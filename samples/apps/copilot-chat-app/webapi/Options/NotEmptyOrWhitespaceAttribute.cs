@@ -3,7 +3,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SemanticKernel.Service.Config;
+namespace SemanticKernel.Service.Options;
 
 /// <summary>
 /// If the string is set, it must not be empty or whitespace.

@@ -5,10 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
-using SemanticKernel.Service.Config;
-using SemanticKernel.Service.CopilotChat.Config;
-using SemanticKernel.Service.CopilotChat.Skills;
+using SemanticKernel.Service.CopilotChat.Options;
+using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 using SemanticKernel.Service.CopilotChat.Storage;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service.CopilotChat.Extensions;
 
