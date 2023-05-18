@@ -79,12 +79,10 @@ export const useChat = () => {
                         title: result.title,
                         messages: chatMessages,
                         users: [loggedInUser],
-                        botProfilePicture: getBotProfilePicture(Object.keys(conversations).length)
+                        botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
                     };
 
                     dispatch(addConversation(newChat));
-                    dispatch(setSelectedConversation(newChat.id));
-
                     return newChat.id;
                 });
         } catch (e: any) {
@@ -179,15 +177,11 @@ export const useChat = () => {
                         await AuthHelper.getSKaaSAccessToken(instance),
                     );
 
-                    // Messages are returned with most recent message at index 0 and oldest message at the last index,
-                    // so we need to reverse the order for render
-                    const orderedMessages = chatMessages.reverse();
-
                     loadedConversations[chatSession.id] = {
                         id: chatSession.id,
                         title: chatSession.title,
                         users: [loggedInUser],
-                        messages: orderedMessages,
+                        messages: chatMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
                     };
                 }
@@ -210,10 +204,7 @@ export const useChat = () => {
 
     const downloadBot = async (chatId: string) => {
         try {
-            return botService.downloadAsync(
-                chatId,
-                await AuthHelper.getSKaaSAccessToken(instance),
-            );
+            return botService.downloadAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance));
         } catch (e: any) {
             const errorMessage = `Unable to download the bot. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -223,7 +214,24 @@ export const useChat = () => {
     const uploadBot = async (bot: Bot) => {
         botService
             .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
-            .then(() => loadChats())
+            .then(async (chatSession: IChatSession) => {
+                const chatMessages = await chatService.getChatMessagesAsync(
+                    chatSession.id,
+                    0,
+                    100,
+                    await AuthHelper.getSKaaSAccessToken(instance),
+                );
+
+                const newChat = {
+                    id: chatSession.id,
+                    title: chatSession.title,
+                    users: [loggedInUser],
+                    messages: chatMessages,
+                    botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
+                };
+
+                dispatch(addConversation(newChat));
+            })
             .catch((e: any) => {
                 const errorMessage = `Unable to upload the bot. Details: ${e.message ?? e}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));

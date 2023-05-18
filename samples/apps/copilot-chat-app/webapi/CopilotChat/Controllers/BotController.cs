@@ -64,14 +64,14 @@ public class BotController : ControllerBase
     /// <param name="kernel">The Semantic Kernel instance.</param>
     /// <param name="userId">The user id.</param>
     /// <param name="bot">The bot object from the message body</param>
-    /// <returns>The HTTP action result.</returns>
+    /// <returns>The HTTP action result with new chat session object.</returns>
     [Authorize]
     [HttpPost]
     [Route("bot/upload")]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> UploadAsync(
+    public async Task<ActionResult<ChatSession>> UploadAsync(
         [FromServices] IKernel kernel,
         [FromQuery] string userId,
         [FromBody] Bot bot)
@@ -94,37 +94,37 @@ public class BotController : ControllerBase
 
         string chatTitle = $"{bot.ChatTitle} - Clone";
         string chatId = string.Empty;
+        ChatSession newChat;
 
         // Upload chat history into chat repository and embeddings into memory.
-        try
+
+        // 1. Create a new chat and get the chat id.
+        newChat = new ChatSession(userId, chatTitle);
+        await this._chatRepository.CreateAsync(newChat);
+        chatId = newChat.Id;
+
+        string oldChatId = bot.ChatHistory.First().ChatId;
+
+        // 2. Update the app's chat storage.
+        foreach (var message in bot.ChatHistory)
         {
-            // 1. Create a new chat and get the chat id.
-            var newChat = new ChatSession(userId, chatTitle);
-            await this._chatRepository.CreateAsync(newChat);
-            chatId = newChat.Id;
-
-            string oldChatId = bot.ChatHistory.First().ChatId;
-
-            // 2. Update the app's chat storage.
-            foreach (var message in bot.ChatHistory)
+            var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content, ChatMessage.AuthorRoles.Participant)
             {
-                var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content, ChatMessage.AuthorRoles.Participant)
-                {
-                    Timestamp = message.Timestamp
-                };
-                await this._chatMessageRepository.CreateAsync(chatMessage);
-            }
-
-            // 3. Update the memory.
-            await this.BulkUpsertMemoryRecordsAsync(oldChatId, chatId, bot.Embeddings);
-        }
-        catch
-        {
-            // TODO: Revert changes if any of the actions failed
-            throw;
+                Timestamp = message.Timestamp
+            };
+            await this._chatMessageRepository.CreateAsync(chatMessage);
         }
 
-        return this.Accepted();
+        // 3. Update the memory.
+        await this.BulkUpsertMemoryRecordsAsync(oldChatId, chatId, bot.Embeddings);
+
+        // TODO: Revert changes if any of the actions failed
+
+        return this.CreatedAtAction(
+            nameof(ChatHistoryController.GetChatSessionByIdAsync),
+            nameof(ChatHistoryController).Replace("Controller", "", StringComparison.OrdinalIgnoreCase),
+            new { chatId },
+            newChat);
     }
 
     /// <summary>
@@ -135,6 +135,7 @@ public class BotController : ControllerBase
     /// <returns>The serialized Bot object of the chat id.</returns>
     [Authorize]
     [HttpGet]
+    [ActionName("DownloadAsync")]
     [Route("bot/download/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
