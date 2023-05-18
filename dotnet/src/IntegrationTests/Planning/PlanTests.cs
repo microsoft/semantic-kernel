@@ -71,6 +71,28 @@ public sealed class PlanTests : IDisposable
     }
 
     [Theory]
+    [InlineData("This is a story about a dog.", "kai@email.com")]
+    public async Task CanExecuteAsChatAsync(string inputToEmail, string expectedEmail)
+    {
+        // Arrange
+        IKernel target = this.InitializeKernel(false, true);
+
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
+
+        var plan = new Plan(emailSkill["SendEmailAsync"]);
+
+        // Act
+        var cv = new ContextVariables();
+        cv.Update(inputToEmail);
+        cv.Set("email_address", expectedEmail);
+        var result = await target.RunAsync(cv, plan);
+
+        // Assert
+        Assert.Equal(expectedBody, result.Result);
+    }
+
+    [Theory]
     [InlineData("Send a story to kai.", "This is a story about a dog.", "French", "kai@email.com")]
     public async Task CanExecuteRunSimpleStepsAsync(string goal, string inputToTranslate, string language, string expectedEmail)
     {
@@ -448,7 +470,7 @@ public sealed class PlanTests : IDisposable
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false)
+    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -460,10 +482,20 @@ public sealed class PlanTests : IDisposable
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                config.AddAzureTextCompletionService(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
+                if (useChatModel)
+                {
+                    config.AddAzureChatCompletionService(
+                        deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey);
+                }
+                else
+                {
+                    config.AddAzureTextCompletionService(
+                        deploymentName: azureOpenAIConfiguration.DeploymentName,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey);
+                }
 
                 if (useEmbeddings)
                 {

@@ -116,7 +116,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 if (usingChatModel)
                 {
                     config.AddAzureChatCompletionService(
-                        deploymentName: azureOpenAIConfiguration.DeploymentName,
+                        deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                         endpoint: azureOpenAIConfiguration.Endpoint,
                         apiKey: azureOpenAIConfiguration.ApiKey);
                 }
