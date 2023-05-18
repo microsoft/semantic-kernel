@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Properties;
 import java.util.ArrayList;
+import java.util.Properties;
 
 public class InlineFunctionExample {
     public static final String AZURE_CONF_PROPERTIES = "conf.properties";
@@ -34,7 +34,8 @@ public class InlineFunctionExample {
         return getConfigValue(configName, "endpoint");
     }
 
-    private static String getConfigValue(String configName, String propertyName) throws IOException {
+    private static String getConfigValue(String configName, String propertyName)
+            throws IOException {
         Path configPath = Paths.get(System.getProperty("user.home"), ".oai", configName);
         Properties props = new Properties();
         try (var reader = Files.newBufferedReader(configPath)) {
@@ -111,7 +112,7 @@ public class InlineFunctionExample {
                     Demo, like Julia Balbilla, writes in the artificial and poetic Aeolic
                      dialect. The language indicates she was knowledgeable in Homeric
                      poetry—'bearing a pleasant gift', for example, alludes to the use of that
-                     phrase throughout the Iliad and Odyssey.[a][2];        
+                     phrase throughout the Iliad and Odyssey.[a][2];
                 """;
 
         CompletionSKContext context = summarize.invokeAsync(text).block();
