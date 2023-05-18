@@ -4,6 +4,9 @@
 
 set -e
 
+ScriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ScriptDir"
+
 # Start backend (in background)
 ./Start-Backend.sh &
 
