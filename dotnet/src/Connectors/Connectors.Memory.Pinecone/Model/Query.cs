@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 /// <summary>
-///  Query parameters for use in a query request.
+/// Query parameters for use in a query request.
 /// </summary>
 public sealed class Query
 {
@@ -16,7 +16,7 @@ public sealed class Query
     public int TopK { get; set; }
 
     /// <summary>
-    ///  The namespace of the index to query. If not specified, the default namespace is used.
+    /// The namespace of the index to query. If not specified, the default namespace is used.
     /// </summary>
     public string? Namespace { get; set; }
 
@@ -40,6 +40,10 @@ public sealed class Query
     /// </summary>
     public SparseVectorData? SparseVector { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Query" /> class.
+    /// </summary>
+    /// <param name="topK">The number of results to return for each query.</param>
     public static Query Create(int topK)
     {
         return new Query()
@@ -48,30 +52,50 @@ public sealed class Query
         };
     }
 
+    /// <summary>
+    /// Sets vector for <see cref="Query"/> instance.
+    /// </summary>
+    /// <param name="vector">Vector dense data. This should be the same length as the dimension of the index being queried.</param>
     public Query WithVector(IEnumerable<float>? vector)
     {
         this.Vector = vector;
         return this;
     }
 
+    /// <summary>
+    /// Sets index namespace for <see cref="Query"/> instance.
+    /// </summary>
+    /// <param name="indexNamespace">The namespace of the index to query. If not specified, the default namespace is used.</param>
     public Query InNamespace(string? indexNamespace)
     {
         this.Namespace = indexNamespace;
         return this;
     }
 
+    /// <summary>
+    /// Sets filter for <see cref="Query"/> instance.
+    /// </summary>
+    /// <param name="filter">If this parameter is present, the operation only affects vectors that satisfy the filter.</param>
     public Query WithFilter(Dictionary<string, object>? filter)
     {
         this.Filter = filter;
         return this;
     }
 
+    /// <summary>
+    /// Sets sparse vector data for <see cref="Query"/> instance.
+    /// </summary>
+    /// <param name="sparseVector">Vector sparse data. Represented as a list of indices and a list of corresponded values, which must be the same length.</param>
     public Query WithSparseVector(SparseVectorData? sparseVector)
     {
         this.SparseVector = sparseVector;
         return this;
     }
 
+    /// <summary>
+    /// Sets unique vector id for <see cref="Query"/> instance.
+    /// </summary>
+    /// <param name="id">The unique ID of a vector.</param>
     public Query WithId(string id)
     {
         this.Id = id;

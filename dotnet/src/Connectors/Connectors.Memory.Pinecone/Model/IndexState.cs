@@ -11,6 +11,9 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum IndexState
 {
+    /// <summary>
+    /// Default value.
+    /// </summary>
     None = 0,
 
     /// <summary>

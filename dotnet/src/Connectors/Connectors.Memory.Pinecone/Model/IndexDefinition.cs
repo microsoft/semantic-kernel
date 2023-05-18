@@ -39,13 +39,13 @@ public class IndexDefinition
     public int Dimension { get; set; } = 1536;
 
     /// <summary>
-    /// The number of pods for the index to use,including replicas.
+    /// The number of pods for the index to use, including replicas.
     /// </summary>
     [JsonPropertyName("pods")]
     public int Pods { get; set; } = 1;
 
     /// <summary>
-    /// The number of replicas. Replicas duplicate your index. They provide higher availability and throughput.
+    /// The number of replicas. Replicas duplicate index. They provide higher availability and throughput.
     /// </summary>
     [JsonPropertyName("replicas")]
     public int Replicas { get; set; }
@@ -72,53 +72,88 @@ public class IndexDefinition
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? SourceCollection { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IndexDefinition" /> class.
+    /// </summary>
+    /// <param name="name">The unique name of an index.</param>
     public static IndexDefinition Create(string name)
     {
         return new IndexDefinition(name);
     }
 
+    /// <summary>
+    /// Sets dimension for <see cref="IndexDefinition"/> instance.
+    /// </summary>
+    /// <param name="dimension">The number of dimensions in the vector representation.</param>
     public IndexDefinition WithDimension(int dimension)
     {
         this.Dimension = dimension;
         return this;
     }
 
+    /// <summary>
+    /// Sets metric for <see cref="IndexDefinition"/> instance.
+    /// </summary>
+    /// <param name="metric">The index metric to use for similarity search.</param>
     public IndexDefinition WithMetric(IndexMetric metric)
     {
         this.Metric = metric;
         return this;
     }
 
+    /// <summary>
+    /// Sets pods for <see cref="IndexDefinition"/> instance.
+    /// </summary>
+    /// <param name="pods">The number of pods for the index to use, including replicas.</param>
     public IndexDefinition NumberOfPods(int pods)
     {
         this.Pods = pods;
         return this;
     }
 
+    /// <summary>
+    /// Sets number of replicas for <see cref="IndexDefinition"/> instance.
+    /// </summary>
+    /// <param name="replicas">The number of replicas. Replicas duplicate index. They provide higher availability and throughput.</param>
     public IndexDefinition NumberOfReplicas(int replicas)
     {
         this.Replicas = replicas;
         return this;
     }
 
+    /// <summary>
+    /// Sets pod type for <see cref="IndexDefinition"/> instance.
+    /// </summary>
+    /// <param name="podType">The type of pod to use for the index.</param>
     public IndexDefinition WithPodType(PodType podType)
     {
         this.PodType = podType;
         return this;
     }
 
+    /// <summary>
+    /// Sets metadata index configuration for <see cref="IndexDefinition"/> instance.
+    /// </summary>
+    /// <param name="config">The metadata index configuration.</param>
     public IndexDefinition WithMetadataIndex(MetadataIndexConfig? config = default)
     {
         this.MetadataConfig = config;
         return this;
     }
 
+    /// <summary>
+    /// Sets source collection for <see cref="IndexDefinition"/> instance.
+    /// </summary>
+    /// <param name="sourceCollection">The unique name of a collection.</param>
     public IndexDefinition FromSourceCollection(string sourceCollection)
     {
         this.SourceCollection = sourceCollection;
         return this;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpRequestMessage" /> class with request body of <see cref="IndexDefinition"/>.
+    /// </summary>
     public HttpRequestMessage Build()
     {
         HttpRequestMessage request = HttpRequest.CreatePostRequest("/databases", this);
@@ -128,6 +163,10 @@ public class IndexDefinition
         return request;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IndexDefinition" /> class with default settings.
+    /// </summary>
+    /// <param name="name">The unique name of an index.</param>
     public static IndexDefinition Default(string? name = default)
     {
         string indexName = name ?? PineconeUtils.DefaultIndexName;

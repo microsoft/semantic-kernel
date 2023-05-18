@@ -359,6 +359,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord?> GetBatchWithFilterAsync(string indexName,
         Dictionary<string, object> filter,
         int limit = 10,

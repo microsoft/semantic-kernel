@@ -8,12 +8,12 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 /// <summary>
-///  Interface for a Pinecone client
+/// Interface for a Pinecone client
 /// </summary>
 public interface IPineconeClient
 {
     /// <summary>
-    ///  Get vectors by id
+    /// Get vectors by id
     /// </summary>
     /// <param name="indexName"> the name of the index </param>
     /// <param name="ids"> A list of ids</param>
@@ -30,7 +30,7 @@ public interface IPineconeClient
     );
 
     /// <summary>
-    ///  Gets the most relevant vectors to a list of queries
+    /// Gets the most relevant vectors to a list of queries
     /// </summary>
     /// <param name="indexName"> the name of the index </param>
     /// <param name="query"> the query parameters</param>
@@ -69,7 +69,7 @@ public interface IPineconeClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///  Upserts a list of documents
+    /// Upserts a list of documents
     /// </summary>
     /// <param name="indexName"> the name of the index</param>
     /// <param name="vectors"> the list of documents</param>

@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 /// <summary>
-/// IndexStatus
+/// Status of the index.
 /// </summary>
 public class IndexStatus
 {

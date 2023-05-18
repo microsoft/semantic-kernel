@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// FetchResponse
 /// See https://docs.pinecone.io/reference/fetch
 /// </summary>
-public sealed class FetchResponse
+internal sealed class FetchResponse
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FetchResponse" /> class.

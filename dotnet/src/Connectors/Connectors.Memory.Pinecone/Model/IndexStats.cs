@@ -6,14 +6,14 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 /// <summary>
-/// DescribeIndexStatsResponse
+/// Index parameters.
 /// </summary>
 public class IndexStats
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="IndexStats" /> class.
     /// </summary>
-    /// <param name="namespaces">namespaces.</param>
+    /// <param name="namespaces">Namespaces.</param>
     /// <param name="dimension">The number of dimensions in the vector representation.</param>
     /// <param name="indexFullness">The fullness of the index, regardless of whether a metadata filter expression was passed. The granularity of this metric is 10%.</param>
     /// <param name="totalVectorCount">totalVectorCount.</param>

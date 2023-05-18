@@ -13,6 +13,9 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
+/// <summary>
+/// Utils for Pinecone connector.
+/// </summary>
 public static class PineconeUtils
 {
     /// <summary>
@@ -22,10 +25,13 @@ public static class PineconeUtils
     public const int MaxMetadataSize = 40 * 1024;
 
     /// <summary>
-    ///  The default dimension for Pinecone vectors. Equivalent to text-embeddings-ada-002 dimension.
+    /// The default dimension for Pinecone vectors. Equivalent to text-embeddings-ada-002 dimension.
     /// </summary>
     public const int DefaultDimension = 1536;
 
+    /// <summary>
+    /// Default index name.
+    /// </summary>
     public const string DefaultIndexName = "sk-index";
 
     /// <summary>
@@ -206,9 +212,14 @@ public static class PineconeUtils
         return pineconeFilter;
     }
 
-    public static string MetricTypeToString(IndexMetric x)
+    /// <summary>
+    /// Maps <see cref="IndexMetric"/> to its string representation.
+    /// </summary>
+    /// <param name="indexMetric">Value of <see cref="IndexMetric"/>.</param>
+    /// <returns>String representation.</returns>
+    public static string MetricTypeToString(IndexMetric indexMetric)
     {
-        return x switch
+        return indexMetric switch
         {
             IndexMetric.Cosine => "cosine",
             IndexMetric.Dotproduct => "dotProduct",
@@ -217,6 +228,11 @@ public static class PineconeUtils
         };
     }
 
+    /// <summary>
+    /// Maps <see cref="PodType"/> to its string representation.
+    /// </summary>
+    /// <param name="podType">Value of <see cref="PodType"/>.</param>
+    /// <returns>String representation.</returns>
     public static string PodTypeToString(PodType podType)
     {
         return podType switch
@@ -237,17 +253,35 @@ public static class PineconeUtils
         };
     }
 
+    /// <summary>
+    /// Class for Pinecone filtering logic.
+    /// </summary>
     public sealed class PineconeOperator
     {
+        /// <summary>
+        /// Filtering operator (e.g. $eq, $ne), see https://docs.pinecone.io/docs/metadata-filtering#metadata-query-language.
+        /// </summary>
         public string Operator { get; }
+
+        /// <summary>
+        /// Filtering value.
+        /// </summary>
         public object Value { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PineconeOperator"/> class.
+        /// </summary>
+        /// <param name="op">Filtering operator.</param>
+        /// <param name="value">Filtering value.</param>
         public PineconeOperator(string op, object value)
         {
             this.Operator = op;
             this.Value = value;
         }
 
+        /// <summary>
+        /// Converts instance of <see cref="PineconeOperator"/> to <see cref="Dictionary{TKey, TValue}"/>.
+        /// </summary>
         public Dictionary<string, object> ToDictionary()
         {
             return new Dictionary<string, object>

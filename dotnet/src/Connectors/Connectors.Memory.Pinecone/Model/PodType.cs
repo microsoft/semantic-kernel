@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 /// <summary>
-/// The pod type
+/// Pod type of the index, see https://docs.pinecone.io/docs/indexes#pods-pod-types-and-pod-sizes.
 /// </summary>
 [JsonConverter(typeof(PodTypeJsonConverter))]
 public enum PodType
@@ -90,7 +90,7 @@ public enum PodType
     P2X8 = 12
 }
 
-public class PodTypeJsonConverter : JsonConverter<PodType>
+internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
 {
     public override PodType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
