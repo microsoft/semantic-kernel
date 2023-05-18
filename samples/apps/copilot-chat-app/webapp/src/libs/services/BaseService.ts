@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
 
 interface ServiceRequest {
@@ -9,7 +11,7 @@ const noResponseBodyStatusCodes = [202];
 
 export class BaseService {
     // eslint-disable-next-line @typescript-eslint/space-before-function-paren
-    constructor(protected readonly serviceUrl: string) {}
+    constructor(protected readonly serviceUrl: string) { }
 
     protected readonly getResponseAsync = async <T>(
         request: ServiceRequest,

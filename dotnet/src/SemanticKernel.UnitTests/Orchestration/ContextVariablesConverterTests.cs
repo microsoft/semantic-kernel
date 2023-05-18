@@ -133,7 +133,7 @@ public class ContextVariablesConverterTests
     public void ReadFromJsonReturnsNullWithNull()
     {
         // Arrange
-        string json = /*lang=json,strict*/ @"null";
+        string json = /*lang=json,strict*/ "null";
         var options = new JsonSerializerOptions();
         options.Converters.Add(new ContextVariablesConverter());
 
@@ -148,7 +148,7 @@ public class ContextVariablesConverterTests
     public void ReadFromJsonReturnsDefaultWithEmpty()
     {
         // Arrange
-        string json = /*lang=json,strict*/ @"[]";
+        string json = /*lang=json,strict*/ "[]";
         var options = new JsonSerializerOptions();
         options.Converters.Add(new ContextVariablesConverter());
 
@@ -164,7 +164,9 @@ public class ContextVariablesConverterTests
     public void ReadFromJsonThrowsWithInvalidJson()
     {
         // Arrange
+#pragma warning disable JSON001 // Invalid JSON pattern
         string json = /*lang=json,strict*/ @"[{""Key"":""a"", ""Value"":""b""";
+#pragma warning restore JSON001 // Invalid JSON pattern
         var options = new JsonSerializerOptions();
         options.Converters.Add(new ContextVariablesConverter());
 
