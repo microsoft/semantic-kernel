@@ -2,6 +2,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
+import { IChatUser } from '../../../libs/models/ChatUser';
 import { ChatState, ConversationTypingState, FileUploadedAlert } from './ChatState';
 import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
@@ -24,6 +25,10 @@ export const conversationsSlice = createSlice({
         addConversation: (state: ConversationsState, action: PayloadAction<ChatState>) => {
             const newId = action.payload.id ?? '';
             state.conversations = { [newId]: action.payload, ...state.conversations };
+        },
+        addUserToConversation: (state: ConversationsState, action: PayloadAction<{ user: IChatUser, chatId: string }>) => {
+            const { user, chatId } = action.payload;
+            state.conversations[chatId].users.push(user);
         },
         /*
         * updateConversationFromUser() and updateConversationFromServer() both update the conversations state.

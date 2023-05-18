@@ -164,6 +164,11 @@ export const useChat = () => {
                         await AuthHelper.getSKaaSAccessToken(instance),
                     );
 
+                    const chatUsers = await chatService.getAllChatParticipantsAsync(
+                        chatSession.id,
+                        await AuthHelper.getSKaaSAccessToken(instance),
+                    );
+
                     // Messages are returned with most recent message at index 0 and oldest message at the last index,
                     // so we need to reverse the order for render
                     const orderedMessages = chatMessages.reverse();
@@ -171,7 +176,7 @@ export const useChat = () => {
                     loadedConversations[chatSession.id] = {
                         id: chatSession.id,
                         title: chatSession.title,
-                        users: [loggedInUser],
+                        users: chatUsers,
                         messages: orderedMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
                     };
