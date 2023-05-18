@@ -3,5 +3,6 @@
   "endpoint": "NOT-USED-BUT-REQUIRED-FOR-PARSER",
   "model":  "text-davinci-003",
   "apikey": "... your OpenAI key ...",
-  "org":    ""
+  "org":    "",
+  "embeddingModel": "text-embedding-ada-002"
 }
