@@ -28,10 +28,12 @@ cd dotnet/src/IntegrationTests
 dotnet user-secrets init
 dotnet user-secrets set "OpenAI:ServiceId" "text-davinci-003"
 dotnet user-secrets set "OpenAI:ModelId" "text-davinci-003"
+dotnet user-secrets set "OpenAI:ChatModelId" "gpt-4"
 dotnet user-secrets set "OpenAI:ApiKey" "..."
 
 dotnet user-secrets set "AzureOpenAI:ServiceId" "azure-text-davinci-003"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "text-davinci-003"
+dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "gpt-4"
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://contoso.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
 
@@ -58,11 +60,13 @@ For example:
   "OpenAI": {
     "ServiceId": "text-davinci-003",
     "ModelId": "text-davinci-003",
+    "ChatModelId": "gpt-4",
     "ApiKey": "sk-...."
   },
   "AzureOpenAI": {
     "ServiceId": "azure-text-davinci-003",
     "DeploymentName": "text-davinci-003",
+    "ChatDeploymentName": "gpt-4",
     "Endpoint": "https://contoso.openai.azure.com/",
     "ApiKey": "...."
   },

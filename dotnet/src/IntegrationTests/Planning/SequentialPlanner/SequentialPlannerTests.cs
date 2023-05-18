@@ -32,11 +32,12 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Write a joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
-    public async Task CreatePlanFunctionFlowAsync(string prompt, string expectedFunction, string expectedSkill)
+    [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
+    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
+    public async Task CreatePlanFunctionFlowAsync(bool usingChatModel, string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel();
+        IKernel kernel = this.InitializeKernel(usingChatModel);
         TestHelpers.GetSkills(kernel, "FunSkill");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
@@ -53,11 +54,12 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterSkill", "<!--===ENDPART===-->")]
-    public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedSkill, string expectedDefault)
+    [InlineData(false, "Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterSkill", "<!--===ENDPART===-->")]
+    [InlineData(true, "Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterSkill", "<!--===ENDPART===-->")]
+    public async Task CreatePlanWithDefaultsAsync(bool usingChatModel, string prompt, string expectedFunction, string expectedSkill, string expectedDefault)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel();
+        IKernel kernel = this.InitializeKernel(usingChatModel);
         TestHelpers.GetSkills(kernel, "WriterSkill");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
@@ -75,11 +77,12 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Write a poem or joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
-    public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedSkill)
+    [InlineData(false, "Write a poem or joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
+    [InlineData(true, "Write a poem or joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
+    public async Task CreatePlanGoalRelevantAsync(bool usingChatModel, string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel(true);
+        IKernel kernel = this.InitializeKernel(usingChatModel, true);
 
         // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(kernel);
@@ -98,7 +101,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false)
+    private IKernel InitializeKernel(bool usingChatModel, bool useEmbeddings = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -110,10 +113,20 @@ public sealed class SequentialPlannerTests : IDisposable
             .WithLogger(this._logger)
             .Configure(config =>
             {
-                config.AddAzureTextCompletionService(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
+                if (usingChatModel)
+                {
+                    config.AddAzureChatCompletionService(
+                        deploymentName: azureOpenAIConfiguration.DeploymentName,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey);
+                }
+                else
+                {
+                    config.AddAzureTextCompletionService(
+                        deploymentName: azureOpenAIConfiguration.DeploymentName,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey);
+                }
 
                 if (useEmbeddings)
                 {
