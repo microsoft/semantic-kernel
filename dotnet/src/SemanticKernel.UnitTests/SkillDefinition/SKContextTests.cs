@@ -29,7 +29,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(variables, NullMemory.Instance, this._skills.Object, this._log.Object);
+        var target = new SKContext(variables, skills: this._skills.Object, logger: this._log.Object);
         variables.Set("foo1", "bar1");
 
         // Act

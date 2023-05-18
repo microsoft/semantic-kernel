@@ -4,7 +4,6 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Models;
@@ -24,7 +23,7 @@ public class CalendarSkillTests : IDisposable
     public CalendarSkillTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<SKContext>(output);
-        this._context = new SKContext(new ContextVariables(), NullMemory.Instance, null, this._logger);
+        this._context = new SKContext(logger: this._logger);
     }
 
     [Fact]

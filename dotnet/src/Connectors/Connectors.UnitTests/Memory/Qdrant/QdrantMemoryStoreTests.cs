@@ -116,6 +116,9 @@ public class QdrantMemoryStoreTests
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task>(x => x.DeleteCollectionAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()));
+        mockQdrantClient
+            .Setup<Task>(x => x.DoesCollectionExistAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(true));
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
