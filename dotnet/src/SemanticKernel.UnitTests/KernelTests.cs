@@ -77,7 +77,7 @@ public class KernelTests
         var nativeSkill = new MySkill();
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
-        using CancellationTokenSource cts = new CancellationTokenSource();
+        using CancellationTokenSource cts = new();
         cts.Cancel();
 
         // Act
@@ -97,7 +97,7 @@ public class KernelTests
         var nativeSkill = new MySkill();
         kernel.ImportSkill(nativeSkill, "mySk");
 
-        using CancellationTokenSource cts = new CancellationTokenSource();
+        using CancellationTokenSource cts = new();
 
         // Act
         SKContext result = await kernel.RunAsync(cts.Token, kernel.Func("mySk", "GetAnyValue"));

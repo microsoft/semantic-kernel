@@ -2,8 +2,10 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
-    <!-- Central version prefix - applies to all nuget packages -->
-    <Version>0.14</Version>
+    <!-- Central version prefix - applies to all nuget packages.
+         Only the numeric portion is used; '-pre' is ignored, but required 
+         for packages with prerelease dependencies -->
+    <Version>0.14-pre</Version>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -245,7 +245,7 @@ Goal: tell me a joke.
                 }
                 else
                 {
-                    this._logger.LogWarning("{0}.{1} is missing a description.", func.SkillName, func.Name);
+                    this._logger.LogWarning("{0}.{1} is missing a description", func.SkillName, func.Name);
                     list.AppendLine($"// Function {func.SkillName}.{func.Name}.");
                 }
 
