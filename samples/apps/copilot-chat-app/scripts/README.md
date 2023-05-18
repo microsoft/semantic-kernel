@@ -1,7 +1,5 @@
 # Copilot Chat Setup Scripts (local deployment)
 
-> The PowerShell scripts in this directory require [PowerShell Core 6 or higher](https://github.com/PowerShell/PowerShell#get-powershell).
-
 ## Before You Begin
 To run Copilot Chat, you will need the following:
 - *Application ID*

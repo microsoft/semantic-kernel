@@ -64,7 +64,7 @@ else {
     exit(1)
 }
 
-$appsettingsOverridesFilePath = Join-Path $PSScriptRoot 'appsettings.Development.json'
+$appsettingsOverridesFilePath = Join-Path "$PSScriptRoot" 'appsettings.Development.json'
 
 Write-Host "Setting 'AIService:Key' user secret for $($appsettingsOverrides.AIService.Type)..."
 dotnet user-secrets set AIService:Key $ApiKey

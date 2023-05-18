@@ -147,16 +147,16 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
           value: aiService
         }
         {
-          name: 'AIService:Models:Completion'
-          value: completionModel
-        }
-        {
           name: 'AIService:Endpoint'
           value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
         }
         {
           name: 'AIService:Key'
           value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+        }
+        {
+          name: 'AIService:Models:Completion'
+          value: completionModel
         }
         {
           name: 'AIService:Models:Embedding'
