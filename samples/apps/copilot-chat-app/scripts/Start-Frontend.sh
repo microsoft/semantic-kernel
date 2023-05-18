@@ -5,7 +5,7 @@
 set -e
 
 ScriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$ScriptDir/../WebApp"
+cd "$ScriptDir/../webapp"
 
 # Build and run the frontend application
 yarn install && yarn start

@@ -3,9 +3,8 @@
 Builds and runs both the backend and frontend for Copilot Chat.
 #>
 
-Set-Location "$PSScriptRoot"
-$BackendScript = Join-Path '.' 'Start-Backend.ps1'
-$FrontendScript = Join-Path '.' 'Start-Frontend.ps1'
+$BackendScript = Join-Path "$PSScriptRoot" 'Start-Backend.ps1'
+$FrontendScript = Join-Path "$PSScriptRoot" 'Start-Frontend.ps1'
 
 # Start backend (in new PS process)
 Start-Process pwsh -ArgumentList "-noexit", "-command $BackendScript"
