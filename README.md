@@ -57,11 +57,11 @@ Semantic Kernel is available to explore AI and build apps with C# and Python:
 </div>
 <br/>
 
-See the [Feature Matrix](FEATURE_MATRIX.md) to see a breakdown of feature parity between C# and Python.
+See the [Feature Matrix](FEATURE_MATRIX.md) to see a breakdown of feature parity across C#, Python, and Java.
 
 The quickest way to get started with the basics is to get an API key
 (OpenAI or Azure OpenAI)
-and to run one of the C# or Python console applications/scripts:
+and to run one of the console applications/scripts:
 
 For C#:
 1. Create a new console app.
@@ -77,6 +77,18 @@ For Python:
 4. Copy the code from [here](python/README.md) into the `hello-world.py` script.
 5. Run the python script.
 
+For Java:
+1. Install [jbang](https://www.jbang.dev/):
+
+    * Linux/Mac: `curl -Ls https://sh.jbang.dev | bash -s - app setup`.
+    * Windows: `iex "& { $(iwr -useb https://ps.jbang.dev) } app setup"`.
+
+2. Create a new script e.g. `HelloSK.java`.
+3. Store your API key and settings in an `sk.properties` file as described [here](java/README.md).
+4. Copy the code from [here](java/README.md#get-started) into the `HelloSK.java` script.
+5. Run the Java application with `jbang HelloSK.java`.
+
+*Note: to run the Java application with `jbang HelloSK.java`, you will need to have the Semantic Kernel for Java installed locally. See [here](java/README.md#build-the-semantic-kernel) for instructions. This step is temporary, and won't be required after the library is available to Maven Central.*
 
 ## Sample apps ⚡
 

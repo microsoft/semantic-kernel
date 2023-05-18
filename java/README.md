@@ -10,7 +10,7 @@ The Semantic Kernel for Java is an SDK that implements the key concepts of the S
 to be used in Java applications and services in an idiomatic way, and to be easily integrated with other Java libraries
 and frameworks.
 
-## Get Started
+## Get started
 
 To run the LLM prompts and semantic functions in this kernel, make sure you have
 an [Open AI API Key](https://openai.com/api/)
@@ -18,26 +18,32 @@ or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-servi
 
 ### Requirements
 
-To build the semantic kernel, you will need to have:
+To build the project, you will need to have:
 
-- **Required**:
-    - [JDK 8](https://microsoft.com/openjdk/) or newer to build the Semantic Kernel library
-    - [JDK 17](https://microsoft.com/openjdk/) or newer to run samples
+- **Required**: 
+  - [JDK 8](https://microsoft.com/openjdk/) or newer to build the Semantic Kernel library
+  - [JDK 17](https://microsoft.com/openjdk/) or newer to run samples
 
-### Build the semantic kernel
+## Building the Semantic Kernel
+
+The Semantic Kernel is built using [Apache Maven](https://maven.apache.org/).
+
+### Build the Semantic Kernel
 
 1. Clone this repository
 
         git clone git@github.com:microsoft/semantic-kernel.git
 
-2. Build the semantic kernel
+2. Build the Semantic Kernel
 
         cd semantic-kernel/java
-        mvn install
+        mvnw install
 
-## Using the semantic kernel
+    - _Note: by defautlt, certain tests will not run if an OpenAI key is not set_
 
-Check the `samples` folder for examples of how to use the semantic kernel.
+## Using the Semantic Kernel
+
+Check the `../samples` folder for examples.
 
 ## Discord community
 
