@@ -7,14 +7,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using SemanticKernel.IntegrationTests.TestSettings;
-using Xunit.Abstractions;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.KernelSyntaxExamples;
+namespace SemanticKernel.IntegrationTests.Issues;
 
-public sealed class Example27SemanticFunctionsUsingChatGptTests : IDisposable
+public sealed class Issue1050 : IDisposable
 {
-    public Example27SemanticFunctionsUsingChatGptTests(ITestOutputHelper output)
+    public Issue1050(ITestOutputHelper output)
     {
         this._logger = NullLogger.Instance;
         this._testOutputHelper = new RedirectOutput(output);
@@ -23,18 +23,16 @@ public sealed class Example27SemanticFunctionsUsingChatGptTests : IDisposable
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddUserSecrets<Example27SemanticFunctionsUsingChatGptTests>()
+            .AddUserSecrets<Issue1050>()
             .AddEnvironmentVariables()
             .Build();
-
-       
     }
 
     [Fact]
-    public async Task CanRunExampleAsync()
+    public async Task CanUseOpenAiChatForTextCompletionAsync()
     {
-        // Note: we use Chat Completion and GPT 3.5 Turbo
-        IKernel kernel = this.InitializeGpt35Kernel(); //new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        // Note: we use OpenAi Chat Completion and GPT 3.5 Turbo
+        IKernel kernel = this.InitializeOpenAiKernel(); //new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         var func = kernel.CreateSemanticFunction(
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
@@ -47,10 +45,10 @@ public sealed class Example27SemanticFunctionsUsingChatGptTests : IDisposable
         Assert.Contains("Uranus", result.Result);
     }
 
-    private IKernel InitializeGpt35Kernel()
+    private IKernel InitializeOpenAiKernel()
     {
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
+        OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
 
         //kernel.Config.AddAzureChatCompletionService("gpt-35-turbo", "https://....openai.azure.com/", "...API KEY...");
 
@@ -58,19 +56,8 @@ public sealed class Example27SemanticFunctionsUsingChatGptTests : IDisposable
             .WithLogger(this._testOutputHelper)
             .Configure(config =>
             {
-                config.AddAzureChatCompletionService(
-                    //deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    deploymentName: "gpt-35-turbo",
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
+                config.AddOpenAIChatCompletionService("gpt-3.5-turbo", openAIConfiguration.ApiKey);
             });
-
-        //var builder = Kernel.Builder
-        //    .WithLogger(this._logger)
-        //    .Configure(config =>
-        //    {
-        //        config.AddOpenAIChatCompletionService("gpt-3.5-turbo", openAIConfiguration.ApiKey);
-        //    });
 
         var kernel = builder.Build();
         return kernel;
@@ -79,14 +66,15 @@ public sealed class Example27SemanticFunctionsUsingChatGptTests : IDisposable
     private readonly ILogger _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
-   
+    private string _bingApiKey;
+
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-    ~Example27SemanticFunctionsUsingChatGptTests()
+    ~Issue1050()
     {
         this.Dispose(false);
     }
