@@ -136,7 +136,7 @@ To view the API key required by your instance, access the page for your Semantic
 From that page, click on the "Configuration" item in the "Settings" section of the left pane. Then click on the text that reads "Hidden value.
 Click to show value" next to the "Authorization:ApiKey" setting.
 
-To authorize requests with the API key, it must be added as the value of an "x-api-key" header added to the requests.
+To authorize requests with the API key, it must be added as the value of an "x-sk-api-key" header added to the requests.
 
 
 ## Using web frontends to access your deployment
