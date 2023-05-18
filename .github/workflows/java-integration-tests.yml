@@ -27,4 +27,4 @@ jobs:
         run: cd java/api-test && ../mvnw -B -Pbug-check clean install --file pom.xml
 
       - name: Build samples
-        run: cd samples/java/semantickernel-samples && ../../../java/mvnw -B clean install --file pom.xml
+        run: cd java/samples && ../mvnw -B clean install --file pom.xml
