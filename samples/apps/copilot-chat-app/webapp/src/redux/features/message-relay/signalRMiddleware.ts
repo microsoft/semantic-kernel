@@ -5,9 +5,9 @@ import { AlertType } from "../../../libs/models/AlertType";
 import { IAskResult } from "../../../libs/semantic-kernel/model/AskResult";
 import { addAlert } from "../app/appSlice";
 import { AuthorRoles, ChatMessageState, IChatMessage } from './../../../libs/models/ChatMessage';
-import { ConversationTypingState, FileUploadedAlert } from './../conversations/ChatState';
-import { getSelectedChatID } from './../../app/store';
 import { isPlan } from './../../../libs/utils/PlanUtils';
+import { getSelectedChatID } from './../../app/store';
+import { ConversationTypingState, FileUploadedAlert } from './../conversations/ChatState';
 
 // These have to match the callback names used in the backend
 const receiveMessageFromServerCallbackName = "ReceiveMessage" as string;
@@ -84,39 +84,38 @@ export const startSignalRConnection = async (store: any) => {
     }
 };
 
-export const signalRMiddleware = () => {
+export const signalRMiddleware = (store: any) => {
     return (next: any) => async (action: any) => {
+        // Call the next dispatch method in the middleware chain before performing any async logic
+        const result = next(action);
+
+        // The following actions will be captured by the SignalR middleware and broadcasted to all clients.
         switch (action.type) {
             case "conversations/updateConversationFromUser":
-                await hubConnection.invoke("SendMessageAsync", getSelectedChatID(), action.payload.message).catch(
-                    err => console.error(err.toString())
-                );
+                hubConnection.invoke("SendMessageAsync", getSelectedChatID(), action.payload.message)
+                    .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
             case "conversations/updateIsTypingFromUser":
-                await hubConnection.invoke("SendTypingStateAsync", getSelectedChatID(), action.payload).catch(
-                    err => console.error(err.toString())
-                );
+                hubConnection.invoke("SendTypingStateAsync", getSelectedChatID(), action.payload)
+                    .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
             case "conversations/updateFileUploadedFromUser":
-                await hubConnection.invoke("SendFileUploadedEventAsync", getSelectedChatID(), action.payload).catch(
-                    err => console.error(err.toString())
-                );
+                hubConnection.invoke("SendFileUploadedEventAsync", getSelectedChatID(), action.payload)
+                    .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
             case "conversations/setConversations":
-                Object.keys(action.payload).map(async (id) => {
-                    await hubConnection.invoke("AddClientToGroupAsync", id).catch(
-                        err => console.error(err.toString())
-                    );
-                });
+                Promise.all(Object.keys(action.payload).map(async (id) => {
+                    await hubConnection.invoke("AddClientToGroupAsync", id);
+                }))
+                    .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
             case "conversations/addConversation":
-                await hubConnection.invoke("AddClientToGroupAsync", action.payload.id).catch(
-                    err => console.error(err.toString())
-                );
+                hubConnection.invoke("AddClientToGroupAsync", action.payload.id)
+                    .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
         }
 
-        return next(action);
+        return result;
     }
 };
 
