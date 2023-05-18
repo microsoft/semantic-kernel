@@ -174,7 +174,7 @@ export class ChatService extends BaseService {
                 online: false,
                 fullName: '',
                 emailAddress: '',
-                lastTypingTimestamp: 0,
+                isTyping: false,
             } as IChatUser;
         });
 

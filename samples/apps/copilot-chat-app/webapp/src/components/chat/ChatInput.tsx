@@ -15,8 +15,8 @@ import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { getSelectedChatID } from './../../redux/app/store';
-import { updateFileUploadedFromUser } from './../../redux/features/conversations/conversationsSlice';
-import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
+import { updateFileUploadedFromUser, updateUserIsTyping } from './../../redux/features/conversations/conversationsSlice';
+import { ChatStatus } from './ChatStatus';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -57,13 +57,11 @@ const useClasses = makeStyles({
 });
 
 interface ChatInputProps {
-    // Hardcode to single user typing. For multi-users, it should be a list of ChatUser who are typing.
-    isTyping?: boolean;
     onSubmit: (value: string) => void;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = (props) => {
-    const { isTyping, onSubmit } = props;
+    const { onSubmit } = props;
     const classes = useClasses();
     const { instance, accounts } = useMsal();
     const account = useAccount(accounts[0] || {});
@@ -159,12 +157,11 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                 }),
             );
         }
-        // void chat.sendTypingStopSignalAsync();
     };
 
     return (
         <div className={classes.root}>
-            <div className={classes.typingIndicator}>{isTyping ? <TypingIndicatorRenderer /> : null}</div>
+            <div className={classes.typingIndicator}><ChatStatus /></div>
             <div className={classes.content}>
                 <Textarea
                     id="chat-input"
@@ -178,6 +175,8 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         if (chatInput) {
                             setValue(chatInput.value);
                         }
+                        // User is considered typing if the input is focused
+                        dispatch(updateUserIsTyping({ userId: account!.homeAccountId!, chatId: selectedId, isTyping: true }));
                     }}
                     onChange={(_event, data) => setValue(data.value)}
                     onKeyDown={(event) => {
@@ -190,8 +189,10 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                             setValue(previousValue);
                             return;
                         }
-
-                        // void chat.sendTypingStartSignalAsync();
+                    }}
+                    onBlur={() => {
+                        // User is considered not typing if the input is not focused
+                        dispatch(updateUserIsTyping({ userId: account!.homeAccountId!, chatId: selectedId, isTyping: false }));
                     }}
                 />
             </div>

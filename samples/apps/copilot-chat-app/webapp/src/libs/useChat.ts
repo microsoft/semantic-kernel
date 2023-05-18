@@ -45,7 +45,7 @@ export const useChat = () => {
         emailAddress: account?.username || '',
         photo: undefined, // TODO: Make call to Graph /me endpoint to load photo
         online: true,
-        lastTypingTimestamp: 0,
+        isTyping: false,
     };
 
     const getChatUserById = (id: string, chatId: string, users: IChatUser[]) => {
@@ -75,7 +75,8 @@ export const useChat = () => {
                         title: result.title,
                         messages: chatMessages,
                         users: [loggedInUser],
-                        botProfilePicture: getBotProfilePicture(Object.keys(conversations).length)
+                        botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
+                        isBotTyping: false,
                     };
 
                     dispatch(addConversation(newChat));
@@ -179,6 +180,7 @@ export const useChat = () => {
                         users: chatUsers,
                         messages: orderedMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
+                        isBotTyping: false,
                     };
                 }
 
