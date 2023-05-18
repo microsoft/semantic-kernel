@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace SemanticKernel.Service.Auth;
 public class PassThroughAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public const string AuthenticationScheme = "PassThrough";
+    private const string DefaultUserId = "c05c61eb-65e4-4223-915a-fe72b0c9ece1";
 
     /// <summary>
     /// Constructor
@@ -30,9 +32,10 @@ public class PassThroughAuthenticationHandler : AuthenticationHandler<Authentica
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         this.Logger.LogInformation("Allowing request to pass through");
-
-        var principal = new ClaimsPrincipal(new ClaimsIdentity(AuthenticationScheme));
-        var ticket = new AuthenticationTicket(principal, this.Scheme.Name);
+        Claim userIdClaim = new(JwtRegisteredClaimNames.Sub, DefaultUserId);
+        ClaimsIdentity identity = new(new Claim[] { userIdClaim }, AuthenticationScheme);
+        ClaimsPrincipal principal = new(identity);
+        AuthenticationTicket ticket = new(principal, this.Scheme.Name);
 
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }

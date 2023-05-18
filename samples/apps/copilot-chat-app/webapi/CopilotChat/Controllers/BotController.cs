@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
+using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -62,10 +63,9 @@ public class BotController : ControllerBase
     /// Upload a bot.
     /// </summary>
     /// <param name="kernel">The Semantic Kernel instance.</param>
-    /// <param name="userId">The user id.</param>
+    /// <param name="authInfoProvider">The auth info instance.</param>
     /// <param name="bot">The bot object from the message body</param>
     /// <returns>The HTTP action result.</returns>
-    [Authorize]
     [HttpPost]
     [Route("bot/upload")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -73,10 +73,9 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UploadAsync(
         [FromServices] IKernel kernel,
-        [FromQuery] string userId,
+        [FromServices] IAuthInfo authInfoProvider,
         [FromBody] Bot bot)
     {
-        // TODO: We should get userId from server context instead of from request for privacy/security reasons when support multiple users.
         this._logger.LogDebug("Received call to upload a bot");
 
         if (!IsBotCompatible(
@@ -99,7 +98,7 @@ public class BotController : ControllerBase
         try
         {
             // 1. Create a new chat and get the chat id.
-            var newChat = new ChatSession(userId, chatTitle);
+            var newChat = new ChatSession(authInfoProvider.UserId, chatTitle);
             await this._chatRepository.CreateAsync(newChat);
             chatId = newChat.Id;
 
@@ -133,12 +132,12 @@ public class BotController : ControllerBase
     /// <param name="kernel">The Semantic Kernel instance.</param>
     /// <param name="chatId">The chat id to be downloaded.</param>
     /// <returns>The serialized Bot object of the chat id.</returns>
-    [Authorize]
     [HttpGet]
     [Route("bot/download/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Policy = AuthPolicyName.RequireChatOwner)]
     public async Task<ActionResult<string>> DownloadAsync(
         [FromServices] IKernel kernel,
         Guid chatId)

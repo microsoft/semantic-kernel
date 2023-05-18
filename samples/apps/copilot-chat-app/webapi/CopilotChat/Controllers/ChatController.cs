@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -55,7 +54,6 @@ public class ChatController : ControllerBase, IDisposable
     /// <param name="ask">Prompt along with its parameters.</param>
     /// <param name="openApiSkillsAuthHeaders">Authentication headers to connect to OpenAPI Skills.</param>
     /// <returns>Results containing the response from the model.</returns>
-    [Authorize]
     [Route("chat")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]

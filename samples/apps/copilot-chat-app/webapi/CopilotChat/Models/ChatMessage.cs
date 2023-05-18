@@ -3,7 +3,6 @@
 using System;
 using System.Globalization;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using SemanticKernel.Service.CopilotChat.Storage;
 
 namespace SemanticKernel.Service.CopilotChat.Models;
@@ -13,6 +12,8 @@ namespace SemanticKernel.Service.CopilotChat.Models;
 /// </summary>
 public class ChatMessage : IStorageEntity
 {
+    private static readonly JsonSerializerOptions SerializerSettings = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
     /// <summary>
     /// Role of the author of a chat message.
     /// </summary>
@@ -37,43 +38,36 @@ public class ChatMessage : IStorageEntity
     /// <summary>
     /// Timestamp of the message.
     /// </summary>
-    [JsonPropertyName("timestamp")]
     public DateTimeOffset Timestamp { get; set; }
 
     /// <summary>
     /// Id of the user who sent this message.
     /// </summary>
-    [JsonPropertyName("userId")]
     public string UserId { get; set; }
 
     /// <summary>
     /// Name of the user who sent this message.
     /// </summary>
-    [JsonPropertyName("userName")]
     public string UserName { get; set; }
 
     /// <summary>
     /// Id of the chat this message belongs to.
     /// </summary>
-    [JsonPropertyName("chatId")]
     public string ChatId { get; set; }
 
     /// <summary>
     /// Content of the message.
     /// </summary>
-    [JsonPropertyName("content")]
     public string Content { get; set; }
 
     /// <summary>
     /// Id of the message.
     /// </summary>
-    [JsonPropertyName("id")]
     public string Id { get; set; }
 
     /// <summary>
     /// Role of the author of the message.
     /// </summary>
-    [JsonPropertyName("authorRole")]
     public AuthorRoles AuthorRole { get; set; }
 
     /// <summary>
@@ -120,7 +114,7 @@ public class ChatMessage : IStorageEntity
     /// <returns>A serialized json string</returns>
     public override string ToString()
     {
-        return JsonSerializer.Serialize(this);
+        return JsonSerializer.Serialize(this, SerializerSettings);
     }
 
     /// <summary>
@@ -130,6 +124,6 @@ public class ChatMessage : IStorageEntity
     /// <returns>A ChatMessage object</returns>
     public static ChatMessage? FromString(string json)
     {
-        return JsonSerializer.Deserialize<ChatMessage>(json);
+        return JsonSerializer.Deserialize<ChatMessage>(json, SerializerSettings);
     }
 }

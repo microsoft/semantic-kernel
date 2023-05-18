@@ -2,12 +2,14 @@
 
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SemanticKernel.Service.CopilotChat.Extensions;
@@ -48,18 +50,27 @@ public sealed class Program
         builder.Services
             .AddApplicationInsightsTelemetry()
             .AddLogging(logBuilder => logBuilder.AddApplicationInsights())
-            .AddAuthorization(builder.Configuration)
+            .AddCopilotChatAuthentication(builder.Configuration)
+            .AddCopilotChatAuthorization()
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
             .AddCors()
-            .AddControllers();
+            .AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            });
+        builder.Services.AddHealthChecks().AddCheck("Default",
+            () => HealthCheckResult.Healthy("Semantic Kernel service up and running"));
 
         // Configure middleware and endpoints
         WebApplication app = builder.Build();
         app.UseCors();
+        app.MapHealthChecks("/healthz");
         app.UseAuthentication();
         app.UseAuthorization();
-        app.MapControllers();
+        app.MapControllers()
+            .RequireAuthorization();
 
         // Enable Swagger for development environments.
         if (app.Environment.IsDevelopment())
@@ -75,7 +86,7 @@ public sealed class Program
         try
         {
             string? address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses.FirstOrDefault();
-            app.Services.GetRequiredService<ILogger>().LogInformation("Health probe: {0}/probe", address);
+            app.Services.GetRequiredService<ILogger>().LogInformation("Health probe: {0}/heaalthz", address);
         }
         catch (ObjectDisposedException)
         {

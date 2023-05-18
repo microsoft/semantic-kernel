@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -21,12 +22,12 @@ namespace SemanticKernel.Service.CopilotChat.Controllers;
 /// retrieving chat messages, and editing chat sessions.
 /// </summary>
 [ApiController]
-[Authorize]
 public class ChatHistoryController : ControllerBase
 {
     private readonly ILogger<ChatHistoryController> _logger;
     private readonly ChatSessionRepository _chatSessionRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
+    private readonly IAuthInfo _authInfoProvider;
     private readonly PromptsOptions _promptOptions;
 
     /// <summary>
@@ -36,15 +37,18 @@ public class ChatHistoryController : ControllerBase
     /// <param name="chatSessionRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
     /// <param name="promptsOptions">The prompts options.</param>
+    /// <param name="authInfoProvider">The auth info for the current request.</param>
     public ChatHistoryController(
         ILogger<ChatHistoryController> logger,
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
-        IOptions<PromptsOptions> promptsOptions)
+        IOptions<PromptsOptions> promptsOptions,
+        IAuthInfo authInfoProvider)
     {
         this._logger = logger;
         this._chatSessionRepository = chatSessionRepository;
         this._chatMessageRepository = chatMessageRepository;
+        this._authInfoProvider = authInfoProvider;
         this._promptOptions = promptsOptions.Value;
     }
 
@@ -54,14 +58,14 @@ public class ChatHistoryController : ControllerBase
     /// <param name="chatParameters">Object that contains the parameters to create a new chat.</param>
     /// <returns>The HTTP action result.</returns>
     [HttpPost]
-    [Route("chatSession/create")]
+    [Route("chatSessions")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreateChatSessionAsync(
-        [FromBody] ChatSession chatParameters)
+        [FromBody] ChatSessionCreationOptions chatParameters)
     {
-        var userId = chatParameters.UserId;
+        var userId = _authInfoProvider.UserId;
         var title = chatParameters.Title;
 
         var newChat = new ChatSession(userId, title);
@@ -80,10 +84,11 @@ public class ChatHistoryController : ControllerBase
     /// <param name="chatId">The chat id.</param>
     [HttpGet]
     [ActionName("GetChatSessionByIdAsync")]
-    [Route("chatSession/getChat/{chatId:guid}")]
+    [Route("chatSessions/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Policy = AuthPolicyName.RequireChatOwner)]
     public async Task<IActionResult> GetChatSessionByIdAsync(Guid chatId)
     {
         var chat = await this._chatSessionRepository.FindByIdAsync(chatId.ToString());
@@ -96,19 +101,16 @@ public class ChatHistoryController : ControllerBase
     }
 
     /// <summary>
-    /// Get all chat sessions associated with a user. Return an empty list if no chats are found.
-    /// The regex pattern that is used to match the user id will match the following format:
-    ///    - 2 period separated groups of one or more hyphen-delimited alphanumeric strings.
-    /// The pattern matches two GUIDs in canonical textual representation separated by a period.
+    /// Get all chat sessions associated with the logged in user. Return an empty list if no chats are found.
     /// </summary>
-    /// <param name="userId">The user id.</param>
     [HttpGet]
-    [Route("chatSession/getAllChats/{userId:regex(([[a-z0-9]]+-)+[[a-z0-9]]+\\.([[a-z0-9]]+-)+[[a-z0-9]]+)}")]
+    [Route("chatSessions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetAllChatSessionsAsync(string userId)
+    public async Task<IActionResult> GetAllChatSessionsAsync()
     {
+        var userId = this._authInfoProvider.UserId;
         var chats = await this._chatSessionRepository.FindByUserIdAsync(userId);
         if (chats == null)
         {
@@ -128,10 +130,11 @@ public class ChatHistoryController : ControllerBase
     /// <param name="count">The number of messages to return. -1 will return all messages starting from startIdx.</param>
     /// [Authorize]
     [HttpGet]
-    [Route("chatSession/getChatMessages/{chatId:guid}")]
+    [Route("chatSessions/{chatId:guid}/messages")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Policy = AuthPolicyName.RequireChatOwner)]
     public async Task<IActionResult> GetChatMessagesAsync(
         Guid chatId,
         [FromQuery] int startIdx = 0,
@@ -153,20 +156,20 @@ public class ChatHistoryController : ControllerBase
     /// <summary>
     /// Edit a chat session.
     /// </summary>
+    /// <param name="chatId">Chat id from the url.</param>
     /// <param name="chatParameters">Object that contains the parameters to edit the chat.</param>
-    [HttpPost]
-    [Route("chatSession/edit")]
+    [HttpPatch]
+    [Route("chatSessions/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> EditChatSessionAsync([FromBody] ChatSession chatParameters)
+    [Authorize(Policy = AuthPolicyName.RequireChatOwner)]
+    public async Task<IActionResult> EditChatSessionAsync(Guid chatId, [FromBody] ChatSessionEditOptions chatParameters)
     {
-        string chatId = chatParameters.Id;
-
-        ChatSession? chat = await this._chatSessionRepository.FindByIdAsync(chatId);
+        ChatSession? chat = await this._chatSessionRepository.FindByIdAsync(chatId.ToString());
         if (chat == null)
         {
-            return this.NotFound($"Chat of id {chatId} not found.");
+            return this.NotFound($"Chat with id {chatId} not found.");
         }
 
         chat.Title = chatParameters.Title;

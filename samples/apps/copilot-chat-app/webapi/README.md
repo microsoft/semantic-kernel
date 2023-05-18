@@ -38,11 +38,11 @@ You can start the WebApi service using the command-line, Visual Studio Code, or 
    ```
    dotnet run
    ```
-1. Early in the startup, the service will provide a probe endpoint you can use in a web browser to verify
+1. Early in the startup, the service will provide a healthz endpoint you can use in a web browser to verify
    the service is running.
    ```
    info: Microsoft.SemanticKernel.Kernel[0]
-         Health probe: https://localhost:40443/probe
+         Health probe: https://localhost:40443/healthz
    ```
 
 ## Visual Studio Code

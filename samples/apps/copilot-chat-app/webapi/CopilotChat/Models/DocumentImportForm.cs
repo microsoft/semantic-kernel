@@ -36,10 +36,4 @@ public class DocumentImportForm
     /// If the document scope is set to global, this value is ignored.
     /// </summary>
     public Guid ChatId { get; set; } = Guid.Empty;
-
-    /// <summary>
-    /// The ID of the user who is importing the document to a chat session.
-    /// Will be use to validate if the user has access to the chat session.
-    /// </summary>
-    public string UserId { get; set; } = string.Empty;
 }

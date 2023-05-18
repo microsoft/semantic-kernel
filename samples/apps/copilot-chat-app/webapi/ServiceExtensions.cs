@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -39,8 +40,8 @@ internal static class ServicesExtensions
             .PostConfigure(TrimStringProperties);
 
         // Authorization configuration
-        services.AddOptions<AuthorizationOptions>()
-            .Bind(configuration.GetSection(AuthorizationOptions.PropertyName))
+        services.AddOptions<ChatAuthenticationOptions>()
+            .Bind(configuration.GetSection(ChatAuthenticationOptions.PropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
@@ -77,26 +78,19 @@ internal static class ServicesExtensions
     }
 
     /// <summary>
-    /// Add authorization services
+    /// Add authentication services
     /// </summary>
-    internal static IServiceCollection AddAuthorization(this IServiceCollection services, IConfiguration configuration)
+    internal static IServiceCollection AddCopilotChatAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        AuthorizationOptions config = services.BuildServiceProvider().GetRequiredService<IOptions<AuthorizationOptions>>().Value;
+        var config = services.BuildServiceProvider().GetRequiredService<IOptions<ChatAuthenticationOptions>>().Value;
         switch (config.Type)
         {
-            case AuthorizationOptions.AuthorizationType.AzureAd:
+            case ChatAuthenticationOptions.AuthenticationType.AzureAd:
                 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApi(configuration.GetSection($"{AuthorizationOptions.PropertyName}:AzureAd"));
+                    .AddMicrosoftIdentityWebApi(configuration.GetSection($"{ChatAuthenticationOptions.PropertyName}:AzureAd"));
                 break;
 
-            case AuthorizationOptions.AuthorizationType.ApiKey:
-                services.AddAuthentication(ApiKeyAuthenticationHandler.AuthenticationScheme)
-                    .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
-                        ApiKeyAuthenticationHandler.AuthenticationScheme,
-                        options => options.ApiKey = config.ApiKey);
-                break;
-
-            case AuthorizationOptions.AuthorizationType.None:
+            case ChatAuthenticationOptions.AuthenticationType.None:
                 services.AddAuthentication(PassThroughAuthenticationHandler.AuthenticationScheme)
                     .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>(
                         authenticationScheme: PassThroughAuthenticationHandler.AuthenticationScheme,
@@ -104,10 +98,28 @@ internal static class ServicesExtensions
                 break;
 
             default:
-                throw new InvalidOperationException($"Invalid authorization type '{config.Type}'.");
+                throw new InvalidOperationException($"Invalid authentication type '{config.Type}'.");
         }
 
         return services;
+    }
+
+    internal static IServiceCollection AddCopilotChatAuthorization(this IServiceCollection services)
+    {
+        return services.AddScoped<IAuthorizationHandler, ChatOwnerAuthorizationHandler>()
+            .AddScoped<IAuthInfo, AuthInfo>()
+            .AddAuthorizationCore(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+
+                options.AddPolicy(AuthPolicyName.RequireChatOwner, builder =>
+                {
+                    builder.RequireAuthenticatedUser()
+                        .AddRequirements(new ChatOwnerRequirement());
+                });
+            });
     }
 
     /// <summary>

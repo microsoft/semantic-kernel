@@ -2,15 +2,14 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Text;
+using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -61,13 +60,13 @@ public class DocumentImportController : ControllerBase
     /// <summary>
     /// Service API for importing a document.
     /// </summary>
-    [Authorize]
     [Route("importDocument")]
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ImportDocumentAsync(
         [FromServices] IKernel kernel,
+        [FromServices] IAuthInfo authInfoProvider,
         [FromForm] DocumentImportForm documentImportForm)
     {
         var formFile = documentImportForm.FormFile;
@@ -86,11 +85,17 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest("File size exceeds the limit.");
         }
 
-        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat
-            && !(await this.UserHasAccessToChatAsync(documentImportForm.UserId, documentImportForm.ChatId)))
+        var chatSession = await this._chatSessionRepository.FindByIdAsync(documentImportForm.ChatId.ToString());
+        if (chatSession == null)
         {
-            return this.BadRequest("User does not have access to the chat session.");
+            return this.NotFound("Session does not exist.");
         }
+
+        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat && authInfoProvider.UserId != chatSession.UserId)
+        {
+            return this.Unauthorized("User does not have access to the chat session.");
+        }
+
 
         this._logger.LogInformation("Importing document {0}", formFile.FileName);
 
@@ -117,7 +122,7 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest(ex.Message);
         }
 
-        return this.Ok();
+        return this.Accepted();
     }
 
     /// <summary>
@@ -200,17 +205,5 @@ public class DocumentImportController : ControllerBase
             paragraphs.Count,
             Path.GetFileName(documentImportForm.FormFile?.FileName)
         );
-    }
-
-    /// <summary>
-    /// Check if the user has access to the chat session.
-    /// </summary>
-    /// <param name="userId">The user ID.</param>
-    /// <param name="chatId">The chat session ID.</param>
-    /// <returns>A boolean indicating whether the user has access to the chat session.</returns>
-    private async Task<bool> UserHasAccessToChatAsync(string userId, Guid chatId)
-    {
-        var chatSessions = await this._chatSessionRepository.FindByUserIdAsync(userId);
-        return chatSessions.Any(c => c.Id == chatId.ToString());
     }
 }
