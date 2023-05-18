@@ -7,12 +7,12 @@
     - Abbreviations
     - Reuse as adjectives
     - Plurals and related changes
-5. Please return the list of items from (6) as a JSON list of dictionaries between a <json_block> and a </json_block> tag, after the bulleted list.
-6. Each dictionary should correspond to one of the items from (6) and have two keys, "entity_name" and "reason"
+5. Please return the list of items from (3) as a JSON list of dictionaries between a <json_block> and a </json_block> tag, after the bulleted list.
+6. Each dictionary should correspond to one of the items from (3) and have two keys, "entity_name" and "reason"
 7. The value associated with the "entity_name" key should be the name of the item
 8. The value associated with the "reason" key should be the explanation associated with the item
-9. Make sure that you return valid JSON for (7)
-10. Any quotes appearing within a string in (7) should be escaped by a double backslash.
+9. Make sure that you return valid JSON for (5)
+10. Any quotes appearing within a string in (5) should be escaped by a double backslash.
 
 # Example
 
