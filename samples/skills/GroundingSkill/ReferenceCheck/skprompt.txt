@@ -17,6 +17,54 @@
 8. Ensure that you return valid JSON
 9. Any quotes appearing within a string should be escaped by a double backslash
 
+# Example
+
+<reference_items>
+- Orange
+- Lime
+</reference_items>
+
+<context>
+Oranges and lemons,
+Say the bells of St. Clement's.
+
+You owe me five farthings,
+Say the bells of St. Martin's.
+
+When will you pay me?
+Say the bells at Old Bailey.
+
+When I grow rich,
+Say the bells at Shoreditch.
+
+When will that be?
+Say the bells of Stepney.
+
+I do not know,
+Says the great bell at Bow.
+</context>
+
+Response:
+- Orange: This is grounded since oranges are explicitly referenced in the context
+- Lime: This is ungrounded since no reference is made to lines in the context
+
+<json_block>
+{
+    "grounded" : [
+        {
+            "entity_name" : "Orange",
+            "explanation" : "This is grounded since oranges are explicitly referenced in the context"
+        }
+    ],
+    "ungrounded" : [
+        {
+            "entity_name" : "Lime",
+            "explanation" : "This is ungrounded since no reference is made to lines in the context"
+        }
+    ]
+}
+</json_block>
+
 # Task
 
 Below are the reference items, and the context that you need to parse for references to the items.
