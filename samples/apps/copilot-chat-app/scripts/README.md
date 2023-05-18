@@ -14,17 +14,23 @@ To run Copilot Chat, you will need the following:
 
 ## 1. Configure your environment
 ### Windows
-1. If you have not already, install PowerShell 6 or newer from https://learn.microsoft.com/powershell/scripting/install/installing-powershell.
-   > You can run `$PSVersionTable.PSVersion` in PowerShell to verify the version.
-1. Open a PowerShell window as an administrator, navigate to this directory, and run the following command:
-   ```powershell
-   ./Install-Requirements.ps1
-   ```
-   > This script uses the Chocolatey package manager install .NET 6.0 SDK, latest Node.js, and Yarn package manager.
+If you have not already, install PowerShell 6 or newer from https://learn.microsoft.com/powershell/scripting/install/installing-powershell.
+> You can run `$PSVersionTable.PSVersion` in PowerShell to verify the version.
+ 
+Open a PowerShell terminal as an administrator, navigate to this directory, and run the following command:
+```powershell
+./Install-Requirements.ps1
+```
+> This script uses the Chocolatey package manager install .NET 6.0 SDK, latest Node.js, and Yarn package manager.
    
-### Linux
-For all other operating systems, ensure NET 6.0 SDK (or newer), latest Node.js, and Yarn package manager are installed before proceeding.
-> Be sure to install the classic (v1.22.19) Yarn package manager from https://classic.yarnpkg.com/.
+### Ubuntu/Debian Linux
+Open a bash terminal as an administrator, navigate to this directory, and run the following command:
+```bash
+./Install-Requirements-UbuntuDebian.ps1
+```
+
+### Other Linux/MacOS
+For all other operating systems, ensure NET 6.0 SDK (or newer), Node.js 14 (or newer), and Yarn classic ([v1.22.19](https://classic.yarnpkg.com/)) package manager are installed before proceeding.
 
 ## 2. Configure CopilotChat
 Configure the projects with your AI service and application registration information from above.
@@ -41,29 +47,27 @@ Configure the projects with your AI service and application registration informa
 ```
 > For OpenAI, replace `--azureopenai` with `--openai` and omit `--endpoint`.
 
-> **Note:** The `Configure.ps1` and `Configure.sh` scripts have additional parameters for setting options such as AI models and Azure Active Directory tenant IDs.
+> **Note:** `Configure.ps1`/`Configure.sh` scripts also have parameters for setting additional options, such as AI models and Azure Active Directory tenant IDs.
 
 ## 3. Run Copilot Chat
 The `Start` script initializes and runs the WebApp (frontend) and WebApi (backend) for Copilot Chat on your local machine.
 
 ### PowerShell
 Open a PowerShell window, navigate to this directory, and run the following command:
-> Use the `Application ID` and `Tenant ID` from above.
 ```powershell
 ./Start.ps1
 ```
 
 ### Bash
-Open a Bash window and navigate to this directory. First, ensure the `Start.sh` script is executable:
+Open a Bash window, navigate to this directory, and run the following commands:
 ```bash
+# Ensure ./Start.sh is executable
 chmod +x Start.sh
-```
-
-Then run the following command:
-```bash
+# Start CopilotChat 
 ./Start.sh
 ```
-Note that this script starts `CopilotChatWebApi.exe` as a background process. Be sure to terminate it when you are finished.
+> **Note:** The first time you run this may take a few minutes for Yarn packages to install.
+> **Note:** This script starts `CopilotChatWebApi.exe` as a background process. Be sure to terminate it when you are finished.
 
 # Troubleshooting
 ## 1. "A fatal error occurred. The folder [/usr/share/dotnet/host/fxr] does not exist" when running dotnet commands on Linux.
