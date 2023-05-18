@@ -32,7 +32,16 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     public static async Task<DuckDBMemoryStore> ConnectAsync(string filename,
         CancellationToken cancellationToken = default)
     {
-        var memoryStore = new DuckDBMemoryStore(filename);
+        var memoryStore = new DuckDBMemoryStore($"Data Source={filename}");
+        await memoryStore._dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await memoryStore._dbConnector.CreateTableAsync(memoryStore._dbConnection, cancellationToken).ConfigureAwait(false);
+        return memoryStore;
+    }
+
+    public static async Task<DuckDBMemoryStore> ConnectAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var memoryStore = new DuckDBMemoryStore(":memory:");
         await memoryStore._dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
         await memoryStore._dbConnector.CreateTableAsync(memoryStore._dbConnection, cancellationToken).ConfigureAwait(false);
         return memoryStore;
@@ -235,7 +244,8 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
 
         await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken))
         {
-            Embedding<float>? vector = JsonSerializer.Deserialize<Embedding<float>>(dbEntry.EmbeddingString);
+            var dbEntryEmbeddingString = dbEntry.EmbeddingString;
+            Embedding<float>? vector = JsonSerializer.Deserialize<Embedding<float>>(dbEntryEmbeddingString);
 
             var record = MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
 

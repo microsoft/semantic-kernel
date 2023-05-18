@@ -50,9 +50,13 @@ internal sealed class Database
 
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-             INSERT INTO {TableName}(collection)
-             VALUES(@collection); ";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
+                INSERT INTO {TableName} VALUES (?1,?2,?3,?4,?5 ); ";
+        cmd.Parameters.Add(new DuckDBParameter(collectionName));
+        cmd.Parameters.Add(new DuckDBParameter(string.Empty));
+        cmd.Parameters.Add(new DuckDBParameter(string.Empty));
+        cmd.Parameters.Add(new DuckDBParameter(string.Empty));
+        cmd.Parameters.Add(new DuckDBParameter(string.Empty));
+
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -62,14 +66,14 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              UPDATE {TableName}
-             SET metadata=@metadata, embedding=@embedding, timestamp=@timestamp
-             WHERE collection=@collection
-                AND key=@key ";
-        cmd.Parameters.AddWithValue("@collection", collection);
-        cmd.Parameters.AddWithValue("@key", key);
-        cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
-        cmd.Parameters.AddWithValue("@embedding", embedding ?? string.Empty);
-        cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
+             SET metadata=?3, embedding=?4, timestamp=?5
+             WHERE collection=?1
+                AND key=?2; ";
+        cmd.Parameters.Add(new DuckDBParameter(collection));
+        cmd.Parameters.Add(new DuckDBParameter(key));
+        cmd.Parameters.Add(new DuckDBParameter(metadata ?? string.Empty));
+        cmd.Parameters.Add(new DuckDBParameter(embedding ?? string.Empty));
+        cmd.Parameters.Add(new DuckDBParameter(timestamp ?? string.Empty));
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -78,13 +82,12 @@ internal sealed class Database
     {
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-             INSERT OR IGNORE INTO {TableName}(collection, key, metadata, embedding, timestamp)
-             VALUES(@collection, @key, @metadata, @embedding, @timestamp); ";
-        cmd.Parameters.AddWithValue("@collection", collection);
-        cmd.Parameters.AddWithValue("@key", key);
-        cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
-        cmd.Parameters.AddWithValue("@embedding", embedding ?? string.Empty);
-        cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
+             INSERT OR IGNORE INTO {TableName} VALUES(?1, ?2, ?3, ?4, ?5); ";
+        cmd.Parameters.Add(new DuckDBParameter(collection));
+        cmd.Parameters.Add(new DuckDBParameter(key));
+        cmd.Parameters.Add(new DuckDBParameter(metadata ?? string.Empty));
+        cmd.Parameters.Add(new DuckDBParameter(embedding ?? string.Empty));
+        cmd.Parameters.Add(new DuckDBParameter(timestamp ?? string.Empty));
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -101,8 +104,8 @@ internal sealed class Database
     {
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-            SELECT DISTINCT(collection)
-            FROM {TableName}";
+            SELECT DISTINCT collection 
+            FROM {TableName};";
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -118,13 +121,17 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
             SELECT * FROM {TableName}
-            WHERE collection=@collection";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
+            WHERE collection=?1;";
+        cmd.Parameters.Add(new DuckDBParameter(collectionName));
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             string key = dataReader.GetString("key");
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                continue;
+            }
             string metadata = dataReader.GetString("metadata");
             string embedding = dataReader.GetString("embedding");
             string timestamp = dataReader.GetString("timestamp");
@@ -140,10 +147,10 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              SELECT * FROM {TableName}
-             WHERE collection=@collection
-                AND key=@key ";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
-        cmd.Parameters.AddWithValue("@key", key);
+             WHERE collection=?1
+                AND key=?2; ";
+        cmd.Parameters.Add(new DuckDBParameter(collectionName));
+        cmd.Parameters.Add(new DuckDBParameter(key));
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -168,8 +175,8 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              DELETE FROM {TableName}
-             WHERE collection=@collection";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
+             WHERE collection=?;";
+        cmd.Parameters.Add(new DuckDBParameter(collectionName));
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
@@ -178,10 +185,10 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              DELETE FROM {TableName}
-             WHERE collection=@collection
-                AND key=@key ";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
-        cmd.Parameters.AddWithValue("@key", key);
+             WHERE collection=?1
+                AND key=?2; ";
+        cmd.Parameters.Add(new DuckDBParameter(collectionName));
+        cmd.Parameters.Add(new DuckDBParameter(key));
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
@@ -190,19 +197,10 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
              DELETE FROM {TableName}
-             WHERE collection=@collection
+             WHERE collection=?1
                 AND key IS NULL";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
+        cmd.Parameters.Add(new DuckDBParameter(collectionName));
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 }
 
-internal static class DuckDBParametersCollectionExtensions
-{
-    public static DuckDBParameter AddWithValue(this DuckDBParameterCollection parameters, string parameterName, object? value)
-    {
-        var parameter = new DuckDBParameter(parameterName, value);
-        parameters.Add(parameter);
-        return parameter;
-    }
-}
