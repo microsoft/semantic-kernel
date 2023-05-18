@@ -51,7 +51,7 @@ jobs:
         working-directory: java
 
       - name: Run tests
-        run: ./mvnw -B -Pbug-check -DskipITs -Pcompile-jdk${{ matrix.java-versions }} test --file pom.xml
+        run: ./mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} test --file pom.xml
         working-directory: java
 
       - uses: actions/upload-artifact@v2
