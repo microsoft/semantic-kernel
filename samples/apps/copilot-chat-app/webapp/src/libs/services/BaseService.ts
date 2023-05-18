@@ -30,7 +30,7 @@ export class BaseService {
 
         // API key auth for private hosted instances
         if (process.env.REACT_APP_SK_API_KEY) {
-            headers.append(`x-sk-copilot-api-key`, process.env.REACT_APP_SK_API_KEY as string);
+            headers.append(`x-sk-api-key`, process.env.REACT_APP_SK_API_KEY as string);
         }
 
         if (enabledPlugins && enabledPlugins.length > 0) {
