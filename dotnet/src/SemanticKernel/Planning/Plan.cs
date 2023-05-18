@@ -320,23 +320,17 @@ public sealed class Plan : ISKFunction
     {
         if (this.Function is not null)
         {
-            try
-            {
-                var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
+            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
 
-                if (result.ErrorOccurred)
-                {
-                    string exceptionMessage = $"Something went wrong in plan step {this.SkillName}.{this.Name}:'{context.LastErrorDescription}'";
-                    result.Log.LogError(result.LastException, exceptionMessage);
-                    throw new Exception(exceptionMessage, innerException: result.LastException);
-                }
-
-                context.Variables.Update(result.Result);
-            }
-            catch (Exception e)
+            if (result.ErrorOccurred)
             {
-                throw e;
+                result.Log.LogError(
+                    result.LastException,
+                    "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
+                return result;
             }
+
+            context.Variables.Update(result.Result);
         }
         else
         {
