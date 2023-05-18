@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Text, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
 import { useMsal } from '@azure/msal-react';
+import { Text, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
