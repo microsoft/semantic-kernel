@@ -21,14 +21,11 @@ export const getAccessTokenUsingMsal = async (
 ) => {
     const account = msalInstance.getActiveAccount()!;
     let accessTokenRequest: PopupRequest = {
+        authority: `https://login.microsoftonline.com/${account.tenantId}`,
         scopes: scopes,
-        extraScopesToConsent: extraScopesToConsent
+        extraScopesToConsent: extraScopesToConsent,
+        account: account
     };
-
-    if (account) {
-        accessTokenRequest.account = account;
-        accessTokenRequest.authority = `https://login.microsoftonline.com/${account.tenantId}`;
-    }
 
     return await acquireToken(accessTokenRequest, msalInstance, inProgress).catch((e) => {
         if (e.message === TokenErrors.InteractionInProgress) {
