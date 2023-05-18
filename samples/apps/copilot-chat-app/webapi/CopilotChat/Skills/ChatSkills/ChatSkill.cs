@@ -239,11 +239,19 @@ public class ChatSkill
             var plan = Plan.FromJson(planJson, newPlanContext);
 
             // Invoke plan
-            SKContext planContext = await plan.InvokeAsync(plannerContext);
+            try
+            {
+                newPlanContext = await plan.InvokeAsync(plannerContext);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
             int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
-            bool extractJsonFromOpenApi = this.TryExtractJsonFromOpenApiPlanResult(planContext.Variables.Input, out string planResult);
+            bool extractJsonFromOpenApi = this.TryExtractJsonFromOpenApiPlanResult(newPlanContext.Variables.Input, out string planResult);
             if (extractJsonFromOpenApi)
             {
                 int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptOptions.RelatedInformationContextWeight);
@@ -252,7 +260,7 @@ public class ChatSkill
             else
             {
                 // If not, use result of the plan execution result directly.
-                planResult = planContext.Variables.Input;
+                planResult = newPlanContext.Variables.Input;
             }
 
             string informationText = $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";

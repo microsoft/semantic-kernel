@@ -253,7 +253,7 @@ public sealed class Plan : ISKFunction
             if (result.ErrorOccurred)
             {
                 throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
-                    $"Error occurred while running plan step: {context.LastErrorDescription}", context.LastException);
+                    $"Error occurred while running plan step: {functionContext.LastErrorDescription}", functionContext.LastException);
             }
 
             #region Update State
@@ -320,17 +320,23 @@ public sealed class Plan : ISKFunction
     {
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
-
-            if (result.ErrorOccurred)
+            try
             {
-                result.Log.LogError(
-                    result.LastException,
-                    "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
-                return result;
-            }
+                var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
 
-            context.Variables.Update(result.Result);
+                if (result.ErrorOccurred)
+                {
+                    string exceptionMessage = $"Something went wrong in plan step {this.SkillName}.{this.Name}:'{context.LastErrorDescription}'";
+                    result.Log.LogError(result.LastException, exceptionMessage);
+                    throw new Exception(exceptionMessage, innerException: result.LastException);
+                }
+
+                context.Variables.Update(result.Result);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
         else
         {
