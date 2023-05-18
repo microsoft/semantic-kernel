@@ -9,8 +9,16 @@ using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
+/// <summary>
+/// Extensions for <see cref="PineconeDocument"/> class.
+/// </summary>
 public static class PineconeDocumentExtensions
 {
+    /// <summary>
+    /// Maps <see cref="MemoryRecord"/> instance to <see cref="PineconeDocument"/>.
+    /// </summary>
+    /// <param name="memoryRecord">Instance of <see cref="MemoryRecord"/>.</param>
+    /// <returns>Instance of <see cref="PineconeDocument"/>.</returns>
     public static PineconeDocument ToPineconeDocument(this MemoryRecord memoryRecord)
     {
         string key = !string.IsNullOrEmpty(memoryRecord.Key)
@@ -46,6 +54,11 @@ public static class PineconeDocumentExtensions
             .WithMetadata(metadata);
     }
 
+    /// <summary>
+    /// Maps <see cref="PineconeDocument"/> instance to <see cref="MemoryRecord"/>.
+    /// </summary>
+    /// <param name="pineconeDocument">Instance of <see cref="PineconeDocument"/>.</param>
+    /// <returns>Instance of <see cref="MemoryRecord"/>.</returns>
     public static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument)
     {
         Embedding<float> embedding = new(pineconeDocument.Values);

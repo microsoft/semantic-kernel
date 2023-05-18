@@ -10,6 +10,9 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
+/// <summary>
+/// Pinecone Document entity.
+/// </summary>
 public class PineconeDocument
 {
     /// <summary>
@@ -63,7 +66,7 @@ public class PineconeDocument
     public string? DocumentId => this.Metadata?.TryGetValue("document_Id", out var docId) == true ? docId.ToString() : null;
 
     /// <summary>
-    ///  The source ID, used to identify the source text this document was created from.
+    /// The source ID, used to identify the source text this document was created from.
     /// </summary>
     /// <remarks>
     ///  An important distinction between the source ID and the source of the document is that the source
@@ -72,25 +75,59 @@ public class PineconeDocument
     [JsonIgnore]
     public string? SourceId => this.Metadata?.TryGetValue("source_Id", out var sourceId) == true ? sourceId.ToString() : null;
 
+    /// <summary>
+    /// The timestamp, used to identify when document was created.
+    /// </summary>
     [JsonIgnore]
     public string? CreatedAt => this.Metadata?.TryGetValue("created_at", out var createdAt) == true ? createdAt.ToString() : null;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PineconeDocument" /> class.
+    /// </summary>
+    /// <param name="values">Vector dense data. This should be the same length as the dimension of the index being queried.</param>
+    /// <param name="id">The unique ID of a vector.</param>
+    /// <param name="metadata">metadata.</param>
+    /// <param name="sparseValues">sparseValues.</param>
+    /// <param name="score"></param>
+    [JsonConstructor]
+    public PineconeDocument(
+        IEnumerable<float>? values = null,
+        string? id = default,
+        Dictionary<string, object>? metadata = null,
+        SparseVectorData? sparseValues = null,
+        float? score = null)
+    {
+        this.Id = id ?? Guid.NewGuid().ToString();
+        this.Values = values ?? Array.Empty<float>();
+        this.Metadata = metadata ?? new Dictionary<string, object>();
+        this.SparseValues = sparseValues;
+        this.Score = score;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PineconeDocument" /> class.
+    /// </summary>
+    /// <param name="id">The unique ID of a vector.</param>
+    /// <param name="values">Vector dense data. This should be the same length as the dimension of the index being queried.</param>
     public static PineconeDocument Create(string? id = default, IEnumerable<float>? values = default)
     {
         return new PineconeDocument(values, id);
     }
 
-    internal UpdateVectorRequest ToUpdateRequest()
-    {
-        return UpdateVectorRequest.FromPineconeDocument(this);
-    }
-
+    /// <summary>
+    /// Sets sparse vector data for <see cref="PineconeDocument" /> class.
+    /// </summary>
+    /// <param name="sparseValues">Vector sparse data. Represented as a list of indices and a list of corresponded values, which must be the same length.</param>
     public PineconeDocument WithSparseValues(SparseVectorData? sparseValues)
     {
         this.SparseValues = sparseValues;
         return this;
     }
 
+    /// <summary>
+    /// Sets metadata for <see cref="PineconeDocument" /> class.
+    /// </summary>
+    /// <param name="metadata">The metadata associated with the document.</param>
     public PineconeDocument WithMetadata(Dictionary<string, object>? metadata)
     {
         this.Metadata = metadata;
@@ -100,7 +137,6 @@ public class PineconeDocument
     /// <summary>
     /// Serializes the metadata to JSON.
     /// </summary>
-    /// <returns></returns>
     public string GetSerializedMetadata()
     {
         // return a dictionary from the metadata without the text, document_Id, and source_Id properties
@@ -119,26 +155,8 @@ public class PineconeDocument
         return JsonSerializer.Serialize(distinctMetadata);
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PineconeDocument" /> class.
-    /// </summary>
-    /// <param name="id">The unique ID of a vector.</param>
-    /// <param name="values">Vector dense data. This should be the same length as the dimension of the index being queried.</param>
-    /// <param name="sparseValues">sparseValues.</param>
-    /// <param name="metadata">metadata.</param>
-    /// <param name="score"></param>
-    [JsonConstructor]
-    public PineconeDocument(
-        IEnumerable<float>? values = null,
-        string? id = default,
-        Dictionary<string, object>? metadata = null,
-        SparseVectorData? sparseValues = null,
-        float? score = null)
+    internal UpdateVectorRequest ToUpdateRequest()
     {
-        this.Id = id ?? Guid.NewGuid().ToString();
-        this.Values = values ?? Array.Empty<float>();
-        this.Metadata = metadata ?? new Dictionary<string, object>();
-        this.SparseValues = sparseValues;
-        this.Score = score;
+        return UpdateVectorRequest.FromPineconeDocument(this);
     }
 }

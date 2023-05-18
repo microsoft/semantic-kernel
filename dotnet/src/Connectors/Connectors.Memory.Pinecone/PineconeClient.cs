@@ -19,7 +19,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 /// <summary>
-///  A client for the Pinecone API
+/// A client for the Pinecone API
 /// </summary>
 public sealed class PineconeClient : IPineconeClient, IDisposable
 {
@@ -77,7 +77,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
             yield break;
         }
 
-        if (!data.Vectors.Any())
+        if (data.Vectors.Count == 0)
         {
             this._logger.LogWarning("Vectors not found");
             yield break;
@@ -130,7 +130,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
             yield break;
         }
 
-        if (!queryResponse.Matches.Any())
+        if (queryResponse.Matches.Count == 0)
         {
             this._logger.LogWarning("No matches found");
             yield break;
@@ -181,7 +181,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
             }
         }
 
-        if (!documents.Any())
+        if (documents.Count == 0)
         {
             this._logger.LogWarning("No relevant documents found");
             yield break;
@@ -260,7 +260,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         {
             throw new PineconeMemoryException(
                 PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Must provide at least one of ids, filter, or deleteAll");
+                "Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();
@@ -523,41 +523,10 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         this._logger.LogDebug("Collection created. {0}", indexName);
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         this._httpClient.Dispose();
-    }
-
-    public async Task<string> GetIndexHostAsync(string indexName, CancellationToken cancellationToken = default)
-    {
-        if (this._indexHostMapping.TryGetValue(indexName, out string indexHost))
-        {
-            return indexHost;
-        }
-
-        this._logger.LogInformation("Getting index host from Pinecone.");
-
-        PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
-
-        if (pineconeIndex == null)
-        {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.IndexNotFound,
-                $"Index not found in Pinecone. Create index to perform operations with vectors.");
-        }
-
-        if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
-        {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.UnknownIndexHost,
-                $"Host of index {indexName} is unknown.");
-        }
-
-        this._logger.LogInformation("Found host {0} for index {1}", pineconeIndex.Status.Host, indexName);
-
-        this._indexHostMapping.TryAdd(indexName, pineconeIndex.Status.Host);
-
-        return pineconeIndex.Status.Host;
     }
 
     #region private ================================================================================
@@ -600,6 +569,38 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         this._logger.LogTrace("{0} - {1}", logMessage, responseContent);
 
         return (response, responseContent);
+    }
+
+    private async Task<string> GetIndexHostAsync(string indexName, CancellationToken cancellationToken = default)
+    {
+        if (this._indexHostMapping.TryGetValue(indexName, out string indexHost))
+        {
+            return indexHost;
+        }
+
+        this._logger.LogInformation("Getting index host from Pinecone.");
+
+        PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
+
+        if (pineconeIndex == null)
+        {
+            throw new PineconeMemoryException(
+                PineconeMemoryException.ErrorCodes.IndexNotFound,
+                "Index not found in Pinecone. Create index to perform operations with vectors.");
+        }
+
+        if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
+        {
+            throw new PineconeMemoryException(
+                PineconeMemoryException.ErrorCodes.UnknownIndexHost,
+                $"Host of index {indexName} is unknown.");
+        }
+
+        this._logger.LogInformation("Found host {0} for index {1}", pineconeIndex.Status.Host, indexName);
+
+        this._indexHostMapping.TryAdd(indexName, pineconeIndex.Status.Host);
+
+        return pineconeIndex.Status.Host;
     }
 
     #endregion

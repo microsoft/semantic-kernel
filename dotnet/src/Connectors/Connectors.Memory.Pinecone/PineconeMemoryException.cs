@@ -53,6 +53,18 @@ public class PineconeMemoryException : SKException
         this.ErrorCode = errorCode;
     }
 
+    protected PineconeMemoryException() : base()
+    {
+    }
+
+    protected PineconeMemoryException(string? message) : base(message)
+    {
+    }
+
+    protected PineconeMemoryException(string? message, Exception? innerException) : base(message, innerException)
+    {
+    }
+
     /// <summary>
     /// Gets the error code for this exception.
     /// </summary>

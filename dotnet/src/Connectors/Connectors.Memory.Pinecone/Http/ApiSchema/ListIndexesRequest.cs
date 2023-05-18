@@ -6,7 +6,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
 /// <summary>
 /// ListIndexesRequest
-/// See https://docs.pinecone.io/reference/list_indexes 
+/// See https://docs.pinecone.io/reference/list_indexes
 /// </summary>
 internal sealed class ListIndexesRequest
 {

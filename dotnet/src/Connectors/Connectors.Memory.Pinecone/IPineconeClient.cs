@@ -8,12 +8,12 @@ using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 /// <summary>
-///  Interface for a Pinecone client
+/// Interface for a Pinecone client
 /// </summary>
 public interface IPineconeClient
 {
     /// <summary>
-    ///  Get vectors by id
+    /// Get vectors by id
     /// </summary>
     /// <param name="indexName"> the name of the index </param>
     /// <param name="ids"> A list of ids</param>
@@ -30,7 +30,7 @@ public interface IPineconeClient
     );
 
     /// <summary>
-    ///  Gets the most relevant vectors to a list of queries
+    /// Gets the most relevant vectors to a list of queries
     /// </summary>
     /// <param name="indexName"> the name of the index </param>
     /// <param name="query"> the query parameters</param>
@@ -52,9 +52,9 @@ public interface IPineconeClient
     /// <param name="vector">The vector to compare the collection's vectors with.</param>
     /// <param name="threshold">The minimum relevance threshold for returned results.</param>
     /// <param name="topK">The maximum number of similarity results to return.</param>
-    /// <param name="indexNamespace">The name assigned to a collection of vectors.</param>
     /// <param name="includeValues"> Whether to include the vector values</param>
     /// <param name="includeMetadata"> Whether to include the metadata</param>
+    /// <param name="indexNamespace">The name assigned to a collection of vectors.</param>
     /// <param name="filter"> A filter to apply to the results</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
@@ -69,7 +69,7 @@ public interface IPineconeClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///  Upserts a list of documents
+    /// Upserts a list of documents
     /// </summary>
     /// <param name="indexName"> the name of the index</param>
     /// <param name="vectors"> the list of documents</param>
@@ -89,9 +89,9 @@ public interface IPineconeClient
     /// </remarks>
     /// <param name="indexName"> The name of the index</param>
     /// <param name="ids"> The ids to delete</param>
-    /// <param name="deleteAll"> Whether to delete all vectors</param>
     /// <param name="indexNamespace"> The namespace to use</param>
     /// <param name="filter"> The filter to use</param>
+    /// <param name="deleteAll"> Whether to delete all vectors</param>
     /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
     /// <returns>Task of Object</returns>
     Task DeleteAsync(
