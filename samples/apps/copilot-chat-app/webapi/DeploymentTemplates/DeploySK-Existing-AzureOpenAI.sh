@@ -16,7 +16,7 @@ usage() {
     echo "  -r, --region REGION                        Region to which to make the deployment (default: \"South Central US\")"
     echo "  -p, --package-uri PACKAGE_URI              Package to deploy to web service (default: 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip')"
     echo "  -a, --app-service-sku APP_SERVICE_SKU      SKU for the Azure App Service plan (default: \"B1\")"
-    echo "  -k, --sk-server-api-key SK_SERVER_API_KEY  API key to access Semantic Kernel server's endpoints (default: random UUID)"
+    echo "  -k, --semker-server-api-key SEMKER_SERVER_API_KEY  API key to access Semantic Kernel server's endpoints (default: random UUID)"
     echo "  -cm, --completion-model COMPLETION_MODEL   Completion model to use (default: \"gpt-35-turbo\")"
     echo "  -em, --embedding-model EMBEDDING_MODEL     Embedding model to use (default: \"text-embedding-ada-002\")"
     echo "  -pm, --planner-model PLANNER_MODEL         Planner model to use (default: \"gpt-35-turbo\")"
@@ -70,8 +70,8 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
-        -k|--sk-server-api-key)
-        SK_SERVER_API_KEY="$2"
+        -k|--semker-server-api-key)
+        SEMKER_SERVER_API_KEY="$2"
         shift
         shift
         ;;
@@ -133,7 +133,7 @@ az account set -s "$SUBSCRIPTION"
 : "${REGION:="South Central US"}"
 : "${PACKAGE_URI:="https://skaasdeploy.blob.core.windows.net/api/skaas.zip"}"
 : "${APP_SERVICE_SKU:="B1"}"
-: "${SK_SERVER_API_KEY:="$(uuidgen)"}"
+: "${SEMKER_SERVER_API_KEY:="$(uuidgen)"}"
 : "${NO_QDRANT:=false}"
 : "${NO_COSMOS_DB:=false}"
 : "${NO_SPEECH_SERVICES:=false}"
@@ -152,7 +152,7 @@ JSON_CONFIG=$(cat << EOF
     "plannerModel": { "value": "$PLANNER_MODEL" },
     "packageUri": { "value": "$PACKAGE_URI" },
     "appServiceSku": { "value": "$APP_SERVICE_SKU" },
-    "skServerApiKey": { "value": "$SK_SERVER_API_KEY" },
+    "semanticKernelApiKey": { "value": "$SEMKER_SERVER_API_KEY" },
     "deployQdrant": { "value": $([ "$NO_QDRANT" = true ] && echo "false" || echo "true") },
     "deployCosmosDB": { "value": $([ "$NO_COSMOS_DB" = true ] && echo "false" || echo "true") },
     "deploySpeechServices": { "value": $([ "$NO_SPEECH_SERVICES" = true ] && echo "false" || echo "true") }
