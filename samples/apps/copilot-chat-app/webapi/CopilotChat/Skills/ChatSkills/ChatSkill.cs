@@ -243,15 +243,15 @@ public class ChatSkill
             {
                 newPlanContext = await plan.InvokeAsync(plannerContext);
             }
-            catch (Exception e)
+            catch
             {
-                throw e;
+                throw;
             }
 
             int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
-            bool extractJsonFromOpenApi = this.TryExtractJsonFromOpenApiPlanResult(newPlanContext.Variables.Input, out string planResult);
+            bool extractJsonFromOpenApi = this.TryExtractJsonFromOpenApiPlanResult(newPlanContext.Result, out string planResult);
             if (extractJsonFromOpenApi)
             {
                 int relatedInformationTokenLimit = (int)Math.Floor(tokenLimit * this._promptOptions.RelatedInformationContextWeight);
