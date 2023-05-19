@@ -19,8 +19,8 @@ public sealed class IterativePlannerTextTests : IDisposable
 {
     public IterativePlannerTextTests(ITestOutputHelper output)
     {
-        this._logger = NullLogger.Instance;
-        this._testOutputHelper = new RedirectOutput(output);
+        this._logger = new RedirectOutput(output);
+        this._testOutputHelper = output;
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
@@ -118,23 +118,11 @@ public sealed class IterativePlannerTextTests : IDisposable
                     apiKey: azureOpenAIConfiguration.ApiKey);
             });
 
-        //var builder = Kernel.Builder
-        //    .WithLogger(this._logger)
-        //    .Configure(config =>
-        //    {
-        //        config.AddAzureChatCompletionService(
-        //            //deploymentName: azureOpenAIConfiguration.DeploymentName,
-        //            deploymentName: "gpt-35-turbo",
-        //            endpoint: azureOpenAIConfiguration.Endpoint,
-        //            apiKey: azureOpenAIConfiguration.ApiKey);
-        //    });
-
         var kernel = builder.Build();
 
         BingConnector connector = new(this._bingApiKey);
 
         var webSearchEngineSkill = new WebSearchSkill(connector);
-        
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
 
@@ -143,8 +131,9 @@ public sealed class IterativePlannerTextTests : IDisposable
         return kernel;
     }
 
-    private readonly ILogger _logger;
-    private readonly RedirectOutput _testOutputHelper;
+    private readonly RedirectOutput _logger;
+    private readonly ITestOutputHelper _testOutputHelper;
+
     private readonly IConfigurationRoot _configuration;
     private string _bingApiKey;
 
@@ -168,7 +157,7 @@ public sealed class IterativePlannerTextTests : IDisposable
                 ld.Dispose();
             }
 
-            this._testOutputHelper.Dispose();
+            this._logger.Dispose();
         }
     }
 }

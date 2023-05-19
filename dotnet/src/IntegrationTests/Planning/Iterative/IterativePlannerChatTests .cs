@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
@@ -106,7 +105,6 @@ public sealed class IterativePlannerChatTests : IDisposable
     private IKernel InitializeKernel(string? deploymentName = null)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        //OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
         var x = deploymentName ?? azureOpenAIConfiguration.DeploymentName;
@@ -120,15 +118,6 @@ public sealed class IterativePlannerChatTests : IDisposable
                     apiKey: azureOpenAIConfiguration.ApiKey);
             });
 
-        //var builder = Kernel.Builder
-        //    .WithLogger(this._logger)
-        //    .Configure(config =>
-        //    {
-        //        //config.AddOpenAIChatCompletionService("gpt-3.5-turbo", openAIConfiguration.ApiKey);
-        //        config.AddOpenAIChatCompletionService("gpt-4", openAIConfiguration.ApiKey);
-        //    });
-
-        //kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
         var kernel = builder.Build();
 
         BingConnector connector = new(this._bingApiKey);
@@ -145,7 +134,7 @@ public sealed class IterativePlannerChatTests : IDisposable
     private readonly RedirectOutput _logger;
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
-    private string _bingApiKey;
+    private readonly string _bingApiKey;
 
     public void Dispose()
     {
