@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "type": "completion",
-  "description": "Extract entities related to a given topic from a text and return them as a list",
+  "description": "Extract entities related to a specified topic from the supplied input text. Returns a bulleted list of entities",
   "completion": {
     "max_tokens": 1024,
     "temperature": 0.0,

@@ -5,17 +5,8 @@
 3. As the first part of your response, return a bulleted list of the items in (1) together with an explanation of whether or not they were referred to in the context, making sure to consider step (2) where you note down references in the form of re-phrasings, alternate names or equivalent meanings in the context, as well as exact matches.
 4. Split the list into two sub-lists, those items which are referenced in the context (these are 'grounded') and those which are not (these are 'ungrounded').
 5. Make one last pass over the two lists from (4) and make sure that they are in the list of items between the <reference_items> tags, drop them otherwise.
-6. Please return the two lists (grounded and ungrounded) of items from (6) in the following JSON format:
-   1. Each ungrounded entity should be turned into a dictionary with two keys, 'entity_name' and 'explanation'
-   2. The value of the 'entity_name' should be the name taken from the <reference_items>
-   3. The value of the 'explanation' should be your explanation as to why the entity is ungrounded in the context
-   4. Create a list of these dictionaries from all of your list of ungrounded entities
-   5. Repeat the process with the grounded entities
-   6. Create a dictionary with a key 'grounded' whose value is the list of dictionaries of grounded entities.
-   7. Add a second key, 'ungrounded', to this dictionary, whose value is the list of dictionaries of ungrounded entities
-7. Return the JSON dictionary you have just generated between a <json_block> and a </json_block> tag.
-8. Ensure that you return valid JSON
-9. Any quotes appearing within a string should be escaped by a double backslash
+6. Return the list of ungrounded items as a bulleted list. Only return the entities themselves, not the reasons you have generated
+
 
 # Example
 
@@ -45,25 +36,7 @@ Says the great bell at Bow.
 </context>
 
 Response:
-- Orange: This is grounded since oranges are explicitly referenced in the context
-- Lime: This is ungrounded since no reference is made to lines in the context
-
-<json_block>
-{
-    "grounded" : [
-        {
-            "entity_name" : "Orange",
-            "explanation" : "This is grounded since oranges are explicitly referenced in the context"
-        }
-    ],
-    "ungrounded" : [
-        {
-            "entity_name" : "Lime",
-            "explanation" : "This is ungrounded since no reference is made to lines in the context"
-        }
-    ]
-}
-</json_block>
+- Lime: This fruit does not appear in the text
 
 # Task
 
@@ -77,6 +50,6 @@ Below are the reference items, and the context that you need to parse for refere
 {{$reference_context}}
 </context>
 
-Please put your response after the "Response:". Ensure that the content between <json_block> and </json_block> is valid JSON.
+Please put your response after the "Response:". Produce a bulleted list of the reference_items which are not grounded in the context, and nothing else
 
 Response:
