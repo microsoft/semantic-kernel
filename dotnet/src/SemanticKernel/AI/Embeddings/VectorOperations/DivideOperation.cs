@@ -32,7 +32,7 @@ public static class DivideOperation
         }
         else
         {
-            SupportedTypes.ThrowTypeNotSupported<TNumber>();
+            EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
         }
     }
 
