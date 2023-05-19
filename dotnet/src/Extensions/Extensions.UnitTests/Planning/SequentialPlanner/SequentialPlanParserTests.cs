@@ -66,7 +66,7 @@ public class SequentialPlanParserTests
         kernel = kernelMock.Object;
 
         // For Create
-        kernelMock.Setup(k => k.CreateNewContext()).Returns(this.CreateSKContext(kernel));
+        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<CancellationToken>())).Returns(this.CreateSKContext(kernel));
 
         var functionsView = new FunctionsView();
         foreach (var (name, skillName, description, isSemantic, resultString) in functions)
