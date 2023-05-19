@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" PublicKey="$(StrongNamePublicKey)" />
+    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>

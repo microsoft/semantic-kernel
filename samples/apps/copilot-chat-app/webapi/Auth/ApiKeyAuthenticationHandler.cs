@@ -17,7 +17,7 @@ namespace SemanticKernel.Service.Auth;
 public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthenticationSchemeOptions>
 {
     public const string AuthenticationScheme = "ApiKey";
-    public const string ApiKeyHeaderName = "x-api-key";
+    public const string ApiKeyHeaderName = "x-sk-api-key";
 
     /// <summary>
     /// Constructor

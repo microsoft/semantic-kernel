@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Skills\Skills.Grpc\Skills.Grpc.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
