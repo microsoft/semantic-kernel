@@ -137,7 +137,7 @@ public class SemanticKernelController : ControllerBase, IDisposable
         }
         finally
         {
-            this._telemetryService.TrackSkillEvent(skillName, functionName, (!result?.ErrorOccurred) ?? false);
+            this._telemetryService.TrackSkillFunction(skillName, functionName, (!result?.ErrorOccurred) ?? false);
         }
 
         if (result.ErrorOccurred)

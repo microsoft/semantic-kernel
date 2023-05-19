@@ -11,6 +11,8 @@ namespace SemanticKernel.Service.Services;
 /// </summary>
 public class AppInsightsTelemetryService : ITelemetryService
 {
+    private const string UnknownUserId = "unauthenticated";
+
     private readonly TelemetryClient _telemetryClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -27,7 +29,7 @@ public class AppInsightsTelemetryService : ITelemetryService
     }
 
     /// <inheritdoc/>
-    public void TrackSkillEvent(string skillName, string functionName, bool success)
+    public void TrackSkillFunction(string skillName, string functionName, bool success)
     {
         var properties = new Dictionary<string, string>(this.BuildDefaultProperties())
         {
@@ -49,32 +51,23 @@ public class AppInsightsTelemetryService : ITelemetryService
         var context = contextAccessor.HttpContext;
         if (context == null)
         {
-            return GetUnknownUserId();
+            return UnknownUserId;
         }
 
         var user = context.User;
         if (user == null || user.Identity == null || !user.Identity.IsAuthenticated)
         {
-            return GetUnknownUserId();
+            return UnknownUserId;
         }
 
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (userId == null)
         {
-            return GetUnknownUserId();
+            return UnknownUserId;
         }
 
         return userId;
-    }
-
-    /// <summary>
-    /// Returns an identity for telemetry when the user is not authenticated.
-    /// </summary>
-    /// <returns>An id for an unauthenticated user</returns>
-    private static string GetUnknownUserId()
-    {
-        return $"unauthenticated";
     }
 
     /// <summary>
@@ -88,8 +81,7 @@ public class AppInsightsTelemetryService : ITelemetryService
 
         return new Dictionary<string, string>
         {
-            { "userId", userId ?? "unknown" },
-            { "timestamp", currentTime.ToString("O") }
+            { "userId", userId ?? UnknownUserId }
         };
     }
 }
