@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
+import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.*;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
@@ -31,12 +32,13 @@ public class KernelDefault implements Kernel {
     private final KernelConfig kernelConfig;
     private DefaultSkillCollection defaultSkillCollection;
     private final PromptTemplateEngine promptTemplateEngine;
-    @Nullable private SemanticTextMemory memory; // TODO: make this final
+    private final MemoryStore memoryStore;
 
     public KernelDefault(
             KernelConfig kernelConfig,
             PromptTemplateEngine promptTemplateEngine,
-            ReadOnlySkillCollection skillCollection) {
+            ReadOnlySkillCollection skillCollection,
+            MemoryStore memoryStore) {
         if (kernelConfig == null) {
             throw new IllegalArgumentException();
         }
@@ -44,6 +46,7 @@ public class KernelDefault implements Kernel {
         this.kernelConfig = kernelConfig;
         this.promptTemplateEngine = promptTemplateEngine;
         this.defaultSkillCollection = new DefaultSkillCollection(skillCollection);
+        this.memoryStore = memoryStore;
 
         if (kernelConfig.getSkills() != null) {
             kernelConfig.getSkills().forEach(this::registerSemanticFunction);
@@ -234,8 +237,13 @@ public class KernelDefault implements Kernel {
     }*/
 
     @Override
+    public MemoryStore getMemoryStore() {
+        return memoryStore;
+    }
+
+    @Override
     public void registerMemory(@Nonnull SemanticTextMemory memory) {
-        this.memory = memory != null ? memory.copy() : null;
+        throw new NotSupportedException("Not implemented");
     }
 
     /// <inheritdoc/>
@@ -261,8 +269,10 @@ public class KernelDefault implements Kernel {
 
     @Override
     public Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction... pipeline) {
+        // TODO: The SemanticTextMemory can be null, but there should be a way to provide it.
+        //       Not sure registerMemory is the right way.
         DefaultSemanticSKContext context =
-                new DefaultSemanticSKContext(variables, this.memory, this.defaultSkillCollection);
+                new DefaultSemanticSKContext(variables, null, this.defaultSkillCollection);
 
         Mono<SKContext<?>> pipelineBuilder = Mono.just(context);
 
