@@ -5,6 +5,8 @@ import json
 from typing import List, Optional  
 from dotenv import load_dotenv
 from logging import Logger, NullLogger
+
+from numpy import ndarray
 from python.semantic_kernel.connectors.memory.azure_cog_search.acs_utils import create_credentials
 
 from tenacity import retry, wait_random_exponential, stop_after_attempt  
@@ -31,6 +33,7 @@ from azure.search.documents.indexes.models import (
     VectorSearch,  
     VectorSearchAlgorithmConfiguration,  
 )
+from python.semantic_kernel.memory.memory_record import MemoryRecord
 
 from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase  
 
@@ -129,9 +132,9 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
         semantic_config = SemanticConfiguration(
             name="az-semantic-config",
             prioritized_fields=PrioritizedFields(
-                title_field=SemanticField(field_name="title"),
-                prioritized_keywords_fields=[SemanticField(field_name="category")],
-                prioritized_content_fields=[SemanticField(field_name="content")]
+                title_field=SemanticField(field_name="collection_name"),
+                prioritized_keywords_fields=[SemanticField(field_name="vector")],
+                prioritized_content_fields=[SemanticField(field_name="payload")]
             )
         )
 
@@ -178,9 +181,7 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-
-
-        self._cogsearch_indexclient.delete_collection(collection_name=collection_name)
+        self._cogsearch_indexclient.delete_index(index=collection_name)
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """Checks if a collection exists.
@@ -273,7 +274,7 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
             return ""
 
     async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
+        self, collection_name: str, key: str, with_embedding: bool = True
     ) -> MemoryRecord:
         """Gets a record.
 
@@ -285,30 +286,22 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord -- The record.
         """
+        
+        search_id = key
 
-        collection_info = self._cogsearch_indexclient.get_collection(
-            collection_name=collection_name
-        )
-        with_payload = True
-        search_id = [key]
-
-        if not collection_info.status == CollectionStatus.GREEN:
-            raise Exception(f"Collection '{collection_name}' does not exist")
-
-        qdrant_record = self._cogsearch_indexclient.retrieve(
-            collection_name=collection_name,
-            ids=search_id,
-            with_payload=with_payload,
-            with_vectors=with_embedding,
+        results = self._cogsearch_client.search(  
+            search_text="",  
+            vector=Vector(value=search_id, k=3, fields="collection_id"),  
+            select=["collection_id", "vector", "payload"]
         )
 
         result = MemoryRecord(
             is_reference=False,
-            external_source_name="qdrant",
+            external_source_name="azure-cognitive-search",
             key=search_id,
             id=search_id,
-            embedding=qdrant_record.vector,
-            payload=qdrant_record.payload,
+            embedding=results[0].vector,
+            payload=results[0].payload,
         )
 
         return result
@@ -327,24 +320,27 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
             List[MemoryRecord] -- The records.
         """
 
-        collection_info = self._cogsearch_indexclient.get_collection(
-            collection_name=collection_name
-        )
+        acs_results = List[MemoryRecord]
 
-        if not collection_info.status == CollectionStatus.GREEN:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+        for acs_key in keys:
+            results = self._cogsearch_client.search(  
+                search_text="",  
+                vector=Vector(value=acs_key, k=3, fields="collection_id"),  
+                select=["collection_id", "vector", "payload"]
+            )
 
-        with_payload = True
-        search_ids = [keys]
+            result = MemoryRecord(
+                is_reference=False,
+                external_source_name="azure-cognitive-search",
+                key=acs_key,
+                id=acs_key,
+                embedding=results[0].vector,
+                payload=results[0].payload,
+            )
 
-        qdrant_records = self._cogsearch_indexclient.retrieve(
-            collection_name=collection_name,
-            ids=search_ids,
-            with_payload=with_payload,
-            with_vectors=with_embeddings,
-        )
+            acs_results.append(result)
 
-        return qdrant_records
+        return acs_results
 
     async def remove_async(self, collection_name: str, key: str) -> None:
         """Removes a record.
@@ -356,20 +352,7 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-
-        collection_info = self._cogsearch_indexclient.get_collection(
-            collection_name=collection_name
-        )
-
-        if not collection_info.status == CollectionStatus.GREEN:
-            raise Exception(f"Collection '{collection_name}' does not exist")
-
-        self._cogsearch_indexclient.delete(
-            collection_name=collection_name,
-            points_selector=models.PointIdsList(
-                points=[key],
-            ),
-        )
+        self._cogsearch_indexclient.delete_index(index=collection_name)
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of records.
@@ -442,41 +425,31 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
 
-        collection_info = self._cogsearch_indexclient.get_collection(
-            collection_name=collection_name
-        )
+        if with_embeddings:
+            select_fields = ["collection_id", "vector", "payload"]
+        else:
+            select_fields = ["collection_id", "payload"]
 
-        if not collection_info.status == CollectionStatus.GREEN:
-            raise Exception(f"Collection '{collection_name}' does not exist")
-
-        # Search for the nearest matches, qdrant already provides results sorted by relevance score
-        qdrant_matches = self._cogsearch_indexclient.search(
-            collection_name=collection_name,
-            search_params=models.SearchParams(
-                hnsw_ef=0,
-                exact=False,
-                quantization=None,
-            ),
-            query_vector=embedding,
-            limit=limit,
-            score_threshold=min_relevance_score,
-            with_vectors=with_embeddings,
-            with_payload=True,
-        )
+        results = self._cogsearch_client.search(  
+            search_text=collection_name,  
+            vector=Vector(value=embedding, k=3, fields="vector"),  
+            select=select_fields,
+            top=limit
+        )  
 
         nearest_results = []
 
         # Convert the results to MemoryRecords
-        for qdrant_match in qdrant_matches:
+        for acs_result in results:
             vector_result = MemoryRecord(
                 is_reference=False,
-                external_source_name="qdrant",
+                external_source_name="azure-cognitive-search",
                 key=None,
-                id=str(qdrant_match.id),
-                embedding=qdrant_match.vector,
-                payload=qdrant_match.payload,
+                id=acs_result.collection_id,
+                embedding=acs_result.vector,
+                payload=acs_result.payload,
             )
 
-            nearest_results.append(tuple(vector_result, qdrant_match.score))
+            nearest_results.append(tuple(vector_result, acs_result.score))
 
         return nearest_results
