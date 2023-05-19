@@ -105,6 +105,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
+    // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
     [Theory]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?",
         "Error executing action [attempt 1 of 1]. Reason: Unauthorized. Will retry after 2000ms")]
