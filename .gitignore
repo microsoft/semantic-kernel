@@ -463,3 +463,7 @@ dist/
 # Peristant storage
 data/qdrant
 data/chatstore*
+
+# Java build
+java/**/target
+java/.mvn/wrapper/maven-wrapper.jar
