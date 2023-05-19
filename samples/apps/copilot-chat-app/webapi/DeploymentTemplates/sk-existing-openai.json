@@ -4,14 +4,14 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.17.1.54307",
-      "templateHash": "7946454707645002164"
+      "version": "0.15.31.15270",
+      "templateHash": "10069123404327729771"
     }
   },
   "parameters": {
     "name": {
       "type": "string",
-      "defaultValue": "sk",
+      "defaultValue": "semkernel",
       "metadata": {
         "description": "Name for the deployment"
       }
@@ -19,6 +19,18 @@
     "appServiceSku": {
       "type": "string",
       "defaultValue": "B1",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "S1",
+        "S2",
+        "S3",
+        "P1V3",
+        "P2V3",
+        "I1V2",
+        "I2V2"
+      ],
       "metadata": {
         "description": "SKU for the Azure App Service plan"
       }
@@ -90,7 +102,7 @@
   "resources": [
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2020-10-01",
       "name": "openAIDeployment",
       "properties": {
         "expressionEvaluationOptions": {
@@ -147,14 +159,14 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.17.1.54307",
-              "templateHash": "4362216299477491752"
+              "version": "0.15.31.15270",
+              "templateHash": "9082980970787954195"
             }
           },
           "parameters": {
             "name": {
               "type": "string",
-              "defaultValue": "sk",
+              "defaultValue": "semkernel",
               "metadata": {
                 "description": "Name for the deployment"
               }
@@ -162,13 +174,25 @@
             "appServiceSku": {
               "type": "string",
               "defaultValue": "B1",
+              "allowedValues": [
+                "F1",
+                "D1",
+                "B1",
+                "S1",
+                "S2",
+                "S3",
+                "P1V3",
+                "P2V3",
+                "I1V2",
+                "I2V2"
+              ],
               "metadata": {
                 "description": "SKU for the Azure App Service plan"
               }
             },
             "packageUri": {
               "type": "string",
-              "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/semantickernelservice.zip",
+              "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/skaas.zip",
               "metadata": {
                 "description": "Location of package to deploy as the web service"
               }
@@ -749,7 +773,7 @@
   "outputs": {
     "endpoint": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'openAIDeployment'), '2022-09-01').outputs.deployedUrl.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'openAIDeployment'), '2020-10-01').outputs.deployedUrl.value]"
     }
   }
 }
