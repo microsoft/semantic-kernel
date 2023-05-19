@@ -7,11 +7,12 @@ import {
     useIsAuthenticated,
     useMsal,
 } from '@azure/msal-react';
-import { Avatar, Spinner, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Spinner, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
+import { UserSettings } from './components/header/UserSettings';
 import { PluginGallery } from './components/open-api-plugins/PluginGallery';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
@@ -20,21 +21,20 @@ import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { removeAlert } from './redux/features/app/appSlice';
+import { CopilotChatTokens } from './styles';
 
-const useClasses = makeStyles({
+export const useClasses = makeStyles({
     container: {
+        ...shorthands.overflow('hidden'),
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
         height: '100vh',
     },
-    content: {
-        Flex: 'auto',
-    },
     header: {
-        backgroundColor: '#9c2153',
+        backgroundColor: CopilotChatTokens.backgroundColor,
         width: '100%',
-        height: '5.5%',
+        height: '48px',
         color: '#FFF',
         display: 'flex',
         '& h1': {
@@ -109,46 +109,38 @@ const App: FC = () => {
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <div className={classes.cornerItems}>
                             <PluginGallery />
-                            <Avatar
-                                className={classes.persona}
-                                key={account?.name}
-                                name={account?.name}
-                                size={28}
-                                badge={{ status: 'available' }}
-                            />
+                            <UserSettings />
                         </div>
                     </div>
-                    <div className={classes.content}>
-                        {alerts &&
-                            Object.keys(alerts).map((key) => {
-                                const alert = alerts[key];
-                                return (
-                                    <Alert
-                                        intent={alert.type}
-                                        action={{
-                                            icon: (
-                                                <Dismiss16Regular
-                                                    aria-label="dismiss message"
-                                                    onClick={() => onDismissAlert(key)}
-                                                    color="black"
-                                                />
-                                            ),
-                                        }}
-                                        key={key}
-                                    >
-                                        {alert.message}
-                                    </Alert>
-                                );
-                            })}
-                        {appState === AppState.ProbeForBackend && (
-                            <BackendProbe
-                                uri={process.env.REACT_APP_BACKEND_URI as string}
-                                onBackendFound={() => setAppState(AppState.LoadingChats)}
-                            />
-                        )}
-                        {appState === AppState.LoadingChats && <Spinner labelPosition="below" label="Loading Chats" />}
-                        {appState === AppState.Chat && <ChatView />}
-                    </div>
+                    {alerts &&
+                        Object.keys(alerts).map((key) => {
+                            const alert = alerts[key];
+                            return (
+                                <Alert
+                                    intent={alert.type}
+                                    action={{
+                                        icon: (
+                                            <Dismiss16Regular
+                                                aria-label="dismiss message"
+                                                onClick={() => onDismissAlert(key)}
+                                                color="black"
+                                            />
+                                        ),
+                                    }}
+                                    key={key}
+                                >
+                                    {alert.message}
+                                </Alert>
+                            );
+                        })}
+                    {appState === AppState.ProbeForBackend && (
+                        <BackendProbe
+                            uri={process.env.REACT_APP_BACKEND_URI as string}
+                            onBackendFound={() => setAppState(AppState.LoadingChats)}
+                        />
+                    )}
+                    {appState === AppState.LoadingChats && <Spinner labelPosition="below" label="Loading Chats" />}
+                    {appState === AppState.Chat && <ChatView />}
                 </div>
             </AuthenticatedTemplate>
         </div>

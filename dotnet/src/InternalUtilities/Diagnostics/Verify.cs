@@ -15,7 +15,9 @@ internal static class Verify
 {
     private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
 
-    // Equivalent of ArgumentNullException.ThrowIfNull
+    /// <summary>
+    /// Equivalent of ArgumentNullException.ThrowIfNull
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression("obj")] string? paramName = null)
     {

@@ -3,7 +3,6 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -223,8 +222,7 @@ public sealed class PromptTemplateEngineTests
     {
         return new SKContext(
             this._variables,
-            NullMemory.Instance,
-            this._skills.Object,
-            TestConsoleLogger.Log);
+            skills: this._skills.Object,
+            logger: TestConsoleLogger.Log);
     }
 }

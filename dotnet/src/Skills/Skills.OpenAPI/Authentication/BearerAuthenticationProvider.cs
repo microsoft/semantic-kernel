@@ -28,7 +28,6 @@ public class BearerAuthenticationProvider
     /// Applies the token to the provided HTTP request message.
     /// </summary>
     /// <param name="request">The HTTP request message.</param>
-    /// <returns></returns>
     public async Task AuthenticateRequestAsync(HttpRequestMessage request)
     {
         var token = await this._bearerToken().ConfigureAwait(false);

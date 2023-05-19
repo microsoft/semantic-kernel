@@ -38,7 +38,7 @@ Jane: I'm writing a chatbot
 Jane: What about you?
 John: That's cool. Let me see if mine will write a poem, too.
 John: Here's a poem my chatbot wrote:
-John: The signularity of the universe is a mystery.
+John: The singularity of the universe is a mystery.
 John: The universe is a mystery.
 John: The universe is a mystery.
 John: The universe is a mystery.
