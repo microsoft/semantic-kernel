@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 
 public static class Program
@@ -7,7 +8,6 @@ public static class Program
     // ReSharper disable once InconsistentNaming
     public static async Task Main()
     {
-        /*
         Example01_NativeFunctions.Run();
         Console.WriteLine("== DONE ==");
 
@@ -120,10 +120,12 @@ public static class Program
         Console.WriteLine("== DONE ==");
 
         await Example38_Pinecone.RunAsync();
-        Console.WriteLine("== DONE ==");*/
+        Console.WriteLine("== DONE ==");
 
-        // await Example39_MultiChatCompletion.RunAsync();
+        await Example39_MultiChatCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
 
         await Example40_MultiStreamingChatCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
