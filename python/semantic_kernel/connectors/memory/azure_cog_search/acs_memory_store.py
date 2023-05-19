@@ -1,45 +1,42 @@
-# Import required libraries  
+# Import required libraries
 
-import os  
+import os
 import json
-from typing import List, Optional  
+from typing import List, Optional, Tuple
 from dotenv import load_dotenv
 from logging import Logger, NullLogger
 
 from numpy import ndarray
-from python.semantic_kernel.connectors.memory.azure_cog_search.acs_utils import create_credentials
+from python.semantic_kernel.connectors.memory.azure_cog_search.acs_utils import (
+    create_credentials,
+)
 
-from tenacity import retry, wait_random_exponential, stop_after_attempt  
-from azure.core.credentials import AzureKeyCredential  
-from azure.search.documents import SearchClient  
-from azure.search.documents.indexes import SearchIndexClient  
-from azure.search.documents.models import Vector, QueryType  
-from azure.search.documents.indexes import SearchIndexClient
+from tenacity import retry, wait_random_exponential, stop_after_attempt
 from azure.core.credentials import AzureKeyCredential
+from azure.search.documents import SearchClient
+from azure.search.documents.indexes import SearchIndexClient
+from azure.search.documents.models import Vector, QueryType
 from azure.identity import DefaultAzureCredential as DefaultAzureCredentialSync
 from azure.identity.aio import DefaultAzureCredential
-from azure.search.documents.indexes.models import (  
-    SearchIndex,  
-    SearchField,  
-    SearchFieldDataType,  
-    SimpleField,  
-    SearchableField,  
-    SearchIndex,  
-    SemanticConfiguration,  
-    PrioritizedFields,  
-    SemanticField,  
-    SearchField,  
-    SemanticSettings,  
-    VectorSearch,  
-    VectorSearchAlgorithmConfiguration,  
+from azure.search.documents.indexes.models import (
+    SearchIndex,
+    SearchField,
+    SearchFieldDataType,
+    SimpleField,
+    SearchableField,
+    SemanticConfiguration,
+    PrioritizedFields,
+    SemanticField,
+    SemanticSettings,
+    VectorSearch,
+    VectorSearchAlgorithmConfiguration,
 )
 from python.semantic_kernel.memory.memory_record import MemoryRecord
 
-from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase  
+from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 
-
-class CogintiveSearchMemoryStore(MemoryStoreBase):
+class CognitiveSearchMemoryStore(MemoryStoreBase):
     _cogsearch_indexclient: SearchIndexClient
     _cogsearch_client: SearchClient
     _cogsearch_records: list
@@ -66,23 +63,22 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
                 "Error: Unable to import azure cognitive search client python package."
                 "Please install azure cognitive search client"
             )
-        
 
-        # Configure environment variables  
-        load_dotenv()  
+        # Configure environment variables
+        load_dotenv()
 
-        self._cogsearch_creds = create_credentials(use_async=True, azsearch_api_key = acs_search_key)
-        
-        #Override environment variable with endpoint provided
+        self._cogsearch_creds = create_credentials(
+            use_async=True, azsearch_api_key=acs_search_key
+        )
+
+        # Override environment variable with endpoint provided
         if acs_endpoint:
             service_endpoint = acs_endpoint
         else:
             service_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
-        
 
         self._cogsearch_indexclient = SearchIndexClient(
-            endpoint=service_endpoint, 
-            credential=self._cogsearch_creds
+            endpoint=service_endpoint, credential=self._cogsearch_creds
         )
 
         self._logger = logger or NullLogger()
@@ -99,19 +95,44 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-    
+
         fields = [
-            SimpleField(name="collection_id", type=SearchFieldDataType.String, key=True),
-            SearchableField(name="collection_name", type=SearchFieldDataType.String, 
-                            searchable=True, retrievable=True),
-            SearchableField(name="content", type=SearchFieldDataType.String,
-                        searchable=True, retrievable=True),
-            SearchableField(name="payload", type=SearchFieldDataType.String,
-                        filterable=True, searchable=True, retrievable=True),
-            SearchField(name="titleVector", type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
-                    searchable=True, dimensions=1536, vector_search_configuration="vector-config"),
-            SearchField(name="contentVector", type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
-                    searchable=True, dimensions=1536, vector_search_configuration="vector-config"),
+            SimpleField(
+                name="collection_id", type=SearchFieldDataType.String, key=True
+            ),
+            SearchableField(
+                name="collection_name",
+                type=SearchFieldDataType.String,
+                searchable=True,
+                retrievable=True,
+            ),
+            SearchableField(
+                name="content",
+                type=SearchFieldDataType.String,
+                searchable=True,
+                retrievable=True,
+            ),
+            SearchableField(
+                name="payload",
+                type=SearchFieldDataType.String,
+                filterable=True,
+                searchable=True,
+                retrievable=True,
+            ),
+            SearchField(
+                name="titleVector",
+                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+                searchable=True,
+                dimensions=1536,
+                vector_search_configuration="vector-config",
+            ),
+            SearchField(
+                name="contentVector",
+                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+                searchable=True,
+                dimensions=1536,
+                vector_search_configuration="vector-config",
+            ),
         ]
 
         vector_search = VectorSearch(
@@ -123,8 +144,8 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
                         "m": 4,
                         "efConstruction": 400,
                         "efSearch": 500,
-                        "metric": "cosine"
-                    }
+                        "metric": "cosine",
+                    },
                 )
             ]
         )
@@ -134,22 +155,22 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
             prioritized_fields=PrioritizedFields(
                 title_field=SemanticField(field_name="collection_name"),
                 prioritized_keywords_fields=[SemanticField(field_name="vector")],
-                prioritized_content_fields=[SemanticField(field_name="payload")]
-            )
+                prioritized_content_fields=[SemanticField(field_name="payload")],
+            ),
         )
 
         # Create the semantic settings with the configuration
         semantic_settings = SemanticSettings(configurations=[semantic_config])
 
         # Create the search index with the semantic settings
-        index = SearchIndex(name=collection_name, 
-                            fields=fields,
-                            vector_search=vector_search, 
-                            semantic_settings=semantic_settings
+        index = SearchIndex(
+            name=collection_name,
+            fields=fields,
+            vector_search=vector_search,
+            semantic_settings=semantic_settings,
         )
 
         result = self._cogsearch_indexclient.create_index(index)
-
 
     async def get_collections_async(
         self,
@@ -286,13 +307,13 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord -- The record.
         """
-        
+
         search_id = key
 
-        results = self._cogsearch_client.search(  
-            search_text="",  
-            vector=Vector(value=search_id, k=3, fields="collection_id"),  
-            select=["collection_id", "vector", "payload"]
+        results = self._cogsearch_client.search(
+            search_text="",
+            vector=Vector(value=search_id, k=3, fields="collection_id"),
+            select=["collection_id", "vector", "payload"],
         )
 
         result = MemoryRecord(
@@ -323,10 +344,10 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
         acs_results = List[MemoryRecord]
 
         for acs_key in keys:
-            results = self._cogsearch_client.search(  
-                search_text="",  
-                vector=Vector(value=acs_key, k=3, fields="collection_id"),  
-                select=["collection_id", "vector", "payload"]
+            results = self._cogsearch_client.search(
+                search_text="",
+                vector=Vector(value=acs_key, k=3, fields="collection_id"),
+                select=["collection_id", "vector", "payload"],
             )
 
             result = MemoryRecord(
@@ -430,12 +451,12 @@ class CogintiveSearchMemoryStore(MemoryStoreBase):
         else:
             select_fields = ["collection_id", "payload"]
 
-        results = self._cogsearch_client.search(  
-            search_text=collection_name,  
-            vector=Vector(value=embedding, k=3, fields="vector"),  
+        results = self._cogsearch_client.search(
+            search_text=collection_name,
+            vector=Vector(value=embedding, k=3, fields="vector"),
             select=select_fields,
-            top=limit
-        )  
+            top=limit,
+        )
 
         nearest_results = []
 
