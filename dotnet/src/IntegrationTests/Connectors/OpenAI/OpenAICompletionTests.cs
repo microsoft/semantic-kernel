@@ -77,6 +77,24 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task CanUseOpenAiChatForTextCompletionAsync()
+    {
+        // Note: we use OpenAi Chat Completion and GPT 3.5 Turbo
+        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+        this.ConfigureChatOpenAI(target);
+
+        var func = target.CreateSemanticFunction(
+            "List the two planets after '{{$input}}', excluding moons, using bullet points.");
+
+        var result = await func.InvokeAsync("Jupiter");
+
+        Assert.NotNull(result);
+        Assert.False(result.ErrorOccurred, result.LastErrorDescription);
+        Assert.Contains("Saturn", result.Result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Uranus", result.Result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
     [Theory]
     [InlineData(false, "Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     [InlineData(true, "Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
