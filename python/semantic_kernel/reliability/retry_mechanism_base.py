@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import abc
+from abc import ABC, abstractmethod
 import logging
 from typing import Awaitable, Callable, TypeVar
 
 T = TypeVar("T")
 
 
-class RetryMechanism(abc.ABC):
-    @abc.abstractmethod
+class RetryMechanismBase(ABC):
+    @abstractmethod
     async def execute_with_retry_async(
         self, action: Callable[[], Awaitable[T]], log: logging.Logger
     ) -> Awaitable[T]:
