@@ -147,8 +147,8 @@ class DelegateInference:
     @staticmethod
     @_infers(DelegateTypes.InStringAndContext)
     def infer_in_string_and_context(signature: Signature, awaitable: bool) -> bool:
-        matches = _first_param_is_str(signature)
-        matches = matches and _first_param_is_context(signature)
+        matches = _first_param_is_str(signature, only=False)
+        matches = matches and _has_two_params_second_is_context(signature)
         matches = matches and _no_return(signature)
         matches = matches and not awaitable
         return matches
@@ -223,7 +223,7 @@ class DelegateInference:
 
     @staticmethod
     @_infers(DelegateTypes.Unknown)
-    def infer_unknown(signature: Signature) -> NoReturn:
+    def infer_unknown(signature: Signature, awaitable: bool) -> NoReturn:
         raise KernelException(
             KernelException.ErrorCodes.FunctionTypeNotSupported,
             "Invalid function type detected, unable to infer DelegateType.",
