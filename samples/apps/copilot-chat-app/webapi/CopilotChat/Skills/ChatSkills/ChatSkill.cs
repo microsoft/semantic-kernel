@@ -263,7 +263,7 @@ public class ChatSkill
 
         // 3. Acquire external information from planner
         var externalInformationTokenLimit = (int)(remainingToken * this._promptOptions.ExternalInformationContextWeight);
-        var plan = await this.AcquireExternalInformationAsync(chatContext, userIntent, externalInformationTokenLimit);
+        var planResult = await this.AcquireExternalInformationAsync(chatContext, userIntent, externalInformationTokenLimit);
         if (chatContext.ErrorOccurred)
         {
             return string.Empty;
@@ -293,7 +293,7 @@ public class ChatSkill
         }
 
         // 6. Fill in the chat history if there is any token budget left
-        var chatContextText = string.Join("\n", new string[] { chatMemories, documentMemories, plan });
+        var chatContextText = string.Join("\n", new string[] { chatMemories, documentMemories, planResult });
         var chatContextTextTokenCount = remainingToken - Utilities.TokenCount(chatContextText);
         if (chatContextTextTokenCount > 0)
         {
