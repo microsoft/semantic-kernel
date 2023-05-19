@@ -3,11 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -86,8 +88,10 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task CanUseOpenAiChatForTextCompletionAsync()
     {
         // Note: we use OpenAi Chat Completion and GPT 3.5 Turbo
-        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
-        this.ConfigureChatOpenAI(target);
+        KernelBuilder builder = Kernel.Builder.WithLogger(this._logger);
+        this.ConfigureChatOpenAI(builder);
+
+        IKernel target = builder.Build();
 
         var func = target.CreateSemanticFunction(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.");
@@ -169,16 +173,20 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         var retryConfig = new HttpRetryConfig();
         retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
-        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Configure(c => c.SetDefaultHttpRetryConfig(retryConfig)).Build();
+        KernelBuilder builder = Kernel.Builder
+            .WithLogger(this._testOutputHelper)
+            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig));
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
-        target.Config.AddAzureTextCompletionService(
+        builder.WithAzureTextCompletionService(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
+
+        IKernel target = builder.Build();
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
