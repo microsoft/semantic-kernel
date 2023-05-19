@@ -43,6 +43,11 @@ public interface IChatCompletion
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
+
+    IAsyncEnumerable<IChatCompletionStreamingResult> GetStreamingChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default);
 }
 
 public interface IChatCompletionResult

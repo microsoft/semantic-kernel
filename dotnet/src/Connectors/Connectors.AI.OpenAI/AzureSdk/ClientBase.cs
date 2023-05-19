@@ -228,6 +228,51 @@ public abstract class ClientBase
     }
 
     /// <summary>
+    /// Generate a new chat message stream
+    /// </summary>
+    /// <param name="chat">Chat history</param>
+    /// <param name="requestSettings">AI request settings</param>
+    /// <param name="cancellationToken">Async cancellation token</param>
+    /// <returns>Streaming of generated chat message in string format</returns>
+    private protected async IAsyncEnumerable<IChatCompletionStreamingResult> InternalGenerateMultiChatMessageStreamAsync(
+        ChatHistory chat,
+        ChatRequestSettings requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(chat);
+        Verify.NotNull(requestSettings);
+
+        foreach (ChatHistory.Message message in chat.Messages)
+        {
+            var role = message.AuthorRole switch
+            {
+                ChatHistory.AuthorRoles.User => ChatRole.User,
+                ChatHistory.AuthorRoles.Assistant => ChatRole.Assistant,
+                ChatHistory.AuthorRoles.System => ChatRole.System,
+                _ => throw new ArgumentException($"Invalid chat message author: {message.AuthorRole:G}")
+            };
+        }
+
+        ValidateMaxTokens(requestSettings.MaxTokens);
+        var options = CreateChatCompletionsOptions(requestSettings, chat);
+
+        Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
+            () => this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+
+        using StreamingChatCompletions streamingChatCompletions = response.Value;
+
+        if (response is null)
+        {
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
+        }
+
+        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
+        {
+            yield return new ChatCompletionStreamingResult(choice);
+        }
+    }
+
+    /// <summary>
     /// Create a new empty chat instance
     /// </summary>
     /// <param name="instructions">Optional chat instructions for the AI service</param>
@@ -327,6 +372,13 @@ public abstract class ClientBase
 
     private static ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, ChatHistory chat)
     {
+        if (requestSettings.ResultsPerPrompt < 1 ||
+            requestSettings.ResultsPerPrompt > 128)
+        {
+            // <see cref="CompletionsOptions.ChoicesPerPrompt"/> must be in range between 1 and 128.
+            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, "The value must be in range between 1 and 128, inclusive.");
+        }
+
         var options = new ChatCompletionsOptions
         {
             MaxTokens = requestSettings.MaxTokens,
@@ -334,7 +386,7 @@ public abstract class ClientBase
             NucleusSamplingFactor = (float?)requestSettings.TopP,
             FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
             PresencePenalty = (float?)requestSettings.PresencePenalty,
-            ChoicesPerPrompt = 1,
+            ChoicesPerPrompt = requestSettings.ResultsPerPrompt
         };
 
         if (requestSettings.StopSequences is { Count: > 0 })

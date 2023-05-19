@@ -15,7 +15,7 @@ public static class Example36_MultiCompletion
     public static async Task RunAsync()
     {
         await AzureOpenAIMultiTextCompletionAsync();
-        await OpenAITextCompletionAsync();
+        await OpenAIMultiTextCompletionAsync();
     }
 
     private static async Task AzureOpenAIMultiTextCompletionAsync()
@@ -33,7 +33,7 @@ public static class Example36_MultiCompletion
         await TextCompletionAsync(textCompletion);
     }
 
-    private static async Task OpenAITextCompletionAsync()
+    private static async Task OpenAIMultiTextCompletionAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Text Completion ========");
 

@@ -18,19 +18,6 @@ internal sealed class ChatCompletionResult : IChatCompletionResult
 
     public async Task<IChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
-        return await Task.FromResult(new ChatMessage(this._choice.Message)).ConfigureAwait(false);
+        return await Task.FromResult(new ChatMessageAdapter(this._choice.Message)).ConfigureAwait(false);
     }
-}
-
-public class ChatMessage : IChatMessage
-{
-    private readonly Azure.AI.OpenAI.ChatMessage _message;
-
-    public ChatMessage(Azure.AI.OpenAI.ChatMessage message)
-    {
-        this._message = message;
-    }
-
-    public string Role => this._message.Role.ToString();
-    public string Content => this._message.Content;
 }

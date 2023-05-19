@@ -55,6 +55,24 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     }
 
     /// <inheritdoc/>
+    public Task<IReadOnlyList<IChatCompletionResult>> GetChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalGenerateMultiChatMessageAsync(chat, requestSettings ?? new(), cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<IChatCompletionStreamingResult> GetStreamingChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalGenerateMultiChatMessageStreamAsync(chat, requestSettings ?? new(), cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public ChatHistory CreateNewChat(string instructions = "")
     {
         return InternalCreateNewChat(instructions);

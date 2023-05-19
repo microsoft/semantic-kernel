@@ -71,12 +71,22 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         return this.InternalGenerateChatMessageStreamAsync(chat, requestSettings ?? new(), cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task<IReadOnlyList<IChatCompletionResult>> GetChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
         return this.InternalGenerateMultiChatMessageAsync(chat, requestSettings ?? new(), cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<IChatCompletionStreamingResult> GetStreamingChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InternalGenerateMultiChatMessageStreamAsync(chat, requestSettings ?? new(), cancellationToken);
     }
 
     /// <inheritdoc/>

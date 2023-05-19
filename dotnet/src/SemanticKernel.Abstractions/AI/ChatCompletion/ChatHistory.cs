@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -62,6 +63,16 @@ public class ChatHistory
     public void AddMessage(AuthorRoles authorRole, string content)
     {
         this.Messages.Add(new Message(authorRole, content));
+    }
+
+    public void AddMessage(IChatMessage message)
+    {
+        if (!Enum.TryParse(message.Role, true, out AuthorRoles role))
+        {
+            throw new NotSupportedException($"Provided role {message.Role} is not supported");
+        }
+
+        this.Messages.Add(new Message(role, message.Content));
     }
 }
 

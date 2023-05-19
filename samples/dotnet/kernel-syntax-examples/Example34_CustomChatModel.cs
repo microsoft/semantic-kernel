@@ -54,6 +54,16 @@ public sealed class MyChatCompletionService : IChatCompletion
             yield return $"{word} ";
         }
     }
+
+    public Task<IReadOnlyList<IChatCompletionResult>> GetChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IAsyncEnumerable<IChatCompletionStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 // ReSharper disable once InconsistentNaming
