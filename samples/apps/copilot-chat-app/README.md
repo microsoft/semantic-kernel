@@ -12,7 +12,11 @@ functions that work together to construct each response.
 
 ![UI Sample](images/UI-Sample.png)
 
-# Configure your environment
+# Automated Setup and Local Deployment
+Refer to [./scripts/README.md](./scripts/README.md) for autonamated configuration and local deployment of CopilotChat.
+
+# Manual Setup and Local Deployment
+## Configure your environment
 Before you get started, make sure you have the following requirements in place:
 - [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
 - [Node.js](https://nodejs.org/)
@@ -20,7 +24,7 @@ Before you get started, make sure you have the following requirements in place:
 - [Azure OpenAI](https://aka.ms/oai/access) resource or an account with [OpenAI](https://platform.openai.com).
 - [Visual Studio Code](https://code.visualstudio.com/Download) **(Optional)** 
 
-# Start the WebApi Backend Server
+## Start the WebApi Backend Server
 The sample uses two applications, a front-end web UI, and a back-end API server.
 First, let’s set up and verify the back-end API server is running.
 
@@ -40,7 +44,7 @@ First, let’s set up and verify the back-end API server is running.
        cd semantic-kernel/samples/apps/copilot-chat-app/webapi
        dotnet user-secrets set "AIService:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
        ```
-     - Optionally update `Models` to the Azure OpenAI deployment or OpenAI models you want to use. 
+     - **(Optional)** Update `Models` to the Azure OpenAI deployment or OpenAI models you want to use. 
        - For `Completion` and `Planner`, CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4.
          > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
        - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effective for generating embeddings.
@@ -69,7 +73,7 @@ First, let’s set up and verify the back-end API server is running.
 
       > You may also need to acknowledge the Windows Defender Firewall, and allow the app to communicate over private or public networks as appropriate.
 
-# Start the WebApp FrontEnd application 
+## Start the WebApp FrontEnd application 
 1. Build and start the front-end application
    1. You will need an Azure Active Directory (AAD) application registration. 
       > For more details on creating an application registration, go [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
