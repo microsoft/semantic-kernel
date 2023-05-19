@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,24 +36,6 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     }
 
     /// <inheritdoc/>
-    public Task<string> GenerateMessageAsync(
-        ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        return this.InternalGenerateChatMessageAsync(chat, requestSettings ?? new(), cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<string> GenerateMessageStreamAsync(
-        ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
-    {
-        return this.InternalGenerateChatMessageStreamAsync(chat, requestSettings ?? new(), cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public Task<IReadOnlyList<IChatCompletionResult>> GetChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
@@ -84,7 +65,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken).ToAsyncEnumerable();
+        return this.InternalGetTextCompletionStreamingAsChatAsync(text, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -93,6 +74,6 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken) as IReadOnlyList<ITextCompletionResult>);
+        return this.InternalGetTextCompletionAsChatAsync(text, requestSettings, cancellationToken);
     }
 }

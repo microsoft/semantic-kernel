@@ -4,10 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class ChatCompletionResult : IChatCompletionResult
+internal sealed class ChatCompletionResult : IChatCompletionResult, ITextCompletionResult
 {
     private readonly ChatChoice _choice;
 
@@ -16,8 +17,13 @@ internal sealed class ChatCompletionResult : IChatCompletionResult
         this._choice = choice;
     }
 
-    public async Task<IChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public Task<IChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
-        return await Task.FromResult(new ChatMessageAdapter(this._choice.Message)).ConfigureAwait(false);
+        return Task.FromResult<IChatMessage>(new ChatMessageAdapter(this._choice.Message));
+    }
+
+    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(this._choice.Message.Content);
     }
 }

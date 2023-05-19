@@ -149,85 +149,6 @@ public abstract class ClientBase
     }
 
     /// <summary>
-    /// Generate a new chat message
-    /// </summary>
-    /// <param name="chat">Chat history</param>
-    /// <param name="requestSettings">AI request settings</param>
-    /// <param name="cancellationToken">Async cancellation token</param>
-    /// <returns>Generated chat message in string format</returns>
-    private protected async Task<string> InternalGenerateChatMessageAsync(
-        ChatHistory chat,
-        ChatRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(chat);
-        Verify.NotNull(requestSettings);
-
-        ValidateMaxTokens(requestSettings.MaxTokens);
-        var options = CreateChatCompletionsOptions(requestSettings, chat);
-
-        Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            () => this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
-
-        if (response == null || response.Value.Choices.Count < 1)
-        {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
-        }
-
-        return response.Value.Choices[0].Message.Content;
-    }
-
-    /// <summary>
-    /// Generate a new chat message stream
-    /// </summary>
-    /// <param name="chat">Chat history</param>
-    /// <param name="requestSettings">AI request settings</param>
-    /// <param name="cancellationToken">Async cancellation token</param>
-    /// <returns>Streaming of generated chat message in string format</returns>
-    private protected async IAsyncEnumerable<string> InternalGenerateChatMessageStreamAsync(
-        ChatHistory chat,
-        ChatRequestSettings requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(chat);
-        Verify.NotNull(requestSettings);
-
-        foreach (ChatHistory.Message message in chat.Messages)
-        {
-            var role = message.AuthorRole switch
-            {
-                ChatHistory.AuthorRoles.User => ChatRole.User,
-                ChatHistory.AuthorRoles.Assistant => ChatRole.Assistant,
-                ChatHistory.AuthorRoles.System => ChatRole.System,
-                _ => throw new ArgumentException($"Invalid chat message author: {message.AuthorRole:G}")
-            };
-        }
-
-        ValidateMaxTokens(requestSettings.MaxTokens);
-        var options = CreateChatCompletionsOptions(requestSettings, chat);
-
-        Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
-            () => this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
-
-        using StreamingChatCompletions streamingChatCompletions = response.Value;
-
-        if (response is null)
-        {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
-        }
-
-        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
-        {
-            await foreach (var message in choice.GetMessageStreaming(cancellationToken))
-            {
-                yield return message.Content;
-            }
-
-            yield return Environment.NewLine;
-        }
-    }
-
-    /// <summary>
     /// Generate a new chat message stream
     /// </summary>
     /// <param name="chat">Chat history</param>
@@ -282,41 +203,30 @@ public abstract class ClientBase
         return new OpenAIChatHistory(instructions);
     }
 
-    private protected List<ITextCompletionStreamingResult> InternalGetTextCompletionAsChat(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+    private protected async Task<IReadOnlyList<ITextCompletionResult>> InternalGetTextCompletionAsChatAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken)
     {
-        return new List<ITextCompletionStreamingResult>
+        ChatHistory chat = PrepareChatHistory(text, requestSettings, out ChatRequestSettings settings);
+
+        return (await this.InternalGenerateMultiChatMessageAsync(chat, settings, cancellationToken).ConfigureAwait(false))
+            .OfType<ITextCompletionResult>()
+            .ToList();
+    }
+
+    private protected async IAsyncEnumerable<ITextCompletionStreamingResult> InternalGetTextCompletionStreamingAsChatAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        ChatHistory chat = PrepareChatHistory(text, requestSettings, out ChatRequestSettings settings);
+
+        await foreach (var chatCompletionStreamingResult in this.InternalGenerateMultiChatMessageStreamAsync(chat, settings, cancellationToken))
         {
-            new ChatCompletionAsTextResult(
-                (cancellationTokenInvoke) => this.InternalCompleteTextUsingChatStreamAsync(text, requestSettings, cancellationTokenInvoke),
-                (cancellationTokenInvoke) => this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationTokenInvoke))
-        };
-    }
-
-    /// <summary>
-    /// Creates a completion for the prompt and settings using the chat endpoint
-    /// </summary>
-    /// <param name="text">The prompt to complete.</param>
-    /// <param name="requestSettings">Request settings for the completion API</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Text generated by the remote model</returns>
-    private async Task<string> InternalCompleteTextUsingChatAsync(
-        string text,
-        CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        ChatHistory chat = PrepareChatHistory(text, requestSettings, out ChatRequestSettings settings);
-
-        return await this.InternalGenerateChatMessageAsync(chat, settings, cancellationToken).ConfigureAwait(false);
-    }
-
-    private IAsyncEnumerable<string> InternalCompleteTextUsingChatStreamAsync(
-        string text,
-        CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        ChatHistory chat = PrepareChatHistory(text, requestSettings, out ChatRequestSettings settings);
-
-        return this.InternalGenerateChatMessageStreamAsync(chat, settings, cancellationToken);
+            var chatStreamingResult = (ITextCompletionStreamingResult)chatCompletionStreamingResult;
+            yield return chatStreamingResult;
+        }
     }
 
     private static ChatHistory PrepareChatHistory(string text, CompleteRequestSettings requestSettings, out ChatRequestSettings settings)
