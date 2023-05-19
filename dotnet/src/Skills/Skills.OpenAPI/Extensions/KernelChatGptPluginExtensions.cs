@@ -180,13 +180,13 @@ public static class KernelChatGptPluginExtensions
         string? apiType = gptPlugin?["api"]?["type"]?.ToString();
         if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")
         {
-            throw new InvalidOperationException($"Invalid ChatGPT plugin document. Supported api types are: openapi");
+            throw new InvalidOperationException("Invalid ChatGPT plugin document. Supported api types are: openapi");
         }
 
         string? openApiUrl = gptPlugin?["api"]?["url"]?.ToString();
         if (string.IsNullOrWhiteSpace(openApiUrl))
         {
-            throw new InvalidOperationException($"Invalid ChatGPT plugin document, OpenAPI URL is missing");
+            throw new InvalidOperationException("Invalid ChatGPT plugin document, OpenAPI URL is missing");
         }
 
         return openApiUrl!;

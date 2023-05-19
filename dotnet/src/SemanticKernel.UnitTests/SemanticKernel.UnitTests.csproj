@@ -4,6 +4,8 @@
     <RootNamespace>SemanticKernel.UnitTests</RootNamespace>
     <AssemblyName>SemanticKernel.UnitTests</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
+    <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>

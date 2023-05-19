@@ -100,4 +100,3 @@ public static class Example33_StreamingChat
         return Task.CompletedTask;
     }
 }
-

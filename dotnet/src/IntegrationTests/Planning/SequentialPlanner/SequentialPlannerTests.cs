@@ -32,11 +32,13 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Write a joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
-    public async Task CreatePlanFunctionFlowAsync(string prompt, string expectedFunction, string expectedSkill)
+    [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
+    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
+    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel();
+        bool useEmbeddings = false;
+        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         TestHelpers.GetSkills(kernel, "FunSkill");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
@@ -79,7 +81,8 @@ public sealed class SequentialPlannerTests : IDisposable
     public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel(true);
+        bool useEmbeddings = true;
+        IKernel kernel = this.InitializeKernel(useEmbeddings);
 
         // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(kernel);
@@ -98,7 +101,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false)
+    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -106,25 +109,30 @@ public sealed class SequentialPlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder
-            .WithLogger(this._logger)
-            .WithAzureTextCompletionService(
+        var builder = Kernel.Builder.WithLogger(this._logger);
+
+        if (useChatModel)
+        {
+            builder.WithAzureChatCompletionService(
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+        else
+        {
+            builder.WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey,
-                setAsDefault: true);
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
 
         if (useEmbeddings)
         {
             builder.WithAzureTextEmbeddingGenerationService(
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-        }
-
-        if (useEmbeddings)
-        {
-            builder = builder.WithMemoryStorage(new VolatileMemoryStore());
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
+                .WithMemoryStorage(new VolatileMemoryStore());
         }
 
         var kernel = builder.Build();

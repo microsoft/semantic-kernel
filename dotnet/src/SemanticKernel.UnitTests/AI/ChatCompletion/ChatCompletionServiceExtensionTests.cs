@@ -48,7 +48,6 @@ public class ChatCompletionServiceExtensionsTests
         Assert.True(provider.TryGetService<IChatCompletion>(serviceId, out _));
     }
 
-
     [Fact]
     public void ItCanSetDefaultChatCompletionService()
     {

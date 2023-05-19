@@ -20,7 +20,6 @@ public sealed class KernelConfig
     /// </summary>
     public HttpRetryConfig DefaultHttpRetryConfig { get; private set; } = new();
 
-
     /// <summary>
     /// Set the http retry handler factory to use for the kernel.
     /// </summary>

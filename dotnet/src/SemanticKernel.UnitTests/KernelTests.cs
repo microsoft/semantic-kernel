@@ -56,7 +56,6 @@ public class KernelTests
             .WithAIService<ITextCompletion>("x", factory.Object)
             .Build();
 
-
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
         var skill = kernel.ImportSkill(nativeSkill, "mySk");

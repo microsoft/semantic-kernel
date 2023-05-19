@@ -71,6 +71,28 @@ public sealed class PlanTests : IDisposable
     }
 
     [Theory]
+    [InlineData("This is a story about a dog.", "kai@email.com")]
+    public async Task CanExecuteAsChatAsync(string inputToEmail, string expectedEmail)
+    {
+        // Arrange
+        IKernel target = this.InitializeKernel(false, true);
+
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
+
+        var plan = new Plan(emailSkill["SendEmailAsync"]);
+
+        // Act
+        var cv = new ContextVariables();
+        cv.Update(inputToEmail);
+        cv.Set("email_address", expectedEmail);
+        var result = await target.RunAsync(cv, plan);
+
+        // Assert
+        Assert.Equal(expectedBody, result.Result);
+    }
+
+    [Theory]
     [InlineData("Send a story to kai.", "This is a story about a dog.", "French", "kai@email.com")]
     public async Task CanExecuteRunSimpleStepsAsync(string goal, string inputToTranslate, string language, string expectedEmail)
     {
@@ -119,7 +141,7 @@ public sealed class PlanTests : IDisposable
         // Assert
         Assert.NotNull(result);
         Assert.Equal(
-            $"Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
+            "Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
             result.Result);
     }
 
@@ -448,7 +470,7 @@ public sealed class PlanTests : IDisposable
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false)
+    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -456,14 +478,22 @@ public sealed class PlanTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder
-            .WithLogger(this._logger)
-            .WithAzureTextCompletionService(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey,
-                setAsDefault: true);
+        var builder = Kernel.Builder.WithLogger(this._logger);
 
+        if (useChatModel)
+        {
+            builder.WithAzureChatCompletionService(
+                        deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+        else
+        {
+            builder.WithAzureTextCompletionService(
+                        deploymentName: azureOpenAIConfiguration.DeploymentName,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey);
+        }
 
         if (useEmbeddings)
         {

@@ -17,7 +17,7 @@
     <None Remove="appsettings.json" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.8.2" />
+    <PackageReference Include="Azure.Identity" Version="1.9.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-preview.3.23174.8" />
@@ -31,6 +31,7 @@
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Skills\Skills.Grpc\Skills.Grpc.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />

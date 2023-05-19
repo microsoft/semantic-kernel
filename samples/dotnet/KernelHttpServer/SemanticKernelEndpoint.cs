@@ -17,7 +17,7 @@ namespace KernelHttpServer;
 
 public class SemanticKernelEndpoint
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IMemoryStore _memoryStore;
 
     public SemanticKernelEndpoint(IMemoryStore memoryStore)

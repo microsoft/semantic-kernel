@@ -4,7 +4,9 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
 
 // Use base namespace for better discoverability and to avoid conflicts with other extensions.
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public static class ChatCompletionServiceExtensions
 {

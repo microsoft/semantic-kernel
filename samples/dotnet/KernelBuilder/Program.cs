@@ -4,12 +4,16 @@
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
 // You can access the builder using either Kernel.Builder or KernelBuilder.
 
+#pragma warning disable CA1050
+
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Services;
 
+#pragma warning disable CA1852 // Seal internal types
 IKernel kernel1 = Kernel.Builder.Build();
+#pragma warning restore CA1852 // Seal internal types
 
 IKernel kernel2 = Kernel.Builder.Build();
 
