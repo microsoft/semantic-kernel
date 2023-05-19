@@ -143,52 +143,28 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
       use32BitWorkerProcess: false
       appSettings: [
         {
-          name: 'Completion:AIService'
+          name: 'AIService:Type'
           value: aiService
         }
         {
-          name: 'Completion:DeploymentOrModelId'
+          name: 'AIService:Endpoint'
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
+        }
+        {
+          name: 'AIService:Key'
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+        }
+        {
+          name: 'AIService:Models:Completion'
           value: completionModel
         }
         {
-          name: 'Completion:Endpoint'
-          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-        }
-        {
-          name: 'Completion:Key'
-          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
-        }
-        {
-          name: 'Embedding:AIService'
-          value: aiService
-        }
-        {
-          name: 'Embedding:DeploymentOrModelId'
+          name: 'AIService:Models:Embedding'
           value: embeddingModel
         }
         {
-          name: 'Embedding:Endpoint'
-          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-        }
-        {
-          name: 'Embedding:Key'
-          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
-        }
-        {
-          name: 'Planner:AIService:AIService'
-          value: aiService
-        }
-        {
-          name: 'Planner:AIService:DeploymentOrModelId'
+          name: 'AIService:Models:Planner'
           value: plannerModel
-        }
-        {
-          name: 'Planner:AIService:Endpoint'
-          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-        }
-        {
-          name: 'Planner:AIService:Key'
-          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
         }
         {
           name: 'Authorization:Type'

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
+    <InternalsVisibleTo Include="IntegrationTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>
