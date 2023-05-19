@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ComponentModel.DataAnnotations;
-using SemanticKernel.Service.Config;
-
-namespace SemanticKernel.Service.CopilotChat.Config;
+namespace SemanticKernel.Service.CopilotChat.Options;
 
 /// <summary>
 /// Configuration options for the planner.
@@ -11,12 +8,6 @@ namespace SemanticKernel.Service.CopilotChat.Config;
 public class PlannerOptions
 {
     public const string PropertyName = "Planner";
-
-    /// <summary>
-    /// The AI service to use for planning.
-    /// </summary>
-    [Required]
-    public AIServiceOptions? AIService { get; set; }
 
     /// <summary>
     /// Whether to enable the planner.

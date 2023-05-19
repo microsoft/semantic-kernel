@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Service.CopilotChat.Config;
+namespace SemanticKernel.Service.CopilotChat.Options;
 
 /// <summary>
 /// Configuration options for Azure speech recognition.

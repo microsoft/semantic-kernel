@@ -32,7 +32,7 @@ public class DataEntryBase
     /// Gets the timestamp of the data.
     /// </summary>
     [JsonPropertyName("timestamp")]
-    public DateTimeOffset? Timestamp { get; set; } = null;
+    public DateTimeOffset? Timestamp { get; set; }
 
     /// <summary>
     /// <c>true</c> if the data has a timestamp.

@@ -7,10 +7,10 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using SemanticKernel.Service.Config;
-using SemanticKernel.Service.CopilotChat.Config;
 using SemanticKernel.Service.CopilotChat.Models;
+using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service.CopilotChat.Extensions;
 
@@ -27,13 +27,8 @@ public static class CopilotChatServiceExtensions
     {
         // AI service configurations for Copilot Chat.
         // They are using the same configuration section as Semantic Kernel.
-        services.AddOptions<AIServiceOptions>(AIServiceOptions.CompletionPropertyName)
-            .Bind(configuration.GetSection(AIServiceOptions.CompletionPropertyName))
-            .ValidateOnStart()
-            .PostConfigure(TrimStringProperties);
-
-        services.AddOptions<AIServiceOptions>(AIServiceOptions.EmbeddingPropertyName)
-            .Bind(configuration.GetSection(AIServiceOptions.EmbeddingPropertyName))
+        services.AddOptions<AIServiceOptions>(AIServiceOptions.PropertyName)
+            .Bind(configuration.GetSection(AIServiceOptions.PropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 

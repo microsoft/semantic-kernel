@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,7 +91,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompletionStreamAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken).ToAsyncEnumerable();
     }
 
     /// <inheritdoc/>
@@ -99,6 +100,6 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextAsync(text, requestSettings, cancellationToken);
+        return Task.FromResult(this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken) as IReadOnlyList<ITextCompletionResult>);
     }
 }

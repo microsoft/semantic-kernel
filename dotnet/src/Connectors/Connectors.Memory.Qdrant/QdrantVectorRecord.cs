@@ -54,7 +54,7 @@ public class QdrantVectorRecord
     /// <summary>
     /// Serializes the metadata to JSON.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Serialized payload</returns>
     public string GetSerializedPayload()
     {
         return JsonSerializer.Serialize(this.Payload);
@@ -67,8 +67,8 @@ public class QdrantVectorRecord
     /// <param name="embedding"></param>
     /// <param name="json"></param>
     /// <param name="tags"></param>
-    /// <returns></returns>
-    /// <exception cref="QdrantMemoryException"></exception>
+    /// <returns>Vector record</returns>
+    /// <exception cref="QdrantMemoryException">Qdrant exception</exception>
     public static QdrantVectorRecord FromJsonMetadata(string pointId, IEnumerable<float> embedding, string json, List<string>? tags = null)
     {
         var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
@@ -76,9 +76,7 @@ public class QdrantVectorRecord
         {
             return new QdrantVectorRecord(pointId, embedding, payload, tags);
         }
-        else
-        {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.UnableToDeserializeRecordPayload);
-        }
+
+        throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.UnableToDeserializeRecordPayload);
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.AI;
 
-#pragma warning disable CA1032 // Implement standard exception constructors
+#pragma warning disable RCS1194 // Implement exception constructors
 
 /// <summary>
 /// Exception thrown for errors related to AI logic.
@@ -78,7 +78,9 @@ public class AIException : SKException
     public string? Detail { get; }
 
     /// <summary>Translate the error code into a default message.</summary>
-    private static string GetDefaultMessage(ErrorCodes errorCode, string? message)
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="defaultMessage">Default error message if nothing available.</param>
+    private static string GetDefaultMessage(ErrorCodes errorCode, string? defaultMessage)
     {
         string description = errorCode switch
         {
@@ -95,7 +97,7 @@ public class AIException : SKException
             _ => $"Unknown error ({errorCode:G})",
         };
 
-        return message is not null ? $"{description}: {message}" : description;
+        return defaultMessage is not null ? $"{description}: {defaultMessage}" : description;
     }
 
     /// <summary>
