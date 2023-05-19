@@ -239,15 +239,7 @@ public class ChatSkill
             var plan = Plan.FromJson(planJson, newPlanContext);
 
             // Invoke plan
-            try
-            {
-                newPlanContext = await plan.InvokeAsync(plannerContext);
-            }
-            catch
-            {
-                throw;
-            }
-
+            newPlanContext = await plan.InvokeAsync(plannerContext);
             int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
