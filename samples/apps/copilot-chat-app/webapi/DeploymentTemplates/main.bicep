@@ -8,15 +8,16 @@ Resources to add:
 - vNet + Network security group
 */
 
-@description('Name for the deployment')
-param name string = 'sk'
+@description('Name for the deployment - Must consist of alphanumeric characters or \'-\'')
+param name string = 'semkernel'
 
 @description('SKU for the Azure App Service plan')
+@allowed([ 'F1', 'D1', 'B1', 'S1', 'S2', 'S3', 'P1V3', 'P2V3', 'I1V2', 'I2V2' ])
 param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
-param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
+param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip'
 
 @description('Underlying AI service')
 @allowed([
@@ -41,8 +42,8 @@ param endpoint string = ''
 @description('Azure OpenAI or OpenAI API key')
 param apiKey string = ''
 
-@description('Semantic Kernel server API key - Provide empty string to disable API key auth')
-param skServerApiKey string = newGuid()
+@description('Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth')
+param semanticKernelApiKey string = newGuid()
 
 @description('Whether to deploy a new Azure OpenAI instance')
 param deployNewAzureOpenAI bool = true
@@ -55,7 +56,6 @@ param deployQdrant bool = true
 
 @description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
 param deploySpeechServices bool = true
-
 
 @description('Region for the resources')
 #disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
@@ -72,7 +72,6 @@ var storageFileShareName = 'aciqdrantshare'
 
 @description('Name of the ACI container volume')
 var containerVolumeMountName = 'azqdrantvolume'
-
 
 resource openAI 'Microsoft.CognitiveServices/accounts@2022-12-01' = if(deployNewAzureOpenAI) {
   name: 'ai-${uniqueName}'
@@ -183,11 +182,11 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       }
       {
         name: 'Authorization:Type'
-        value: empty(skServerApiKey) ? 'None' : 'ApiKey'
+        value: empty(semanticKernelApiKey) ? 'None' : 'ApiKey'
       }
       {
         name: 'Authorization:ApiKey'
-        value: skServerApiKey
+        value: semanticKernelApiKey
       }
       {
         name: 'ChatStore:Type'

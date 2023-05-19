@@ -4,21 +4,33 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.17.1.54307",
-      "templateHash": "2745819638418681315"
+      "version": "0.15.31.15270",
+      "templateHash": "12093302041750720157"
     }
   },
   "parameters": {
     "name": {
       "type": "string",
-      "defaultValue": "sk",
+      "defaultValue": "semkernel",
       "metadata": {
-        "description": "Name for the deployment"
+        "description": "Name for the deployment - Must consist of alphanumeric characters or '-'"
       }
     },
     "appServiceSku": {
       "type": "string",
       "defaultValue": "B1",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "S1",
+        "S2",
+        "S3",
+        "P1V3",
+        "P2V3",
+        "I1V2",
+        "I2V2"
+      ],
       "metadata": {
         "description": "SKU for the Azure App Service plan"
       }
@@ -51,11 +63,11 @@
         "description": "Completion model the task planner should use"
       }
     },
-    "skServerApiKey": {
+    "semanticKernelApiKey": {
       "type": "string",
       "defaultValue": "[newGuid()]",
       "metadata": {
-        "description": "Semantic Kernel server API key - Provide empty string to disable API key auth"
+        "description": "Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth"
       }
     },
     "deployCosmosDB": {
@@ -83,7 +95,7 @@
   "resources": [
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
+      "apiVersion": "2020-10-01",
       "name": "openAIDeployment",
       "properties": {
         "expressionEvaluationOptions": {
@@ -112,8 +124,8 @@
           "plannerModel": {
             "value": "[parameters('plannerModel')]"
           },
-          "skServerApiKey": {
-            "value": "[parameters('skServerApiKey')]"
+          "semanticKernelApiKey": {
+            "value": "[parameters('semanticKernelApiKey')]"
           },
           "deployCosmosDB": {
             "value": "[parameters('deployCosmosDB')]"
@@ -134,21 +146,33 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.17.1.54307",
-              "templateHash": "431931786258827567"
+              "version": "0.15.31.15270",
+              "templateHash": "8624783622076748465"
             }
           },
           "parameters": {
             "name": {
               "type": "string",
-              "defaultValue": "sk",
+              "defaultValue": "semkernel",
               "metadata": {
-                "description": "Name for the deployment"
+                "description": "Name for the deployment - Must consist of alphanumeric characters or '-'"
               }
             },
             "appServiceSku": {
               "type": "string",
               "defaultValue": "B1",
+              "allowedValues": [
+                "F1",
+                "D1",
+                "B1",
+                "S1",
+                "S2",
+                "S3",
+                "P1V3",
+                "P2V3",
+                "I1V2",
+                "I2V2"
+              ],
               "metadata": {
                 "description": "SKU for the Azure App Service plan"
               }
@@ -206,11 +230,11 @@
                 "description": "Azure OpenAI or OpenAI API key"
               }
             },
-            "skServerApiKey": {
+            "semanticKernelApiKey": {
               "type": "string",
               "defaultValue": "[newGuid()]",
               "metadata": {
-                "description": "Semantic Kernel server API key - Provide empty string to disable API key auth"
+                "description": "Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth"
               }
             },
             "deployNewAzureOpenAI": {
@@ -388,11 +412,11 @@
                   },
                   {
                     "name": "Authorization:Type",
-                    "value": "[if(empty(parameters('skServerApiKey')), 'None', 'ApiKey')]"
+                    "value": "[if(empty(parameters('semanticKernelApiKey')), 'None', 'ApiKey')]"
                   },
                   {
                     "name": "Authorization:ApiKey",
-                    "value": "[parameters('skServerApiKey')]"
+                    "value": "[parameters('semanticKernelApiKey')]"
                   },
                   {
                     "name": "ChatStore:Type",
@@ -755,7 +779,7 @@
   "outputs": {
     "endpoint": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'openAIDeployment'), '2022-09-01').outputs.deployedUrl.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'openAIDeployment'), '2020-10-01').outputs.deployedUrl.value]"
     }
   }
 }
