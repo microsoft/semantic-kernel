@@ -59,7 +59,7 @@ if [ -z "$buildAndRevisionNumber" ]; then
 fi
 
 propsVersionString=$(cat $propsFile | grep -i "<Version>");
-regex="<Version>([0-9.]*)-pre<\/Version>"
+regex="<Version>([0-9.]*)<\/Version>"
 if [[ $propsVersionString =~ $regex ]]; then
   propsVersion=${BASH_REMATCH[1]}
 else
