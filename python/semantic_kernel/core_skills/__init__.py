@@ -16,7 +16,6 @@ __all__ = [
     "FileIOSkill",
     "TimeSkill",
     "HttpSkill",
-    "BasicPlanner",
     "ConversationSummarySkill",
     "MathSkill",
 ]

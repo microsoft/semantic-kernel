@@ -149,21 +149,21 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         IAsyncEnumerable<(DatabaseEntry, double)> results = this._dbConnector.GetNearestMatchesAsync(
-           dbConnection,
-           collectionName: collectionName,
-           embeddingFilter: new Vector(embedding.Vector.ToArray()),
-           limit: limit,
-           minRelevanceScore: minRelevanceScore,
-           withEmbeddings: withEmbeddings,
-           cancellationToken: cancellationToken);
+            dbConnection,
+            collectionName: collectionName,
+            embeddingFilter: new Vector(embedding.Vector.ToArray()),
+            limit: limit,
+            minRelevanceScore: minRelevanceScore,
+            withEmbeddings: withEmbeddings,
+            cancellationToken: cancellationToken);
 
         await foreach (var (entry, cosineSimilarity) in results.ConfigureAwait(false))
         {
             MemoryRecord record = MemoryRecord.FromJsonMetadata(
-               json: entry.MetadataString,
-               withEmbeddings && entry.Embedding != null ? new Embedding<float>(entry.Embedding!.ToArray()) : Embedding<float>.Empty,
-               entry.Key,
-               ParseTimestamp(entry.Timestamp));
+                json: entry.MetadataString,
+                withEmbeddings && entry.Embedding != null ? new Embedding<float>(entry.Embedding!.ToArray()) : Embedding<float>.Empty,
+                entry.Key,
+                ParseTimestamp(entry.Timestamp));
             yield return (record, cosineSimilarity);
         }
     }
