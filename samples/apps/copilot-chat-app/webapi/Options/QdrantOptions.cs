@@ -30,5 +30,5 @@ public class QdrantOptions
     /// <summary>
     /// Gets or sets the Qdrant Cloud "api-key" header value.
     /// </summary>
-    public string ApiKey { get; set; } = string.Empty;
+    public string Key { get; set; } = string.Empty;
 }

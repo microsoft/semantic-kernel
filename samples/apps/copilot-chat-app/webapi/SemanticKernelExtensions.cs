@@ -118,9 +118,9 @@ internal static class SemanticKernelExtensions
                 services.AddSingleton<IMemoryStore>(sp =>
                 {
                     HttpClient httpClient = new HttpClient(new HttpClientHandler { CheckCertificateRevocationList = false });
-                    if (!string.IsNullOrWhiteSpace(config.Qdrant.ApiKey))
+                    if (!string.IsNullOrWhiteSpace(config.Qdrant.Key))
                     {
-                        httpClient.DefaultRequestHeaders.Add("api-key", config.Qdrant.ApiKey);
+                        httpClient.DefaultRequestHeaders.Add("api-key", config.Qdrant.Key);
                     }
                     return new QdrantMemoryStore(new QdrantVectorDbClient(
                         config.Qdrant.Host, config.Qdrant.VectorSize, port: config.Qdrant.Port, httpClient: httpClient, log: sp.GetRequiredService<ILogger<IQdrantVectorDbClient>>()));
