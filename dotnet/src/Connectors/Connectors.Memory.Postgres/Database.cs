@@ -150,7 +150,7 @@ internal sealed class Database
     }
 
     /// <summary>
-    /// Check if a collection exists. 
+    /// Check if a collection exists.
     /// </summary>
     /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
     /// <param name="collectionName">The name assigned to a collection of entries.</param>

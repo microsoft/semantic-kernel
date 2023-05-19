@@ -130,7 +130,6 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         {
             await this._dbConnector.DeleteAsync(dbConnection, collectionName, key, cancellationToken).ConfigureAwait(false);
         }
-
     }
 
     /// <inheritdoc/>
@@ -258,29 +257,22 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
     {
         DatabaseEntry? entry = await this._dbConnector.ReadAsync(connection, collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
 
-        if (entry.HasValue)
+        if (!entry.HasValue) { return null; }
+
+        if (withEmbedding)
         {
-            if (withEmbedding)
-            {
-                return MemoryRecord.FromJsonMetadata(
-                    json: entry.Value.MetadataString,
-                    embedding: entry.Value.Embedding != null ? new Embedding<float>(entry.Value.Embedding.ToArray()) : Embedding<float>.Empty,
-                    entry.Value.Key,
-                    ParseTimestamp(entry.Value.Timestamp));
-            }
-            else
-            {
-                return MemoryRecord.FromJsonMetadata(
-                    json: entry.Value.MetadataString,
-                    Embedding<float>.Empty,
-                    entry.Value.Key,
-                    ParseTimestamp(entry.Value.Timestamp));
-            }
+            return MemoryRecord.FromJsonMetadata(
+                json: entry.Value.MetadataString,
+                embedding: entry.Value.Embedding != null ? new Embedding<float>(entry.Value.Embedding.ToArray()) : Embedding<float>.Empty,
+                entry.Value.Key,
+                ParseTimestamp(entry.Value.Timestamp));
         }
-        else
-        {
-            return null;
-        }
+
+        return MemoryRecord.FromJsonMetadata(
+            json: entry.Value.MetadataString,
+            Embedding<float>.Empty,
+            entry.Value.Key,
+            ParseTimestamp(entry.Value.Timestamp));
     }
 
     #endregion
