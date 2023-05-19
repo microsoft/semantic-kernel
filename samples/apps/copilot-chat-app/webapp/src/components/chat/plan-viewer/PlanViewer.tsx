@@ -41,9 +41,10 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ plan, planState, onSubmi
         <div className={classes.container}>
             <Text>Based on the request, Copilot Chat will run the following steps:</Text>
             <Text weight="bold">{`Goal: ${plan.description}`}</Text>
-            {plan.steps.map((step: IPlanStep) => (
-                <PlanStepCard index={stepCount++} step={step} />
-            ))}
+            {plan.steps.map((step: IPlanStep) => {
+                const stepIndex = stepCount++;
+                return <PlanStepCard key={`Plan step: ${stepIndex}`} index={stepIndex} step={step} />;
+            })}
             {planState === ChatMessageState.PlanApprovalRequired && (
                 <>
                     Would you like to proceed with the plan?
