@@ -113,14 +113,8 @@ In addition to this, the "Diagnose and "solve problems" item near the top of the
 
 If the service itself if functioning properly but you keep getting errors (perhaps reported as 400 HTTP errors) when making calls to the Semantic Kernel,
 check that you have correctly entered the values for the following settings:
-- Completion:AzureOpenAI
-- Completion:DeploymentOrModelId
-- Completion:Endpoint
-- Completion:Label
-- Embedding:AzureOpenAI
-- Embedding:DeploymentOrModelId
-- Embedding:Endpoint
-- Embedding:Label
+- AIService:AzureOpenAI
+- AIService:Endpoint
 
 Both Completion:Endpoint and Embedding:Endpoint are ignored for OpenAI instances from [openai.com](https://openai.com) but MUST be properly populated when using Azure OpenAI instances.
 
