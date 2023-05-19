@@ -2,7 +2,8 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
-import { ChatState } from './ChatState';
+import { IChatUser } from '../../../libs/models/ChatUser';
+import { ChatState, FileUploadedAlert } from './ChatState';
 import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
 export const conversationsSlice = createSlice({
@@ -26,7 +27,18 @@ export const conversationsSlice = createSlice({
             state.conversations = { [newId]: action.payload, ...state.conversations };
             state.selectedId = newId;
         },
-        updateConversation: (
+        addUserToConversation: (state: ConversationsState, action: PayloadAction<{ user: IChatUser, chatId: string }>) => {
+            const { user, chatId } = action.payload;
+            state.conversations[chatId].users.push(user);
+        },
+        /*
+        * updateConversationFromUser() and updateConversationFromServer() both update the conversations state.
+        * However they are for different purposes. The former action is for updating the conversation from the
+        * user and will be captured by the SignalR middleware and the payload will be broadcasted to all clients
+        * in the same group.
+        * The updateConversationFromUser() action is triggered by the SignalR middleware when a response is received.
+        */
+        updateConversationFromUser: (
             state: ConversationsState,
             action: PayloadAction<{ message: IChatMessage; chatId?: string }>,
         ) => {
@@ -34,6 +46,14 @@ export const conversationsSlice = createSlice({
             const id = chatId ?? state.selectedId;
             state.conversations[id].messages.push(message);
             frontLoadChat(state, id);
+        },
+        updateConversationFromServer: (
+            state: ConversationsState,
+            action: PayloadAction<{ message: IChatMessage; chatId: string }>,
+        ) => {
+            const { message, chatId } = action.payload;
+            state.conversations[chatId].messages.push(message);
+            frontLoadChat(state, chatId);
         },
         updateMessageState: (
             state: ConversationsState,
@@ -44,6 +64,36 @@ export const conversationsSlice = createSlice({
             state.conversations[id].messages[messageIndex].state = newMessageState;
             frontLoadChat(state, id);
         },
+        updateUserIsTyping: (state: ConversationsState, action: PayloadAction<{ userId: string; chatId: string; isTyping: boolean }>) => {
+            const { userId, chatId, isTyping } = action.payload;
+            const conversation = state.conversations[chatId];
+            const user = conversation.users.find(u => u.id === userId);
+            if (user) {
+                user.isTyping = isTyping;
+            }
+        },
+        updateUserIsTypingFromServer: (state: ConversationsState, action: PayloadAction<{ userId: string; chatId: string; isTyping: boolean }>) => {
+            const { userId, chatId, isTyping } = action.payload;
+            const conversation = state.conversations[chatId];
+            const user = conversation.users.find(u => u.id === userId);
+            if (user) {
+                user.isTyping = isTyping;
+            }
+        },
+        updateBotIsTypingFromServer: (state: ConversationsState, action: PayloadAction<{ chatId: string; isTyping: boolean }>) => {
+            const { chatId, isTyping } = action.payload;
+            const conversation = state.conversations[chatId];
+            conversation.isBotTyping = isTyping;
+        },
+        updateFileUploadedFromUser: (
+            state: ConversationsState,
+            action: PayloadAction<FileUploadedAlert>,
+        ) => {
+            const alert = action.payload;
+            const id = action.payload.id;
+            state.alerts[id] = alert;
+            frontLoadChat(state, id);
+        },
     },
 });
 
@@ -52,8 +102,12 @@ export const {
     editConversationTitle,
     setSelectedConversation,
     addConversation,
-    updateConversation,
+    updateConversationFromUser,
+    updateConversationFromServer,
     updateMessageState,
+    updateUserIsTyping,
+    updateUserIsTypingFromServer,
+    updateFileUploadedFromUser,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

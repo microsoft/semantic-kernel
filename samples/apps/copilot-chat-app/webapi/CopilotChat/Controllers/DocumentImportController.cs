@@ -2,7 +2,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -43,7 +42,7 @@ public class DocumentImportController : ControllerBase
 
     private readonly ILogger<DocumentImportController> _logger;
     private readonly DocumentMemoryOptions _options;
-    private readonly ChatSessionRepository _chatSessionRepository;
+    private readonly ChatParticipantRepository _chatParticipantRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -51,11 +50,11 @@ public class DocumentImportController : ControllerBase
     public DocumentImportController(
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<DocumentImportController> logger,
-        ChatSessionRepository chatSessionRepository)
+        ChatParticipantRepository chatParticipantRepository)
     {
         this._options = documentMemoryOptions.Value;
         this._logger = logger;
-        this._chatSessionRepository = chatSessionRepository;
+        this._chatParticipantRepository = chatParticipantRepository;
     }
 
     /// <summary>
@@ -210,7 +209,6 @@ public class DocumentImportController : ControllerBase
     /// <returns>A boolean indicating whether the user has access to the chat session.</returns>
     private async Task<bool> UserHasAccessToChatAsync(string userId, Guid chatId)
     {
-        var chatSessions = await this._chatSessionRepository.FindByUserIdAsync(userId);
-        return chatSessions.Any(c => c.Id == chatId.ToString());
+        return await this._chatParticipantRepository.IsUserInChatAsync(userId, chatId.ToString());
     }
 }

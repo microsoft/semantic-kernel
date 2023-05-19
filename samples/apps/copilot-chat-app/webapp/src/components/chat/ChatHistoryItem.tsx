@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { useMsal } from '@azure/msal-react';
-import { Text, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
+import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
@@ -146,7 +146,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
             time;
     }
 
-    const isMe = message.authorRole === AuthorRoles.User || message.userId === account?.homeAccountId!;
+    const isMe = message.authorRole === AuthorRoles.User && message.userId === account!.homeAccountId!;
     const isBot = message.authorRole !== AuthorRoles.User && message.userId === 'bot';
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
     const fullName = user?.fullName ?? message.userName;
