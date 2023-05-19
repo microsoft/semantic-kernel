@@ -99,10 +99,9 @@ Follow the links for more information and instructions about running these apps.
   [Open AI API Key](https://openai.com/api/) or
   [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
   to get started.
+- [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) or [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
 - [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local)
   are required to run the kernel as a local web service, used by the sample web apps.
-- [.NET 6](https://dotnet.microsoft.com/download/dotnet/6.0). If you have .NET 7 installed, Azure Function
-  Tools will still require .NET 6, so we suggest installing both.
 - [Yarn](https://yarnpkg.com/getting-started/install) is used for installing web apps' dependencies.
 
 
