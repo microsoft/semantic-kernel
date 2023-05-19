@@ -128,152 +128,147 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
   properties: {
     serverFarmId: appServicePlan.id
     httpsOnly: true
+    siteConfig: {
+      alwaysOn: true
+      detailedErrorLoggingEnabled: true
+      minTlsVersion: '1.2'
+      netFrameworkVersion: 'v6.0'
+      use32BitWorkerProcess: false
+      appSettings: [
+        {
+          name: 'Completion:AIService'
+          value: aiService
+        }
+        {
+          name: 'Completion:DeploymentOrModelId'
+          value: completionModel
+        }
+        {
+          name: 'Completion:Endpoint'
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
+        }
+        {
+          name: 'Completion:Key'
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+        }
+        {
+          name: 'Embedding:AIService'
+          value: aiService
+        }
+        {
+          name: 'Embedding:DeploymentOrModelId'
+          value: embeddingModel
+        }
+        {
+          name: 'Embedding:Endpoint'
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
+        }
+        {
+          name: 'Embedding:Key'
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+        }
+        {
+          name: 'Planner:AIService:AIService'
+          value: aiService
+        }
+        {
+          name: 'Planner:AIService:DeploymentOrModelId'
+          value: plannerModel
+        }
+        {
+          name: 'Planner:AIService:Endpoint'
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
+        }
+        {
+          name: 'Planner:AIService:Key'
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+        }
+        {
+          name: 'Authorization:Type'
+          value: empty(skServerApiKey) ? 'None' : 'ApiKey'
+        }
+        {
+          name: 'Authorization:ApiKey'
+          value: skServerApiKey
+        }
+        {
+          name: 'ChatStore:Type'
+          value: deployCosmosDB ? 'cosmos' : 'volatile'
+        }
+        {
+          name: 'ChatStore:Cosmos:Database'
+          value: 'CopilotChat'
+        }
+        {
+          name: 'ChatStore:Cosmos:ChatSessionsContainer'
+          value: 'chatsessions'
+        }
+        {
+          name: 'ChatStore:Cosmos:ChatMessagesContainer'
+          value: 'chatmessages'
+        }
+        {
+          name: 'ChatStore:Cosmos:ConnectionString'
+          value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
+        }
+        {
+          name: 'MemoriesStore:Type'
+          value: deployQdrant ? 'Qdrant' : 'Volatile'
+        }
+        {
+          name: 'MemoriesStore:Qdrant:Host'
+          value: deployQdrant ? 'http://${aci.properties.ipAddress.fqdn}' : ''
+        }
+        {
+          name: 'AzureSpeech:Region'
+          value: location
+        }
+        {
+          name: 'AzureSpeech:Key'
+          value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
+        }
+        {
+          name: 'Kestrel:Endpoints:Https:Url'
+          value: 'https://localhost:443'
+        }
+        {
+          name: 'Logging:LogLevel:Default'
+          value: 'Warning'
+        }
+        {
+          name: 'Logging:LogLevel:SemanticKernel.Service'
+          value: 'Warning'
+        }
+        {
+          name: 'Logging:LogLevel:Microsoft.SemanticKernel'
+          value: 'Warning'
+        }
+        {
+          name: 'Logging:LogLevel:Microsoft.AspNetCore.Hosting'
+          value: 'Warning'
+        }
+        {
+          name: 'Logging:LogLevel:Microsoft.Hosting.Lifetimel'
+          value: 'Warning'
+        }
+        {
+          name: 'ApplicationInsights:ConnectionString'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~2'
+        }
+      ]
+    }
   }
   dependsOn: [
     logAnalyticsWorkspace
   ]
-}
-
-resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
-  parent: appServiceWeb
-  name: 'web'
-  properties: {
-    alwaysOn: true
-    detailedErrorLoggingEnabled: true
-    minTlsVersion: '1.2'
-    netFrameworkVersion: 'v6.0'
-    use32BitWorkerProcess: false
-    appSettings: [
-      {
-        name: 'Completion:AIService'
-        value: aiService
-      }
-      {
-        name: 'Completion:DeploymentOrModelId'
-        value: completionModel
-      }
-      {
-        name: 'Completion:Endpoint'
-        value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-      }
-      {
-        name: 'Completion:Key'
-        value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
-      }
-      {
-        name: 'Embedding:AIService'
-        value: aiService
-      }
-      {
-        name: 'Embedding:DeploymentOrModelId'
-        value: embeddingModel
-      }
-      {
-        name: 'Embedding:Endpoint'
-        value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-      }
-      {
-        name: 'Embedding:Key'
-        value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
-      }
-      {
-        name: 'Planner:AIService:AIService'
-        value: aiService
-      }
-      {
-        name: 'Planner:AIService:DeploymentOrModelId'
-        value: plannerModel
-      }
-      {
-        name: 'Planner:AIService:Endpoint'
-        value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-      }
-      {
-        name: 'Planner:AIService:Key'
-        value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
-      }
-      {
-        name: 'Authorization:Type'
-        value: empty(skServerApiKey) ? 'None' : 'ApiKey'
-      }
-      {
-        name: 'Authorization:ApiKey'
-        value: skServerApiKey
-      }
-      {
-        name: 'ChatStore:Type'
-        value: deployCosmosDB ? 'cosmos' : 'volatile'
-      }
-      {
-        name: 'ChatStore:Cosmos:Database'
-        value: 'CopilotChat'
-      }
-      {
-        name: 'ChatStore:Cosmos:ChatSessionsContainer'
-        value: 'chatsessions'
-      }
-      {
-        name: 'ChatStore:Cosmos:ChatMessagesContainer'
-        value: 'chatmessages'
-      }
-      {
-        name: 'ChatStore:Cosmos:ConnectionString'
-        value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
-      }
-      {
-        name: 'MemoriesStore:Type'
-        value: deployQdrant ? 'Qdrant' : 'Volatile'
-      }
-      {
-        name: 'MemoriesStore:Qdrant:Host'
-        value: deployQdrant ? 'https://${containerApp.properties.configuration.ingress.fqdn}' : ''
-      }
-      {
-        name: 'AzureSpeech:Region'
-        value: location
-      }
-      {
-        name: 'AzureSpeech:Key'
-        value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
-      }
-      {
-        name: 'Kestrel:Endpoints:Https:Url'
-        value: 'https://localhost:443'
-      }
-      {
-        name: 'Logging:LogLevel:Default'
-        value: 'Warning'
-      }
-      {
-        name: 'Logging:LogLevel:SemanticKernel.Service'
-        value: 'Warning'
-      }
-      {
-        name: 'Logging:LogLevel:Microsoft.SemanticKernel'
-        value: 'Warning'
-      }
-      {
-        name: 'Logging:LogLevel:Microsoft.AspNetCore.Hosting'
-        value: 'Warning'
-      }
-      {
-        name: 'Logging:LogLevel:Microsoft.Hosting.Lifetimel'
-        value: 'Warning'
-      }
-      {
-        name: 'ApplicationInsights:ConnectionString'
-        value: appInsights.properties.ConnectionString
-      }
-      {
-        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        value: appInsights.properties.ConnectionString
-      }
-      {
-        name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-        value: '~2'
-      }
-    ]
-  }
 }
 
 resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2021-03-01' = {

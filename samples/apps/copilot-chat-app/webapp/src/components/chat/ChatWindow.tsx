@@ -89,7 +89,7 @@ export const ChatWindow: React.FC = () => {
     const chatName = conversations[selectedId].title;
     const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const { instance } = useMsal();
+    const { instance, inProgress } = useMsal();
 
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
 
@@ -99,7 +99,7 @@ export const ChatWindow: React.FC = () => {
                 await chatService.editChatAsync(
                     conversations[selectedId].id,
                     title!,
-                    await AuthHelper.getSKaaSAccessToken(instance),
+                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 );
 
                 dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));

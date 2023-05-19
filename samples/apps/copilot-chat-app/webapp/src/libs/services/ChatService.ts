@@ -69,7 +69,9 @@ export class ChatService extends BaseService {
             accessToken,
         );
 
-        return result;
+        // Messages are returned with most recent message at index 0 and oldest message at the last index,
+        // so we need to reverse the order for render
+        return result.reverse();
     };
 
     public editChatAsync = async (chatId: string, title: string, accessToken: string): Promise<any> => {

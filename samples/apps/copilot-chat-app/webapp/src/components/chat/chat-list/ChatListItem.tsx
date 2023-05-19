@@ -14,7 +14,7 @@ const useClasses = makeStyles({
     },
     avatar: {
         flexShrink: '0',
-        minWidth: '3.2rem'
+        minWidth: '3.2rem',
     },
     body: {
         display: 'flex',
@@ -38,13 +38,13 @@ const useClasses = makeStyles({
         maxWidth: '6rem',
         marginTop: '0',
         marginBottom: 'auto',
-        marginLeft: '0.8rem'
+        marginLeft: '0.8rem',
     },
     title: {
         ...shorthands.overflow('hidden'),
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-        minWidth: '4rem'
+        minWidth: '4rem',
     },
     preview: {
         marginTop: '0.2rem',
@@ -61,12 +61,11 @@ const useClasses = makeStyles({
 interface IChatListItemProps {
     id: string;
     header: string;
-    timestamp: string;
+    timestamp: number;
     preview: string;
     botProfilePicture: string;
 }
 
-// TODO: populate Avatar
 export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, preview, botProfilePicture }) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
@@ -75,19 +74,31 @@ export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, pr
         dispatch(setSelectedConversation(id));
     };
 
+    const date = new Date(timestamp);
+    let time = date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+
+    // If not today, only show the date
+    if (date.toDateString() !== new Date().toDateString()) {
+        time = date.toLocaleDateString([], {
+            month: 'numeric',
+            day: 'numeric',
+        });
+    }
+
     return (
         <div className={classes.root} onClick={onClick}>
-            <Avatar image={{ src: botProfilePicture }}/>
+            <Avatar image={{ src: botProfilePicture }} />
             <div className={classes.body}>
                 <div className={classes.header}>
                     <Text className={classes.title} style={{ color: 'var(--colorNeutralForeground1)' }}>
                         {header}
                     </Text>
-                    {timestamp && (
-                        <Text className={classes.timestamp} size={300}>
-                            {timestamp}
-                        </Text>
-                    )}
+                    <Text className={classes.timestamp} size={300}>
+                        {time}
+                    </Text>
                 </div>
                 {preview && (
                     <div className={classes.preview}>
