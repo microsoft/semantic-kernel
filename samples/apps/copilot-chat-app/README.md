@@ -35,7 +35,7 @@ First, let’s set up and verify the back-end API server is running.
      - If your are using Azure OpenAI, update `Endpoint` to your Azure OpenAI resource Endpoint address (e.g.,  
        `http://contoso.openai.azure.com`).
         > If you are using OpenAI, this property will be ignored.
-     - Set your Azure OpenAI key by opening a terminal in the webapi project directory and using `dotnet user-secrets`
+     - Set your Azure OpenAI or OpenAI key by opening a terminal in the webapi project directory and using `dotnet user-secrets`
        ```bash
        cd semantic-kernel/samples/apps/copilot-chat-app/webapi
        dotnet user-secrets set "AIService:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
