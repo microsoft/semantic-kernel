@@ -11,16 +11,4 @@
     <Message Text="Running dotnet format" Importance="high" />
     <Exec Command="dotnet format --no-restore -v diag $(ProjectFileName)" />
   </Target>
-
-  <Target Name="AddInternalsVisibleTo" BeforeTargets="BeforeCompile">
-    <!-- Handle Add InternalsVisibleTo to any targets that don't support it. -->
-    <ItemGroup
-      Condition="'@(InternalsVisibleTo->Count())' &gt; 0 AND $([MSBuild]::VersionLessThan($(NETCoreSdkVersion), '5.0.0'))">
-      <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-        <_Parameter1 Condition="'%(InternalsVisibleTo.PublicKey)' != ''">%(InternalsVisibleTo.Identity), PublicKey="%(InternalsVisibleTo.PublicKey)</_Parameter1>
-        <_Parameter1 Condition="'%(InternalsVisibleTo.PublicKey)' == ''">%(InternalsVisibleTo.Identity)</_Parameter1>
-        <_Parameter1_TypeName>System.String</_Parameter1_TypeName>
-      </AssemblyAttribute>
-    </ItemGroup>
-  </Target>
 </Project>
