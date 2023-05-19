@@ -24,7 +24,7 @@ param(
 
     [string]
     # Package to deploy to web service
-    $PackageUri = 'https://skaasdeploy.blob.core.windows.net/api/semantickernelservice.zip',
+    $PackageUri = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip',
 
     [string]
     # SKU for the Azure App Service plan

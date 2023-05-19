@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.15.31.15270",
-      "templateHash": "10069123404327729771"
+      "templateHash": "16693702172671365342"
     }
   },
   "parameters": {
@@ -37,7 +37,7 @@
     },
     "packageUri": {
       "type": "string",
-      "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/semantickernelservice.zip",
+      "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/skaas.zip",
       "metadata": {
         "description": "Location of package to deploy as the web service"
       }
