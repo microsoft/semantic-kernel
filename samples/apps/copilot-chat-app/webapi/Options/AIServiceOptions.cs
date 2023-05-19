@@ -9,37 +9,64 @@ namespace SemanticKernel.Service.Options;
 /// </summary>
 public sealed class AIServiceOptions
 {
-    public const string CompletionPropertyName = "Completion";
-    public const string EmbeddingPropertyName = "Embedding";
+    public const string PropertyName = "AIService";
 
+    /// <summary>
+    /// Supported types of AI services.
+    /// </summary>
     public enum AIServiceType
     {
+        /// <summary>
+        /// Azure OpenAI https://learn.microsoft.com/en-us/azure/cognitive-services/openai/
+        /// </summary>
         AzureOpenAI,
+
+        /// <summary>
+        /// OpenAI https://openai.com/
+        /// </summary>
         OpenAI
     }
 
     /// <summary>
-    /// Label used for referencing the AI service in Semantic Kernel.
+    /// AI models to use.
     /// </summary>
-    [Required, NotEmptyOrWhitespace]
-    public string Label { get; set; } = string.Empty;
+    public class ModelTypes
+    {
+        /// <summary>
+        /// Azure OpenAI deployment name or OpenAI model name to use for completions.
+        /// </summary>
+        [Required, NotEmptyOrWhitespace]
+        public string Completion { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Azure OpenAI deployment name or OpenAI model name to use for embeddings.
+        /// </summary>
+        [Required, NotEmptyOrWhitespace]
+        public string Embedding { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Azure OpenAI deployment name or OpenAI model name to use for planner.
+        /// </summary>
+        [Required, NotEmptyOrWhitespace]
+        public string Planner { get; set; } = string.Empty;
+    }
 
     /// <summary>
     /// Type of AI service.
     /// </summary>
     [Required]
-    public AIServiceType AIService { get; set; } = AIServiceType.AzureOpenAI;
+    public AIServiceType Type { get; set; } = AIServiceType.AzureOpenAI;
 
     /// <summary>
-    /// Azure OpenAI deployment name or OpenAI model name.
+    /// Models/deployment names to use.
     /// </summary>
-    [Required, NotEmptyOrWhitespace]
-    public string DeploymentOrModelId { get; set; } = string.Empty;
+    [Required]
+    public ModelTypes Models { get; set; } = new ModelTypes();
 
     /// <summary>
     /// (Azure OpenAI only) Azure OpenAI endpoint.
     /// </summary>
-    [RequiredOnPropertyValue(nameof(AIService), AIServiceType.AzureOpenAI, notEmptyOrWhitespace: true)]
+    [RequiredOnPropertyValue(nameof(Type), AIServiceType.AzureOpenAI, notEmptyOrWhitespace: true)]
     public string Endpoint { get; set; } = string.Empty;
 
     /// <summary>
@@ -47,6 +74,4 @@ public sealed class AIServiceOptions
     /// </summary>
     [Required, NotEmptyOrWhitespace]
     public string Key { get; set; } = string.Empty;
-
-    // TODO support OpenAI's orgID
 }
