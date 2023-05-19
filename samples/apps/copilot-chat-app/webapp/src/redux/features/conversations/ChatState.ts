@@ -9,4 +9,11 @@ export interface ChatState {
     users: IChatUser[];
     messages: IChatMessage[];
     botProfilePicture: string;
+    isBotTyping: boolean;
+}
+
+export interface FileUploadedAlert {
+    id: string;
+    fileOwner: string;
+    fileName: string;
 }
