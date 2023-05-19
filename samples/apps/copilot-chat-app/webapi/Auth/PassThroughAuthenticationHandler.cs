@@ -17,6 +17,7 @@ public class PassThroughAuthenticationHandler : AuthenticationHandler<Authentica
 {
     public const string AuthenticationScheme = "PassThrough";
     private const string DefaultUserId = "c05c61eb-65e4-4223-915a-fe72b0c9ece1";
+    private const string DefaultUserName = "Default User";
 
     /// <summary>
     /// Constructor
@@ -33,7 +34,8 @@ public class PassThroughAuthenticationHandler : AuthenticationHandler<Authentica
     {
         this.Logger.LogInformation("Allowing request to pass through");
         Claim userIdClaim = new(JwtRegisteredClaimNames.Sub, DefaultUserId);
-        ClaimsIdentity identity = new(new Claim[] { userIdClaim }, AuthenticationScheme);
+        Claim nameClaim = new(JwtRegisteredClaimNames.Name, DefaultUserName);
+        ClaimsIdentity identity = new(new Claim[] { userIdClaim, nameClaim }, AuthenticationScheme);
         ClaimsPrincipal principal = new(identity);
         AuthenticationTicket ticket = new(principal, this.Scheme.Name);
 

@@ -19,11 +19,11 @@ export class BotService extends BaseService {
         return result;
     };
 
-    public uploadAsync = async (bot: Bot, userId: string, accessToken: string): Promise<any> => {
+    public uploadAsync = async (bot: Bot, accessToken: string): Promise<any> => {
         // TODO: return type
         const result = await this.getResponseAsync<any>(
             {
-                commandPath: `bot/upload?userId=${userId}`,
+                commandPath: `bot/upload`,
                 method: 'Post',
                 body: bot,
             },

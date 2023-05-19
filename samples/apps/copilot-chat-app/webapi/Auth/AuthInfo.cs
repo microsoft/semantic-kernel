@@ -12,11 +12,15 @@ namespace SemanticKernel.Service.Auth;
 /// </summary>
 public class AuthInfo : IAuthInfo
 {
-    private readonly Lazy<string> _userId;
+    private record struct AuthData(
+        string UserId,
+        string UserName);
+
+    private readonly Lazy<AuthData> _data;
 
     public AuthInfo(IHttpContextAccessor httpContextAccessor)
     {
-        _userId = new Lazy<string>(() =>
+        _data = new Lazy<AuthData>(() =>
         {
             var user = httpContextAccessor.HttpContext?.User;
             if (user is null)
@@ -30,12 +34,28 @@ public class AuthInfo : IAuthInfo
             {
                 throw new CredentialUnavailableException("User Id was not present in the request token.");
             }
-            return userIdClaim.Value;
+
+            var userNameClaim = user.FindFirst(JwtRegisteredClaimNames.Name);
+            if (userNameClaim is null)
+            {
+                throw new CredentialUnavailableException("User name was not present in the request token.");
+            }
+
+            return new AuthData
+            {
+                UserId = userIdClaim.Value,
+                UserName = userNameClaim.Value,
+            };
         }, isThreadSafe: false);
     }
 
     /// <summary>
     /// The authenticated user's unique ID.
     /// </summary>
-    public string UserId => _userId.Value;
+    public string UserId => _data.Value.UserId;
+
+    /// <summary>
+    /// The authenticated user's name.
+    /// </summary>
+    public string Name => _data.Value.UserName;
 }

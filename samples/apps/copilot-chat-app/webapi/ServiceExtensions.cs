@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.Options;
+using SemanticKernel.Service.Utilities;
 
 namespace SemanticKernel.Service;
 
@@ -52,6 +53,11 @@ internal static class ServicesExtensions
             .PostConfigure(TrimStringProperties);
 
         return services;
+    }
+
+    internal static IServiceCollection AddCopilotChatUtilities(this IServiceCollection services)
+    {
+        return services.AddScoped<AskConverter>();
     }
 
     /// <summary>

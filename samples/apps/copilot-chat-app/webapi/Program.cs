@@ -44,7 +44,8 @@ public sealed class Program
         builder.Services
             .AddCopilotChatOptions(builder.Configuration)
             .AddCopilotChatPlannerServices()
-            .AddPersistentChatStore();
+            .AddPersistentChatStore()
+            .AddCopilotChatUtilities();
 
         // Add in the rest of the services.
         builder.Services

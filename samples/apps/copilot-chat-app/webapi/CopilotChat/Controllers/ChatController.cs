@@ -21,10 +21,13 @@ using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
+using SemanticKernel.Service.CopilotChat.Storage;
 using SemanticKernel.Service.Models;
+using SemanticKernel.Service.Utilities;
 
 namespace SemanticKernel.Service.CopilotChat.Controllers;
 
@@ -51,6 +54,9 @@ public class ChatController : ControllerBase, IDisposable
     /// <param name="kernel">Semantic kernel obtained through dependency injection.</param>
     /// <param name="planner">Planner to use to create function sequences.</param>
     /// <param name="plannerOptions">Options for the planner.</param>
+    /// <param name="askConverter">Converter to use for converting Asks.</param>
+    /// <param name="chatSessionRepository">Storage for chat sessions.</param>
+    /// <param name="authInfo">Authenticated info about the user for the current request.</param>
     /// <param name="ask">Prompt along with its parameters.</param>
     /// <param name="openApiSkillsAuthHeaders">Authentication headers to connect to OpenAPI Skills.</param>
     /// <returns>Results containing the response from the model.</returns>
@@ -63,17 +69,30 @@ public class ChatController : ControllerBase, IDisposable
         [FromServices] IKernel kernel,
         [FromServices] CopilotChatPlanner? planner,
         [FromServices] IOptions<PlannerOptions> plannerOptions,
+        [FromServices] AskConverter askConverter,
+        [FromServices] ChatSessionRepository chatSessionRepository,
+        [FromServices] IAuthInfo authInfo,
         [FromBody] Ask ask,
         [FromHeader] OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
         this._logger.LogDebug("Chat request received.");
+        const string chatIdKey = "chatId";
+        var chatIdFromContext = ask.Variables.FirstOrDefault(x => x.Key == chatIdKey);
+        if (chatIdFromContext.Key is chatIdKey)
+        {
+            var chat = await chatSessionRepository.FindByIdAsync(chatIdFromContext.Value);
+            if (chat == null)
+            {
+                return this.NotFound("Failed to find chat session for the chatId specified in variables.");
+            }
+            if (chat.UserId != authInfo.UserId)
+            {
+                return this.Unauthorized("User does not have access to the chatId specified in variables.");
+            }
+        }
 
         // Put ask's variables in the context we will use.
-        var contextVariables = new ContextVariables(ask.Input);
-        foreach (var input in ask.Variables)
-        {
-            contextVariables.Set(input.Key, input.Value);
-        }
+        var contextVariables = askConverter.GetContextVariables(ask);
 
         // Register plugins that have been enabled
         if (planner != null && plannerOptions.Value.Enabled)

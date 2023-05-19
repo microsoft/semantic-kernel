@@ -78,7 +78,7 @@ public static class CopilotChatServiceExtensions
     /// <summary>
     /// Add persistent chat store services.
     /// </summary>
-    public static void AddPersistentChatStore(this IServiceCollection services)
+    public static IServiceCollection AddPersistentChatStore(this IServiceCollection services)
     {
         IStorageContext<ChatSession> chatSessionInMemoryContext;
         IStorageContext<ChatMessage> chatMessageInMemoryContext;
@@ -134,7 +134,7 @@ public static class CopilotChatServiceExtensions
         }
 
         services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
-        services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
+        return services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
     }
 
     /// <summary>

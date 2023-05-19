@@ -9,22 +9,18 @@ import { BaseService } from './BaseService';
 
 export class ChatService extends BaseService {
     public createChatAsync = async (
-        userId: string,
-        userName: string,
         title: string,
         accessToken: string,
     ): Promise<IChatSession> => {
         const body = {
-            userId: userId,
-            userName: userName,
-            title: title,
+            title,
         };
 
         const result = await this.getResponseAsync<IChatSession>(
             {
-                commandPath: 'chatSession/create',
+                commandPath: 'chatSessions',
                 method: 'POST',
-                body: body,
+                body,
             },
             accessToken,
         );
@@ -35,7 +31,7 @@ export class ChatService extends BaseService {
     public getChatAsync = async (chatId: string, accessToken: string): Promise<IChatSession> => {
         const result = await this.getResponseAsync<IChatSession>(
             {
-                commandPath: `chatSession/getChat/${chatId}`,
+                commandPath: `chatSessions/${chatId}`,
                 method: 'GET',
             },
             accessToken,
@@ -44,10 +40,10 @@ export class ChatService extends BaseService {
         return result;
     };
 
-    public getAllChatsAsync = async (userId: string, accessToken: string): Promise<IChatSession[]> => {
+    public getAllChatsAsync = async (accessToken: string): Promise<IChatSession[]> => {
         const result = await this.getResponseAsync<IChatSession[]>(
             {
-                commandPath: `chatSession/getAllChats/${userId}`,
+                commandPath: `chatSessions`,
                 method: 'GET',
             },
             accessToken,
@@ -63,7 +59,7 @@ export class ChatService extends BaseService {
     ): Promise<IChatMessage[]> => {
         const result = await this.getResponseAsync<IChatMessage[]>(
             {
-                commandPath: `chatSession/getChatMessages/${chatId}?startIdx=${startIdx}&count=${count}`,
+                commandPath: `chatSessions/${chatId}/messages?startIdx=${startIdx}&count=${count}`,
                 method: 'GET',
             },
             accessToken,
@@ -73,17 +69,15 @@ export class ChatService extends BaseService {
     };
 
     public editChatAsync = async (chatId: string, title: string, accessToken: string): Promise<any> => {
-        const body: IChatSession = {
-            id: chatId,
-            userId: '',
-            title: title,
+        const body: Partial<IChatSession> = {
+            title,
         };
 
         const result = await this.getResponseAsync<any>(
             {
-                commandPath: `chatSession/edit`,
-                method: 'POST',
-                body: body,
+                commandPath: `chatSessions/${chatId}`,
+                method: 'PATCH',
+                body,
             },
             accessToken,
         );

@@ -61,8 +61,6 @@ export const useChat = () => {
         try {
             await chatService
                 .createChatAsync(
-                    account?.homeAccountId!,
-                    account?.name!,
                     chatTitle,
                     await AuthHelper.getSKaaSAccessToken(instance),
                 )
@@ -103,14 +101,6 @@ export const useChat = () => {
         const ask = {
             input: value,
             variables: [
-                {
-                    key: 'userId',
-                    value: account?.homeAccountId!,
-                },
-                {
-                    key: 'userName',
-                    value: account?.name!,
-                },
                 {
                     key: 'chatId',
                     value: chatId,
@@ -164,7 +154,6 @@ export const useChat = () => {
     const loadChats = async () => {
         try {
             const chatSessions = await chatService.getAllChatsAsync(
-                account?.homeAccountId!,
                 await AuthHelper.getSKaaSAccessToken(instance),
             );
 
@@ -222,7 +211,7 @@ export const useChat = () => {
 
     const uploadBot = async (bot: Bot) => {
         botService
-            .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
+            .uploadAsync(bot, await AuthHelper.getSKaaSAccessToken(instance))
             .then(() => loadChats())
             .catch((e: any) => {
                 const errorMessage = `Unable to upload the bot. Details: ${e.message ?? e}`;
