@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { FC } from 'react';
+import { FC, useCallback } from 'react';
 
 import { useMsal } from '@azure/msal-react';
 import {
@@ -17,6 +17,7 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
+import { resetState } from '../../redux/app/store';
 
 export const useClasses = makeStyles({
     root: {
@@ -28,11 +29,21 @@ export const useClasses = makeStyles({
     },
 });
 
-export const UserSettings: FC = () => {
+interface IUserSettingsProps {
+    setLoadingState: () => void;
+}
+
+export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
     const classes = useClasses();
     const { instance } = useMsal();
 
     const account = instance.getActiveAccount();
+
+    const onLogout = useCallback(async () => {
+        setLoadingState();
+        await AuthHelper.logoutAsync(instance);
+        resetState();
+    }, [instance, setLoadingState]);
 
     return (
         <Menu>
@@ -58,7 +69,7 @@ export const UserSettings: FC = () => {
                         />
                     </MenuItem>
                     <MenuDivider />
-                    <MenuItem onClick={async () => await AuthHelper.logoutAsync(instance)}>Log Out</MenuItem>
+                    <MenuItem onClick={onLogout}>Log Out</MenuItem>
                 </MenuList>
             </MenuPopover>
         </Menu>
