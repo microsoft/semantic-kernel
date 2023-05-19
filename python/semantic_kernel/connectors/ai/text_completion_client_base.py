@@ -24,7 +24,8 @@ class TextCompletionClientBase(ABC):
     @abstractmethod
     async def complete_stream_async(
         self,
-        text: str,
-        settings: "CompleteRequestSettings"
-    ) -> TextIOBase:
+        prompt: str,
+        settings: "CompleteRequestSettings",        
+        logger: Logger,
+    ):
         pass

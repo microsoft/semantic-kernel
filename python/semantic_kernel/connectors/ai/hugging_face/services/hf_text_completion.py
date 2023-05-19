@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 from logging import Logger
+from threading import Thread
 from typing import Optional
-from io import StringIO
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -105,7 +106,41 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             raise AIException("Hugging Face completion failed", e)
 
     async def complete_stream_async(
-        self, text: str, request_settings: CompleteRequestSettings
+        self, prompt: str, request_settings: CompleteRequestSettings
     ):
-        text = self.complete_async(text, request_settings)
-        return StringIO(text)
+        try:
+            import transformers
+
+            generation_config = transformers.GenerationConfig(
+                temperature=request_settings.temperature,
+                top_p=request_settings.top_p,
+                max_new_tokens=request_settings.max_tokens,
+                pad_token_id=50256,  # EOS token
+            )
+            tokenizer = transformers.AutoTokenizer.from_pretrained(self._model_id)
+            streamer = transformers.TextIteratorStreamer(tokenizer)
+            args = {
+                "prompt": prompt
+            }
+            kwargs = {              
+                "num_return_sequences": 1,
+                "generation_config": generation_config,
+                "streamer": streamer
+            }
+
+            
+            thread = Thread(target=self.generator, args=args, kwargs=kwargs)
+
+            # result = self.generator(
+            #     prompt, num_return_sequences=1, generation_config=generation_config, streamer=transformers.TextIteratorStreamer(tokenizer)
+            # )
+
+            thread.start()
+
+            for new_text in streamer:
+                yield new_text
+
+            thread.join()
+
+        except Exception as e:
+            raise AIException("Hugging Face completion failed", e)
