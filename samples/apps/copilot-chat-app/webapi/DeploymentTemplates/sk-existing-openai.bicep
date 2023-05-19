@@ -5,7 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 Bicep template for deploying Semantic Kernel to Azure as a web app service with an existing OpenAI account on openai.com.
 */
 
-@description('Name for the deployment')
+@description('Name for the deployment - Must consist of alphanumeric characters or \'-\'')
 param name string = 'semkernel'
 
 @description('SKU for the Azure App Service plan')
