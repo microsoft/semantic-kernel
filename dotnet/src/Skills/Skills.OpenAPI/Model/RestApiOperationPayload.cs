@@ -20,7 +20,7 @@ public record RestApiOperationPayload
     public string? Description { get; }
 
     /// <summary>
-    /// The payload properties. 
+    /// The payload properties.
     /// </summary>
     public IList<RestApiOperationPayloadProperty> Properties { get; }
 

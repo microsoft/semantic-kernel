@@ -13,7 +13,7 @@ public class EmailAddress
     public string? Name { get; set; }
 
     /// <summary>
-    /// Email address 
+    /// Email address
     /// </summary>
     public string? Address { get; set; }
 }

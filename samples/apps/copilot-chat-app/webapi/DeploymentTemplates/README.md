@@ -32,14 +32,14 @@ For more options, see the deployment script.
 After ensuring DeploySK.sh file found in this folder is executable, enter the following command:
 
 ```bash
-./DeploySK.sh YOUR_DEPLOYMENT_NAME YOUR_SUBSCRIPTION_ID
+./DeploySK.sh -d DEPLOYMENT_NAME -s SUBSCRIPTION_ID
 ```
 
 ### Azure Portal
 
 Alternatively, you can deploy by clicking on the following button:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fmain%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fmain%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fwebapi%2FDeploymentTemplates%2Fsk-new.json)
 
 
 ## Deploying with an existing Azure OpenAI account
@@ -58,7 +58,7 @@ After entering the command above, you will be prompted to enter your Azure OpenA
 After ensuring the [DeploySK-Existing-AzureOpenAI.sh](DeploySK-Existing-AzureOpenAI.sh) file found in this folder is executable, enter the following command:
 
 ```bash
-./DeploySK-Existing-AzureOpenAI.sh YOUR_DEPLOYMENT_NAME YOUR_API_KEY "YOUR_AZURE_OPENAI_ENDPOINT" YOUR_SUBSCRIPTION_ID
+./DeploySK-Existing-AzureOpenAI.sh -d YOUR_DEPLOYMENT_NAME -s YOUR_SUBSCRIPTION_ID -e "YOUR_AZURE_OPENAI_ENDPOINT" -o YOUR_AZURE_OPENAI_API_KEY
 ```
 
 ### Azure Portal
@@ -84,7 +84,7 @@ After entering the command above, you will be prompted to enter your OpenAI API 
 After ensuring DeploySK-Existing-OpenAI.sh file found in this folder is executable, enter the following command:
 
 ```bash
-./DeploySK-Existing-AI.sh YOUR_DEPLOYMENT_NAME YOUR_API_KEY YOUR_SUBSCRIPTION_ID
+./DeploySK-Existing-AI.sh -d YOUR_DEPLOYMENT_NAME -s YOUR_SUBSCRIPTION_ID -o YOUR_OPENAI_API_KEY
 ```
 
 ### Azure Portal
@@ -113,16 +113,24 @@ In addition to this, the "Diagnose and "solve problems" item near the top of the
 
 If the service itself if functioning properly but you keep getting errors (perhaps reported as 400 HTTP errors) when making calls to the Semantic Kernel,
 check that you have correctly entered the values for the following settings:
-- Completion:AzureOpenAI
-- Completion:DeploymentOrModelId
-- Completion:Endpoint
-- Completion:Label
-- Embedding:AzureOpenAI
-- Embedding:DeploymentOrModelId
-- Embedding:Endpoint
-- Embedding:Label
+- AIService:AzureOpenAI
+- AIService:Endpoint
 
 Both Completion:Endpoint and Embedding:Endpoint are ignored for OpenAI instances from [openai.com](https://openai.com) but MUST be properly populated when using Azure OpenAI instances.
+
+
+## Authorization
+
+All of the server's endpoints other than the /probe one require authorization to access.
+By default, the deployment templates set up the server so that an API key is required to access its endpoints.
+
+AAD authentication and authorization can also be set up manually after the automated deployment is done.
+
+To view the API key required by your instance, access the page for your Semantic Kernel app service in the Azure portal.
+From that page, click on the "Configuration" item in the "Settings" section of the left pane. Then click on the text that reads "Hidden value.
+Click to show value" next to the "Authorization:ApiKey" setting.
+
+To authorize requests with the API key, it must be added as the value of an "x-sk-api-key" header added to the requests.
 
 
 ## Using web frontends to access your deployment
