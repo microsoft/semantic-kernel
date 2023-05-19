@@ -208,7 +208,7 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       }
       {
         name: 'MemoriesStore:Qdrant:Host'
-        value: deployQdrant ? 'http://${aci.properties.ipAddress.fqdn}' : ''
+        value: deployQdrant ? 'https://${containerApp.properties.configuration.ingress.fqdn}' : ''
       }
       {
         name: 'AzureSpeech:Region'
@@ -262,7 +262,7 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
   }
 }
 
-resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2021-03-01' = {
+resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2022-09-01' = {
   name: 'MSDeploy'
   kind: 'string'
   parent: appServiceWeb
@@ -284,7 +284,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-resource appInsightExtension 'Microsoft.Web/sites/siteextensions@2020-06-01' = {
+resource appInsightExtension 'Microsoft.Web/sites/siteextensions@2022-09-01' = {
   parent: appServiceWeb
   name: 'Microsoft.ApplicationInsights.AzureWebSites'
   dependsOn: [
@@ -292,7 +292,7 @@ resource appInsightExtension 'Microsoft.Web/sites/siteextensions@2020-06-01' = {
   ]
 }
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: 'la-${uniqueName}'
   location: location
   tags: {
@@ -330,7 +330,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = if (deployQdra
   }
 }
 
-resource environment 'Microsoft.App/managedEnvironments@2022-03-01' = if (deployQdrant) {
+resource environment 'Microsoft.App/managedEnvironments@2022-10-01' = if (deployQdrant) {
   name: 'cae-${uniqueName}'
   location: location
   properties: {
@@ -357,7 +357,7 @@ resource azurefilestorage 'Microsoft.App/managedEnvironments/storages@2022-10-01
   }
 }
 
-resource containerApp 'Microsoft.App/containerApps@2022-03-01' = if (deployQdrant) {
+resource containerApp 'Microsoft.App/containerApps@2022-10-01' = if (deployQdrant) {
   name: 'app-${rgIdHash}-qdrant' // Not using full unique name to avoid hitting 32 char limit
   location: location
   properties:{
@@ -371,8 +371,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = if (deployQdran
         ipSecurityRestrictions: [
           {
             name: 'SemanticKernel'
-#disable-next-line BCP053 // Bicep doesn't yet know this is a valid property
-            ipAddressRange: appServiceWeb.properties.inboundIpAddress
+            //ipAddressRange: reference(resourceId('Microsoft.Web/sites', 'app-${uniqueName}-skweb'), '2022-09-01', 'full').inboundIpAddress
             action: 'Allow'
           }
         ]
@@ -413,7 +412,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = if (deployQdran
   ]
 }
 
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = if (deployCosmosDB) {
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = if (deployCosmosDB) {
   name: toLower('cosmos-${uniqueName}')
   location: location
   kind: 'GlobalDocumentDB'
@@ -429,7 +428,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = if (
   }
 }
 
-resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = if (deployCosmosDB) {
+resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023-04-15' = if (deployCosmosDB) {
   parent: cosmosAccount
   name: 'CopilotChat'
   properties: {
@@ -439,7 +438,7 @@ resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022
   }
 }
 
-resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = if (deployCosmosDB) {
+resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = if (deployCosmosDB) {
   parent: cosmosDatabase
   name: 'chatmessages'
   properties: {
@@ -470,7 +469,7 @@ resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
   }
 }
 
-resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = if (deployCosmosDB) {
+resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = if (deployCosmosDB) {
   parent: cosmosDatabase
   name: 'chatsessions'
   properties: {
