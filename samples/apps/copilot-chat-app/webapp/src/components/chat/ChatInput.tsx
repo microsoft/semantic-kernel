@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount, useMsal } from '@azure/msal-react';
+import { useMsal } from '@azure/msal-react';
 import { Button, Spinner, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
@@ -63,8 +63,7 @@ interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const { isTyping, onSubmit } = props;
     const classes = useClasses();
-    const { instance, accounts, inProgress } = useMsal();
-    const account = useAccount(accounts[0] || {});
+    const { instance, inProgress } = useMsal();
     const dispatch = useAppDispatch();
     const [value, setValue] = React.useState('');
     const [previousValue, setPreviousValue] = React.useState('');
