@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Label, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
+import { useMsal } from '@azure/msal-react';
+import { Text, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
@@ -39,6 +40,8 @@ const useClasses = makeStyles({
     },
     time: {
         color: tokens.colorNeutralForeground3,
+        fontSize: '12px',
+        fontWeight: 400
     },
     header: {
         position: 'relative',
@@ -72,8 +75,12 @@ const createCommandLink = (command: string) => {
 };
 
 export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getResponse, messageIndex }) => {
-    const chat = useChat();
     const classes = useClasses();
+
+    const { instance } = useMsal();
+    const account = instance.getActiveAccount();
+
+    const chat = useChat();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const dispatch = useAppDispatch();
 
@@ -128,7 +135,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
         minute: '2-digit',
     });
 
-    // if not today, prepend date
+    // If not today, prepend date
     if (date.toDateString() !== new Date().toDateString()) {
         time =
             date.toLocaleDateString([], {
@@ -139,14 +146,14 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
             time;
     }
 
-    const isMe = message.authorRole === AuthorRoles.User;
+    const isMe = message.authorRole === AuthorRoles.User || message.userId === account?.homeAccountId!;
+    const isBot = message.authorRole !== AuthorRoles.User && message.userId === 'bot';
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
-    const avatar = isMe
-        ? user?.photo
-            ? { image: { src: user.photo } }
-            : undefined
-        : { image: { src: conversations[selectedId].botProfilePicture } };
     const fullName = user?.fullName ?? message.userName;
+
+    const avatar = isBot
+        ? { image: { src: conversations[selectedId].botProfilePicture } }
+        : { name: fullName, color: 'colorful' as 'colorful' };
 
     return (
         <>
@@ -154,10 +161,8 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                 {!isMe && <Persona className={classes.persona} avatar={avatar} />}
                 <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
                     <div className={classes.header}>
-                        {!isMe && <Label weight="semibold">{fullName}</Label>}
-                        <Label className={mergeClasses(classes.time, classes.alignEnd)} size="small">
-                            {time}
-                        </Label>
+                        {!isMe && <Text weight="semibold">{fullName}</Text>}
+                        <Text className={mergeClasses(classes.time, classes.alignEnd)}>{time}</Text>
                     </div>
                     {!isPlan && (
                         <div

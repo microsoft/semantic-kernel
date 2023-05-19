@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service.CopilotChat.Models;
 

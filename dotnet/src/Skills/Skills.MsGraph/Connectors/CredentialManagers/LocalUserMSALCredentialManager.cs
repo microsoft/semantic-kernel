@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
 /// <remarks>
 /// https://learn.microsoft.com/azure/active-directory/develop/msal-net-token-cache-serialization?tabs=desktop
 /// </remarks>
-public class LocalUserMSALCredentialManager
+public sealed class LocalUserMSALCredentialManager
 {
     /// <summary>
     /// An in-memory cache of IPublicClientApplications by clientId and tenantId.

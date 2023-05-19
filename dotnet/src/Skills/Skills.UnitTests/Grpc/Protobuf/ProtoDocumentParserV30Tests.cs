@@ -105,4 +105,3 @@ public sealed class ProtoDocumentParserV30Tests
         Assert.Equal("TYPE_STRING", messageField.TypeName);
     }
 }
-

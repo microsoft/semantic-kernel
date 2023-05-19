@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace SemanticKernel.Service.Config;
+namespace SemanticKernel.Service.Options;
 
 /// <summary>
 /// Configuration options for authorizing to the service.
@@ -21,12 +21,13 @@ public class AuthorizationOptions
     /// <summary>
     /// Type of authorization.
     /// </summary>
+    [Required]
     public AuthorizationType Type { get; set; } = AuthorizationType.None;
 
     /// <summary>
     /// When <see cref="Type"/> is <see cref="AuthorizationType.ApiKey"/>, this is the API key to use.
     /// </summary>
-    [Required, NotEmptyOrWhitespace]
+    [RequiredOnPropertyValue(nameof(Type), AuthorizationType.ApiKey, notEmptyOrWhitespace: true)]
     public string ApiKey { get; set; } = string.Empty;
 
     /// <summary>
