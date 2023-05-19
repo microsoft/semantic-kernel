@@ -13,7 +13,7 @@ functions that work together to construct each response.
 ![UI Sample](images/UI-Sample.png)
 
 # Automated Setup and Local Deployment
-Refer to [./scripts/README.md](./scripts/README.md) for autonamated configuration and local deployment of CopilotChat.
+Refer to [./scripts/README.md](./scripts/README.md) for automated configuration and local deployment of CopilotChat.
 
 # Manual Setup and Local Deployment
 ## Configure your environment
