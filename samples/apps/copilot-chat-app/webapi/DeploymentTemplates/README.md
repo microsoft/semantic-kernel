@@ -148,7 +148,7 @@ You can build and upload a customized version of the Semantic Kernel service.
 To do so, clone the code from this repo then modify it to your needs (for example, by adding your own skills). Once that is done, go into the ../semantic-kernel/samples/apps/copilot-chat-app/webapi
 directory and enter the following command:
 ```powershell
-dotnet publish CopilotChatApi.csproj --configuration Release --arch x64 --os win
+dotnet publish CopilotChatWebApi.csproj --configuration Release --arch x64 --os win
 ```
 
 This will create the following directory, which will contain all the files needed for a deployment:
