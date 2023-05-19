@@ -6,7 +6,7 @@
       <OutputType>Exe</OutputType>
       <Nullable>enable</Nullable>
       <ImplicitUsings>enable</ImplicitUsings>
-      <NoWarn>CA2000</NoWarn>
+      <NoWarn>CA2000,CA1852</NoWarn>
       <IsPackable>false</IsPackable>
     </PropertyGroup>
 
