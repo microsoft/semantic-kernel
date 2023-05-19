@@ -32,31 +32,36 @@ jobs:
       # This step will loop over the changed files and find the nearest .csproj file for each one, then store the unique csproj files in a variable
       - name: Find csproj files
         id: find-csproj
-        if: steps.changed-files.outputs.added_modified != ''
+        if: steps.changed-files.outputs.added_modified != '' || steps.seedBuild.outcome == 'failure'
         run: |
           csproj_files=()
-          for file in ${{ steps.changed-files.outputs.added_modified }}; do
-            echo "$file was changed"
-            dir="$GITHUB_WORKSPACE/$file"
-            while [[ $dir != "." && $dir != "/" && $dir != $GITHUB_WORKSPACE ]]; do
-              if find "$dir" -maxdepth 1 -name "*.csproj" -print -quit | grep -q .; then
-                csproj_files+=("$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)")
-                break
-              fi
-              dir=$(dirname $dir)
+          if steps.seedBuild.outcome == 'success'; do
+            for file in ${{ steps.changed-files.outputs.added_modified }}; do
+              echo "$file was changed"
+              dir="$GITHUB_WORKSPACE/$file"
+              while [[ $dir != "." && $dir != "/" && $dir != $GITHUB_WORKSPACE ]]; do
+                if find "$dir" -maxdepth 1 -name "*.csproj" -print -quit | grep -q .; then
+                  csproj_files+=("$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)")
+                  break
+                fi
+                dir=$(dirname $dir)
+              done
             done
-          done
+          else
+            # if the changed-files step failed, run dotnet format on all projects
+            csproj_files=$(find ./ -type f -name "*.csproj" | tr '\n' ' ');
+          fi
           csproj_files=($(printf "%s\n" "${csproj_files[@]}" | sort -u))
           echo "Found ${#csproj_files[@]} unique csproj files: ${csproj_files[*]}"
           echo "::set-output name=csproj_files::${csproj_files[*]}"
 
       - name: Install dotnet-format tool
-        if: steps.changed-files.outputs.added_modified != ''
+        if: steps.find-csproj.outputs.csproj_files != ''
         run: dotnet tool install -g dotnet-format
 
       # This step will run dotnet format on each of the unique csproj files and fail if any changes are made
       - name: Run dotnet format
-        if: steps.changed-files.outputs.added_modified != ''
+        if: steps.find-csproj.outputs.csproj_files != ''
         run: |
           for csproj in ${{ steps.find-csproj.outputs.csproj_files }}; do
             echo "Running dotnet format on $csproj"
