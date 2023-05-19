@@ -35,7 +35,7 @@ jobs:
         if: steps.changed-files.outputs.added_modified != '' || steps.changed-files.outcome == 'failure'
         run: |
           csproj_files=()
-          if steps.changed-files.outcome == 'success'; then
+          if [[ ${{ steps.changed-files.outcome }} == 'success' ]]; then
             for file in ${{ steps.changed-files.outputs.added_modified }}; do
               echo "$file was changed"
               dir="$GITHUB_WORKSPACE/$file"
