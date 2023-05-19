@@ -6,20 +6,6 @@ public abstract class Block {
     private final String content;
     private final BlockTypes type;
 
-    /*
-
-        // internal virtual bool? SynchronousRendering => null;
-
-        /// <summary>
-        /// The block content
-        /// </summary>
-        internal string Content { get; }
-
-        /// <summary>
-        /// App logger
-        /// </summary>
-        protected ILogger Log { get; } = NullLogger.Instance;
-    */
     /// <summary>
     /// Base constructor
     /// </summary>
