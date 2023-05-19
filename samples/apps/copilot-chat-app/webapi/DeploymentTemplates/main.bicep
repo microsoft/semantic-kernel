@@ -17,7 +17,7 @@ param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
-param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
+param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip'
 
 @description('Underlying AI service')
 @allowed([
