@@ -20,7 +20,6 @@ pytest = "7.2.0"
 ruff = "^0.0.257"
 pytest-asyncio = "^0.21.0"
 
-
 [tool.poetry.group.hugging_face.dependencies]
 torch = "^2.0.0"
 transformers = "^4.28.1"
@@ -28,6 +27,14 @@ sentence-transformers = "^2.2.2"
 
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.3.23"
+
+[[tool.poetry.source]]
+name = "azure-sdk-dev"
+url = "https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-python/pypi/simple/"
+secondary = true
+
+[tool.poetry.group.azure_cognitive_search.dependencies]
+azure-search-documents = {version = "11.4.0a20230509004", source = "azure-sdk-dev"}
 
 [tool.isort]
 profile = "black"
