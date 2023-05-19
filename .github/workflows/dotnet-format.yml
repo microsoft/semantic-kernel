@@ -22,6 +22,7 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: jitterbit/get-changed-files@v1
+        continue-on-error: true
 
       - name: No C# files changed
         id: no-csharp
