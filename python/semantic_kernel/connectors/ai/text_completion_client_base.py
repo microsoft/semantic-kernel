@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from io import TextIOBase
 from logging import Logger
 from typing import TYPE_CHECKING
 
