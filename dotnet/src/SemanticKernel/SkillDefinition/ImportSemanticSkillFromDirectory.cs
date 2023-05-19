@@ -19,13 +19,18 @@ namespace Microsoft.SemanticKernel;
 public static class ImportSemanticSkillFromDirectoryExtension
 {
     /// <summary>
-    /// A kernel extension that allows to load Semantic Functions, defined by prompt templates stored in the filesystem.
+    /// Loads semantic functions, defined by prompt templates stored in the filesystem.
+    /// </summary>
+    /// <remarks>
+    /// <para>
     /// A skill directory contains a set of subdirectories, one for each semantic function.
-    /// This extension requires the path of the parent directory (e.g. "d:\skills") and the name of the skill directory
-    /// (e.g. "OfficeSkill"), which is used also as the "skill name" in the internal skill collection.
-    ///
-    /// Note: skill and function names can contain only alphanumeric chars and underscore.
-    ///
+    /// </para>
+    /// <para>
+    /// This method accepts the path of the parent directory (e.g. "d:\skills") and the name of the skill directory
+    /// (e.g. "OfficeSkill"), which is used also as the "skill name" in the internal skill collection (note that
+    /// skill and function names can contain only alphanumeric chars and underscore).
+    /// </para>
+    /// <code>
     /// Example:
     /// D:\skills\                            # parentDirectory = "D:\skills"
     ///
@@ -51,9 +56,11 @@ public static class ImportSemanticSkillFromDirectoryExtension
     ///         |__ LaunchGame
     ///             |__ skprompt.txt
     ///             |__ config.json
-    ///
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/skills for some skills in our repo.
-    /// </summary>
+    /// </code>
+    /// <para>
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/skills for examples in the Semantic Kernel repository.
+    /// </para>
+    /// </remarks>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="parentDirectory">Directory containing the skill directory, e.g. "d:\myAppSkills"</param>
     /// <param name="skillDirectoryNames">Name of the directories containing the selected skills, e.g. "StrategySkill"</param>
