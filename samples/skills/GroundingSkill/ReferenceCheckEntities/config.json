@@ -18,7 +18,7 @@
       },
       {
         "name": "reference_context",
-        "description": "The context which should be examined to support the items",
+        "description": "The reference context to be used to ground the entities. Only those missing from the reference_context will be returned",
         "defaultValue": ""
       }
     ]
