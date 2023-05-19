@@ -34,7 +34,7 @@ from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
-from semantic_kernel.reliability.retry_mechanism import RetryMechanism
+from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -95,7 +95,7 @@ class Kernel:
         self._default_chat_service: Optional[str] = None
         self._default_text_embedding_generation_service: Optional[str] = None
 
-        self._retry_mechanism: RetryMechanism = PassThroughWithoutRetry()
+        self._retry_mechanism: RetryMechanismBase = PassThroughWithoutRetry()
 
     @property
     def logger(self) -> Logger:

@@ -26,4 +26,9 @@ public class QdrantOptions
     /// </summary>
     [Required, Range(1, int.MaxValue)]
     public int VectorSize { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Qdrant Cloud "api-key" header value.
+    /// </summary>
+    public string Key { get; set; } = string.Empty;
 }

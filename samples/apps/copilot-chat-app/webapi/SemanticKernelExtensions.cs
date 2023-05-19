@@ -115,8 +115,16 @@ internal static class SemanticKernelExtensions
                     throw new InvalidOperationException("MemoriesStore type is Qdrant and Qdrant configuration is null.");
                 }
 
-                services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
-                    config.Qdrant.Host, config.Qdrant.Port, config.Qdrant.VectorSize, sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
+                services.AddSingleton<IMemoryStore>(sp =>
+                {
+                    HttpClient httpClient = new HttpClient(new HttpClientHandler { CheckCertificateRevocationList = true });
+                    if (!string.IsNullOrWhiteSpace(config.Qdrant.Key))
+                    {
+                        httpClient.DefaultRequestHeaders.Add("api-key", config.Qdrant.Key);
+                    }
+                    return new QdrantMemoryStore(new QdrantVectorDbClient(
+                        config.Qdrant.Host, config.Qdrant.VectorSize, port: config.Qdrant.Port, httpClient: httpClient, log: sp.GetRequiredService<ILogger<IQdrantVectorDbClient>>()));
+                });
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
                     sp.GetRequiredService<IMemoryStore>(),
                     sp.GetRequiredService<IOptions<AIServiceOptions>>().Value
