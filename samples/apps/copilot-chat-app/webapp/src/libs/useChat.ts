@@ -165,7 +165,7 @@ export const useChat = () => {
 
                     const chatUsers = await chatService.getAllChatParticipantsAsync(
                         chatSession.id,
-                        await AuthHelper.getSKaaSAccessToken(instance),
+                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                     );
 
                     loadedConversations[chatSession.id] = {

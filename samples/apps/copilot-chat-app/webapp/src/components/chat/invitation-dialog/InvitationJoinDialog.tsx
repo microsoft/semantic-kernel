@@ -26,7 +26,7 @@ interface InvitationJoinDialogProps {
 
 export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = (props) => {
     const { onCancel, onJoinComplete } = props;
-    const { instance, accounts } = useMsal();
+    const { instance, accounts, inProgress } = useMsal();
     const account = useAccount(accounts[0] || {});
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
     const chat = useChat();
@@ -45,7 +45,7 @@ export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = (props)
             await chatService.joinChatAsync(
                 account!.homeAccountId!,
                 chatId.value,
-                await AuthHelper.getSKaaSAccessToken(instance)
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress)
             );
             await chat.loadChats();
             onJoinComplete();
