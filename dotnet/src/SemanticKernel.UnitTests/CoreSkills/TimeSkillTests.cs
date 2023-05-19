@@ -41,8 +41,6 @@ public class TimeSkillTests
         Assert.Equal(expected.Month, returned.Month);
         Assert.Equal(expected.Year, returned.Year);
     }
-
-
     [Fact]
     public void LastMatchingDayBadInput()
     {
