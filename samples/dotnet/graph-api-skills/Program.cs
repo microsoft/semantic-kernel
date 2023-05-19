@@ -37,7 +37,7 @@ public sealed class Program
             .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "appsettings.Development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAIConfiguration>()
+            .AddUserSecrets<Program>()
             .Build();
 
         // Initialize logger
