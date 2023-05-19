@@ -20,6 +20,8 @@ using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
 using DayOfWeek = System.DayOfWeek;
 
+namespace GraphApiSkills;
+
 /// <summary>
 /// The static plan below is meant to emulate a plan generated from the following request:
 ///   "Summarize the content of cheese.txt and send me an email with the summary and a link to the file.
@@ -137,7 +139,7 @@ public sealed class Program
             throw new InvalidOperationException("Unable to determine current assembly directory.");
         }
 
-        string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../skills"));
+        string skillParentDirectory = RepoUtils.RepoFiles.SampleSkillsPath();
 
         IDictionary<string, ISKFunction> summarizeSkills =
             sk.ImportSemanticSkillFromDirectory(skillParentDirectory, "SummarizeSkill");
