@@ -14,6 +14,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -158,7 +159,7 @@ public sealed class Kernel : IKernel, IDisposable
         => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
 
     /// <inheritdoc/>
-    public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
         var context = new SKContext(
             variables,
@@ -167,41 +168,8 @@ public sealed class Kernel : IKernel, IDisposable
             this.Log,
             cancellationToken);
 
-        int pipelineStepCount = -1;
-        foreach (ISKFunction f in pipeline)
-        {
-            if (context.ErrorOccurred)
-            {
-                this.Log.LogError(
-                    context.LastException,
-                    "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastErrorDescription);
-                return context;
-            }
-
-            pipelineStepCount++;
-
-            try
-            {
-                context.CancellationToken.ThrowIfCancellationRequested();
-                context = await f.InvokeAsync(context).ConfigureAwait(false);
-
-                if (context.ErrorOccurred)
-                {
-                    this.Log.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
-                        pipelineStepCount, f.SkillName, f.Name, context.LastErrorDescription);
-                    return context;
-                }
-            }
-            catch (Exception e) when (!e.IsCriticalException())
-            {
-                this.Log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
-                    pipelineStepCount, f.SkillName, f.Name, e.Message);
-                context.Fail(e.Message, e);
-                return context;
-            }
-        }
-
-        return context;
+        Plan plan = new Plan(pipeline);
+        return plan.InvokeAsync(context);
     }
 
     /// <inheritdoc/>

@@ -84,13 +84,20 @@ public sealed class Plan : ISKFunction
     #endregion ISKFunction implementation
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="Plan"/> class.
+    /// </summary>
+    public Plan()
+    {
+        this.SkillName = this.GetType().FullName;
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
     /// </summary>
     /// <param name="goal">The goal of the plan used as description.</param>
-    public Plan(string goal)
+    public Plan(string goal) : this()
     {
         this.Description = goal;
-        this.SkillName = this.GetType().FullName;
     }
 
     /// <summary>
@@ -114,12 +121,30 @@ public sealed class Plan : ISKFunction
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="Plan"/> class with steps.
+    /// </summary>
+    /// <param name="steps">The steps to add.</param>
+    public Plan(params Plan[] steps)
+    {
+        this.AddSteps(steps);
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a function.
     /// </summary>
     /// <param name="function">The function to execute.</param>
-    public Plan(ISKFunction function)
+    public Plan(ISKFunction function) : this()
     {
         this.SetFunction(function);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Plan"/> class with steps.
+    /// </summary>
+    /// <param name="steps">The steps to execute.</param>
+    public Plan(params ISKFunction[] steps) : this()
+    {
+        this.AddSteps(steps);
     }
 
     /// <summary>
@@ -338,10 +363,21 @@ public sealed class Plan : ISKFunction
             while (this.HasNextStep)
             {
                 var functionContext = context;
-
                 AddVariablesToContext(this.State, functionContext);
 
-                await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
+                try
+                {
+                    functionContext.CancellationToken.ThrowIfCancellationRequested();
+                    await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
+                    if (functionContext.ErrorOccurred) { return functionContext; }
+                }
+                catch (Exception e) when (!e.IsCriticalException())
+                {
+                    functionContext.Log.LogError(e, "Something went wrong in plan step {0}.{1}:'{2}'",
+                        this.SkillName, this.Name, context.LastErrorDescription);
+                    functionContext.Fail(e.Message, e);
+                    return functionContext;
+                }
 
                 this.UpdateContextWithOutputs(context);
             }
