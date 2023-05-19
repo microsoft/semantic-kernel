@@ -207,6 +207,8 @@ public class ChatSkill
 
         // Clone the context to avoid modifying the original context variables.
         var chatContext = Utilities.CopyContextWithVariablesClone(context);
+        chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
+        chatContext.Variables.Set("audience", chatContext["userName"]);
 
         var response = chatContext.Variables.ContainsKey("userCancelledPlan")
             ? "I am sorry the plan did not meet your goals."
@@ -308,8 +310,6 @@ public class ChatSkill
         // Invoke the model
         chatContext.Variables.Set("UserIntent", userIntent);
         chatContext.Variables.Set("ChatContext", chatContextText);
-        chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
-        chatContext.Variables.Set("audience", chatContext["userName"]);
 
         var completionFunction = this._kernel.CreateSemanticFunction(
             this._promptOptions.SystemChatPrompt,
