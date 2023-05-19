@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Skills\Skills.MsGraph\Skills.MsGraph.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\kernel-syntax-examples\KernelSyntaxExamples.csproj" />
   </ItemGroup>
 
   <ItemGroup>
