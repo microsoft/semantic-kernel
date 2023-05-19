@@ -137,7 +137,7 @@ public sealed class Program
             throw new InvalidOperationException("Unable to determine current assembly directory.");
         }
 
-        string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../skills"));
+        string skillParentDirectory = RepoUtils.RepoFiles.SampleSkillsPath();
 
         IDictionary<string, ISKFunction> summarizeSkills =
             sk.ImportSemanticSkillFromDirectory(skillParentDirectory, "SummarizeSkill");

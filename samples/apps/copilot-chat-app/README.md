@@ -12,7 +12,11 @@ functions that work together to construct each response.
 
 ![UI Sample](images/UI-Sample.png)
 
-# Configure your environment
+# Automated Setup and Local Deployment
+Refer to [./scripts/README.md](./scripts/README.md) for automated configuration and local deployment of CopilotChat.
+
+# Manual Setup and Local Deployment
+## Configure your environment
 Before you get started, make sure you have the following requirements in place:
 - [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
 - [Node.js](https://nodejs.org/)
@@ -20,7 +24,7 @@ Before you get started, make sure you have the following requirements in place:
 - [Azure OpenAI](https://aka.ms/oai/access) resource or an account with [OpenAI](https://platform.openai.com).
 - [Visual Studio Code](https://code.visualstudio.com/Download) **(Optional)** 
 
-# Start the WebApi Backend Server
+## Start the WebApi Backend Server
 The sample uses two applications, a front-end web UI, and a back-end API server.
 First, let’s set up and verify the back-end API server is running.
 
@@ -30,22 +34,20 @@ First, let’s set up and verify the back-end API server is running.
    > **Note:** It is recommended you close all instances of your web browser after installing the developer certificates.
 
 1. Navigate to `samples/apps/copilot-chat-app/webapi` and open `appsettings.json`
-   - Update the `Completion`, `Embedding`, and `Planner:AIService` (if enabled) configuration sections:
-     - Update `AIService` to the AI service you will be using (i.e., `AzureOpenAI` or `OpenAI`).
+   - Update the `AIService` configuration section:
+     - Update `Type` to the AI service you will be using (i.e., `AzureOpenAI` or `OpenAI`).
      - If your are using Azure OpenAI, update `Endpoint` to your Azure OpenAI resource Endpoint address (e.g.,  
        `http://contoso.openai.azure.com`).
         > If you are using OpenAI, this property will be ignored.
-     - Set your Azure OpenAI key by opening a terminal in the webapi project directory and using `dotnet user-secrets`
+     - Set your Azure OpenAI or OpenAI key by opening a terminal in the webapi project directory and using `dotnet user-secrets`
        ```bash
        cd semantic-kernel/samples/apps/copilot-chat-app/webapi
-       dotnet user-secrets set "Completion:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
-       dotnet user-secrets set "Embedding:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
-       dotnet user-secrets set "Planner:AIService:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
+       dotnet user-secrets set "AIService:Key" "MY_AZUREOPENAI_OR_OPENAI_KEY"
        ```
-     - Update `DeploymentOrModelId` to the Azure OpenAI deployment or OpenAI models you want to use. 
-       - For `Completion` and `Planner:AIService`, CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4.
+     - **(Optional)** Update `Models` to the Azure OpenAI deployment or OpenAI models you want to use. 
+       - For `Completion` and `Planner`, CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4.
          > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
-       - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effect for generating embeddings.
+       - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effective for generating embeddings.
    
    - **(Optional)** To enable speech-to-text for chat input, update the `AzureSpeech` configuration section:
      > If you have not already, you will need to [create an Azure Speech resource](https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices) 
@@ -71,11 +73,11 @@ First, let’s set up and verify the back-end API server is running.
 
       > You may also need to acknowledge the Windows Defender Firewall, and allow the app to communicate over private or public networks as appropriate.
 
-# Start the WebApp FrontEnd application 
+## Start the WebApp FrontEnd application 
 1. Build and start the front-end application
    1. You will need an Azure Active Directory (AAD) application registration. 
       > For more details on creating an application registration, go [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
-      - Select `Single-page application (SPA)` as platform type, and set the Web redirect URI to `https://localhost:3000`
+      - Select `Single-page application (SPA)` as platform type, and set the Web redirect URI to `http://localhost:3000`
       - Select `Accounts in any organizational directory and personal Microsoft Accounts` as supported account types for this sample.
       - Make a note of the `Application (client) ID` from the Azure Portal, we will use of it later.
 
@@ -88,6 +90,11 @@ First, let’s set up and verify the back-end API server is running.
       REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/common
       ```
       > For more detail on AAD authorities, see [Client Application Configuration Authorities](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority).
+
+      > `REACT_APP_SK_API_KEY` is only required if you're using an SK server deployed to Azure. See the [Authorization section of Deploying Semantic Kernel to Azure in a web app service](https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/copilot-chat-app/webapi/DeploymentTemplates/README.md#authorization) for more details and instruction on how to find your API key.
+      ```bash
+      REACT_APP_SK_API_KEY={Your API Key, should be the same as Authorization:ApiKey from appsettings.json}
+      ```
 
    1. To build and run the front-end application
       ```bash
