@@ -13,17 +13,17 @@ namespace SemanticKernel.Service.Auth;
 /// </summary>
 public class ChatOwnerAuthorizationHandler : AuthorizationHandler<ChatOwnerRequirement, HttpContext>
 {
-    private readonly IAuthInfo _authInfoProvider;
+    private readonly IAuthInfo _authInfo;
     private readonly ChatSessionRepository _chatSessionRepository;
 
     /// <summary>
     /// Constructor
     /// </summary>
     public ChatOwnerAuthorizationHandler(
-        IAuthInfo authInfoProvider,
+        IAuthInfo authInfo,
         ChatSessionRepository chatSessionRepository) : base()
     {
-        this._authInfoProvider = authInfoProvider;
+        this._authInfo = authInfo;
         this._chatSessionRepository = chatSessionRepository;
     }
 
@@ -48,7 +48,7 @@ public class ChatOwnerAuthorizationHandler : AuthorizationHandler<ChatOwnerRequi
             return;
         }
 
-        if (session.UserId != this._authInfoProvider.UserId)
+        if (session.UserId != this._authInfo.UserId)
         {
             context.Fail(new AuthorizationFailureReason(this, "User does not have access to the requested chat."));
         }

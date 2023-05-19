@@ -66,7 +66,7 @@ public class DocumentImportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ImportDocumentAsync(
         [FromServices] IKernel kernel,
-        [FromServices] IAuthInfo authInfoProvider,
+        [FromServices] IAuthInfo authInfo,
         [FromForm] DocumentImportForm documentImportForm)
     {
         var formFile = documentImportForm.FormFile;
@@ -91,7 +91,7 @@ public class DocumentImportController : ControllerBase
             return this.NotFound("Session does not exist.");
         }
 
-        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat && authInfoProvider.UserId != chatSession.UserId)
+        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat && authInfo.UserId != chatSession.UserId)
         {
             return this.Unauthorized("User does not have access to the chat session.");
         }

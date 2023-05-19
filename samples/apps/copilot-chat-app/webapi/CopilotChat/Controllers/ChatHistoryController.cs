@@ -27,7 +27,7 @@ public class ChatHistoryController : ControllerBase
     private readonly ILogger<ChatHistoryController> _logger;
     private readonly ChatSessionRepository _chatSessionRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
-    private readonly IAuthInfo _authInfoProvider;
+    private readonly IAuthInfo _authInfo;
     private readonly PromptsOptions _promptOptions;
 
     /// <summary>
@@ -37,18 +37,18 @@ public class ChatHistoryController : ControllerBase
     /// <param name="chatSessionRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
     /// <param name="promptsOptions">The prompts options.</param>
-    /// <param name="authInfoProvider">The auth info for the current request.</param>
+    /// <param name="authInfo">The auth info for the current request.</param>
     public ChatHistoryController(
         ILogger<ChatHistoryController> logger,
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
         IOptions<PromptsOptions> promptsOptions,
-        IAuthInfo authInfoProvider)
+        IAuthInfo authInfo)
     {
         this._logger = logger;
         this._chatSessionRepository = chatSessionRepository;
         this._chatMessageRepository = chatMessageRepository;
-        this._authInfoProvider = authInfoProvider;
+        this._authInfo = authInfo;
         this._promptOptions = promptsOptions.Value;
     }
 
@@ -65,7 +65,7 @@ public class ChatHistoryController : ControllerBase
     public async Task<IActionResult> CreateChatSessionAsync(
         [FromBody] ChatSessionCreationOptions chatParameters)
     {
-        var userId = _authInfoProvider.UserId;
+        var userId = _authInfo.UserId;
         var title = chatParameters.Title;
 
         var newChat = new ChatSession(userId, title);
@@ -110,7 +110,7 @@ public class ChatHistoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAllChatSessionsAsync()
     {
-        var userId = this._authInfoProvider.UserId;
+        var userId = this._authInfo.UserId;
         var chats = await this._chatSessionRepository.FindByUserIdAsync(userId);
         if (chats == null)
         {

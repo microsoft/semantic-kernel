@@ -74,7 +74,7 @@ public class SemanticKernelController : ControllerBase
         }
 
         // Put ask's variables in the context we will use.
-        var contextVariables = askConverter.GetContextVariables(ask);        
+        var contextVariables = askConverter.GetContextVariables(ask);
 
         // Get the function to invoke
         ISKFunction? function = null;

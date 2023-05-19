@@ -63,7 +63,7 @@ public class BotController : ControllerBase
     /// Upload a bot.
     /// </summary>
     /// <param name="kernel">The Semantic Kernel instance.</param>
-    /// <param name="authInfoProvider">The auth info instance.</param>
+    /// <param name="authInfo">The auth info instance.</param>
     /// <param name="bot">The bot object from the message body</param>
     /// <returns>The HTTP action result with new chat session object.</returns>
     [HttpPost]
@@ -73,7 +73,7 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ChatSession>> UploadAsync(
         [FromServices] IKernel kernel,
-        [FromServices] IAuthInfo authInfoProvider,
+        [FromServices] IAuthInfo authInfo,
         [FromBody] Bot bot)
     {
         this._logger.LogDebug("Received call to upload a bot");
@@ -98,7 +98,7 @@ public class BotController : ControllerBase
         // Upload chat history into chat repository and embeddings into memory.
 
         // 1. Create a new chat and get the chat id.
-        newChat = new ChatSession(authInfoProvider.UserId, chatTitle);
+        newChat = new ChatSession(authInfo.UserId, chatTitle);
         await this._chatRepository.CreateAsync(newChat);
         chatId = newChat.Id;
 
