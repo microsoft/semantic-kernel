@@ -5,7 +5,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Kernel logic exception */
-public class KernelException extends RuntimeException {
+public class KernelException extends SKException {
 
     @Nonnull private final ErrorCodes errorCode;
 
