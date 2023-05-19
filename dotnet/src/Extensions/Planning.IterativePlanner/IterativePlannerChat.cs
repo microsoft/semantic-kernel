@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -20,9 +21,10 @@ public class IterativePlannerChat : IterativePlannerText
         string? systemPrompt = null,
         string systemResource = "iterative-planer-chat-system.txt",
         string? userPrompt = null,
-        string userResource = "iterative-planer-chat-user.txt"
+        string userResource = "iterative-planer-chat-user.txt",
+        ILogger? logger = null
     )
-        : base(kernel, maxIterations, null, null)
+        : base(kernel, maxIterations, null, null, logger)
     {
         if (!string.IsNullOrEmpty(systemResource))
         {
@@ -72,13 +74,13 @@ public class IterativePlannerChat : IterativePlannerText
             var chatHistory = (OpenAIChatHistory)chat.CreateNewChat(systemPrompt);
             var scratchPad = this.CreateScratchPad(goal);
             context.Variables.Set("agentScratchPad", scratchPad);
-            var userMessage = await promptRenderer.RenderAsync(this._userPromptTemplate, context).ConfigureAwait(false);
-            PrintColored(scratchPad);
 
+            var userMessage = await promptRenderer.RenderAsync(this._userPromptTemplate, context).ConfigureAwait(false);
+            this.Trace("UserMessage", userMessage);
             chatHistory.AddUserMessage(userMessage);
 
             string reply = await chat.GenerateMessageAsync(chatHistory, chatRequestSettings).ConfigureAwait(false);
-        
+            this.Trace("Reply", reply);
             var nextStep = this.ParseResult(reply);
             this.Steps.Add(nextStep);
 
@@ -88,6 +90,7 @@ public class IterativePlannerChat : IterativePlannerText
             }
 
             nextStep.Observation = await this.InvokeActionAsync(nextStep.Action, nextStep.ActionInput).ConfigureAwait(false);
+            this.Trace("Observation", nextStep.Observation);
         }
 
         return "zebra";

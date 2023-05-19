@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -34,11 +35,13 @@ namespace Microsoft.SemanticKernel.Planning;
     /// <param name="config">The planner configuration.</param>
     /// <param name="prompt">Optional prompt override</param>
     /// <param name="embeddedResourceName"></param>
+    /// <param name="logger"></param>
     public IterativePlannerText(
         IKernel kernel,
         int maxIterations = 5,
         string? prompt = null,
-        string? embeddedResourceName = "iterative-planer-text.txt")
+        string? embeddedResourceName = "iterative-planer-text.txt",
+        ILogger? logger = null)
     {
         this.MaxIterations = maxIterations;
         Verify.NotNull(kernel);
@@ -56,6 +59,7 @@ namespace Microsoft.SemanticKernel.Planning;
         this._context = kernel.CreateNewContext();
         this.Kernel = kernel;
         this.Steps = new List<AgentStep>();
+        this._logger = logger;
     }
 
     private ISKFunction InitiateSemanticFunction(IKernel kernel, string promptTemplate, string stopSequence)
@@ -96,12 +100,12 @@ namespace Microsoft.SemanticKernel.Planning;
         for (int i = 0; i < this.MaxIterations; i++)
         {
             var scratchPad = this.CreateScratchPad(goal);
-            //PrintColored(scratchPad);
+            this.Trace("Scratchpad: " + scratchPad);
             this._context.Variables.Set("agentScratchPad", scratchPad);
-            var llmResponse = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
+            var llmResponse = await functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
             string actionText = llmResponse.Result.Trim();
-            //PrintColored(actionText);
-            
+            this.Trace("Response : " + actionText);
+
             var nextStep = this.ParseResult(actionText);
             this.Steps.Add(nextStep);
 
@@ -111,6 +115,7 @@ namespace Microsoft.SemanticKernel.Planning;
             }
 
             nextStep.Observation = await this.InvokeActionAsync(nextStep.Action, nextStep.ActionInput).ConfigureAwait(false);
+            this.Trace("Observation : " + nextStep.Observation);
         }
 
         return "Result Not found, check out the steps to see what happen";
@@ -153,7 +158,7 @@ namespace Microsoft.SemanticKernel.Planning;
 
         var func = this.Kernel.Func(theFunction.SkillName, theFunction.Name);
         var result = await func.InvokeAsync(actionActionInput).ConfigureAwait(false);
-        PrintColored(result.Result);
+        this.Trace("invoking " +theFunction.Name, result.Result);
         return result.Result;
     }
 
@@ -170,13 +175,30 @@ namespace Microsoft.SemanticKernel.Planning;
         return availableFunctions;
     }
 
-    protected static void PrintColored(string planResultString)
+    protected void Trace(string message)
     {
-        var color = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine(planResultString);
+        //var color = Console.ForegroundColor;
+        //Console.ForegroundColor = ConsoleColor.Yellow;
+        //Console.WriteLine(planResultString);
+        this._logger?.LogTrace("############" + Environment.NewLine + message + Environment.NewLine + "############");
 
-        Console.ForegroundColor = color;
+        //this._logger?.Log(
+        //    LogLevel.Trace,
+        //    new EventId(0, $"Printing"),
+        //    message);
+    }
+
+    protected void Trace(string title, string message)
+    {
+        //var color = Console.ForegroundColor;
+        //Console.ForegroundColor = ConsoleColor.Yellow;
+        //Console.WriteLine(planResultString);
+        this._logger?.LogTrace("############  "+ title + "  ########" + Environment.NewLine + message + Environment.NewLine + "############");
+
+        //this._logger?.Log(
+        //    LogLevel.Trace,
+        //    new EventId(0, $"Printing"),
+        //    message);
     }
 
     protected virtual AgentStep ParseResult(string input)
@@ -233,14 +255,13 @@ namespace Microsoft.SemanticKernel.Planning;
         return (toolNames, toolDescriptions);
     }
 
-    
-
     private readonly SKContext _context;
 
-    private ISKFunction _functionFlowFunction;
+    //private ISKFunction _functionFlowFunction;
 
     protected readonly IKernel Kernel;
     private readonly string _promptTemplate;
+    private readonly ILogger? _logger;
     public List<AgentStep> Steps { get; set; }
 }
 
