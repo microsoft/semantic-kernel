@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
