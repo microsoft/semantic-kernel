@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example38_Postgres
+public static class Example39_Postgres
 {
     private const string MemoryCollectionName = "postgres-test";
 

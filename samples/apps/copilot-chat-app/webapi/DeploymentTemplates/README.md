@@ -113,14 +113,8 @@ In addition to this, the "Diagnose and "solve problems" item near the top of the
 
 If the service itself if functioning properly but you keep getting errors (perhaps reported as 400 HTTP errors) when making calls to the Semantic Kernel,
 check that you have correctly entered the values for the following settings:
-- Completion:AzureOpenAI
-- Completion:DeploymentOrModelId
-- Completion:Endpoint
-- Completion:Label
-- Embedding:AzureOpenAI
-- Embedding:DeploymentOrModelId
-- Embedding:Endpoint
-- Embedding:Label
+- AIService:AzureOpenAI
+- AIService:Endpoint
 
 Both Completion:Endpoint and Embedding:Endpoint are ignored for OpenAI instances from [openai.com](https://openai.com) but MUST be properly populated when using Azure OpenAI instances.
 
@@ -136,7 +130,7 @@ To view the API key required by your instance, access the page for your Semantic
 From that page, click on the "Configuration" item in the "Settings" section of the left pane. Then click on the text that reads "Hidden value.
 Click to show value" next to the "Authorization:ApiKey" setting.
 
-To authorize requests with the API key, it must be added as the value of an "x-api-key" header added to the requests.
+To authorize requests with the API key, it must be added as the value of an "x-sk-api-key" header added to the requests.
 
 
 ## Using web frontends to access your deployment

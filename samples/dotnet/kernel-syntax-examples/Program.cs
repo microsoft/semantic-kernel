@@ -119,7 +119,10 @@ public static class Program
         await Example37_MultiStreamingCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example38_Postgres.RunAsync();
+        await Example38_Pinecone.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example39_Postgres.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
