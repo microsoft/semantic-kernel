@@ -7,7 +7,7 @@ import {
     useIsAuthenticated,
     useMsal,
 } from '@azure/msal-react';
-import { Spinner, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
 import * as React from 'react';
@@ -16,6 +16,7 @@ import { UserSettings } from './components/header/UserSettings';
 import { PluginGallery } from './components/open-api-plugins/PluginGallery';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
+import Loading from './components/views/Loading';
 import { Login } from './components/views/Login';
 import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
@@ -57,6 +58,7 @@ enum AppState {
     ProbeForBackend,
     LoadingChats,
     Chat,
+    SigningOut,
 }
 
 const App: FC = () => {
@@ -100,7 +102,8 @@ const App: FC = () => {
                     <div className={classes.header}>
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                     </div>
-                    <Login />
+                    {appState === AppState.SigningOut && <Loading text="Signing you out..." />}
+                    {appState !== AppState.SigningOut && <Login />}
                 </div>
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
@@ -109,7 +112,7 @@ const App: FC = () => {
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <div className={classes.cornerItems}>
                             <PluginGallery />
-                            <UserSettings />
+                            <UserSettings setLoadingState={() => setAppState(AppState.SigningOut)} />
                         </div>
                     </div>
                     {alerts &&
@@ -139,7 +142,7 @@ const App: FC = () => {
                             onBackendFound={() => setAppState(AppState.LoadingChats)}
                         />
                     )}
-                    {appState === AppState.LoadingChats && <Spinner labelPosition="below" label="Loading Chats" />}
+                    {appState === AppState.LoadingChats && <Loading text="Loading Chats..." />}
                     {appState === AppState.Chat && <ChatView />}
                 </div>
             </AuthenticatedTemplate>
