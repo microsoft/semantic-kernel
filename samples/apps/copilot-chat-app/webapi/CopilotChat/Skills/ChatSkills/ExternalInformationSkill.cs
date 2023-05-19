@@ -40,6 +40,17 @@ public class ExternalInformationSkill
     public Plan? ProposedPlan { get; private set; }
 
     /// <summary>
+    /// Preamble to add to the related information text.
+    /// </summary>
+    private const string PromptPreamble = "[RELATED START]";
+
+    /// <summary>
+    /// Postamble to add to the related information text.
+    /// </summary>
+    private const string PromptPostamble = "[RELATED END]";
+
+
+    /// <summary>
     /// Create a new instance of ExternalInformationSkill.
     /// </summary>
     public ExternalInformationSkill(
@@ -84,7 +95,10 @@ public class ExternalInformationSkill
 
             // Invoke plan
             newPlanContext = await plan.InvokeAsync(newPlanContext);
-            int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
+            int tokenLimit =
+                int.Parse(context["tokenLimit"], new NumberFormatInfo()) -
+                Utilities.TokenCount(PromptPreamble) -
+                Utilities.TokenCount(PromptPostamble);
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.
             bool extractJsonFromOpenApi =
@@ -99,7 +113,7 @@ public class ExternalInformationSkill
                 planResult = newPlanContext.Variables.Input;
             }
 
-            return $"[START RELATED INFORMATION]\n{planResult.Trim()}\n[END RELATED INFORMATION]\n";
+            return $"{PromptPreamble}\n{planResult.Trim()}\n{PromptPostamble}\n";
         }
         else
         {

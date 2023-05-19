@@ -12,6 +12,9 @@ using SemanticKernel.Service.CopilotChat.Options;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
+/// <summary>
+/// Helper class to extract and create semantic memory from chat history.
+/// </summary>
 internal static class SemanticChatMemoryExtractor
 {
     /// <summary>

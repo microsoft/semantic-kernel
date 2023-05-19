@@ -185,6 +185,7 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "userId", Description = "Unique and persistent identifier for the user")]
     [SKFunctionContextParameter(Name = "userName", Description = "Name of the user")]
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
+    [SKFunctionContextParameter(Name = "proposedPlan", Description = "Previously proposed plan that is approved")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
         // TODO: check if user has access to the chat
@@ -263,6 +264,10 @@ public class ChatSkill
         // 3. Acquire external information from planner
         var externalInformationTokenLimit = (int)(remainingToken * this._promptOptions.ExternalInformationContextWeight);
         var plan = await this.AcquireExternalInformationAsync(chatContext, userIntent, externalInformationTokenLimit);
+        if (chatContext.ErrorOccurred)
+        {
+            return string.Empty;
+        }
 
         // If plan is suggested, send back to user for approval before running
         if (this._externalInformationSkill.ProposedPlan != null)
@@ -449,9 +454,9 @@ public class ChatSkill
     {
         var contextVariables = new ContextVariables();
         contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-        if (context.Variables.Get("proposalPlan", out string? proposalPlan))
+        if (context.Variables.Get("proposedPlan", out string? proposedPlan))
         {
-            contextVariables.Set("proposalPlan", proposalPlan);
+            contextVariables.Set("proposedPlan", proposedPlan);
         }
 
         var planContext = new SKContext(
