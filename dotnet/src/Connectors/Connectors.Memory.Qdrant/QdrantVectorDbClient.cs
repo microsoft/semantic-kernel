@@ -435,6 +435,34 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         }
     }
 
+    /// <inheritdoc/>
+    public async Task<IEnumerable<QdrantPointRecord>?> ListPointsAsync(string collectionName, int offset = 0, int limit = 10, CancellationToken cancellationToken = default)
+    {
+        this._log.LogDebug("Listing points");
+
+        using var request = ListPointsRequest.Create(collectionName).Offset(offset).Limit(limit).Build();
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException ex)
+        {
+            this._log.LogDebug("List points failed: {0}", ex.Message);
+        }
+
+        var data = JsonSerializer.Deserialize<ListPointsResponse>(responseContent);
+
+        if (data == null)
+        {
+            this._log.LogDebug("Unable to deserialize List response");
+            return default;
+        }
+
+        return data.Result?.Points;
+    }
+
     #region private ================================================================================
 
     private readonly ILogger _log;

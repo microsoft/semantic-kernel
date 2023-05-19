@@ -571,4 +571,21 @@ public class QdrantMemoryStoreTests2
         mockQdrantClient.Verify<Task>(x =>
             x.DeleteVectorsByIdAsync(It.IsAny<string>(), new[] { key, key2, key3 }, It.IsAny<CancellationToken>()), Times.Once());
     }
+
+    [Fact]
+    public async Task ItCanListPointsUsingCollectionNameAsync()
+    {
+        var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
+        mockQdrantClient
+            .Setup<Task<IEnumerable<QdrantPointRecord>?>>(x => x.ListPointsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult<IEnumerable<QdrantPointRecord>?>(new List<QdrantPointRecord> { new QdrantPointRecord { Id = _id } }));
+
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+
+        var pointList = await vectorStore.ListPointsAsync("test_collection");
+
+        mockQdrantClient.Verify<Task<IEnumerable<QdrantPointRecord>?>>(x => x.ListPointsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once());
+        Assert.Equal(1, pointList?.Count());
+        Assert.Equal(_id, pointList?.FirstOrDefault()?.Id);
+    }
 }
