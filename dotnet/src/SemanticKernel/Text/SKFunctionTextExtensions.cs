@@ -3,14 +3,16 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Text;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of ISKFunction
+namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Class with extension methods for semantic functions.
 /// </summary>
-public static class FunctionExtensions
+public static class SKFunctionTextExtensions
 {
     /// <summary>
     /// Extension method to aggregate partitioned results of a semantic function.

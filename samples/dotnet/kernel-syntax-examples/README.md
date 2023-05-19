@@ -23,6 +23,9 @@ dotnet user-secrets set "AZURE_OPENAI_DEPLOYMENT_NAME" "..."
 dotnet user-secrets set "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME" "..."
 dotnet user-secrets set "AZURE_OPENAI_ENDPOINT" "https://... .openai.azure.com/"
 dotnet user-secrets set "AZURE_OPENAI_KEY" "..."
+dotnet user-secrets set "AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME" "..."
+dotnet user-secrets set "AZURE_OPENAI_EMBEDDINGS_ENDPOINT" "https://... .openai.azure.com/"
+dotnet user-secrets set "AZURE_OPENAI_EMBEDDINGS_KEY" "..."
 dotnet user-secrets set "ACS_ENDPOINT" "https://... .search.windows.net"
 dotnet user-secrets set "ACS_API_KEY" "..."
 dotnet user-secrets set "QDRANT_ENDPOINT" "..."
@@ -45,3 +48,6 @@ To set your secrets with environment variables, use these names:
 * QDRANT_PORT
 * GITHUB_PERSONAL_ACCESS_TOKEN
 * POSTGRES_CONNECTIONSTRING
+* AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME
+* AZURE_OPENAI_EMBEDDINGS_ENDPOINT
+* AZURE_OPENAI_EMBEDDINGS_KEY
