@@ -13,7 +13,7 @@ param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
-param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
+param packageUri string = 'https://semantickerneldeploy.blob.core.windows.net/api/semantickernelservice.zip'
 
 @description('Model to use for chat completions')
 param completionModel string = 'gpt-35-turbo'
@@ -32,7 +32,7 @@ param endpoint string
 param apiKey string
 
 @description('Semantic Kernel server API key - Provide empty string to disable API key auth')
-param skServerApiKey string = newGuid()
+param semanticKernelApiKey string = newGuid()
 
 @description('Whether to deploy Cosmos DB for chat storage')
 param deployCosmosDB bool = true
@@ -56,7 +56,7 @@ module openAI 'main.bicep' = {
     plannerModel: plannerModel
     endpoint: endpoint
     apiKey: apiKey
-    skServerApiKey: skServerApiKey
+    semanticKernelApiKey: semanticKernelApiKey
     deployCosmosDB: deployCosmosDB
     deployQdrant: deployQdrant
     deploySpeechServices: deploySpeechServices

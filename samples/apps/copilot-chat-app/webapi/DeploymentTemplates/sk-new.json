@@ -25,7 +25,7 @@
     },
     "packageUri": {
       "type": "string",
-      "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/skaas.zip",
+      "defaultValue": "https://semantickerneldeploy.blob.core.windows.net/api/semantickernelservice.zip",
       "metadata": {
         "description": "Location of package to deploy as the web service"
       }
@@ -51,7 +51,7 @@
         "description": "Completion model the task planner should use"
       }
     },
-    "skServerApiKey": {
+    "semanticKernelApiKey": {
       "type": "string",
       "defaultValue": "[newGuid()]",
       "metadata": {
@@ -112,8 +112,8 @@
           "plannerModel": {
             "value": "[parameters('plannerModel')]"
           },
-          "skServerApiKey": {
-            "value": "[parameters('skServerApiKey')]"
+          "semanticKernelApiKey": {
+            "value": "[parameters('semanticKernelApiKey')]"
           },
           "deployCosmosDB": {
             "value": "[parameters('deployCosmosDB')]"
@@ -155,7 +155,7 @@
             },
             "packageUri": {
               "type": "string",
-              "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/skaas.zip",
+              "defaultValue": "https://semantickerneldeploy.blob.core.windows.net/api/semantickernelservice.zip",
               "metadata": {
                 "description": "Location of package to deploy as the web service"
               }
@@ -206,7 +206,7 @@
                 "description": "Azure OpenAI or OpenAI API key"
               }
             },
-            "skServerApiKey": {
+            "semanticKernelApiKey": {
               "type": "string",
               "defaultValue": "[newGuid()]",
               "metadata": {
@@ -372,11 +372,11 @@
                     },
                     {
                       "name": "Authorization:Type",
-                      "value": "[if(empty(parameters('skServerApiKey')), 'None', 'ApiKey')]"
+                      "value": "[if(empty(parameters('semanticKernelApiKey')), 'None', 'ApiKey')]"
                     },
                     {
                       "name": "Authorization:ApiKey",
-                      "value": "[parameters('skServerApiKey')]"
+                      "value": "[parameters('semanticKernelApiKey')]"
                     },
                     {
                       "name": "ChatStore:Type",

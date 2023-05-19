@@ -16,7 +16,7 @@ param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
-param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
+param packageUri string = 'https://semantickerneldeploy.blob.core.windows.net/api/semantickernelservice.zip'
 
 @description('Underlying AI service')
 @allowed([
@@ -42,7 +42,7 @@ param endpoint string = ''
 param apiKey string = ''
 
 @description('Semantic Kernel server API key - Provide empty string to disable API key auth')
-param skServerApiKey string = newGuid()
+param semanticKernelServerApiKey string = newGuid()
 
 @description('Whether to deploy a new Azure OpenAI instance')
 param deployNewAzureOpenAI bool = true
@@ -168,11 +168,11 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'Authorization:Type'
-          value: empty(skServerApiKey) ? 'None' : 'ApiKey'
+          value: empty(semanticKernelServerApiKey) ? 'None' : 'ApiKey'
         }
         {
           name: 'Authorization:ApiKey'
-          value: skServerApiKey
+          value: semanticKernelServerApiKey
         }
         {
           name: 'ChatStore:Type'
