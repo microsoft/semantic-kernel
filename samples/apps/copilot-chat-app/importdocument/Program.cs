@@ -115,10 +115,8 @@ public static class Program
             {
                 Console.WriteLine($"Successfully acquired User ID. Continuing...");
                 using var chatScopeContent = new StringContent("Chat");
-                using var userIdContent = new StringContent(userId);
                 using var chatCollectionIdContent = new StringContent(chatCollectionId.ToString());
                 formContent.Add(chatScopeContent, "documentScope");
-                formContent.Add(userIdContent, "userId");
                 formContent.Add(chatCollectionIdContent, "chatId");
 
                 // Calling UploadAsync here to make sure disposable objects are still in scope.

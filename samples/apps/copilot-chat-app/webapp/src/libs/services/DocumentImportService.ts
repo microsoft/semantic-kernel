@@ -5,17 +5,15 @@ export class DocumentImportService {
     constructor(private readonly serviceUrl: string) { }
 
     importDocumentAsync = async (
-        userId: string,
         chatId: string,
         document: File,
         accessToken: string,
     ) => {
         const formData = new FormData();
-        formData.append('userId', userId);
         formData.append('chatId', chatId);
         formData.append('documentScope', 'Chat');
         formData.append('formFile', document);
-        
+
         const commandPath = `importDocument`;
         const requestUrl = new URL(commandPath, this.serviceUrl);
 
@@ -27,7 +25,7 @@ export class DocumentImportService {
             const response = await fetch(requestUrl, {
                 method: 'POST',
                 body: formData,
-                headers: headers,
+                headers,
             });
 
             if (!response.ok) {

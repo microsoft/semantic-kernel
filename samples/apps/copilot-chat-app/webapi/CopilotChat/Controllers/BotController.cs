@@ -139,14 +139,14 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Policy = AuthPolicyName.RequireChatOwner)]
-    public async Task<ActionResult<string>> DownloadAsync(
+    public async Task<ActionResult<Bot?>> DownloadAsync(
         [FromServices] IKernel kernel,
         Guid chatId)
     {
         this._logger.LogDebug("Received call to download a bot");
         var memory = await this.CreateBotAsync(kernel: kernel, chatId: chatId);
 
-        return JsonSerializer.Serialize(memory);
+        return this.Ok(memory);
     }
 
     /// <summary>
