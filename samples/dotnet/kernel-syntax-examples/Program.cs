@@ -122,10 +122,14 @@ public static class Program
         await Example38_Pinecone.RunAsync();
         Console.WriteLine("== DONE ==");
 
+<<<<<<< HEAD
         await Example39_MultiChatCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
 
         await Example40_MultiStreamingChatCompletion.RunAsync();
+=======
+        await Example39_Postgres.RunAsync();
+>>>>>>> 7a884d4e57623c412534d15b4bc9f46a70fb7334
         Console.WriteLine("== DONE ==");
     }
 }
