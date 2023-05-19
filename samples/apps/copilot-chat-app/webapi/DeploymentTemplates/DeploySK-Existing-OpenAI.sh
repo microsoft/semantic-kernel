@@ -13,7 +13,7 @@ usage() {
     echo "  -o, --openai-api-key OPENAI_API_KEY        OpenAI API key (mandatory)"
     echo "  -rg, --resource-group RESOURCE_GROUP       Resource group to which to make the deployment (default: \"rg-\$DEPLOYMENT_NAME\")"
     echo "  -r, --region REGION                        Region to which to make the deployment (default: \"South Central US\")"
-    echo "  -p, --package-uri PACKAGE_URI              Package to deploy to web service (default: 'https://semantickerneldeploy.blob.core.windows.net/api/semantickernelservice.zip')"
+    echo "  -p, --package-uri PACKAGE_URI              Package to deploy to web service (default: 'https://skaasdeploy.blob.core.windows.net/api/semantickernelservice.zip')"
     echo "  -a, --app-service-sku APP_SERVICE_SKU      SKU for the Azure App Service plan (default: \"B1\")"
     echo "  -k, --semker-server-api-key SEMKER_SERVER_API_KEY  API key to access Semantic Kernel server's endpoints (default: random UUID)"
     echo "  -cm, --completion-model COMPLETION_MODEL   Completion model to use (default: \"gpt-3.5-turbo\")"
@@ -125,7 +125,7 @@ az account set -s "$SUBSCRIPTION"
 
 # Set defaults
 : "${REGION:="South Central US"}"
-: "${PACKAGE_URI:="https://semantickerneldeploy.blob.core.windows.net/api/semantickernelservice.zip"}"
+: "${PACKAGE_URI:="https://skaasdeploy.blob.core.windows.net/api/semantickernelservice.zip"}"
 : "${APP_SERVICE_SKU:="B1"}"
 : "${SEMKER_SERVER_API_KEY:="$(uuidgen)"}"
 : "${NO_QDRANT:=false}"

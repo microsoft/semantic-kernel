@@ -14,7 +14,7 @@ param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
-param packageUri string = 'https://semantickerneldeploy.blob.core.windows.net/api/semantickernelservice.zip'
+param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/semantickernelservice.zip'
 
 @description('Model to use for chat completions')
 param completionModel string = 'gpt-3.5-turbo'

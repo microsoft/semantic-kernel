@@ -25,7 +25,7 @@
     },
     "packageUri": {
       "type": "string",
-      "defaultValue": "https://semantickerneldeploy.blob.core.windows.net/api/semantickernelservice.zip",
+      "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/semantickernelservice.zip",
       "metadata": {
         "description": "Location of package to deploy as the web service"
       }
@@ -173,7 +173,7 @@
             },
             "packageUri": {
               "type": "string",
-              "defaultValue": "https://semantickerneldeploy.blob.core.windows.net/api/semantickernelservice.zip",
+              "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/semantickernelservice.zip",
               "metadata": {
                 "description": "Location of package to deploy as the web service"
               }
