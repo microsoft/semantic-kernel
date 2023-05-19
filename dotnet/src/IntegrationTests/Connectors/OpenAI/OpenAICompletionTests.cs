@@ -145,10 +145,15 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task OpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
         // Arrange
+        var retryConfig = new HttpRetryConfig();
+        retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
+
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
         IKernel target = Kernel.Builder
+            .WithLogger(this._testOutputHelper)
+            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
             .WithOpenAITextCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
