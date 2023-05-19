@@ -77,7 +77,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
     public async Task CanUseOpenAiChatForTextCompletionAsync()
     {
         // Note: we use OpenAi Chat Completion and GPT 3.5 Turbo
