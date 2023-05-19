@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "type": "completion",
-  "description": "Extract entities related to a given topic from a text",
+  "description": "Extract entities related to a given topic from a text and return them as a list",
   "completion": {
     "max_tokens": 1024,
     "temperature": 0.0,
@@ -18,7 +18,12 @@
       },
       {
         "name": "topic",
-        "description": "The topic of the entities to be extracted",
+        "description": "The topic of interest; this will determine which entities are extracted",
+        "defaultValue": ""
+      },
+      {
+        "name": "example_entities",
+        "description": "A list of example entities from the topic. This can help guide the entity extraction",
         "defaultValue": ""
       }
     ]
