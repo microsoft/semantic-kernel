@@ -8,7 +8,7 @@ Resources to add:
 - vNet + Network security group
 */
 
-@description('Name for the deployment')
+@description('Name for the deployment - Must consist of alphanumeric characters or \'-\'')
 param name string = 'semkernel'
 
 @description('SKU for the Azure App Service plan')
