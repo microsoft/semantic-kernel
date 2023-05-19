@@ -32,10 +32,10 @@ jobs:
       # This step will loop over the changed files and find the nearest .csproj file for each one, then store the unique csproj files in a variable
       - name: Find csproj files
         id: find-csproj
-        if: steps.changed-files.outputs.added_modified != '' || steps.seedBuild.outcome == 'failure'
+        if: steps.changed-files.outputs.added_modified != '' || steps.changed-files.outcome == 'failure'
         run: |
           csproj_files=()
-          if steps.seedBuild.outcome == 'success'; then
+          if steps.changed-files.outcome == 'success'; then
             for file in ${{ steps.changed-files.outputs.added_modified }}; do
               echo "$file was changed"
               dir="$GITHUB_WORKSPACE/$file"
