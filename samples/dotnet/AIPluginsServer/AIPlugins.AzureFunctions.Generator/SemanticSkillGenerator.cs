@@ -105,7 +105,7 @@ public class {skillName}
     public Task<HttpResponseData> GetAIPluginSpecAsync([HttpTrigger(AuthorizationLevel.Anonymous, ""get"")] HttpRequestData req)
     {{
         this._logger.LogInformation(""HTTP trigger processed a request for function GetAIPluginSpecAsync."");
-        return AIPluginHelpers.GenerateAIPluginJsonResponseAsync(req, ""{skillName}"", ""{skillDescription}"");
+        return AIPluginHelpers.GenerateAIPluginJsonResponseAsync(req, ""{skillName}"", ""{skillDescription}"", ""{skillDescription}"");
     }}";
     }
 

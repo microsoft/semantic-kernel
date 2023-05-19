@@ -15,40 +15,26 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <PackageId>Microsoft.SemanticKernel</PackageId>
-    <Title>Semantic Kernel</Title>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <DocumentationFile>bin\Release\netstandard2.0\SemanticKernel.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>portable</DebugType>
-    <DocumentationFile>bin\Debug\netstandard2.0\SemanticKernel.xml</DocumentationFile>
+    <Title>Semantic Kernel Core</Title>
+    <Description>
+      Semantic Kernel core orchestration, runtime and skills.
+      This package is automatically installed by 'Microsoft.SemanticKernel' package with other useful packages.
+      Install this package manually only if you are selecting individual Semantic Kernel components.
+    </Description>
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Connectors.OpenAI</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.SemanticKernel.Skills.OpenAPI</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.UnitTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.Skills.UnitTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.IntegrationTests</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1> <!-- Moq -->
-    </AssemblyAttribute>
+    <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StrongNamePublicKey)" />
+    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" PublicKey="$(StrongNamePublicKey)" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Skills.OpenAPI" PublicKey="$(StrongNamePublicKey)" />
+    <InternalsVisibleTo Include="SemanticKernel.IntegrationTests" PublicKey="$(StrongNamePublicKey)" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" PublicKey="$(StrongNamePublicKey)" /> <!-- Moq -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <ItemGroup>

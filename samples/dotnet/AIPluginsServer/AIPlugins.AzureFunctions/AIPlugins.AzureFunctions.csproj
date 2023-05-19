@@ -20,8 +20,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\dotnet\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\AIPlugins.AzureFunctions.Extensions\AIPlugins.AzureFunctions.Extensions.csproj" />
-    <ProjectReference Include="..\AIPlugins.AzureFunctions.Generator\AIPlugins.AzureFunctions.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
@@ -36,11 +36,11 @@
     </AdditionalFiles>
   </ItemGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <None Include="$(IntDir).generated\AIPlugins.AzureFunctions.Generator\AIPlugins.AzureFunctions.Generator.SemanticSkillGenerator\**">
       <Link>.generated\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
-  </ItemGroup>
+  </ItemGroup>-->
 
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />

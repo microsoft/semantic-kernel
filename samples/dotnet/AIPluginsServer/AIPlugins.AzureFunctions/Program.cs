@@ -14,9 +14,8 @@ var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureServices(services =>
     {
-
         services
-            .AddTransient<IKernel>((providers) =>
+            .AddScoped<IKernel>((providers) =>
             {
                 // This will be called each time a new Kernel is needed
 
@@ -33,11 +32,12 @@ var host = new HostBuilder()
                 var kernel = builder.Build();
 
                 // Load your skills...
+                kernel.ImportSkill(new LinkedInSkill(), "LI");
                 //kernel.RegisterSemanticSkills(semanticSkillsFolder, logger);
 
                 return kernel;
             })
-            .AddTransient<IAIPluginRunner, KernelAIPluginRunner>();
+            .AddScoped<IAIPluginRunner, KernelAIPluginRunner>();
     })
     .Build();
 
