@@ -15,8 +15,8 @@ public interface ISemanticTextMemory
     /// Save some information into the semantic memory, keeping a copy of the source information.
     /// </summary>
     /// <param name="collection">Collection where to save the information.</param>
-    /// <param name="id">Unique identifier.</param>
     /// <param name="text">Information to save.</param>
+    /// <param name="id">Unique identifier.</param>
     /// <param name="description">Optional description.</param>
     /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>

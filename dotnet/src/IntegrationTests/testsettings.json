@@ -7,6 +7,7 @@
   "AzureOpenAI": {
     "ServiceId": "azure-text-davinci-003",
     "DeploymentName": "text-davinci-003",
+    "ChatDeploymentName": "gpt-4",
     "Endpoint": "",
     "ApiKey": ""
   },

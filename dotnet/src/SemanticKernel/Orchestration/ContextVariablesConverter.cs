@@ -26,6 +26,13 @@ public class ContextVariablesConverter : JsonConverter<ContextVariables>
 
         foreach (var kvp in keyValuePairs!)
         {
+            if (string.IsNullOrWhiteSpace(kvp.Key))
+            {
+                // Json deserialization behaves differently in different versions of .NET. In some cases, the above "Deserialize" call
+                // throws on a null key, and in others it does not. This check is to ensure that we throw in all cases.
+                throw new JsonException("'Key' property cannot be null or empty.");
+            }
+
             context.Set(kvp.Key, kvp.Value);
         }
 
