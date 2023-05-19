@@ -1,21 +1,30 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { configureStore } from '@reduxjs/toolkit';
-import { AppState } from '../features/app/AppState';
-import { ConversationsState } from '../features/conversations/ConversationsState';
-import { PluginsState } from '../features/plugins/PluginsState';
-import resetStateReducer, { resetApp } from './rootReducer';
+import appReducer from '../features/app/appSlice';
+import conversationsReducer from '../features/conversations/conversationsSlice';
+import { registerSignalREvents, signalRMiddleware, startSignalRConnection } from '../features/message-relay/signalRMiddleware';
+import pluginsReducer from '../features/plugins/pluginsSlice';
 
 export const store = configureStore({
-    reducer: resetStateReducer,
+    reducer: {
+        app: appReducer,
+        conversations: conversationsReducer,
+        plugins: pluginsReducer,
+    },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(signalRMiddleware)
 });
 
-export type RootState = {
-    app: AppState;
-    conversations: ConversationsState;
-    plugins: PluginsState;
+export const getSelectedChatID = () : string => {
+    return store.getState().conversations.selectedId;
 };
 
+// Start the signalR connection to make sure messages are
+// sent to all clients and received by all clients
+startSignalRConnection(store);
+registerSignalREvents(store);
+
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 // Function to reset the app state
