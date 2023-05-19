@@ -4,6 +4,7 @@
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
 // You can access the builder using either Kernel.Builder or KernelBuilder.
 
+#pragma warning disable CA1852
 #pragma warning disable CA1050
 
 using Microsoft.SemanticKernel.AI.TextCompletion;

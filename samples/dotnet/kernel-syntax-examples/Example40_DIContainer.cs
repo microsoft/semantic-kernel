@@ -15,7 +15,7 @@ using RepoUtils;
 /**
  * The following examples show how to use SK SDK in applications using DI/IoC containers.
  */
-public static class Example39_DIContainer
+public static class Example40_DIContainer
 {
     public static async Task RunAsync()
     {

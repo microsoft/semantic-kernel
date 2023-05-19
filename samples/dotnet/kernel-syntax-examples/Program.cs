@@ -122,7 +122,10 @@ public static class Program
         await Example38_Pinecone.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example39_DIContainer.RunAsync();
+        await Example39_Postgres.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example40_DIContainer.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
