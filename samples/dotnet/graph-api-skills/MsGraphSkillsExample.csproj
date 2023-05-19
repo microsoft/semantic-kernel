@@ -40,4 +40,15 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\kernel-syntax-examples\RepoUtils\RepoFiles.cs">
+      <Link>LinkedFiles\RepoFiles.cs</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="..\kernel-syntax-examples\RepoUtils\YourAppException.cs">
+      <Link>LinkedFiles\YourAppException.cs</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
 </Project>

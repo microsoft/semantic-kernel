@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "10267534410369500421"
+      "templateHash": "13483101291283325126"
     }
   },
   "parameters": {
@@ -135,7 +135,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "14734235123073662514"
+              "templateHash": "4362216299477491752"
             }
           },
           "parameters": {
@@ -347,52 +347,28 @@
                   "use32BitWorkerProcess": false,
                   "appSettings": [
                     {
-                      "name": "Completion:AIService",
+                      "name": "AIService:Type",
                       "value": "[parameters('aiService')]"
                     },
                     {
-                      "name": "Completion:DeploymentOrModelId",
+                      "name": "AIService:Endpoint",
+                      "value": "[if(parameters('deployNewAzureOpenAI'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').endpoint, parameters('endpoint'))]"
+                    },
+                    {
+                      "name": "AIService:Key",
+                      "value": "[if(parameters('deployNewAzureOpenAI'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').key1, parameters('apiKey'))]"
+                    },
+                    {
+                      "name": "AIService:Models:Completion",
                       "value": "[parameters('completionModel')]"
                     },
                     {
-                      "name": "Completion:Endpoint",
-                      "value": "[if(parameters('deployNewAzureOpenAI'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').endpoint, parameters('endpoint'))]"
-                    },
-                    {
-                      "name": "Completion:Key",
-                      "value": "[if(parameters('deployNewAzureOpenAI'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').key1, parameters('apiKey'))]"
-                    },
-                    {
-                      "name": "Embedding:AIService",
-                      "value": "[parameters('aiService')]"
-                    },
-                    {
-                      "name": "Embedding:DeploymentOrModelId",
+                      "name": "AIService:Models:Embedding",
                       "value": "[parameters('embeddingModel')]"
                     },
                     {
-                      "name": "Embedding:Endpoint",
-                      "value": "[if(parameters('deployNewAzureOpenAI'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').endpoint, parameters('endpoint'))]"
-                    },
-                    {
-                      "name": "Embedding:Key",
-                      "value": "[if(parameters('deployNewAzureOpenAI'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').key1, parameters('apiKey'))]"
-                    },
-                    {
-                      "name": "Planner:AIService:AIService",
-                      "value": "[parameters('aiService')]"
-                    },
-                    {
-                      "name": "Planner:AIService:DeploymentOrModelId",
+                      "name": "AIService:Models:Planner",
                       "value": "[parameters('plannerModel')]"
-                    },
-                    {
-                      "name": "Planner:AIService:Endpoint",
-                      "value": "[if(parameters('deployNewAzureOpenAI'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').endpoint, parameters('endpoint'))]"
-                    },
-                    {
-                      "name": "Planner:AIService:Key",
-                      "value": "[if(parameters('deployNewAzureOpenAI'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').key1, parameters('apiKey'))]"
                     },
                     {
                       "name": "Authorization:Type",

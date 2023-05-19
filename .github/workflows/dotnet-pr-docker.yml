@@ -9,6 +9,10 @@ on:
   pull_request:
     branches: [ "main", "feature*" ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -67,7 +71,7 @@ jobs:
       if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: |
         for solution in ${{ env.solutions }}; do
-          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet build -c ${{ matrix.configuration }} /app/$solution"
+          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet build -c ${{ matrix.configuration }} /warnaserror /app/$solution"
         done
         
     - name: Find unit test projects
