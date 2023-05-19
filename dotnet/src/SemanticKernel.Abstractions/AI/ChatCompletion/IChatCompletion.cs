@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,4 +60,15 @@ public interface IChatCompletionResult
 public interface IChatCompletionStreamingResult : IChatCompletionResult
 {
     IAsyncEnumerable<IChatMessage> GetChatMessageStreamingAsync(CancellationToken cancellationToken = default);
+}
+
+public static class ChatCompletionExtensions
+{
+    public static IAsyncEnumerable<string> GenerateMessageStreamAsync(this IChatCompletion chatCompletion,
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        return Array.Empty<string>().ToAsyncEnumerable();
+    }
 }
