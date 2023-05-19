@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -14,7 +17,7 @@ namespace SemanticKernel.Service.Auth;
 public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthenticationSchemeOptions>
 {
     public const string AuthenticationScheme = "ApiKey";
-    public const string ApiKeyHeaderName = "x-api-key";
+    public const string ApiKeyHeaderName = "x-sk-api-key";
 
     /// <summary>
     /// Constructor

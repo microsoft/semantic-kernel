@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { IChatMessage } from '../../../libs/models/ChatMessage';
-import { ChatUser } from '../../../libs/models/ChatUser';
+import { IChatUser } from '../../../libs/models/ChatUser';
 
 export interface ChatState {
     id: string;
     title: string;
-    audience: ChatUser[];
+    users: IChatUser[];
     messages: IChatMessage[];
-    botTypingTimestamp: number;
     botProfilePicture: string;
 }

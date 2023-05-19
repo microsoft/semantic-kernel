@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SemanticKernel.Service.Config;
+namespace SemanticKernel.Service.Options;
 
 /// <summary>
 /// Configuration options for the CopilotChat service.
@@ -20,5 +21,5 @@ public class ServiceOptions
     /// <summary>
     /// Local directory in which to load semantic skills.
     /// </summary>
-    public string SemanticSkillsDirectory { get; set; } = string.Empty;
+    public string? SemanticSkillsDirectory { get; set; }
 }

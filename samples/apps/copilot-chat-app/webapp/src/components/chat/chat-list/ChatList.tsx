@@ -3,7 +3,7 @@
 import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 import { FC } from 'react';
-import { isPlan } from '../../../libs/semantic-kernel/sk-utilities';
+import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { ChatListItem } from './ChatListItem';
@@ -14,7 +14,6 @@ const useClasses = makeStyles({
         ...shorthands.overflow('hidden'),
         display: 'flex',
         width: '25%',
-        scrollbarWidth: 'thin',
         backgroundColor: '#F0F0F0',
         flexDirection: 'column',
         '@media (max-width: 25%)': {
@@ -23,6 +22,17 @@ const useClasses = makeStyles({
     },
     list: {
         overflowY: 'auto',
+        overflowX: 'hidden',
+        '&:hover': {
+            '&::-webkit-scrollbar-thumb': {
+                backgroundColor: tokens.colorScrollbarOverlay,
+                visibility: 'visible',
+            },
+        },
+        ...shorthands.margin('4px'),
+        '&::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent',
+        },
     },
     header: {
         ...shorthands.padding(tokens.spacingVerticalXXS, tokens.spacingHorizontalXS),
@@ -62,10 +72,7 @@ export const ChatList: FC = () => {
                             <ChatListItem
                                 id={id}
                                 header={convo.title}
-                                timestamp={new Date(messages[lastMessage].timestamp).toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                })}
+                                timestamp={messages[lastMessage].timestamp}
                                 preview={
                                     messages.length > 0
                                         ? isPlan(messages[lastMessage].content)
