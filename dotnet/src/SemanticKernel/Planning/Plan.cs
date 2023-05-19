@@ -253,7 +253,7 @@ public sealed class Plan : ISKFunction
             if (result.ErrorOccurred)
             {
                 throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
-                    $"Error occurred while running plan step: {context.LastErrorDescription}", context.LastException);
+                    $"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
             }
 
             #region Update State
