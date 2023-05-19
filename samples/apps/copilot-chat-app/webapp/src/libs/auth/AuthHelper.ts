@@ -4,11 +4,12 @@ import {
     Configuration,
     EndSessionRequest,
     IPublicClientApplication,
-    InteractionRequiredAuthError,
+    InteractionStatus,
     LogLevel
 } from '@azure/msal-browser';
 import debug from 'debug';
 import { Constants } from '../../Constants';
+import { TokenHelper } from './TokenHelper';
 
 const log = debug(Constants.debug.root).extend('authHelper');
 
@@ -75,17 +76,8 @@ const logoutAsync = async (instance: IPublicClientApplication) => {
 
 // SKaaS = Semantic Kernel as a Service
 // Gets token with scopes to authorize SKaaS specifically
-const getSKaaSAccessToken = async (instance: IPublicClientApplication) => {
-    try {
-        const token = await instance.acquireTokenSilent({ scopes: Constants.msal.skScopes, account: instance.getAllAccounts()[0] });
-        return token.accessToken;
-    } catch (ex: any) {
-        if (ex instanceof InteractionRequiredAuthError) {
-            const token = await instance.acquireTokenPopup({ scopes: Constants.msal.skScopes, account: instance.getAllAccounts()[0] });
-            return token.accessToken;
-        }
-        throw new Error(`Failed to get access token for web service: ${ex}`);
-    }
+const getSKaaSAccessToken = async (instance: IPublicClientApplication, inProgress: InteractionStatus) => {
+    return await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, Constants.msal.skScopes);
 };
 
 export const AuthHelper = {
