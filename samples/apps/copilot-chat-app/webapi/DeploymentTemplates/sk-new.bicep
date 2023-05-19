@@ -5,7 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 Bicep template for deploying Semantic Kernel to Azure as a web app service with a new Azure OpenAI account.
 */
 
-@description('Name for the deployment')
+@description('Name for the deployment - Must consist of alphanumeric characters or \'-\'')
 param name string = 'sk'
 
 @description('SKU for the Azure App Service plan')
@@ -13,7 +13,7 @@ param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
-param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
+param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/semantic-kernel.zip'
 
 @description('Model to use for chat completions')
 param completionModel string = 'gpt-35-turbo'
@@ -24,7 +24,7 @@ param embeddingModel string = 'text-embedding-ada-002'
 @description('Completion model the task planner should use')
 param plannerModel string = 'gpt-35-turbo'
 
-@description('Semantic Kernel server API key - Provide empty string to disable API key auth')
+@description('Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth')
 param skServerApiKey string = newGuid()
 
 @description('Whether to deploy Cosmos DB for chat storage')

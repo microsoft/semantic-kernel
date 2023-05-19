@@ -5,7 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 Bicep template for deploying Semantic Kernel to Azure as a web app service with an existing Azure OpenAI account.
 */
 
-@description('Name for the deployment')
+@description('Name for the deployment - Must consist of alphanumeric characters or \'-\'')
 param name string = 'sk'
 
 @description('SKU for the Azure App Service plan')
@@ -31,7 +31,7 @@ param endpoint string
 @description('Azure OpenAI API key')
 param apiKey string
 
-@description('Semantic Kernel server API key - Provide empty string to disable API key auth')
+@description('Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth')
 param skServerApiKey string = newGuid()
 
 @description('Whether to deploy Cosmos DB for chat storage')

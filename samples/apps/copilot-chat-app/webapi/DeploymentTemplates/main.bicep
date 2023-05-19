@@ -5,7 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 Bicep template for deploying Semantic Kernel to Azure as a web app service.
 */
 
-@description('Name for the deployment')
+@description('Name for the deployment - Must consist of alphanumeric characters or \'-\'')
 param name string = 'sk'
 
 @description('SKU for the Azure App Service plan')
@@ -13,7 +13,7 @@ param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
-param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
+param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/semantic-kernel.zip'
 
 @description('Underlying AI service')
 @allowed([
@@ -38,7 +38,7 @@ param endpoint string = ''
 @description('Azure OpenAI or OpenAI API key')
 param apiKey string = ''
 
-@description('Semantic Kernel server API key - Provide empty string to disable API key auth')
+@description('Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth')
 param skServerApiKey string = newGuid()
 
 @description('Whether to deploy a new Azure OpenAI instance')
@@ -120,7 +120,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 }
 
 resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
-  name: 'app-${uniqueName}skweb'
+  name: 'app-${uniqueName}-skweb'
   location: location
   tags: {
     skweb: '1'
@@ -226,7 +226,7 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       }
       {
         name: 'MemoriesStore:Qdrant:Host'
-        value: deployQdrant ? 'http://${appServiceQdrant.properties.defaultHostName}' : ''
+        value: deployQdrant ? 'https://${containerApp.properties.configuration.ingress.fqdn}' : ''
       }
       {
         name: 'AzureSpeech:Region'
@@ -344,60 +344,87 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = if (deployQdra
   }
 }
 
-resource appServicePlanQdrant 'Microsoft.Web/serverfarms@2022-03-01' = if (deployQdrant) {
-  name: 'asp-${uniqueName}-qdrant'
+resource environment 'Microsoft.App/managedEnvironments@2022-03-01' = if (deployQdrant) {
+  name: 'cae-${uniqueName}'
   location: location
-  kind: 'linux'
-  sku: {
-    name: 'P1v3'
-  }
   properties: {
-    reserved: true
-  }
-}
-
-resource appServiceQdrant 'Microsoft.Web/sites@2022-09-01' = if (deployQdrant) {
-  name: 'app-${uniqueName}-qdrant'
-  location: location
-  kind: 'app,linux,container'
-  properties: {
-    serverFarmId: appServicePlanQdrant.id
-    httpsOnly: true
-    reserved: true
-    clientCertMode: 'Required'
-    siteConfig: {
-      numberOfWorkers: 1
-      linuxFxVersion: 'DOCKER|qdrant/qdrant:latest'
-      alwaysOn: true
-      ipSecurityRestrictions: [
-        {
-#disable-next-line BCP053 // Bicep doesn't yet know about this existing property
-          ipAddress: '${appServiceWeb.properties.inboundIpAddress}/32'
-          action: 'Allow'
-          tag: 'Default'
-          priority: 300
-          name: 'Acces from SK'
-          description: 'Allows SK to access Qdrant'
-        }
-        {
-          ipAddress: 'Any'
-          action: 'Deny'
-          priority: 2147483647
-          name: 'Deny all'
-          description: 'Deny all access'
-        }
-      ]
-      azureStorageAccounts: {
-        default: {
-          type: 'AzureFiles'
-          accountName: deployQdrant ? storage.name : 'notdeployed'
-          shareName: storageFileShareName
-          mountPath: '/qdrant/storage'
-          accessKey: deployQdrant ? storage.listKeys().keys[0].value : ''
-        }
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalyticsWorkspace.properties.customerId
+        sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
       }
     }
   }
+}
+
+resource azurefilestorage 'Microsoft.App/managedEnvironments/storages@2022-10-01' = {
+  parent: environment
+  name: 'azure-file-storage'
+  properties: {
+    azureFile: {
+      accountName: deployQdrant ? storage.name : 'notdeployed'
+      accountKey: deployQdrant ? storage.listKeys().keys[0].value : ''
+      shareName: storageFileShareName
+      accessMode: 'ReadWrite'
+    }
+  }
+}
+
+resource containerApp 'Microsoft.App/containerApps@2022-03-01' = if (deployQdrant) {
+  name: 'app-${rgIdHash}-qdrant' // Not using full unique name to avoid hitting 32 char limit
+  location: location
+  properties:{
+    managedEnvironmentId: environment.id
+    configuration: {
+      ingress: {
+        allowInsecure: false
+        transport: 'http'
+        targetPort: 6333
+        external: true
+        ipSecurityRestrictions: [
+          {
+            name: 'SemanticKernel'
+#disable-next-line BCP053 // Bicep doesn't yet know this is a valid property
+            ipAddressRange: appServiceWeb.properties.inboundIpAddress
+            action: 'Allow'
+          }
+        ]
+      }
+    }
+    template: {
+      containers: [
+        {
+          image: 'qdrant/qdrant:latest'
+          name: 'qdrant-container'
+          resources: {
+            cpu: 2
+            memory: '4.0Gi'
+          }
+          volumeMounts: [
+            {
+              mountPath: '/qdrant/storage'
+              volumeName: 'azure-files-volume'
+            }
+          ]
+        }
+      ]
+      scale: {
+        minReplicas: 1
+        maxReplicas: 1
+      }
+      volumes: [
+        {
+          name: 'azure-files-volume'
+          storageName: 'azure-file-storage'
+          storageType: 'AzureFile'
+        }
+      ]
+    }
+  }
+  dependsOn: [
+    azurefilestorage
+  ]
 }
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = if (deployCosmosDB) {
