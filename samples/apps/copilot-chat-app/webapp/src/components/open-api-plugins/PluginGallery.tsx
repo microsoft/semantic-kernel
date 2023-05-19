@@ -11,6 +11,7 @@ import {
     Subtitle2,
     makeStyles,
     shorthands,
+    tokens,
 } from '@fluentui/react-components';
 import { AppsAddIn24Regular, Dismiss24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
@@ -23,6 +24,7 @@ const useClasses = makeStyles({
         maxWidth: '1052px',
         height: '632px',
         width: 'fit-content',
+        display: 'flex',
     },
     title: {
         ...shorthands.margin(0, 0, '12px'),
@@ -30,13 +32,23 @@ const useClasses = makeStyles({
     description: {
         ...shorthands.margin(0, 0, '12px'),
     },
+    dialogContent: {
+        ...shorthands.overflow('hidden'),
+        display: 'flex',
+        flexDirection: 'column',
+    },
     content: {
         display: 'flex',
         flexDirection: 'row',
         flexWrap: 'wrap',
+        overflowY: 'auto',
         rowGap: '24px',
         columnGap: '24px',
-        ...shorthands.margin(0, '2px', '12px'),
+        ...shorthands.padding('12px', '2px', '12px'),
+        '&::-webkit-scrollbar-thumb': {
+            backgroundColor: tokens.colorScrollbarOverlay,
+            visibility: 'visible',
+        },
     },
 });
 
@@ -67,7 +79,7 @@ export const PluginGallery: React.FC = () => {
                             Authorize plugins and have more powerful bots!
                         </Body1>
                     </DialogTitle>
-                    <DialogContent>
+                    <DialogContent className={classes.dialogContent}>
                         <Subtitle2 block className={classes.title}>
                             Available Plugins
                         </Subtitle2>{' '}

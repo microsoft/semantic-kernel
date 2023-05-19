@@ -231,7 +231,7 @@ public class ChatSkill
             // Reload the plan with the planner's kernel so
             // it has full context to be executed
             var newPlanContext = new SKContext(
-                context.Variables,
+                null,
                 this._planner.Kernel.Memory,
                 this._planner.Kernel.Skills,
                 this._planner.Kernel.Log
@@ -239,7 +239,7 @@ public class ChatSkill
             var plan = Plan.FromJson(planJson, newPlanContext);
 
             // Invoke plan
-            newPlanContext = await plan.InvokeAsync(plannerContext);
+            newPlanContext = await plan.InvokeAsync(newPlanContext);
             int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.

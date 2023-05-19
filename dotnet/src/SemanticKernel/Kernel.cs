@@ -211,12 +211,13 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext()
+    public SKContext CreateNewContext(CancellationToken cancellationToken = default)
     {
         return new SKContext(
             memory: this._memory,
             skills: this._skillCollection.ReadOnlySkillCollection,
-            logger: this.Log);
+            logger: this.Log,
+            cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
