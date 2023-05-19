@@ -3,8 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
@@ -15,9 +13,9 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Planning.Iterative;
 
-public sealed class IterativePlannerTextTests : IDisposable
+public sealed class MrklPlannerTextTests : IDisposable
 {
-    public IterativePlannerTextTests(ITestOutputHelper output)
+    public MrklPlannerTextTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
         this._testOutputHelper = output;
@@ -27,7 +25,7 @@ public sealed class IterativePlannerTextTests : IDisposable
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<IterativePlannerTextTests>()
+            .AddUserSecrets<MrklPlannerTextTests>()
             .Build();
 
         string? bingApiKeyCandidate = this._configuration["Bing:ApiKey"];
@@ -44,7 +42,7 @@ public sealed class IterativePlannerTextTests : IDisposable
         // Arrange
         IKernel kernel = this.InitializeKernel();
         //lets limit it to 10 steps to have a long chain and scratchpad
-        var plan = new IterativePlannerText(kernel, 12);
+        var plan = new MrklPlannerText(kernel, 12);
         var goal = "count down from 10 to one using subtraction functionality of the calculator tool, and decrementing value 1 by 1 ";
         var result = await plan.ExecutePlanAsync(goal);
 
@@ -56,7 +54,7 @@ public sealed class IterativePlannerTextTests : IDisposable
         Assert.Equal(10, plan.Steps.Count);
     }
 
-    private void PrintPlan(IterativePlannerText plan, string result)
+    private void PrintPlan(MrklPlannerText plan, string result)
     {
         foreach (var step in plan.Steps)
         {
@@ -76,7 +74,7 @@ public sealed class IterativePlannerTextTests : IDisposable
         // Arrange
         IKernel kernel = this.InitializeKernel();
         //it should be able to finish in 4 steps 
-        var plan = new IterativePlannerText(kernel, 4);
+        var plan = new MrklPlannerText(kernel, 4);
         var goal = "Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?";
         //var goal = "Who is Leo DiCaprio's girlfriend? What is her current age ?";
 
@@ -143,7 +141,7 @@ public sealed class IterativePlannerTextTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    ~IterativePlannerTextTests()
+    ~MrklPlannerTextTests()
     {
         this.Dispose(false);
     }

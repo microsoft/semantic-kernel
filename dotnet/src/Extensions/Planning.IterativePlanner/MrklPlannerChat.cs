@@ -11,12 +11,12 @@ using Planning.IterativePlanner;
 namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
-public class IterativePlannerChat : IterativePlannerText
+public class MrklPlannerChat : MrklPlannerText
 {
     private readonly string _systemPromptTemplate;
     private readonly string _userPromptTemplate;
 
-    public IterativePlannerChat(IKernel kernel,
+    public MrklPlannerChat(IKernel kernel,
         int maxIterations = 5,
         string? systemPrompt = null,
         string systemResource = "iterative-planer-chat-system.txt",

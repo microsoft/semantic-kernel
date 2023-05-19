@@ -14,9 +14,9 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Planning.Iterative;
 
-public sealed class IterativePlannerChatTests : IDisposable
+public sealed class MrklPlannerChatTests : IDisposable
 {
-    public IterativePlannerChatTests(ITestOutputHelper output)
+    public MrklPlannerChatTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
         this._testOutputHelper = output;
@@ -26,7 +26,7 @@ public sealed class IterativePlannerChatTests : IDisposable
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<IterativePlannerChatTests>()
+            .AddUserSecrets<MrklPlannerChatTests>()
             .Build();
 
         string? bingApiKeyCandidate = this._configuration["Bing:ApiKey"];
@@ -43,7 +43,7 @@ public sealed class IterativePlannerChatTests : IDisposable
         // Arrange
         IKernel kernel = this.InitializeKernel("gpt-35-turbo");
         //lets limit it to 10 steps to have a long chain and scratchpad
-        var plan = new IterativePlannerChat(kernel, 12, logger: this._logger);
+        var plan = new MrklPlannerChat(kernel, 12, logger: this._logger);
         var goal = "count down from 10 to one using subtraction functionality of the calculator tool. Decrementing value by 1 in each step. Each step should have only one subtraction. So you need to call calculator tool multiple times ";
         var result = await plan.ExecutePlanAsync(goal);
 
@@ -55,7 +55,7 @@ public sealed class IterativePlannerChatTests : IDisposable
         Assert.True(plan.Steps.Count >= 9, "it should take at least 9 steps");
     }
 
-    private void PrintPlan(IterativePlannerText plan, string result)
+    private void PrintPlan(MrklPlannerText plan, string result)
     {
         foreach (var step in plan.Steps)
         {
@@ -75,7 +75,7 @@ public sealed class IterativePlannerChatTests : IDisposable
         // Arrange
         IKernel kernel = this.InitializeKernel("gpt-35-turbo");
         //it should be able to finish in 4 steps 
-        var plan = new IterativePlannerChat(kernel, 5, logger: this._logger);
+        var plan = new MrklPlannerChat(kernel, 5, logger: this._logger);
         var goal = "Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?";
         //var goal = "Who is Leo DiCaprio's girlfriend? What is her current age ?";
 
@@ -142,7 +142,7 @@ public sealed class IterativePlannerChatTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    ~IterativePlannerChatTests()
+    ~MrklPlannerChatTests()
     {
         this.Dispose(false);
     }

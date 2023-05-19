@@ -21,12 +21,12 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
     /// A planner that uses semantic function to create a sequential plan.
     /// </summary>
-    public class IterativePlannerText
+    public class MrklPlannerText
 {
     protected readonly int MaxIterations;
 
     /// <summary>
-    /// Initialize a new instance of the <see cref="IterativePlannerText"/> class.
+    /// Initialize a new instance of the <see cref="MrklPlannerText"/> class.
     /// This planer is optimized and tested for text completion ITextCompletion.
     /// For Chat completion use the ones which Has Chat in the name
     /// </summary>
@@ -36,7 +36,7 @@ namespace Microsoft.SemanticKernel.Planning;
     /// <param name="prompt">Optional prompt override</param>
     /// <param name="embeddedResourceName"></param>
     /// <param name="logger"></param>
-    public IterativePlannerText(
+    public MrklPlannerText(
         IKernel kernel,
         int maxIterations = 5,
         string? prompt = null,
