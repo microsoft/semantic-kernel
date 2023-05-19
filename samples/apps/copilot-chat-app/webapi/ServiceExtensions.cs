@@ -26,29 +26,30 @@ internal static class ServicesExtensions
         // General configuration
         services.AddOptions<ServiceOptions>()
             .Bind(configuration.GetSection(ServiceOptions.PropertyName))
+            .ValidateDataAnnotations()
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-        // AI service configurations for Semantic Kernel
-        services.AddOptions<AIServiceOptions>(AIServiceOptions.CompletionPropertyName)
-            .Bind(configuration.GetSection(AIServiceOptions.CompletionPropertyName))
+        // Default AI service configurations for Semantic Kernel
+        services.AddOptions<AIServiceOptions>()
+            .Bind(configuration.GetSection(AIServiceOptions.PropertyName))
+            .ValidateDataAnnotations()
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-        services.AddOptions<AIServiceOptions>(AIServiceOptions.EmbeddingPropertyName)
-            .Bind(configuration.GetSection(AIServiceOptions.EmbeddingPropertyName))
-            .ValidateOnStart()
-            .PostConfigure(TrimStringProperties);
+        var foo = services.BuildServiceProvider().GetService<IOptions<AIServiceOptions>>();
 
         // Authorization configuration
         services.AddOptions<ChatAuthenticationOptions>()
             .Bind(configuration.GetSection(ChatAuthenticationOptions.PropertyName))
             .ValidateOnStart()
+            .ValidateDataAnnotations()
             .PostConfigure(TrimStringProperties);
 
         // Memory store configuration
         services.AddOptions<MemoriesStoreOptions>()
             .Bind(configuration.GetSection(MemoriesStoreOptions.PropertyName))
+            .ValidateDataAnnotations()
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 

@@ -27,13 +27,8 @@ public static class CopilotChatServiceExtensions
     {
         // AI service configurations for Copilot Chat.
         // They are using the same configuration section as Semantic Kernel.
-        services.AddOptions<AIServiceOptions>(AIServiceOptions.CompletionPropertyName)
-            .Bind(configuration.GetSection(AIServiceOptions.CompletionPropertyName))
-            .ValidateOnStart()
-            .PostConfigure(TrimStringProperties);
-
-        services.AddOptions<AIServiceOptions>(AIServiceOptions.EmbeddingPropertyName)
-            .Bind(configuration.GetSection(AIServiceOptions.EmbeddingPropertyName))
+        services.AddOptions<AIServiceOptions>(AIServiceOptions.PropertyName)
+            .Bind(configuration.GetSection(AIServiceOptions.PropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 

@@ -20,6 +20,7 @@ public class ChatAuthenticationOptions
     /// <summary>
     /// Type of authorization.
     /// </summary>
+    [Required]
     public AuthenticationType Type { get; set; } = AuthenticationType.None;
 
     /// <summary>
