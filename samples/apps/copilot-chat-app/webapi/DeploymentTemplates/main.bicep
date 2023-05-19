@@ -119,7 +119,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   }
 }
 
-resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
+resource appServiceWeb 'Microsoft.Web/sites@2022-09-01' = {
   name: 'app-${uniqueName}-skweb'
   location: location
   tags: {
@@ -139,6 +139,12 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
   name: 'web'
   properties: {
     alwaysOn: true
+    cors: {
+      allowedOrigins: [
+        'http://localhost:3000'
+      ]
+      supportCredentials: true
+    }
     detailedErrorLoggingEnabled: true
     minTlsVersion: '1.2'
     netFrameworkVersion: 'v6.0'
@@ -202,7 +208,7 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       }
       {
         name: 'MemoriesStore:Qdrant:Host'
-        value: deployQdrant ? 'https://${containerApp.properties.configuration.ingress.fqdn}' : ''
+        value: deployQdrant ? 'http://${aci.properties.ipAddress.fqdn}' : ''
       }
       {
         name: 'AzureSpeech:Region'
@@ -211,6 +217,10 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       {
         name: 'AzureSpeech:Key'
         value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
+      }
+      {
+        name: 'AllowedOrigins'
+        value: '[*]' // Defer list of allowed origins to the Azure service app's CORS configuration
       }
       {
         name: 'Kestrel:Endpoints:Https:Url'
