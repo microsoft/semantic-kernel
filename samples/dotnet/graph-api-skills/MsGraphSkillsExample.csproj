@@ -29,7 +29,6 @@
     <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\Skills\Skills.MsGraph\Skills.MsGraph.csproj" />
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
-    <ProjectReference Include="..\kernel-syntax-examples\KernelSyntaxExamples.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +38,17 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\kernel-syntax-examples\RepoUtils\RepoFiles.cs">
+      <Link>LinkedFiles\RepoFiles.cs</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="..\kernel-syntax-examples\RepoUtils\YourAppException.cs">
+      <Link>LinkedFiles\YourAppException.cs</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
 
 </Project>
