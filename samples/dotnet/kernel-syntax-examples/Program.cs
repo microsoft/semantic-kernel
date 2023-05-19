@@ -121,5 +121,8 @@ public static class Program
 
         await Example38_Pinecone.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example39_Postgres.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
