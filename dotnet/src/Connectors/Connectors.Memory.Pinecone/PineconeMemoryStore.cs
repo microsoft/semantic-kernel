@@ -246,10 +246,12 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         try
         {
-            await foreach (PineconeDocument? record in this._pineconeClient.FetchVectorsAsync(indexName,
+            await foreach (PineconeDocument? record in this._pineconeClient.FetchVectorsAsync(
+                               indexName,
                                new[] { key },
                                indexNamespace,
-                               withEmbedding, cancellationToken))
+                               withEmbedding,
+                               cancellationToken))
             {
                 return record?.ToMemoryRecord();
             }
@@ -349,8 +351,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        foreach (IAsyncEnumerable<MemoryRecord?>? records in documentIds.Select(documentId =>
-                     this.GetWithDocumentIdAsync(indexName, documentId, limit, indexNamespace, withEmbeddings, cancellationToken)))
+        foreach (IAsyncEnumerable<MemoryRecord?>? records
+                 in documentIds.Select(
+                     documentId => this.GetWithDocumentIdAsync(indexName, documentId, limit, indexNamespace, withEmbeddings, cancellationToken)))
         {
             await foreach (MemoryRecord? record in records.WithCancellation(cancellationToken))
             {

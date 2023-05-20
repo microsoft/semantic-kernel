@@ -7,7 +7,7 @@
   <Import Project="$(RepoRoot)/dotnet/Directory.Build.props" />
 
   <PropertyGroup>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>MsGraphSkillsExample</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <NoWarn>CA1050</NoWarn>
