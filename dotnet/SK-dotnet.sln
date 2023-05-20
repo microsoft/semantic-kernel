@@ -98,6 +98,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InternalUtilities", "Intern
 		src\InternalUtilities\InternalUtilities.props = src\InternalUtilities\InternalUtilities.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Memory.Weaviate", "src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj", "{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -288,6 +290,12 @@ Global
 		{136823BE-8665-4D57-87E0-EF41535539E2}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{136823BE-8665-4D57-87E0-EF41535539E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{136823BE-8665-4D57-87E0-EF41535539E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -330,6 +338,7 @@ Global
 		{E52F805C-794A-4CA9-B684-DFF358B18820} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 		{136823BE-8665-4D57-87E0-EF41535539E2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{4D3DAE63-41C6-4E1C-A35A-E77BDFC40675} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
+		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

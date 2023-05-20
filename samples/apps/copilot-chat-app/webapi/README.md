@@ -81,3 +81,27 @@ Before you get started, make sure you have the following additional requirements
     docker run --name copilotchat -p 6333:6333 -v "$(pwd)/data/qdrant:/qdrant/storage" qdrant/qdrant
     ```
     > To stop the container, in another terminal window run `docker container stop copilotchat; docker container rm copilotchat;`.
+
+# (Optional) Enabling the Weaviate Memory Store
+
+[Weaviate](https://github.com/weaviate/weaviate) is an open source ​vector database that is robust, scalable, cloud-native, and fast.
+
+To enable the Weaviate memory store, you must first deploy Weaviate locally and then configure the Copilot Chat API service to use it. 
+
+## 1. Configure your environment
+
+Before you get started, make sure you have the following additional requirements in place:
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) for hosting the [Weaviate](https://github.com/weaviate/weaviate) open source ​vector database.
+
+## 2. Run a Weaviate instance locally
+
+Change directory to this repo and start the Weaviate container on port `8080`:
+
+```bash
+cd ./dotnet/src/IntegrationTests/Connectors/Weaviate
+docker-compose up -d
+```
+
+This will launch both the Weaviate and Contextionary instances.
+
+> To stop the container, open Docker Dekstop and stop the containers.
