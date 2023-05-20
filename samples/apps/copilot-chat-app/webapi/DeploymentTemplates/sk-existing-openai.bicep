@@ -37,7 +37,7 @@ param deployCosmosDB bool = true
 
 // TODO: Temporarily disabling qdrant deployment by default while we secure its endpoint.
 @description('Whether to deploy Qdrant (in a container) for memory storage')
-param deployQdrant bool = true
+param deployQdrant bool = false
 
 @description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
 param deploySpeechServices bool = true

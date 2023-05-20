@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "4693660502081832508"
+      "templateHash": "18401873900331689852"
     }
   },
   "parameters": {
@@ -84,7 +84,7 @@
     },
     "deployQdrant": {
       "type": "bool",
-      "defaultValue": true,
+      "defaultValue": false,
       "metadata": {
         "description": "Whether to deploy Qdrant (in a container) for memory storage"
       }
