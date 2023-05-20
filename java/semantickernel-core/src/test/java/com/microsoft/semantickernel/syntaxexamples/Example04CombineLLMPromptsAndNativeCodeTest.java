@@ -2,8 +2,8 @@
 package com.microsoft.semantickernel.syntaxexamples; // Copyright (c) Microsoft. All rights
 // reserved.
 
-import com.microsoft.openai.AzureOpenAIClient;
-import com.microsoft.semantickernel.DefaultKernelTest;
+import com.azure.ai.openai.models.Choice;
+import com.azure.ai.openai.models.Completions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -14,19 +14,35 @@ import com.microsoft.semantickernel.syntaxexamples.skills.SearchEngineSkill;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
-// ReSharper disable once InconsistentNaming
-public class Example04CombineLLMPromptsAndNativeCode {
+public class Example04CombineLLMPromptsAndNativeCodeTest {
 
     @Test
     public void run() {
         com.microsoft.openai.OpenAIAsyncClient client =
-                new AzureOpenAIClient(
-                        DefaultKernelTest.mockCompletionOpenAIAsyncClient(new ArrayList<>()));
+                Mockito.mock(com.microsoft.openai.OpenAIAsyncClient.class);
+
+        Completions completion = Mockito.mock(Completions.class);
+        Choice choice = Mockito.mock(Choice.class);
+        Mockito.when(choice.getText()).thenReturn("A-SUMMARY");
+        Mockito.when(completion.getChoices()).thenReturn(Arrays.asList(choice));
+        Mockito.when(
+                        client.getCompletions(
+                                Mockito.any(),
+                                Mockito.argThat(
+                                        r -> {
+                                            return r.getPrompt()
+                                                    .get(0)
+                                                    .contains(
+                                                            "Gran Torre Santiago is the tallest"
+                                                                    + " building in South America");
+                                        })))
+                .thenReturn(Mono.just(completion));
 
         KernelConfig kernelConfig =
                 SKBuilders.kernelConfig()
@@ -62,28 +78,6 @@ public class Example04CombineLLMPromptsAndNativeCode {
                         kernel.getSkills().getFunction("Search", null),
                         kernel.getSkill("SummarizeSkill").getFunction("Summarize", null));
 
-        Assertions.assertEquals(
-                "Gran Torre Santiago is the tallest building in South America summary",
-                result.block().getResult());
-
-        /*
-        var result2 = await kernel.RunAsync(
-                ask,
-                search["Search"],
-                sumSkill["Summarize"]
-        );
-
-        var result3 = await kernel.RunAsync(
-                ask,
-                search["Search"],
-                sumSkill["Notegen"]
-        );
-
-        Console.WriteLine(ask + "\n");
-        Console.WriteLine("Bing Answer: " + result1 + "\n");
-        Console.WriteLine("Summary: " + result2 + "\n");
-        Console.WriteLine("Notes: " + result3 + "\n");
-
-         */
+        Assertions.assertEquals("A-SUMMARY", result.block().getResult());
     }
 }
