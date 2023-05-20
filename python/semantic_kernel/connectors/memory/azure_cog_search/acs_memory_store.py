@@ -1,8 +1,9 @@
 # Import required libraries
-
+from datetime import datetime
 import os
 import json
 from typing import List, Optional, Tuple
+import uuid
 from dotenv import load_dotenv
 from logging import Logger, NullLogger
 
@@ -13,8 +14,8 @@ from python.semantic_kernel.connectors.memory.azure_cog_search.acs_utils import 
 
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from azure.core.credentials import AzureKeyCredential
-from azure.search.documents import SearchClient
-from azure.search.documents.indexes import SearchIndexClient
+from azure.search.documents.aio import SearchClient
+from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.models import Vector, QueryType
 from azure.identity import DefaultAzureCredential as DefaultAzureCredentialSync
 from azure.identity.aio import DefaultAzureCredential
@@ -91,23 +92,22 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Arguments:
             collection_name {str} -- The name of the collection to create.
             vector_size {int} -- The size of the vector.
-            distance {Optional[str]} -- The distance metric to use. (default: {"Cosine"})
         Returns:
             None
         """
 
         fields = [
             SimpleField(
-                name="collection_id", type=SearchFieldDataType.String, key=True
+                name="collection_name", type=SearchFieldDataType.String, key=True
             ),
             SearchableField(
-                name="collection_name",
+                name="timestamp",
                 type=SearchFieldDataType.String,
                 searchable=True,
                 retrievable=True,
             ),
             SearchableField(
-                name="content",
+                name="vector_id",
                 type=SearchFieldDataType.String,
                 searchable=True,
                 retrievable=True,
@@ -120,18 +120,11 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                 retrievable=True,
             ),
             SearchField(
-                name="titleVector",
+                name="vector",
                 type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
                 searchable=True,
-                dimensions=1536,
-                vector_search_configuration="vector-config",
-            ),
-            SearchField(
-                name="contentVector",
-                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
-                searchable=True,
-                dimensions=1536,
-                vector_search_configuration="vector-config",
+                dimensions=vector_size,
+                vector_search_configuration="az-vector-config",
             ),
         ]
 
@@ -170,7 +163,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             semantic_settings=semantic_settings,
         )
 
-        result = self._cogsearch_indexclient.create_index(index)
+        await self._cogsearch_indexclient.create_index(index)
 
     async def get_collections_async(
         self,
@@ -180,18 +173,25 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The list of collections.
         """
-        return list(self._cogsearch_indexclient.get_collections())
+        results_list = list(str)
+        items = self._cogsearch_indexclient.list_index_names()
 
-    async def get_collection(self, collection_name: str) -> CollectionInfo:
+        for result in items:
+            results_list.append(result)
+
+        return results_list
+
+    async def get_collection(self, collection_name: str) -> SearchIndex:
         """Gets the a collections based upon collection name.
 
         Returns:
             CollectionInfo -- Collection Information from Qdrant about collection.
         """
-        collection_info = self._cogsearch_indexclient.get_collection(
-            collection_name=collection_name
+        collection_result = await self._cogsearch_indexclient.get_index(
+            name=collection_name
         )
-        return collection_info
+
+        return collection_result
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.
@@ -214,14 +214,14 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             bool -- True if the collection exists; otherwise, False.
         """
 
-        collection_info = self._cogsearch_indexclient.get_collection(
-            collection_name=collection_name
+        collection_result = await self._cogsearch_indexclient.get_index(
+            name=collection_name
         )
 
-        if collection_info.status == CollectionStatus.GREEN:
-            return collection_name
+        if collection_result:
+            return True
         else:
-            return ""
+            return False
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
@@ -242,18 +242,23 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         if not collection_info:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        upsert_info = self._cogsearch_indexclient.upsert(
-            collection_name=collection_name,
-            wait=True,
-            points=[
-                PointStruct(
-                    id=record._key, vector=record._embedding, payload=record._payload
-                ),
-            ],
-        )
+        if record._id:
+            id = record._id
+        else:
+            id = uuid.uuid4()
 
-        if upsert_info.status == UpdateStatus.COMPLETED:
-            return record._key
+        acs_doc = {
+            "collection_name": collection_name,
+            "timestamp": datetime.utcnow(),
+            "vector_id": id,
+            "payload": str(json.load(record._payload)),
+            "vector": record._embedding.tolist(),
+        }
+
+        result = self._cogsearch_client.upload_documents(documents=[acs_doc])
+
+        if result[0].succeeded:
+            return id
         else:
             return ""
 
@@ -270,29 +275,40 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             List[str] -- The unique database keys of the records.
         """
 
-        collection_info = self.does_collection_exist_async(
+        collection_result = self.does_collection_exist_async(
             collection_name=collection_name
         )
 
-        if not collection_info:
+        if not collection_result:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        points_rec = []
+        acs_documents = []
+        acs_ids = []
 
         for record in records:
-            record._key = record._id
-            pointstruct = PointStruct(
-                id=record._id, vector=record._embedding, payload=record._payload
-            )
-            points_rec.append([pointstruct])
-            upsert_info = self._cogsearch_indexclient.upsert(
-                collection_name=collection_name, wait=True, points=points_rec
-            )
+            if record._id:
+                id = record._id
+            else:
+                id = uuid.uuid4()
 
-        if upsert_info.status == UpdateStatus.COMPLETED:
-            return [record._key for record in records]
+            acs_ids.append(id)
+
+            acs_doc = {
+                "collection_name": collection_name,
+                "timestamp": datetime.utcnow(),
+                "vector_id": str(id),
+                "payload": str(json.load(record._payload)),
+                "vector": record._embedding.tolist(),
+            }
+
+            acs_documents.append(acs_doc)
+
+        result = self._cogsearch_client.upload_documents(documents=[acs_doc])
+
+        if result[0].succeeded:
+            return acs_ids
         else:
-            return ""
+            return None
 
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool = True
@@ -385,18 +401,15 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        collection_info = self._cogsearch_indexclient.get_collection(
+        collection_result = self.does_collection_exist_async(
             collection_name=collection_name
         )
 
-        if not collection_info.status == CollectionStatus.GREEN:
+        if not collection_result:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
         self._cogsearch_indexclient.delete(
-            collection_name=collection_name,
-            points_selector=models.PointIdsList(
-                points=[keys],
-            ),
+            collection_name=collection_name
         )
 
     async def get_nearest_match_async(
