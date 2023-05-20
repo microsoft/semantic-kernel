@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [ "main", "feature*" ]
 
+permissions:
+  pull-requests: read
+
 jobs:
   dotnet-format:
     runs-on: ubuntu-latest
