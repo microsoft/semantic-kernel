@@ -31,8 +31,9 @@ param semanticKernelApiKey string = newGuid()
 @description('Whether to deploy Cosmos DB for chat storage')
 param deployCosmosDB bool = true
 
-@description('Whether to deploy Qdrant (in a container) for memory storage')
-param deployQdrant bool = true
+// TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
+// @description('Whether to deploy Qdrant (in a container) for memory storage')
+// param deployQdrant bool = true
 
 @description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
 param deploySpeechServices bool = true
@@ -50,7 +51,7 @@ module openAI 'main.bicep' = {
     plannerModel: plannerModel
     semanticKernelApiKey: semanticKernelApiKey
     deployCosmosDB: deployCosmosDB
-    deployQdrant: deployQdrant
+    deployQdrant: false // TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
     deploySpeechServices: deploySpeechServices
     deployNewAzureOpenAI: true
   }
