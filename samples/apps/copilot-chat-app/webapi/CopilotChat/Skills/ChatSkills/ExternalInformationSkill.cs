@@ -49,7 +49,6 @@ public class ExternalInformationSkill
     /// </summary>
     private const string PromptPostamble = "[RELATED END]";
 
-
     /// <summary>
     /// Create a new instance of ExternalInformationSkill.
     /// </summary>
