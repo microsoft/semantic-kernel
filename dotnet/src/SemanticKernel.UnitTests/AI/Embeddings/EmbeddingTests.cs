@@ -80,7 +80,7 @@ public class EmbeddingTests
         // Assert
         Assert.Empty(target.Vector);
         Assert.Equal(0, target.Count);
-        Assert.False(Embedding<int>.IsSupported);
+        Assert.False(Embedding.IsSupported<int>());
     }
 
     [Fact]
@@ -120,5 +120,14 @@ public class EmbeddingTests
         // Assert
         Assert.False(Unsafe.AreSame(ref MemoryMarshal.GetReference(span1), ref MemoryMarshal.GetArrayDataReference(this._vector)));
         Assert.True(Unsafe.AreSame(ref MemoryMarshal.GetReference(span1), ref MemoryMarshal.GetReference(span2)));
+    }
+
+    [Fact]
+    public void ItTransfersOwnershipWhenRequested()
+    {
+        // Assert
+        Assert.False(ReferenceEquals(_vector, new Embedding<float>(_vector).Vector));
+        Assert.False(ReferenceEquals(_vector, new Embedding<float>(_vector, transferOwnership: false).Vector));
+        Assert.True(ReferenceEquals(_vector, new Embedding<float>(_vector, transferOwnership: true).Vector));
     }
 }

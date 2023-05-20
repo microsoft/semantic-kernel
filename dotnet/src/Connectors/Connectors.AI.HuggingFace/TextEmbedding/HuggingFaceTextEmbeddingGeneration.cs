@@ -107,7 +107,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : IEmbeddingGeneration<st
 
             var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
 
-            return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding!)).ToList()!;
+            return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding!, transferOwnership: true)).ToList()!;
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {
