@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "14419043104901620523"
+      "templateHash": "7494758937150199818"
     }
   },
   "parameters": {
@@ -77,13 +77,6 @@
         "description": "Whether to deploy Cosmos DB for chat storage"
       }
     },
-    "deployQdrant": {
-      "type": "bool",
-      "defaultValue": true,
-      "metadata": {
-        "description": "Whether to deploy Qdrant (in a container) for memory storage"
-      }
-    },
     "deploySpeechServices": {
       "type": "bool",
       "defaultValue": true,
@@ -131,7 +124,7 @@
             "value": "[parameters('deployCosmosDB')]"
           },
           "deployQdrant": {
-            "value": "[parameters('deployQdrant')]"
+            "value": false
           },
           "deploySpeechServices": {
             "value": "[parameters('deploySpeechServices')]"
