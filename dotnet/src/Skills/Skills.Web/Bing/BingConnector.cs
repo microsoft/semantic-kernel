@@ -32,7 +32,7 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<string>> SearchAsync(string query, string relatedSite = "", int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
         if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
 
@@ -40,7 +40,7 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
 
         if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
 
-        Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
+        Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}{(!String.IsNullOrWhiteSpace(relatedSite) ? $"&site:{relatedSite}" : "")}&count={count}&offset={offset}");
 
         this._logger.LogDebug("Sending request: {0}", uri);
         HttpResponseMessage response = await this._httpClient.GetAsync(uri, cancellationToken).ConfigureAwait(false);
@@ -70,6 +70,11 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         this.Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+
+    public Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 
     [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",

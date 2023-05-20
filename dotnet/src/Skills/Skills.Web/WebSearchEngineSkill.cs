@@ -20,6 +20,8 @@ public class WebSearchEngineSkill
     private const string DefaultCount = "1";
     private const string DefaultOffset = "0";
 
+    private const string DefaultRelatedSite = "";
+
     private readonly IWebSearchEngineConnector _connector;
 
     public WebSearchEngineSkill(IWebSearchEngineConnector connector)
@@ -32,7 +34,7 @@ public class WebSearchEngineSkill
     [SKFunctionInput(Description = "Text to search for")]
     [SKFunctionContextParameter(Name = CountParam, Description = "Number of results", DefaultValue = DefaultCount)]
     [SKFunctionContextParameter(Name = OffsetParam, Description = "Number of results to skip", DefaultValue = DefaultOffset)]
-    public async Task<string> SearchAsync(string query, SKContext context)
+    public async Task<string> SearchAsync(string query, string relatedSite, SKContext context)
     {
         var count = context.Variables.ContainsKey(CountParam) ? context[CountParam] : DefaultCount;
         if (string.IsNullOrWhiteSpace(count)) { count = DefaultCount; }
@@ -40,9 +42,11 @@ public class WebSearchEngineSkill
         var offset = context.Variables.ContainsKey(OffsetParam) ? context[OffsetParam] : DefaultOffset;
         if (string.IsNullOrWhiteSpace(offset)) { offset = DefaultOffset; }
 
+        if (!System.Uri.IsWellFormedUriString(relatedSite, System.UriKind.RelativeOrAbsolute)) { relatedSite = DefaultRelatedSite; }
+
         int countInt = int.Parse(count, CultureInfo.InvariantCulture);
         int offsetInt = int.Parse(offset, CultureInfo.InvariantCulture);
-        var results = await this._connector.SearchAsync(query, countInt, offsetInt, context.CancellationToken).ConfigureAwait(false);
+        var results = await this._connector.SearchAsync(query, relatedSite, countInt, offsetInt, context.CancellationToken).ConfigureAwait(false);
         if (!results.Any())
         {
             context.Fail("Failed to get a response from the web search engine.");

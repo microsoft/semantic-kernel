@@ -40,6 +40,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     /// <inheritdoc/>
     public async Task<IEnumerable<string>> SearchAsync(
         string query,
+        string relatedSite,
         int count,
         int offset,
         CancellationToken cancellationToken)
@@ -53,6 +54,9 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         var search = this._search.Cse.List();
         search.Cx = this._searchEngineId;
         search.Q = query;
+
+        if (!String.IsNullOrWhiteSpace(relatedSite)) search.RelatedSite = relatedSite;
+
         search.Num = count;
         search.Start = offset;
 
