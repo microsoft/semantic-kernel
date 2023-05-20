@@ -46,7 +46,7 @@ param(
 
     [string]
     # Package to deploy to web service
-    $PackageUri = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip',
+    $PackageUri = 'https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip',
 
     [string]
     # SKU for the Azure App Service plan
@@ -54,11 +54,12 @@ param(
 
     [string]
     # API key to access Semantic Kernel server's endpoints
-    $SkServerApiKey = "$([guid]::NewGuid())",
+    $SemanticKernelApiKey = "$([guid]::NewGuid())",
 
-    [switch]
-    # Don't deploy Qdrant for memory storage - Use volatile memory instead
-    $NoQdrant,
+    # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
+    # [switch]
+    # # Don't deploy Qdrant for memory storage - Use volatile memory instead
+    # $NoQdrant,
 
     [switch]
     # Don't deploy Cosmos DB for chat storage - Use volatile memory instead
@@ -73,6 +74,8 @@ param(
     $DebugDeployment
 )
 
+$NoQdrant = $true # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
+
 $jsonConfig = "
 {
     `\`"name`\`": { `\`"value`\`": `\`"$DeploymentName`\`" },
@@ -83,7 +86,7 @@ $jsonConfig = "
     `\`"plannerModel`\`": { `\`"value`\`": `\`"$PlannerModel`\`" },
     `\`"packageUri`\`": { `\`"value`\`": `\`"$PackageUri`\`" },
     `\`"appServiceSku`\`": { `\`"value`\`": `\`"$AppServiceSku`\`" },
-    `\`"skServerApiKey`\`": { `\`"value`\`": `\`"$SkServerApiKey`\`" },
+    `\`"semanticKernelApiKey`\`": { `\`"value`\`": `\`"$SemanticKernelApiKey`\`" },
     `\`"deployQdrant`\`": { `\`"value`\`": $(If (!($NoQdrant)) {"true"} Else {"false"}) },
     `\`"deployCosmosDB`\`": { `\`"value`\`": $(If (!($NoSpeechServices)) {"true"} Else {"false"}) },
     `\`"deploySpeechServices`\`": { `\`"value`\`": $(If (!($NoSpeechServices)) {"true"} Else {"false"}) }

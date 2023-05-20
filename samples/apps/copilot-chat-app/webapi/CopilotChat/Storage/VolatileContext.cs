@@ -72,10 +72,8 @@ public class VolatileContext<T> : IStorageContext<T> where T : IStorageEntity
         {
             return Task.FromResult(entity);
         }
-        else
-        {
-            throw new KeyNotFoundException($"Entity with id {entityId} not found.");
-        }
+
+        throw new KeyNotFoundException($"Entity with id {entityId} not found.");
     }
 
     /// <inheritdoc/>

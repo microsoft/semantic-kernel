@@ -135,4 +135,24 @@ public sealed class SKContext
     {
         return this.ErrorOccurred ? $"Error: {this.LastErrorDescription}" : this.Result;
     }
+
+    /// <summary>
+    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
+    /// and a new set variables, so that variables can be modified without affecting the original context.
+    /// </summary>
+    /// <returns>A new context copied from the current one</returns>
+    public SKContext Clone()
+    {
+        return new SKContext(
+            variables: this.Variables.Clone(),
+            memory: this.Memory,
+            skills: this.Skills,
+            logger: this.Log,
+            cancellationToken: this.CancellationToken)
+        {
+            ErrorOccurred = this.ErrorOccurred,
+            LastErrorDescription = this.LastErrorDescription,
+            LastException = this.LastException
+        };
+    }
 }

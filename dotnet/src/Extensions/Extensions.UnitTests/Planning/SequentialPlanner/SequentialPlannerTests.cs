@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -97,7 +98,7 @@ public sealed class SequentialPlannerTests
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<CancellationToken>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
@@ -184,7 +185,7 @@ public sealed class SequentialPlannerTests
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<CancellationToken>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),

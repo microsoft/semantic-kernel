@@ -76,10 +76,8 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
         {
             return Task.FromResult(entity);
         }
-        else
-        {
-            return Task.FromException<T>(new KeyNotFoundException($"Entity with id {entityId} not found."));
-        }
+
+        return Task.FromException<T>(new KeyNotFoundException($"Entity with id {entityId} not found."));
     }
 
     /// <inheritdoc/>
