@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings;
@@ -19,10 +18,16 @@ public readonly ref struct EmbeddingSpan<TEmbedding>
     /// <param name="vector">A a vector of contiguous, unmanaged data.</param>
     public EmbeddingSpan(Span<TEmbedding> vector)
     {
-        SupportedTypes.VerifyTypeSupported<TEmbedding>();
+        if (!Embedding.IsSupported<TEmbedding>())
+        {
+            ThrowTEmbeddingNotSupported();
+        }
 
         this.Span = vector;
     }
+
+    internal static void ThrowTEmbeddingNotSupported() =>
+        throw new NotSupportedException($"Embeddings do not support type '{typeof(TEmbedding).Name}'. Supported types include: [ Single, Double ]");
 
     /// <summary>
     /// Constructor
@@ -78,10 +83,4 @@ public readonly ref struct EmbeddingSpan<TEmbedding>
     {
         return this.Span.CosineSimilarity(other.Span);
     }
-
-    /// <summary>
-    /// Gets a value that indicates whether <typeparamref name="TEmbedding"/> is supported.
-    /// </summary>
-    [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Following 'IsSupported' pattern of System.Numerics.")]
-    public static bool IsSupported => SupportedTypes.IsSupported<TEmbedding>();
 }

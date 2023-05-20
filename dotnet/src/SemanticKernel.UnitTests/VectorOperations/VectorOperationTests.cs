@@ -21,7 +21,7 @@ public class VectorOperationTests
     public void ItOnlySupportsFPDataTypes()
     {
         // Arrange
-        var target = SupportedTypes.Types;
+        var target = Embedding.SupportedTypes;
 
         // Assert
         Assert.Equal(2, target.Count());

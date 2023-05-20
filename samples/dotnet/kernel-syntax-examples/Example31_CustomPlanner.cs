@@ -40,8 +40,7 @@ internal static class Example31_CustomPlanner
         plan.AddSteps(skills["ContextQuery"], markup["RunMarkup"]);
 
         // Execute plan
-        context.Variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
-        var result = await plan.InvokeAsync(context);
+        var result = await plan.InvokeAsync("Who is my president? Who was president 3 years ago? What should I eat for dinner", context);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.Result);
