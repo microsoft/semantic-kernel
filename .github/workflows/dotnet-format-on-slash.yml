@@ -3,7 +3,9 @@ on:
   issue_comment:
     types: created
 permissions:
-  pull-requests: write
+  pull-requests: read
+  contents: read
+  id-token: read
 jobs:
   dotnet-format:
     runs-on: ubuntu-latest
