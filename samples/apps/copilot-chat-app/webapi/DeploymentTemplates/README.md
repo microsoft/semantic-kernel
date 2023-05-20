@@ -137,6 +137,9 @@ To authorize requests with the API key, it must be added as the value of an "x-s
 
 Make sure to include your frontend's URL as an allowed origin in your deployment's CORS settings. Otherwise, web browsers will refuse to let JavaScript make calls to your deployment.
 
+To do this, go on the Azure portal, select your Semantic Kernel App Service, then click on "CORS" under the "API" section of the resource menu on the left of the page.
+This will get you to the CORS page where you can add your allowed hosts.
+
 
 ## Deploying your custom version of Semantic Kernel
 
@@ -145,7 +148,7 @@ You can build and upload a customized version of the Semantic Kernel service.
 To do so, clone the code from this repo then modify it to your needs (for example, by adding your own skills). Once that is done, go into the ../semantic-kernel/samples/apps/copilot-chat-app/webapi
 directory and enter the following command:
 ```powershell
-dotnet publish CopilotChatApi.csproj --configuration Release --arch x64 --os win
+dotnet publish CopilotChatWebApi.csproj --configuration Release --arch x64 --os win
 ```
 
 This will create the following directory, which will contain all the files needed for a deployment:

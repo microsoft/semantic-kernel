@@ -15,7 +15,7 @@ export const Constants = {
             cacheLocation: 'localStorage',
             storeAuthStateInCookie: false,
         },
-        skScopes: ['openid', 'offline_access', 'profile'],
+        semanticKernelScopes: ['openid', 'offline_access', 'profile'],
     },
     bot: {
         profile: {
