@@ -14,7 +14,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.UnitTests.Memory.DuckDB;
 
 /// <summary>
-/// Unit tests of <see cref="SqliteMemoryStore"/>.
+/// Unit tests of <see cref="DuckDBMemoryStore"/>.
 /// </summary>
 [Collection("Sequential")]
 public class DuckDBMemoryStoreTests
