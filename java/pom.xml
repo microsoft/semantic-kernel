@@ -1,21 +1,28 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.microsoft.semantickernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
     <version>0.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <url>https://www.github.com/microsoft/semantic-kernel</url>
 
-
+    <!-- Some of these propertires are here as well as the BOM as the parent needs to know before
+    the BOM is loaded -->
     <properties>
-        <jdk.version>1.8</jdk.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.testSource>1.8</maven.compiler.testSource>
-        <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
+        <azure-ai-openai.version>1.0.0-alpha.20230505.3</azure-ai-openai.version>
+        <checkstyle.version>10.11.0</checkstyle.version>
+        <junit5.version>5.9.3</junit5.version>
+        <log4j2.version>2.20.0</log4j2.version>
+        <maven.compiler-plugin.version>3.11.0</maven.compiler-plugin.version>
+        <maven.compiler.release>8</maven.compiler.release>
+        <maven.enforcer-plugin.version>3.2.1</maven.enforcer-plugin.version>
+        <maven.version>3.9.2</maven.version>
+        <mockito.version>4.11.0</mockito.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -38,49 +45,46 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
-                <version>5.9.2</version>
+                <version>${junit5.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
-                <version>5.9.2</version>
+                <version>${junit5.version}</version>
                 <scope>test</scope>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-api</artifactId>
-                <version>2.20.0</version>
+                <version>${log4j2.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-core</artifactId>
-                <version>2.20.0</version>
+                <version>${log4j2.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-slf4j2-impl</artifactId>
-                <version>2.20.0</version>
+                <version>${log4j2.version}</version>
                 <scope>test</scope>
             </dependency>
-
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>4.11.0</version>
+                <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
-                <version>1.0.0-alpha.20230505.3</version>
+                <version>${azure-ai-openai.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantickernel.connectors</groupId>
@@ -94,6 +98,40 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven.enforcer-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-maven</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireMavenVersion>
+                                        <version>${maven.version}</version>
+                                    </requireMavenVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
     <repositories>
         <repository>
@@ -118,18 +156,6 @@
         </repository>
     </repositories>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.5.0</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
-
     <profiles>
         <profile>
             <id>bug-check</id>
@@ -138,30 +164,36 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
 
+            <!-- 
+                As this is a bug check profile that is configured before the BOM kicks in, 
+                we hard code some versions here 
+            -->
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.10.1</version>
+                        <version>${maven.compiler-plugin.version}</version>
                         <configuration>
-                            <source>8</source>
-                            <target>8</target>
-                            <encoding>UTF-8</encoding>
+                            <source>${maven.compiler.release}</source>
+                            <target>${maven.compiler.release}</target>
+                            <encoding>${project.build.sourceEncoding}</encoding>
                             <showWarnings>true</showWarnings>
                             <compilerArgs>
                                 <arg>-XDcompilePolicy=simple</arg>
 
                                 <!-- Remove exclusions when more project is stable -->
-                                <arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=com.microsoft.semantickernel
-                                    -Xep:AlmostJavadoc:OFF -Xep:MissingSummary:OFF -Xep:UnusedVariable:OFF -Xep:EmptyBlockTag:OFF
+                                <arg>-Xplugin:ErrorProne
+                                    -XepOpt:NullAway:AnnotatedPackages=com.microsoft.semantickernel
+                                    -Xep:AlmostJavadoc:OFF -Xep:MissingSummary:OFF
+                                    -Xep:UnusedVariable:OFF -Xep:EmptyBlockTag:OFF
                                 </arg>
                             </compilerArgs>
                             <annotationProcessorPaths>
                                 <path>
                                     <groupId>com.google.errorprone</groupId>
                                     <artifactId>error_prone_core</artifactId>
-                                    <version>2.18.0</version>
+                                    <version>2.19.1</version>
                                 </path>
                                 <path>
                                     <groupId>com.uber.nullaway</groupId>
@@ -174,6 +206,8 @@
                     <plugin>
                         <groupId>com.diffplug.spotless</groupId>
                         <artifactId>spotless-maven-plugin</artifactId>
+                        <!-- TODO check JRE support, 2.30.0 is the last to properly support Java 8
+                        according to docs -->
                         <version>2.36.0</version>
                         <executions>
                             <execution>
@@ -191,15 +225,13 @@
                                 <phase>process-sources</phase>
                             </execution>
                         </executions>
-
                         <configuration>
                             <java>
                                 <googleJavaFormat>
-                                    <version>1.16.0</version>
+                                    <version>1.17.0</version>
                                     <style>AOSP</style>
                                     <reflowLongStrings>true</reflowLongStrings>
                                 </googleJavaFormat>
-
                                 <licenseHeader>
                                     <content>// Copyright (c) Microsoft. All rights reserved.</content>
                                 </licenseHeader>
@@ -210,7 +242,7 @@
                     <plugin>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>4.7.3.4</version>
+                        <version>4.7.3.0</version>
                         <configuration>
                             <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
                             <effort>Max</effort>
