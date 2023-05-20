@@ -89,9 +89,10 @@ public class ChatController : ControllerBase, IDisposable
         {
             function = kernel.Skills.GetFunction(ChatSkillName, ChatFunctionName);
         }
-        catch (KernelException)
+        catch (KernelException ke)
         {
-            this._logger.LogDebug("Failed to find {0}/{1} on server", ChatSkillName, ChatFunctionName);
+            this._logger.LogError("Failed to find {0}/{1} on server: {2}", ChatSkillName, ChatFunctionName, ke);
+
             return this.NotFound($"Failed to find {ChatSkillName}/{ChatFunctionName} on server");
         }
 
