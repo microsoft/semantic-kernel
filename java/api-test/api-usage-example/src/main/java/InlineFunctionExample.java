@@ -26,6 +26,18 @@ public class InlineFunctionExample {
     private static final Logger LOGGER = LoggerFactory.getLogger(InlineFunctionExample.class);
     private static final String MODEL = "text-davinci-003";
 
+    private static String API_KEY = "";
+    private static String ENDPOINT = "";
+
+    static{
+        try {
+            API_KEY = getToken(AZURE_CONF_PROPERTIES);
+            ENDPOINT = getEndpoint(AZURE_CONF_PROPERTIES);
+        } catch (IOException e) {
+            LOGGER.error("Error reading config file or properties ", e);
+        }
+    }
+
     private static final String TEXT_TO_SUMMARIZE = """
             Demo (ancient Greek poet)
                From Wikipedia, the free encyclopedia
@@ -57,15 +69,15 @@ public class InlineFunctionExample {
                 phrase throughout the Iliad and Odyssey.[a][2];
                 """;
 
-    public String getToken(String configName) throws IOException {
+    private static String getToken(String configName) throws IOException {
         return getConfigValue(configName, "token");
     }
 
-    public String getEndpoint(String configName) throws IOException {
+    private static String getEndpoint(String configName) throws IOException {
         return getConfigValue(configName, "endpoint");
     }
 
-    private String getConfigValue(String configName, String propertyName)
+    private static String getConfigValue(String configName, String propertyName)
             throws IOException {
         String propertyValue = "";
         Path configPath = Paths.get(System.getProperty("user.home"), ".oai", configName);
@@ -83,22 +95,15 @@ public class InlineFunctionExample {
     }
 
     public static void main(String[] args) {
-        InlineFunctionWithPreBuiltSkillExample main = new InlineFunctionWithPreBuiltSkillExample();
-
-        String apiKey = "";
-        String endpoint = "";
-        try {
-            apiKey = main.getToken(AZURE_CONF_PROPERTIES);
-            endpoint = main.getEndpoint(AZURE_CONF_PROPERTIES);
-        } catch (IOException e) {
-            LOGGER.error("Error reading config file or properties ", e);
+        if(API_KEY.isEmpty() || ENDPOINT.isEmpty()){
+            LOGGER.error("Please provide API_KEY and ENDPOINT");
             return;
         }
 
         OpenAIAsyncClient client = new AzureOpenAIClient(
                 new OpenAIClientBuilder()
-                        .endpoint(endpoint)
-                        .credential(new AzureKeyCredential(apiKey))
+                        .endpoint(ENDPOINT)
+                        .credential(new AzureKeyCredential(API_KEY))
                         .buildAsyncClient());
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, MODEL);
