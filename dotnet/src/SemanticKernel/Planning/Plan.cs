@@ -104,7 +104,6 @@ public sealed class Plan : ISKFunction
     public Plan(string goal, params ISKFunction[] steps) : this(goal)
     {
         this.AddSteps(steps);
-
     }
 
     /// <summary>
