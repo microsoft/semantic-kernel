@@ -38,10 +38,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install poetry pytest
         cd python && poetry install --with hugging_face --with chromadb
-    - name: Install Linux-specific dependencies
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        python -m pip install nvidia-cublas-cu11
     - name: Run Integration Tests
       shell: bash
       env: # Set Azure credentials secret as an input
