@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -89,6 +88,7 @@ internal static class ServicesExtensions
     /// </summary>
     internal static IServiceCollection AddCopilotChatAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddScoped<IAuthInfo, AuthInfo>();
         var config = services.BuildServiceProvider().GetRequiredService<IOptions<ChatAuthenticationOptions>>().Value;
         switch (config.Type)
         {
@@ -109,24 +109,6 @@ internal static class ServicesExtensions
         }
 
         return services;
-    }
-
-    internal static IServiceCollection AddCopilotChatAuthorization(this IServiceCollection services)
-    {
-        return services.AddScoped<IAuthorizationHandler, ChatOwnerAuthorizationHandler>()
-            .AddScoped<IAuthInfo, AuthInfo>()
-            .AddAuthorizationCore(options =>
-            {
-                options.DefaultPolicy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-
-                options.AddPolicy(AuthPolicyName.RequireChatOwner, builder =>
-                {
-                    builder.RequireAuthenticatedUser()
-                        .AddRequirements(new ChatOwnerRequirement());
-                });
-            });
     }
 
     /// <summary>

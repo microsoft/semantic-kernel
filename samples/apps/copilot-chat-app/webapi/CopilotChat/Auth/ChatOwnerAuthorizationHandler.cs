@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.CopilotChat.Storage;
 
-namespace SemanticKernel.Service.Auth;
+namespace SemanticKernel.Service.CopilotChat.Auth;
 
 /// <summary>
 /// Class implementing "authorization" that validates the user has access to a chat.

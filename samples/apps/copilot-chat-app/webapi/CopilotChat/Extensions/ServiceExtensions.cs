@@ -4,9 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using SemanticKernel.Service.CopilotChat.Auth;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -68,6 +70,26 @@ public static class CopilotChatServiceExtensions
             .PostConfigure(TrimStringProperties);
 
         return services;
+    }
+
+    /// <summary>
+    /// Add authorization services for the copilot chat.
+    /// </summary>
+    public static IServiceCollection AddCopilotChatAuthorization(this IServiceCollection services)
+    {
+        return services.AddScoped<IAuthorizationHandler, ChatOwnerAuthorizationHandler>()
+            .AddAuthorizationCore(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+
+                options.AddPolicy(AuthPolicyName.RequireChatOwner, builder =>
+                {
+                    builder.RequireAuthenticatedUser()
+                        .AddRequirements(new ChatOwnerRequirement());
+                });
+            });
     }
 
     /// <summary>

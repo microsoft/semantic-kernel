@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 
-namespace SemanticKernel.Service.Auth;
+namespace SemanticKernel.Service.CopilotChat.Auth;
 
 /// <summary>
 /// Used to require the chat to be owned by the authenticated user.

@@ -85,17 +85,19 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest("File size exceeds the limit.");
         }
 
-        var chatSession = await this._chatSessionRepository.FindByIdAsync(documentImportForm.ChatId.ToString());
-        if (chatSession == null)
+        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat)
         {
-            return this.NotFound("Session does not exist.");
-        }
+            var chatSession = await this._chatSessionRepository.FindByIdAsync(documentImportForm.ChatId.ToString());
+            if (chatSession == null)
+            {
+                return this.NotFound("Session does not exist.");
+            }
 
-        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat && authInfo.UserId != chatSession.UserId)
-        {
-            return this.Unauthorized("User does not have access to the chat session.");
+            if (authInfo.UserId != chatSession.UserId)
+            {
+                return this.Unauthorized("User does not have access to the chat session.");
+            }
         }
-
 
         this._logger.LogInformation("Importing document {0}", formFile.FileName);
 

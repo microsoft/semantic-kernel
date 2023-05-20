@@ -72,7 +72,7 @@ public class ChatController : ControllerBase, IDisposable
         [FromServices] AskConverter askConverter,
         [FromServices] ChatSessionRepository chatSessionRepository,
         [FromServices] IAuthInfo authInfo,
-        [FromBody] Ask ask,
+        [FromBody] ChatAsk ask,
         [FromHeader] OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
         this._logger.LogDebug("Chat request received.");
