@@ -2,6 +2,8 @@ name: dotnet format on slash command
 on:
   issue_comment:
     types: created
+permissions:
+  pull-requests: write
 jobs:
   dotnet-format:
     runs-on: ubuntu-latest
