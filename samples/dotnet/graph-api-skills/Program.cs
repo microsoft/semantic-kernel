@@ -20,7 +20,7 @@ using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
 using DayOfWeek = System.DayOfWeek;
 
-namespace GraphApiSkills;
+namespace MsGraphSkillsExample;
 
 /// <summary>
 /// The static plan below is meant to emulate a plan generated from the following request:
