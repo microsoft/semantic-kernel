@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -24,6 +25,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// SKFunction is used to extend one C# <see cref="Delegate"/>, <see cref="Func{T, TResult}"/>, <see cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKFunction : ISKFunction, IDisposable
 {
     /// <inheritdoc/>
@@ -762,6 +764,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
             new EventId((int)type, $"FuncType{type}"),
             "Executing function type {0}: {1}", (int)type, type.ToString("G"));
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{Name} ({Description})";
 
     #endregion
 }

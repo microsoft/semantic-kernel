@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Semantic Kernel context.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKContext
 {
     /// <summary>
@@ -154,5 +156,32 @@ public sealed class SKContext
             LastErrorDescription = this.LastErrorDescription,
             LastException = this.LastException
         };
+    }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay
+    {
+        get
+        {
+            if (this.ErrorOccurred)
+            {
+                return $"Error: {this.LastErrorDescription}";
+            }
+
+            string display = this.Variables.DebuggerDisplay;
+
+            if (this.Skills is IReadOnlySkillCollection skills)
+            {
+                var view = skills.GetFunctionsView();
+                display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";
+            }
+
+            if (this.Memory is ISemanticTextMemory memory && memory is not NullMemory)
+            {
+                display += $", Memory = {memory.GetType().Name}";
+            }
+
+            return display;
+        }
     }
 }
