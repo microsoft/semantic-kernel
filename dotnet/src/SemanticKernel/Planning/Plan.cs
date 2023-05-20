@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -20,6 +21,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Standard Semantic Kernel callable plan.
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class Plan : ISKFunction
 {
     /// <summary>
@@ -586,4 +588,25 @@ public sealed class Plan : ISKFunction
     private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
 
     private const string DefaultResultKey = "PLAN.RESULT";
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay
+    {
+        get
+        {
+            string display = this.Description;
+
+            if (!string.IsNullOrWhiteSpace(this.Name))
+            {
+                display = $"{this.Name} ({display})";
+            }
+
+            if (this._steps.Count > 0)
+            {
+                display += $", Steps = {this._steps.Count}, NextStep = {this.NextStepIndex}";
+            }
+
+            return display;
+        }
+    }
 }
