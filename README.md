@@ -103,7 +103,7 @@ Follow the links for more information and instructions about running these apps.
   are required to run the kernel as a local web service, used by the sample web apps.
 - [.NET 6](https://dotnet.microsoft.com/download/dotnet/6.0). If you have .NET 7 installed, Azure Function
   Tools will still require .NET 6, so we suggest installing both.
-- [Yarn](https://yarnpkg.com/getting-started/install) is used for installing web apps' dependencies.
+- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) is used for installing web apps' dependencies.
 
 
 ## Jupyter Notebooks ⚡
