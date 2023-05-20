@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.15.31.15270",
-      "templateHash": "9735786839376477539"
+      "version": "0.17.1.54307",
+      "templateHash": "5099073128205443561"
     }
   },
   "parameters": {
@@ -37,7 +37,7 @@
     },
     "packageUri": {
       "type": "string",
-      "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/skaas.zip",
+      "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip",
       "metadata": {
         "description": "Location of package to deploy as the web service"
       }
@@ -84,13 +84,6 @@
         "description": "Whether to deploy Cosmos DB for chat storage"
       }
     },
-    "deployQdrant": {
-      "type": "bool",
-      "defaultValue": true,
-      "metadata": {
-        "description": "Whether to deploy Qdrant (in a container) for memory storage"
-      }
-    },
     "deploySpeechServices": {
       "type": "bool",
       "defaultValue": true,
@@ -102,7 +95,7 @@
   "resources": [
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-10-01",
+      "apiVersion": "2022-09-01",
       "name": "openAIDeployment",
       "properties": {
         "expressionEvaluationOptions": {
@@ -144,7 +137,7 @@
             "value": "[parameters('deployCosmosDB')]"
           },
           "deployQdrant": {
-            "value": "[parameters('deployQdrant')]"
+            "value": false
           },
           "deploySpeechServices": {
             "value": "[parameters('deploySpeechServices')]"
@@ -159,8 +152,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.15.31.15270",
-              "templateHash": "8624783622076748465"
+              "version": "0.17.1.54307",
+              "templateHash": "9633349434860720155"
             }
           },
           "parameters": {
@@ -192,7 +185,7 @@
             },
             "packageUri": {
               "type": "string",
-              "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/skaas.zip",
+              "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip",
               "metadata": {
                 "description": "Location of package to deploy as the web service"
               }
@@ -792,7 +785,7 @@
   "outputs": {
     "endpoint": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'openAIDeployment'), '2020-10-01').outputs.deployedUrl.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'openAIDeployment'), '2022-09-01').outputs.deployedUrl.value]"
     }
   }
 }
