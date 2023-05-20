@@ -1,3 +1,4 @@
+
 // Copyright (c) Microsoft. All rights reserved.
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
@@ -34,7 +35,7 @@ public class InlineFunctionExample {
             API_KEY = getToken(AZURE_CONF_PROPERTIES);
             ENDPOINT = getEndpoint(AZURE_CONF_PROPERTIES);
         } catch (IOException e) {
-            LOGGER.error("Error reading config file or properties ", e);
+            throw new ExceptionInInitializerError ("Error reading config file or properties. " + e.getMessage());
         }
     }
 
@@ -85,8 +86,8 @@ public class InlineFunctionExample {
         try (var reader = Files.newBufferedReader(configPath)) {
             props.load(reader);
             propertyValue = props.getProperty(propertyName);
-            if (propertyValue == null) {
-                throw new IOException("No property for: " + propertyName);
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                throw new IOException("No property for: " + propertyName + " in " + configPath);
             }
         } catch (IOException e) {
             throw new IOException("Please create a file at " + configPath, e);
@@ -95,11 +96,6 @@ public class InlineFunctionExample {
     }
 
     public static void main(String[] args) {
-        if(API_KEY.isEmpty() || ENDPOINT.isEmpty()){
-            LOGGER.error("Please provide API_KEY and ENDPOINT");
-            return;
-        }
-
         OpenAIAsyncClient client = new AzureOpenAIClient(
                 new OpenAIClientBuilder()
                         .endpoint(ENDPOINT)
