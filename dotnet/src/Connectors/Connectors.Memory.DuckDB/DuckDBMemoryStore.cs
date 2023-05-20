@@ -38,6 +38,10 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         return memoryStore;
     }
 
+    /// <summary>
+    /// Connect a in memory DuckDB database
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static async Task<DuckDBMemoryStore> ConnectAsync(
         CancellationToken cancellationToken = default)
     {
