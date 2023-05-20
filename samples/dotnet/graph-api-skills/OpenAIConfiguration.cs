@@ -2,6 +2,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+namespace MsGraphSkillsExample;
+
 [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
     Justification = "Configuration classes are instantiated through IConfiguration.")]
 internal sealed class OpenAIConfiguration

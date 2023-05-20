@@ -137,7 +137,7 @@ export const ChatWindow: React.FC = () => {
             <div className={classes.header}>
                 <div className={classes.title}>
                     <Persona
-                        key={'SK Bot'}
+                        key={'Semantic Kernel Bot'}
                         size="medium"
                         avatar={{ image: { src: conversations[selectedId].botProfilePicture } }}
                         presence={{ status: 'available' }}

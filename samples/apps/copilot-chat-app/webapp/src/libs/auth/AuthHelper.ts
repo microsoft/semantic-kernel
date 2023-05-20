@@ -54,14 +54,14 @@ const logoutRequest: EndSessionRequest = {
 };
 
 const ssoSilentRequest = async (msalInstance: IPublicClientApplication) => {
-    await msalInstance.ssoSilent({ account: msalInstance.getAllAccounts()[0], scopes: Constants.msal.skScopes });
+    await msalInstance.ssoSilent({ account: msalInstance.getAllAccounts()[0], scopes: Constants.msal.semanticKernelScopes });
 };
 
 const loginAsync = async (instance: IPublicClientApplication) => {
     if (Constants.msal.method === 'redirect') {
-        await instance.loginRedirect({ account: instance.getAllAccounts()[0], scopes: Constants.msal.skScopes });
+        await instance.loginRedirect({ account: instance.getAllAccounts()[0], scopes: Constants.msal.semanticKernelScopes });
     } else {
-        await instance.loginPopup({ account: instance.getAllAccounts()[0], scopes: Constants.msal.skScopes });
+        await instance.loginPopup({ account: instance.getAllAccounts()[0], scopes: Constants.msal.semanticKernelScopes });
     }
 };
 
@@ -77,7 +77,7 @@ const logoutAsync = async (instance: IPublicClientApplication) => {
 // SKaaS = Semantic Kernel as a Service
 // Gets token with scopes to authorize SKaaS specifically
 const getSKaaSAccessToken = async (instance: IPublicClientApplication, inProgress: InteractionStatus) => {
-    return await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, Constants.msal.skScopes);
+    return await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, Constants.msal.semanticKernelScopes);
 };
 
 export const AuthHelper = {
