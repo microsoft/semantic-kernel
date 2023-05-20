@@ -157,7 +157,7 @@ public sealed class SKContext
             LastException = this.LastException
         };
     }
-  
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
