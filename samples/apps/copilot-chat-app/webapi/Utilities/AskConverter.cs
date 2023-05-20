@@ -25,20 +25,14 @@ public class AskConverter
         var contextVariables = new ContextVariables(ask.Input);
         foreach (var input in ask.Variables)
         {
-            if (input.Key == userIdKey)
-            {
-                contextVariables.Set(userIdKey, this._authInfo.UserId);
-            }
-            else if (input.Key == userNameKey)
-            {
-                contextVariables.Set(userNameKey, this._authInfo.Name);
-            }
-            else
+            if (input.Key != userIdKey && input.Key != userNameKey)
             {
                 contextVariables.Set(input.Key, input.Value);
             }
         }
 
+        contextVariables.Set(userIdKey, this._authInfo.UserId);
+        contextVariables.Set(userNameKey, this._authInfo.Name);
         return contextVariables;
     }
 }
