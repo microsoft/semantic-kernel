@@ -43,7 +43,7 @@
         <maven.site-plugin.version>4.0.0-M5</maven.site-plugin.version>
         <maven.shade-plugin.version>3.4.1</maven.shade-plugin.version>
         <maven.source-plugin.version>3.2.1</maven.source-plugin.version>
-        <maven.spotbugs-plugin.version>4.7.3.0</maven.spotbugs-plugin.version>
+        <maven.spotbugs-plugin.version>4.7.3.4</maven.spotbugs-plugin.version>
         <maven.surefire-plugin.version>3.0.0</maven.surefire-plugin.version>
         <maven.version>3.9.2</maven.version>
         <maven.versions-plugin.version>2.15.0</maven.versions-plugin.version>
