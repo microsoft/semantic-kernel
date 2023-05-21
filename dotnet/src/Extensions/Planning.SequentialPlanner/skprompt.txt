@@ -9,7 +9,8 @@ To create a plan, follow these steps:
 6. 'input' does not need to be specified if it consumes the 'output' of the previous function.
 7. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: "<UNIQUE_VARIABLE_KEY>"/>
 8. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: "RESULT__<UNIQUE_RESULT_KEY>"/>
-9. Append an "END" XML comment at the end of the plan.
+9. Each function must have a rationale parameter which is a description of the role of the function in the plan and must describe specific actions that should be achieved on parameters to allow the function to be successful
+10. Append an "END" XML comment at the end of the plan.
 
 [EXAMPLES]
 [AVAILABLE FUNCTIONS]
@@ -40,10 +41,10 @@ To create a plan, follow these steps:
 
 <goal>Summarize the input, then translate to japanese and email it to Martin</goal>
 <plan>
-  <function.WriterSkill.Summarize/>
-  <function.LanguageHelpers.TranslateTo translate_to_language="Japanese" setContextVariable="TRANSLATED_TEXT" />
-  <function.EmailConnector.LookupContactEmail input="Martin" setContextVariable="CONTACT_RESULT" />
-  <function.EmailConnector.EmailTo input="$TRANSLATED_TEXT" recipient="$CONTACT_RESULT"/>
+  <function.WriterSkill.Summarize ratinale="Summarize the content"/>
+  <function.LanguageHelpers.TranslateTo rationale="Translate input to Japanese" translate_to_language="Japanese" setContextVariable="TRANSLATED_TEXT" />
+  <function.EmailConnector.LookupContactEmail rationale="Find the email of Martin" input="Martin" setContextVariable="CONTACT_RESULT" />
+  <function.EmailConnector.EmailTo rationale="Send an email with the input to Martin by email, the recipient parameter must be formatted as an email" input="$TRANSLATED_TEXT" recipient="$CONTACT_RESULT"/>
 </plan><!-- END -->
 
 [AVAILABLE FUNCTIONS]
@@ -74,10 +75,10 @@ To create a plan, follow these steps:
 
 <goal>Summarize an input, translate to french, and e-mail to John Doe</goal>
 <plan>
-    <function.AuthorAbility.Summarize/>
-    <function.Magician.TranslateTo translate_to_language="French" setContextVariable="TRANSLATED_SUMMARY"/>
-    <function._GLOBAL_FUNCTIONS_.GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
-    <function._GLOBAL_FUNCTIONS_.SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
+    <function.AuthorAbility.Summarize ratinale="Summarize the content"/>
+    <function.Magician.TranslateTo rationale="Translate inupt to French" translate_to_language="French" setContextVariable="TRANSLATED_SUMMARY"/>
+    <function._GLOBAL_FUNCTIONS_.GetEmailAddress rationale="Find the email of John Doe" input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
+    <function._GLOBAL_FUNCTIONS_.SendEmail rationale="Send an email with the input to John Doe by email, the recipient parameter must be formatted as an email" input="$TRANSLATED_SUMMARY" recipient="$EMAIL_ADDRESS"/>
 </plan><!-- END -->
 
 [AVAILABLE FUNCTIONS]
@@ -103,8 +104,8 @@ To create a plan, follow these steps:
 
 <goal>Create an outline for a children's book with 3 chapters about a group of kids in a club and then summarize it.</goal>
 <plan>
-  <function._GLOBAL_FUNCTIONS_.NovelOutline input="A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic." chapterCount="3" />
-  <function.Everything.Summarize/>
+  <function._GLOBAL_FUNCTIONS_.NovelOutline rationale="Create outline for a 3 chapters children's book about a group of kids in a club" input="A group of kids in a club called 'The Thinking Caps' that solve mysteries and puzzles using their creativity and logic." chapterCount="3" />
+  <function.Everything.Summarize rationale="Summarize the outline of a 3 chapters children's book" />
 </plan><!-- END -->
 
 [END EXAMPLES]

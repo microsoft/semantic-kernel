@@ -25,6 +25,12 @@ namespace Microsoft.SemanticKernel.Planning;
 public sealed class Plan : ISKFunction
 {
     /// <summary>
+    /// Rationale of the step with goal to achieve and instructions on how to achieve this plan
+    /// </summary>
+    [JsonPropertyName("rationale")]
+    public string Rationale { get; set; } = String.Empty;
+
+    /// <summary>
     /// State of the plan
     /// </summary>
     [JsonPropertyName("state")]
@@ -61,6 +67,11 @@ public sealed class Plan : ISKFunction
     /// </summary>
     [JsonPropertyName("next_step_index")]
     public int NextStepIndex { get; private set; }
+
+    /// <summary>
+    /// access to the kernel
+    /// </summary>
+    private IKernel? _kernel { get; set; } = null;
 
     #region ISKFunction implementation
 
@@ -164,15 +175,21 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
     /// <param name="context">The context to use for function registrations.</param>
+    /// <param name="kernel">The kernel to use to create function to prepare variables.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, SKContext? context = null)
+    public static Plan FromJson(string json, SKContext? context = null, IKernel? kernel = null)
     {
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
         if (context != null)
         {
             plan = SetAvailableFunctions(plan, context);
+        }
+
+        if (kernel != null)
+        {
+            plan._kernel = kernel;
         }
 
         return plan;
@@ -568,6 +585,70 @@ public sealed class Plan : ISKFunction
             }
         }
 
+        // Extract variables that must be reworked (variable from previous step)
+        // Only if this._kernel has been defined previously
+        if (this._kernel != null)
+        {
+            var contextVariablesPrompt = String.Empty;
+            var functionParametersPrompt = String.Empty;
+
+            var tempFunctionParameters = step.Describe();
+
+            foreach (var param in step.Parameters)
+            {
+                if (param.Value.StartsWith("$", StringComparison.InvariantCulture))
+                {
+                    contextVariablesPrompt += $"Variable \"{param.Value}\": {this.ExpandFromVariables(variables, step.Parameters[param.Key]).Replace("\n", "\\n")}\n";
+                    functionParametersPrompt += $"Parameter \"{param.Key}\" (based on {param.Value}): {tempFunctionParameters.Parameters.FirstOrDefault(x => x.Name == param.Key)?.Description}\n";
+                }
+            }
+
+            if (!String.IsNullOrEmpty(contextVariablesPrompt))
+            {
+                var context = new SKContext();
+                context.Variables.Set("contextVariables", contextVariablesPrompt);
+                context.Variables.Set("functionParameters", functionParametersPrompt);
+                context.Variables.Set("rationale", this.Rationale);
+                context.Variables.Set("planUserIntent", variables["planUserIntent"]);
+
+                var configCompletion = new AI.TextCompletion.CompleteRequestSettings { Temperature = 0, TopP = 0.95, PresencePenalty = 0, FrequencyPenalty = 0, MaxTokens = 800 };
+
+                var prepareVariablesFunction = this._kernel.CreateSemanticFunction(
+                    promptTemplate: PromptTemplate,
+                    temperature: 0.0);
+                var variablesResult = prepareVariablesFunction.InvokeAsync(context, configCompletion).Result;
+
+                string planResultString = variablesResult.Result.Replace("[END FUNCTION_INPUTS]", "").Trim();
+
+                try
+                {
+                    var parameters = JsonSerializer.Deserialize<List<FunctionPlanParameter>>(planResultString, new JsonSerializerOptions
+                    {
+                        AllowTrailingCommas = true,
+                        DictionaryKeyPolicy = null,
+                        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+                        PropertyNameCaseInsensitive = true,
+                    });
+
+                    if (parameters != null)
+                    {
+                        foreach (var param in parameters)
+                        {
+                            if (!String.IsNullOrWhiteSpace(param.Value))
+                            {
+                                stepVariables.Set(param.Name, param.Value);
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
+                        "Plan variables preparation parsing error, invalid JSON", e);
+                }
+            }
+        }
+
         return stepVariables;
     }
 
@@ -588,6 +669,43 @@ public sealed class Plan : ISKFunction
     private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
 
     private const string DefaultResultKey = "PLAN.RESULT";
+
+    private const string PromptTemplate = @"A function is composed of parameters. Each parameter has a description to explain what data and format is expected. Considering the following context ([CONTEXT] section), function parameters and description ([FUNCTION_PARAMETERS] section), goal of the global plan ([GOAL] section) and description of what the function must do ([RATIONALE] section), create a JSON defining for each function paramter, the data that must be used which respect the expected format described.
+
+[START EXAMPLE]
+[START CONTEXT]
+Variable ""$STORE_List"": Here is the list of Stores: [Paris Saint Sulpice,Paris Auteuil, Cannes]
+Variable ""$PRODUCT_LIST"": List of found products (format: [SKU of the Product][Name of the product]: <<Description of the product>>:\n\n\n[AB123CC][white t-shirt in virgin wool] <<T-shirt whith V-neck.70% Wool, 30% Silk. MADE IN Italy.  Color: White>>\n\n[AA456IZ][black contoso t-shirt] <<Classic round-neck T-shirt made with organic cotton and virgin wool. 90% Cotton and 10% wool. MADE IN China. Color: Black GRIS>>\n\nWhen responding to the user, use the name, SKU and a short nice description of each product cited in your response.
+[END CONTEXT]
+[START FUNCTION_PARAMETERS]
+Parameter ""skuList""(based on $PRODUCT_LIST): List of SKU to look for availability separated by comma (ex: 711847Y36XE1000,683806Y36OX9310).
+Parameter ""storeList"" (based on $STORE_List): List of Stores for which we need to check availability separated by comma, by default the user Store Location (ex: Paris Saint Sulpice,Cannes).
+[END FUNCTION_PARAMETERS]
+[START GOAL]User intent: Please search for black t-shirts made of wool fabric and provide me with their availability at stores located in Paris.[END GOAL]
+[START RATIONALE]Find availability of products by their SKUs and List of stores in Paris, the storeList parameter must be filtered on stores located in Paris only[END RATIONALE]
+
+[START FUNCTION_INPUTS]
+[
+	{ ""parameterName"":""skuList"", ""value"": ""AB123CC,AA456IZ"" },
+	{ ""parameterName"":""storeList"", ""value"": ""Paris Saint Sulpice,Paris Auteuil"" }
+]
+[END FUNCTION_INPUTS]
+[END EXAMPLE]
+
+Real data start here :
+
+[START CONTEXT]
+{{$contextVariables}}
+[END CONTEXT]
+
+[START FUNCTION_PARAMETERS]
+{{$functionParameters}}
+[END FUNCTION_PARAMETERS]
+[START GOAL]{{$planUserIntent}}[END GOAL]
+[START RATIONALE]{{$rationale}}[END RATIONALE]
+
+[START FUNCTION_INPUTS]
+";
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay

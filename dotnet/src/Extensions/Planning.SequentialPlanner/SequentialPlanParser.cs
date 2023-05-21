@@ -40,6 +40,11 @@ internal static class SequentialPlanParser
     internal const string AppendToResultTag = "appendToResult";
 
     /// <summary>
+    /// The attribute tag used in the plan xml for setting the rationale of the function
+    /// </summary>
+    internal const string RationaleTag = "rationale";
+
+    /// <summary>
     /// Convert a plan xml string to a plan.
     /// </summary>
     /// <param name="xmlString">The plan xml string.</param>
@@ -110,6 +115,10 @@ internal static class SequentialPlanParser
                                     if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
                                     {
                                         functionOutputs.Add(attr.InnerText);
+                                    }
+                                    else if (attr.Name.Equals(RationaleTag, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        planStep.Rationale = attr.InnerText;
                                     }
                                     else if (attr.Name.Equals(AppendToResultTag, StringComparison.OrdinalIgnoreCase))
                                     {
