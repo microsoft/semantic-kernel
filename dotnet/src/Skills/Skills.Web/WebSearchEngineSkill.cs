@@ -42,7 +42,7 @@ public class WebSearchEngineSkill
         var offset = context.Variables.ContainsKey(OffsetParam) ? context[OffsetParam] : DefaultOffset;
         if (string.IsNullOrWhiteSpace(offset)) { offset = DefaultOffset; }
 
-        if (relatedSites != null || relatedSites.Count != 0)
+        if (relatedSites != null && relatedSites.Count != 0)
         {
             relatedSites = relatedSites.Select(site =>
             {
