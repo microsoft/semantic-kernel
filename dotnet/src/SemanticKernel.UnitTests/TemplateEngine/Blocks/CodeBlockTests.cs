@@ -206,7 +206,8 @@ public class CodeBlockTests
                 ctx["input"] = "overridden";
                 ctx["var1"] = "overridden";
                 ctx["var2"] = "overridden";
-            });
+            })
+            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -247,7 +248,8 @@ public class CodeBlockTests
             .Callback<SKContext, CompleteRequestSettings?>((ctx, _) =>
             {
                 canary = ctx!["input"];
-            });
+            })
+            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -280,7 +282,8 @@ public class CodeBlockTests
             .Callback<SKContext, CompleteRequestSettings?>((ctx, _) =>
             {
                 canary = ctx!["input"];
-            });
+            })
+            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);

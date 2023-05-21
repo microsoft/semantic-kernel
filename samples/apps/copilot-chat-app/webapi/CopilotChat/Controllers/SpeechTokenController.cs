@@ -70,9 +70,7 @@ public class SpeechTokenController : ControllerBase
             string token = await result.Content.ReadAsStringAsync();
             return new TokenResult { Token = token, ResponseCode = response.StatusCode };
         }
-        else
-        {
-            return new TokenResult { Token = "", ResponseCode = HttpStatusCode.NotFound };
-        }
+
+        return new TokenResult { Token = "", ResponseCode = HttpStatusCode.NotFound };
     }
 }

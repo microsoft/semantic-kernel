@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.15.31.15270",
-      "templateHash": "12093302041750720157"
+      "version": "0.17.1.54307",
+      "templateHash": "16246284004730438134"
     }
   },
   "parameters": {
@@ -20,8 +20,6 @@
       "type": "string",
       "defaultValue": "B1",
       "allowedValues": [
-        "F1",
-        "D1",
         "B1",
         "S1",
         "S2",
@@ -37,7 +35,7 @@
     },
     "packageUri": {
       "type": "string",
-      "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/skaas.zip",
+      "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip",
       "metadata": {
         "description": "Location of package to deploy as the web service"
       }
@@ -79,7 +77,7 @@
     },
     "deployQdrant": {
       "type": "bool",
-      "defaultValue": true,
+      "defaultValue": false,
       "metadata": {
         "description": "Whether to deploy Qdrant (in a container) for memory storage"
       }
@@ -95,7 +93,7 @@
   "resources": [
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-10-01",
+      "apiVersion": "2022-09-01",
       "name": "openAIDeployment",
       "properties": {
         "expressionEvaluationOptions": {
@@ -146,8 +144,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.15.31.15270",
-              "templateHash": "8624783622076748465"
+              "version": "0.17.1.54307",
+              "templateHash": "13081190617603210009"
             }
           },
           "parameters": {
@@ -162,8 +160,6 @@
               "type": "string",
               "defaultValue": "B1",
               "allowedValues": [
-                "F1",
-                "D1",
                 "B1",
                 "S1",
                 "S2",
@@ -179,7 +175,7 @@
             },
             "packageUri": {
               "type": "string",
-              "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/skaas.zip",
+              "defaultValue": "https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip",
               "metadata": {
                 "description": "Location of package to deploy as the web service"
               }
@@ -253,7 +249,7 @@
             },
             "deployQdrant": {
               "type": "bool",
-              "defaultValue": true,
+              "defaultValue": false,
               "metadata": {
                 "description": "Whether to deploy Qdrant (in a container) for memory storage"
               }
@@ -779,7 +775,7 @@
   "outputs": {
     "endpoint": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'openAIDeployment'), '2020-10-01').outputs.deployedUrl.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'openAIDeployment'), '2022-09-01').outputs.deployedUrl.value]"
     }
   }
 }
