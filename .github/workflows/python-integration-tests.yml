@@ -37,13 +37,14 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        export HNSWLIB_NO_NATIVE=1
         python -m pip install --upgrade pip
         python -m pip install poetry pytest
         cd python && poetry install --with hugging_face --with chromadb
     - name: Run Integration Tests
       shell: bash
       env: # Set Azure credentials secret as an input
-        HNSWLIB_NO_NATIVE: 1 # Disable native hsnwlib
+        HNSWLIB_NO_NATIVE: 1
         Python_Integration_Tests: Python_Integration_Tests
         AzureOpenAI__Label: azure-text-davinci-003
         AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
