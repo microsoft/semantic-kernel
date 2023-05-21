@@ -33,9 +33,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default)
     {
         var memoryStore = new DuckDBMemoryStore($"Data Source={filename}");
-        await memoryStore._dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        await memoryStore._dbConnector.CreateTableAsync(memoryStore._dbConnection, cancellationToken).ConfigureAwait(false);
-        return memoryStore;
+        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -46,9 +44,19 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default)
     {
         var memoryStore = new DuckDBMemoryStore(":memory:");
-        await memoryStore._dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        await memoryStore._dbConnector.CreateTableAsync(memoryStore._dbConnection, cancellationToken).ConfigureAwait(false);
-        return memoryStore;
+        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Connect a in memory DuckDB database
+    /// </summary>
+    /// <param name="connection">An already established connection.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task<DuckDBMemoryStore> ConnectAsync(DuckDBConnection connection,
+        CancellationToken cancellationToken = default)
+    {
+        var memoryStore = new DuckDBMemoryStore(connection);
+        return await InitialiseMemoryStoreAsync(memoryStore, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -214,6 +222,13 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     private readonly DuckDBConnection _dbConnection;
     private bool _disposedValue;
 
+    private static async Task<DuckDBMemoryStore> InitialiseMemoryStoreAsync(DuckDBMemoryStore memoryStore, CancellationToken cancellationToken = default)
+    {
+        await memoryStore._dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await memoryStore._dbConnector.CreateTableAsync(memoryStore._dbConnection, cancellationToken).ConfigureAwait(false);
+        return memoryStore;
+    }
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -222,6 +237,27 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     {
         this._dbConnector = new Database();
         this._dbConnection = new DuckDBConnection($"Data Source={filename};");
+        this._disposedValue = false;
+    }
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    private DuckDBMemoryStore()
+    {
+        this._dbConnector = new Database();
+        this._dbConnection = new DuckDBConnection($"Data Source=:memory:;");
+        this._disposedValue = false;
+    }
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="connection"></param>
+    private DuckDBMemoryStore(DuckDBConnection connection)
+    {
+        this._dbConnector = new Database();
+        this._dbConnection = connection;
         this._disposedValue = false;
     }
 
