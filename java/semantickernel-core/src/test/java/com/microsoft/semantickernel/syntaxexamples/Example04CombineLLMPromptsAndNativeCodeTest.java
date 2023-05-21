@@ -2,8 +2,9 @@
 package com.microsoft.semantickernel.syntaxexamples; // Copyright (c) Microsoft. All rights
 // reserved.
 
-import com.azure.ai.openai.models.Choice;
-import com.azure.ai.openai.models.Completions;
+import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
+
+import com.microsoft.openai.AzureOpenAIClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -14,35 +15,19 @@ import com.microsoft.semantickernel.syntaxexamples.skills.SearchEngineSkill;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import reactor.core.publisher.Mono;
-
-import java.util.Arrays;
+import reactor.util.function.Tuples;
 
 public class Example04CombineLLMPromptsAndNativeCodeTest {
 
     @Test
     public void run() {
-        com.microsoft.openai.OpenAIAsyncClient client =
-                Mockito.mock(com.microsoft.openai.OpenAIAsyncClient.class);
-
-        Completions completion = Mockito.mock(Completions.class);
-        Choice choice = Mockito.mock(Choice.class);
-        Mockito.when(choice.getText()).thenReturn("A-SUMMARY");
-        Mockito.when(completion.getChoices()).thenReturn(Arrays.asList(choice));
-        Mockito.when(
-                        client.getCompletions(
-                                Mockito.any(),
-                                Mockito.argThat(
-                                        r -> {
-                                            return r.getPrompt()
-                                                    .get(0)
-                                                    .contains(
-                                                            "Gran Torre Santiago is the tallest"
-                                                                    + " building in South America");
-                                        })))
-                .thenReturn(Mono.just(completion));
+        AzureOpenAIClient client =
+                mockCompletionOpenAIAsyncClient(
+                        Tuples.of(
+                                "Gran Torre Santiago is the tallest building in South America",
+                                "A-SUMMARY"));
 
         KernelConfig kernelConfig =
                 SKBuilders.kernelConfig()

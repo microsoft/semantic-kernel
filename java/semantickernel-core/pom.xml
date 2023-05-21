@@ -90,6 +90,11 @@
             <artifactId>semantickernel-core-skills</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantickernel.extensions</groupId>
+            <artifactId>sequentialplanner-extensions</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>jakarta.inject</groupId>
