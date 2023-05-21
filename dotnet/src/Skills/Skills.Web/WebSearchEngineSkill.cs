@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -33,7 +34,7 @@ public class WebSearchEngineSkill
     [SKFunctionInput(Description = "Text to search for")]
     [SKFunctionContextParameter(Name = CountParam, Description = "Number of results", DefaultValue = DefaultCount)]
     [SKFunctionContextParameter(Name = OffsetParam, Description = "Number of results to skip", DefaultValue = DefaultOffset)]
-    public async Task<string> SearchAsync(string query, List<string> relatedSites, SKContext context)
+    public async Task<string> SearchAsync(string query, List<string>? relatedSites, SKContext context)
     {
         var count = context.Variables.ContainsKey(CountParam) ? context[CountParam] : DefaultCount;
         if (string.IsNullOrWhiteSpace(count)) { count = DefaultCount; }
@@ -41,7 +42,20 @@ public class WebSearchEngineSkill
         var offset = context.Variables.ContainsKey(OffsetParam) ? context[OffsetParam] : DefaultOffset;
         if (string.IsNullOrWhiteSpace(offset)) { offset = DefaultOffset; }
 
-        if (relatedSites?.Any() != true) { relatedSites = new List<string> { }; }
+        if (relatedSites != null || relatedSites.Count != 0)
+        {
+            relatedSites = relatedSites.Select(site =>
+            {
+                if (!Uri.TryCreate(site, UriKind.Absolute, out Uri? uri))
+                {
+                    context.Fail($"Failed to parse site {site}");
+                    return site;
+                }
+
+                return uri.Host + uri.PathAndQuery + uri.Fragment;
+            }).ToList();
+        }
+        else { relatedSites = new List<string> { }; }
 
         int countInt = int.Parse(count, CultureInfo.InvariantCulture);
         int offsetInt = int.Parse(offset, CultureInfo.InvariantCulture);
