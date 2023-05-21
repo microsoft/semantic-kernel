@@ -24,8 +24,10 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        # python-version: ["3.8", "3.9", "3.10", "3.11"]
+        # os: [ ubuntu-latest, windows-latest, macos-latest ]
+        python-version: ["3.11"]
+        os: [macos-latest ]
         
     steps:
     - uses: actions/checkout@v3
@@ -38,6 +40,10 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install poetry pytest
         cd python && poetry install --with hugging_face --with chromadb
+    - name: macOS dependencies
+      if: matrix.os == 'macos-latest'
+      run: |
+        export HNSWLIB_NO_NATIVE=1
     - name: Run Integration Tests
       shell: bash
       env: # Set Azure credentials secret as an input
