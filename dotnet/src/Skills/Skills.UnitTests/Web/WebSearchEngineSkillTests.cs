@@ -31,16 +31,16 @@ public sealed class WebSearchEngineSkillTests : IDisposable
         IEnumerable<string> expected = new[] { Guid.NewGuid().ToString() };
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
-        connectorMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
         WebSearchEngineSkill target = new(connectorMock.Object);
 
         string anyQuery = Guid.NewGuid().ToString();
-        string anyRelatedSite = new Uri("http://www.contoso.com").ToString();
+        List<string> anyRelatedSites = new() { "http://www.contoso.com", "http://www.fabrikam.com" };
 
         // Act
-        await target.SearchAsync(anyQuery, anyRelatedSite, this._context);
+        await target.SearchAsync(anyQuery, anyRelatedSites, this._context);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);

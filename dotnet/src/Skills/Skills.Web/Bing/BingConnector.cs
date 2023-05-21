@@ -32,7 +32,7 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<string>> SearchAsync(string query, string relatedSite = "", int count = 1, int offset = 0, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<string>> SearchAsync(string query, List<string> relatedSites, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
         if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
 
@@ -40,7 +40,16 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
 
         if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
 
-        Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}{(!String.IsNullOrWhiteSpace(relatedSite) ? $"&site:{relatedSite}" : "")}&count={count}&offset={offset}");
+        UriBuilder uriBuilder = new("https://api.bing.microsoft.com/v7.0/search");
+
+        uriBuilder.Query = $"q={Uri.EscapeDataString(query)}";
+
+        if (relatedSites?.Count > 1) uriBuilder.Query += Uri.EscapeDataString($" site:{String.Join(" OR site:", relatedSites)}");
+        else if (relatedSites?.Count == 1) uriBuilder.Query += Uri.EscapeDataString($" site:{relatedSites[0]}");
+
+        uriBuilder.Query += $"&count={count}&offset={offset}";
+
+        Uri uri = uriBuilder.Uri;
 
         this._logger.LogDebug("Sending request: {0}", uri);
         HttpResponseMessage response = await this._httpClient.GetAsync(uri, cancellationToken).ConfigureAwait(false);
@@ -73,6 +82,11 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
     }
 
     public Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<string>> SearchAsync(string query, string relatedSites, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }

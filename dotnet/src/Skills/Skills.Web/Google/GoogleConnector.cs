@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Apis.CustomSearchAPI.v1;
@@ -40,7 +41,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     /// <inheritdoc/>
     public async Task<IEnumerable<string>> SearchAsync(
         string query,
-        string relatedSite,
+        List<string> relatedSites,
         int count,
         int offset,
         CancellationToken cancellationToken)
@@ -53,10 +54,12 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 
         var search = this._search.Cse.List();
         search.Cx = this._searchEngineId;
-        search.Q = query;
 
-        if (!String.IsNullOrWhiteSpace(relatedSite)) search.RelatedSite = relatedSite;
+        StringBuilder stringBuilder = new(query);
+        if (relatedSites?.Count > 1) stringBuilder.Append(Uri.EscapeDataString($" site:{String.Join(" OR site:", relatedSites)}"));
+        else if (relatedSites?.Count == 1) stringBuilder.Append(Uri.EscapeDataString($" site:{relatedSites[0]}"));
 
+        search.Q = stringBuilder.ToString();
         search.Num = count;
         search.Start = offset;
 
