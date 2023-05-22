@@ -138,7 +138,7 @@ public class ExternalInformationSkill
                     }
                 }
 
-                ProposedPlan = plan;
+                this.ProposedPlan = plan;
             }
         }
 
