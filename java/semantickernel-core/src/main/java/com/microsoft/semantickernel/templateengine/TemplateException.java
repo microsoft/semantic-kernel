@@ -10,6 +10,12 @@ public class TemplateException extends SKException {
 
     @Nonnull private final ErrorCodes errorCode;
 
+/**
+ * <p>
+ * Initializes a new instance of the {@code TemplateException} class with a provided error code.
+ * </p>
+ * @param error The error code.
+ */
     public TemplateException(@Nonnull ErrorCodes error) {
         this(error, null, null);
     }
