@@ -17,7 +17,12 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 
-internal class Program
+/// <summary>
+/// The chat example below is meant to demonstrate the use of an OpenAPI-based skill (e.g., GitHub),
+/// a planner (e.g., ActionPlanner) and chat completions to create a conversational experience with
+/// additional information from a skill when needed.
+/// </summary>
+internal sealed class Program
 {
     private static ILogger<Program> logger;
 
