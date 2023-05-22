@@ -112,7 +112,7 @@ resource openAI_embeddingModel 'Microsoft.CognitiveServices/accounts/deployments
 }
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: 'asp-${uniqueName}'
+  name: 'asp-${uniqueName}-skweb'
   location: location
   sku: {
     name: appServiceSku
@@ -128,138 +128,135 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-09-01' = {
   properties: {
     serverFarmId: appServicePlan.id
     httpsOnly: true
+    virtualNetworkSubnetId: virtualNetwork.properties.subnets[0].id
+    siteConfig: {
+      alwaysOn: true
+      cors: {
+        allowedOrigins: [
+          'http://localhost:3000'
+        ]
+        supportCredentials: true
+      }
+      detailedErrorLoggingEnabled: true
+      minTlsVersion: '1.2'
+      netFrameworkVersion: 'v6.0'
+      use32BitWorkerProcess: false
+      vnetRouteAllEnabled: true
+      appSettings: [
+        {
+          name: 'AIService:Type'
+          value: aiService
+        }
+        {
+          name: 'AIService:Endpoint'
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
+        }
+        {
+          name: 'AIService:Key'
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+        }
+        {
+          name: 'AIService:Models:Completion'
+          value: completionModel
+        }
+        {
+          name: 'AIService:Models:Embedding'
+          value: embeddingModel
+        }
+        {
+          name: 'AIService:Models:Planner'
+          value: plannerModel
+        }
+        {
+          name: 'Authorization:Type'
+          value: empty(semanticKernelApiKey) ? 'None' : 'ApiKey'
+        }
+        {
+          name: 'Authorization:ApiKey'
+          value: semanticKernelApiKey
+        }
+        {
+          name: 'ChatStore:Type'
+          value: deployCosmosDB ? 'cosmos' : 'volatile'
+        }
+        {
+          name: 'ChatStore:Cosmos:Database'
+          value: 'CopilotChat'
+        }
+        {
+          name: 'ChatStore:Cosmos:ChatSessionsContainer'
+          value: 'chatsessions'
+        }
+        {
+          name: 'ChatStore:Cosmos:ChatMessagesContainer'
+          value: 'chatmessages'
+        }
+        {
+          name: 'ChatStore:Cosmos:ConnectionString'
+          value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
+        }
+        {
+          name: 'MemoriesStore:Type'
+          value: deployQdrant ? 'Qdrant' : 'Volatile'
+        }
+        {
+          name: 'MemoriesStore:Qdrant:Host'
+          value: deployQdrant ? 'http://${appServiceQdrant.properties.defaultHostName}' : ''
+        }
+        {
+          name: 'AzureSpeech:Region'
+          value: location
+        }
+        {
+          name: 'AzureSpeech:Key'
+          value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
+        }
+        {
+          name: 'AllowedOrigins'
+          value: '[*]' // Defer list of allowed origins to the Azure service app's CORS configuration
+        }
+        {
+          name: 'Kestrel:Endpoints:Https:Url'
+          value: 'https://localhost:443'
+        }
+        {
+          name: 'Logging:LogLevel:Default'
+          value: 'Warning'
+        }
+        {
+          name: 'Logging:LogLevel:SemanticKernel.Service'
+          value: 'Warning'
+        }
+        {
+          name: 'Logging:LogLevel:Microsoft.SemanticKernel'
+          value: 'Warning'
+        }
+        {
+          name: 'Logging:LogLevel:Microsoft.AspNetCore.Hosting'
+          value: 'Warning'
+        }
+        {
+          name: 'Logging:LogLevel:Microsoft.Hosting.Lifetimel'
+          value: 'Warning'
+        }
+        {
+          name: 'ApplicationInsights:ConnectionString'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~2'
+        }
+      ]
+    }
   }
   dependsOn: [
     logAnalyticsWorkspace
   ]
-}
-
-resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
-  parent: appServiceWeb
-  name: 'web'
-  properties: {
-    alwaysOn: true
-    cors: {
-      allowedOrigins: [
-        'http://localhost:3000'
-      ]
-      supportCredentials: true
-    }
-    detailedErrorLoggingEnabled: true
-    minTlsVersion: '1.2'
-    netFrameworkVersion: 'v6.0'
-    use32BitWorkerProcess: false
-    appSettings: [
-      {
-        name: 'AIService:Type'
-        value: aiService
-      }
-      {
-        name: 'AIService:Endpoint'
-        value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-      }
-      {
-        name: 'AIService:Key'
-        value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
-      }
-      {
-        name: 'AIService:Models:Completion'
-        value: completionModel
-      }
-      {
-        name: 'AIService:Models:Embedding'
-        value: embeddingModel
-      }
-      {
-        name: 'AIService:Models:Planner'
-        value: plannerModel
-      }
-      {
-        name: 'Authorization:Type'
-        value: empty(semanticKernelApiKey) ? 'None' : 'ApiKey'
-      }
-      {
-        name: 'Authorization:ApiKey'
-        value: semanticKernelApiKey
-      }
-      {
-        name: 'ChatStore:Type'
-        value: deployCosmosDB ? 'cosmos' : 'volatile'
-      }
-      {
-        name: 'ChatStore:Cosmos:Database'
-        value: 'CopilotChat'
-      }
-      {
-        name: 'ChatStore:Cosmos:ChatSessionsContainer'
-        value: 'chatsessions'
-      }
-      {
-        name: 'ChatStore:Cosmos:ChatMessagesContainer'
-        value: 'chatmessages'
-      }
-      {
-        name: 'ChatStore:Cosmos:ConnectionString'
-        value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
-      }
-      {
-        name: 'MemoriesStore:Type'
-        value: deployQdrant ? 'Qdrant' : 'Volatile'
-      }
-      {
-        name: 'MemoriesStore:Qdrant:Host'
-        value: deployQdrant ? 'http://${appServiceQdrant.properties.defaultHostName}' : ''
-      }
-      {
-        name: 'AzureSpeech:Region'
-        value: location
-      }
-      {
-        name: 'AzureSpeech:Key'
-        value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
-      }
-      {
-        name: 'AllowedOrigins'
-        value: '[*]' // Defer list of allowed origins to the Azure service app's CORS configuration
-      }
-      {
-        name: 'Kestrel:Endpoints:Https:Url'
-        value: 'https://localhost:443'
-      }
-      {
-        name: 'Logging:LogLevel:Default'
-        value: 'Warning'
-      }
-      {
-        name: 'Logging:LogLevel:SemanticKernel.Service'
-        value: 'Warning'
-      }
-      {
-        name: 'Logging:LogLevel:Microsoft.SemanticKernel'
-        value: 'Warning'
-      }
-      {
-        name: 'Logging:LogLevel:Microsoft.AspNetCore.Hosting'
-        value: 'Warning'
-      }
-      {
-        name: 'Logging:LogLevel:Microsoft.Hosting.Lifetimel'
-        value: 'Warning'
-      }
-      {
-        name: 'ApplicationInsights:ConnectionString'
-        value: appInsights.properties.ConnectionString
-      }
-      {
-        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        value: appInsights.properties.ConnectionString
-      }
-      {
-        name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-        value: '~2'
-      }
-    ]
-  }
 }
 
 resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2022-09-01' = {
@@ -288,7 +285,7 @@ resource appInsightExtension 'Microsoft.Web/sites/siteextensions@2022-09-01' = {
   parent: appServiceWeb
   name: 'Microsoft.ApplicationInsights.AzureWebSites'
   dependsOn: [
-    appInsights
+    webSubnetConnection
   ]
 }
 
@@ -351,10 +348,26 @@ resource appServiceQdrant 'Microsoft.Web/sites@2022-09-01' = if (deployQdrant) {
     httpsOnly: true
     reserved: true
     clientCertMode: 'Required'
+    virtualNetworkSubnetId: virtualNetwork.properties.subnets[1].id
     siteConfig: {
       numberOfWorkers: 1
       linuxFxVersion: 'DOCKER|qdrant/qdrant:latest'
       alwaysOn: true
+      vnetRouteAllEnabled: true
+      ipSecurityRestrictions: [
+        {
+          vnetSubnetResourceId: virtualNetwork.properties.subnets[0].id
+          action: 'Allow'
+          priority: 300
+          name: 'Allow front vnet'
+        }
+        {
+          ipAddress: 'Any'
+          action: 'Deny'
+          priority: 2147483647
+          name: 'Deny all'
+        }
+      ]
       azureStorageAccounts: {
         aciqdrantshare: {
           type: 'AzureFiles'
@@ -365,6 +378,125 @@ resource appServiceQdrant 'Microsoft.Web/sites@2022-09-01' = if (deployQdrant) {
         }
       }
     }
+  }
+}
+
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+  name: 'vnet-semantickernel'
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.0.0.0/16'
+      ]
+    }
+    subnets: [
+      {
+        name: 'webSubnet'
+        properties: {
+          addressPrefix: '10.0.1.0/24'
+          networkSecurityGroup: {
+            id: webNsg.id
+          }
+          serviceEndpoints: [
+            {
+              service: 'Microsoft.Web'
+              locations: [
+                '*'
+              ]
+            }
+          ]
+          delegations: [
+            {
+              name: 'delegation'
+              properties: {
+                serviceName: 'Microsoft.Web/serverfarms'
+              }
+            }
+          ]
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Enabled'
+        }
+      }
+      {
+        name: 'qdrantSubnet'
+        properties: {
+          addressPrefix: '10.0.2.0/24'
+          networkSecurityGroup: {
+            id: qdrantNsg.id
+          }
+          serviceEndpoints: [
+            {
+              service: 'Microsoft.Web'
+              locations: [
+                '*'
+              ]
+            }
+          ]
+          delegations: [
+            {
+              name: 'delegation'
+              properties: {
+                serviceName: 'Microsoft.Web/serverfarms'
+              }
+            }
+          ]
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Enabled'
+        }
+      }
+    ]
+  }
+}
+
+resource webNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+  name: 'nsg-${uniqueName}-web'
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'AllowAnyHTTPSInbound'
+        properties: {
+          protocol: 'TCP'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 100
+          direction: 'Inbound'
+        }
+      }
+    ]
+  }
+}
+
+resource qdrantNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+  name: 'nsg-${uniqueName}-qdrant'
+  location: location
+  properties: {
+    securityRules: []
+  }
+}
+
+resource webSubnetConnection 'Microsoft.Web/sites/virtualNetworkConnections@2022-09-01' = {
+  parent: appServiceWeb
+  name: 'webSubnetConnection'
+  properties: {
+    vnetResourceId: virtualNetwork.properties.subnets[0].id
+    isSwift: true
+  }
+  dependsOn: [
+    appServiceWebDeploy
+  ]
+}
+
+resource qdrantSubnetConnection 'Microsoft.Web/sites/virtualNetworkConnections@2022-09-01' = if (deployQdrant) {
+  parent: appServiceQdrant
+  name: 'qdrantSubnetConnection'
+  properties: {
+    vnetResourceId: virtualNetwork.properties.subnets[1].id
+    isSwift: true
   }
 }
 
