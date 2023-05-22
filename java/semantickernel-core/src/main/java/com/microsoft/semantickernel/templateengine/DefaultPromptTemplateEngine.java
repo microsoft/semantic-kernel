@@ -7,8 +7,10 @@ import com.microsoft.semantickernel.templateengine.blocks.Block;
 import com.microsoft.semantickernel.templateengine.blocks.CodeBlock;
 import com.microsoft.semantickernel.templateengine.blocks.CodeRendering;
 import com.microsoft.semantickernel.templateengine.blocks.TextRendering;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -76,10 +78,14 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
                             } else if (block instanceof CodeRendering) {
                                 return ((CodeBlock) block).renderCodeAsync(context);
                             } else {
-                                String message = "Unexpected block type, the block doesn't have a rendering method";
+                                String message =
+                                        "Unexpected block type, the block doesn't have a rendering"
+                                                + " method";
                                 LOGGER.error(message);
                                 return Mono.error(
-                                        new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, message));
+                                        new TemplateException(
+                                                TemplateException.ErrorCodes.UnexpectedBlockType,
+                                                message));
                             }
                         })
                 .collectList()

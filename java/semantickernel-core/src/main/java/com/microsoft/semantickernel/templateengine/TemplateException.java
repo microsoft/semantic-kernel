@@ -10,35 +10,32 @@ public class TemplateException extends SKException {
 
     @Nonnull private final ErrorCodes errorCode;
 
-/**
- * <p>
- * Initializes a new instance of the {@code TemplateException} class with a provided error code.
- * </p>
- * @param error The error code.
- */
+    /**
+     * Initializes a new instance of the {@code TemplateException} class with a provided error code.
+     *
+     * @param error The error code.
+     */
     public TemplateException(@Nonnull ErrorCodes error) {
         this(error, null, null);
     }
 
-/**
- * <p>
- * Initializes a new instance of the {@code TemplateException} class with a provided error code.
- * </p>
- * @param error The error code.
- * @param message The exception message.
- */
+    /**
+     * Initializes a new instance of the {@code TemplateException} class with a provided error code.
+     *
+     * @param error The error code.
+     * @param message The exception message.
+     */
     public TemplateException(@Nonnull ErrorCodes errorCode, @Nullable String message) {
         this(errorCode, message, null);
     }
 
-/**
- * <p>
- * Initializes a new instance of the {@code TemplateException} class with a provided error code.
- * </p>
- * @param error The error code.
- * @param message The exception message.
- * @param innerException The exception that is the cause of the current exception.
- */
+    /**
+     * Initializes a new instance of the {@code TemplateException} class with a provided error code.
+     *
+     * @param error The error code.
+     * @param message The exception message.
+     * @param innerException The exception that is the cause of the current exception.
+     */
     public TemplateException(
             @Nonnull ErrorCodes errorCode,
             @Nullable String message,
