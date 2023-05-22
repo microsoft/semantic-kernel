@@ -4,6 +4,8 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
+namespace OpenApiSkillsExample;
+
 /// <summary>
 /// If the other property is set to the expected value, then this property is required.
 /// </summary>

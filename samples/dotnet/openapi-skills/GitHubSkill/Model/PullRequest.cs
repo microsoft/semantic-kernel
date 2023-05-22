@@ -3,6 +3,8 @@
 using System;
 using System.Text.Json.Serialization;
 
+namespace GitHubSkill.Model;
+
 /// <summary>
 /// Represents a GitHub Pull Request.
 /// </summary>
@@ -12,7 +14,7 @@ public class PullRequest
     /// Gets or sets the URL of the pull request
     /// </summary>
     [JsonPropertyName("url")]
-    public System.Uri? Url { get; set; }
+    public Uri? Url { get; set; }
 
     /// <summary>
     /// Gets or sets the unique identifier of the pull request

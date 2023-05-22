@@ -2,6 +2,8 @@
 
 using System.Text.Json.Serialization;
 
+namespace GitHubSkill.Model;
+
 /// <summary>
 /// Represents a user on GitHub.
 /// </summary>

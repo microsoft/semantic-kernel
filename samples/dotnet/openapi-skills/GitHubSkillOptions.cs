@@ -2,6 +2,8 @@
 
 using System.ComponentModel.DataAnnotations;
 
+namespace OpenApiSkillsExample;
+
 /// <summary>
 /// Configuration options for GitHub skill.
 /// </summary>

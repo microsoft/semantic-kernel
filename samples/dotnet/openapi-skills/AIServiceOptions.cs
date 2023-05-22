@@ -2,6 +2,8 @@
 
 using System.ComponentModel.DataAnnotations;
 
+namespace OpenApiSkillsExample;
+
 /// <summary>
 /// Configuration options for AI services, such as Azure OpenAI and OpenAI.
 /// </summary>
