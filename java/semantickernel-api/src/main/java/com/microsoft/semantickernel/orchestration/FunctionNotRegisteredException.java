@@ -1,15 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-public class FunctionNotRegisteredException extends RuntimeException {
+import com.microsoft.semantickernel.SKException;
+
+public class FunctionNotRegisteredException extends SKException {
+
+    private static final String format =
+            "It does not appear this function(%s) has been registered on a kernel.%n"
+                    + "Register it on a kernel either by passing it to "
+                    + "KernelConfig.Builder().addSkill() when building the kernel, or%n"
+                    + "passing it to Kernel.registerSemanticFunction";
 
     public FunctionNotRegisteredException(String name) {
-        super(
-                "It does not appear this function("
-                        + name
-                        + ") has been registered on a kernel.\n"
-                        + "Register it on a kernel either by passing it to"
-                        + " KernelConfig.Builder().addSkill() when building the kernel, or\n"
-                        + "passing it to Kernel.registerSemanticFunction");
+        super(String.format(format, name));
     }
 }

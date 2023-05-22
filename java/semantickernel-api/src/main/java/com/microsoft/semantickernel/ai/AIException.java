@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.ai; // Copyright (c) Microsoft. All rights reserved.
 
+import com.microsoft.semantickernel.SKException;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** AI logic exception */
-public class AIException extends RuntimeException {
+public class AIException extends SKException {
 
     @Nonnull private final ErrorCodes errorCode;
 
