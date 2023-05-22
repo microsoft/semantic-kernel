@@ -25,7 +25,7 @@ internal static class WordprocessingDocumentEx
 
     internal static string ReadText(this WordprocessingDocument wordprocessingDocument)
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
 
         var mainPart = wordprocessingDocument.MainDocumentPart;
         if (mainPart is null)

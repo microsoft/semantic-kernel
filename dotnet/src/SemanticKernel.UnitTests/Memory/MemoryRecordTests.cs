@@ -16,7 +16,7 @@ public class MemoryRecordTests
     private readonly string _description = "description";
     private readonly string _externalSourceName = "externalSourceName";
     private readonly string _additionalMetadata = "value";
-    private readonly Embedding<float> _embedding = new Embedding<float>(new float[] { 1, 2, 3 });
+    private readonly Embedding<float> _embedding = new(new float[] { 1, 2, 3 });
 
     [Fact]
     public void ItCanBeConstructedFromMetadataAndVector()

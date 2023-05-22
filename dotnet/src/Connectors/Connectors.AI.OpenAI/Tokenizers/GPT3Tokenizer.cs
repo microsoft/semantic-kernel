@@ -193,7 +193,7 @@ public static class GPT3Tokenizer
             return list;
         }
 
-        List<string> word = new List<string>(token.Length);
+        List<string> word = new(token.Length);
         foreach (char c in token)
         {
             word.Add(c.ToString());
