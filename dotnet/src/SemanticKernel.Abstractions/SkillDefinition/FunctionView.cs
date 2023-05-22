@@ -75,5 +75,5 @@ public sealed class FunctionView
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{Name} ({Description})";
+    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
 }

@@ -57,7 +57,7 @@ internal static class SemanticKernelExtensions
             .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptions<AIServiceOptions>>().Value));
 
         // Register skills
-        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkills);
+        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkillsAsync);
 
         return services;
     }
@@ -65,7 +65,7 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Register the skills with the kernel.
     /// </summary>
-    private static Task RegisterSkills(IServiceProvider sp, IKernel kernel)
+    private static Task RegisterSkillsAsync(IServiceProvider sp, IKernel kernel)
     {
         // Copilot chat skills
         kernel.RegisterCopilotChatSkills(sp);
@@ -122,6 +122,7 @@ internal static class SemanticKernelExtensions
                     {
                         httpClient.DefaultRequestHeaders.Add("api-key", config.Qdrant.Key);
                     }
+
                     return new QdrantMemoryStore(new QdrantVectorDbClient(
                         config.Qdrant.Host, config.Qdrant.VectorSize, port: config.Qdrant.Port, httpClient: httpClient, log: sp.GetRequiredService<ILogger<IQdrantVectorDbClient>>()));
                 });

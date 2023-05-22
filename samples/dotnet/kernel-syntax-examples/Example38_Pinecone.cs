@@ -48,7 +48,7 @@ public static class Example38_Pinecone
 
         Console.WriteLine("== Adding Memories ==");
 
-        Dictionary<string, object> metadata = new Dictionary<string, object>()
+        Dictionary<string, object> metadata = new()
         {
             { "type", "text" },
             { "tags", new List<string>() { "memory", "cats" } }
