@@ -133,7 +133,7 @@ public class ChatController : ControllerBase, IDisposable
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "GitHubSkill",
-                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Skills/OpenApiSkills/GitHubSkill/openapi.json"),
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "CopilotChat", "Skills", "OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
 
@@ -146,7 +146,7 @@ public class ChatController : ControllerBase, IDisposable
 
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "JiraSkill",
-                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Skills/OpenApiSkills/JiraSkill/openapi.json"),
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "CopilotChat", "Skills", "OpenApiSkills/JiraSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync,
                 serverUrlOverride: hasServerUrlOverride ? new Uri(serverUrlOverride) : null);
         }
