@@ -39,7 +39,7 @@ param endpoint string = ''
 @description('Azure OpenAI or OpenAI API key')
 param apiKey string = ''
 
-@description('Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth')
+@description('Semantic Kernel server API key - Generated GUID by default (Provide empty string to disable API key auth)')
 param semanticKernelApiKey string = newGuid()
 
 @description('Whether to deploy a new Azure OpenAI instance')
@@ -208,7 +208,7 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       }
       {
         name: 'MemoriesStore:Qdrant:Host'
-        value: deployQdrant ? 'https://${containerApp.properties.configuration.ingress.fqdn}' : ''
+        value: deployQdrant ? 'http://${appServiceQdrant.properties.defaultHostName}' : ''
       }
       {
         name: 'AzureSpeech:Region'
@@ -330,86 +330,42 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = if (deployQdra
   }
 }
 
-resource environment 'Microsoft.App/managedEnvironments@2022-10-01' = if (deployQdrant) {
-  name: 'cae-${uniqueName}'
+resource appServicePlanQdrant 'Microsoft.Web/serverfarms@2022-03-01' = if (deployQdrant) {
+  name: 'asp-${uniqueName}-qdrant'
   location: location
+  kind: 'linux'
+  sku: {
+    name: 'P1v3'
+  }
   properties: {
-    appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: logAnalyticsWorkspace.properties.customerId
-        sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
-      }
-    }
+    reserved: true
   }
 }
 
-resource azurefilestorage 'Microsoft.App/managedEnvironments/storages@2022-10-01' = {
-  parent: environment
-  name: 'azure-file-storage'
-  properties: {
-    azureFile: {
-      accountName: deployQdrant ? storage.name : 'notdeployed'
-      accountKey: deployQdrant ? storage.listKeys().keys[0].value : ''
-      shareName: storageFileShareName
-      accessMode: 'ReadWrite'
-    }
-  }
-}
-
-resource containerApp 'Microsoft.App/containerApps@2022-10-01' = if (deployQdrant) {
-  name: 'app-${rgIdHash}-qdrant' // Not using full unique name to avoid hitting 32 char limit
+resource appServiceQdrant 'Microsoft.Web/sites@2022-09-01' = if (deployQdrant) {
+  name: 'app-${uniqueName}-qdrant'
   location: location
-  properties:{
-    managedEnvironmentId: environment.id
-    configuration: {
-      ingress: {
-        allowInsecure: false
-        transport: 'http'
-        targetPort: 6333
-        external: true
-        ipSecurityRestrictions: [
-          {
-            name: 'SemanticKernel'
-            //ipAddressRange: reference(resourceId('Microsoft.Web/sites', 'app-${uniqueName}-skweb'), '2022-09-01', 'full').inboundIpAddress
-            action: 'Allow'
-          }
-        ]
-      }
-    }
-    template: {
-      containers: [
-        {
-          image: 'qdrant/qdrant:latest'
-          name: 'qdrant-container'
-          resources: {
-            cpu: 2
-            memory: '4.0Gi'
-          }
-          volumeMounts: [
-            {
-              mountPath: '/qdrant/storage'
-              volumeName: 'azure-files-volume'
-            }
-          ]
+  kind: 'app,linux,container'
+  properties: {
+    serverFarmId: appServicePlanQdrant.id
+    httpsOnly: true
+    reserved: true
+    clientCertMode: 'Required'
+    siteConfig: {
+      numberOfWorkers: 1
+      linuxFxVersion: 'DOCKER|qdrant/qdrant:latest'
+      alwaysOn: true
+      azureStorageAccounts: {
+        aciqdrantshare: {
+          type: 'AzureFiles'
+          accountName: deployQdrant ? storage.name : 'notdeployed'
+          shareName: storageFileShareName
+          mountPath: '/qdrant/storage'
+          accessKey: deployQdrant ? storage.listKeys().keys[0].value : ''
         }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
       }
-      volumes: [
-        {
-          name: 'azure-files-volume'
-          storageName: 'azure-file-storage'
-          storageType: 'AzureFile'
-        }
-      ]
     }
   }
-  dependsOn: [
-    azurefilestorage
-  ]
 }
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = if (deployCosmosDB) {

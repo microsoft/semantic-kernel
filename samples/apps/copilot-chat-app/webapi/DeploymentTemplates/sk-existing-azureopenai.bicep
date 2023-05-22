@@ -32,7 +32,7 @@ param endpoint string
 @description('Azure OpenAI API key')
 param apiKey string
 
-@description('Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth')
+@description('Semantic Kernel server API key - Generated GUID by default (Provide empty string to disable API key auth)')
 param semanticKernelApiKey string = newGuid()
 
 @description('Whether to deploy Cosmos DB for chat storage')
