@@ -10,7 +10,7 @@ interface TokenResponse {
 }
 
 export class SpeechService extends BaseService {
-    validSpeechKeyAsync = async (accessToken: string) => {
+    validateSpeechKeyAsync = async (accessToken: string) => {
         const response = await this.invokeTokenAsync(accessToken);
         return response;
     };
