@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
+import { BaseService } from './BaseService';
 
 interface TokenResponse {
     token: string;
@@ -8,16 +9,9 @@ interface TokenResponse {
     isSuccess: boolean;
 }
 
-interface SpeechServiceRequest {
-    commandPath: string;
-    method?: string;
-}
-
-export class SpeechService {
-    constructor(private readonly serviceUrl: string) {}
-
-    validSpeechKeyAsync = async () => {
-        const response = await this.invokeTokenAsync();
+export class SpeechService extends BaseService {
+    validSpeechKeyAsync = async (accessToken: string) => {
+        const response = await this.invokeTokenAsync(accessToken);
         return response;
     };
 
@@ -32,8 +26,8 @@ export class SpeechService {
         return this.generateSpeechRecognizer(token, region);
     };
 
-    getSpeechRecognizerAsync = async () => {
-        const response = await this.invokeTokenAsync();
+    getSpeechRecognizerAsync = async (accessToken: string) => {
+        const response = await this.invokeTokenAsync(accessToken);
         return await this.getSpeechRecognizerAsyncWithValidKey(response);
     };
 
@@ -44,39 +38,15 @@ export class SpeechService {
         return new speechSdk.SpeechRecognizer(speechConfig, audioConfig);
     }
 
-    private invokeTokenAsync = async (): Promise<TokenResponse> => {
-        const result = await this.getAzureSpeechTokenAsync<TokenResponse>({
-            commandPath: `speechToken`,
-            method: 'GET',
-        });
+    private invokeTokenAsync = async (accessToken: string): Promise<TokenResponse> => {
+        const result = await this.getResponseAsync<TokenResponse>(
+            {
+                commandPath: `speechToken`,
+                method: 'GET',
+            },
+            accessToken,
+        );
+
         return result;
-    };
-
-    private readonly getAzureSpeechTokenAsync = async <TokenResponse>(
-        request: SpeechServiceRequest,
-    ): Promise<TokenResponse> => {
-        const { commandPath, method } = request;
-
-        try {
-            const requestUrl = new URL(commandPath, this.serviceUrl);
-            const response = await fetch(requestUrl, {
-                method: method ?? 'GET',
-                headers: { 'Content-Type': 'application/json' },
-            });
-
-            if (!response.ok) {
-                throw Object.assign(new Error(response.statusText + ' => ' + (await response.text())));
-            }
-
-            return (await response.json()) as TokenResponse;
-        } catch (e) {
-            var additional_error_msg = '';
-            if (e instanceof TypeError) {
-                // fetch() will reject with a TypeError when a network error is encountered.
-                additional_error_msg =
-                    '\n\nPlease check that your backend is running and that it is accessible by the app';
-            }
-            throw Object.assign(new Error(e + additional_error_msg));
-        }
     };
 }

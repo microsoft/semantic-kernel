@@ -79,7 +79,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         async function initSpeechRecognizer() {
             const speechService = new SpeechService(process.env.REACT_APP_BACKEND_URI as string);
 
-            var response = await speechService.validSpeechKeyAsync();
+            var response = await speechService.validSpeechKeyAsync(await AuthHelper.getSKaaSAccessToken(instance, inProgress));
             if (response.isSuccess) {
                 const recognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
                 setRecognizer(recognizer);
@@ -87,7 +87,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         }
 
         initSpeechRecognizer();
-    }, []);
+    }, [instance, inProgress]);
 
     const handleSpeech = () => {
         setIsListening(true);
