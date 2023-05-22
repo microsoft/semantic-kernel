@@ -16,6 +16,7 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.CopilotChat.Extensions;
+using SemanticKernel.Service.CopilotChat.Storage;
 using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service;
@@ -143,6 +144,12 @@ internal static class SemanticKernelExtensions
             default:
                 throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
         }
+
+        // High level semantic memory implementations, such as Azure Cognitive Search, do not allow for providing embeddings when storing memories.
+        // We wrap the memory store in an optional memory store to allow controllers to pass dependency injection validation and potentially optimize
+        // for a lower-level memory implementation (e.g. Qdrant). Lower level memory implementations (i.e., IMemoryStore) allow for reusing embeddings,
+        // whereas high level memory implementation (i.e., ISemanticTextMemory) assume embeddings get recalculated on every write.
+        services.AddSingleton<OptionalIMemoryStore>(sp => new OptionalIMemoryStore() { MemoryStore = sp.GetService<IMemoryStore>() });
     }
 
     /// <summary>

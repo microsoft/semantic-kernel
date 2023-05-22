@@ -24,6 +24,7 @@ namespace SemanticKernel.Service.CopilotChat.Controllers;
 public class BotController : ControllerBase
 {
     private readonly ILogger<BotController> _logger;
+    private readonly IMemoryStore? _memoryStore;
     private readonly ISemanticTextMemory _semanticMemory;
     private readonly ChatSessionRepository _chatRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
@@ -34,7 +35,7 @@ public class BotController : ControllerBase
     /// <summary>
     /// The constructor of BotController.
     /// </summary>
-    /// <param name="memoryStore">The memory store (optional).</param>
+    /// <param name="optionalIMemoryStore">Optional memory store.</param>
     /// <param name="chatRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
     /// <param name="aiServiceOptions">The AI service options where we need the embedding settings from.</param>
@@ -42,6 +43,7 @@ public class BotController : ControllerBase
     /// <param name="documentMemoryOptions">The document memory options.</param>
     /// <param name="logger">The logger.</param>
     public BotController(
+        OptionalIMemoryStore optionalIMemoryStore,
         ISemanticTextMemory semanticMemory,
         ChatSessionRepository chatRepository,
         ChatMessageRepository chatMessageRepository,
@@ -50,6 +52,7 @@ public class BotController : ControllerBase
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<BotController> logger)
     {
+        this._memoryStore = optionalIMemoryStore.MemoryStore;
         this._logger = logger;
         this._semanticMemory = semanticMemory;
         this._chatRepository = chatRepository;
@@ -290,11 +293,30 @@ public class BotController : ControllerBase
                 {
                     var newCollectionName = collection.Key.Replace(oldChatId, chatId, StringComparison.OrdinalIgnoreCase);
 
-                    await this._semanticMemory.SaveInformationAsync(
-                        collection: newCollectionName,
-                        text: record.Metadata.Text,
-                        id: record.Metadata.Id,
-                        cancellationToken: cancellationToken);
+                    if (this._memoryStore == null)
+                    {
+                        await this._semanticMemory.SaveInformationAsync(
+                            collection: newCollectionName,
+                            text: record.Metadata.Text,
+                            id: record.Metadata.Id,
+                            cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        MemoryRecord data = MemoryRecord.LocalRecord(
+                            id: record.Metadata.Id,
+                            text: record.Metadata.Text,
+                            embedding: record.Embedding.Value,
+                            description: null,
+                            additionalMetadata: null);
+
+                        if (!(await this._memoryStore.DoesCollectionExistAsync(newCollectionName, default)))
+                        {
+                            await this._memoryStore.CreateCollectionAsync(newCollectionName, default);
+                        }
+
+                        await this._memoryStore.UpsertAsync(newCollectionName, data, default);
+                    }
                 }
             }
         }
