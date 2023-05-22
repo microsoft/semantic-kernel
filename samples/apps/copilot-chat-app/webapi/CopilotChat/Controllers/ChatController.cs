@@ -89,9 +89,10 @@ public class ChatController : ControllerBase, IDisposable
         {
             function = kernel.Skills.GetFunction(ChatSkillName, ChatFunctionName);
         }
-        catch (KernelException)
+        catch (KernelException ke)
         {
-            this._logger.LogDebug("Failed to find {0}/{1} on server", ChatSkillName, ChatFunctionName);
+            this._logger.LogError("Failed to find {0}/{1} on server: {2}", ChatSkillName, ChatFunctionName, ke);
+
             return this.NotFound($"Failed to find {ChatSkillName}/{ChatFunctionName} on server");
         }
 
@@ -138,7 +139,7 @@ public class ChatController : ControllerBase, IDisposable
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "GitHubSkill",
-                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/GitHubSkill/openapi.json"),
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Skills/OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
 
@@ -151,7 +152,7 @@ public class ChatController : ControllerBase, IDisposable
 
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "JiraSkill",
-                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Skills/OpenApiSkills/JiraSkill/openapi.json"),
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Skills/OpenApiSkills/JiraSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync,
                 serverUrlOverride: hasServerUrlOverride ? new Uri(serverUrlOverride) : null);
         }

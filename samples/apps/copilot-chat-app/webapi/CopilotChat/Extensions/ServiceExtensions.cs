@@ -124,7 +124,7 @@ public static class CopilotChatServiceExtensions
             default:
             {
                 throw new InvalidOperationException(
-                    $"Invalid 'ChatStore' setting 'chatStoreConfig.Type'.");
+                    "Invalid 'ChatStore' setting 'chatStoreConfig.Type'.");
             }
         }
 
