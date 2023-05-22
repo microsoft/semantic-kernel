@@ -68,7 +68,10 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
         var options = new OpenAIClientOptions();
+        //The following three lines turn off the internal AzureOpenAI retry mechanism in order to ensure consistent retry policies across all connectors.
         options.Transport = new HttpClientTransport(httpClient);
+        options.RetryPolicy = null;
+        options.Retry.MaxRetries = 0;
 
         this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
