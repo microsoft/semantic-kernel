@@ -44,7 +44,7 @@ export const useChat = () => {
 
     const loggedInUser: IChatUser = {
         id: account?.homeAccountId || '',
-        fullName: account?.name || '',
+        fullName: (account?.name ?? account?.username) || '',
         emailAddress: account?.username || '',
         photo: undefined, // TODO: Make call to Graph /me endpoint to load photo
         online: true,
@@ -62,7 +62,7 @@ export const useChat = () => {
             await chatService
                 .createChatAsync(
                     account?.homeAccountId!,
-                    account?.name!,
+                    account?.name ?? account?.username!,
                     chatTitle,
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 )
@@ -107,7 +107,7 @@ export const useChat = () => {
                 },
                 {
                     key: 'userName',
-                    value: account?.name!,
+                    value: account?.name ?? account?.username!,
                 },
                 {
                     key: 'chatId',
