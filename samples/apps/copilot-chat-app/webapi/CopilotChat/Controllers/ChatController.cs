@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
@@ -23,7 +22,6 @@ using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.CopilotChat.Models;
-using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 using SemanticKernel.Service.Models;
 
@@ -63,8 +61,7 @@ public class ChatController : ControllerBase, IDisposable
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ChatAsync(
         [FromServices] IKernel kernel,
-        [FromServices] CopilotChatPlanner? planner,
-        [FromServices] IOptions<PlannerOptions> plannerOptions,
+        [FromServices] CopilotChatPlanner planner,
         [FromBody] Ask ask,
         [FromHeader] OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
@@ -78,10 +75,7 @@ public class ChatController : ControllerBase, IDisposable
         }
 
         // Register plugins that have been enabled
-        if (planner != null && plannerOptions.Value.Enabled)
-        {
-            await this.RegisterPlannerSkillsAsync(planner, plannerOptions.Value, openApiSkillsAuthHeaders, contextVariables);
-        }
+        await this.RegisterPlannerSkillsAsync(planner, openApiSkillsAuthHeaders, contextVariables);
 
         // Get the function to invoke
         ISKFunction? function = null;
@@ -114,7 +108,7 @@ public class ChatController : ControllerBase, IDisposable
     /// <summary>
     /// Register skills with the planner's kernel.
     /// </summary>
-    private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders, ContextVariables variables)
+    private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders, ContextVariables variables)
     {
         // Register authenticated skills with the planner's kernel only if the request includes an auth header for the skill.
 

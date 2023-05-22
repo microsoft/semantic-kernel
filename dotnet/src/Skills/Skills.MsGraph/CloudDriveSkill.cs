@@ -47,7 +47,7 @@ public class CloudDriveSkill
         this._logger.LogDebug("Getting file content for '{0}'", filePath);
         Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
 
-        using StreamReader sr = new StreamReader(fileContentStream);
+        using StreamReader sr = new(fileContentStream);
         string content = await sr.ReadToEndAsync().ConfigureAwait(false);
         this._logger.LogDebug("File content: {0}", content);
         return content;

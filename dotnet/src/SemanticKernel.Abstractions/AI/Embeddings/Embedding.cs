@@ -66,8 +66,7 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
         // Create a local, protected copy if transferOwnership is false or if the vector is not an array.
         // If the vector is an array and transferOwnership is true, then we can use the array directly.
         this._vector =
-            transferOwnership && vector is TEmbedding[] array ? array :
-            vector.ToArray();
+            transferOwnership && vector is TEmbedding[] array ? array : vector.ToArray();
     }
 
     private static void ThrowNotSupportedEmbedding() =>
@@ -205,7 +204,7 @@ public static class Embedding
     /// <typeparam name="TEmbedding">The type to be checked.</typeparam>
     /// <returns>
     /// <see langword="true"/> if the type is supported; otherwise, <see langword="true"/>.
-    /// Currently only <see cref="Single"/> and <see cref="Double"/> are supported.
+    /// Currently only <see cref="float"/> and <see cref="double"/> are supported.
     /// </returns>
     public static bool IsSupported<TEmbedding>() => typeof(TEmbedding) == typeof(float) || typeof(TEmbedding) == typeof(double);
 
@@ -215,7 +214,7 @@ public static class Embedding
     /// <param name="type">The type to be checked.</param>
     /// <returns>
     /// <see langword="true"/> if the type is supported; otherwise, <see langword="true"/>.
-    /// Currently only <see cref="Single"/> and <see cref="Double"/> are supported.
+    /// Currently only <see cref="float"/> and <see cref="double"/> are supported.
     /// </returns>
     public static bool IsSupported(Type type) => type == typeof(float) || type == typeof(double);
 
