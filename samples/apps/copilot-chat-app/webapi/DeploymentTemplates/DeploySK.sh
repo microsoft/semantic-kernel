@@ -14,8 +14,7 @@ usage() {
     echo "  -r, --region REGION                        Region to which to make the deployment (default: \"South Central US\")"
     echo "  -p, --package-uri PACKAGE_URI              Package to deploy to web service (default: 'https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip')"
     echo "  -a, --app-service-sku APP_SERVICE_SKU      SKU for the Azure App Service plan (default: \"B1\")"
-    # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
-    # echo "  -nq, --no-qdrant                           Don't deploy Qdrant for memory storage - Use volatile memory instead"
+    echo "  -nq, --no-qdrant                           Don't deploy Qdrant for memory storage - Use volatile memory instead"
     echo "  -nc, --no-cosmos-db                        Don't deploy Cosmos DB for chat storage - Use volatile memory instead"
     echo "  -ns, --no-speech-services                  Don't deploy Speech Services to enable speech as chat input"
     echo "  -dd, --debug-deployment                    Switches on verbose template deployment output"
@@ -55,11 +54,10 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
-        # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
-        # -nq|--no-qdrant)
-        # NO_QDRANT=true
-        # shift
-        # ;;
+        -nq|--no-qdrant)
+        NO_QDRANT=true
+        shift
+        ;;
         -nc|--no-cosmos-db)
         NO_COSMOS_DB=true
         shift
@@ -99,7 +97,7 @@ az account set -s "$SUBSCRIPTION"
 : "${REGION:="South Central US"}"
 : "${PACKAGE_URI:="https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip"}"
 : "${APP_SERVICE_SKU:="B1"}"
-: "${NO_QDRANT:=true}" # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
+: "${NO_QDRANT:=false}"
 : "${NO_COSMOS_DB:=false}"
 : "${NO_SPEECH_SERVICES:=false}"
 

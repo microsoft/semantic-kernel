@@ -44,7 +44,7 @@ export const useChat = () => {
 
     const loggedInUser: IChatUser = {
         id: account?.homeAccountId || '',
-        fullName: account?.name || '',
+        fullName: (account?.name ?? account?.username) || '',
         emailAddress: account?.username || '',
         photo: undefined, // TODO: Make call to Graph /me endpoint to load photo
         online: true,

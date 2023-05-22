@@ -30,10 +30,9 @@ param(
     # SKU for the Azure App Service plan
     $AppServiceSku = "B1",
 
-    # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
-    # [switch]
-    # # Don't deploy Qdrant for memory storage - Use volatile memory instead
-    # $NoQdrant,
+    [switch]
+    # Don't deploy Qdrant for memory storage - Use volatile memory instead
+    $NoQdrant,
 
     [switch]
     # Don't deploy Cosmos DB for chat storage - Use volatile memory instead
@@ -47,8 +46,6 @@ param(
     # Switches on verbose template deployment output
     $DebugDeployment
 )
-
-$NoQdrant = $true # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
 
 $jsonConfig = "
 {

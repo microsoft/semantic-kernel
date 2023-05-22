@@ -35,15 +35,15 @@ param apiKey string
 @description('Whether to deploy Cosmos DB for chat storage')
 param deployCosmosDB bool = true
 
-// TODO: Temporarily disabling qdrant deployment by default while we secure its endpoint.
 @description('Whether to deploy Qdrant (in a container) for memory storage')
-param deployQdrant bool = false
+param deployQdrant bool = true
 
 @description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
 param deploySpeechServices bool = true
 
-module openAI 'main.bicep' = {
-  name: 'openAIDeployment'
+
+module semanticKernel 'main.bicep' = {
+  name: 'SemanticKernel'
   params: {
     name: name
     appServiceSku: appServiceSku
@@ -61,4 +61,5 @@ module openAI 'main.bicep' = {
   }
 }
 
-output endpoint string = openAI.outputs.deployedUrl
+
+output endpoint string = semanticKernel.outputs.deployedUrl
