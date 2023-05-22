@@ -37,7 +37,6 @@ public abstract class OpenAIClientBase
         this._log = logger ?? NullLogger.Instance;
     }
 
-
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected virtual void AddRequestHeaders(HttpRequestMessage request)
     {

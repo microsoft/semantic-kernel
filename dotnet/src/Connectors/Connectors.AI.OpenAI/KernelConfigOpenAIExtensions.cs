@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Net.Http;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
