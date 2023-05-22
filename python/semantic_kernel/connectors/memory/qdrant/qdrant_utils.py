@@ -4,7 +4,7 @@ import datetime
 import uuid
 import struct
 
-import qdrant_client
+from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from numpy import zeros
@@ -47,7 +47,7 @@ def guid_comb_generator() -> str:
 
 
 def convert_from_memory_record(
-    qdrant_client: qdrant_client,
+    qdrant_client: QdrantClient,
     collection_name: str,
     record: MemoryRecord,
     vector_size: Optional[int] = 0,

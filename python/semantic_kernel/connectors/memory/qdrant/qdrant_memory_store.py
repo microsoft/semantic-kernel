@@ -6,7 +6,7 @@ The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving da
 """
 import json
 from logging import Logger
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from numpy import ndarray
 from semantic_kernel.connectors.memory.qdrant.qdrant_utils import (
