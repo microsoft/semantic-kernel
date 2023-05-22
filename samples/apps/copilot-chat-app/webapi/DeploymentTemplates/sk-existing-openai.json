@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "5099073128205443561"
+      "templateHash": "18401873900331689852"
     }
   },
   "parameters": {
@@ -20,8 +20,6 @@
       "type": "string",
       "defaultValue": "B1",
       "allowedValues": [
-        "F1",
-        "D1",
         "B1",
         "S1",
         "S2",
@@ -84,6 +82,13 @@
         "description": "Whether to deploy Cosmos DB for chat storage"
       }
     },
+    "deployQdrant": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether to deploy Qdrant (in a container) for memory storage"
+      }
+    },
     "deploySpeechServices": {
       "type": "bool",
       "defaultValue": true,
@@ -137,7 +142,7 @@
             "value": "[parameters('deployCosmosDB')]"
           },
           "deployQdrant": {
-            "value": false
+            "value": "[parameters('deployQdrant')]"
           },
           "deploySpeechServices": {
             "value": "[parameters('deploySpeechServices')]"
@@ -153,7 +158,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "9633349434860720155"
+              "templateHash": "13081190617603210009"
             }
           },
           "parameters": {
@@ -168,8 +173,6 @@
               "type": "string",
               "defaultValue": "B1",
               "allowedValues": [
-                "F1",
-                "D1",
                 "B1",
                 "S1",
                 "S2",
@@ -259,7 +262,7 @@
             },
             "deployQdrant": {
               "type": "bool",
-              "defaultValue": true,
+              "defaultValue": false,
               "metadata": {
                 "description": "Whether to deploy Qdrant (in a container) for memory storage"
               }
