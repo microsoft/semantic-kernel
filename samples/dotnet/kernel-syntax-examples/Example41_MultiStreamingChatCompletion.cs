@@ -60,10 +60,10 @@ public static class Example41_MultiStreamingChatCompletion
             PresencePenalty = 0,
             Temperature = 1,
             TopP = 0.5,
-            ResultsPerPrompt = 2
+            ResultsPerPrompt = 3
         };
 
-        var consoleLinesPerResult = 15;
+        var consoleLinesPerResult = 10;
 
         var chatHistory = (OpenAIChatHistory)chatCompletion.CreateNewChat("You are a librarian, expert about books");
 

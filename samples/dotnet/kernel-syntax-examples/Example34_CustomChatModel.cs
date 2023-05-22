@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -20,29 +19,6 @@ using RepoUtils;
  */
 public sealed class MyChatCompletionService : IChatCompletion
 {
-    private const string OutputAssistantResult = "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)";
-
-    public async Task<string> GenerateMessageAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
-    {
-        // Forcing a 2 sec delay (Simulating custom LLM lag)
-        await Task.Delay(2000, cancellationToken);
-
-        return OutputAssistantResult;
-    }
-
-    public async IAsyncEnumerable<string> GenerateMessageStreamAsync(
-        ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var streamedOutput = OutputAssistantResult.Split(' ');
-        foreach (string word in streamedOutput)
-        {
-            await Task.Delay(200, cancellationToken);
-            yield return $"{word} ";
-        }
-    }
-
     public ChatHistory CreateNewChat(string instructions = "")
     {
         var chatHistory = new MyChatHistory();
@@ -57,12 +33,45 @@ public sealed class MyChatCompletionService : IChatCompletion
 
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return Task.FromResult<IReadOnlyList<IChatResult>>(new List<IChatResult>
+        {
+            new MyChatStreamingResult(MyRoles.Bot, "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)")
+        });
     }
 
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return (new List<IChatStreamingResult>
+        {
+            new MyChatStreamingResult(MyRoles.Bot, "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)")
+        }).ToAsyncEnumerable();
+    }
+}
+
+public class MyChatStreamingResult : IChatStreamingResult
+{
+    private readonly IChatMessage _message;
+    private readonly MyRoles _role;
+
+    public MyChatStreamingResult(MyRoles role, string content)
+    {
+        this._role = role;
+        this._message = new MyChatMessage(role, content);
+    }
+
+    public Task<IChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(this._message);
+    }
+
+    public async IAsyncEnumerable<IChatMessage> GetChatMessageStreamingAsync(CancellationToken cancellationToken = default)
+    {
+        var streamedOutput = this._message.Content.Split(' ');
+        foreach (string word in streamedOutput)
+        {
+            await Task.Delay(100, cancellationToken);
+            yield return new MyChatMessage(this._role, $"{word} ");
+        }
     }
 }
 
