@@ -32,7 +32,7 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class KernelDefault implements Kernel {
+public class DefaultKernel implements Kernel {
 
     private final KernelConfig kernelConfig;
     private final DefaultSkillCollection defaultSkillCollection;
@@ -40,7 +40,7 @@ public class KernelDefault implements Kernel {
     @Nullable private SemanticTextMemory memory; // TODO: make this final
 
     @Inject
-    public KernelDefault(
+    public DefaultKernel(
             KernelConfig kernelConfig,
             PromptTemplateEngine promptTemplateEngine,
             @Nullable SemanticTextMemory memory) {

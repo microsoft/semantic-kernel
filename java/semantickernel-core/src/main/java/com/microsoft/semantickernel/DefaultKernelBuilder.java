@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 
 import javax.annotation.Nullable;
 
-public class KernelDefaultBuilder implements Kernel.InternalBuilder {
+public class DefaultKernelBuilder implements Kernel.InternalBuilder {
 
     @Override
     public Kernel build(
@@ -19,6 +19,6 @@ public class KernelDefaultBuilder implements Kernel.InternalBuilder {
             throw new IllegalArgumentException();
         }
 
-        return new KernelDefault(kernelConfig, promptTemplateEngine, null);
+        return new DefaultKernel(kernelConfig, promptTemplateEngine, null);
     }
 }
