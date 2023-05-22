@@ -12,10 +12,11 @@ usage() {
     echo "  -s, --subscription SUBSCRIPTION            Subscription to which to make the deployment (mandatory)"
     echo "  -rg, --resource-group RESOURCE_GROUP       Resource group to which to make the deployment (default: \"rg-\$DEPLOYMENT_NAME\")"
     echo "  -r, --region REGION                        Region to which to make the deployment (default: \"South Central US\")"
-    echo "  -p, --package-uri PACKAGE_URI              Package to deploy to web service (default: 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip')"
+    echo "  -p, --package-uri PACKAGE_URI              Package to deploy to web service (default: 'https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip')"
     echo "  -a, --app-service-sku APP_SERVICE_SKU      SKU for the Azure App Service plan (default: \"B1\")"
     echo "  -k, --semker-server-api-key SEMKER_SERVER_API_KEY  API key to access Semantic Kernel server's endpoints (default: random UUID)"
-    echo "  -nq, --no-qdrant                           Don't deploy Qdrant for memory storage - Use volatile memory instead"
+    # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
+    # echo "  -nq, --no-qdrant                           Don't deploy Qdrant for memory storage - Use volatile memory instead"
     echo "  -nc, --no-cosmos-db                        Don't deploy Cosmos DB for chat storage - Use volatile memory instead"
     echo "  -ns, --no-speech-services                  Don't deploy Speech Services to enable speech as chat input"
     echo "  -dd, --debug-deployment                    Switches on verbose template deployment output"
@@ -60,10 +61,11 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
-        -nq|--no-qdrant)
-        NO_QDRANT=true
-        shift
-        ;;
+        # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
+        # -nq|--no-qdrant)
+        # NO_QDRANT=true
+        # shift
+        # ;;
         -nc|--no-cosmos-db)
         NO_COSMOS_DB=true
         shift
@@ -101,10 +103,10 @@ az account set -s "$SUBSCRIPTION"
 
 # Set defaults
 : "${REGION:="South Central US"}"
-: "${PACKAGE_URI:="https://skaasdeploy.blob.core.windows.net/api/skaas.zip"}"
+: "${PACKAGE_URI:="https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip"}"
 : "${APP_SERVICE_SKU:="B1"}"
 : "${SEMKER_SERVER_API_KEY:="$(uuidgen)"}"
-: "${NO_QDRANT:=false}"
+: "${NO_QDRANT:=true}" # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
 : "${NO_COSMOS_DB:=false}"
 : "${NO_SPEECH_SERVICES:=false}"
 

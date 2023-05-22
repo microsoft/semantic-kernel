@@ -33,7 +33,7 @@ public static class MultiplyOperation
         }
         else
         {
-            SupportedTypes.ThrowTypeNotSupported<TNumber>();
+            EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
         }
     }
 
@@ -62,7 +62,7 @@ public static class MultiplyOperation
             if (Vector.IsHardwareAccelerated &&
                 x.Length >= Vector<float>.Count)
             {
-                Vector<float> multiplierVec = new Vector<float>(multiplier);
+                Vector<float> multiplierVec = new(multiplier);
                 float* pxOneVectorFromEnd = pxEnd - Vector<float>.Count;
                 do
                 {
@@ -89,7 +89,7 @@ public static class MultiplyOperation
             if (Vector.IsHardwareAccelerated &&
                 x.Length >= Vector<double>.Count)
             {
-                Vector<double> multiplierVec = new Vector<double>(multiplier);
+                Vector<double> multiplierVec = new(multiplier);
                 double* pxOneVectorFromEnd = pxEnd - Vector<double>.Count;
                 do
                 {

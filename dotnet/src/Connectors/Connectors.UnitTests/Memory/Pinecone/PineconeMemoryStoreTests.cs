@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -223,7 +223,7 @@ public class PineconeMemoryStoreTests
         // Arrange
         Embedding<float> embedding = new(new float[] { 0.1f, 0.2f });
 
-        List<(PineconeDocument, double)> queryResults = new List<(PineconeDocument, double)>
+        List<(PineconeDocument, double)> queryResults = new()
         {
             new(new()
             {

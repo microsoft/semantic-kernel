@@ -9,7 +9,7 @@ Bicep template for deploying Semantic Kernel to Azure as a web app service with 
 param name string = 'semkernel'
 
 @description('SKU for the Azure App Service plan')
-@allowed([ 'F1', 'D1', 'B1', 'S1', 'S2', 'S3', 'P1V3', 'P2V3', 'I1V2', 'I2V2' ])
+@allowed(['B1', 'S1', 'S2', 'S3', 'P1V3', 'P2V3', 'I1V2', 'I2V2' ])
 param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
