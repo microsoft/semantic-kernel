@@ -8,11 +8,11 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class ChatCompletionResult : IChatCompletionResult, ITextCompletionResult
+internal sealed class ChatResult : IChatResult, ITextCompletionResult
 {
     private readonly ChatChoice _choice;
 
-    public ChatCompletionResult(ChatChoice choice)
+    public ChatResult(ChatChoice choice)
     {
         this._choice = choice;
     }

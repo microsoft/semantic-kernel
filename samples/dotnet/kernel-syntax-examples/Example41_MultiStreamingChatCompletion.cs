@@ -88,7 +88,7 @@ public static class Example41_MultiStreamingChatCompletion
         Console.WriteLine();
     }
 
-    private static async Task ProcessStreamAsyncEnumerableAsync(IChatCompletionStreamingResult result, int resultNumber, int linesPerResult)
+    private static async Task ProcessStreamAsyncEnumerableAsync(IChatStreamingResult result, int resultNumber, int linesPerResult)
     {
         string message = string.Empty;
 

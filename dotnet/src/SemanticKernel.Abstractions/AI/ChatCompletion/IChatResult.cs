@@ -3,14 +3,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.AI.TextCompletion;
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
-public interface ITextCompletionResult
+public interface IChatResult
 {
     /// <summary>
-    /// Get the text completion from the result.
+    /// Get the chat message from the result.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Text completion content</returns>
-    Task<string> GetCompletionAsync(CancellationToken cancellationToken = default);
+    /// <returns>Current chat message content</returns>
+    Task<IChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default);
 }

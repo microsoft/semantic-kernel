@@ -11,11 +11,11 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class ChatCompletionStreamingResult : IChatCompletionStreamingResult, ITextCompletionStreamingResult
+internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletionStreamingResult
 {
     private readonly StreamingChatChoice _choice;
 
-    public ChatCompletionStreamingResult(StreamingChatChoice choice)
+    public ChatStreamingResult(StreamingChatChoice choice)
     {
         this._choice = choice;
     }

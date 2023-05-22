@@ -75,9 +75,3 @@ public class ChatHistory
         this.Messages.Add(new Message(role, message.Content));
     }
 }
-
-public interface IChatMessage
-{
-    string Role { get; }
-    string Content { get; }
-}

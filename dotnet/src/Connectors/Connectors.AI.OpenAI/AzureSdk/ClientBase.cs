@@ -126,7 +126,7 @@ public abstract class ClientBase
     /// <param name="requestSettings">AI request settings</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
-    private protected async Task<IReadOnlyList<IChatCompletionResult>> InternalGenerateMultiChatMessageAsync(
+    private protected async Task<IReadOnlyList<IChatResult>> InternalGenerateChatMessageAsync(
         ChatHistory chat,
         ChatRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
@@ -145,7 +145,7 @@ public abstract class ClientBase
             throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
         }
 
-        return response.Value.Choices.Select(completion => new ChatCompletionResult(completion)).ToList();
+        return response.Value.Choices.Select(completion => new ChatResult(completion)).ToList();
     }
 
     /// <summary>
@@ -155,7 +155,7 @@ public abstract class ClientBase
     /// <param name="requestSettings">AI request settings</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Streaming of generated chat message in string format</returns>
-    private protected async IAsyncEnumerable<IChatCompletionStreamingResult> InternalGenerateMultiChatMessageStreamAsync(
+    private protected async IAsyncEnumerable<IChatStreamingResult> InternalGenerateStreamingChatMessageAsync(
         ChatHistory chat,
         ChatRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -189,7 +189,7 @@ public abstract class ClientBase
 
         await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
         {
-            yield return new ChatCompletionStreamingResult(choice);
+            yield return new ChatStreamingResult(choice);
         }
     }
 
@@ -210,7 +210,7 @@ public abstract class ClientBase
     {
         ChatHistory chat = PrepareChatHistory(text, requestSettings, out ChatRequestSettings settings);
 
-        return (await this.InternalGenerateMultiChatMessageAsync(chat, settings, cancellationToken).ConfigureAwait(false))
+        return (await this.InternalGenerateChatMessageAsync(chat, settings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextCompletionResult>()
             .ToList();
     }
@@ -222,7 +222,7 @@ public abstract class ClientBase
     {
         ChatHistory chat = PrepareChatHistory(text, requestSettings, out ChatRequestSettings settings);
 
-        await foreach (var chatCompletionStreamingResult in this.InternalGenerateMultiChatMessageStreamAsync(chat, settings, cancellationToken))
+        await foreach (var chatCompletionStreamingResult in this.InternalGenerateStreamingChatMessageAsync(chat, settings, cancellationToken))
         {
             var chatStreamingResult = (ITextCompletionStreamingResult)chatCompletionStreamingResult;
             yield return chatStreamingResult;
