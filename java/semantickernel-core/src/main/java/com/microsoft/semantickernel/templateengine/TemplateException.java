@@ -70,6 +70,11 @@ public class TemplateException extends SKException {
  */
 
     public enum ErrorCodes {
+      /**
+        * <p>
+        * Unknown error.
+        * </p>
+        */
         UnknownError("Unknown error"),
 
         SyntaxError("Syntax error, the template syntax used is not valid"),
