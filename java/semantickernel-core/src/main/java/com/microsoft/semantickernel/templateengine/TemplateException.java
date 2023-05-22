@@ -63,6 +63,12 @@ public class TemplateException extends SKException {
         return String.format("%s: %s", errorCode.getMessage(), message);
     }
 
+/**
+ * <p>
+ * Error codes for {@code TemplateException}.
+ * </p>
+ */
+
     public enum ErrorCodes {
         UnknownError("Unknown error"),
 
