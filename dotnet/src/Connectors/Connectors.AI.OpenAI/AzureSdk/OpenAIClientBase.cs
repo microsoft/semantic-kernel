@@ -5,6 +5,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Policies;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -37,10 +38,9 @@ public abstract class OpenAIClientBase : ClientBase
         Verify.NotNull(httpClient);
 
         var options = new OpenAIClientOptions();
-        //The following three lines turn off the internal AzureOpenAI retry mechanism in order to ensure consistent retry policies across all connectors.
+        // The following lines enable the reuse of globally configured SK SDK policies that are configured on the custom HTTPClient.
         options.Transport = new HttpClientTransport(httpClient);
-        options.RetryPolicy = null;
-        options.Retry.MaxRetries = 0;
+        options.RetryPolicy = new NoRetryPolicy();
 
         if (!string.IsNullOrWhiteSpace(organization))
         {
