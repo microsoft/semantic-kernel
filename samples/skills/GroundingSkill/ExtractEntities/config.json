@@ -18,7 +18,7 @@
       },
       {
         "name": "topic",
-        "description": "The topic of interest, which specifies the kind of entities to be extracted",
+        "description": "The topic of interest; the extracted entities should be related to this topic",
         "defaultValue": ""
       },
       {
