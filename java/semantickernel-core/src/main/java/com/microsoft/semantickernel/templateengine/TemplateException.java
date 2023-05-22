@@ -53,7 +53,11 @@ public class TemplateException extends SKException {
         return errorCode;
     }
 
-    /* Translate the error code into a default message */
+/**
+ * <p>
+ * Translate the error code into a default message.
+ * </p>
+ */
     private static String getDefaultMessage(
             @Nonnull ErrorCodes errorCode, @Nullable String message) {
         return String.format("%s: %s", errorCode.getMessage(), message);
