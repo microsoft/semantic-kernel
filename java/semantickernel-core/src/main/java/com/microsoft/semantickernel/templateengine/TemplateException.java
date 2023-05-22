@@ -84,8 +84,18 @@ public class TemplateException extends SKException {
         */
         SyntaxError("Syntax error, the template syntax used is not valid"),
 
+      /**
+        * <p>
+        * The block type produced be the tokenizer was not expected.
+        * </p>
+        */
         UnexpectedBlockType("The block type produced be the tokenizer was not expected"),
 
+      /**
+        * <p>
+        * The template requires an unknown function.
+        * </p>
+        */
         FunctionNotFound("The template requires an unknown function"),
 
 
