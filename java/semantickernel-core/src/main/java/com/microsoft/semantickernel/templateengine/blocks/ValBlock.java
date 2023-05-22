@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import reactor.util.annotation.Nullable;
 
-public class ValBlock extends Block implements TextRendering {
+package class ValBlock extends Block implements TextRendering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ValBlock.class);
 
@@ -20,8 +20,8 @@ public class ValBlock extends Block implements TextRendering {
     // Content, excluding start/end quote chars
     private String value = "";
 
-    public ValBlock(String content) {
-        super(content.trim(), BlockTypes.Value);
+    public ValBlock(String quotedValue) {
+        super(quotedValue.trim(), BlockTypes.Value);
 
         if (this.getContent().length() < 2) {
             LOGGER.error("A value must have single quotes or double quotes on both sides");

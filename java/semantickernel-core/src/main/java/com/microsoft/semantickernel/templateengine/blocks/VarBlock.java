@@ -16,6 +16,10 @@ public class VarBlock extends Block implements TextRendering {
     public VarBlock(String content) {
         super(content, BlockTypes.Variable);
 
+        if (content.length() < 2) {
+            LOGGER.error("The variable name is empty");
+        }
+
         this.name = content.substring(1);
     }
 
