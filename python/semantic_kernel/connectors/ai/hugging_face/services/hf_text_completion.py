@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 from logging import Logger
 from threading import Thread
 from typing import Optional
@@ -127,11 +126,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             }
 
             thread = Thread(target=self.generator, args=args, kwargs=kwargs)
-
-            # result = self.generator(
-            #     prompt, num_return_sequences=1, generation_config=generation_config, streamer=transformers.TextIteratorStreamer(tokenizer)
-            # )
-
             thread.start()
 
             for new_text in streamer:

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 from logging import Logger
 from typing import Any, Optional
 
