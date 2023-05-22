@@ -13,7 +13,7 @@ namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
 public class EmailSkillTests
 {
-    private readonly SKContext _context = new SKContext();
+    private readonly SKContext _context = new();
 
     [Fact]
     public async Task SendEmailAsyncSucceedsAsync()

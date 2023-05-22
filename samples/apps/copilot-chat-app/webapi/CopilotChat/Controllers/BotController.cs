@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +26,8 @@ namespace SemanticKernel.Service.CopilotChat.Controllers;
 public class BotController : ControllerBase
 {
     private readonly ILogger<BotController> _logger;
-    private readonly IMemoryStore _memoryStore;
+    private readonly IMemoryStore? _memoryStore;
+    private readonly ISemanticTextMemory _semanticMemory;
     private readonly ChatSessionRepository _chatRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
     private readonly BotSchemaOptions _botSchemaOptions;
@@ -34,7 +37,12 @@ public class BotController : ControllerBase
     /// <summary>
     /// The constructor of BotController.
     /// </summary>
-    /// <param name="memoryStore">The memory store.</param>
+    /// <param name="optionalIMemoryStore">Optional memory store.
+    ///     High level semantic memory implementations, such as Azure Cognitive Search, do not allow for providing embeddings when storing memories.
+    ///     We wrap the memory store in an optional memory store to allow controllers to pass dependency injection validation and potentially optimize
+    ///     for a lower-level memory implementation (e.g. Qdrant). Lower level memory implementations (i.e., IMemoryStore) allow for reusing embeddings,
+    ///     whereas high level memory implementation (i.e., ISemanticTextMemory) assume embeddings get recalculated on every write.
+    /// </param>
     /// <param name="chatRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
     /// <param name="aiServiceOptions">The AI service options where we need the embedding settings from.</param>
@@ -42,7 +50,8 @@ public class BotController : ControllerBase
     /// <param name="documentMemoryOptions">The document memory options.</param>
     /// <param name="logger">The logger.</param>
     public BotController(
-        IMemoryStore memoryStore,
+        OptionalIMemoryStore optionalIMemoryStore,
+        ISemanticTextMemory semanticMemory,
         ChatSessionRepository chatRepository,
         ChatMessageRepository chatMessageRepository,
         IOptions<AIServiceOptions> aiServiceOptions,
@@ -50,8 +59,9 @@ public class BotController : ControllerBase
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<BotController> logger)
     {
+        this._memoryStore = optionalIMemoryStore.MemoryStore;
         this._logger = logger;
-        this._memoryStore = memoryStore;
+        this._semanticMemory = semanticMemory;
         this._chatRepository = chatRepository;
         this._chatMessageRepository = chatMessageRepository;
         this._botSchemaOptions = botSchemaOptions.Value;
@@ -65,6 +75,7 @@ public class BotController : ControllerBase
     /// <param name="kernel">The Semantic Kernel instance.</param>
     /// <param name="authInfo">The auth info instance.</param>
     /// <param name="bot">The bot object from the message body</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The HTTP action result with new chat session object.</returns>
     [HttpPost]
     [Route("bot/upload")]
@@ -74,7 +85,8 @@ public class BotController : ControllerBase
     public async Task<ActionResult<ChatSession>> UploadAsync(
         [FromServices] IKernel kernel,
         [FromServices] IAuthInfo authInfo,
-        [FromBody] Bot bot)
+        [FromBody] Bot bot,
+        CancellationToken cancellationToken)
     {
         this._logger.LogDebug("Received call to upload a bot");
 
@@ -115,7 +127,7 @@ public class BotController : ControllerBase
         }
 
         // 3. Update the memory.
-        await this.BulkUpsertMemoryRecordsAsync(oldChatId, chatId, bot.Embeddings);
+        await this.BulkUpsertMemoryRecordsAsync(oldChatId, chatId, bot.Embeddings, cancellationToken);
 
         // TODO: Revert changes if any of the actions failed
 
@@ -276,7 +288,7 @@ public class BotController : ControllerBase
     /// <param name="chatId">The new chat id that will replace the original chat id.</param>
     /// <param name="embeddings">The list of embeddings of the chat id.</param>
     /// <returns>The function doesn't return anything.</returns>
-    private async Task BulkUpsertMemoryRecordsAsync(string oldChatId, string chatId, List<KeyValuePair<string, List<MemoryQueryResult>>> embeddings)
+    private async Task BulkUpsertMemoryRecordsAsync(string oldChatId, string chatId, List<KeyValuePair<string, List<MemoryQueryResult>>> embeddings, CancellationToken cancellationToken = default)
     {
         foreach (var collection in embeddings)
         {
@@ -286,18 +298,30 @@ public class BotController : ControllerBase
                 {
                     var newCollectionName = collection.Key.Replace(oldChatId, chatId, StringComparison.OrdinalIgnoreCase);
 
-                    MemoryRecord data = MemoryRecord.LocalRecord(
-                        id: record.Metadata.Id,
-                        text: record.Metadata.Text,
-                        embedding: record.Embedding.Value,
-                        description: null, additionalMetadata: null);
-
-                    if (!(await this._memoryStore.DoesCollectionExistAsync(newCollectionName, default)))
+                    if (this._memoryStore == null)
                     {
-                        await this._memoryStore.CreateCollectionAsync(newCollectionName, default);
+                        await this._semanticMemory.SaveInformationAsync(
+                            collection: newCollectionName,
+                            text: record.Metadata.Text,
+                            id: record.Metadata.Id,
+                            cancellationToken: cancellationToken);
                     }
+                    else
+                    {
+                        MemoryRecord data = MemoryRecord.LocalRecord(
+                            id: record.Metadata.Id,
+                            text: record.Metadata.Text,
+                            embedding: record.Embedding.Value,
+                            description: null,
+                            additionalMetadata: null);
 
-                    await this._memoryStore.UpsertAsync(newCollectionName, data, default);
+                        if (!(await this._memoryStore.DoesCollectionExistAsync(newCollectionName, default)))
+                        {
+                            await this._memoryStore.CreateCollectionAsync(newCollectionName, default);
+                        }
+
+                        await this._memoryStore.UpsertAsync(newCollectionName, data, default);
+                    }
                 }
             }
         }

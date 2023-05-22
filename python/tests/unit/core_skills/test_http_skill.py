@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 import pytest
 
-from semantic_kernel.core_skills import HttpSkill
 from semantic_kernel import Kernel
+from semantic_kernel.core_skills import HttpSkill
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 

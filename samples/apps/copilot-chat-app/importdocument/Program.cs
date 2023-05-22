@@ -108,7 +108,7 @@ public static class Program
         };
         if (chatCollectionId != Guid.Empty)
         {
-            Console.WriteLine($"Uploading and parsing file to chat {chatCollectionId.ToString()}...");
+            Console.WriteLine($"Uploading and parsing file to chat {chatCollectionId}...");
             var userId = await AcquireUserIdAsync(config);
 
             if (userId != null)
