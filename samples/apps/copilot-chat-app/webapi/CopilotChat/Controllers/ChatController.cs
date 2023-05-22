@@ -65,8 +65,7 @@ public class ChatController : ControllerBase, IDisposable
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ChatAsync(
         [FromServices] IKernel kernel,
-        [FromServices] CopilotChatPlanner? planner,
-        [FromServices] IOptions<PlannerOptions> plannerOptions,
+        [FromServices] CopilotChatPlanner planner,
         [FromServices] AskConverter askConverter,
         [FromServices] ChatSessionRepository chatSessionRepository,
         [FromServices] IAuthInfo authInfo,

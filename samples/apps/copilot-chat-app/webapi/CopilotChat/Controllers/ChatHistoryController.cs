@@ -66,7 +66,7 @@ public class ChatHistoryController : ControllerBase
     public async Task<IActionResult> CreateChatSessionAsync(
         [FromBody] ChatSessionCreationOptions chatParameters)
     {
-        var userId = _authInfo.UserId;
+        var userId = this._authInfo.UserId;
         var title = chatParameters.Title;
 
         var newChat = new ChatSession(userId, title);

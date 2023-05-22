@@ -20,7 +20,7 @@ public class AuthInfo : IAuthInfo
 
     public AuthInfo(IHttpContextAccessor httpContextAccessor)
     {
-        _data = new Lazy<AuthData>(() =>
+        this._data = new Lazy<AuthData>(() =>
         {
             var user = httpContextAccessor.HttpContext?.User;
             if (user is null)
@@ -52,10 +52,10 @@ public class AuthInfo : IAuthInfo
     /// <summary>
     /// The authenticated user's unique ID.
     /// </summary>
-    public string UserId => _data.Value.UserId;
+    public string UserId => this._data.Value.UserId;
 
     /// <summary>
     /// The authenticated user's name.
     /// </summary>
-    public string Name => _data.Value.UserName;
+    public string Name => this._data.Value.UserName;
 }
