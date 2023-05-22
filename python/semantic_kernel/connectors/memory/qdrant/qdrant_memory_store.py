@@ -9,7 +9,9 @@ from logging import Logger
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from numpy import ndarray
-from python.semantic_kernel.connectors.memory.qdrant.qdrant_utils import convert_from_memory_record
+from python.semantic_kernel.connectors.memory.qdrant.qdrant_utils import (
+    convert_from_memory_record,
+)
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -134,7 +136,9 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             str -- The unique database key of the record.
         """
-        conv_result = convert_from_memory_record(self._qdrantclient, collection_name, record)
+        conv_result = convert_from_memory_record(
+            self._qdrantclient, collection_name, record
+        )
 
         collection_info = self.does_collection_exist_async(
             collection_name=collection_name
@@ -148,7 +152,9 @@ class QdrantMemoryStore(MemoryStoreBase):
             wait=True,
             points=[
                 PointStruct(
-                    id=conv_result["pointid"], vector=record._embedding, payload=json.dumps(record._payload)
+                    id=conv_result["pointid"],
+                    vector=record._embedding,
+                    payload=json.dumps(record._payload),
                 ),
             ],
         )
@@ -181,10 +187,14 @@ class QdrantMemoryStore(MemoryStoreBase):
         points_rec = []
 
         for record in records:
-            conv_result = convert_from_memory_record(self._qdrantclient, collection_name, record)
+            conv_result = convert_from_memory_record(
+                self._qdrantclient, collection_name, record
+            )
             record._id = conv_result["pointid"]
             pointstruct = PointStruct(
-                id=conv_result["pointid"], vector=record._embedding, payload=json.dumps(record._payload)
+                id=conv_result["pointid"],
+                vector=record._embedding,
+                payload=json.dumps(record._payload),
             )
             points_rec.append([pointstruct])
             upsert_info = self._qdrantclient.upsert(
