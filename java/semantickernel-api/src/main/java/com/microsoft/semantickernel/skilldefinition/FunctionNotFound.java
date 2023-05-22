@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.skilldefinition;
 
-public class FunctionNotFound extends RuntimeException {
+import com.microsoft.semantickernel.SKException;
+
+public class FunctionNotFound extends SKException {
     public FunctionNotFound(String functionName) {
         super("Could not find function: " + functionName);
     }
