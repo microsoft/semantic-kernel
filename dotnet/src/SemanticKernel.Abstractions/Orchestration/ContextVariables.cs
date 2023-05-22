@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -12,6 +13,8 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// Context Variables is a data structure that holds temporary data while a task is being performed.
 /// It is accessed and manipulated by functions in the pipeline.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
+[DebuggerTypeProxy(typeof(ContextVariables.TypeProxy))]
 public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
 {
     /// <summary>
@@ -160,12 +163,28 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
 
     internal const string MainKey = "INPUT";
 
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    internal string DebuggerDisplay =>
+        this._variables.TryGetValue(MainKey, out string input) && !string.IsNullOrEmpty(input) ?
+            $"Variables = {this._variables.Count}, Input = {input}" :
+            $"Variables = {this._variables.Count}";
+
     #region private ================================================================================
 
     /// <summary>
     /// Important: names are case insensitive
     /// </summary>
     private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.OrdinalIgnoreCase);
+
+    private sealed class TypeProxy
+    {
+        private readonly ContextVariables _variables;
+
+        public TypeProxy(ContextVariables variables) => _variables = variables;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, string>[] Items => _variables._variables.ToArray();
+    }
 
     #endregion
 }

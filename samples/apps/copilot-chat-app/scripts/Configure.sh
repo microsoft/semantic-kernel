@@ -143,6 +143,8 @@ echo "Setting up '.env'..."
 echo "REACT_APP_BACKEND_URI=https://localhost:40443/" > $ENV_FILEPATH
 echo "REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/$TENANT_ID" >> $ENV_FILEPATH
 echo "REACT_APP_AAD_CLIENT_ID=$CLIENT_ID" >> $ENV_FILEPATH
+echo "# Web Service API key (not required when running locally)" >> $ENV_FILEPATH
+echo  "REACT_APP_SK_API_KEY=" >> $ENV_FILEPATH
 
 echo "($ENV_FILEPATH)"
 echo "========"
