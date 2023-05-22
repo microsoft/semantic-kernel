@@ -196,7 +196,7 @@ public abstract class ClientBase
     private protected async Task<IReadOnlyList<ITextCompletionResult>> InternalGetTextCompletionAsChatAsync(
         string text,
         CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         ChatHistory chat = PrepareChatHistory(text, requestSettings, out ChatRequestSettings settings);
 
@@ -208,7 +208,7 @@ public abstract class ClientBase
     private protected async IAsyncEnumerable<ITextCompletionStreamingResult> InternalGetTextCompletionStreamingAsChatAsync(
         string text,
         CompleteRequestSettings requestSettings,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ChatHistory chat = PrepareChatHistory(text, requestSettings, out ChatRequestSettings settings);
 
