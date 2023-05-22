@@ -19,7 +19,7 @@ public sealed class GitHubSkillOptions
     /// GitHub organization or account containing <see cref="Repository"/> (e.g., "microsoft").
     /// </summary>
     [Required, NotEmptyOrWhitespace]
-    public string Organization { get; set; } = string.Empty;
+    public string Owner { get; set; } = string.Empty;
 
     /// <summary>
     /// GitHub repository (e.g., "semantic-kernel").

@@ -56,6 +56,12 @@ public sealed class AIServiceOptions
     public string Endpoint { get; set; } = string.Empty;
 
     /// <summary>
+    /// Token limits for completion model interactions.
+    /// </summary>
+    [Required]
+    public int TokenLimit { get; set; } = 4096;
+
+    /// <summary>
     /// Key to access the AI service.
     /// </summary>
     [Required, NotEmptyOrWhitespace]
