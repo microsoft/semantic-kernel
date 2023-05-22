@@ -119,16 +119,13 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             )
             tokenizer = transformers.AutoTokenizer.from_pretrained(self._model_id)
             streamer = transformers.TextIteratorStreamer(tokenizer)
-            args = {
-                "prompt": prompt
-            }
-            kwargs = {              
+            args = {"prompt": prompt}
+            kwargs = {
                 "num_return_sequences": 1,
                 "generation_config": generation_config,
-                "streamer": streamer
+                "streamer": streamer,
             }
 
-            
             thread = Thread(target=self.generator, args=args, kwargs=kwargs)
 
             # result = self.generator(

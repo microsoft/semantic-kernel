@@ -65,15 +65,13 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     ) -> str:
         # TODO: tracking on token counts/etc.
         response = await self._send_chat_request(messages, request_settings, False)
-        
+
         return response.choices[0].message.content
-    
+
     async def complete_chat_stream_async(
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
     ):
-        response = await self._send_chat_request(
-            messages, request_settings, True
-        )
+        response = await self._send_chat_request(messages, request_settings, True)
         async for chunk in response:
             if "role" in chunk.choices[0].delta:
                 yield chunk.choices[0].delta.role + ": "
@@ -102,7 +100,9 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             frequency_penalty=request_settings.frequency_penalty,
             max_tokens=request_settings.max_tokens,
         )
-        response = await self._send_chat_request(prompt_to_message, chat_settings, False)
+        response = await self._send_chat_request(
+            prompt_to_message, chat_settings, False
+        )
 
         return response.choices[0].message.content
 
@@ -124,7 +124,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 yield chunk.choices[0].delta.content
 
     async def _send_chat_request(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings, stream: bool
+        self,
+        messages: List[Tuple[str, str]],
+        request_settings: ChatRequestSettings,
+        stream: bool,
     ):
         """
         Completes the given user message. Returns a single string completion.

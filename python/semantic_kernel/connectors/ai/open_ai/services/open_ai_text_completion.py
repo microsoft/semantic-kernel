@@ -58,11 +58,8 @@ class OpenAITextCompletion(TextCompletionClientBase):
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> str:
-
         # TODO: tracking on token counts/etc.
-        response = await self._send_completion_request(
-            prompt, request_settings, False
-        )
+        response = await self._send_completion_request(prompt, request_settings, False)
         return response.choices[0].text
 
     # TODO: complete w/ multiple...
@@ -70,9 +67,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
     async def complete_stream_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ):
-        response = await self._send_completion_request(
-            prompt, request_settings, True
-        )
+        response = await self._send_completion_request(prompt, request_settings, True)
         async for chunk in response:
             yield chunk.choices[0].text
 
