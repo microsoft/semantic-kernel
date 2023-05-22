@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.exceptions;
 
-public class NotSupportedException extends RuntimeException {
+import com.microsoft.semantickernel.SKException;
+
+public class NotSupportedException extends SKException {
     public NotSupportedException(String s) {
         super(s);
     }

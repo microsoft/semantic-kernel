@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
-import com.microsoft.semantickernel.diagnostics.SKException;
+import com.microsoft.semantickernel.SKException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
