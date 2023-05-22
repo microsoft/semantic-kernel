@@ -239,7 +239,7 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new AzureChatCompletion(
+        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new(
             deploymentName,
             endpoint,
             apiKey,
@@ -279,7 +279,7 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new AzureChatCompletion(
+        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new(
             deploymentName,
             endpoint,
             credentials,
@@ -319,7 +319,7 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        OpenAIChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new OpenAIChatCompletion(
+        OpenAIChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new(
             modelId,
             apiKey,
             orgId,

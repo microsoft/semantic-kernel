@@ -165,9 +165,9 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     internal string DebuggerDisplay =>
-        this._variables.TryGetValue(MainKey, out string input) && !string.IsNullOrEmpty(input) ?
-            $"Variables = {this._variables.Count}, Input = {input}" :
-            $"Variables = {this._variables.Count}";
+        this._variables.TryGetValue(MainKey, out string input) && !string.IsNullOrEmpty(input)
+            ? $"Variables = {this._variables.Count}, Input = {input}"
+            : $"Variables = {this._variables.Count}";
 
     #region private ================================================================================
 
@@ -180,10 +180,10 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     {
         private readonly ContextVariables _variables;
 
-        public TypeProxy(ContextVariables variables) => _variables = variables;
+        public TypeProxy(ContextVariables variables) => this._variables = variables;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, string>[] Items => _variables._variables.ToArray();
+        public KeyValuePair<string, string>[] Items => this._variables._variables.ToArray();
     }
 
     #endregion
