@@ -9,7 +9,7 @@ from logging import Logger
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from numpy import ndarray
-from python.semantic_kernel.connectors.memory.qdrant.qdrant_utils import (
+from semantic_kernel.connectors.memory.qdrant.qdrant_utils import (
     convert_from_memory_record,
 )
 
@@ -17,16 +17,14 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
 
-
-if TYPE_CHECKING:
-    import qdrant_client
-    from qdrant_client.http import models
-    from qdrant_client.http.models import Distance, VectorParams, CollectionInfo
-    from qdrant_client.http.models import CollectionStatus, UpdateStatus, PointStruct
+from qdrant_client import QdrantClient
+from qdrant_client.http import models
+from qdrant_client.http.models import Distance, VectorParams, CollectionInfo
+from qdrant_client.http.models import CollectionStatus, UpdateStatus, PointStruct
 
 
 class QdrantMemoryStore(MemoryStoreBase):
-    _qdrantclient: qdrant_client
+    _qdrantclient: QdrantClient
     _logger: Logger
 
     def __init__(
@@ -42,7 +40,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
         try:
-            import qdrant_client
+            from qdrant_client import QdrantClient
         except ImportError:
             raise ValueError(
                 "Error: Unable to import qdrant client python package."
@@ -50,9 +48,9 @@ class QdrantMemoryStore(MemoryStoreBase):
             )
 
         if local:
-            self._qdrantclient = qdrant_client(host=hostip)
+            self._qdrantclient = QdrantClient(host=hostip)
         else:
-            self._qdrantclient = qdrant_client(host=hostip, port=port)
+            self._qdrantclient = QdrantClient(host=hostip, port=port)
 
         self._logger = logger or NullLogger()
 
