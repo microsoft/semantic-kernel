@@ -8,6 +8,11 @@ from logging import Logger
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
+from semantic_kernel.cache.base import (
+    NullCache,
+    SemanticTextCache,
+    SemanticTextCacheBase,
+)
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -62,12 +67,14 @@ class Kernel:
     _skill_collection: SkillCollectionBase
     _prompt_template_engine: PromptTemplatingEngine
     _memory: SemanticTextMemoryBase
+    _cache: SemanticTextCacheBase
 
     def __init__(
         self,
         skill_collection: Optional[SkillCollectionBase] = None,
         prompt_template_engine: Optional[PromptTemplatingEngine] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
+        cache: Optional[SemanticTextCache] = None,
         log: Optional[Logger] = None,
     ) -> None:
         self._log = log if log else NullLogger()
@@ -80,6 +87,7 @@ class Kernel:
             else PromptTemplateEngine(self._log)
         )
         self._memory = memory if memory else NullMemory()
+        self._cache = cache if cache else NullCache()
 
         self._text_completion_services: Dict[
             str, Callable[["Kernel"], TextCompletionClientBase]
@@ -106,6 +114,10 @@ class Kernel:
         return self._memory
 
     @property
+    def cache(self) -> SemanticTextCacheBase:
+        return self._cache
+
+    @property
     def prompt_template_engine(self) -> PromptTemplatingEngine:
         return self._prompt_template_engine
 
@@ -118,6 +130,7 @@ class Kernel:
         skill_name: Optional[str],
         function_name: str,
         function_config: SemanticFunctionConfig,
+        use_cache: bool = False,
     ) -> SKFunctionBase:
         if skill_name is None or skill_name == "":
             skill_name = SkillCollection.GLOBAL_SKILL
@@ -127,7 +140,7 @@ class Kernel:
         validate_function_name(function_name)
 
         function = self._create_semantic_function(
-            skill_name, function_name, function_config
+            skill_name, function_name, function_config, use_cache
         )
         self._skill_collection.add_semantic_function(function)
 
@@ -244,6 +257,42 @@ class Kernel:
 
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
+
+    def use_cache(
+        self,
+        cache: SemanticTextCacheBase,
+        storage: MemoryStoreBase,
+        embeddings_generator: Optional[EmbeddingGeneratorBase] = None,
+    ) -> None:
+        if embeddings_generator is None:
+            service_id = self.get_text_embedding_generation_service_id()
+            if not service_id:
+                raise ValueError("The embedding service id cannot be `None` or empty")
+
+            embeddings_service = self.get_ai_service(EmbeddingGeneratorBase, service_id)
+            if not embeddings_service:
+                raise ValueError(f"AI configuration is missing for: {service_id}")
+
+            embeddings_generator = embeddings_service(self)
+
+        if cache is None:
+            raise ValueError("The cache instance provided cannot be `None`")
+        if embeddings_generator is None:
+            raise ValueError("The embedding generator cannot be `None`")
+
+        cache.set_storage(SemanticTextMemory(storage, embeddings_generator))
+        self.register_cache(cache)
+
+    def register_cache(self, cache: SemanticTextCacheBase) -> None:
+        assert isinstance(
+            cache.storage, SemanticTextMemoryBase
+        ), "The cache storage must be a SemanticTextMemoryBase instance"
+        self._cache = cache
+
+    def register_cache_store(
+        self, cache: SemanticTextCacheBase, memory_store: MemoryStoreBase
+    ) -> None:
+        self.use_cache(cache, memory_store)
 
     def create_new_context(self) -> SKContext:
         return SKContext(
@@ -526,6 +575,7 @@ class Kernel:
         skill_name: str,
         function_name: str,
         function_config: SemanticFunctionConfig,
+        use_cache: bool = False,
     ) -> SKFunctionBase:
         function_type = function_config.prompt_template_config.type
         if not function_type == "completion":
@@ -535,7 +585,7 @@ class Kernel:
             )
 
         function = SKFunction.from_semantic_config(
-            skill_name, function_name, function_config
+            skill_name, function_name, function_config, use_cache
         )
         function.request_settings.update_from_completion_config(
             function_config.prompt_template_config.completion
@@ -592,6 +642,11 @@ class Kernel:
                 )
 
             function.set_ai_service(lambda: service(self))
+
+        if use_cache:
+            if self._cache is None:
+                raise ValueError("No cache is set")
+            function.set_cache(self._cache)
 
         return function
 

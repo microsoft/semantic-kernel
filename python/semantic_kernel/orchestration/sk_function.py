@@ -6,6 +6,7 @@ from enum import Enum
 from logging import Logger
 from typing import Any, Callable, List, Optional, cast
 
+from semantic_kernel.cache.base import SemanticTextCache
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -98,12 +99,13 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         function_config: SemanticFunctionConfig,
+        use_cache: bool = False,
         log: Optional[Logger] = None,
     ) -> "SKFunction":
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
-        async def _local_func(client, request_settings, context):
+        async def _local_func(client, request_settings, context, cache):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
@@ -130,8 +132,18 @@ class SKFunction(SKFunctionBase):
                     # Update context
                     context.variables.update(completion)
                 else:
+                    # TODO: caching should be done before prompt rendering
+                    #       long prompt cause similarity too high
                     prompt = await function_config.prompt_template.render_async(context)
-                    completion = await client.complete_async(prompt, request_settings)
+                    completion = await cache.get_async(prompt) if use_cache else None
+
+                    if completion is None:
+                        completion = await client.complete_async(
+                            prompt, request_settings
+                        )
+                        if use_cache:
+                            await cache.upsert_async(prompt, completion)
+
                     context.variables.update(completion)
             except Exception as e:
                 # TODO: "critical exceptions"
@@ -202,6 +214,7 @@ class SKFunction(SKFunctionBase):
         self._ai_request_settings = CompleteRequestSettings()
         self._chat_service = None
         self._chat_request_settings = ChatRequestSettings()
+        self._cache = None
 
     def set_default_skill_collection(
         self, skills: ReadOnlySkillCollectionBase
@@ -239,6 +252,11 @@ class SKFunction(SKFunctionBase):
             raise ValueError("Chat LLM request settings cannot be `None`")
         self._verify_is_semantic()
         self._chat_request_settings = settings
+        return self
+
+    def set_cache(self, cache: Optional[SemanticTextCache]) -> "SKFunction":
+        self._verify_is_semantic()
+        self._cache = cache
         return self
 
     def describe(self) -> FunctionView:
@@ -370,7 +388,7 @@ class SKFunction(SKFunctionBase):
         service = (
             self._ai_service if self._ai_service is not None else self._chat_service
         )
-        new_context = await self._function(service, settings, context)
+        new_context = await self._function(service, settings, context, self._cache)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 
