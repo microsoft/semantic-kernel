@@ -190,7 +190,7 @@ internal sealed class RestApiOperationRunner
     /// List of payload builders/factories.
     /// </summary>
     private static readonly Dictionary<string, Func<IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType =
-        new Dictionary<string, Func<IDictionary<string, string>, HttpContent>>()
+        new()
         {
             { MediaTypeApplicationJson, BuildAppJsonPayload },
             { MediaTypeTextPlain, BuildPlainTextPayload }

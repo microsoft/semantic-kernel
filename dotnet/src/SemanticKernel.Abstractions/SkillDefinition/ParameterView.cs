@@ -65,7 +65,7 @@ public sealed class ParameterView
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => string.IsNullOrEmpty(this.Description) ?
-        this.Name :
-        $"{this.Name} ({this.Description})";
+    private string DebuggerDisplay => string.IsNullOrEmpty(this.Description)
+        ? this.Name
+        : $"{this.Name} ({this.Description})";
 }
