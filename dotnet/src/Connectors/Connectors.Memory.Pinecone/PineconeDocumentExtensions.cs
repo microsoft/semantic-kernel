@@ -59,9 +59,18 @@ public static class PineconeDocumentExtensions
     /// </summary>
     /// <param name="pineconeDocument">Instance of <see cref="PineconeDocument"/>.</param>
     /// <returns>Instance of <see cref="MemoryRecord"/>.</returns>
-    public static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument)
+    public static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument) =>
+        ToMemoryRecord(pineconeDocument, transferVectorOwnership: false);
+
+    /// <summary>
+    /// Maps <see cref="PineconeDocument"/> instance to <see cref="MemoryRecord"/>.
+    /// </summary>
+    /// <param name="pineconeDocument">Instance of <see cref="PineconeDocument"/>.</param>
+    /// <param name="transferVectorOwnership">Whether to allow the created embedding to store a reference to this instance.</param>
+    /// <returns>Instance of <see cref="MemoryRecord"/>.</returns>
+    internal static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument, bool transferVectorOwnership)
     {
-        Embedding<float> embedding = new(pineconeDocument.Values);
+        Embedding<float> embedding = new(pineconeDocument.Values, transferVectorOwnership);
 
         string additionalMetadataJson = pineconeDocument.GetSerializedMetadata();
 

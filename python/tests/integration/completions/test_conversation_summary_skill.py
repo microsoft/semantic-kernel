@@ -1,18 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import os
 
-import e2e_text_completion
 import pytest
+from test_utils import retry
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.core_skills.conversation_summary_skill import (
+    ConversationSummarySkill,
+)
 
 
 @pytest.mark.asyncio
-async def test_azure_summarize_conversation_using_skill():
-    kernel = sk.Kernel()
+async def test_azure_summarize_conversation_using_skill(
+    setup_summarize_conversation_using_skill,
+):
+    kernel, chatTranscript = setup_summarize_conversation_using_skill
 
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAI__DeploymentName"]
@@ -28,12 +32,27 @@ async def test_azure_summarize_conversation_using_skill():
         sk_oai.AzureTextCompletion(deployment_name, endpoint, api_key),
     )
 
-    await e2e_text_completion.summarize_conversation_using_skill(kernel)
+    conversationSummarySkill = kernel.import_skill(
+        ConversationSummarySkill(kernel), "conversationSummary"
+    )
+
+    summary = await retry(
+        lambda: kernel.run_async(
+            conversationSummarySkill["SummarizeConversation"], input_str=chatTranscript
+        )
+    )
+
+    output = str(summary).strip().lower()
+    print(output)
+    assert "john" in output and "jane" in output
+    assert len(output) < len(chatTranscript)
 
 
 @pytest.mark.asyncio
-async def test_oai_summarize_conversation_using_skill():
-    kernel = sk.Kernel()
+async def test_oai_summarize_conversation_using_skill(
+    setup_summarize_conversation_using_skill,
+):
+    kernel, chatTranscript = setup_summarize_conversation_using_skill
 
     if "Python_Integration_Tests" in os.environ:
         api_key = os.environ["OpenAI__ApiKey"]
@@ -42,14 +61,22 @@ async def test_oai_summarize_conversation_using_skill():
         # Load credentials from .env file
         api_key, org_id = sk.openai_settings_from_dot_env()
 
-    kernel.add_chat_service(
+    kernel.add_text_completion_service(
         "davinci-003",
         sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id=org_id),
     )
 
-    await e2e_text_completion.summarize_conversation_using_skill(kernel)
+    conversationSummarySkill = kernel.import_skill(
+        ConversationSummarySkill(kernel), "conversationSummary"
+    )
 
+    summary = await retry(
+        lambda: kernel.run_async(
+            conversationSummarySkill["SummarizeConversation"], input_str=chatTranscript
+        )
+    )
 
-if __name__ == "__main__":
-    asyncio.run(test_oai_summarize_conversation_using_skill())
-    asyncio.run(test_azure_summarize_conversation_using_skill())
+    output = str(summary).strip().lower()
+    print(output)
+    assert "john" in output and "jane" in output
+    assert len(output) < len(chatTranscript)

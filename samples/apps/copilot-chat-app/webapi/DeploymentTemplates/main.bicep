@@ -8,15 +8,16 @@ Resources to add:
 - vNet + Network security group
 */
 
-@description('Name for the deployment')
-param name string = 'sk'
+@description('Name for the deployment - Must consist of alphanumeric characters or \'-\'')
+param name string = 'semkernel'
 
 @description('SKU for the Azure App Service plan')
+@allowed(['B1', 'S1', 'S2', 'S3', 'P1V3', 'P2V3', 'I1V2', 'I2V2' ])
 param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
-param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
+param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip'
 
 @description('Underlying AI service')
 @allowed([
@@ -41,8 +42,8 @@ param endpoint string = ''
 @description('Azure OpenAI or OpenAI API key')
 param apiKey string = ''
 
-@description('Semantic Kernel server API key - Provide empty string to disable API key auth')
-param skServerApiKey string = newGuid()
+@description('Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth')
+param semanticKernelApiKey string = newGuid()
 
 @description('Whether to deploy a new Azure OpenAI instance')
 param deployNewAzureOpenAI bool = true
@@ -50,12 +51,12 @@ param deployNewAzureOpenAI bool = true
 @description('Whether to deploy Cosmos DB for chat storage')
 param deployCosmosDB bool = true
 
+// TODO: Temporarily disabling qdrant deployment by default while we secure its endpoint.
 @description('Whether to deploy Qdrant (in a container) for memory storage')
-param deployQdrant bool = true
+param deployQdrant bool = false
 
 @description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
 param deploySpeechServices bool = true
-
 
 @description('Region for the resources')
 #disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
@@ -72,7 +73,6 @@ var storageFileShareName = 'aciqdrantshare'
 
 @description('Name of the ACI container volume')
 var containerVolumeMountName = 'azqdrantvolume'
-
 
 resource openAI 'Microsoft.CognitiveServices/accounts@2022-12-01' = if(deployNewAzureOpenAI) {
   name: 'ai-${uniqueName}'
@@ -126,8 +126,8 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   }
 }
 
-resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
-  name: 'app-${uniqueName}skweb'
+resource appServiceWeb 'Microsoft.Web/sites@2022-09-01' = {
+  name: 'app-${uniqueName}-skweb'
   location: location
   tags: {
     skweb: '1'
@@ -135,123 +135,138 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
   properties: {
     serverFarmId: appServicePlan.id
     httpsOnly: true
-    siteConfig: {
-      alwaysOn: true
-      detailedErrorLoggingEnabled: true
-      minTlsVersion: '1.2'
-      netFrameworkVersion: 'v6.0'
-      use32BitWorkerProcess: false
-      appSettings: [
-        {
-          name: 'AIService:Type'
-          value: aiService
-        }
-        {
-          name: 'AIService:Endpoint'
-          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-        }
-        {
-          name: 'AIService:Key'
-          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
-        }
-        {
-          name: 'AIService:Models:Completion'
-          value: completionModel
-        }
-        {
-          name: 'AIService:Models:Embedding'
-          value: embeddingModel
-        }
-        {
-          name: 'AIService:Models:Planner'
-          value: plannerModel
-        }
-        {
-          name: 'Authorization:Type'
-          value: empty(skServerApiKey) ? 'None' : 'ApiKey'
-        }
-        {
-          name: 'Authorization:ApiKey'
-          value: skServerApiKey
-        }
-        {
-          name: 'ChatStore:Type'
-          value: deployCosmosDB ? 'cosmos' : 'volatile'
-        }
-        {
-          name: 'ChatStore:Cosmos:Database'
-          value: 'CopilotChat'
-        }
-        {
-          name: 'ChatStore:Cosmos:ChatSessionsContainer'
-          value: 'chatsessions'
-        }
-        {
-          name: 'ChatStore:Cosmos:ChatMessagesContainer'
-          value: 'chatmessages'
-        }
-        {
-          name: 'ChatStore:Cosmos:ConnectionString'
-          value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
-        }
-        {
-          name: 'MemoriesStore:Type'
-          value: deployQdrant ? 'Qdrant' : 'Volatile'
-        }
-        {
-          name: 'MemoriesStore:Qdrant:Host'
-          value: deployQdrant ? 'http://${aci.properties.ipAddress.fqdn}' : ''
-        }
-        {
-          name: 'AzureSpeech:Region'
-          value: location
-        }
-        {
-          name: 'AzureSpeech:Key'
-          value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
-        }
-        {
-          name: 'Kestrel:Endpoints:Https:Url'
-          value: 'https://localhost:443'
-        }
-        {
-          name: 'Logging:LogLevel:Default'
-          value: 'Warning'
-        }
-        {
-          name: 'Logging:LogLevel:SemanticKernel.Service'
-          value: 'Warning'
-        }
-        {
-          name: 'Logging:LogLevel:Microsoft.SemanticKernel'
-          value: 'Warning'
-        }
-        {
-          name: 'Logging:LogLevel:Microsoft.AspNetCore.Hosting'
-          value: 'Warning'
-        }
-        {
-          name: 'Logging:LogLevel:Microsoft.Hosting.Lifetimel'
-          value: 'Warning'
-        }
-        {
-          name: 'ApplicationInsights:ConnectionString'
-          value: appInsights.properties.ConnectionString
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
-        }
-        {
-          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-          value: '~2'
-        }
-      ]
-    }
   }
   dependsOn: [
     logAnalyticsWorkspace
   ]
+}
+
+resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
+  parent: appServiceWeb
+  name: 'web'
+  properties: {
+    alwaysOn: true
+    cors: {
+      allowedOrigins: [
+        'http://localhost:3000'
+      ]
+      supportCredentials: true
+    }
+    detailedErrorLoggingEnabled: true
+    minTlsVersion: '1.2'
+    netFrameworkVersion: 'v6.0'
+    use32BitWorkerProcess: false
+    appSettings: [
+      {
+        name: 'AIService:Type'
+        value: aiService
+      }
+      {
+        name: 'AIService:Endpoint'
+        value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
+      }
+      {
+        name: 'AIService:Key'
+        value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+      }
+      {
+        name: 'AIService:Models:Completion'
+        value: completionModel
+      }
+      {
+        name: 'AIService:Models:Embedding'
+        value: embeddingModel
+      }
+      {
+        name: 'AIService:Models:Planner'
+        value: plannerModel
+      }
+      {
+        name: 'Authorization:Type'
+        value: empty(semanticKernelApiKey) ? 'None' : 'ApiKey'
+      }
+      {
+        name: 'Authorization:ApiKey'
+        value: semanticKernelApiKey
+      }
+      {
+        name: 'ChatStore:Type'
+        value: deployCosmosDB ? 'cosmos' : 'volatile'
+      }
+      {
+        name: 'ChatStore:Cosmos:Database'
+        value: 'CopilotChat'
+      }
+      {
+        name: 'ChatStore:Cosmos:ChatSessionsContainer'
+        value: 'chatsessions'
+      }
+      {
+        name: 'ChatStore:Cosmos:ChatMessagesContainer'
+        value: 'chatmessages'
+      }
+      {
+        name: 'ChatStore:Cosmos:ConnectionString'
+        value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
+      }
+      {
+        name: 'MemoriesStore:Type'
+        value: deployQdrant ? 'Qdrant' : 'Volatile'
+      }
+      {
+        name: 'MemoriesStore:Qdrant:Host'
+        value: deployQdrant ? 'http://${aci.properties.ipAddress.fqdn}' : ''
+      }
+      {
+        name: 'AzureSpeech:Region'
+        value: location
+      }
+      {
+        name: 'AzureSpeech:Key'
+        value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
+      }
+      {
+        name: 'AllowedOrigins'
+        value: '[*]' // Defer list of allowed origins to the Azure service app's CORS configuration
+      }
+      {
+        name: 'Kestrel:Endpoints:Https:Url'
+        value: 'https://localhost:443'
+      }
+      {
+        name: 'Logging:LogLevel:Default'
+        value: 'Warning'
+      }
+      {
+        name: 'Logging:LogLevel:SemanticKernel.Service'
+        value: 'Warning'
+      }
+      {
+        name: 'Logging:LogLevel:Microsoft.SemanticKernel'
+        value: 'Warning'
+      }
+      {
+        name: 'Logging:LogLevel:Microsoft.AspNetCore.Hosting'
+        value: 'Warning'
+      }
+      {
+        name: 'Logging:LogLevel:Microsoft.Hosting.Lifetimel'
+        value: 'Warning'
+      }
+      {
+        name: 'ApplicationInsights:ConnectionString'
+        value: appInsights.properties.ConnectionString
+      }
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        value: appInsights.properties.ConnectionString
+      }
+      {
+        name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+        value: '~2'
+      }
+    ]
+  }
 }
 
 resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2021-03-01' = {
@@ -312,6 +327,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = if (deployQdra
   }
   properties: {
     supportsHttpsTrafficOnly: true
+    allowBlobPublicAccess: false
   }
   resource fileservices 'fileServices' = {
     name: 'default'

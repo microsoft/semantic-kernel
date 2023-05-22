@@ -33,7 +33,7 @@ public static class MultiplyOperation
         }
         else
         {
-            SupportedTypes.ThrowTypeNotSupported<TNumber>();
+            EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
         }
     }
 

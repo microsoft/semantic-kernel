@@ -147,7 +147,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
             {
                 memoryRecord = MemoryRecord.FromJsonMetadata(
                     result.MetadataString,
-                    new Embedding<float>(vector),
+                    new Embedding<float>(vector, transferOwnership: true),
                     result.Id,
                     result.Timestamp);
             }
@@ -309,7 +309,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
                 {
                     yield return MemoryRecord.FromJsonMetadata(
                         item.MetadataString,
-                        new Embedding<float>(vector),
+                        new Embedding<float>(vector, transferOwnership: true),
                         item.Id,
                         item.Timestamp);
                 }
