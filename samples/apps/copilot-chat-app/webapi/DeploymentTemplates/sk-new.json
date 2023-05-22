@@ -61,13 +61,6 @@
         "description": "Completion model the task planner should use"
       }
     },
-    "semanticKernelApiKey": {
-      "type": "string",
-      "defaultValue": "[newGuid()]",
-      "metadata": {
-        "description": "Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth"
-      }
-    },
     "deployCosmosDB": {
       "type": "bool",
       "defaultValue": true,
@@ -121,9 +114,6 @@
           },
           "plannerModel": {
             "value": "[parameters('plannerModel')]"
-          },
-          "semanticKernelApiKey": {
-            "value": "[parameters('semanticKernelApiKey')]"
           },
           "deployCosmosDB": {
             "value": "[parameters('deployCosmosDB')]"
@@ -224,13 +214,6 @@
               "defaultValue": "",
               "metadata": {
                 "description": "Azure OpenAI or OpenAI API key"
-              }
-            },
-            "semanticKernelApiKey": {
-              "type": "string",
-              "defaultValue": "[newGuid()]",
-              "metadata": {
-                "description": "Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth"
               }
             },
             "deployNewAzureOpenAI": {
@@ -407,12 +390,8 @@
                     "value": "[parameters('plannerModel')]"
                   },
                   {
-                    "name": "Authorization:Type",
-                    "value": "[if(empty(parameters('semanticKernelApiKey')), 'None', 'ApiKey')]"
-                  },
-                  {
-                    "name": "Authorization:ApiKey",
-                    "value": "[parameters('semanticKernelApiKey')]"
+                    "name": "AuthenticationType",
+                    "value": "None"
                   },
                   {
                     "name": "ChatStore:Type",

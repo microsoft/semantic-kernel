@@ -25,9 +25,6 @@ param embeddingModel string = 'text-embedding-ada-002'
 @description('Completion model the task planner should use')
 param plannerModel string = 'gpt-35-turbo'
 
-@description('Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth')
-param semanticKernelApiKey string = newGuid()
-
 @description('Whether to deploy Cosmos DB for chat storage')
 param deployCosmosDB bool = true
 
@@ -49,7 +46,6 @@ module openAI 'main.bicep' = {
     completionModel: completionModel
     embeddingModel: embeddingModel
     plannerModel: plannerModel
-    semanticKernelApiKey: semanticKernelApiKey
     deployCosmosDB: deployCosmosDB
     deployQdrant: deployQdrant
     deploySpeechServices: deploySpeechServices

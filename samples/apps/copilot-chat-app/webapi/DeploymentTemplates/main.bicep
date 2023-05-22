@@ -42,9 +42,6 @@ param endpoint string = ''
 @description('Azure OpenAI or OpenAI API key')
 param apiKey string = ''
 
-@description('Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth')
-param semanticKernelApiKey string = newGuid()
-
 @description('Whether to deploy a new Azure OpenAI instance')
 param deployNewAzureOpenAI bool = true
 
@@ -182,12 +179,8 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
         value: plannerModel
       }
       {
-        name: 'Authorization:Type'
-        value: empty(semanticKernelApiKey) ? 'None' : 'ApiKey'
-      }
-      {
-        name: 'Authorization:ApiKey'
-        value: semanticKernelApiKey
+        name: 'Authentication:Type'
+        value: 'None'
       }
       {
         name: 'ChatStore:Type'
