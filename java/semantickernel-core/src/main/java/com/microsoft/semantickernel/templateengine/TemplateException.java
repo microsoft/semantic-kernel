@@ -77,6 +77,11 @@ public class TemplateException extends SKException {
         */
         UnknownError("Unknown error"),
 
+      /**
+        * <p>
+        * Syntax error, the template syntax used is not valid.
+        * </p>
+        */
         SyntaxError("Syntax error, the template syntax used is not valid"),
 
         UnexpectedBlockType("The block type produced be the tokenizer was not expected"),
