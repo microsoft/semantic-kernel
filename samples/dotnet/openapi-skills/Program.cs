@@ -33,7 +33,6 @@ internal sealed class Program
     {
         Console.WriteLine("Welcome to Semantic Kernel OpenAPI Skills Example!");
 
-
         // Load configuration
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
@@ -42,7 +41,6 @@ internal sealed class Program
             .AddUserSecrets<Program>()
             .Build();
 
-
         // Initialize logger
         using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
             builder.AddConfiguration(configuration.GetSection("Logging"))
@@ -50,7 +48,6 @@ internal sealed class Program
                 .AddDebug());
 
         logger = loggerFactory.CreateLogger<Program>();
-
 
         // Initialize semantic kernel
         AIServiceOptions aiOptions = configuration.GetRequiredSection(AIServiceOptions.PropertyName).Get<AIServiceOptions>()
@@ -74,7 +71,6 @@ internal sealed class Program
             })
             .Build();
 
-
         // Register the GitHub skill using an OpenAPI definition containing only pull request GET operations.
         GitHubSkillOptions gitHubOptions = configuration.GetRequiredSection(GitHubSkillOptions.PropertyName).Get<GitHubSkillOptions>()
             ?? throw new InvalidOperationException($"Missing configuration for {GitHubSkillOptions.PropertyName}.");
@@ -85,7 +81,6 @@ internal sealed class Program
             skillName: "GitHubSkill",
             filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "GitHubSkill/openapi.json"),
             authCallback: authenticationProvider.AuthenticateRequestAsync);
-
 
         // Use a planner to decide when to call the GitHub skill. Since we are not chaining operations, use
         // the ActionPlanner which is a simplified planner that will always return a 0 or 1 step plan.
