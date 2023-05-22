@@ -120,19 +120,14 @@ internal static class Example31_CustomPlanner
     {
         return new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .Configure(
-                config =>
-                {
-                    config.AddAzureTextCompletionService(
-                        Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                        Env.Var("AZURE_OPENAI_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_KEY"));
-
-                    config.AddAzureTextEmbeddingGenerationService(
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
-                })
+            .WithAzureTextCompletionService(
+                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_KEY"))
+            .WithAzureTextEmbeddingGenerationService(
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
     }

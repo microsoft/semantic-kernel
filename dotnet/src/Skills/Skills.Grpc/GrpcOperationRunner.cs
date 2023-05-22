@@ -104,9 +104,7 @@ internal class GrpcOperationRunner
     /// <returns>The channel address.</returns>
     private string GetAddress(GrpcOperation operation, IDictionary<string, string> arguments)
     {
-        string? address = null;
-
-        if (!arguments.TryGetValue(GrpcOperation.AddressArgumentName, out address))
+        if (!arguments.TryGetValue(GrpcOperation.AddressArgumentName, out string? address))
         {
             address = operation.Address;
         }
