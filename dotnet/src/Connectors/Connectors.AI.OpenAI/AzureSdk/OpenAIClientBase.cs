@@ -21,27 +21,25 @@ public abstract class OpenAIClientBase : ClientBase
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
-    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="logger">Application logger</param>
     private protected OpenAIClientBase(
         string modelId,
         string apiKey,
+        HttpClient httpClient,
         string? organization = null,
-        HttpClient? httpClient = null,
         ILogger? logger = null
     )
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this.ModelId = modelId;
-
         var options = new OpenAIClientOptions();
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-        }
+        //The following three lines turn off the internal AzureOpenAI retry mechanism in order to ensure consistent retry policies across all connectors.
+        options.Transport = new HttpClientTransport(httpClient);
+        options.RetryPolicy = null;
+        options.Retry.MaxRetries = 0;
 
         if (!string.IsNullOrWhiteSpace(organization))
         {

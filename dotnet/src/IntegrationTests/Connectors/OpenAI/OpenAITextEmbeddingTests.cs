@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -39,7 +40,9 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        var embeddingGenerator = new OpenAITextEmbeddingGeneration(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
+        using var httpClient = new HttpClient();
+
+        var embeddingGenerator = new OpenAITextEmbeddingGeneration(openAIConfiguration.ModelId, openAIConfiguration.ApiKey, httpClient);
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
@@ -58,9 +61,11 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
+        using var httpClient = new HttpClient();
+
         var embeddingGenerator = new AzureTextEmbeddingGeneration(azureOpenAIConfiguration.DeploymentName,
             azureOpenAIConfiguration.Endpoint,
-            azureOpenAIConfiguration.ApiKey);
+            azureOpenAIConfiguration.ApiKey, httpClient);
 
         // Act
         var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);

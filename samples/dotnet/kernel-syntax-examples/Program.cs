@@ -112,5 +112,8 @@ public static class Program
 
         await Example35_GrpcSkills.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        Example40_HttpUsage.Run();
+        Console.WriteLine("== DONE ==");
     }
 }

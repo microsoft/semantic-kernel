@@ -30,7 +30,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         string modelId,
         string endpoint,
         string apiKey,
-        HttpClient? httpClient = null,
+        HttpClient httpClient,
         ILogger? logger = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
@@ -39,11 +39,10 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var options = new OpenAIClientOptions();
-
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-        }
+        //The following three lines turn off the internal AzureOpenAI retry mechanism in order to ensure consistent retry policies across all connectors.
+        options.Transport = new HttpClientTransport(httpClient);
+        options.RetryPolicy = null;
+        options.Retry.MaxRetries = 0;
 
         this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
@@ -61,7 +60,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         string modelId,
         string endpoint,
         TokenCredential credential,
-        HttpClient? httpClient = null,
+        HttpClient httpClient,
         ILogger? log = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
@@ -69,10 +68,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
         var options = new OpenAIClientOptions();
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-        }
+        options.Transport = new HttpClientTransport(httpClient);
 
         this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), credential, options);

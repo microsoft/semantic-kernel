@@ -24,25 +24,19 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 #pragma warning disable CA1816 // No derived types implement a finalizer
 
 /// <summary>Base type for OpenAI clients.</summary>
-public abstract class OpenAIClientBase : IDisposable
+public abstract class OpenAIClientBase
 {
-    /// <summary>Initialize the client.</summary>
-    private protected OpenAIClientBase(HttpClient? httpClient = null, ILogger? logger = null)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIClientBase"/> class.
+    /// </summary>
+    /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
+    /// <param name="logger">The ILogger used for logging. If null, a NullLogger instance will be used.</param>
+    private protected OpenAIClientBase(HttpClient httpClient, ILogger? logger = null)
     {
-        this._httpClient = httpClient ?? new HttpClient(s_defaultHttpClientHandler, disposeHandler: false);
-        this._disposeHttpClient = this._httpClient != httpClient; // dispose a non-shared client when this is disposed
-
+        this._httpClient = httpClient;
         this._log = logger ?? NullLogger.Instance;
     }
 
-    /// <summary>Clean up resources used by this instance.</summary>
-    public void Dispose()
-    {
-        if (this._disposeHttpClient)
-        {
-            this._httpClient.Dispose();
-        }
-    }
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected virtual void AddRequestHeaders(HttpRequestMessage request)
@@ -111,14 +105,8 @@ public abstract class OpenAIClientBase : IDisposable
 
     #region private ================================================================================
 
-    // Shared singleton HttpClientHandler used when an existing HttpClient isn't provided
-    private static readonly HttpClientHandler s_defaultHttpClientHandler = new() { CheckCertificateRevocationList = true };
-
     // HTTP user agent sent to remote endpoints
     private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
-
-    // Set to true to dispose of HttpClient when disposing. If HttpClient was passed in, then the caller can manage.
-    private readonly bool _disposeHttpClient;
 
     /// <summary>
     /// Logger
@@ -126,7 +114,7 @@ public abstract class OpenAIClientBase : IDisposable
     private readonly ILogger _log;
 
     /// <summary>
-    /// The <see cref="_httpClient"/> to use for issuing requests.
+    /// The HttpClient used for making HTTP requests.
     /// </summary>
     private readonly HttpClient _httpClient;
 
