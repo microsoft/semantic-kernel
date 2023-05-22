@@ -44,6 +44,11 @@ public class TemplateException extends SKException {
         this.errorCode = errorCode;
     }
 
+/**
+ * <p>
+ * Gets the error code for this exception.
+ * </p>
+ */
     public ErrorCodes getErrorCode() {
         return errorCode;
     }
