@@ -243,8 +243,10 @@ class WeaviateMemoryStore(MemoryStoreBase):
         await self.remove_batch_async(collection_name, [key])
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
-        # TODO: Use In operator when it's available (https://github.com/weaviate/weaviate/issues/2387)
-        #       and handle max delete objects (https://weaviate.io/developers/weaviate/api/rest/batch#maximum-number-of-deletes-per-query)
+        # TODO: Use In operator when it's available
+        #       (https://github.com/weaviate/weaviate/issues/2387)
+        #       and handle max delete objects
+        #       (https://weaviate.io/developers/weaviate/api/rest/batch#maximum-number-of-deletes-per-query)
         for key in keys:
             where = {
                 "path": ["key"],
