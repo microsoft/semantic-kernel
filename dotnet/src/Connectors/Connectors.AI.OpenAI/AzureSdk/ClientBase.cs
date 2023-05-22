@@ -113,7 +113,7 @@ public abstract class ClientBase
 
             EmbeddingItem x = response.Value.Data[0];
 
-            result.Add(new Embedding<float>(x.Embedding));
+            result.Add(new Embedding<float>(x.Embedding, transferOwnership: true));
         }
 
         return result;

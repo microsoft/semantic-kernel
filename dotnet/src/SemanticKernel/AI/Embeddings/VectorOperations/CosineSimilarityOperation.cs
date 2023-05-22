@@ -36,7 +36,7 @@ public static class CosineSimilarityOperation
             return CosineSimilarityImplementation(doubleSpanX, doubleSpanY);
         }
 
-        SupportedTypes.ThrowTypeNotSupported<TNumber>();
+        EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
         return default;
     }
 
