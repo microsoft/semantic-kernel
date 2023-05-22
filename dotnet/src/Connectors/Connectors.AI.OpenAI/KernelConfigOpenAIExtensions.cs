@@ -2,14 +2,18 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureRestApi;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.OpenAIRestApi;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Reliability;
@@ -21,6 +25,106 @@ namespace Microsoft.SemanticKernel;
 
 public static class KernelConfigOpenAIExtensions
 {
+    /// <summary>
+    /// Adds all available Azure OpenAI model deployments to the list.
+    /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
+    /// </summary>
+    /// <param name="config">The kernel config instance</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Self instance</returns>
+    public static async Task<KernelConfig> AddAzureOpenAIAsync(this KernelConfig config,
+        string endpoint,
+        string apiKey,
+        HttpClient? httpClient = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Get list of (available) models on Azure OpenAI instance
+        var models = await AzureOpenAIRestClient.GetModelsAsync(endpoint, apiKey, httpClient, cancellationToken).ConfigureAwait(false);
+
+        // Get list of deployments
+        var deployments = await AzureOpenAIRestClient.GetDeploymentsAsync(endpoint, apiKey, httpClient, cancellationToken).ConfigureAwait(false);
+
+        foreach (AzureDeployment d in deployments.Values)
+        {
+            AzureModel model = models[d.Model];
+            if (model.Capabilities.SupportsTextCompletion)
+            {
+                config.AddAzureTextCompletionService(
+                    d.Id,
+                    endpoint,
+                    apiKey,
+                    serviceId: d.Model,
+                    httpClient: httpClient,
+                    logger: logger);
+            }
+
+            if (model.Capabilities.SupportsEmbeddings)
+            {
+                config.AddAzureTextEmbeddingGenerationService(
+                    d.Id,
+                    endpoint,
+                    apiKey,
+                    serviceId: d.Model,
+                    httpClient: httpClient,
+                    logger: logger);
+            }
+        }
+
+        return config;
+    }
+
+    /// <summary>
+    /// Adds all OpenAI model deployments to the list.
+    /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
+    /// </summary>
+    /// <param name="config">The kernel config instance</param>
+    /// <param name="apiKey">OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="organization">OpenAI organization Id</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Self instance</returns>
+    public static async Task<KernelConfig> AddOpenAIAsync(this KernelConfig config,
+        string apiKey,
+        string? organization = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Get list of (available) models on Azure OpenAI instance
+        var models = await OpenAIRestClient.GetModelsAsync(apiKey, organization, httpClient, cancellationToken).ConfigureAwait(false);
+
+        foreach (var model in models.Values)
+        {
+            if (model.Capabilities.SupportsTextCompletion)
+            {
+                config.AddOpenAITextCompletionService(
+                    d.Id,
+                    apiKey,
+                    serviceId: d.Model,
+                    httpClient: httpClient,
+                    logger: logger);
+            }
+
+            if (model.Capabilities.SupportsEmbeddings)
+            {
+                config.AddAzureTextEmbeddingGenerationService(
+                    d.Id,
+                    apiKey,
+                    serviceId: d.Model,
+                    httpClient: httpClient,
+                    logger: logger);
+            }
+        }
+
+        return config;
+    }
+
     #region Text Completion
 
     /// <summary>
