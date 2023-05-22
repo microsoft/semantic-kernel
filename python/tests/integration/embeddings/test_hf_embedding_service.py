@@ -1,8 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
-
-import e2e_memories
 import pytest
 
 import semantic_kernel as sk
@@ -20,8 +17,54 @@ async def test_hf_embeddings_with_memories():
     )
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 
-    await e2e_memories.simple_memory_test(kernel)
+    # Add some documents to the semantic memory
+    await kernel.memory.save_information_async(
+        "test", id="info1", text="Sharks are fish."
+    )
+    await kernel.memory.save_information_async(
+        "test", id="info2", text="Whales are mammals."
+    )
+    await kernel.memory.save_information_async(
+        "test", id="info3", text="Penguins are birds."
+    )
+    await kernel.memory.save_information_async(
+        "test", id="info4", text="Dolphins are mammals."
+    )
+    await kernel.memory.save_information_async(
+        "test", id="info5", text="Flies are insects."
+    )
 
+    # Search for documents
+    query = "What are mammals?"
+    result = await kernel.memory.search_async(
+        "test", query, limit=2, min_relevance_score=0.0
+    )
+    print(f"Query: {query}")
+    print(f"\tAnswer 1: {result[0].text}")
+    print(f"\tAnswer 2: {result[1].text}\n")
+    assert "mammals." in result[0].text
+    assert "mammals." in result[1].text
 
-if __name__ == "__main__":
-    asyncio.run(test_hf_embeddings_with_memories())
+    query = "What are fish?"
+    result = await kernel.memory.search_async(
+        "test", query, limit=1, min_relevance_score=0.0
+    )
+    print(f"Query: {query}")
+    print(f"\tAnswer: {result[0].text}\n")
+    assert result[0].text == "Sharks are fish."
+
+    query = "What are insects?"
+    result = await kernel.memory.search_async(
+        "test", query, limit=1, min_relevance_score=0.0
+    )
+    print(f"Query: {query}")
+    print(f"\tAnswer: {result[0].text}\n")
+    assert result[0].text == "Flies are insects."
+
+    query = "What are birds?"
+    result = await kernel.memory.search_async(
+        "test", query, limit=1, min_relevance_score=0.0
+    )
+    print(f"Query: {query}")
+    print(f"\tAnswer: {result[0].text}\n")
+    assert result[0].text == "Penguins are birds."
