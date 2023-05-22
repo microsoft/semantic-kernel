@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
@@ -23,6 +25,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// SKFunction is used to extend one C# <see cref="Delegate"/>, <see cref="Func{T, TResult}"/>, <see cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKFunction : ISKFunction, IDisposable
 {
     /// <inheritdoc/>
@@ -51,8 +54,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Create a native function instance, wrapping a native object method
     /// </summary>
-    /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="methodSignature">Signature of the method to invoke</param>
+    /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
@@ -200,11 +203,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
+        ISemanticTextMemory? memory = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
         SKContext context = new(
             new ContextVariables(input),
+            memory: memory,
             skills: this._skillCollection,
             logger: logger,
             cancellationToken: cancellationToken);
@@ -224,7 +229,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         Verify.NotNull(serviceFactory);
         this.VerifyIsSemantic();
-        this._aiService = serviceFactory.Invoke();
+        this._aiService = new Lazy<ITextCompletion>(serviceFactory);
         return this;
     }
 
@@ -249,7 +254,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
-    /// <returns></returns>
     public override string ToString()
         => this.ToString(false);
 
@@ -257,7 +261,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// JSON serialized string representation of the function.
     /// </summary>
     public string ToString(bool writeIndented)
-       => JsonSerializer.Serialize(this, options: new JsonSerializerOptions() { WriteIndented = writeIndented });
+        => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
 
     /// <summary>
     /// Finalizer.
@@ -269,11 +273,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     #region private
 
+    private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
+    private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly DelegateTypes _delegateType;
     private readonly Delegate _function;
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
-    private ITextCompletion? _aiService = null;
+    private Lazy<ITextCompletion>? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
 
     private struct MethodDetails
@@ -339,9 +345,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private void ReleaseUnmanagedResources()
     {
-        if (this._aiService is not IDisposable disposable) { return; }
+        if (this._aiService == null || !this._aiService.IsValueCreated)
+        {
+            return;
+        }
 
-        disposable.Dispose();
+        if (this._aiService.Value is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 
     /// <summary>
@@ -368,7 +380,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         settings ??= this._aiRequestSettings;
 
         var callable = (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>>)this._function;
-        context.Variables.Update((await callable(this._aiService, settings, context).ConfigureAwait(false)).Variables);
+        context.Variables.Update((await callable(this._aiService?.Value, settings, context).ConfigureAwait(false)).Variables);
         return context;
     }
 
@@ -547,7 +559,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (!result.HasSkFunctionAttribute || skFunctionAttribute == null)
         {
-            log?.LogTrace("Method '{0}' doesn't have '{1}' attribute", result.Name, typeof(SKFunctionAttribute).Name);
+            log?.LogTrace("Method '{0}' doesn't have '{1}' attribute", result.Name, nameof(SKFunctionAttribute));
             if (skAttributesRequired) { return result; }
         }
         else
@@ -590,7 +602,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         else if (skMainParam != null)
         {
             // The developer used [SKFunctionInput] on a function that doesn't support a string input
-            var message = $"The method '{result.Name}' doesn't have a string parameter, do not use '{typeof(SKFunctionInputAttribute).Name}' attribute.";
+            var message = $"The method '{result.Name}' doesn't have a string parameter, do not use '{nameof(SKFunctionInputAttribute)}' attribute.";
             throw new KernelException(KernelException.ErrorCodes.InvalidFunctionDescription, message);
         }
 
@@ -758,6 +770,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
             new EventId((int)type, $"FuncType{type}"),
             "Executing function type {0}: {1}", (int)type, type.ToString("G"));
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
 
     #endregion
 }

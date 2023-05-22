@@ -49,7 +49,7 @@ internal sealed class RestApiOperationRunner
         // If no auth callback provided, use empty function
         if (authCallback == null)
         {
-            this._authCallback = (request) => { return Task.CompletedTask; };
+            this._authCallback = _ => Task.CompletedTask;
         }
         else
         {
@@ -57,7 +57,6 @@ internal sealed class RestApiOperationRunner
         }
     }
 
-    /// <inheritdoc/>
     public Task<JsonNode?> RunAsync(RestApiOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
     {
         var url = operation.BuildOperationUrl(arguments);
@@ -79,8 +78,12 @@ internal sealed class RestApiOperationRunner
     /// <param name="headers">Headers to include into the HTTP request.</param>
     /// <param name="payload">HTTP request payload.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
-    private async Task<JsonNode?> SendAsync(Uri url, HttpMethod method, IDictionary<string, string>? headers = null, HttpContent? payload = null,
+    /// <returns>Response content and content type</returns>
+    private async Task<JsonNode?> SendAsync(
+        Uri url,
+        HttpMethod method,
+        IDictionary<string, string>? headers = null,
+        HttpContent? payload = null,
         CancellationToken cancellationToken = default)
     {
         using var requestMessage = new HttpRequestMessage(method, url);
@@ -111,10 +114,12 @@ internal sealed class RestApiOperationRunner
 
         var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        //First iteration allowing to associate additional metadata with the returned content.
-        var result = new JsonObject();
-        result.Add("content", content);
-        result.Add("contentType", responseMessage.Content.Headers.ContentType.ToString());
+        // First iteration allowing to associate additional metadata with the returned content.
+        var result = new JsonObject
+        {
+            { "content", content },
+            { "contentType", responseMessage.Content.Headers.ContentType.ToString() }
+        };
 
         return result;
     }
@@ -134,7 +139,7 @@ internal sealed class RestApiOperationRunner
 
         var mediaType = operation.Payload?.MediaType;
 
-        //A try to resolve payload content type from the operation arguments if it's missing in the payload metadata.
+        // A try to resolve payload content type from the operation arguments if it's missing in the payload metadata.
         if (string.IsNullOrEmpty(mediaType))
         {
             if (!arguments.TryGetValue(RestApiOperation.ContentTypeArgumentName, out mediaType))
@@ -185,7 +190,7 @@ internal sealed class RestApiOperationRunner
     /// List of payload builders/factories.
     /// </summary>
     private static readonly Dictionary<string, Func<IDictionary<string, string>, HttpContent>> s_payloadFactoryByMediaType =
-        new Dictionary<string, Func<IDictionary<string, string>, HttpContent>>()
+        new()
         {
             { MediaTypeApplicationJson, BuildAppJsonPayload },
             { MediaTypeTextPlain, BuildPlainTextPayload }

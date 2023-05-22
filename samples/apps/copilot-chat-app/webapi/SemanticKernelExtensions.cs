@@ -15,8 +15,9 @@ using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.TemplateEngine;
-using SemanticKernel.Service.Config;
 using SemanticKernel.Service.CopilotChat.Extensions;
+using SemanticKernel.Service.CopilotChat.Storage;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service;
 
@@ -53,13 +54,11 @@ internal static class SemanticKernelExtensions
 
         // AI backends
         services.AddScoped<KernelConfig>(serviceProvider => new KernelConfig()
-            .AddCompletionBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()
-                .Get(AIServiceOptions.CompletionPropertyName))
-            .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>()
-                .Get(AIServiceOptions.EmbeddingPropertyName)));
+            .AddCompletionBackend(serviceProvider.GetRequiredService<IOptions<AIServiceOptions>>().Value)
+            .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptions<AIServiceOptions>>().Value));
 
         // Register skills
-        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkills);
+        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkillsAsync);
 
         return services;
     }
@@ -67,7 +66,7 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Register the skills with the kernel.
     /// </summary>
-    private static Task RegisterSkills(IServiceProvider sp, IKernel kernel)
+    private static Task RegisterSkillsAsync(IServiceProvider sp, IKernel kernel)
     {
         // Copilot chat skills
         kernel.RegisterCopilotChatSkills(sp);
@@ -107,7 +106,7 @@ internal static class SemanticKernelExtensions
                 services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
                     sp.GetRequiredService<IMemoryStore>(),
-                    sp.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
+                    sp.GetRequiredService<IOptions<AIServiceOptions>>().Value
                         .ToTextEmbeddingsService(logger: sp.GetRequiredService<ILogger<AIServiceOptions>>())));
                 break;
 
@@ -117,11 +116,20 @@ internal static class SemanticKernelExtensions
                     throw new InvalidOperationException("MemoriesStore type is Qdrant and Qdrant configuration is null.");
                 }
 
-                services.AddSingleton<IMemoryStore>(sp => new QdrantMemoryStore(
-                    config.Qdrant.Host, config.Qdrant.Port, config.Qdrant.VectorSize, sp.GetRequiredService<ILogger<QdrantMemoryStore>>()));
+                services.AddSingleton<IMemoryStore>(sp =>
+                {
+                    HttpClient httpClient = new(new HttpClientHandler { CheckCertificateRevocationList = true });
+                    if (!string.IsNullOrWhiteSpace(config.Qdrant.Key))
+                    {
+                        httpClient.DefaultRequestHeaders.Add("api-key", config.Qdrant.Key);
+                    }
+
+                    return new QdrantMemoryStore(new QdrantVectorDbClient(
+                        config.Qdrant.Host, config.Qdrant.VectorSize, port: config.Qdrant.Port, httpClient: httpClient, log: sp.GetRequiredService<ILogger<IQdrantVectorDbClient>>()));
+                });
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
                     sp.GetRequiredService<IMemoryStore>(),
-                    sp.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
+                    sp.GetRequiredService<IOptions<AIServiceOptions>>().Value
                         .ToTextEmbeddingsService(logger: sp.GetRequiredService<ILogger<AIServiceOptions>>())));
                 break;
 
@@ -137,90 +145,64 @@ internal static class SemanticKernelExtensions
             default:
                 throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
         }
+
+        // High level semantic memory implementations, such as Azure Cognitive Search, do not allow for providing embeddings when storing memories.
+        // We wrap the memory store in an optional memory store to allow controllers to pass dependency injection validation and potentially optimize
+        // for a lower-level memory implementation (e.g. Qdrant). Lower level memory implementations (i.e., IMemoryStore) allow for reusing embeddings,
+        // whereas high level memory implementation (i.e., ISemanticTextMemory) assume embeddings get recalculated on every write.
+        services.AddSingleton<OptionalIMemoryStore>(sp => new OptionalIMemoryStore() { MemoryStore = sp.GetService<IMemoryStore>() });
     }
 
     /// <summary>
     /// Add the completion backend to the kernel config
     /// </summary>
-    private static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
+    private static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions options)
     {
-        switch (aiServiceOptions.AIService)
+        return options.Type switch
         {
-            case AIServiceOptions.AIServiceType.AzureOpenAI:
-                kernelConfig.AddAzureChatCompletionService(
-                    deploymentName: aiServiceOptions.DeploymentOrModelId,
-                    endpoint: aiServiceOptions.Endpoint,
-                    apiKey: aiServiceOptions.Key);
-                break;
-
-            case AIServiceOptions.AIServiceType.OpenAI:
-                kernelConfig.AddOpenAIChatCompletionService(
-                    modelId: aiServiceOptions.DeploymentOrModelId,
-                    apiKey: aiServiceOptions.Key);
-                break;
-
-            default:
-                throw new ArgumentException($"Invalid {nameof(aiServiceOptions.AIService)} value in '{AIServiceOptions.CompletionPropertyName}' settings.");
-        }
-
-        return kernelConfig;
+            AIServiceOptions.AIServiceType.AzureOpenAI
+                => kernelConfig.AddAzureChatCompletionService(options.Models.Completion, options.Endpoint, options.Key),
+            AIServiceOptions.AIServiceType.OpenAI
+                => kernelConfig.AddOpenAIChatCompletionService(options.Models.Completion, options.Key),
+            _
+                => throw new ArgumentException($"Invalid {nameof(options.Type)} value in '{AIServiceOptions.PropertyName}' settings."),
+        };
     }
 
     /// <summary>
     /// Add the embedding backend to the kernel config
     /// </summary>
-    private static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceOptions aiServiceOptions)
+    private static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceOptions options)
     {
-        switch (aiServiceOptions.AIService)
+        return options.Type switch
         {
-            case AIServiceOptions.AIServiceType.AzureOpenAI:
-                kernelConfig.AddAzureTextEmbeddingGenerationService(
-                    deploymentName: aiServiceOptions.DeploymentOrModelId,
-                    endpoint: aiServiceOptions.Endpoint,
-                    apiKey: aiServiceOptions.Key,
-                    serviceId: aiServiceOptions.Label);
-                break;
-
-            case AIServiceOptions.AIServiceType.OpenAI:
-                kernelConfig.AddOpenAITextEmbeddingGenerationService(
-                    modelId: aiServiceOptions.DeploymentOrModelId,
-                    apiKey: aiServiceOptions.Key,
-                    serviceId: aiServiceOptions.Label);
-                break;
-
-            default:
-                throw new ArgumentException($"Invalid {nameof(aiServiceOptions.AIService)} value in '{AIServiceOptions.EmbeddingPropertyName}' settings.");
-        }
-
-        return kernelConfig;
+            AIServiceOptions.AIServiceType.AzureOpenAI
+                => kernelConfig.AddAzureTextEmbeddingGenerationService(options.Models.Embedding, options.Endpoint, options.Key),
+            AIServiceOptions.AIServiceType.OpenAI
+                => kernelConfig.AddOpenAITextEmbeddingGenerationService(options.Models.Embedding, options.Key),
+            _
+                => throw new ArgumentException($"Invalid {nameof(options.Type)} value in '{AIServiceOptions.PropertyName}' settings."),
+        };
     }
 
     /// <summary>
     /// Construct IEmbeddingGeneration from <see cref="AIServiceOptions"/>
     /// </summary>
-    /// <param name="serviceConfig">The service configuration</param>
+    /// <param name="options">The service configuration</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
-    private static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions serviceConfig,
+    private static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions options,
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
-        return serviceConfig.AIService switch
+        return options.Type switch
         {
-            AIServiceOptions.AIServiceType.AzureOpenAI => new AzureTextEmbeddingGeneration(
-                serviceConfig.DeploymentOrModelId,
-                serviceConfig.Endpoint,
-                serviceConfig.Key,
-                httpClient: httpClient,
-                logger: logger),
-
-            AIServiceOptions.AIServiceType.OpenAI => new OpenAITextEmbeddingGeneration(
-                serviceConfig.DeploymentOrModelId,
-                serviceConfig.Key,
-                httpClient: httpClient,
-                logger: logger),
-
-            _ => throw new ArgumentException("Invalid AIService value in embeddings backend settings"),
+            AIServiceOptions.AIServiceType.AzureOpenAI
+                => new AzureTextEmbeddingGeneration(options.Models.Embedding, options.Endpoint, options.Key, httpClient: httpClient, logger: logger),
+            AIServiceOptions.AIServiceType.OpenAI
+                => new OpenAITextEmbeddingGeneration(options.Models.Embedding, options.Key, httpClient: httpClient, logger: logger),
+            _
+                => throw new ArgumentException("Invalid AIService value in embeddings backend settings"),
         };
     }
 }

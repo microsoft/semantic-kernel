@@ -16,7 +16,7 @@ namespace SemanticKernel.UnitTests.CoreSkills;
 
 public class HttpSkillTests : IDisposable
 {
-    private readonly SKContext _context = new SKContext();
+    private readonly SKContext _context = new();
     private readonly string _content = "hello world";
     private readonly string _uriString = "http://www.example.com";
 

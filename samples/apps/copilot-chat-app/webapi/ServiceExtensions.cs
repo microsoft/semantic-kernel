@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using SemanticKernel.Service.Auth;
-using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service;
 
@@ -24,29 +24,30 @@ internal static class ServicesExtensions
         // General configuration
         services.AddOptions<ServiceOptions>()
             .Bind(configuration.GetSection(ServiceOptions.PropertyName))
+            .ValidateDataAnnotations()
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-        // AI service configurations for Semantic Kernel
-        services.AddOptions<AIServiceOptions>(AIServiceOptions.CompletionPropertyName)
-            .Bind(configuration.GetSection(AIServiceOptions.CompletionPropertyName))
+        // Default AI service configurations for Semantic Kernel
+        services.AddOptions<AIServiceOptions>()
+            .Bind(configuration.GetSection(AIServiceOptions.PropertyName))
+            .ValidateDataAnnotations()
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-        services.AddOptions<AIServiceOptions>(AIServiceOptions.EmbeddingPropertyName)
-            .Bind(configuration.GetSection(AIServiceOptions.EmbeddingPropertyName))
-            .ValidateOnStart()
-            .PostConfigure(TrimStringProperties);
+        var foo = services.BuildServiceProvider().GetService<IOptions<AIServiceOptions>>();
 
         // Authorization configuration
         services.AddOptions<AuthorizationOptions>()
             .Bind(configuration.GetSection(AuthorizationOptions.PropertyName))
             .ValidateOnStart()
+            .ValidateDataAnnotations()
             .PostConfigure(TrimStringProperties);
 
         // Memory store configuration
         services.AddOptions<MemoriesStoreOptions>()
             .Bind(configuration.GetSection(MemoriesStoreOptions.PropertyName))
+            .ValidateDataAnnotations()
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
@@ -59,8 +60,8 @@ internal static class ServicesExtensions
     internal static IServiceCollection AddCors(this IServiceCollection services)
     {
         IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-        string[] allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
-        if (allowedOrigins is not null && allowedOrigins.Length > 0)
+        string[] allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        if (allowedOrigins.Length > 0)
         {
             services.AddCors(options =>
             {

@@ -498,7 +498,7 @@ public sealed class SKFunctionTests2
         // Arrange
         [SKFunction("Test")]
         [SKFunctionName("Test")]
-        static Task Test(string input)
+        static Task TestAsync(string input)
         {
             s_canary = s_expected;
             return Task.CompletedTask;
@@ -507,7 +507,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(TestAsync), log: this._log.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -523,7 +523,7 @@ public sealed class SKFunctionTests2
         // Arrange
         [SKFunction("Test")]
         [SKFunctionName("Test")]
-        static Task Test(SKContext cx)
+        static Task TestAsync(SKContext cx)
         {
             s_canary = s_expected;
             cx["canary"] = s_expected;
@@ -534,7 +534,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(TestAsync), log: this._log.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -552,7 +552,7 @@ public sealed class SKFunctionTests2
         // Arrange
         [SKFunction("Test")]
         [SKFunctionName("Test")]
-        static Task Test(string input, SKContext cx)
+        static Task TestAsync(string input, SKContext cx)
         {
             s_canary = s_expected;
             cx["canary"] = s_expected;
@@ -563,7 +563,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("input:");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(TestAsync), log: this._log.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -581,7 +581,7 @@ public sealed class SKFunctionTests2
         // Arrange
         [SKFunction("Test")]
         [SKFunctionName("Test")]
-        static Task Test()
+        static Task TestAsync()
         {
             s_canary = s_expected;
             return Task.CompletedTask;
@@ -590,7 +590,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(TestAsync), log: this._log.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 

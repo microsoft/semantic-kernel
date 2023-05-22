@@ -2,9 +2,9 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using SemanticKernel.Service.Config;
+using SemanticKernel.Service.Options;
 
-namespace SemanticKernel.Service.CopilotChat.Config;
+namespace SemanticKernel.Service.CopilotChat.Options;
 
 /// <summary>
 /// Configuration options for the chat
@@ -17,7 +17,6 @@ public class PromptsOptions
     /// Token limit of the chat model.
     /// </summary>
     /// <remarks>https://platform.openai.com/docs/models/overview for token limits.</remarks>
-
     [Required, Range(0, int.MaxValue)] public int CompletionTokenLimit { get; set; }
 
     /// <summary>
@@ -61,6 +60,7 @@ public class PromptsOptions
     [Required, NotEmptyOrWhitespace] public string InitialBotMessage { get; set; } = string.Empty;
     [Required, NotEmptyOrWhitespace] public string SystemDescription { get; set; } = string.Empty;
     [Required, NotEmptyOrWhitespace] public string SystemResponse { get; set; } = string.Empty;
+
     internal string[] SystemIntentPromptComponents => new string[]
     {
         this.SystemDescription,
@@ -68,6 +68,7 @@ public class PromptsOptions
         "{{ChatSkill.ExtractChatHistory}}",
         this.SystemIntentContinuation
     };
+
     internal string SystemIntentExtraction => string.Join("\n", this.SystemIntentPromptComponents);
 
     // Intent extraction
@@ -83,6 +84,7 @@ public class PromptsOptions
     // Long-term memory
     [Required, NotEmptyOrWhitespace] public string LongTermMemoryName { get; set; } = string.Empty;
     [Required, NotEmptyOrWhitespace] public string LongTermMemoryExtraction { get; set; } = string.Empty;
+
     internal string[] LongTermMemoryPromptComponents => new string[]
     {
         this.SystemCognitive,
@@ -92,11 +94,13 @@ public class PromptsOptions
         "{{ChatSkill.ExtractChatHistory}}",
         this.MemoryContinuation
     };
+
     internal string LongTermMemory => string.Join("\n", this.LongTermMemoryPromptComponents);
 
     // Working memory
     [Required, NotEmptyOrWhitespace] public string WorkingMemoryName { get; set; } = string.Empty;
     [Required, NotEmptyOrWhitespace] public string WorkingMemoryExtraction { get; set; } = string.Empty;
+
     internal string[] WorkingMemoryPromptComponents => new string[]
     {
         this.SystemCognitive,
@@ -106,13 +110,14 @@ public class PromptsOptions
         "{{ChatSkill.ExtractChatHistory}}",
         this.MemoryContinuation
     };
+
     internal string WorkingMemory => string.Join("\n", this.WorkingMemoryPromptComponents);
 
     // Memory map
     internal IDictionary<string, string> MemoryMap => new Dictionary<string, string>()
     {
-        { this.LongTermMemoryName, this.LongTermMemory},
-        { this.WorkingMemoryName, this.WorkingMemory}
+        { this.LongTermMemoryName, this.LongTermMemory },
+        { this.WorkingMemoryName, this.WorkingMemory }
     };
 
     // Chat commands
@@ -131,7 +136,6 @@ public class PromptsOptions
     };
 
     internal string SystemChatPrompt => string.Join("\n", this.SystemChatPromptComponents);
-
 
     internal double ResponseTemperature { get; } = 0.7;
     internal double ResponseTopP { get; } = 1;

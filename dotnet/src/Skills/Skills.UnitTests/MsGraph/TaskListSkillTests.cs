@@ -14,13 +14,13 @@ namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
 public class TaskListSkillTests
 {
-    private readonly SKContext _context = new SKContext();
+    private readonly SKContext _context = new();
 
-    private readonly TaskManagementTaskList _anyTaskList = new TaskManagementTaskList(
+    private readonly TaskManagementTaskList _anyTaskList = new(
         id: Guid.NewGuid().ToString(),
         name: Guid.NewGuid().ToString());
 
-    private readonly TaskManagementTask _anyTask = new TaskManagementTask(
+    private readonly TaskManagementTask _anyTask = new(
         id: Guid.NewGuid().ToString(),
         title: Guid.NewGuid().ToString(),
         reminder: (DateTimeOffset.Now + TimeSpan.FromDays(1)).ToString("o"),
@@ -33,14 +33,14 @@ public class TaskListSkillTests
         // Arrange
         string anyTitle = Guid.NewGuid().ToString();
 
-        Mock<ITaskManagementConnector> connectorMock = new Mock<ITaskManagementConnector>();
+        Mock<ITaskManagementConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(this._anyTaskList);
 
         connectorMock.Setup(c => c.AddTaskAsync(It.IsAny<string>(), It.IsAny<TaskManagementTask>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(this._anyTask);
 
-        TaskListSkill target = new TaskListSkill(connectorMock.Object);
+        TaskListSkill target = new(connectorMock.Object);
 
         // Verify no reminder is set
         Assert.False(this._context.Variables.Get(Parameters.Reminder, out _));
@@ -59,7 +59,7 @@ public class TaskListSkillTests
         // Arrange
         string anyTitle = Guid.NewGuid().ToString();
 
-        Mock<ITaskManagementConnector> connectorMock = new Mock<ITaskManagementConnector>();
+        Mock<ITaskManagementConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(this._anyTaskList);
 
@@ -68,7 +68,7 @@ public class TaskListSkillTests
 
         string anyReminder = (DateTimeOffset.Now + TimeSpan.FromHours(1)).ToString("o");
 
-        TaskListSkill target = new TaskListSkill(connectorMock.Object);
+        TaskListSkill target = new(connectorMock.Object);
         this._context.Variables.Set(Parameters.Reminder, anyReminder);
 
         // Act
@@ -85,7 +85,7 @@ public class TaskListSkillTests
         // Arrange
         string anyTitle = Guid.NewGuid().ToString();
 
-        Mock<ITaskManagementConnector> connectorMock = new Mock<ITaskManagementConnector>();
+        Mock<ITaskManagementConnector> connectorMock = new();
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
         connectorMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync((TaskManagementTaskList)null);
@@ -93,7 +93,7 @@ public class TaskListSkillTests
 
         string anyReminder = (DateTimeOffset.Now + TimeSpan.FromHours(1)).ToString("o");
 
-        TaskListSkill target = new TaskListSkill(connectorMock.Object);
+        TaskListSkill target = new(connectorMock.Object);
         this._context.Variables.Set(Parameters.Reminder, anyReminder);
 
         // Act
@@ -115,7 +115,7 @@ public class TaskListSkillTests
     public void GetNextDayOfWeekIsCorrect(DayOfWeek dayOfWeek)
     {
         // Arrange
-        DateTimeOffset today = new DateTimeOffset(DateTime.Today);
+        DateTimeOffset today = new(DateTime.Today);
         TimeSpan timeOfDay = TimeSpan.FromHours(13);
 
         // Act

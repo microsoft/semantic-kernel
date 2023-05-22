@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb;
 /// <remarks>The Embedding data is saved to the Azure Cosmos DB database container specified in the constructor.
 /// The embedding data persists between subsequent instances and has similarity search capability, handled by the client as Azure Cosmos DB is not a vector-native DB.
 /// </remarks>
-public class CosmosMemoryStore : IMemoryStore
+public sealed class CosmosMemoryStore : IMemoryStore
 {
     private Database _database;
     private string _databaseName;
@@ -147,7 +147,7 @@ public class CosmosMemoryStore : IMemoryStore
             {
                 memoryRecord = MemoryRecord.FromJsonMetadata(
                     result.MetadataString,
-                    new Embedding<float>(vector),
+                    new Embedding<float>(vector, transferOwnership: true),
                     result.Id,
                     result.Timestamp);
             }
@@ -309,7 +309,7 @@ public class CosmosMemoryStore : IMemoryStore
                 {
                     yield return MemoryRecord.FromJsonMetadata(
                         item.MetadataString,
-                        new Embedding<float>(vector),
+                        new Embedding<float>(vector, transferOwnership: true),
                         item.Id,
                         item.Timestamp);
                 }

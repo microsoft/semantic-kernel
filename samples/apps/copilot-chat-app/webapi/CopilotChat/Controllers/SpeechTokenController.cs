@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SemanticKernel.Service.CopilotChat.Config;
 using SemanticKernel.Service.CopilotChat.Models;
+using SemanticKernel.Service.CopilotChat.Options;
 
 namespace SemanticKernel.Service.CopilotChat.Controllers;
 
@@ -70,9 +70,7 @@ public class SpeechTokenController : ControllerBase
             string token = await result.Content.ReadAsStringAsync();
             return new TokenResult { Token = token, ResponseCode = response.StatusCode };
         }
-        else
-        {
-            return new TokenResult { Token = "", ResponseCode = HttpStatusCode.NotFound };
-        }
+
+        return new TokenResult { Token = "", ResponseCode = HttpStatusCode.NotFound };
     }
 }

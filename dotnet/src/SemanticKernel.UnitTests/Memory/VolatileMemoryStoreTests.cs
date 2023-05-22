@@ -543,7 +543,7 @@ public class VolatileMemoryStoreTests
         await this._db.CreateCollectionAsync(collection);
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
 
-        List<string> keys = new List<string>();
+        List<string> keys = new();
         await foreach (var key in this._db.UpsertBatchAsync(collection, records))
         {
             keys.Add(key);

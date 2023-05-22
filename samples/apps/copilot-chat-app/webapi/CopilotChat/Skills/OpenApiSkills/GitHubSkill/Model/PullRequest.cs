@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using SemanticKernel.Services.CopilotChat.Skills.OpenApiSkills.GitHubSkill.Model;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.OpenApiSkills.GitHubSkill.Model;
 

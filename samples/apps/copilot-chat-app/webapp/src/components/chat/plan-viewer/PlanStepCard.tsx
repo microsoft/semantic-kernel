@@ -77,7 +77,7 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ index, step }) => {
                         <Text weight="semibold">Inputs: </Text>
                         {step.stepInputs.map((input: IPlanInput) => {
                             return (
-                                <Badge color="informative" shape="rounded" appearance="tint">
+                                <Badge color="informative" shape="rounded" appearance="tint" key={input.Key}>
                                     {`${input.Key}: ${input.Value}`}
                                 </Badge>
                             );

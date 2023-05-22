@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StrongNamePublicKey)" />
+    <InternalsVisibleTo Include="IntegrationTests" />
   </ItemGroup>
 
   <ItemGroup>

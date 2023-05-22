@@ -3,20 +3,18 @@ Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 Bicep template for deploying Semantic Kernel to Azure as a web app service.
-
-Resources to add:
-- vNet + Network security group
 */
 
-@description('Name for the deployment')
-param name string = 'sk'
+@description('Name for the deployment - Must consist of alphanumeric characters or \'-\'')
+param name string = 'semkernel'
 
 @description('SKU for the Azure App Service plan')
+@allowed(['B1', 'S1', 'S2', 'S3', 'P1V3', 'P2V3', 'I1V2', 'I2V2' ])
 param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
 #disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
-param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip'
+param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip'
 
 @description('Underlying AI service')
 @allowed([
@@ -41,8 +39,8 @@ param endpoint string = ''
 @description('Azure OpenAI or OpenAI API key')
 param apiKey string = ''
 
-@description('Semantic Kernel server API key - Provide empty string to disable API key auth')
-param skServerApiKey string = newGuid()
+@description('Semantic Kernel server API key - Generated GUID by default (Provide empty string to disable API key auth)')
+param semanticKernelApiKey string = newGuid()
 
 @description('Whether to deploy a new Azure OpenAI instance')
 param deployNewAzureOpenAI bool = true
@@ -56,7 +54,6 @@ param deployQdrant bool = true
 @description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
 param deploySpeechServices bool = true
 
-
 @description('Region for the resources')
 #disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
 var location = resourceGroup().location       // more intelligible deployment experience at the cost of some flexibility
@@ -69,9 +66,6 @@ var uniqueName = '${name}-${rgIdHash}'
 
 @description('Name of the Azure Storage file share to create')
 var storageFileShareName = 'aciqdrantshare'
-
-@description('Name of the ACI container volume')
-var containerVolumeMountName = 'azqdrantvolume'
 
 
 resource openAI 'Microsoft.CognitiveServices/accounts@2022-12-01' = if(deployNewAzureOpenAI) {
@@ -117,17 +111,16 @@ resource openAI_embeddingModel 'Microsoft.CognitiveServices/accounts/deployments
   ]
 }
 
-
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: 'asp-${uniqueName}'
+  name: 'asp-${uniqueName}-skweb'
   location: location
   sku: {
     name: appServiceSku
   }
 }
 
-resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
-  name: 'app-${uniqueName}skweb'
+resource appServiceWeb 'Microsoft.Web/sites@2022-09-01' = {
+  name: 'app-${uniqueName}-skweb'
   location: location
   tags: {
     skweb: '1'
@@ -135,68 +128,52 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
   properties: {
     serverFarmId: appServicePlan.id
     httpsOnly: true
+    virtualNetworkSubnetId: virtualNetwork.properties.subnets[0].id
     siteConfig: {
       alwaysOn: true
+      cors: {
+        allowedOrigins: [
+          'http://localhost:3000'
+        ]
+        supportCredentials: true
+      }
       detailedErrorLoggingEnabled: true
       minTlsVersion: '1.2'
       netFrameworkVersion: 'v6.0'
       use32BitWorkerProcess: false
+      vnetRouteAllEnabled: true
       appSettings: [
         {
-          name: 'Completion:AIService'
+          name: 'AIService:Type'
           value: aiService
         }
         {
-          name: 'Completion:DeploymentOrModelId'
+          name: 'AIService:Endpoint'
+          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
+        }
+        {
+          name: 'AIService:Key'
+          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+        }
+        {
+          name: 'AIService:Models:Completion'
           value: completionModel
         }
         {
-          name: 'Completion:Endpoint'
-          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-        }
-        {
-          name: 'Completion:Key'
-          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
-        }
-        {
-          name: 'Embedding:AIService'
-          value: aiService
-        }
-        {
-          name: 'Embedding:DeploymentOrModelId'
+          name: 'AIService:Models:Embedding'
           value: embeddingModel
         }
         {
-          name: 'Embedding:Endpoint'
-          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-        }
-        {
-          name: 'Embedding:Key'
-          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
-        }
-        {
-          name: 'Planner:AIService:AIService'
-          value: aiService
-        }
-        {
-          name: 'Planner:AIService:DeploymentOrModelId'
+          name: 'AIService:Models:Planner'
           value: plannerModel
         }
         {
-          name: 'Planner:AIService:Endpoint'
-          value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
-        }
-        {
-          name: 'Planner:AIService:Key'
-          value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
-        }
-        {
           name: 'Authorization:Type'
-          value: empty(skServerApiKey) ? 'None' : 'ApiKey'
+          value: empty(semanticKernelApiKey) ? 'None' : 'ApiKey'
         }
         {
           name: 'Authorization:ApiKey'
-          value: skServerApiKey
+          value: semanticKernelApiKey
         }
         {
           name: 'ChatStore:Type'
@@ -224,7 +201,11 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'MemoriesStore:Qdrant:Host'
-          value: deployQdrant ? 'http://${aci.properties.ipAddress.fqdn}' : ''
+          value: deployQdrant ? 'https://${appServiceQdrant.properties.defaultHostName}' : ''
+        }
+        {
+          name: 'MemoriesStore:Qdrant:Port'
+          value: '443'
         }
         {
           name: 'AzureSpeech:Region'
@@ -233,6 +214,10 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'AzureSpeech:Key'
           value: deploySpeechServices ? speechAccount.listKeys().key1 : ''
+        }
+        {
+          name: 'AllowedOrigins'
+          value: '[*]' // Defer list of allowed origins to the Azure service app's CORS configuration
         }
         {
           name: 'Kestrel:Endpoints:Https:Url'
@@ -278,7 +263,7 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-03-01' = {
   ]
 }
 
-resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2021-03-01' = {
+resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2022-09-01' = {
   name: 'MSDeploy'
   kind: 'string'
   parent: appServiceWeb
@@ -300,15 +285,15 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-resource appInsightExtension 'Microsoft.Web/sites/siteextensions@2020-06-01' = {
+resource appInsightExtension 'Microsoft.Web/sites/siteextensions@2022-09-01' = {
   parent: appServiceWeb
   name: 'Microsoft.ApplicationInsights.AzureWebSites'
   dependsOn: [
-    appInsights
+    webSubnetConnection
   ]
 }
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: 'la-${uniqueName}'
   location: location
   tags: {
@@ -336,6 +321,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = if (deployQdra
   }
   properties: {
     supportsHttpsTrafficOnly: true
+    allowBlobPublicAccess: false
   }
   resource fileservices 'fileServices' = {
     name: 'default'
@@ -345,63 +331,180 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = if (deployQdra
   }
 }
 
-resource aci 'Microsoft.ContainerInstance/containerGroups@2022-10-01-preview' = if (deployQdrant) {
-  name: 'ci-${uniqueName}'
+resource appServicePlanQdrant 'Microsoft.Web/serverfarms@2022-03-01' = if (deployQdrant) {
+  name: 'asp-${uniqueName}-qdrant'
   location: location
+  kind: 'linux'
+  sku: {
+    name: 'P1v3'
+  }
   properties: {
-    sku: 'Standard'
-    containers: [
-      {
-        name: uniqueName
-        properties: {
-          image: 'qdrant/qdrant:latest'
-          ports: [
-            {
-              port: 6333
-              protocol: 'TCP'
-            }
-          ]
-          resources: {
-            requests: {
-              cpu: 4
-              memoryInGB: 16
-            }
-          }
-          volumeMounts: [
-            {
-              name: containerVolumeMountName
-              mountPath: '/qdrant/storage'
-            }
-          ]
-        }
-      }
-    ]
-    osType: 'Linux'
-    restartPolicy: 'OnFailure'
-    ipAddress: {
-      ports: [
+    reserved: true
+  }
+}
+
+resource appServiceQdrant 'Microsoft.Web/sites@2022-09-01' = if (deployQdrant) {
+  name: 'app-${uniqueName}-qdrant'
+  location: location
+  kind: 'app,linux,container'
+  properties: {
+    serverFarmId: appServicePlanQdrant.id
+    httpsOnly: true
+    reserved: true
+    clientCertMode: 'Required'
+    virtualNetworkSubnetId: virtualNetwork.properties.subnets[1].id
+    siteConfig: {
+      numberOfWorkers: 1
+      linuxFxVersion: 'DOCKER|qdrant/qdrant:latest'
+      alwaysOn: true
+      vnetRouteAllEnabled: true
+      ipSecurityRestrictions: [
         {
-          port: 6333
-          protocol: 'TCP'
+          vnetSubnetResourceId: virtualNetwork.properties.subnets[0].id
+          action: 'Allow'
+          priority: 300
+          name: 'Allow front vnet'
+        }
+        {
+          ipAddress: 'Any'
+          action: 'Deny'
+          priority: 2147483647
+          name: 'Deny all'
         }
       ]
-      type: 'Public'
-      dnsNameLabel: uniqueName
-    }
-    volumes: [
-      {
-        name: containerVolumeMountName
-        azureFile: {
+      azureStorageAccounts: {
+        aciqdrantshare: {
+          type: 'AzureFiles'
+          accountName: deployQdrant ? storage.name : 'notdeployed'
           shareName: storageFileShareName
-          storageAccountName: deployQdrant ? storage.name : 'notdeployed'
-          storageAccountKey: deployQdrant ? storage.listKeys().keys[0].value : ''
+          mountPath: '/qdrant/storage'
+          accessKey: deployQdrant ? storage.listKeys().keys[0].value : ''
+        }
+      }
+    }
+  }
+}
+
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+  name: 'vnet-semantickernel'
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.0.0.0/16'
+      ]
+    }
+    subnets: [
+      {
+        name: 'webSubnet'
+        properties: {
+          addressPrefix: '10.0.1.0/24'
+          networkSecurityGroup: {
+            id: webNsg.id
+          }
+          serviceEndpoints: [
+            {
+              service: 'Microsoft.Web'
+              locations: [
+                '*'
+              ]
+            }
+          ]
+          delegations: [
+            {
+              name: 'delegation'
+              properties: {
+                serviceName: 'Microsoft.Web/serverfarms'
+              }
+            }
+          ]
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Enabled'
+        }
+      }
+      {
+        name: 'qdrantSubnet'
+        properties: {
+          addressPrefix: '10.0.2.0/24'
+          networkSecurityGroup: {
+            id: qdrantNsg.id
+          }
+          serviceEndpoints: [
+            {
+              service: 'Microsoft.Web'
+              locations: [
+                '*'
+              ]
+            }
+          ]
+          delegations: [
+            {
+              name: 'delegation'
+              properties: {
+                serviceName: 'Microsoft.Web/serverfarms'
+              }
+            }
+          ]
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Enabled'
         }
       }
     ]
   }
 }
 
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = if (deployCosmosDB) {
+resource webNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+  name: 'nsg-${uniqueName}-web'
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'AllowAnyHTTPSInbound'
+        properties: {
+          protocol: 'TCP'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 100
+          direction: 'Inbound'
+        }
+      }
+    ]
+  }
+}
+
+resource qdrantNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+  name: 'nsg-${uniqueName}-qdrant'
+  location: location
+  properties: {
+    securityRules: []
+  }
+}
+
+resource webSubnetConnection 'Microsoft.Web/sites/virtualNetworkConnections@2022-09-01' = {
+  parent: appServiceWeb
+  name: 'webSubnetConnection'
+  properties: {
+    vnetResourceId: virtualNetwork.properties.subnets[0].id
+    isSwift: true
+  }
+  dependsOn: [
+    appServiceWebDeploy
+  ]
+}
+
+resource qdrantSubnetConnection 'Microsoft.Web/sites/virtualNetworkConnections@2022-09-01' = if (deployQdrant) {
+  parent: appServiceQdrant
+  name: 'qdrantSubnetConnection'
+  properties: {
+    vnetResourceId: virtualNetwork.properties.subnets[1].id
+    isSwift: true
+  }
+}
+
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = if (deployCosmosDB) {
   name: toLower('cosmos-${uniqueName}')
   location: location
   kind: 'GlobalDocumentDB'
@@ -417,7 +520,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = if (
   }
 }
 
-resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = if (deployCosmosDB) {
+resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023-04-15' = if (deployCosmosDB) {
   parent: cosmosAccount
   name: 'CopilotChat'
   properties: {
@@ -427,7 +530,7 @@ resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022
   }
 }
 
-resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = if (deployCosmosDB) {
+resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = if (deployCosmosDB) {
   parent: cosmosDatabase
   name: 'chatmessages'
   properties: {
@@ -458,7 +561,7 @@ resource messageContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
   }
 }
 
-resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-03-15' = if (deployCosmosDB) {
+resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = if (deployCosmosDB) {
   parent: cosmosDatabase
   name: 'chatsessions'
   properties: {

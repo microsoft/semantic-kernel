@@ -13,6 +13,6 @@ internal sealed class ListCollectionsRequest
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateGetRequest($"collections");
+        return HttpRequest.CreateGetRequest("collections");
     }
 }
