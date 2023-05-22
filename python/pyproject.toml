@@ -22,9 +22,9 @@ pytest-asyncio = "^0.21.0"
 
 
 [tool.poetry.group.hugging_face.dependencies]
-torch = "^2.0.0"
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
+torch = "2.0.0"
 
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.3.23"
@@ -38,3 +38,4 @@ line-length = 120
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
