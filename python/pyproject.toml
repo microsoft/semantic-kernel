@@ -8,26 +8,26 @@ packages = [{include = "semantic_kernel"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-numpy = "^1.24.2"
-openai = "^0.27.0"
-aiofiles = "^23.1.0"
+numpy = "1.24.2"
+openai = "0.27.0"
+aiofiles = "23.1.0"
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "^2.21.0"
-black = {version = "^23.3.0", allow-prereleases = true}
-ipykernel = "^6.21.1"
+pre-commit = "2.21.0"
+black = {version = "23.3.0", allow-prereleases = true}
+ipykernel = "6.21.1"
 pytest = "7.2.0"
-ruff = "^0.0.257"
-pytest-asyncio = "^0.21.0"
+ruff = "0.0.257"
+pytest-asyncio = "0.21.0"
 
 
 [tool.poetry.group.hugging_face.dependencies]
-transformers = "^4.28.1"
-sentence-transformers = "^2.2.2"
+transformers = "4.28.1"
+sentence-transformers = "2.2.2"
 torch = "2.0.0"
 
 [tool.poetry.group.chromadb.dependencies]
-chromadb = "^0.3.23"
+chromadb = "0.3.23"
 
 [tool.isort]
 profile = "black"
