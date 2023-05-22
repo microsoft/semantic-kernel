@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -62,14 +63,12 @@ public static class Example15_MemorySkill
         Console.WriteLine("========= Example: Recalling an Idea =========");
 
         context[TextMemorySkill.LimitParam] = "2";
-        string ask = "where did I grow up?";
-        answer = await memorySkill.RecallAsync(ask, context);
-        Console.WriteLine("Ask: {0}", ask);
+        answer = await memorySkill.RecallAsync("where did I grow up?", context);
+        Console.WriteLine("Ask: where did I grow up?");
         Console.WriteLine("Answer:\n{0}", answer);
 
-        ask = "where do I live?";
-        answer = await memorySkill.RecallAsync(ask, context);
-        Console.WriteLine("Ask: {0}", ask);
+        answer = await memorySkill.RecallAsync("where do I live?", context);
+        Console.WriteLine("Ask: where do I live?");
         Console.WriteLine("Answer:\n{0}", answer);
 
         /*
@@ -94,19 +93,19 @@ Consider only the facts below when answering questions.
 About me: {{recall 'where did I grow up?'}}
 About me: {{recall 'where do I live?'}}
 
-Question: {{$query}}
+Question: {{$input}}
 
 Answer:
 ";
 
         var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, maxTokens: 100);
 
-        context["query"] = "Do I live in the same town where I grew up?";
+        context = kernel.CreateNewContext();
+        context[TextMemorySkill.CollectionParam] = MemoryCollectionName;
         context[TextMemorySkill.RelevanceParam] = "0.8";
+        var result = await aboutMeOracle.InvokeAsync("Do I live in the same town where I grew up?", context);
 
-        var result = await aboutMeOracle.InvokeAsync(context);
-
-        Console.WriteLine(context["query"] + "\n");
+        Console.WriteLine("Do I live in the same town where I grew up?\n");
         Console.WriteLine(result);
 
         /*
@@ -122,12 +121,11 @@ Answer:
 
         context["fact1"] = "What is my name?";
         context["fact2"] = "What do I do for a living?";
-        context["query"] = "Tell me a bit about myself";
         context[TextMemorySkill.RelevanceParam] = ".75";
 
-        result = await aboutMeOracle.InvokeAsync(context);
+        result = await aboutMeOracle.InvokeAsync("Tell me a bit about myself", context);
 
-        Console.WriteLine(context["query"] + "\n");
+        Console.WriteLine("Tell me a bit about myself\n");
         Console.WriteLine(result);
 
         /*
@@ -140,9 +138,9 @@ Answer:
         context[TextMemorySkill.KeyParam] = "info1";
         await memorySkill.RemoveAsync(context);
 
-        result = await aboutMeOracle.InvokeAsync(context);
+        result = await aboutMeOracle.InvokeAsync("Tell me a bit about myself", context);
 
-        Console.WriteLine(context["query"] + "\n");
+        Console.WriteLine("Tell me a bit about myself\n");
         Console.WriteLine(result);
 
         /*
