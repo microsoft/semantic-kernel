@@ -62,7 +62,7 @@ public class DocumentImportController : ControllerBase
     /// </summary>
     [Route("importDocument")]
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ImportDocumentAsync(
         [FromServices] IKernel kernel,
@@ -124,7 +124,7 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest(ex.Message);
         }
 
-        return this.Accepted();
+        return this.Ok();
     }
 
     /// <summary>
