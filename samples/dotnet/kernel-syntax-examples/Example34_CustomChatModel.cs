@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using RepoUtils;
@@ -81,11 +82,12 @@ public static class Example34_CustomChatModel
     {
         Console.WriteLine("======== Custom LLM - Chat Completion ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        IChatCompletion Factory(ILogger l) => new MyChatCompletionService();
 
-        IChatCompletion Factory(IKernel k) => new MyChatCompletionService();
-        // Add your chat completion service
-        kernel.Config.AddChatCompletionService(Factory);
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithDefaultAIService<IChatCompletion>(Factory)
+            .Build();
 
         IChatCompletion customChat = kernel.GetService<IChatCompletion>();
 
@@ -113,11 +115,12 @@ public static class Example34_CustomChatModel
     {
         Console.WriteLine("======== Custom LLM - Chat Completion Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        IChatCompletion Factory(ILogger l) => new MyChatCompletionService();
 
-        IChatCompletion Factory(IKernel k) => new MyChatCompletionService();
-        // Add your chat completion service
-        kernel.Config.AddChatCompletionService(Factory);
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithDefaultAIService<IChatCompletion>(Factory)
+            .Build();
 
         IChatCompletion customChat = kernel.GetService<IChatCompletion>();
 
