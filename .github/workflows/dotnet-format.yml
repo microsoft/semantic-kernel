@@ -65,5 +65,5 @@ jobs:
         run: |
           for csproj in ${{ steps.find-csproj.outputs.csproj_files }}; do
             echo "Running dotnet format on $csproj"
-            dotnet format $csproj --verify-no-changes --verbosity detailed
+            dotnet format $csproj --verify-no-changes --verbosity diagnostic
           done
