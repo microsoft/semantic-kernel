@@ -124,5 +124,8 @@ public static class Program
 
         await Example39_Postgres.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example40_DIContainer.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }

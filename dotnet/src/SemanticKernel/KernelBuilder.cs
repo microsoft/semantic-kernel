@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -20,9 +21,11 @@ public sealed class KernelBuilder
 {
     private KernelConfig _config = new();
     private ISemanticTextMemory _memory = NullMemory.Instance;
-    private ILogger _log = NullLogger.Instance;
+    private ILogger _logger = NullLogger.Instance;
     private IMemoryStore? _memoryStorage = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
+    private IPromptTemplateEngine? _promptTemplateEngine;
+    private readonly AIServiceCollection _aiServices = new();
 
     /// <summary>
     /// Create a new kernel instance
@@ -46,11 +49,12 @@ public sealed class KernelBuilder
         }
 
         var instance = new Kernel(
-            new SkillCollection(this._log),
-            new PromptTemplateEngine(this._log),
+            new SkillCollection(this._logger),
+            this._aiServices.Build(),
+            this._promptTemplateEngine ?? new PromptTemplateEngine(this._logger),
             this._memory,
             this._config,
-            this._log
+            this._logger
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -70,7 +74,7 @@ public sealed class KernelBuilder
     public KernelBuilder WithLogger(ILogger log)
     {
         Verify.NotNull(log);
-        this._log = log;
+        this._logger = log;
         return this;
     }
 
@@ -99,13 +103,25 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
+    /// Add prompt template engine to the kernel to be built.
+    /// </summary>
+    /// <param name="promptTemplateEngine">Prompt template engine to add.</param>
+    /// <returns>Updated kernel builder including the prompt template engine.</returns>
+    public KernelBuilder WithPromptTemplateEngine(IPromptTemplateEngine promptTemplateEngine)
+    {
+        Verify.NotNull(promptTemplateEngine);
+        this._promptTemplateEngine = promptTemplateEngine;
+        return this;
+    }
+
+    /// <summary>
     /// Add memory storage and an embedding generator to the kernel to be built.
     /// </summary>
     /// <param name="storage">Storage to add.</param>
     /// <param name="embeddingGenerator">Embedding generator to add.</param>
     /// <returns>Updated kernel builder including the memory storage and embedding generator.</returns>
     public KernelBuilder WithMemoryStorageAndTextEmbeddingGeneration(
-        IMemoryStore storage, IEmbeddingGeneration<string, float> embeddingGenerator)
+        IMemoryStore storage, ITextEmbeddingGeneration embeddingGenerator)
     {
         Verify.NotNull(storage);
         Verify.NotNull(embeddingGenerator);
@@ -146,6 +162,56 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(configure);
         configure.Invoke(this._config);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <typeparamref name="TService"/> instance to the services collection
+    /// </summary>
+    /// <param name="instance">The <typeparamref name="TService"/> instance.</param>
+    public KernelBuilder WithDefaultAIService<TService>(TService instance) where TService : IAIService
+    {
+        this._aiServices.SetService<TService>(instance);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <typeparamref name="TService"/> instance to the services collection
+    /// </summary>
+    /// <param name="serviceId">The service ID</param>
+    /// <param name="instance">The <typeparamref name="TService"/> instance.</param>
+    /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
+    public KernelBuilder WithAIService<TService>(
+        string? serviceId,
+        TService instance,
+        bool setAsDefault = false) where TService : IAIService
+    {
+        this._aiServices.SetService<TService>(serviceId, instance, setAsDefault);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <typeparamref name="TService"/> factory method to the services collection
+    /// </summary>
+    /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
+    public KernelBuilder WithDefaultAIService<TService>(Func<ILogger, TService> factory) where TService : IAIService
+    {
+        this._aiServices.SetService<TService>(() => factory(this._logger));
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <typeparamref name="TService"/> factory method to the services collection
+    /// </summary>
+    /// <param name="serviceId">The service ID</param>
+    /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
+    /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
+    public KernelBuilder WithAIService<TService>(
+        string? serviceId,
+        Func<(ILogger Logger, KernelConfig Config), TService> factory,
+        bool setAsDefault = false) where TService : IAIService
+    {
+        this._aiServices.SetService<TService>(serviceId, () => factory((this._logger, this._config)), setAsDefault);
         return this;
     }
 }
