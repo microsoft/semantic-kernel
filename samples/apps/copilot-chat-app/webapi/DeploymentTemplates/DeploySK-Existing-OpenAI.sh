@@ -19,8 +19,7 @@ usage() {
     echo "  -cm, --completion-model COMPLETION_MODEL   Completion model to use (default: \"gpt-3.5-turbo\")"
     echo "  -em, --embedding-model EMBEDDING_MODEL     Embedding model to use (default: \"text-embedding-ada-002\")"
     echo "  -pm, --planner-model PLANNER_MODEL         Planner model to use (default: \"gpt-3.5-turbo\")"
-    # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
-    # echo "  -nq, --no-qdrant                           Don't deploy Qdrant for memory storage - Use volatile memory instead"
+    echo "  -nq, --no-qdrant                           Don't deploy Qdrant for memory storage - Use volatile memory instead"
     echo "  -nc, --no-cosmos-db                        Don't deploy Cosmos DB for chat storage - Use volatile memory instead"
     echo "  -ns, --no-speech-services                  Don't deploy Speech Services to enable speech as chat input"
     echo "  -dd, --debug-deployment                    Switches on verbose template deployment output"
@@ -85,11 +84,10 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
-        # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
-        # -nq|--no-qdrant)
-        # NO_QDRANT=true
-        # shift
-        # ;;
+        -nq|--no-qdrant)
+        NO_QDRANT=true
+        shift
+        ;;
         -nc|--no-cosmos-db)
         NO_COSMOS_DB=true
         shift
@@ -130,7 +128,7 @@ az account set -s "$SUBSCRIPTION"
 : "${PACKAGE_URI:="https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip"}"
 : "${APP_SERVICE_SKU:="B1"}"
 : "${SEMKER_SERVER_API_KEY:="$(uuidgen)"}"
-: "${NO_QDRANT:=true}" # TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
+: "${NO_QDRANT:=false}"
 : "${NO_COSMOS_DB:=false}"
 : "${NO_SPEECH_SERVICES:=false}"
 : "${COMPLETION_MODEL:="gpt-3.5-turbo"}"
