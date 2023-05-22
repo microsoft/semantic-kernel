@@ -22,7 +22,7 @@ public class TemplateException extends SKException {
     /**
      * Initializes a new instance of the {@code TemplateException} class with a provided error code.
      *
-     * @param error The error code.
+     * @param errorCode The error code.
      * @param message The exception message.
      */
     public TemplateException(@Nonnull ErrorCodes errorCode, @Nullable String message) {
@@ -32,7 +32,7 @@ public class TemplateException extends SKException {
     /**
      * Initializes a new instance of the {@code TemplateException} class with a provided error code.
      *
-     * @param error The error code.
+     * @param errorCode The error code.
      * @param message The exception message.
      * @param innerException The exception that is the cause of the current exception.
      */
@@ -44,66 +44,83 @@ public class TemplateException extends SKException {
         this.errorCode = errorCode;
     }
 
-/**
- * <p>
- * Gets the error code for this exception.
- * </p>
- */
+    // spotless:off
+
+    /**
+     * <p>
+     * Gets the error code for this exception.
+     * </p>
+     */
+    //spotless:on
     public ErrorCodes getErrorCode() {
         return errorCode;
     }
 
-/**
- * <p>
- * Translate the error code into a default message.
- * </p>
- */
+    // spotless:off
+
+    /**
+     * <p>
+     * Translate the error code into a default message.
+     * </p>
+     */
+    //spotless:on
     private static String getDefaultMessage(
             @Nonnull ErrorCodes errorCode, @Nullable String message) {
         return String.format("%s: %s", errorCode.getMessage(), message);
     }
 
-/**
- * <p>
- * Error codes for {@code TemplateException}.
- * </p>
- */
+    // spotless:off
 
+    /**
+     * <p>
+     * Error codes for {@code TemplateException}.
+     * </p>
+     */
+    //spotless:on
     public enum ErrorCodes {
-      /**
-        * <p>
-        * Unknown error.
-        * </p>
-        */
+
+        // spotless:off
+        /**
+         * <p>
+         * Unknown error.
+         * </p>
+         */
+        //spotless:on
         UnknownError("Unknown error"),
 
-      /**
-        * <p>
-        * Syntax error, the template syntax used is not valid.
-        * </p>
-        */
+        // spotless:off
+        /**
+         * <p>
+         * Syntax error, the template syntax used is not valid.
+         * </p>
+         */
+        //spotless:on
         SyntaxError("Syntax error, the template syntax used is not valid"),
 
-      /**
-        * <p>
-        * The block type produced be the tokenizer was not expected.
-        * </p>
-        */
+        // spotless:off
+        /**
+         * <p>
+         * The block type produced be the tokenizer was not expected.
+         * </p>
+         */
         UnexpectedBlockType("The block type produced be the tokenizer was not expected"),
 
-      /**
-        * <p>
-        * The template requires an unknown function.
-        * </p>
-        */
+        //spotless:off
+        /**
+         * <p>
+         * The template requires an unknown function.
+         * </p>
+         */
+        //spotless:on
         FunctionNotFound("The template requires an unknown function"),
 
-
-      /**
-        * <p>
-        * The template execution failed, e.g. a function call threw an exception.
-        * </p>
-        */
+        // spotless:off
+        /**
+         * <p>
+         * The template execution failed, e.g. a function call threw an exception.
+         * </p>
+         */
+        //spotless:on
         RuntimeError("The template execution failed, e.g. a function call threw an exception"),
         ;
 

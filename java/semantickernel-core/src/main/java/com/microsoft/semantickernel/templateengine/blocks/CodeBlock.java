@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-final public class CodeBlock extends Block implements CodeRendering {
+public final class CodeBlock extends Block implements CodeRendering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CodeBlock.class);
     private final List<Block> tokens;
