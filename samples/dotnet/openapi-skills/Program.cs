@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
@@ -58,11 +59,18 @@ GitHubSkillOptions gitHubOptions = configuration.GetRequiredSection(GitHubSkillO
     ?? throw new InvalidOperationException($"Missing configuration for {GitHubSkillOptions.PropertyName}.");
 
 BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(gitHubOptions.Key));
+
+//
+// TODO add bigger comment
+//
 await kernel.ImportOpenApiSkillFromFileAsync(
     skillName: "GitHubSkill",
     filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "GitHubSkill/openapi.json"),
     authCallback: authenticationProvider.AuthenticateRequestAsync);
 
+//
+// TODO bigger comment
+//
 ActionPlanner planner = new ActionPlanner(kernel, logger: logger);
 
 // Chat
@@ -81,9 +89,13 @@ while (true)
 
     chatHistory.AddUserMessage(input);
 
+    //
+    // explain planner -> openapi skill
+    //
     Plan plan = await planner.CreatePlanAsync(input);
     if (plan.Steps.Count > 0)
     {
+        // TODO inject organization and repo
         SKContext planContext = await plan.InvokeAsync(logger: logger);
         if (planContext.ErrorOccurred)
         {
