@@ -68,6 +68,12 @@ public class TemplateException extends SKException {
 
         FunctionNotFound("The template requires an unknown function"),
 
+
+      /**
+        * <p>
+        * The template execution failed, e.g. a function call threw an exception.
+        * </p>
+        */
         RuntimeError("The template execution failed, e.g. a function call threw an exception"),
         ;
 
