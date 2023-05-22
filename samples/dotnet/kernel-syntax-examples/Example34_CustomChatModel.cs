@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -64,7 +65,7 @@ public class MyChatStreamingResult : IChatStreamingResult
         return Task.FromResult(this._message);
     }
 
-    public async IAsyncEnumerable<IChatMessage> GetChatMessageStreamingAsync(CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<IChatMessage> GetChatMessageStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var streamedOutput = this._message.Content.Split(' ');
         foreach (string word in streamedOutput)
