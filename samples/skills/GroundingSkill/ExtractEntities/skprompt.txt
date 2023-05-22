@@ -10,6 +10,7 @@
     - Reuse as adjectives
     - Plurals and related changes
 7. Return a bulleted list of the entities you have extracted. Only return the entities themselves, not the reasons you have generated
+8. Do not return anything other than the bulleted list
 
 
 # Example
@@ -43,7 +44,7 @@ Response:
 
 # Task
 
-Extract entities related to {{$topic}} from the following context. Produce a bulleted list of entities and nothing else
+Extract entities related to {{$topic}} from the following context. Produce a bulleted list of entities. Do NOT generate anything after the end of the bulleted list.
 
 <context>
 {{$input}}

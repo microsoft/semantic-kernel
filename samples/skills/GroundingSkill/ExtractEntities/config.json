@@ -3,9 +3,9 @@
   "type": "completion",
   "description": "Extract entities related to a specified topic from the supplied input text. Returns a bulleted list of entities",
   "completion": {
-    "max_tokens": 1024,
+    "max_tokens": 128,
     "temperature": 0.0,
-    "top_p": 0.0,
+    "top_p": 0.1,
     "presence_penalty": 0.0,
     "frequency_penalty": 0.0
   },
@@ -18,7 +18,7 @@
       },
       {
         "name": "topic",
-        "description": "The topic of interest; this will determine which entities are extracted",
+        "description": "The topic of interest, which specifies the kind of entities to be extracted",
         "defaultValue": ""
       },
       {
