@@ -63,8 +63,10 @@ public static class Example30_ChatWithPrompts
         var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
         // Usual kernel initialization, with GPT 3.5 Turbo
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"), serviceId: "chat")
+            .Build();
 
         // As an example, we import the time skill, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
