@@ -16,10 +16,11 @@ public static class Example27_SemanticFunctionsUsingChatGPT
     {
         Console.WriteLine("======== Using Chat GPT model for text completion ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        // Note: we use Chat Completion and GPT 3.5 Turbo
-        kernel.Config.AddAzureChatCompletionService("gpt-35-turbo", "https://....openai.azure.com/", "...API KEY...");
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            // Note: we use Chat Completion and GPT 3.5 Turbo
+            .WithAzureChatCompletionService("gpt-35-turbo", "https://....openai.azure.com/", "...API KEY...")
+            .Build();
 
         var func = kernel.CreateSemanticFunction(
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
