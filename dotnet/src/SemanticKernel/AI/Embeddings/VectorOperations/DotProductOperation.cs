@@ -37,7 +37,7 @@ public static class DotProductOperation
             return DotProductImplementation(doubleSpanX, doubleSpanY);
         }
 
-        SupportedTypes.ThrowTypeNotSupported<TNumber>();
+        EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
         return default;
     }
 

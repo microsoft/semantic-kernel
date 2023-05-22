@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// and <see cref="SKFunctionInputAttribute"/>
 /// for planner and related scenarios.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class ParameterView
 {
     private string _name = "";
@@ -61,4 +63,9 @@ public sealed class ParameterView
         this.Description = description;
         this.DefaultValue = defaultValue;
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => string.IsNullOrEmpty(this.Description) ?
+        this.Name :
+        $"{this.Name} ({this.Description})";
 }
