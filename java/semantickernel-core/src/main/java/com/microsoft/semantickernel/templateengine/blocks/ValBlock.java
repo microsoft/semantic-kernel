@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import reactor.util.annotation.Nullable;
 
-public class ValBlock extends Block implements TextRendering {
+final public class ValBlock extends Block implements TextRendering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ValBlock.class);
 

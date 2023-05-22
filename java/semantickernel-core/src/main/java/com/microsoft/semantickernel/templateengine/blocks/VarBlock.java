@@ -8,7 +8,7 @@ import com.microsoft.semantickernel.templateengine.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class VarBlock extends Block implements TextRendering {
+final public class VarBlock extends Block implements TextRendering {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VarBlock.class);
     private final String name;

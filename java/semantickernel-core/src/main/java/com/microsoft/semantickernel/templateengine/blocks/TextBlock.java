@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.templateengine.blocks; // Copyright (c) Mic
 
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 
-public class TextBlock extends Block implements TextRendering {
+final public class TextBlock extends Block implements TextRendering {
 
     public TextBlock(String text) {
         super(text, BlockTypes.Text);
