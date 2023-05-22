@@ -48,7 +48,7 @@
 | ChromaDb (Memory)                 | ❌ | 🔄 | |
 | Milvus (Memory)                   | ❌ | ❌ | Vector optimized |
 | Weaviate (Memory)                 | ❌ | ✅ | Vector optimized |
-| Pinecone (Memory)                 | ✅ | ❌ | Vector optimized |=
+| Pinecone (Memory)                 | ✅ | ❌ | Vector optimized |
 | CosmosDB (Memory)                 | ✅ | ❌ | CosmosDB is not optimized for vector storage |
 | Sqlite (Memory)                   | ✅ | ❌ | Sqlite is not optimized for vector storage |
 | Postgres (Memory)                 | ✅ | ❌ | Vector optimized (required the [pgvector](https://github.com/pgvector/pgvector) extension) |
