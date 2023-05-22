@@ -201,7 +201,11 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'MemoriesStore:Qdrant:Host'
-          value: deployQdrant ? 'http://${appServiceQdrant.properties.defaultHostName}' : ''
+          value: deployQdrant ? 'https://${appServiceQdrant.properties.defaultHostName}' : ''
+        }
+        {
+          name: 'MemoriesStore:Qdrant:Port'
+          value: '443'
         }
         {
           name: 'AzureSpeech:Region'

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "9397568847887475110"
+      "templateHash": "6427489064347814145"
     }
   },
   "parameters": {
@@ -158,7 +158,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "1985723158144467058"
+              "templateHash": "15747785251033980045"
             }
           },
           "parameters": {
@@ -444,7 +444,11 @@
                     },
                     {
                       "name": "MemoriesStore:Qdrant:Host",
-                      "value": "[if(parameters('deployQdrant'), format('http://{0}', reference(resourceId('Microsoft.Web/sites', format('app-{0}-qdrant', variables('uniqueName'))), '2022-09-01').defaultHostName), '')]"
+                      "value": "[if(parameters('deployQdrant'), format('https://{0}', reference(resourceId('Microsoft.Web/sites', format('app-{0}-qdrant', variables('uniqueName'))), '2022-09-01').defaultHostName), '')]"
+                    },
+                    {
+                      "name": "MemoriesStore:Qdrant:Port",
+                      "value": "443"
                     },
                     {
                       "name": "AzureSpeech:Region",
