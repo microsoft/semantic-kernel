@@ -3,10 +3,17 @@
 import numpy as np
 import numpy.testing as npt
 import pytest
+import sys
 
 from semantic_kernel.connectors.memory import weaviate_memory_store
 from semantic_kernel.memory.memory_record import MemoryRecord
 
+
+if not sys.platform.startswith("linux"):
+    pytest.skip(
+        "test_weaviate_memory_store uses embedded weaviate which only runs on Linux at the moment",
+        allow_module_level=True,
+    )
 
 @pytest.fixture
 def documents():
