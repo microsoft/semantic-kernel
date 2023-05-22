@@ -25,7 +25,7 @@ namespace Microsoft.SemanticKernel.CoreSkills;
     Justification = "Semantic Kernel operates on strings")]
 public class HttpSkill : IDisposable
 {
-    private static readonly HttpClientHandler s_httpClientHandler = new HttpClientHandler() { CheckCertificateRevocationList = true };
+    private static readonly HttpClientHandler s_httpClientHandler = new() { CheckCertificateRevocationList = true };
     private readonly HttpClient _client;
 
     /// <summary>
