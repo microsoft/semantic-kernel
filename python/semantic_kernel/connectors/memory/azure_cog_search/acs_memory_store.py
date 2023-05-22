@@ -32,8 +32,8 @@ from azure.search.documents.indexes.models import (
     VectorSearch,
     VectorSearchAlgorithmConfiguration,
 )
-from python.semantic_kernel.memory.memory_record import MemoryRecord
 
+from python.semantic_kernel.memory.memory_record import MemoryRecord
 from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 
@@ -68,7 +68,10 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         # Configure environment variables
         load_dotenv()
 
-        self._cogsearch_creds = create_credentials(
+        if acs_credential:
+            self._cogsearch_creds = acs_credential
+        else: 
+            self._cogsearch_creds = create_credentials(
             use_async=True, azsearch_api_key=acs_search_key
         )
 
@@ -102,7 +105,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             ),
             SearchableField(
                 name="timestamp",
-                type=SearchFieldDataType.String,
+                type=SearchFieldDataType.DateTimeOffset,
                 searchable=True,
                 retrievable=True,
             ),
