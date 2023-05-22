@@ -123,7 +123,7 @@ public static class Example41_MultiStreamingChatCompletion
     {
         var message = chatHistory.Messages.Last();
 
-        Console.WriteLine($"{message.AuthorRole}: {message.Content}");
+        Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
 
         return Task.CompletedTask;

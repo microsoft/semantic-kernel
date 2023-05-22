@@ -3,10 +3,13 @@
 using System;
 using System.Collections.Generic;
 
+#pragma warning disable CA1710
+
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
-public class ChatHistory
+public class ChatHistory : List<IChatMessage>
 {
+    [Obsolete("This enum is deprecated, using it will not be supported")]
     public enum AuthorRoles
     {
         Unknown = -1,
@@ -18,12 +21,15 @@ public class ChatHistory
     /// <summary>
     /// Chat message representation
     /// </summary>
-    public class Message
+    [Obsolete("This class is deprecated, using instances of this class will not be supported")]
+    public class Message : IChatMessage
     {
         /// <summary>
         /// Role of the message author, e.g. user/assistant/system
         /// </summary>
-        public AuthorRoles AuthorRole { get; set; }
+        private AuthorRoles AuthorRole { get; set; }
+
+        public string Role => this.AuthorRole.ToString();
 
         /// <summary>
         /// Message content
@@ -45,33 +51,26 @@ public class ChatHistory
     /// <summary>
     /// List of messages in the chat
     /// </summary>
-    public List<Message> Messages { get; }
-
-    /// <summary>
-    /// Create a new instance of the chat content class
-    /// </summary>
-    public ChatHistory()
-    {
-        this.Messages = new List<Message>();
-    }
+    public List<IChatMessage> Messages => this;
 
     /// <summary>
     /// Add a message to the chat history
     /// </summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
+    [Obsolete("This method is deprecated, use Add(IChatMessage) instead")]
     public void AddMessage(AuthorRoles authorRole, string content)
     {
-        this.Messages.Add(new Message(authorRole, content));
+        this.Add(new Message(authorRole, content));
     }
 
+    /// <summary>
+    /// Add a message to the chat history
+    /// </summary>
+    /// <param name="message">New message instance</param>
+    [Obsolete("This method is deprecated, use Add(IChatMessage) instead")]
     public void AddMessage(IChatMessage message)
     {
-        if (!Enum.TryParse(message.Role, true, out AuthorRoles role))
-        {
-            throw new NotSupportedException($"Provided role {message.Role} is not supported");
-        }
-
-        this.Messages.Add(new Message(role, message.Content));
+        this.Add(message);
     }
 }

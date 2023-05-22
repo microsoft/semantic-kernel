@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -64,18 +65,18 @@ public static class Example33_StreamingChat
         await MessageOutputAsync(chatHistory);
 
         // First bot assistant message
-        await StreamMessageOutputAsync(chatGPT, chatHistory);
+        await StreamMessageOutputAsync(chatGPT, chatHistory, ChatRole.Assistant);
 
         // Second user message
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
         await MessageOutputAsync(chatHistory);
 
         // Second bot assistant message
-        await StreamMessageOutputAsync(chatGPT, chatHistory);
+        await StreamMessageOutputAsync(chatGPT, chatHistory, ChatRole.Assistant);
     }
 
-    private static async Task StreamMessageOutputAsync(IChatCompletion chatGPT, ChatHistory chatHistory,
-        ChatHistory.AuthorRoles authorRole = ChatHistory.AuthorRoles.Assistant)
+    private static async Task StreamMessageOutputAsync(IChatCompletion chatGPT, OpenAIChatHistory chatHistory,
+        ChatRole authorRole)
     {
         Console.Write($"{authorRole}: ");
         string fullMessage = string.Empty;
@@ -97,7 +98,7 @@ public static class Example33_StreamingChat
     {
         var message = chatHistory.Messages.Last();
 
-        Console.WriteLine($"{message.AuthorRole}: {message.Content}");
+        Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
 
         return Task.CompletedTask;

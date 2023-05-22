@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -29,7 +31,7 @@ public class OpenAIChatHistory : ChatHistory
     /// <param name="content">Message content</param>
     public void AddSystemMessage(string content)
     {
-        this.AddMessage(AuthorRoles.System, content);
+        this.AddMessage(ChatRole.System, content);
     }
 
     /// <summary>
@@ -38,7 +40,7 @@ public class OpenAIChatHistory : ChatHistory
     /// <param name="content">Message content</param>
     public void AddAssistantMessage(string content)
     {
-        this.AddMessage(AuthorRoles.Assistant, content);
+        this.AddMessage(ChatRole.Assistant, content);
     }
 
     /// <summary>
@@ -47,6 +49,11 @@ public class OpenAIChatHistory : ChatHistory
     /// <param name="content">Message content</param>
     public void AddUserMessage(string content)
     {
-        this.AddMessage(AuthorRoles.User, content);
+        this.AddMessage(ChatRole.User, content);
+    }
+
+    public void AddMessage(ChatRole role, string content)
+    {
+        this.Add(new ChatMessageAdapter(role, content));
     }
 }

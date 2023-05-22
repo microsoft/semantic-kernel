@@ -68,7 +68,7 @@ public static class Example40_MultiChatCompletion
         foreach (IChatResult chatCompletionResult in await chatCompletion.GetChatCompletionsAsync(chatHistory, chatRequestSettings))
         {
             IChatMessage chatMessage = await chatCompletionResult.GetChatMessageAsync();
-            chatHistory.AddMessage(chatMessage);
+            chatHistory.Add(chatMessage);
             await MessageOutputAsync(chatHistory);
         }
 
@@ -82,7 +82,7 @@ public static class Example40_MultiChatCompletion
     {
         var message = chatHistory.Messages.Last();
 
-        Console.WriteLine($"{message.AuthorRole}: {message.Content}");
+        Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
 
         return Task.CompletedTask;

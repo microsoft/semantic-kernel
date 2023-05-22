@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
@@ -104,10 +105,10 @@ public static class Example30_ChatWithPrompts
         // The full chat history. Depending on your scenario, you can pass the full chat if useful,
         // or create a new one every time, assuming that the "system message" contains all the
         // information needed.
-        var chatHistory = chatGPT.CreateNewChat(systemMessage);
+        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat(systemMessage);
 
         // Add the user query to the chat history
-        chatHistory.AddMessage(ChatHistory.AuthorRoles.User, userMessage);
+        chatHistory.AddUserMessage(userMessage);
 
         // Finally, get the response from AI
         string answer = await chatGPT.GenerateMessageAsync(chatHistory);

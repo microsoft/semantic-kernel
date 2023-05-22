@@ -112,7 +112,7 @@ public static class Example17_ChatGPT
     {
         var message = chatHistory.Messages.Last();
 
-        Console.WriteLine($"{message.AuthorRole}: {message.Content}");
+        Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
 
         return Task.CompletedTask;

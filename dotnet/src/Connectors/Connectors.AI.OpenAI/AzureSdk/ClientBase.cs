@@ -156,25 +156,15 @@ public abstract class ClientBase
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Streaming of generated chat message in string format</returns>
     private protected async IAsyncEnumerable<IChatStreamingResult> InternalGenerateStreamingChatMessageAsync(
-        ChatHistory chat,
+        IEnumerable<IChatMessage> chat,
         ChatRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
         Verify.NotNull(requestSettings);
 
-        foreach (ChatHistory.Message message in chat.Messages)
-        {
-            var role = message.AuthorRole switch
-            {
-                ChatHistory.AuthorRoles.User => ChatRole.User,
-                ChatHistory.AuthorRoles.Assistant => ChatRole.Assistant,
-                ChatHistory.AuthorRoles.System => ChatRole.System,
-                _ => throw new ArgumentException($"Invalid chat message author: {message.AuthorRole:G}")
-            };
-        }
-
         ValidateMaxTokens(requestSettings.MaxTokens);
+
         var options = CreateChatCompletionsOptions(requestSettings, chat);
 
         Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
@@ -198,7 +188,7 @@ public abstract class ClientBase
     /// </summary>
     /// <param name="instructions">Optional chat instructions for the AI service</param>
     /// <returns>Chat object</returns>
-    private protected static ChatHistory InternalCreateNewChat(string instructions = "")
+    private protected static OpenAIChatHistory InternalCreateNewChat(string instructions = "")
     {
         return new OpenAIChatHistory(instructions);
     }
@@ -229,10 +219,10 @@ public abstract class ClientBase
         }
     }
 
-    private static ChatHistory PrepareChatHistory(string text, CompleteRequestSettings requestSettings, out ChatRequestSettings settings)
+    private static OpenAIChatHistory PrepareChatHistory(string text, CompleteRequestSettings requestSettings, out ChatRequestSettings settings)
     {
         var chat = InternalCreateNewChat();
-        chat.AddMessage(ChatHistory.AuthorRoles.User, text);
+        chat.AddUserMessage(text);
         settings = new ChatRequestSettings
         {
             MaxTokens = requestSettings.MaxTokens,
@@ -280,7 +270,7 @@ public abstract class ClientBase
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, ChatHistory chat)
+    private static ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, IEnumerable<IChatMessage> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt < 1 ||
             requestSettings.ResultsPerPrompt > 128)
@@ -307,20 +297,27 @@ public abstract class ClientBase
             }
         }
 
-        foreach (ChatHistory.Message message in chat.Messages)
+        foreach (IChatMessage message in chatHistory)
         {
-            var role = message.AuthorRole switch
-            {
-                ChatHistory.AuthorRoles.User => ChatRole.User,
-                ChatHistory.AuthorRoles.Assistant => ChatRole.Assistant,
-                ChatHistory.AuthorRoles.System => ChatRole.System,
-                _ => throw new ArgumentException($"Invalid chat message author: {message.AuthorRole:G}")
-            };
+            ValidateChatAuthors(message.Role, out var validRole);
 
-            options.Messages.Add(new ChatMessage(role, message.Content));
+            options.Messages.Add(new ChatMessage(validRole, message.Content));
         }
 
         return options;
+    }
+
+    private static void ValidateChatAuthors(string role, out ChatRole validRole)
+    {
+        Verify.NotNullOrWhiteSpace(role);
+
+        validRole = role.ToUpperInvariant() switch
+        {
+            "USER" => ChatRole.User,
+            "ASSISTANT" => ChatRole.Assistant,
+            "SYSTEM" => ChatRole.System,
+            _ => throw new ArgumentException($"Invalid chat message author: {role}")
+        };
     }
 
     private static void ValidateMaxTokens(int maxTokens)

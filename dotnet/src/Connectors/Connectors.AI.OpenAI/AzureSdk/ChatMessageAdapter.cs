@@ -14,6 +14,10 @@ public class ChatMessageAdapter : IChatMessage
         this._message = message;
     }
 
+    public ChatMessageAdapter(ChatRole role, string content) : this(new ChatMessage(role, content))
+    {
+    }
+
     public string Role => this._message.Role.ToString();
     public string Content => this._message.Content;
 }
