@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -12,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
@@ -22,6 +25,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// SKFunction is used to extend one C# <see cref="Delegate"/>, <see cref="Func{T, TResult}"/>, <see cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKFunction : ISKFunction, IDisposable
 {
     /// <inheritdoc/>
@@ -50,8 +54,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Create a native function instance, wrapping a native object method
     /// </summary>
-    /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="methodSignature">Signature of the method to invoke</param>
+    /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
@@ -199,11 +203,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
+        ISemanticTextMemory? memory = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
         SKContext context = new(
             new ContextVariables(input),
+            memory: memory,
             skills: this._skillCollection,
             logger: logger,
             cancellationToken: cancellationToken);
@@ -246,6 +252,18 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public override string ToString()
+        => this.ToString(false);
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public string ToString(bool writeIndented)
+        => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
+
+    /// <summary>
     /// Finalizer.
     /// </summary>
     ~SKFunction()
@@ -255,6 +273,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     #region private
 
+    private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
+    private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly DelegateTypes _delegateType;
     private readonly Delegate _function;
     private readonly ILogger _log;
@@ -744,6 +764,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
             new EventId((int)type, $"FuncType{type}"),
             "Executing function type {0}: {1}", (int)type, type.ToString("G"));
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{Name} ({Description})";
 
     #endregion
 }

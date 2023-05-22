@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
@@ -14,7 +14,7 @@ namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextCompletion;
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextCompletion"/> class.
 /// </summary>
-public class HuggingFaceTextCompletionTests : IDisposable
+public sealed class HuggingFaceTextCompletionTests : IDisposable
 {
     private const string Endpoint = "http://localhost:5000/completions";
     private const string Model = "gpt2";
@@ -25,7 +25,7 @@ public class HuggingFaceTextCompletionTests : IDisposable
     };
 
     /// <summary>
-    /// Verifies that <see cref="HuggingFaceTextCompletion.CompleteAsync(string, CompleteRequestSettings, CancellationToken)"/>
+    /// Verifies that <see cref="HuggingFaceTextCompletion.GetCompletionsAsync(string, CompleteRequestSettings, CancellationToken)"/>
     /// returns expected completed text without errors.
     /// </summary>
     [Fact]
@@ -57,17 +57,5 @@ public class HuggingFaceTextCompletionTests : IDisposable
         return new HuggingFaceTextCompletion(new Uri(Endpoint), Model, httpClientHandler);
     }
 
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._response.Dispose();
-        }
-    }
+    public void Dispose() => this._response.Dispose();
 }

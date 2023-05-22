@@ -65,7 +65,7 @@ public abstract class OpenAIClientBase
                 "Embeddings not found");
         }
 
-        return result.Embeddings.Select(e => new Embedding<float>(e.Values)).ToList();
+        return result.Embeddings.Select(e => new Embedding<float>(e.Values, transferOwnership: true)).ToList();
     }
 
     /// <summary>

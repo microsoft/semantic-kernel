@@ -34,6 +34,7 @@ public abstract class OpenAIClientBase : ClientBase
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
+        Verify.NotNull(httpClient);
 
         var options = new OpenAIClientOptions();
         //The following three lines turn off the internal AzureOpenAI retry mechanism in order to ensure consistent retry policies across all connectors.

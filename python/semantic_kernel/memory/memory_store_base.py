@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import List, Tuple
 
 from numpy import ndarray
@@ -8,7 +8,7 @@ from numpy import ndarray
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
-class MemoryStoreBase:
+class MemoryStoreBase(ABC):
     @abstractmethod
     async def create_collection_async(self, collection_name: str) -> None:
         pass
