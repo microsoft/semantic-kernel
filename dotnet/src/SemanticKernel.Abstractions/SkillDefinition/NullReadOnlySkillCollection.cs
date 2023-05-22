@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
+[DebuggerDisplay("Count = 0")]
 internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
 {
     public static NullReadOnlySkillCollection Instance = new();
