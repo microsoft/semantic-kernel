@@ -60,8 +60,8 @@ internal static class ServicesExtensions
     internal static IServiceCollection AddCors(this IServiceCollection services)
     {
         IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-        string[] allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
-        if (allowedOrigins is not null && allowedOrigins.Length > 0)
+        string[] allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        if (allowedOrigins.Length > 0)
         {
             services.AddCors(options =>
             {

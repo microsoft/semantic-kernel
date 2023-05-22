@@ -47,10 +47,10 @@ public class PostgresMemoryStoreTests : IDisposable
         {
             if (disposing)
             {
-                using NpgsqlConnection conn = new NpgsqlConnection(string.Format(CultureInfo.CurrentCulture, ConnectionString, "postgres"));
+                using NpgsqlConnection conn = new(string.Format(CultureInfo.CurrentCulture, ConnectionString, "postgres"));
                 conn.Open();
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
-                using NpgsqlCommand command = new NpgsqlCommand($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn);
+                using NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn);
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
                 command.ExecuteNonQuery();
             }
@@ -63,9 +63,9 @@ public class PostgresMemoryStoreTests : IDisposable
 
     private async Task TryCreateDatabaseAsync()
     {
-        using NpgsqlConnection conn = new NpgsqlConnection(string.Format(CultureInfo.CurrentCulture, ConnectionString, "postgres"));
+        using NpgsqlConnection conn = new(string.Format(CultureInfo.CurrentCulture, ConnectionString, "postgres"));
         await conn.OpenAsync();
-        using NpgsqlCommand checkCmd = new NpgsqlCommand("SELECT COUNT(*) FROM pg_database WHERE datname = @databaseName", conn);
+        using NpgsqlCommand checkCmd = new("SELECT COUNT(*) FROM pg_database WHERE datname = @databaseName", conn);
         checkCmd.Parameters.AddWithValue("@databaseName", this._databaseName);
 
         var count = (long?)await checkCmd.ExecuteScalarAsync();

@@ -111,5 +111,5 @@ public sealed class FunctionsView
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"Native = {NativeFunctions.Count}, Semantic = {SemanticFunctions.Count}";
+    private string DebuggerDisplay => $"Native = {this.NativeFunctions.Count}, Semantic = {this.SemanticFunctions.Count}";
 }
