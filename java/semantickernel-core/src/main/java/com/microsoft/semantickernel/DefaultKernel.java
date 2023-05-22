@@ -7,7 +7,11 @@ import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.*;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
+import com.microsoft.semantickernel.orchestration.RegistrableSkFunction;
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
@@ -16,6 +20,8 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
+import jakarta.inject.Inject;
 
 import reactor.core.publisher.Mono;
 
@@ -26,32 +32,37 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class KernelDefault implements Kernel {
+public class DefaultKernel implements Kernel {
 
     private final KernelConfig kernelConfig;
-    private DefaultSkillCollection defaultSkillCollection;
+    private final DefaultSkillCollection defaultSkillCollection;
     private final PromptTemplateEngine promptTemplateEngine;
     @Nullable private SemanticTextMemory memory; // TODO: make this final
 
-    public KernelDefault(
+    @Inject
+    public DefaultKernel(
             KernelConfig kernelConfig,
             PromptTemplateEngine promptTemplateEngine,
-            ReadOnlySkillCollection skillCollection) {
+            @Nullable SemanticTextMemory memory) {
         if (kernelConfig == null) {
             throw new IllegalArgumentException();
         }
 
         this.kernelConfig = kernelConfig;
         this.promptTemplateEngine = promptTemplateEngine;
-        this.defaultSkillCollection = new DefaultSkillCollection(skillCollection);
+        this.defaultSkillCollection = new DefaultSkillCollection();
 
-        if (kernelConfig.getSkills() != null) {
-            kernelConfig.getSkills().forEach(this::registerSemanticFunction);
+        if (memory != null) {
+            this.memory = memory.copy();
+        } else {
+            this.memory = null;
         }
+
+        kernelConfig.getSkills().forEach(this::registerSemanticFunction);
     }
 
     @Override
-    public <T> T getService(@Nullable String serviceId, Class<T> clazz) throws KernelException {
+    public <T> T getService(String serviceId, Class<T> clazz) {
         if (TextCompletion.class.isAssignableFrom(clazz)) {
             Function<Kernel, TextCompletion> factory =
                     kernelConfig.getTextCompletionServiceOrDefault(serviceId);
@@ -84,7 +95,7 @@ public class KernelDefault implements Kernel {
             throw new RuntimeException("This function does not implement RegistrableSkFunction");
         }
         ((RegistrableSkFunction) func).registerOnKernel(this);
-        defaultSkillCollection = defaultSkillCollection.addSemanticFunction(func);
+        defaultSkillCollection.addSemanticFunction(func);
         return func;
     }
 
@@ -136,8 +147,6 @@ public class KernelDefault implements Kernel {
             Object skillInstance, @Nullable String skillName) {
         if (skillName == null || skillName.isEmpty()) {
             skillName = ReadOnlySkillCollection.GlobalSkill;
-            // this._log.LogTrace("Importing skill {0} in the global namespace",
-            // skillInstance.GetType().FullName);
         }
 
         // skill = new Dictionary<string, ISKFunction>(StringComparer.OrdinalIgnoreCase);
@@ -151,7 +160,7 @@ public class KernelDefault implements Kernel {
                                 DefaultSkillCollection::addNativeFunction,
                                 DefaultSkillCollection::merge);
 
-        this.defaultSkillCollection = this.defaultSkillCollection.merge(newSkills);
+        this.defaultSkillCollection.merge(newSkills);
 
         return functions;
     }
@@ -250,27 +259,34 @@ public class KernelDefault implements Kernel {
      */
 
     @Override
-    public Mono<SKContext<?>> runAsync(SKFunction... pipeline) {
+    public Mono<SKContext<?>> runAsync(SKFunction<?, ?>... pipeline) {
         return runAsync(SKBuilders.variables().build(), pipeline);
     }
 
     @Override
-    public Mono<SKContext<?>> runAsync(String input, SKFunction... pipeline) {
+    public Mono<SKContext<?>> runAsync(String input, SKFunction<?, ?>... pipeline) {
         return runAsync(SKBuilders.variables().build(input), pipeline);
     }
 
     @Override
-    public Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction... pipeline) {
-        DefaultSemanticSKContext context =
-                new DefaultSemanticSKContext(variables, this.memory, this.defaultSkillCollection);
+    public Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction<?, ?>... pipeline) {
+        if (pipeline == null || pipeline.length == 0) {
+            throw new SKException("No parameters provided to pipeline");
+        }
 
-        Mono<SKContext<?>> pipelineBuilder = Mono.just(context);
+        Mono<SKContext<?>> pipelineBuilder =
+                Mono.just(pipeline[0].buildContext(variables, memory, getSkills()));
 
         for (SKFunction f : Arrays.asList(pipeline)) {
             pipelineBuilder =
                     pipelineBuilder.flatMap(
                             newContext -> {
-                                return f.invokeAsync(newContext, null);
+                                SKContext context =
+                                        f.buildContext(
+                                                newContext.getVariables(),
+                                                newContext.getSemanticMemory(),
+                                                newContext.getSkills());
+                                return f.invokeAsync(context, null);
                             });
         }
 

@@ -21,7 +21,7 @@ public enum BuildersSingleton {
     private static final String FALLBACK_FUNCTION_BUILDER_CLASS =
             "com.microsoft.semantickernel.SkFunctionBuilders";
     private static final String FALLBACK_KERNEL_BUILDER_CLASS =
-            "com.microsoft.semantickernel.KernelDefaultBuilder";
+            "com.microsoft.semantickernel.DefaultKernelBuilder";
     private static final String FALLBACK_TEXT_COMPLETION_BUILDER_CLASS =
             "com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletionBuilder";
 
