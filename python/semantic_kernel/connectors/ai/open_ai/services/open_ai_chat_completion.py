@@ -62,6 +62,72 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     async def complete_chat_async(
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
     ) -> str:
+        # TODO: tracking on token counts/etc.
+        response = await self._send_chat_request(messages, request_settings, False)
+
+        return response.choices[0].message.content
+
+    async def complete_chat_stream_async(
+        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
+    ):
+        response = await self._send_chat_request(messages, request_settings, True)
+        async for chunk in response:
+            if "role" in chunk.choices[0].delta:
+                yield chunk.choices[0].delta.role + ": "
+            if "content" in chunk.choices[0].delta:
+                yield chunk.choices[0].delta.content
+
+    async def complete_async(
+        self, prompt: str, request_settings: CompleteRequestSettings
+    ) -> str:
+        """
+        Completes the given prompt. Returns a single string completion.
+        Cannot return multiple completions. Cannot return logprobs.
+
+        Arguments:
+            prompt {str} -- The prompt to complete.
+            request_settings {CompleteRequestSettings} -- The request settings.
+
+        Returns:
+            str -- The completed text.
+        """
+        prompt_to_message = [("user", prompt)]
+        chat_settings = ChatRequestSettings(
+            temperature=request_settings.temperature,
+            top_p=request_settings.top_p,
+            presence_penalty=request_settings.presence_penalty,
+            frequency_penalty=request_settings.frequency_penalty,
+            max_tokens=request_settings.max_tokens,
+        )
+        response = await self._send_chat_request(
+            prompt_to_message, chat_settings, False
+        )
+
+        return response.choices[0].message.content
+
+    async def complete_stream_async(
+        self, prompt: str, request_settings: CompleteRequestSettings
+    ):
+        prompt_to_message = [("user", prompt)]
+        chat_settings = ChatRequestSettings(
+            temperature=request_settings.temperature,
+            top_p=request_settings.top_p,
+            presence_penalty=request_settings.presence_penalty,
+            frequency_penalty=request_settings.frequency_penalty,
+            max_tokens=request_settings.max_tokens,
+        )
+        response = await self._send_chat_request(prompt_to_message, chat_settings, True)
+
+        async for chunk in response:
+            if "content" in chunk.choices[0].delta:
+                yield chunk.choices[0].delta.content
+
+    async def _send_chat_request(
+        self,
+        messages: List[Tuple[str, str]],
+        request_settings: ChatRequestSettings,
+        stream: bool,
+    ):
         """
         Completes the given user message. Returns a single string completion.
 
@@ -118,6 +184,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 presence_penalty=request_settings.presence_penalty,
                 frequency_penalty=request_settings.frequency_penalty,
                 max_tokens=request_settings.max_tokens,
+                stream=stream,
             )
         except Exception as ex:
             raise AIException(
@@ -128,28 +195,4 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
         # TODO: tracking on token counts/etc.
 
-        return response.choices[0].message.content
-
-    async def complete_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
-    ) -> str:
-        """
-        Completes the given prompt. Returns a single string completion.
-        Cannot return multiple completions. Cannot return logprobs.
-
-        Arguments:
-            prompt {str} -- The prompt to complete.
-            request_settings {CompleteRequestSettings} -- The request settings.
-
-        Returns:
-            str -- The completed text.
-        """
-        prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings(
-            temperature=request_settings.temperature,
-            top_p=request_settings.top_p,
-            presence_penalty=request_settings.presence_penalty,
-            frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens,
-        )
-        return await self.complete_chat_async(prompt_to_message, chat_settings)
+        return response
