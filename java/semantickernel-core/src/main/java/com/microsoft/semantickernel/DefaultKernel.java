@@ -174,6 +174,7 @@ public class DefaultKernel implements Kernel {
     public CompletionSKFunction.Builder getSemanticFunctionBuilder() {
         return FunctionBuilders.getCompletionBuilder(this);
     }
+
     /*
       private static FunctionCollection importSkill(Object skillInstance, String skillName) {
 
@@ -216,6 +217,7 @@ public class DefaultKernel implements Kernel {
     public PromptTemplateEngine getPromptTemplateEngine() {
         return promptTemplateEngine;
     }
+
     /*
     private SKFunction createSemanticFunction(
         String skillName, String functionName, SemanticFunctionConfig functionConfig) {
