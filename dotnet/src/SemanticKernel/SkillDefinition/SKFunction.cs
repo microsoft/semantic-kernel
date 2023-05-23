@@ -255,7 +255,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Dispose of resources.
     /// </summary>
-    public void Dispose() => (this._aiService as IDisposable)?.Dispose();
+    public void Dispose()
+    {
+        if (this._aiService is { IsValueCreated: true } aiService)
+        {
+            (aiService.Value as IDisposable)?.Dispose();
+        }
+    }
 
     /// <summary>
     /// JSON serialized string representation of the function.
