@@ -152,4 +152,5 @@ async def test_azure_chat_completion_call_with_parameters() -> None:
             top_p=complete_request_settings.top_p,
             presence_penalty=complete_request_settings.presence_penalty,
             frequency_penalty=complete_request_settings.frequency_penalty,
+            stream=False,
         )
