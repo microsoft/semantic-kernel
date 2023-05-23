@@ -131,11 +131,12 @@ public class InlineFunctionExample {
                 },
                 error -> {
                     LOGGER.error("Error: {} ", error.getMessage());
+                    cdl.countDown();
                 },
                 () -> {
                     LOGGER.info("Completed");
                     cdl.countDown();
                 });                
-                cdl.await();
+        cdl.await();
     }
 }

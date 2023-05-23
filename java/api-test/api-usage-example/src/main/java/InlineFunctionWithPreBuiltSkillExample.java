@@ -134,6 +134,7 @@ public class InlineFunctionWithPreBuiltSkillExample {
                 },
                 error -> {
                     LOGGER.error("Error: {} ", error.getMessage());
+                    cdl.countDown();
                 },
                 () -> {
                     LOGGER.info("Completed");
