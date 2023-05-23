@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
@@ -18,7 +19,8 @@ namespace SemanticKernel.UnitTests;
 public class KernelTests
 {
     [Fact]
-    public void ItProvidesAccessToFunctionsViaSkillCollection()
+    [System.Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
+    public void ItProvidesAccessToFunctionsViaSkillCollectionObsolete()
     {
         // Arrange
         var kernel = KernelBuilder.Create();
@@ -46,7 +48,8 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task ItProvidesAccessToFunctionsViaSKContextAsync()
+    [System.Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
+    public async Task ItProvidesAccessToFunctionsViaSKContextObsoleteAsync()
     {
         // Arrange
         var kernel = KernelBuilder.Create();
@@ -70,10 +73,64 @@ public class KernelTests
     }
 
     [Fact]
+    public void ItProvidesAccessToFunctionsViaSkillCollection()
+    {
+        // Arrange
+        var factory = new Mock<Func<ILogger, ITextCompletion>>();
+        var kernel = Kernel.Builder
+            .WithDefaultAIService<ITextCompletion>(factory.Object)
+            .Build();
+
+        var nativeSkill = new MySkill();
+        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
+        kernel.ImportSkill(nativeSkill, "mySk");
+
+        // Act
+        FunctionsView data = kernel.Skills.GetFunctionsView();
+
+        // Assert - 3 functions, var name is not case sensitive
+        Assert.True(data.IsSemantic("jk", "joker"));
+        Assert.True(data.IsSemantic("JK", "JOKER"));
+        Assert.False(data.IsNative("jk", "joker"));
+        Assert.False(data.IsNative("JK", "JOKER"));
+        Assert.True(data.IsNative("mySk", "sayhello"));
+        Assert.True(data.IsNative("MYSK", "SayHello"));
+        Assert.True(data.IsNative("mySk", "ReadSkillCollectionAsync"));
+        Assert.True(data.IsNative("MYSK", "readskillcollectionasync"));
+        Assert.Single(data.SemanticFunctions["Jk"]);
+        Assert.Equal(3, data.NativeFunctions["mySk"].Count);
+    }
+
+    [Fact]
+    public async Task ItProvidesAccessToFunctionsViaSKContextAsync()
+    {
+        // Arrange
+        var factory = new Mock<Func<(ILogger, KernelConfig), ITextCompletion>>();
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("x", factory.Object)
+            .Build();
+
+        var nativeSkill = new MySkill();
+        kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
+        var skill = kernel.ImportSkill(nativeSkill, "mySk");
+
+        // Act
+        SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
+
+        // Assert - 3 functions, var name is not case sensitive
+        Assert.Equal("Nice fun", result["jk.joker"]);
+        Assert.Equal("Nice fun", result["JK.JOKER"]);
+        Assert.Equal("Just say hello", result["mySk.sayhello"]);
+        Assert.Equal("Just say hello", result["mySk.SayHello"]);
+        Assert.Equal("Export info.", result["mySk.ReadSkillCollectionAsync"]);
+        Assert.Equal("Export info.", result["mysk.readskillcollectionasync"]);
+    }
+
+    [Fact]
     public async Task RunAsyncDoesNotRunWhenCancelledAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        var kernel = Kernel.Builder.Build();
         var nativeSkill = new MySkill();
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
@@ -93,7 +150,7 @@ public class KernelTests
     public async Task RunAsyncRunsWhenNotCancelledAsync()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        var kernel = Kernel.Builder.Build();
         var nativeSkill = new MySkill();
         kernel.ImportSkill(nativeSkill, "mySk");
 
@@ -112,7 +169,7 @@ public class KernelTests
     public void ItImportsSkillsNotCaseSensitive()
     {
         // Act
-        IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new MySkill(), "test");
+        IDictionary<string, ISKFunction> skill = Kernel.Builder.Build().ImportSkill(new MySkill(), "test");
 
         // Assert
         Assert.Equal(3, skill.Count);
@@ -125,7 +182,7 @@ public class KernelTests
     public void ItAllowsToImportSkillsInTheGlobalNamespace()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        var kernel = Kernel.Builder.Build();
 
         // Act
         IDictionary<string, ISKFunction> skill = kernel.ImportSkill(new MySkill());
@@ -140,22 +197,12 @@ public class KernelTests
     public void ItAllowsToImportTheSameSkillMultipleTimes()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs
         kernel.ImportSkill(new MySkill());
         kernel.ImportSkill(new MySkill());
         kernel.ImportSkill(new MySkill());
-    }
-
-    [Fact]
-    public void ItFailsIfTextCompletionServiceConfigIsNotSet()
-    {
-        // Arrange
-        var kernel = KernelBuilder.Create();
-
-        var exception = Assert.Throws<KernelException>(
-            () => kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun"));
     }
 
     public class MySkill

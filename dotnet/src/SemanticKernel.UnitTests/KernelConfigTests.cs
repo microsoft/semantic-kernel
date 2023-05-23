@@ -76,6 +76,7 @@ public class KernelConfigTests
     }
 
     [Fact]
+    [System.Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public void ItFailsWhenSetNonExistentTextCompletionService()
     {
         var target = new KernelConfig();
@@ -87,6 +88,7 @@ public class KernelConfigTests
     }
 
     [Fact]
+    [System.Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public void ItFailsWhenSetNonExistentEmbeddingService()
     {
         var target = new KernelConfig();
