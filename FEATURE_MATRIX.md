@@ -1,5 +1,10 @@
 # Kernel Feature Matrix by Language
 
+## Legend
+✅ - Feature implemented
+🔄 - Feature partially implemented
+❌ - Feature not implemented
+
 ## AI Services
 | | C# | Python | Notes |
 |---|---|---|---|
@@ -38,21 +43,21 @@
 ## Planning
 | | C# | Python | Notes |
 |---|---|---|---|
-| Plan | ✅ | ❌ | |
-| SequentialPlanner | ✅ | ❌ | |
+| Plan                              | ✅ | ❌ | |
+| SequentialPlanner                 | ✅ | ❌ | |
 
 ## Connectors and Skill Libraries
 | | C# | Python | Notes |
 |---|---|---|---|
 | Qdrant (Memory)                   | ✅ | ❌ | Vector optimized |
-| ChromaDb (Memory)                 | ❌ | 🔄 | |
+| ChromaDb (Memory)                 | ❌ | ✅ | |
 | Milvus (Memory)                   | ❌ | ❌ | Vector optimized |
 | Pinecone (Memory)                 | ✅ | ❌ | Vector optimized |
 | Weaviate (Memory)                 | ❌ | ❌ | Vector optimized |
 | CosmosDB (Memory)                 | ✅ | ❌ | CosmosDB is not optimized for vector storage |
 | Sqlite (Memory)                   | ✅ | ❌ | Sqlite is not optimized for vector storage |
 | Postgres (Memory)                 | ✅ | ❌ | Vector optimized (required the [pgvector](https://github.com/pgvector/pgvector) extension) |
-| Azure Cognitive Search            | ❌ | ❌ | |
+| Azure Cognitive Search            | 🔄 | ❌ | Azure Cognitive Search backed by vector search coming soon |
 | MsGraph                           | ✅ | ❌ | Contains connectors for OneDrive, Outlook, ToDos, and Organization Hierarchies |
 | Document Skills                   | ✅ | ❌ | Currently only supports Word documents |
 | OpenAPI                           | ✅ | ❌ | |
