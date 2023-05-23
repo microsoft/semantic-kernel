@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Check for command
         id: command
-        uses: xt0rted/slash-command-action@v1
+        uses: xt0rted/slash-command-action@v2
         continue-on-error: true
         with:
           command: dotnet
