@@ -20,7 +20,7 @@
 | AzureOpenAI                       | ✅ | ✅ | |
 | Hugging Face Inference API        | 🔄 | ❌ | Coming soon to Python, not all scenarios are covered for .NET |
 | Hugging Face Local                | ❌ | ✅ | |
-| Custom                            | ✅ | 🔄 | Requires the user to define the service schema in their application |
+| Custom                            | ✅ | ✅ | Requires the user to define the service schema or rely on 3rd party dependencies in their application |
 
 ## Tokenizers
 | | C# | Python | Notes |
@@ -57,7 +57,7 @@
 | CosmosDB (Memory)                 | ✅ | ❌ | CosmosDB is not optimized for vector storage |
 | Sqlite (Memory)                   | ✅ | ❌ | Sqlite is not optimized for vector storage |
 | Postgres (Memory)                 | ✅ | ❌ | Vector optimized (required the [pgvector](https://github.com/pgvector/pgvector) extension) |
-| Azure Cognitive Search            | 🔄 | ❌ | Azure Cognitive Search backed by vector search coming soon |
+| Azure Cognitive Search            | 🔄 | ❌ | Azure Search backed by vector search coming soon |
 | MsGraph                           | ✅ | ❌ | Contains connectors for OneDrive, Outlook, ToDos, and Organization Hierarchies |
 | Document Skills                   | ✅ | ❌ | Currently only supports Word documents |
 | OpenAPI                           | ✅ | ❌ | |
