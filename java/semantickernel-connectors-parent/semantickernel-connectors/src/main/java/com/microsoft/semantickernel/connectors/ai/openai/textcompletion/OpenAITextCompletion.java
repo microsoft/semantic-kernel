@@ -66,4 +66,11 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
                 .mapNotNull(Choice::getText)
                 .collectList();
     }
+
+    public static class Builder implements TextCompletion.Builder {
+        @Override
+        public TextCompletion build(OpenAIAsyncClient client, String modelId) {
+            return new OpenAITextCompletion(client, modelId);
+        }
+    }
 }

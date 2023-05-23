@@ -17,6 +17,7 @@ import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -291,5 +292,22 @@ public class DefaultKernel implements Kernel {
         }
 
         return pipelineBuilder;
+    }
+
+    public static class Builder implements Kernel.InternalBuilder {
+
+        @Override
+        public Kernel build(
+                KernelConfig kernelConfig, @Nullable PromptTemplateEngine promptTemplateEngine) {
+            if (promptTemplateEngine == null) {
+                promptTemplateEngine = new DefaultPromptTemplateEngine();
+            }
+
+            if (kernelConfig == null) {
+                throw new IllegalArgumentException();
+            }
+
+            return new DefaultKernel(kernelConfig, promptTemplateEngine, null);
+        }
     }
 }

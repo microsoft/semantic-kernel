@@ -35,4 +35,11 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
                 .mapNotNull(Embedding::new)
                 .collectList();
     }
+
+    public static class Builder implements EmbeddingGeneration.Builder<String, Double> {
+        @Override
+        public EmbeddingGeneration<String, Double> build(OpenAIAsyncClient client, String modelId) {
+            return new OpenAITextEmbeddingGeneration(client, modelId);
+        }
+    }
 }

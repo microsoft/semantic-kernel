@@ -21,17 +21,17 @@ public enum BuildersSingleton {
     private static final String FALLBACK_FUNCTION_BUILDER_CLASS =
             "com.microsoft.semantickernel.SkFunctionBuilders";
     private static final String FALLBACK_KERNEL_BUILDER_CLASS =
-            "com.microsoft.semantickernel.DefaultKernelBuilder";
+            "com.microsoft.semantickernel.DefaultKernel$Builder";
     private static final String FALLBACK_TEXT_COMPLETION_BUILDER_CLASS =
-            "com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletionBuilder";
+            "com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion$Builder";
 
     private static final String FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS =
-            "com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGenerationBuilder";
+            "com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration$Builder";
     private static final String FALLBACK_SKILL_COLLECTION_BUILDER_CLASS =
             "com.microsoft.semantickernel.skilldefinition.DefaultCollection$Builder";
 
     private static final String FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS =
-            "com.microsoft.semantickernel.semanticfunctions.DefaultPromptTemplateBuilder";
+            "com.microsoft.semantickernel.semanticfunctions.DefaultPromptTemplate$Builder";
 
     private static final String FALLBACK_VARIABLE_BUILDER_CLASS =
             "com.microsoft.semantickernel.orchestration.DefaultContextVariables$Builder";
