@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.SemanticKernel.Text;
@@ -26,9 +27,7 @@ public static class TextChunker
     /// <returns>List of lines.</returns>
     public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine)
     {
-        var result = new List<string>();
-        InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions, result);
-        return result;
+        return InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions);
     }
 
     /// <summary>
@@ -39,9 +38,7 @@ public static class TextChunker
     /// <returns>List of lines.</returns>
     public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine)
     {
-        var result = new List<string>();
-        InternalSplitLines(text, maxTokensPerLine, trim: true, s_markdownSplitOptions, result);
-        return result;
+        return InternalSplitLines(text, maxTokensPerLine, trim: true, s_markdownSplitOptions);
     }
 
     /// <summary>
@@ -52,7 +49,7 @@ public static class TextChunker
     /// <returns>List of paragraphs.</returns>
     public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph)
     {
-        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, (text, result) => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_plaintextSplitOptions, result));
+        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, text => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_plaintextSplitOptions));
     }
 
     /// <summary>
@@ -63,29 +60,25 @@ public static class TextChunker
     /// <returns>List of paragraphs.</returns>
     public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph)
     {
-        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, (text, result) => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_markdownSplitOptions, result));
+        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, text => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_markdownSplitOptions));
     }
 
-    private static List<string> InternalSplitTextParagraphs(List<string> lines, int maxTokensPerParagraph, Action<string, List<string>> longLinesSplitter)
+    private static List<string> InternalSplitTextParagraphs(List<string> lines2, int maxTokensPerParagraph, Func<string, List<string>> longLinesSplitter)
     {
-        if (lines.Count == 0)
+        if (lines2.Count == 0)
         {
             return new List<string>();
         }
 
         // Split long lines first
-        var truncatedLines = new List<string>(lines.Count);
-        foreach (var line in lines)
-        {
-            longLinesSplitter(line, truncatedLines);
-        }
+        var truncatedLines = lines2.SelectMany(longLinesSplitter);
 
-        lines = truncatedLines;
+        //lines = truncatedLines.ToList();
 
         // Group lines in paragraphs
         var paragraphs = new List<string>();
         var currentParagraph = new StringBuilder();
-        foreach (var line in lines)
+        foreach (var line in truncatedLines)
         {
             // "+1" to account for the "new line" added by AppendLine()
             if (currentParagraph.Length > 0 &&
@@ -120,28 +113,10 @@ public static class TextChunker
 
                 if (lastParagraphTokensCount + secondLastParagraphTokensCount <= maxTokensPerParagraph)
                 {
-                    var newSecondLastParagraph = new StringBuilder();
-                    for (var i = 0; i < secondLastParagraphTokensCount; i++)
-                    {
-                        if (newSecondLastParagraph.Length != 0)
-                        {
-                            newSecondLastParagraph.Append(' ');
-                        }
+                    var newSecondLastParagraph = string.Join(" ", secondLastParagraphTokens);
+                    var newLastParagraph = string.Join(" ", lastParagraphTokens);
 
-                        newSecondLastParagraph.Append(secondLastParagraphTokens[i]);
-                    }
-
-                    for (var i = 0; i < lastParagraphTokensCount; i++)
-                    {
-                        if (newSecondLastParagraph.Length != 0)
-                        {
-                            newSecondLastParagraph.Append(' ');
-                        }
-
-                        newSecondLastParagraph.Append(lastParagraphTokens[i]);
-                    }
-
-                    paragraphs[paragraphs.Count - 2] = newSecondLastParagraph.ToString().Trim();
+                    paragraphs[paragraphs.Count - 2] = $"{newSecondLastParagraph} {newLastParagraph}" ;
                     paragraphs.RemoveAt(paragraphs.Count - 1);
                 }
             }
@@ -150,8 +125,9 @@ public static class TextChunker
         return paragraphs;
     }
 
-    private static void InternalSplitLines(string text, int maxTokensPerLine, bool trim, string?[] splitOptions, List<string> result)
+    private static List<string> InternalSplitLines(string text, int maxTokensPerLine, bool trim, string?[] splitOptions)
     {
+        var result = new List<string>();
         text = text.NormalizeLineEndings();
 
         Split(text.AsSpan(), text, maxTokensPerLine, splitOptions[0].AsSpan(), trim, out bool inputWasSplit, result);
@@ -168,6 +144,7 @@ public static class TextChunker
                 }
             }
         }
+        return result;
     }
 
     private static void Split(List<string> input, int maxTokens, ReadOnlySpan<char> separators, bool trim, out bool inputWasSplit, List<string> result)
