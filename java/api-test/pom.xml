@@ -45,20 +45,16 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
 
-            <!-- 
-                As this is a bug check profile that is configured before the BOM kicks in, 
-                we hard code versions here 
-            -->
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.11.0</version>
+                        <version>${maven.compiler.plugin.version}</version>
                         <configuration>
-                            <source>17</source>
-                            <target>17</target>
-                            <encoding>UTF-8</encoding>
+                            <source>${maven.compiler.release}</source>
+                            <target>${maven.compiler.release}</target>
+                            <encoding>${project.build.sourceEncoding}</encoding>
                             <showWarnings>true</showWarnings>
                             <compilerArgs>
                                 <arg>-XDcompilePolicy=simple</arg>
@@ -74,12 +70,12 @@
                                 <path>
                                     <groupId>com.google.errorprone</groupId>
                                     <artifactId>error_prone_core</artifactId>
-                                    <version>2.19.1</version>
+                                    <version>${google.errorprone.core.version}</version>
                                 </path>
                                 <path>
                                     <groupId>com.uber.nullaway</groupId>
                                     <artifactId>nullaway</artifactId>
-                                    <version>0.10.10</version>
+                                    <version>${com.uber.nullaway.version}</version>
                                 </path>
                             </annotationProcessorPaths>
                         </configuration>
