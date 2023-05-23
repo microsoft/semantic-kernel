@@ -20,8 +20,9 @@ public static class Example10_DescribeAllSkillsAndFunctions
     {
         Console.WriteLine("======== Describe all skills and functions ========");
 
-        var kernel = KernelBuilder.Create();
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", "none");
+        var kernel = Kernel.Builder
+            .WithOpenAITextCompletionService("text-davinci-003", "none")
+            .Build();
 
         // Import a native skill
         var skill1 = new StaticTextSkill();

@@ -56,7 +56,7 @@ public static class Example14_SemanticMemory
 
         var kernelWithCustomDb = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .Configure(c => c.AddOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY")))
+            .WithOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
