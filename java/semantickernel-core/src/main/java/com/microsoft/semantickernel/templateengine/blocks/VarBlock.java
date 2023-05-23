@@ -5,19 +5,22 @@ package com.microsoft.semantickernel.templateengine.blocks; // Copyright (c) Mic
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.templateengine.TemplateException;
 
-public class VarBlock extends Block implements TextRendering {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+public final class VarBlock extends Block implements TextRendering {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(VarBlock.class);
     private final String name;
 
     public VarBlock(String content) {
         super(content, BlockTypes.Variable);
 
-        this.name = content.substring(1);
-    }
+        if (content.length() < 2) {
+            LOGGER.error("The variable name is empty");
+        }
 
-    @Override
-    public boolean isValid() {
-        return true;
+        this.name = content.substring(1);
     }
 
     @Override
@@ -27,93 +30,47 @@ public class VarBlock extends Block implements TextRendering {
         }
 
         if (name == null || name.isEmpty()) {
-            // TODO
-            // const string errMsg = "Variable rendering failed, the variable name is empty";
-            // this.Log.LogError(errMsg);
-            // throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, errMsg);
-            throw new TemplateException();
+            throw new TemplateException(
+                    TemplateException.ErrorCodes.SyntaxError,
+                    "Variable rendering failed, the variable name is empty");
         }
 
         String value = variables.asMap().get(name);
 
         if (value == null) {
-            // TODO
-            // this.Log.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name);
+
+            LOGGER.warn("Variable `{}{}` not found", Symbols.VarPrefix, name);
         }
 
         return value != null ? value : "";
     }
-    /*
-        internal override BlockTypes Type => BlockTypes.Variable;
 
-        internal string Name { get; } = string.Empty;
-
-        public VarBlock(string? content, ILogger? log = null) : base(content?.Trim(), log)
-        {
-            if (this.Content.Length < 2)
-            {
-                this.Log.LogError("The variable name is empty");
-                return;
-            }
-
-            this.Name = this.Content.Substring(1);
+    @Override
+    public boolean isValid() {
+        if (getContent() == null || getContent().isEmpty()) {
+            LOGGER.error(
+                    "A variable must start with the symbol {} and have a name", Symbols.VarPrefix);
+            return false;
         }
 
-    #pragma warning disable CA2254 // error strings are used also internally, not just for logging
-        // ReSharper disable TemplateIsNotCompileTimeConstantProblem
-        public override bool IsValid(out string errorMsg)
-        {
-            errorMsg = string.Empty;
-
-            if (string.IsNullOrEmpty(this.Content))
-            {
-                errorMsg = $"A variable must start with the symbol {Symbols.VarPrefix} and have a name";
-                this.Log.LogError(errorMsg);
-                return false;
-            }
-
-            if (this.Content[0] != Symbols.VarPrefix)
-            {
-                errorMsg = $"A variable must start with the symbol {Symbols.VarPrefix}";
-                this.Log.LogError(errorMsg);
-                return false;
-            }
-
-            if (this.Content.Length < 2)
-            {
-                errorMsg = "The variable name is empty";
-                this.Log.LogError(errorMsg);
-                return false;
-            }
-
-            if (!Regex.IsMatch(this.Name, "^[a-zA-Z0-9_]*$"))
-            {
-                errorMsg = $"The variable name '{this.Name}' contains invalid characters. " +
-                           "Only alphanumeric chars and underscore are allowed.";
-                this.Log.LogError(errorMsg);
-                return false;
-            }
-
-            return true;
-        }
-    #pragma warning restore CA2254
-
-        public string Render(ContextVariables? variables)
-        {
-            if (variables == null) { return string.Empty; }
-
-            if (string.IsNullOrEmpty(this.Name))
-            {
-                const string errMsg = "Variable rendering failed, the variable name is empty";
-                this.Log.LogError(errMsg);
-                throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, errMsg);
-            }
-
-            var exists = variables.Get(this.Name, out string value);
-            if (!exists) { this.Log.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name); }
-
-            return exists ? value : string.Empty;
+        if (getContent().charAt(0) != Symbols.VarPrefix) {
+            LOGGER.error("A variable must start with the symbol {}", Symbols.VarPrefix);
+            return false;
         }
 
-         */
+        if (getContent().length() < 2) {
+            LOGGER.error("The variable name is empty");
+            return false;
+        }
+
+        if (!name.matches("^[a-zA-Z0-9_]*$")) {
+            LOGGER.error(
+                    "The variable name '{}' contains invalid characters. "
+                            + "Only alphanumeric chars and underscore are allowed.",
+                    name);
+            return false;
+        }
+
+        return true;
+    }
 }

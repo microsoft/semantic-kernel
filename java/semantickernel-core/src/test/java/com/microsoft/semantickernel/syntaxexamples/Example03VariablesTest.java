@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
+import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.DefaultKernelTest;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -14,13 +15,10 @@ import org.junit.jupiter.api.Test;
 
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-
 public class Example03VariablesTest {
     @Test
     public void run() {
-        com.azure.ai.openai.OpenAIAsyncClient client =
-                DefaultKernelTest.mockCompletionOpenAIAsyncClient(new ArrayList<>());
+        OpenAIAsyncClient client = DefaultKernelTest.mockCompletionOpenAIAsyncClient();
         Kernel kernel = DefaultKernelTest.buildKernel("model", client);
 
         // Load native skill
