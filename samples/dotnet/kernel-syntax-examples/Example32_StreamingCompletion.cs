@@ -22,11 +22,13 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureTextCompletionService(
-            Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithAzureTextCompletionService(
+                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_KEY"))
+            .Build();
 
         ITextCompletion textCompletion = kernel.GetService<ITextCompletion>();
 
@@ -37,8 +39,10 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-003");
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-003")
+            .Build();
 
         ITextCompletion textCompletion = kernel.GetService<ITextCompletion>();
 

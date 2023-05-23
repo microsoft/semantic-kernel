@@ -36,9 +36,6 @@ public sealed class OpenAICompletionTests : IDisposable
             .AddEnvironmentVariables()
             .AddUserSecrets<OpenAICompletionTests>()
             .Build();
-
-        this._serviceConfiguration.Add(AIServiceType.OpenAI, this.ConfigureOpenAI);
-        this._serviceConfiguration.Add(AIServiceType.AzureOpenAI, this.ConfigureAzureOpenAI);
     }
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
@@ -46,9 +43,17 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task OpenAITestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
-        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
 
-        this.ConfigureOpenAI(target);
+        IKernel target = Kernel.Builder
+            .WithLogger(this._logger)
+            .WithOpenAITextCompletionService(
+                serviceId: openAIConfiguration.ServiceId,
+                modelId: openAIConfiguration.ModelId,
+                apiKey: openAIConfiguration.ApiKey,
+                setAsDefault: true)
+            .Build();
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
 
@@ -64,9 +69,11 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task OpenAIChatAsTextTestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
-        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+        KernelBuilder builder = Kernel.Builder.WithLogger(this._logger);
 
-        this.ConfigureChatOpenAI(target);
+        this.ConfigureChatOpenAI(builder);
+
+        IKernel target = builder.Build();
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
 
@@ -81,8 +88,10 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task CanUseOpenAiChatForTextCompletionAsync()
     {
         // Note: we use OpenAi Chat Completion and GPT 3.5 Turbo
-        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
-        this.ConfigureChatOpenAI(target);
+        KernelBuilder builder = Kernel.Builder.WithLogger(this._logger);
+        this.ConfigureChatOpenAI(builder);
+
+        IKernel target = builder.Build();
 
         var func = target.CreateSemanticFunction(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.");
@@ -101,16 +110,22 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAITestAsync(bool useChatModel, string prompt, string expectedAnswerContains)
     {
         // Arrange
-        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        var builder = Kernel.Builder.WithLogger(this._logger);
 
         if (useChatModel)
         {
-            this.ConfigureAzureOpenAIChatAsText(target);
+            this.ConfigureAzureOpenAIChatAsText(builder);
         }
         else
         {
-            this.ConfigureAzureOpenAI(target);
+            this.ConfigureAzureOpenAI(builder);
         }
+
+        IKernel target = builder.Build();
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
 
@@ -132,15 +147,18 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         var retryConfig = new HttpRetryConfig();
         retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
-        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Configure(c => c.SetDefaultHttpRetryConfig(retryConfig)).Build();
 
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        // Use an invalid API key to force a 401 Unauthorized response
-        target.Config.AddOpenAITextCompletionService(
-            modelId: openAIConfiguration.ModelId,
-            apiKey: "INVALID_KEY");
+        IKernel target = Kernel.Builder
+            .WithLogger(this._testOutputHelper)
+            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
+            .WithOpenAITextCompletionService(
+                serviceId: openAIConfiguration.ServiceId,
+                modelId: openAIConfiguration.ModelId,
+                apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
+            .Build();
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
@@ -160,16 +178,20 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         var retryConfig = new HttpRetryConfig();
         retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
-        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Configure(c => c.SetDefaultHttpRetryConfig(retryConfig)).Build();
+        KernelBuilder builder = Kernel.Builder
+            .WithLogger(this._testOutputHelper)
+            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig));
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
-        target.Config.AddAzureTextCompletionService(
+        builder.WithAzureTextCompletionService(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: "INVALID_KEY");
+
+        IKernel target = builder.Build();
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
@@ -184,15 +206,16 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task OpenAIHttpInvalidKeyShouldReturnErrorDetailAsync()
     {
         // Arrange
-        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Build();
-
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
         // Use an invalid API key to force a 401 Unauthorized response
-        target.Config.AddOpenAITextCompletionService(
-            modelId: openAIConfiguration.ModelId,
-            apiKey: "INVALID_KEY");
+        IKernel target = Kernel.Builder
+            .WithOpenAITextCompletionService(
+                modelId: openAIConfiguration.ModelId,
+                apiKey: "INVALID_KEY",
+                serviceId: openAIConfiguration.ServiceId)
+            .Build();
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
@@ -210,16 +233,17 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIHttpInvalidKeyShouldReturnErrorDetailAsync()
     {
         // Arrange
-        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Build();
-
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-
         Assert.NotNull(azureOpenAIConfiguration);
 
-        target.Config.AddAzureTextCompletionService(
-            deploymentName: azureOpenAIConfiguration.DeploymentName,
-            endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: "INVALID_KEY");
+        IKernel target = Kernel.Builder
+            .WithLogger(this._testOutputHelper)
+            .WithAzureTextCompletionService(
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: "INVALID_KEY",
+                serviceId: azureOpenAIConfiguration.ServiceId)
+            .Build();
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
@@ -236,17 +260,18 @@ public sealed class OpenAICompletionTests : IDisposable
     [Fact]
     public async Task AzureOpenAIHttpExceededMaxTokensShouldReturnErrorDetailAsync()
     {
-        // Arrange
-        IKernel target = Kernel.Builder.WithLogger(this._testOutputHelper).Build();
-
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-
         Assert.NotNull(azureOpenAIConfiguration);
 
-        target.Config.AddAzureTextCompletionService(
-            deploymentName: azureOpenAIConfiguration.DeploymentName,
-            endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey);
+        // Arrange
+        IKernel target = Kernel.Builder
+            .WithLogger(this._testOutputHelper)
+            .WithAzureTextCompletionService(
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey,
+                serviceId: azureOpenAIConfiguration.ServiceId)
+            .Build();
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
@@ -316,7 +341,7 @@ public sealed class OpenAICompletionTests : IDisposable
         }
     }
 
-    private void ConfigureOpenAI(IKernel kernel)
+    private void ConfigureOpenAI(KernelBuilder kernelBuilder)
     {
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
 
@@ -325,15 +350,14 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration.ApiKey);
         Assert.NotNull(openAIConfiguration.ServiceId);
 
-        kernel.Config.AddOpenAITextCompletionService(
+        kernelBuilder.WithOpenAITextCompletionService(
             modelId: openAIConfiguration.ModelId,
             apiKey: openAIConfiguration.ApiKey,
-            serviceId: openAIConfiguration.ServiceId);
-
-        kernel.Config.SetDefaultTextCompletionService(openAIConfiguration.ServiceId);
+            serviceId: openAIConfiguration.ServiceId,
+            setAsDefault: true);
     }
 
-    private void ConfigureChatOpenAI(IKernel kernel)
+    private void ConfigureChatOpenAI(KernelBuilder kernelBuilder)
     {
         var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
 
@@ -342,15 +366,14 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration.ApiKey);
         Assert.NotNull(openAIConfiguration.ServiceId);
 
-        kernel.Config.AddOpenAIChatCompletionService(
+        kernelBuilder.WithOpenAIChatCompletionService(
             modelId: openAIConfiguration.ChatModelId,
             apiKey: openAIConfiguration.ApiKey,
-            serviceId: openAIConfiguration.ServiceId);
-
-        kernel.Config.SetDefaultTextCompletionService(openAIConfiguration.ServiceId);
+            serviceId: openAIConfiguration.ServiceId,
+            setAsDefault: true);
     }
 
-    private void ConfigureAzureOpenAI(IKernel kernel)
+    private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
@@ -360,16 +383,15 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernel.Config.AddAzureTextCompletionService(
+        kernelBuilder.WithAzureTextCompletionService(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
-            serviceId: azureOpenAIConfiguration.ServiceId);
-
-        kernel.Config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
+            serviceId: azureOpenAIConfiguration.ServiceId,
+            setAsDefault: true);
     }
 
-    private void ConfigureAzureOpenAIChatAsText(IKernel kernel)
+    private void ConfigureAzureOpenAIChatAsText(KernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
@@ -379,13 +401,11 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernel.Config.AddAzureChatCompletionService(
+        kernelBuilder.WithAzureChatCompletionService(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);
-
-        kernel.Config.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
     }
 
     #endregion
