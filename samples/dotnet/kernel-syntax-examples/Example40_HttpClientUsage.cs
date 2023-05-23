@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel;
  * These examples show how to use HttpClient and HttpClientFactory within SK SDK.
  */
 
-public static class Example40_HttpUsage
+public static class Example40_HttpClientUsage
 {
     public static void Run()
     {
