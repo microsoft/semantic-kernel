@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, Slice } from '@reduxjs/toolkit';
 import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
 import { ChatState } from './ChatState';
 import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
-export const conversationsSlice = createSlice({
+export const conversationsSlice: Slice<ConversationsState> = createSlice({
     name: 'conversations',
     initialState,
     reducers: {
@@ -16,6 +16,7 @@ export const conversationsSlice = createSlice({
             const id = action.payload.id;
             const newTitle = action.payload.newTitle;
             state.conversations[id].title = newTitle;
+            state.conversations[id].lastUpdatedTimestamp = new Date().getTime();
             frontLoadChat(state, id);
         },
         setSelectedConversation: (state: ConversationsState, action: PayloadAction<string>) => {
@@ -33,6 +34,7 @@ export const conversationsSlice = createSlice({
             const { message, chatId } = action.payload;
             const id = chatId ?? state.selectedId;
             state.conversations[id].messages.push(message);
+            state.conversations[id].lastUpdatedTimestamp = new Date().getTime();
             frontLoadChat(state, id);
         },
         updateMessageState: (
