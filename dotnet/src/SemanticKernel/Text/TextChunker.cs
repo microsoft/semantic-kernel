@@ -63,39 +63,41 @@ public static class TextChunker
         return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, text => InternalSplitLines(text, maxTokensPerParagraph, trim: false, s_markdownSplitOptions));
     }
 
-    private static List<string> InternalSplitTextParagraphs(List<string> lines2, int maxTokensPerParagraph, Func<string, List<string>> longLinesSplitter)
+    private static List<string> InternalSplitTextParagraphs(List<string> lines, int maxTokensPerParagraph, Func<string, List<string>> longLinesSplitter)
     {
-        if (lines2.Count == 0)
+        if (lines.Count == 0)
         {
             return new List<string>();
         }
 
         // Split long lines first
-        var truncatedLines = lines2.SelectMany(longLinesSplitter);
-
-        //lines = truncatedLines.ToList();
+        var truncatedLines = lines.SelectMany(longLinesSplitter);
 
         // Group lines in paragraphs
-        var paragraphs = new List<string>();
-        var currentParagraph = new StringBuilder();
-        foreach (var line in truncatedLines)
-        {
-            // "+1" to account for the "new line" added by AppendLine()
-            if (currentParagraph.Length > 0 &&
-                TokenCount(currentParagraph.Length) + TokenCount(line.Length) + 1 >= maxTokensPerParagraph)
+          var paragraphs = truncatedLines.Aggregate(new { Paragraph = new StringBuilder(), Paragraphs = new List<string>() },
+           (state, line) =>
+           {
+               if (state.Paragraph.Length > 0 &&
+                   TokenCount(state.Paragraph.Length) + TokenCount(line.Length) + 1 >= maxTokensPerParagraph)
+               {
+                   state.Paragraphs.Add(state.Paragraph.ToString().Trim());
+                   state.Paragraph.Clear();
+               }
+
+               state.Paragraph.AppendLine(line);
+
+               return state;
+           },
+            finalState =>
             {
-                paragraphs.Add(currentParagraph.ToString().Trim());
-                currentParagraph.Clear();
+                if (finalState.Paragraph.Length > 0)
+                {
+                    finalState.Paragraphs.Add(finalState.Paragraph.ToString().Trim());
+                }
+
+                return finalState.Paragraphs;
             }
-
-            currentParagraph.AppendLine(line);
-        }
-
-        if (currentParagraph.Length > 0)
-        {
-            paragraphs.Add(currentParagraph.ToString().Trim());
-            currentParagraph.Clear();
-        }
+        );
 
         // distribute text more evenly in the last paragraphs when the last paragraph is too short.
         if (paragraphs.Count > 1)
