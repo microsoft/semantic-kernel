@@ -18,11 +18,8 @@ public static class Example39_Postgres
         using PostgresMemoryStore memoryStore = await PostgresMemoryStore.ConnectAsync(connectionString, vectorSize: 1536);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .Configure(c =>
-            {
-                c.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
-                c.AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
-            })
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
             .WithMemoryStorage(memoryStore)
             .Build();
 
