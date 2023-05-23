@@ -228,6 +228,7 @@ export const useChat = () => {
                     users: [loggedInUser],
                     messages: chatMessages,
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
+                    lastUpdatedTimestamp: new Date().getTime(),
                 };
 
                 dispatch(addConversation(newChat));
