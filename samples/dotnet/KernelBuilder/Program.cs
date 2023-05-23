@@ -46,11 +46,8 @@ var kernelX3 = builderX.Build();
 
 // Manually setup all the dependencies used internally by the kernel
 var logger = NullLogger.Instance;
-var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), logger);
-var httpClient = new HttpClient(httpHandler);
-
 var memoryStorage = new VolatileMemoryStore();
-var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", httpClient, logger: logger);
+var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", logger: logger);
 var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
 var skills = new SkillCollection();
 var templateEngine = new PromptTemplateEngine(logger);

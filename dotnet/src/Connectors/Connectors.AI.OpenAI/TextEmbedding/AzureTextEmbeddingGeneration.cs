@@ -28,7 +28,7 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
         string modelId,
         string endpoint,
         string apiKey,
-        HttpClient httpClient,
+        HttpClient? httpClient = null,
         ILogger? logger = null) : base(modelId, endpoint, apiKey, httpClient, logger)
     {
     }
@@ -45,7 +45,7 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
         string modelId,
         string endpoint,
         TokenCredential credential,
-        HttpClient httpClient,
+        HttpClient? httpClient = null,
         ILogger? logger = null) : base(modelId, endpoint, credential, httpClient, logger)
     {
     }

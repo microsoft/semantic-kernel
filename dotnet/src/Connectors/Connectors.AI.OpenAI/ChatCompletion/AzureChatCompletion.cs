@@ -31,7 +31,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         string modelId,
         string endpoint,
         string apiKey,
-        HttpClient httpClient,
+        HttpClient? httpClient = null,
         ILogger? logger = null) : base(modelId, endpoint, apiKey, httpClient, logger)
     {
     }
@@ -48,7 +48,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         string modelId,
         string endpoint,
         TokenCredential credentials,
-        HttpClient httpClient,
+        HttpClient? httpClient = null,
         ILogger? logger = null) : base(modelId, endpoint, credentials, httpClient, logger)
     {
     }

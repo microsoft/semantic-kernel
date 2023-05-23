@@ -23,16 +23,16 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     /// </summary>
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     public OpenAIChatCompletion(
         string modelId,
         string apiKey,
-        HttpClient httpClient,
         string? organization = null,
+        HttpClient? httpClient = null,
         ILogger? logger = null
-    ) : base(modelId, apiKey, httpClient, organization, logger)
+    ) : base(modelId, apiKey, organization, httpClient, logger)
     {
     }
 

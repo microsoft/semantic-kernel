@@ -7,7 +7,6 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Policies;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -31,7 +30,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         string modelId,
         string endpoint,
         string apiKey,
-        HttpClient httpClient,
+        HttpClient? httpClient,
         ILogger? logger = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
@@ -41,9 +40,10 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.NotNull(httpClient);
 
         var options = new OpenAIClientOptions();
-        // The following lines enable the reuse of globally configured SK SDK policies that are configured on the custom HTTPClient.
-        options.Transport = new HttpClientTransport(httpClient);
-        options.RetryPolicy = new NoRetryPolicy();
+        if (httpClient != null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+        }
 
         this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
@@ -61,7 +61,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         string modelId,
         string endpoint,
         TokenCredential credential,
-        HttpClient httpClient,
+        HttpClient? httpClient,
         ILogger? log = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
@@ -69,9 +69,10 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
         var options = new OpenAIClientOptions();
-        // The following lines enable the reuse of globally configured SK SDK policies that are configured on the custom HTTPClient.
-        options.Transport = new HttpClientTransport(httpClient);
-        options.RetryPolicy = new NoRetryPolicy();
+        if (httpClient != null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+        }
 
         this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), credential, options);

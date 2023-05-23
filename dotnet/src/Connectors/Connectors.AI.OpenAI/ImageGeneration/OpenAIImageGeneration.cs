@@ -34,13 +34,13 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// Create a new instance of OpenAI image generation service
     /// </summary>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="organization">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     public OpenAIImageGeneration(
         string apiKey,
-        HttpClient httpClient,
         string? organization = null,
+        HttpClient? httpClient = null,
         ILogger? logger = null
     ) : base(httpClient, logger)
     {

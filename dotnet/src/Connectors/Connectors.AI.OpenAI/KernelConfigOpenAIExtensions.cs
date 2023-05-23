@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Reliability;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
@@ -47,7 +48,7 @@ public static class KernelConfigOpenAIExtensions
             deploymentName,
             endpoint,
             apiKey,
-            GetHttpClient(kernel, httpClient, logger),
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
             logger ?? kernel.Log);
 
         config.AddTextCompletionService(Factory, serviceId);
@@ -80,7 +81,7 @@ public static class KernelConfigOpenAIExtensions
             deploymentName,
             endpoint,
             credentials,
-            GetHttpClient(kernel, httpClient, logger),
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
             logger ?? kernel.Log);
 
         config.AddTextCompletionService(Factory, serviceId);
@@ -112,8 +113,8 @@ public static class KernelConfigOpenAIExtensions
         ITextCompletion Factory(IKernel kernel) => new OpenAITextCompletion(
             modelId,
             apiKey,
-            GetHttpClient(kernel, httpClient, logger),
             orgId,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
             logger ?? kernel.Log);
 
         config.AddTextCompletionService(Factory, serviceId);
@@ -150,7 +151,7 @@ public static class KernelConfigOpenAIExtensions
             deploymentName,
             endpoint,
             apiKey,
-            GetHttpClient(kernel, httpClient, logger),
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
             logger ?? kernel.Log);
 
         config.AddTextEmbeddingGenerationService(Factory, serviceId);
@@ -183,7 +184,7 @@ public static class KernelConfigOpenAIExtensions
             deploymentName,
             endpoint,
             credentials,
-            GetHttpClient(kernel, httpClient, logger),
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
             logger ?? kernel.Log);
 
         config.AddTextEmbeddingGenerationService(Factory, serviceId);
@@ -215,8 +216,8 @@ public static class KernelConfigOpenAIExtensions
         IEmbeddingGeneration<string, float> Factory(IKernel kernel) => new OpenAITextEmbeddingGeneration(
             modelId,
             apiKey,
-            GetHttpClient(kernel, httpClient, logger),
             orgId,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
             logger ?? kernel.Log);
 
         config.AddTextEmbeddingGenerationService(Factory, serviceId);
@@ -255,7 +256,7 @@ public static class KernelConfigOpenAIExtensions
             deploymentName,
             endpoint,
             apiKey,
-            GetHttpClient(kernel, httpClient, logger));
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log));
 
         config.AddChatCompletionService(Factory, serviceId);
 
@@ -266,7 +267,7 @@ public static class KernelConfigOpenAIExtensions
                 deploymentName,
                 endpoint,
                 apiKey,
-                GetHttpClient(kernel, httpClient, logger),
+                httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
                 logger ?? kernel.Log);
 
             config.AddTextCompletionService(TextServiceFactory, serviceId);
@@ -302,7 +303,7 @@ public static class KernelConfigOpenAIExtensions
             deploymentName,
             endpoint,
             credentials,
-            GetHttpClient(kernel, httpClient, logger),
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
             logger ?? kernel.Log);
 
         config.AddChatCompletionService(Factory, serviceId);
@@ -314,7 +315,7 @@ public static class KernelConfigOpenAIExtensions
                 deploymentName,
                 endpoint,
                 credentials,
-                GetHttpClient(kernel, httpClient, logger),
+                httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
                 logger ?? kernel.Log);
 
             config.AddTextCompletionService(TextServiceFactory, serviceId);
@@ -349,8 +350,8 @@ public static class KernelConfigOpenAIExtensions
         IChatCompletion Factory(IKernel kernel) => new OpenAIChatCompletion(
             modelId,
             apiKey,
-            GetHttpClient(kernel, httpClient, logger),
             orgId,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
             logger ?? kernel.Log);
 
         config.AddChatCompletionService(Factory, serviceId);
@@ -361,8 +362,8 @@ public static class KernelConfigOpenAIExtensions
             ITextCompletion TextServiceFactory(IKernel kernel) => new OpenAIChatCompletion(
                 modelId,
                 apiKey,
-                GetHttpClient(kernel, httpClient, logger),
                 orgId,
+                httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
                 logger ?? kernel.Log);
 
             config.AddTextCompletionService(TextServiceFactory, serviceId);
@@ -395,8 +396,8 @@ public static class KernelConfigOpenAIExtensions
     {
         IImageGeneration Factory(IKernel kernel) => new OpenAIImageGeneration(
             apiKey,
-            GetHttpClient(kernel, httpClient, logger),
             orgId,
+            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log),
             logger ?? kernel.Log);
 
         config.AddImageGenerationService(Factory, serviceId);
@@ -404,29 +405,14 @@ public static class KernelConfigOpenAIExtensions
         return config;
     }
 
-    #endregion
-
-    /// <summary>
-    /// Retrieves an instance of HttpClient.
-    /// </summary>
-    /// <param name="kernel">The kernel.</param>
-    /// <param name="httpClient">An optional pre-existing instance of HttpClient.</param>
-    /// <param name="logger">An optional logger.</param>
-    /// <returns>An instance of HttpClient.</returns>
-    private static HttpClient GetHttpClient(IKernel kernel, HttpClient? httpClient, ILogger? logger)
+    private static HttpClient CreateHttpClient(this IDelegatingHandlerFactory handlerFactory,
+        ILogger? logger)
     {
-        if (httpClient == null)
-        {
-            var retryHandler = kernel.Config.HttpHandlerFactory.Create(logger ?? kernel.Log);
-            retryHandler.InnerHandler = DefaultHttpClientHandler;
-            return new HttpClient(retryHandler, false); //We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
-        }
-
-        return httpClient;
+        var retryHandler = handlerFactory.Create(logger);
+        retryHandler.InnerHandler = new HttpClientHandler { CheckCertificateRevocationList = true };
+        return new HttpClient(retryHandler);
     }
 
-    /// <summary>
-    /// The default HttpClientHandler to be used by all by all OpenAI connectors.
-    /// </summary>
-    private static HttpClientHandler DefaultHttpClientHandler { get; } = new HttpClientHandler() { CheckCertificateRevocationList = true, };
+    #endregion
+
 }
