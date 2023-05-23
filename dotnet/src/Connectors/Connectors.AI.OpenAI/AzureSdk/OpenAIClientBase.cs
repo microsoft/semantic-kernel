@@ -35,6 +35,8 @@ public abstract class OpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
+        this.ModelId = modelId;
+
         var options = new OpenAIClientOptions();
         if (httpClient != null)
         {

@@ -30,14 +30,13 @@ public abstract class AzureOpenAIClientBase : ClientBase
         string modelId,
         string endpoint,
         string apiKey,
-        HttpClient? httpClient,
+        HttpClient? httpClient = null,
         ILogger? logger = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
-        Verify.NotNull(httpClient);
 
         var options = new OpenAIClientOptions();
         if (httpClient != null)
@@ -61,7 +60,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         string modelId,
         string endpoint,
         TokenCredential credential,
-        HttpClient? httpClient,
+        HttpClient? httpClient = null,
         ILogger? log = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
