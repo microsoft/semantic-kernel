@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -149,8 +148,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 var completionResults = await client.GetCompletionsAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
                 string completion = await GetCompletionsResultContentAsync(completionResults, context.CancellationToken).ConfigureAwait(false);
 
-                context.LastResultData = GetCompletionsResponseData(completionResults);
-
+                context.LastPromptResults = completionResults.Select(c => c.ResultData).ToArray();
                 context.Variables.Update(completion);
             }
             catch (AIException ex)
@@ -310,11 +308,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         return completionResult.ToString();
     }
 
-    private static JsonObject? GetCompletionsResponseData(IReadOnlyList<ITextCompletionResult> completions)
+    private static object? GetCompletionsResponseData(IReadOnlyList<ITextCompletionResult> completions)
     {
         var resultsData = completions.Select(c => c.ResultData).ToArray();
 
-        return JsonSerializer.Deserialize<JsonObject>(JsonSerializer.Serialize(resultsData));
+        return resultsData;
     }
 
     internal enum DelegateTypes

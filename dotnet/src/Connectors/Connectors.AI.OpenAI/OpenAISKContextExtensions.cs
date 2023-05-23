@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json;
+using System.Linq;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -11,13 +11,18 @@ namespace Microsoft.SemanticKernel;
 
 public static class OpenAISKContextExtensions
 {
-    private static IEnumerable<Completions>? GetOpenAILastResultData(this SKContext skContext)
+    public static IEnumerable<Completions>? GetOpenAILastPromptResults(this SKContext skContext)
     {
-        if (skContext.LastResultData is not null)
+        if (skContext.LastPromptResults is not null)
         {
-            return skContext.LastResultData.Deserialize<Completions[]>();
+            return (skContext.LastPromptResults as object[])?.OfType<Completions>();
         }
 
         return null;
+    }
+
+    public static Completions? GetOpenAILastPromptResult(this SKContext skContext)
+    {
+        return GetOpenAILastPromptResults(skContext)?.FirstOrDefault();
     }
 }

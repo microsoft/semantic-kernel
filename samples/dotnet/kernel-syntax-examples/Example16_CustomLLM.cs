@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -47,7 +48,12 @@ exploring space. AI can also augment our abilities and inspire us to create new 
 of art, music, or literature. AI can also improve our well-being and happiness by
 providing personalized recommendations, entertainment, and assistance. AI is awesome";
 
-    public object? ResultData => new { Tokens = Text.Split(' ').Length };
+    public object? ResultData => new
+    {
+        Content = Text,
+        Message = "This is my model raw response",
+        Tokens = Text.Split(' ').Length
+    };
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
@@ -101,6 +107,12 @@ public static class Example16_CustomLLM
 
         var result = await textValidationFunction.InvokeAsync("I mised the training sesion this morning");
         Console.WriteLine(result);
+
+        // Details of the my custom model response
+        Console.WriteLine(JsonSerializer.Serialize(
+            result.LastPromptResults,
+            new JsonSerializerOptions() { WriteIndented = true }
+        ));
     }
 
     private static async Task CustomTextCompletionAsync()

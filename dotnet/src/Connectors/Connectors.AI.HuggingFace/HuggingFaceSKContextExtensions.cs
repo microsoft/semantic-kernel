@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json;
+using System.Linq;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -12,13 +12,18 @@ namespace Microsoft.SemanticKernel;
 
 public static class HuggingFaceSKContextExtensions
 {
-    private static IEnumerable<TextCompletionResponse>? GetHuggingFaceLastResultData(this SKContext skContext)
+    public static IEnumerable<TextCompletionResponse>? GetHuggingFaceLastResultsData(this SKContext skContext)
     {
-        if (skContext.LastResultData is not null)
+        if (skContext.LastPromptResults is not null)
         {
-            return skContext.LastResultData.Deserialize<TextCompletionResponse[]>();
+            return (skContext.LastPromptResults as object[])?.OfType<TextCompletionResponse>();
         }
 
         return null;
+    }
+
+    public static TextCompletionResponse? GetHuggingFaceLastResultData(this SKContext skContext)
+    {
+        return GetHuggingFaceLastResultsData(skContext)?.FirstOrDefault();
     }
 }

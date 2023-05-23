@@ -127,5 +127,8 @@ public static class Program
 
         await Example40_DIContainer.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example41_GetModelResult.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
