@@ -20,6 +20,6 @@ public class NoRetryPolicy : HttpPipelinePolicy
     /// <inheritdoc/>
     public override async ValueTask ProcessAsync(HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)
     {
-        await ProcessNextAsync(message, pipeline).ConfigureAwait(false);
+        return ProcessNextAsync(message, pipeline);
     }
 }
