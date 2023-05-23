@@ -39,6 +39,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var options = new OpenAIClientOptions();
+
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);

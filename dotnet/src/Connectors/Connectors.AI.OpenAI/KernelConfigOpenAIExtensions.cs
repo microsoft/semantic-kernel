@@ -253,10 +253,7 @@ public static class KernelConfigOpenAIExtensions
         ILogger? logger = null)
     {
         IChatCompletion Factory(IKernel kernel) => new AzureChatCompletion(
-            deploymentName,
-            endpoint,
-            apiKey,
-            httpClient ?? kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log));
+            deploymentName, endpoint, apiKey, kernel.Config.HttpHandlerFactory.CreateHttpClient(kernel.Log), kernel.Log);
 
         config.AddChatCompletionService(Factory, serviceId);
 
@@ -405,6 +402,8 @@ public static class KernelConfigOpenAIExtensions
         return config;
     }
 
+    #endregion
+
     private static HttpClient CreateHttpClient(this IDelegatingHandlerFactory handlerFactory,
         ILogger? logger)
     {
@@ -412,7 +411,4 @@ public static class KernelConfigOpenAIExtensions
         retryHandler.InnerHandler = new HttpClientHandler { CheckCertificateRevocationList = true };
         return new HttpClient(retryHandler);
     }
-
-    #endregion
-
 }
