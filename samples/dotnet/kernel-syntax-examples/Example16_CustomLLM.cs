@@ -47,6 +47,8 @@ exploring space. AI can also augment our abilities and inspire us to create new 
 of art, music, or literature. AI can also improve our well-being and happiness by
 providing personalized recommendations, entertainment, and assistance. AI is awesome";
 
+    public object? ResultData => new { Tokens = Text.Split(' ').Length };
+
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
         // Forcing a 2 sec delay (Simulating custom LLM lag)

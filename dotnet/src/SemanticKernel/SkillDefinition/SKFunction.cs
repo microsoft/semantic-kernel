@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -144,7 +146,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
             {
                 string prompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
 
-                string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
+                var completionResults = await client.GetCompletionsAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
+                string completion = await GetCompletionsResultContentAsync(completionResults, context.CancellationToken).ConfigureAwait(false);
+
+                context.LastResultData = GetCompletionsResponseData(completionResults);
+
                 context.Variables.Update(completion);
             }
             catch (AIException ex)
@@ -290,6 +296,25 @@ public sealed class SKFunction : ISKFunction, IDisposable
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+    }
+
+    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextCompletionResult> completions, CancellationToken cancellationToken = default)
+    {
+        StringBuilder completionResult = new();
+
+        foreach (ITextCompletionResult result in completions)
+        {
+            completionResult.Append(await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false));
+        }
+
+        return completionResult.ToString();
+    }
+
+    private static JsonObject? GetCompletionsResponseData(IReadOnlyList<ITextCompletionResult> completions)
+    {
+        var resultsData = completions.Select(c => c.ResultData).ToArray();
+
+        return JsonSerializer.Deserialize<JsonObject>(JsonSerializer.Serialize(resultsData));
     }
 
     internal enum DelegateTypes

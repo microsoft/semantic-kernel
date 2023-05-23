@@ -10,16 +10,18 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
 internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingResult
 {
-    private readonly string _result;
+    private readonly TextCompletionResponse _responseData;
 
-    public TextCompletionStreamingResult(string? result)
+    public TextCompletionStreamingResult(TextCompletionResponse responseData)
     {
-        this._result = result ?? string.Empty;
+        this._responseData = responseData;
     }
+
+    public object? ResultData => this._responseData;
 
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this._result);
+        return Task.FromResult(this._responseData.Text ?? string.Empty);
     }
 
     public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)

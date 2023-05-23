@@ -21,6 +21,8 @@ internal sealed class ChatCompletionAsTextResult : ITextCompletionStreamingResul
         this._getCompletionAsyncImpl = getCompletionAsyncImpl;
     }
 
+    public object? ResultData => null; //TODO: implement when IChatCompletionResult PR is merged
+
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
         => this._getCompletionAsyncImpl(cancellationToken);
 

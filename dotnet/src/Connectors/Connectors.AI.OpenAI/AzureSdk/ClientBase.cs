@@ -53,12 +53,22 @@ public abstract class ClientBase
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
             () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null || response.Value.Choices.Count < 1)
+        if (response == null)
         {
             throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions not found");
         }
 
-        return response.Value.Choices.Select(choice => new TextCompletionResult(choice)).ToList();
+        var responseDetail = response.Value;
+
+        if (responseDetail.Choices.Count < 1)
+        {
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions not found")
+            {
+                Data = { { "ResponseDetail", responseDetail } }
+            };
+        }
+
+        return responseDetail.Choices.Select(choice => new TextCompletionResult(responseDetail, choice)).ToList();
     }
 
     /// <summary>
@@ -84,7 +94,7 @@ public abstract class ClientBase
         using StreamingCompletions streamingChatCompletions = response.Value;
         await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
         {
-            yield return new TextCompletionStreamingResult(choice);
+            yield return new TextCompletionStreamingResult(streamingChatCompletions, choice);
         }
     }
 

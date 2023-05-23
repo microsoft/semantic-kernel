@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Text.Json.Nodes;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -36,6 +37,11 @@ public sealed class SKContext
     /// When an error occurs, this is the most recent exception.
     /// </summary>
     public Exception? LastException { get; private set; }
+
+    /// <summary>
+    /// When a prompt is resolved, this will contain the model details of the last prompt result.
+    /// </summary>
+    public JsonObject? LastResultData { get; set; }
 
     /// <summary>
     /// The token to monitor for cancellation requests.

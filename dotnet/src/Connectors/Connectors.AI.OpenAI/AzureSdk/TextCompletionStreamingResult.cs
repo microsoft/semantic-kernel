@@ -11,10 +11,13 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingResult
 {
+    private readonly StreamingCompletions _resultData;
     private readonly StreamingChoice _choice;
+    public object? ResultData => this._resultData;
 
-    public TextCompletionStreamingResult(StreamingChoice choice)
+    public TextCompletionStreamingResult(StreamingCompletions resultData, StreamingChoice choice)
     {
+        this._resultData = resultData;
         this._choice = choice;
     }
 
