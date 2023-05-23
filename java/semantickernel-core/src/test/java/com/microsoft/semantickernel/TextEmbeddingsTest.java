@@ -8,7 +8,6 @@ import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -43,7 +42,6 @@ public class TextEmbeddingsTest {
     }
 
     @Test
-    @Disabled
     public void testEmbedding() {
         testEmbeddingGeneration(mockEmbeddingOpenAIAsyncClient(), 1);
     }

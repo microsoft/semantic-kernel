@@ -55,7 +55,7 @@ public interface Kernel {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext<?>> runAsync(SKFunction... pipeline);
+    Mono<SKContext<?>> runAsync(SKFunction<?, ?>... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -64,7 +64,7 @@ public interface Kernel {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext<?>> runAsync(String input, SKFunction... pipeline);
+    Mono<SKContext<?>> runAsync(String input, SKFunction<?, ?>... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -73,7 +73,7 @@ public interface Kernel {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction... pipeline);
+    Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction<?, ?>... pipeline);
 
     /**
      * Import a set of skills
@@ -128,8 +128,6 @@ public interface Kernel {
         @Nullable private KernelConfig kernelConfig = null;
         @Nullable private PromptTemplateEngine promptTemplateEngine = null;
 
-        @Nullable private ReadOnlySkillCollection skillCollection = null;
-
         public Builder setKernelConfig(KernelConfig kernelConfig) {
             this.kernelConfig = kernelConfig;
             return this;
@@ -140,11 +138,6 @@ public interface Kernel {
             return this;
         }
 
-        public Builder setSkillCollection(@Nullable ReadOnlySkillCollection skillCollection) {
-            this.skillCollection = skillCollection;
-            return this;
-        }
-
         public Kernel build() {
             if (kernelConfig == null) {
                 throw new IllegalStateException("Must provide a kernel configuration");
@@ -152,14 +145,12 @@ public interface Kernel {
 
             return BuildersSingleton.INST
                     .getKernelBuilder()
-                    .build(kernelConfig, promptTemplateEngine, skillCollection);
+                    .build(kernelConfig, promptTemplateEngine);
         }
     }
 
     interface InternalBuilder {
         Kernel build(
-                KernelConfig kernelConfig,
-                @Nullable PromptTemplateEngine promptTemplateEngine,
-                @Nullable ReadOnlySkillCollection skillCollection);
+                KernelConfig kernelConfig, @Nullable PromptTemplateEngine promptTemplateEngine);
     }
 }

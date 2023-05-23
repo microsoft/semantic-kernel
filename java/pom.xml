@@ -203,6 +203,7 @@
                                 <licenseHeader>
                                     <content>// Copyright (c) Microsoft. All rights reserved.</content>
                                 </licenseHeader>
+                                <toggleOffOn/>
                             </java>
                         </configuration>
                     </plugin>

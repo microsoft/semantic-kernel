@@ -10,6 +10,8 @@ import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
+import jakarta.inject.Inject;
+
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
@@ -29,6 +31,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
     /// <param name="log">Application logger</param>
+    @Inject
     public OpenAITextCompletion(OpenAIAsyncClient client, String modelId) {
         super(client, modelId);
     }

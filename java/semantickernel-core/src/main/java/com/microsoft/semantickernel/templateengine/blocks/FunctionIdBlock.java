@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.orchestration.ContextVariables;
 
 import javax.annotation.Nullable;
 
-public class FunctionIdBlock extends Block implements TextRendering {
+public final class FunctionIdBlock extends Block implements TextRendering {
     private final String skillName;
 
     private final String functionName;
