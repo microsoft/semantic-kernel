@@ -24,10 +24,10 @@ public static class Example33_StreamingChat
     {
         Console.WriteLine("======== Open AI - ChatGPT Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        // Add your chat completion service
-        kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY")) // Add your chat completion service
+            .Build();
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
 
@@ -38,13 +38,10 @@ public static class Example33_StreamingChat
     {
         Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        // Add your chat completion service
-        kernel.Config.AddAzureChatCompletionService(
-            Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithAzureChatCompletionService(Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"), Env.Var("AZURE_OPENAI_ENDPOINT"), Env.Var("OPENAI_API_KEY")) // Add your chat completion service
+            .Build();
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
 
