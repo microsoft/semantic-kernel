@@ -22,7 +22,7 @@ public class SKBuilders {
         return BuildersSingleton.INST.getTextCompletionBuilder();
     }
 
-    public static EmbeddingGeneration.Builder<String, Double> textEmbeddingGenerationService() {
+    public static EmbeddingGeneration.Builder<String, Float> textEmbeddingGenerationService() {
         return BuildersSingleton.INST.getTextEmbeddingGenerationBuilder();
     }
 

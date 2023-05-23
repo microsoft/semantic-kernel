@@ -45,7 +45,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
     @EnabledIf("isAzureTestEnabled")
     public void testEmbeddingGeneration() throws IOException {
         String model = "text-embedding-ada-002";
-        EmbeddingGeneration<String, Double> embeddingGeneration =
+        EmbeddingGeneration<String, Float> embeddingGeneration =
                 new OpenAITextEmbeddingGeneration(getOpenAIClient(), model);
 
         List<String> data = new ArrayList<>();
@@ -58,7 +58,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
     @EnabledIf("isAzureTestEnabled")
     public void testMemory() throws IOException {
         String model = "text-embedding-ada-002";
-        EmbeddingGeneration<String, Double> embeddingGeneration =
+        EmbeddingGeneration<String, Float> embeddingGeneration =
                 new OpenAITextEmbeddingGeneration(getAzureOpenAIClient(), model);
 
         Kernel kernel = buildTextEmbeddingsKernel();
@@ -92,7 +92,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
     public void testEmbeddingGeneration(OpenAIAsyncClient client, int expectedEmbeddingSize) {
         String model = "text-embedding-ada-002";
-        EmbeddingGeneration<String, Double> embeddingGeneration =
+        EmbeddingGeneration<String, Float> embeddingGeneration =
                 new OpenAITextEmbeddingGeneration(client, model);
 
         List<String> data = new ArrayList<>();
@@ -111,7 +111,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
     private Kernel buildTextEmbeddingsKernel() throws IOException {
         String model = "text-embedding-ada-002";
-        EmbeddingGeneration<String, Double> embeddingGeneration =
+        EmbeddingGeneration<String, Float> embeddingGeneration =
                 new OpenAITextEmbeddingGeneration(getOpenAIClient(), model);
 
         KernelConfig kernelConfig =

@@ -44,7 +44,7 @@ public enum BuildersSingleton {
     private final FunctionBuilders functionBuilders;
     private final Kernel.InternalBuilder kernelBuilder;
     private final TextCompletion.Builder textCompletionBuilder;
-    private final EmbeddingGeneration.Builder<String, Double> textEmbeddingGenerationBuilder;
+    private final EmbeddingGeneration.Builder<String, Float> textEmbeddingGenerationBuilder;
     private final ReadOnlySkillCollection.Builder readOnlySkillCollection;
     private final PromptTemplate.Builder promptTemplate;
     private final ContextVariables.Builder variables;
@@ -129,7 +129,7 @@ public enum BuildersSingleton {
         return textCompletionBuilder;
     }
 
-    public EmbeddingGeneration.Builder<String, Double> getTextEmbeddingGenerationBuilder() {
+    public EmbeddingGeneration.Builder<String, Float> getTextEmbeddingGenerationBuilder() {
         return textEmbeddingGenerationBuilder;
     }
 
