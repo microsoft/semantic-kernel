@@ -145,4 +145,4 @@ public class InlineFunctionWithPreBuiltSkillExample {
             Thread.currentThread().interrupt();
         }
     }
-}                                                                                                                                >
+}
