@@ -127,6 +127,7 @@ public class InlineFunctionWithPreBuiltSkillExample {
             return;
         }
 
+        CountDownLatch cdl = new CountDownLatch(1);        
         summarize.invokeAsync(TEXT_TO_SUMMARIZE).subscribe(
                 context -> {
                     LOGGER.info("Result: {} ", context.getResult());
@@ -136,13 +137,8 @@ public class InlineFunctionWithPreBuiltSkillExample {
                 },
                 () -> {
                     LOGGER.info("Completed");
-                });
-
-        try {
-            TimeUnit.SECONDS.sleep(10);
-        } catch (InterruptedException e) {
-            LOGGER.warn("Interrupted : {}", e.getMessage());
-            Thread.currentThread().interrupt();
-        }
+                    cdl.countDown();
+                });                
+        cdl.await();
     }
 }
