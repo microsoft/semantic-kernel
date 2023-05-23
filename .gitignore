@@ -465,6 +465,5 @@ data/qdrant
 data/chatstore*
 
 # Java build
-java/.java-version
 java/**/target
 java/.mvn/wrapper/maven-wrapper.jar
