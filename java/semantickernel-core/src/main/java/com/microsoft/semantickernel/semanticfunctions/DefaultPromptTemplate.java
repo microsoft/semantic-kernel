@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.semanticfunctions; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.semanticfunctions;
 
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
