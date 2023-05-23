@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Check for command
         id: command
-        uses: xt0rted/slash-command-action@v1
+        uses: xt0rted/slash-command-action@v2
         continue-on-error: true
         with:
           command: dotnet
@@ -22,7 +22,7 @@ jobs:
       - name: Get branch info
         if: steps.command.outputs.command-name
         id: comment-branch
-        uses: xt0rted/pull-request-comment-branch@v1
+        uses: xt0rted/pull-request-comment-branch@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -56,7 +56,7 @@ jobs:
 
       - name: Push changes
         if: steps.command.outputs.command-name && steps.command.outputs.command-arguments == 'format' && steps.format.outputs.has-changes == 'true'
-        uses: ad-m/github-push-action@v0.5.0
+        uses: ad-m/github-push-action@v0.6.0
         with:
           branch: ${{ steps.comment-branch.outputs.ref }}
           github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
