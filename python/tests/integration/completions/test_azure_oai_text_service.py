@@ -1,26 +1,24 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import os
 
-import e2e_text_completion
 import pytest
+from test_utils import retry
 
-import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 @pytest.mark.asyncio
-async def test_azure_text_completion_with_skills():
-    kernel = sk.Kernel()
+async def test_azure_e2e_text_completion_with_skill(
+    setup_tldr_function_for_oai_models, get_aoai_config
+):
+    kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
+
+    _, api_key, endpoint = get_aoai_config
 
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAI__DeploymentName"]
-        api_key = os.environ["AzureOpenAI__ApiKey"]
-        endpoint = os.environ["AzureOpenAI__Endpoint"]
     else:
-        # Load credentials from .env file
-        deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
         deployment_name = "text-davinci-003"
 
     print("* Service: Azure OpenAI Text Completion")
@@ -33,8 +31,17 @@ async def test_azure_text_completion_with_skills():
         sk_oai.AzureTextCompletion(deployment_name, endpoint, api_key),
     )
 
-    await e2e_text_completion.summarize_function_test(kernel)
+    # Create the semantic function
+    tldr_function = kernel.create_semantic_function(
+        sk_prompt, max_tokens=200, temperature=0, top_p=0.5
+    )
 
-
-if __name__ == "__main__":
-    asyncio.run(test_azure_text_completion_with_skills())
+    summary = await retry(
+        lambda: kernel.run_async(tldr_function, input_str=text_to_summarize)
+    )
+    output = str(summary).strip()
+    print(f"TLDR using input string: '{output}'")
+    assert "First Law" not in output and (
+        "human" in output or "Human" in output or "preserve" in output
+    )
+    assert len(output) < 100

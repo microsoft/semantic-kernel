@@ -62,11 +62,6 @@ public class ChatSkill
     private readonly CopilotChatPlanner _planner;
 
     /// <summary>
-    /// Options for the planner.
-    /// </summary>
-    private readonly PlannerOptions _plannerOptions;
-
-    /// <summary>
     /// Proposed plan to return for approval.
     /// </summary>
     private Plan? _proposedPlan;
@@ -80,7 +75,6 @@ public class ChatSkill
         ChatSessionRepository chatSessionRepository,
         IOptions<PromptsOptions> promptOptions,
         CopilotChatPlanner planner,
-        PlannerOptions plannerOptions,
         ILogger logger)
     {
         this._logger = logger;
@@ -89,7 +83,6 @@ public class ChatSkill
         this._chatSessionRepository = chatSessionRepository;
         this._promptOptions = promptOptions.Value;
         this._planner = planner;
-        this._plannerOptions = plannerOptions;
     }
 
     /// <summary>
@@ -210,7 +203,8 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
     public async Task<string> AcquireExternalInformationAsync(SKContext context)
     {
-        if (!this._plannerOptions.Enabled)
+        FunctionsView functions = this._planner.Kernel.Skills.GetFunctionsView(true, true);
+        if (functions.NativeFunctions.IsEmpty && functions.SemanticFunctions.IsEmpty)
         {
             return string.Empty;
         }
@@ -231,7 +225,7 @@ public class ChatSkill
             // Reload the plan with the planner's kernel so
             // it has full context to be executed
             var newPlanContext = new SKContext(
-                context.Variables,
+                null,
                 this._planner.Kernel.Memory,
                 this._planner.Kernel.Skills,
                 this._planner.Kernel.Log
@@ -239,7 +233,7 @@ public class ChatSkill
             var plan = Plan.FromJson(planJson, newPlanContext);
 
             // Invoke plan
-            newPlanContext = await plan.InvokeAsync(plannerContext);
+            newPlanContext = await plan.InvokeAsync(newPlanContext);
             int tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
 
             // The result of the plan may be from an OpenAPI skill. Attempt to extract JSON from the response.

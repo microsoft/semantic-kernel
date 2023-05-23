@@ -101,7 +101,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatApi.csproj",
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary",
         "/property:DebugType=portable"
@@ -113,7 +113,7 @@
       "label": "run (CopilotChatApi)",
       "command": "dotnet",
       "type": "process",
-      "args": ["run", "--project", "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatApi.csproj"],
+      "args": ["run", "--project", "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj"],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
@@ -130,7 +130,7 @@
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatApi.csproj"
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "build"

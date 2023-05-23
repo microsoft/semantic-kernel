@@ -5,6 +5,7 @@ import com.azure.ai.openai.models.Choice;
 import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.openai.AzureOpenAIClient;
+import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
@@ -17,6 +18,7 @@ import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
 import reactor.core.publisher.Mono;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DefaultKernelTest {
 
@@ -34,10 +37,9 @@ public class DefaultKernelTest {
     void contextVariableTest() {
         String model = "a-model";
 
-        List<Tuple2<String, String>> responses =
-                Arrays.asList(Tuples.of("A", "a"), Tuples.of("user: Aauser: B", "b"));
-
-        com.azure.ai.openai.OpenAIAsyncClient client = mockCompletionOpenAIAsyncClient(responses);
+        OpenAIAsyncClient client =
+                mockCompletionOpenAIAsyncClient(
+                        Tuples.of("A", "a"), Tuples.of("user: Aauser: B", "b"));
 
         Kernel kernel = buildKernel(model, client);
 
@@ -82,8 +84,7 @@ public class DefaultKernelTest {
     @Test
     void tellAJoke() {
         String expectedResponse = "a result joke";
-        com.azure.ai.openai.OpenAIAsyncClient client =
-                mockCompletionOpenAIAsyncClient("WRITE", expectedResponse);
+        OpenAIAsyncClient client = mockCompletionOpenAIAsyncClient("WRITE", expectedResponse);
         String model = "a-model-name";
         Kernel kernel = buildKernel(model, client);
 
@@ -117,10 +118,7 @@ public class DefaultKernelTest {
         assertTheResultEquals(result, expectedResponse);
     }
 
-    public static Kernel buildKernel(
-            String model, com.azure.ai.openai.OpenAIAsyncClient openAIAsyncClient) {
-
-        com.microsoft.openai.OpenAIAsyncClient client = new AzureOpenAIClient(openAIAsyncClient);
+    public static Kernel buildKernel(String model, OpenAIAsyncClient client) {
 
         TextCompletion textCompletion = new OpenAITextCompletion(client, model);
 
@@ -132,12 +130,11 @@ public class DefaultKernelTest {
         return SKBuilders.kernel().setKernelConfig(kernelConfig).build();
     }
 
-    private static com.azure.ai.openai.OpenAIAsyncClient mockCompletionOpenAIAsyncClient(
-            String arg, String response) {
+    private static AzureOpenAIClient mockCompletionOpenAIAsyncClient(String arg, String response) {
         List<Tuple2<String, String>> responses =
                 Collections.singletonList(Tuples.of(arg, response));
 
-        return mockCompletionOpenAIAsyncClient(responses);
+        return mockCompletionOpenAIAsyncClient(responses.toArray(new Tuple2[0]));
     }
 
     /*
@@ -152,12 +149,28 @@ public class DefaultKernelTest {
 
           This if the client is prompted with "Tell me a joke", the mocked client would respond with "This is a joke"
     */
-    public static com.azure.ai.openai.OpenAIAsyncClient mockCompletionOpenAIAsyncClient(
-            List<Tuple2<String, String>> responses) {
+
+    public static AzureOpenAIClient mockCompletionOpenAIAsyncClient(
+            Tuple2<String, String>... responses) {
+
+        List<Tuple2<ArgumentMatcher<String>, String>> matchers =
+                Arrays.stream(responses)
+                        .map(
+                                response ->
+                                        Tuples.<ArgumentMatcher<String>, String>of(
+                                                arg -> arg.contains(response.getT1()),
+                                                response.getT2()))
+                        .collect(Collectors.toList());
+
+        return mockCompletionOpenAIAsyncClientMatchers(matchers.toArray(new Tuple2[0]));
+    }
+
+    public static AzureOpenAIClient mockCompletionOpenAIAsyncClientMatchers(
+            Tuple2<ArgumentMatcher<String>, String>... responses) {
         com.azure.ai.openai.OpenAIAsyncClient openAIAsyncClient =
                 Mockito.mock(com.azure.ai.openai.OpenAIAsyncClient.class);
 
-        for (Tuple2<String, String> response : responses) {
+        for (Tuple2<ArgumentMatcher<String>, String> response : responses) {
 
             Choice choice = Mockito.mock(Choice.class);
             Mockito.when(choice.getText()).thenReturn(response.getT2());
@@ -170,13 +183,11 @@ public class DefaultKernelTest {
                             openAIAsyncClient.getCompletions(
                                     Mockito.any(String.class),
                                     Mockito.<CompletionsOptions>argThat(
-                                            it ->
-                                                    it.getPrompt()
-                                                            .get(0)
-                                                            .contains(response.getT1()))))
+                                            it -> response.getT1().matches(it.getPrompt().get(0)))))
                     .thenReturn(Mono.just(completions));
         }
-        return openAIAsyncClient;
+        AzureOpenAIClient client = new AzureOpenAIClient(openAIAsyncClient);
+        return Mockito.spy(client);
     }
 
     @Test
@@ -185,7 +196,7 @@ public class DefaultKernelTest {
         String model = "a-model";
 
         String expectedResponse = "foo";
-        com.azure.ai.openai.OpenAIAsyncClient openAIAsyncClient =
+        OpenAIAsyncClient openAIAsyncClient =
                 mockCompletionOpenAIAsyncClient("block", expectedResponse);
 
         Kernel kernel = buildKernel(model, openAIAsyncClient);
@@ -219,13 +230,11 @@ public class DefaultKernelTest {
     }
 
     private static void assertCompletionsWasCalledWithModelAndText(
-            com.azure.ai.openai.OpenAIAsyncClient openAIAsyncClient,
-            String model,
-            String expected) {
+            OpenAIAsyncClient openAIAsyncClient, String model, String expected) {
         Mockito.verify(openAIAsyncClient, Mockito.times(1))
                 .getCompletions(
                         Mockito.matches(model),
-                        Mockito.<CompletionsOptions>argThat(
+                        Mockito.argThat(
                                 completionsOptions ->
                                         completionsOptions.getPrompt().size() == 1
                                                 && completionsOptions

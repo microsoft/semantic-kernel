@@ -29,13 +29,13 @@
   </Match>
 
   <Match>
-    <Class name="com.microsoft.semantickernel.KernelDefault"/>
+    <Class name="com.microsoft.semantickernel.DefaultKernel"/>
     <Field name="memoryStore"/>
     <Bug pattern="EI_EXPOSE_REP2"/>
   </Match>
 
   <Match>
-    <Class name="com.microsoft.semantickernel.KernelDefault"/>
+    <Class name="com.microsoft.semantickernel.DefaultKernel"/>
     <Method name="getMemoryStore"/>
     <Bug pattern="EI_EXPOSE_REP"/>
   </Match>
