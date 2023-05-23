@@ -2,7 +2,9 @@
 
 ## Legend
 ✅ - Feature implemented
-🔄 - Feature partially implemented
+
+🔄 - Feature partially implemented (see associated Note column)
+
 ❌ - Feature not implemented
 
 ## AI Services
