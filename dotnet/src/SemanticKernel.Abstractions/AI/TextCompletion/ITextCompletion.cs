@@ -3,13 +3,14 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 /// <summary>
 /// Interface for text completion services
 /// </summary>
-public interface ITextCompletion
+public interface ITextCompletion : IAIService
 {
     /// <summary>
     /// Get completion results for the prompt and settings.

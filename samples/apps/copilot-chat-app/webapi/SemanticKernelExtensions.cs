@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.CopilotChat.Extensions;
+using SemanticKernel.Service.CopilotChat.Storage;
 using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service;
@@ -58,7 +59,7 @@ internal static class SemanticKernelExtensions
             .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptions<AIServiceOptions>>().Value));
 
         // Register skills
-        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkills);
+        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkillsAsync);
 
         return services;
     }
@@ -66,7 +67,7 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Register the skills with the kernel.
     /// </summary>
-    private static Task RegisterSkills(IServiceProvider sp, IKernel kernel)
+    private static Task RegisterSkillsAsync(IServiceProvider sp, IKernel kernel)
     {
         // Copilot chat skills
         kernel.RegisterCopilotChatSkills(sp);
@@ -118,11 +119,12 @@ internal static class SemanticKernelExtensions
 
                 services.AddSingleton<IMemoryStore>(sp =>
                 {
-                    HttpClient httpClient = new HttpClient(new HttpClientHandler { CheckCertificateRevocationList = true });
+                    HttpClient httpClient = new(new HttpClientHandler { CheckCertificateRevocationList = true });
                     if (!string.IsNullOrWhiteSpace(config.Qdrant.Key))
                     {
                         httpClient.DefaultRequestHeaders.Add("api-key", config.Qdrant.Key);
                     }
+
                     return new QdrantMemoryStore(new QdrantVectorDbClient(
                         config.Qdrant.Host, config.Qdrant.VectorSize, port: config.Qdrant.Port, httpClient: httpClient, log: sp.GetRequiredService<ILogger<IQdrantVectorDbClient>>()));
                 });
@@ -158,6 +160,12 @@ internal static class SemanticKernelExtensions
             default:
                 throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
         }
+
+        // High level semantic memory implementations, such as Azure Cognitive Search, do not allow for providing embeddings when storing memories.
+        // We wrap the memory store in an optional memory store to allow controllers to pass dependency injection validation and potentially optimize
+        // for a lower-level memory implementation (e.g. Qdrant). Lower level memory implementations (i.e., IMemoryStore) allow for reusing embeddings,
+        // whereas high level memory implementation (i.e., ISemanticTextMemory) assume embeddings get recalculated on every write.
+        services.AddSingleton<OptionalIMemoryStore>(sp => new OptionalIMemoryStore() { MemoryStore = sp.GetService<IMemoryStore>() });
     }
 
     /// <summary>

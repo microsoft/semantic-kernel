@@ -23,7 +23,7 @@ public class SearchUrlSkillTests
     public void ItCanBeImported()
     {
         // Arrange
-        IKernel kernel = KernelBuilder.Create();
+        IKernel kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportSkill(new SearchUrlSkill(), "search");

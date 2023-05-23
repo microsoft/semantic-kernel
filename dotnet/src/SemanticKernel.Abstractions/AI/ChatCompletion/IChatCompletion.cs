@@ -3,10 +3,11 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
-public interface IChatCompletion
+public interface IChatCompletion : IAIService
 {
     /// <summary>
     /// Create a new empty chat instance
