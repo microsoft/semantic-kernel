@@ -6,6 +6,7 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.Policies;
+
 /// <summary>
 /// Represents a custom HTTP pipeline no retry policy.
 /// NOTE: Replace the use of this class with the new RetryPolicy(maxRetries: 0) once a new version of the Azure.AI.OpenAI nuget package, which includes a public version of the RetryPolicy class, is released.
