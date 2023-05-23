@@ -21,7 +21,7 @@ public class QdrantMemoryStoreTests3
     private readonly string _id = "Id";
     private readonly string _text = "text";
     private readonly string _description = "description";
-    private readonly Embedding<float> _embedding = new Embedding<float>(new float[] { 1, 1, 1 });
+    private readonly Embedding<float> _embedding = new(new float[] { 1, 1, 1 });
 
     [Fact]
     public async Task GetNearestMatchesAsyncCallsDoNotReturnVectorsUnlessSpecifiedAsync()

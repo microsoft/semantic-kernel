@@ -229,7 +229,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         Verify.NotNull(serviceFactory);
         this.VerifyIsSemantic();
-        this._aiService = serviceFactory.Invoke();
+        this._aiService = new Lazy<ITextCompletion>(serviceFactory);
         return this;
     }
 
@@ -279,7 +279,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private readonly Delegate _function;
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
-    private ITextCompletion? _aiService = null;
+    private Lazy<ITextCompletion>? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
 
     private struct MethodDetails
@@ -345,9 +345,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private void ReleaseUnmanagedResources()
     {
-        if (this._aiService is not IDisposable disposable) { return; }
+        if (this._aiService == null || !this._aiService.IsValueCreated)
+        {
+            return;
+        }
 
-        disposable.Dispose();
+        if (this._aiService.Value is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 
     /// <summary>
@@ -374,7 +380,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         settings ??= this._aiRequestSettings;
 
         var callable = (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>>)this._function;
-        context.Variables.Update((await callable(this._aiService, settings, context).ConfigureAwait(false)).Variables);
+        context.Variables.Update((await callable(this._aiService?.Value, settings, context).ConfigureAwait(false)).Variables);
         return context;
     }
 
@@ -553,7 +559,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (!result.HasSkFunctionAttribute || skFunctionAttribute == null)
         {
-            log?.LogTrace("Method '{0}' doesn't have '{1}' attribute", result.Name, typeof(SKFunctionAttribute).Name);
+            log?.LogTrace("Method '{0}' doesn't have '{1}' attribute", result.Name, nameof(SKFunctionAttribute));
             if (skAttributesRequired) { return result; }
         }
         else
@@ -596,7 +602,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         else if (skMainParam != null)
         {
             // The developer used [SKFunctionInput] on a function that doesn't support a string input
-            var message = $"The method '{result.Name}' doesn't have a string parameter, do not use '{typeof(SKFunctionInputAttribute).Name}' attribute.";
+            var message = $"The method '{result.Name}' doesn't have a string parameter, do not use '{nameof(SKFunctionInputAttribute)}' attribute.";
             throw new KernelException(KernelException.ErrorCodes.InvalidFunctionDescription, message);
         }
 
@@ -766,7 +772,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{Name} ({Description})";
+    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
 
     #endregion
 }
