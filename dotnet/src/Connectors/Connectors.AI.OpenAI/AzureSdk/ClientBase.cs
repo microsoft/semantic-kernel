@@ -58,17 +58,17 @@ public abstract class ClientBase
             throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions not found");
         }
 
-        var responseDetail = response.Value;
+        var responseData = response.Value;
 
-        if (responseDetail.Choices.Count < 1)
+        if (responseData.Choices.Count < 1)
         {
             throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions not found")
             {
-                Data = { { "ResponseDetail", responseDetail } }
+                Data = { { "ResponseData", responseData } }
             };
         }
 
-        return responseDetail.Choices.Select(choice => new TextCompletionResult(responseDetail, choice)).ToList();
+        return responseData.Choices.Select(choice => new TextCompletionResult(responseData, choice)).ToList();
     }
 
     /// <summary>
@@ -116,9 +116,17 @@ public abstract class ClientBase
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
                 () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-            if (response == null || response.Value.Data.Count < 1)
+            if (response == null)
             {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text embedding not found");
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text embedding null response");
+            }
+
+            if (response.Value.Data.Count < 1)
+            {
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text embedding not found")
+                {
+                    Data = { { "ResponseData", response.Value } }
+                };
             }
 
             EmbeddingItem x = response.Value.Data[0];
@@ -150,9 +158,17 @@ public abstract class ClientBase
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
             () => this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null || response.Value.Choices.Count < 1)
+        if (response == null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions null response");
+        }
+
+        if (response.Value.Choices.Count < 1)
+        {
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found")
+            {
+                Data = { { "ResponseData", response.Value } }
+            };
         }
 
         return response.Value.Choices[0].Message.Content;
@@ -194,7 +210,7 @@ public abstract class ClientBase
 
         if (response is null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions null response");
         }
 
         await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
