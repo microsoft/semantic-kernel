@@ -13,6 +13,8 @@ import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 public class SKBuilders {
+    // Prevent creating object
+    private SKBuilders() {}
 
     public static CompletionSKFunction.Builder completionFunctions() {
         return FunctionBuilders.getCompletionBuilder();

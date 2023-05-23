@@ -67,7 +67,8 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
                 .collectList();
     }
 
-    public static class Builder implements TextCompletion.Builder {
+    public static final class Builder extends TextCompletion.Builder {
+
         @Override
         public TextCompletion build(OpenAIAsyncClient client, String modelId) {
             return new OpenAITextCompletion(client, modelId);

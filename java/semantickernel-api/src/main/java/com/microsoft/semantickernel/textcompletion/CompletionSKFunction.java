@@ -15,28 +15,31 @@ public interface CompletionSKFunction
         return BuildersSingleton.INST.getFunctionBuilders().completionBuilders(null);
     }
 
-    interface Builder {
-        CompletionSKFunction createFunction(
+    abstract class Builder {
+
+        protected Builder() {}
+
+        public abstract CompletionSKFunction createFunction(
                 String promptTemplate,
                 PromptTemplateConfig config,
                 String functionName,
                 @Nullable String skillName);
 
-        CompletionSKFunction createFunction(
+        public abstract CompletionSKFunction createFunction(
                 String functionName, SemanticFunctionConfig functionConfig);
 
-        CompletionSKFunction createFunction(
+        public abstract CompletionSKFunction createFunction(
                 @Nullable String skillNameFinal,
                 String functionName,
                 SemanticFunctionConfig functionConfig);
 
-        CompletionSKFunction createFunction(
+        public abstract CompletionSKFunction createFunction(
                 String promptTemplate,
                 @Nullable String functionName,
                 @Nullable String skillName,
                 @Nullable String description);
 
-        CompletionSKFunction createFunction(
+        public abstract CompletionSKFunction createFunction(
                 String prompt,
                 @Nullable String functionName,
                 @Nullable String skillName,
