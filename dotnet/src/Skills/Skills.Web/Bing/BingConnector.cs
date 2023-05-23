@@ -44,8 +44,14 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
 
         uriBuilder.Query = $"q={Uri.EscapeDataString(query)}";
 
-        if (relatedSites?.Count > 1) uriBuilder.Query += Uri.EscapeDataString($" site:{String.Join(" OR site:", relatedSites)}");
-        else if (relatedSites?.Count == 1) uriBuilder.Query += Uri.EscapeDataString($" site:{relatedSites[0]}");
+        if (relatedSites?.Count > 1)
+        {
+            uriBuilder.Query += Uri.EscapeDataString($" site:{string.Join(" OR site:", relatedSites)}");
+        }
+        else if (relatedSites?.Count == 1)
+        {
+            uriBuilder.Query += Uri.EscapeDataString($" site:{relatedSites[0]}");
+        }
 
         uriBuilder.Query += $"&count={count}&offset={offset}";
 

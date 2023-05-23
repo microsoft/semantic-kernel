@@ -56,8 +56,14 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         search.Cx = this._searchEngineId;
 
         StringBuilder stringBuilder = new(query);
-        if (relatedSites?.Count > 1) stringBuilder.Append(Uri.EscapeDataString($" site:{String.Join(" OR site:", relatedSites)}"));
-        else if (relatedSites?.Count == 1) stringBuilder.Append(Uri.EscapeDataString($" site:{relatedSites[0]}"));
+        if (relatedSites?.Count > 1)
+        {
+            stringBuilder.Append(Uri.EscapeDataString($" site:{string.Join(" OR site:", relatedSites)}"));
+        }
+        else if (relatedSites?.Count == 1)
+        {
+            stringBuilder.Append(Uri.EscapeDataString($" site:{relatedSites[0]}"));
+        }
 
         search.Q = stringBuilder.ToString();
         search.Num = count;
