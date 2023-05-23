@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Reliability;
 
 #pragma warning disable IDE0130
@@ -388,17 +389,11 @@ public static class OpenAIKernelBuilderExtensions
         if (httpClient == null)
         {
             var retryHandler = config.HttpHandlerFactory.Create(logger);
-            retryHandler.InnerHandler = DefaultHttpClientHandler;
-            return new HttpClient(retryHandler, false); //We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
+            return HttpClientProvider.GetClient(retryHandler);
         }
 
         return httpClient;
     }
-
-    /// <summary>
-    /// The default HttpClientHandler to be used by all by all OpenAI connectors.
-    /// </summary>
-    private static HttpClientHandler DefaultHttpClientHandler { get; } = new HttpClientHandler() { CheckCertificateRevocationList = true, };
 
     #endregion
 }
