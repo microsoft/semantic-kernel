@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -9,6 +12,7 @@ using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ModelDiscovery;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Reliability;
@@ -20,6 +24,127 @@ namespace Microsoft.SemanticKernel;
 
 public static class OpenAIKernelBuilderExtensions
 {
+    #region Auto Configuration
+    /// <summary>
+    /// Adds all available Azure OpenAI model deployments to the list.
+    /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Self instance</returns>
+    public static async Task<KernelBuilder> AddAzureOpenAIAsync(this KernelBuilder builder,
+        string endpoint,
+        string apiKey,
+        HttpClient? httpClient = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Get list of (available) models on Azure OpenAI instance
+        var models = await AzureOpenAIRestClient.GetModelsAsync(endpoint, apiKey, httpClient, cancellationToken).ConfigureAwait(false);
+
+        // Get list of deployments
+        var deployments = await AzureOpenAIRestClient.GetDeploymentsAsync(endpoint, apiKey, httpClient, cancellationToken).ConfigureAwait(false);
+
+        foreach (AzureDeploymentInfo d in deployments.Values)
+        {
+            AzureModelInfo model = models[d.Model];
+            if (model.Capabilities.SupportsChatCompletion
+                || model.Id.StartsWith("gpt-", StringComparison.OrdinalIgnoreCase))
+            {
+                builder.WithAzureChatCompletionService(
+                    d.Id,
+                    endpoint,
+                    apiKey,
+                    serviceId: d.Model,
+                    httpClient: httpClient);
+            }
+
+            if (model.Capabilities.SupportsTextCompletion)
+            {
+                builder.WithAzureTextCompletionService(
+                    d.Id,
+                    endpoint,
+                    apiKey,
+                    serviceId: d.Model,
+                    httpClient: httpClient);
+            }
+
+            if (model.Capabilities.SupportsEmbeddings)
+            {
+                builder.WithAzureTextEmbeddingGenerationService(
+                    d.Id,
+                    endpoint,
+                    apiKey,
+                    serviceId: d.Model,
+                    httpClient: httpClient);
+            }
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds all OpenAI model deployments to the list.
+    /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
+    /// <param name="apiKey">OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="organization">OpenAI organization Id</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Application logger</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Self instance</returns>
+    public static async Task<KernelBuilder> AddOpenAIAsync(this KernelBuilder builder,
+        string apiKey,
+        string? organization = null,
+        HttpClient? httpClient = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Get list of (available) models on Azure OpenAI instance
+        var models = await OpenAIRestClient.GetModelsAsync(apiKey, organization, httpClient, cancellationToken).ConfigureAwait(false);
+
+        foreach (var model in models.Values)
+        {
+            if (model.Capabilities.SupportsChatCompletion)
+            {
+                builder.WithOpenAIChatCompletionService(
+                    model.Id,
+                    apiKey,
+                    organization,
+                    serviceId: model.Id,
+                    httpClient: httpClient);
+            }
+
+            if (model.Capabilities.SupportsTextCompletion)
+            {
+                builder.WithOpenAITextCompletionService(
+                    model.Id,
+                    apiKey,
+                    organization,
+                    serviceId: model.Id,
+                    httpClient: httpClient);
+            }
+
+            if (model.Capabilities.SupportsEmbeddings)
+            {
+                builder.WithOpenAITextEmbeddingGenerationService(
+                    model.Id,
+                    apiKey,
+                    organization,
+                    serviceId: model.Id,
+                    httpClient: httpClient);
+            }
+        }
+
+        return builder;
+    }
+    #endregion
+
     #region Text Completion
 
     /// <summary>
