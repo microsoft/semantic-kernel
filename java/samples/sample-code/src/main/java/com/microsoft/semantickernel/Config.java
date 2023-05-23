@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class Config {
 
-    public static final String CONF_PROPERTIES = "samples/java/semantickernel-samples/conf.properties";
+    public static final String CONF_PROPERTIES = "java/samples/conf.properties";
 
     /**
      * Returns the client that will handle AzureOpenAI or OpenAI requests.
