@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.memory; // Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.memory;
 
 import reactor.core.publisher.Mono;
 
