@@ -127,5 +127,8 @@ public static class Program
         Example40_HttpClientUsage.Run();
 
         Console.WriteLine("== DONE ==");
+
+        await Example40_DIContainer.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }

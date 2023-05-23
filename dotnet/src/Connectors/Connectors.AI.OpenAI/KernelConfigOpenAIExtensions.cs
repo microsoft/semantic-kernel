@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
@@ -33,6 +34,7 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use the corresponding extension method in the KernelBuilder class instead.")]
     public static KernelConfig AddAzureTextCompletionService(this KernelConfig config,
         string deploymentName,
         string endpoint,
@@ -65,6 +67,7 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use the corresponding extension method in the KernelBuilder class instead.")]
     public static KernelConfig AddAzureTextCompletionService(this KernelConfig config,
         string deploymentName,
         string endpoint,
@@ -97,6 +100,7 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use the corresponding extension method in the KernelBuilder class instead.")]
     public static KernelConfig AddOpenAITextCompletionService(this KernelConfig config,
         string modelId,
         string apiKey,
@@ -133,6 +137,7 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use the corresponding extension method in the KernelBuilder class instead.")]
     public static KernelConfig AddAzureTextEmbeddingGenerationService(this KernelConfig config,
         string deploymentName,
         string endpoint,
@@ -165,6 +170,7 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use the corresponding extension method in the KernelBuilder class instead.")]
     public static KernelConfig AddAzureTextEmbeddingGenerationService(this KernelConfig config,
         string deploymentName,
         string endpoint,
@@ -197,6 +203,7 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use the corresponding extension method in the KernelBuilder class instead.")]
     public static KernelConfig AddOpenAITextEmbeddingGenerationService(this KernelConfig config,
         string modelId,
         string apiKey,
@@ -234,6 +241,7 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use the corresponding extension method in the KernelBuilder class instead.")]
     public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
         string deploymentName,
         string endpoint,
@@ -280,6 +288,7 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use the corresponding extension method in the KernelBuilder class instead.")]
     public static KernelConfig AddAzureChatCompletionService(this KernelConfig config,
         string deploymentName,
         string endpoint,
@@ -327,6 +336,7 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use the corresponding extension method in the KernelBuilder class instead.")]
     public static KernelConfig AddOpenAIChatCompletionService(this KernelConfig config,
         string modelId,
         string apiKey,
@@ -375,6 +385,7 @@ public static class KernelConfigOpenAIExtensions
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <returns>Self instance</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use the corresponding extension method in the KernelBuilder class instead.")]
     public static KernelConfig AddOpenAIImageGenerationService(this KernelConfig config,
         string apiKey,
         string? orgId = null,
