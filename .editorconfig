@@ -135,8 +135,27 @@ dotnet_diagnostic.CA1860.severity = warning # Prefer comparing 'Count' to 0 rath
 dotnet_diagnostic.CA2000.severity = warning # Call System.IDisposable.Dispose on object before all references to it are out of scope
 dotnet_diagnostic.CA2201.severity = warning # Exception type System.Exception is not sufficiently specific
 
-dotnet_diagnostic.IDE0005.severity = warning # Remove unnecessary usings
+dotnet_diagnostic.IDE0001.severity = warning # Simplify name
+dotnet_diagnostic.IDE0005.severity = warning # Remove unnecessary using directives
+dotnet_diagnostic.IDE0009.severity = warning # Add this or Me qualification
+dotnet_diagnostic.IDE0011.severity = warning # Add braces
+dotnet_diagnostic.IDE0018.severity = warning # Inline variable declaration
+dotnet_diagnostic.IDE0032.severity = warning # Use auto-implemented property
+dotnet_diagnostic.IDE0034.severity = warning # Simplify 'default' expression
+dotnet_diagnostic.IDE0035.severity = warning # Remove unreachable code
+dotnet_diagnostic.IDE0040.severity = warning # Add accessibility modifiers
+dotnet_diagnostic.IDE0049.severity = warning # Use language keywords instead of framework type names for type references
+dotnet_diagnostic.IDE0050.severity = warning # Convert anonymous type to tuple
+dotnet_diagnostic.IDE0051.severity = warning # Remove unused private member
+dotnet_diagnostic.IDE0055.severity = warning # Formatting rule
+dotnet_diagnostic.IDE0060.severity = warning # Remove unused parameter
+dotnet_diagnostic.IDE0070.severity = warning # Use 'System.HashCode.Combine'
+dotnet_diagnostic.IDE0071.severity = warning # Simplify interpolation
+dotnet_diagnostic.IDE0073.severity = warning # Require file header
+dotnet_diagnostic.IDE0082.severity = warning # Convert typeof to nameof
+dotnet_diagnostic.IDE0090.severity = warning # Simplify new expression
 dotnet_diagnostic.IDE0130.severity = warning # Namespace does not match folder structure
+dotnet_diagnostic.IDE0161.severity = warning # Use file-scoped namespace
 
 # Suppressed diagnostics
 dotnet_diagnostic.CA1002.severity = none # Change 'List<string>' in '...' to use 'Collection<T>' ...
@@ -276,7 +295,7 @@ dotnet_naming_rule.async_methods_end_in_async.severity = error
 ###############################
 # C# Coding Conventions       #
 ###############################
-[*.cs]
+
 # var preferences
 csharp_style_var_for_built_in_types = false:none
 csharp_style_var_when_type_is_apparent = false:none
@@ -306,7 +325,7 @@ csharp_style_inlined_variable_declaration = true:suggestion
 ###############################
 # C# Formatting Rules         #
 ###############################
-[*.cs]
+
 # New line preferences
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
@@ -344,19 +363,6 @@ csharp_style_prefer_top_level_statements = true:silent
 csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 
-##################
-# C# Style       #
-##################
-
-###############################
-# VB Coding Conventions       #
-###############################
-[*.vb]
-trim_trailing_whitespace = true
-tab_width = 4
-indent_size = 4
-# Modifier preferences
-visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public,Friend,NotOverridable,Overridable,MustOverride,Overloads,Overrides,MustInherit,NotInheritable,Static,Shared,Shadows,ReadOnly,WriteOnly,Dim,Const,WithEvents,Widening,Narrowing,Custom,Async:suggestion
 
 ###############################
 # Java Coding Conventions     #

@@ -56,12 +56,7 @@ public static class CopilotChatServiceExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-        // Planner options
-        services.AddOptions<PlannerOptions>()
-            .Bind(configuration.GetSection(PlannerOptions.PropertyName))
-            .ValidateOnStart()
-            .PostConfigure(TrimStringProperties);
-
+        // Chat prompt options
         services.AddOptions<PromptsOptions>()
             .Bind(configuration.GetSection(PromptsOptions.PropertyName))
             .ValidateOnStart()
