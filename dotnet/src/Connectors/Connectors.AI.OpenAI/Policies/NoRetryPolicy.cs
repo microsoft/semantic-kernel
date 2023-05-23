@@ -6,6 +6,7 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.Policies;
+
 /// <summary>
 /// Represents a custom HTTP pipeline no retry policy.
 /// </summary>
