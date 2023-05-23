@@ -40,7 +40,7 @@ Event: {{$input}}
         var textResult = await excuseFunction.InvokeAsync("I missed the F1 final race");
         Console.WriteLine(textResult);
         Console.WriteLine(JsonSerializer.Serialize(
-            textResult.GetOpenAILastPromptResult(),
+            textResult.LastPromptResults,
             new JsonSerializerOptions() { WriteIndented = true }
         ));
         Console.WriteLine();

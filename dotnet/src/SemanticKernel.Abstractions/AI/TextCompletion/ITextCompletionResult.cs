@@ -7,6 +7,9 @@ namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
 public interface ITextCompletionResult
 {
+    /// <summary>
+    /// Gets the model result data.
+    /// </summary>
     object? ResultData { get; }
 
     Task<string> GetCompletionAsync(CancellationToken cancellationToken = default);

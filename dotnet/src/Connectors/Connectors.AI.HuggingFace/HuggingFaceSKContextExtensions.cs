@@ -12,6 +12,11 @@ namespace Microsoft.SemanticKernel;
 
 public static class HuggingFaceSKContextExtensions
 {
+    /// <summary>
+    /// Retrieves a list of <see cref="TextCompletionResponse"/> from <see cref="SKContext.LastPromptResults"/>.
+    /// </summary>
+    /// <param name="skContext">Current context</param>
+    /// <returns>List of <see cref="TextCompletionResponse"/></returns>
     public static IEnumerable<TextCompletionResponse>? GetHuggingFaceLastResultsData(this SKContext skContext)
     {
         if (skContext.LastPromptResults is not null)
@@ -22,6 +27,11 @@ public static class HuggingFaceSKContextExtensions
         return null;
     }
 
+    /// <summary>
+    /// Retrieves the first occurrence of <see cref="TextCompletionResponse"/> from <see cref="SKContext.LastPromptResults"/>.
+    /// </summary>
+    /// <param name="skContext">Target SK Context</param>
+    /// <returns>First occurrence of <see cref="TextCompletionResponse"/></returns>
     public static TextCompletionResponse? GetHuggingFaceLastResultData(this SKContext skContext)
     {
         return GetHuggingFaceLastResultsData(skContext)?.FirstOrDefault();
