@@ -131,40 +131,40 @@ public static class TextChunker
     {
         var result = new List<string>();
         text = text.NormalizeLineEndings();
-
-        Split(text.AsSpan(), text, maxTokensPerLine, splitOptions[0].AsSpan(), trim, out bool inputWasSplit, result);
-        if (inputWasSplit)
+        result.Add(text);
+        for (int i = 0; i < splitOptions.Length; i++)
         {
-            for (int i = 1; i < splitOptions.Length; i++)
+            int count = result.Count; // track where the original input left off
+            var (splits2, inputWasSplit2) = Split(result, maxTokensPerLine, splitOptions[i].AsSpan(), trim);
+            result.AddRange(splits2);
+            result.RemoveRange(0, count); // remove the original input
+            if (!inputWasSplit2)
             {
-                int count = result.Count; // track where the original input left off
-                Split(result, maxTokensPerLine, splitOptions[i].AsSpan(), trim, out inputWasSplit, result);
-                result.RemoveRange(0, count); // remove the original input
-                if (!inputWasSplit)
-                {
-                    break;
-                }
+                break;
             }
         }
         return result;
     }
 
-    private static void Split(List<string> input, int maxTokens, ReadOnlySpan<char> separators, bool trim, out bool inputWasSplit, List<string> result)
+    private static (List<string>, bool) Split(List<string> input, int maxTokens, ReadOnlySpan<char> separators, bool trim)
     {
-        inputWasSplit = false;
+        bool inputWasSplit = false;
+        List<string> result = new List<string>();
         int count = input.Count;
         for (int i = 0; i < count; i++)
         {
-            Split(input[i].AsSpan(), input[i], maxTokens, separators, trim, out bool split, result);
+            var (splits, split) = Split(input[i].AsSpan(), input[i], maxTokens, separators, trim);
+            result.AddRange(splits);
             inputWasSplit |= split;
         }
+        return (result, inputWasSplit);
     }
 
-    private static void Split(ReadOnlySpan<char> input, string? inputString, int maxTokens, ReadOnlySpan<char> separators, bool trim, out bool inputWasSplit, List<string> result)
+    private static (List<string>,bool) Split(ReadOnlySpan<char> input, string? inputString, int maxTokens, ReadOnlySpan<char> separators, bool trim)
     {
         Debug.Assert(inputString is null || input.SequenceEqual(inputString.AsSpan()));
-
-        inputWasSplit = false;
+        List<string> result = new List<string>();
+        var inputWasSplit = false;
         if (TokenCount(input.Length) > maxTokens)
         {
             inputWasSplit = true;
@@ -209,11 +209,13 @@ public static class TextChunker
                 }
 
                 // Recursion
-                Split(firstHalf, null, maxTokens, separators, trim, out bool split1, result);
-                Split(secondHalf, null, maxTokens, separators, trim, out bool split2, result);
+                var (splits1, split1) = Split(firstHalf, null, maxTokens, separators, trim);
+                result.AddRange(splits1);
+                var (splits2, split2) = Split(secondHalf, null, maxTokens, separators, trim);
+                result.AddRange(splits2) ;
 
                 inputWasSplit = split1 || split2;
-                return;
+                return (result, inputWasSplit);
             }
         }
 
@@ -224,6 +226,8 @@ public static class TextChunker
             (false, true) => input.Trim().ToString(),
             (false, false) => input.ToString(),
         });
+
+        return (result, inputWasSplit);
     }
 
     private static int TokenCount(int inputLength)
