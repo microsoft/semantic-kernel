@@ -139,13 +139,6 @@
             </properties>
         </profile>
         <profile>
-            <id>compile-jdk11</id>
-            <properties>
-                <maven.compiler.source>11</maven.compiler.source>
-                <maven.compiler.target>11</maven.compiler.target>
-            </properties>
-        </profile>
-        <profile>
             <id>compile-jdk17</id>
             <properties>
                 <maven.compiler.source>17</maven.compiler.source>
