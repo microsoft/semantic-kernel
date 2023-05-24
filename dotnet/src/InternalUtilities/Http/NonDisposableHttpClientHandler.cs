@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Net.Http;
 
 /// <summary>
@@ -7,11 +6,6 @@ using System.Net.Http;
 /// </summary>
 internal sealed class NonDisposableHttpClientHandler : HttpClientHandler
 {
-    /// <summary>
-    /// Lazy-initialized instance of <see cref="NonDisposableHttpClientHandler"/>.
-    /// </summary>
-    private static readonly Lazy<NonDisposableHttpClientHandler> instance = new(() => new NonDisposableHttpClientHandler());
-
     /// <summary>
     /// Private constructor to prevent direct instantiation of the class.
     /// </summary>
@@ -23,7 +17,7 @@ internal sealed class NonDisposableHttpClientHandler : HttpClientHandler
     /// <summary>
     /// Gets the singleton instance of <see cref="NonDisposableHttpClientHandler"/>.
     /// </summary>
-    public static NonDisposableHttpClientHandler Instance => instance.Value;
+    public static NonDisposableHttpClientHandler Instance { get; } = new NonDisposableHttpClientHandler();
 
     /// <summary>
     /// Disposes the underlying resources held by the <see cref="NonDisposableHttpClientHandler"/>.
