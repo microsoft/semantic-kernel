@@ -8,6 +8,7 @@
   <PropertyGroup>
     <RootNamespace></RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <!-- Suppress: "Declare types in namespaces" -->
