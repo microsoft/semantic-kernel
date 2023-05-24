@@ -54,6 +54,8 @@ public static class OpenAIKernelBuilderExtensions
         foreach (AzureDeploymentInfo d in deployments.Values)
         {
             AzureModelInfo model = models[d.Model];
+            string serviceId = $"{serviceIdPrefix ?? string.Empty}{d.Model}";
+
             if (model.Capabilities.SupportsChatCompletion
                 || model.Id.StartsWith("gpt-", StringComparison.OrdinalIgnoreCase))
             {
@@ -61,8 +63,10 @@ public static class OpenAIKernelBuilderExtensions
                     d.Id,
                     endpoint,
                     apiKey,
-                    serviceId: $"{serviceIdPrefix ?? string.Empty}{d.Model}",
+                    serviceId: serviceId,
                     httpClient: httpClient);
+
+                logger?.LogInformation("Registered Azure OpenAI chat completion model: {Model}, serviceId: {ServiceId}", d.Model, serviceId);
             }
 
             if (model.Capabilities.SupportsTextCompletion)
@@ -71,8 +75,10 @@ public static class OpenAIKernelBuilderExtensions
                     d.Id,
                     endpoint,
                     apiKey,
-                    serviceId: $"{serviceIdPrefix ?? string.Empty}{d.Model}",
+                    serviceId: serviceId,
                     httpClient: httpClient);
+
+                logger?.LogInformation("Registered Azure OpenAI text completion model: {Model}, serviceId: {ServiceId}", d.Model, serviceId);
             }
 
             if (model.Capabilities.SupportsEmbeddings)
@@ -81,8 +87,10 @@ public static class OpenAIKernelBuilderExtensions
                     d.Id,
                     endpoint,
                     apiKey,
-                    serviceId: $"{serviceIdPrefix ?? string.Empty}{d.Model}",
+                    serviceId: serviceId,
                     httpClient: httpClient);
+
+                logger?.LogInformation("Registered Azure OpenAI embedding generation model: {Model}, serviceId: {ServiceId}", d.Model, serviceId);
             }
         }
 
@@ -115,14 +123,18 @@ public static class OpenAIKernelBuilderExtensions
 
         foreach (var model in models.Values)
         {
+            string serviceId = $"{serviceIdPrefix ?? string.Empty}{model.Id}";
+
             if (model.Capabilities.SupportsChatCompletion)
             {
                 builder.WithOpenAIChatCompletionService(
                     model.Id,
                     apiKey,
                     organization,
-                    serviceId: $"{serviceIdPrefix ?? string.Empty}{model.Id}",
+                    serviceId: serviceId,
                     httpClient: httpClient);
+
+                logger?.LogInformation("Registered OpenAI chat completion model: {Model}, serviceId: {ServiceId}", model.Id, serviceId);
             }
 
             if (model.Capabilities.SupportsTextCompletion)
@@ -131,8 +143,10 @@ public static class OpenAIKernelBuilderExtensions
                     model.Id,
                     apiKey,
                     organization,
-                    serviceId: $"{serviceIdPrefix ?? string.Empty}{model.Id}",
+                    serviceId: serviceId,
                     httpClient: httpClient);
+
+                logger?.LogInformation("Registered OpenAI text completion model: {Model}, serviceId: {ServiceId}", model.Id, serviceId);
             }
 
             if (model.Capabilities.SupportsEmbeddings)
@@ -141,8 +155,10 @@ public static class OpenAIKernelBuilderExtensions
                     model.Id,
                     apiKey,
                     organization,
-                    serviceId: $"{serviceIdPrefix ?? string.Empty}{model.Id}",
+                    serviceId: serviceId,
                     httpClient: httpClient);
+
+                logger?.LogInformation("Registered OpenAI embedding generation model: {Model}, serviceId: {ServiceId}", model.Id, serviceId);
             }
         }
 
