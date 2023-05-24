@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.planner.sequentialplanner; // Copyright (c) Microsoft. All
-// rights reserved.
+package com.microsoft.semantickernel.planner.sequentialplanner;
 
 import java.io.IOException;
 import java.io.InputStream;

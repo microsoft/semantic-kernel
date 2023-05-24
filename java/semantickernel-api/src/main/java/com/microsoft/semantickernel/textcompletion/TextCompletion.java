@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.textcompletion; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.textcompletion;
 
 import com.microsoft.openai.OpenAIAsyncClient;
 

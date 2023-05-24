@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.syntaxexamples.skills; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.syntaxexamples.skills;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;

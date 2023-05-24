@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.e2e; // Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.e2e;
 
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
