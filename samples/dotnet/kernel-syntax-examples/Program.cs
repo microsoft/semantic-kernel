@@ -2,7 +2,6 @@
 
 using System;
 using System.Threading.Tasks;
-
 public static class Program
 {
     // ReSharper disable once InconsistentNaming
@@ -126,6 +125,9 @@ public static class Program
         Console.WriteLine("== DONE ==");
 
         await Example40_DIContainer.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example41_OpenAIAutoconfigure.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
