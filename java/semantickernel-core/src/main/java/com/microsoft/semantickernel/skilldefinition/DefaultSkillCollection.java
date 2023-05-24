@@ -31,7 +31,7 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
         }
     }
 
-    public Map<String, FunctionCollection> getSkillCollection() {
+    protected Map<String, FunctionCollection> getSkillCollection() {
         return skillCollection;
     }
 
