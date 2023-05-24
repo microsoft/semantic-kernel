@@ -31,6 +31,8 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceIdPrefix">Optional srting to prepend onto the model name when registering the service. Used to disambiguate, when multiple connectors
+    /// may have the same model names. Example: specifying prefix "openai:" will result in model registrations of the form "openai:gpt-3.5-turbo".</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -38,6 +40,7 @@ public static class OpenAIKernelBuilderExtensions
     public static KernelBuilder WithAzureOpenAI(this KernelBuilder builder,
         string endpoint,
         string apiKey,
+        string? serviceIdPrefix = null,
         HttpClient? httpClient = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
@@ -58,7 +61,7 @@ public static class OpenAIKernelBuilderExtensions
                     d.Id,
                     endpoint,
                     apiKey,
-                    serviceId: d.Model,
+                    serviceId: $"{serviceIdPrefix ?? string.Empty}{d.Model}",
                     httpClient: httpClient);
             }
 
@@ -68,7 +71,7 @@ public static class OpenAIKernelBuilderExtensions
                     d.Id,
                     endpoint,
                     apiKey,
-                    serviceId: d.Model,
+                    serviceId: $"{serviceIdPrefix ?? string.Empty}{d.Model}",
                     httpClient: httpClient);
             }
 
@@ -78,7 +81,7 @@ public static class OpenAIKernelBuilderExtensions
                     d.Id,
                     endpoint,
                     apiKey,
-                    serviceId: d.Model,
+                    serviceId: $"{serviceIdPrefix ?? string.Empty}{d.Model}",
                     httpClient: httpClient);
             }
         }
@@ -93,6 +96,8 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="apiKey">OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="organization">OpenAI organization Id</param>
+    /// <param name="serviceIdPrefix">Optional srting to prepend onto the model name when registering the service. Used to disambiguate, when multiple connectors
+    /// may have the same model names. Example: specifying prefix "openai:" will result in model registrations of the form "openai:gpt-3.5-turbo".</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -100,6 +105,7 @@ public static class OpenAIKernelBuilderExtensions
     public static KernelBuilder WithOpenAI(this KernelBuilder builder,
         string apiKey,
         string? organization = null,
+        string? serviceIdPrefix = null,
         HttpClient? httpClient = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
@@ -115,7 +121,7 @@ public static class OpenAIKernelBuilderExtensions
                     model.Id,
                     apiKey,
                     organization,
-                    serviceId: model.Id,
+                    serviceId: $"{serviceIdPrefix ?? string.Empty}{model.Id}",
                     httpClient: httpClient);
             }
 
@@ -125,7 +131,7 @@ public static class OpenAIKernelBuilderExtensions
                     model.Id,
                     apiKey,
                     organization,
-                    serviceId: model.Id,
+                    serviceId: $"{serviceIdPrefix ?? string.Empty}{model.Id}",
                     httpClient: httpClient);
             }
 
@@ -135,7 +141,7 @@ public static class OpenAIKernelBuilderExtensions
                     model.Id,
                     apiKey,
                     organization,
-                    serviceId: model.Id,
+                    serviceId: $"{serviceIdPrefix ?? string.Empty}{model.Id}",
                     httpClient: httpClient);
             }
         }
