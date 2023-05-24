@@ -4,10 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Web;
+using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.CopilotChat.Auth;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
@@ -32,6 +36,13 @@ public static class CopilotChatServiceExtensions
         services.AddOptions<AIServiceOptions>(AIServiceOptions.PropertyName)
             .Bind(configuration.GetSection(AIServiceOptions.PropertyName))
             .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
+        // Authorization configuration
+        services.AddOptions<ChatAuthenticationOptions>()
+            .Bind(configuration.GetSection(ChatAuthenticationOptions.PropertyName))
+            .ValidateOnStart()
+            .ValidateDataAnnotations()
             .PostConfigure(TrimStringProperties);
 
         // Chat log storage configuration
@@ -147,6 +158,34 @@ public static class CopilotChatServiceExtensions
 
         services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
         return services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
+    }
+
+    /// <summary>
+    /// Add authentication services
+    /// </summary>
+    public static IServiceCollection AddCopilotChatAuthentication(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<IAuthInfo, AuthInfo>();
+        var config = services.BuildServiceProvider().GetRequiredService<IOptions<ChatAuthenticationOptions>>().Value;
+        switch (config.Type)
+        {
+            case ChatAuthenticationOptions.AuthenticationType.AzureAd:
+                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddMicrosoftIdentityWebApi(configuration.GetSection($"{ChatAuthenticationOptions.PropertyName}:AzureAd"));
+                break;
+
+            case ChatAuthenticationOptions.AuthenticationType.None:
+                services.AddAuthentication(PassThroughAuthenticationHandler.AuthenticationScheme)
+                    .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>(
+                        authenticationScheme: PassThroughAuthenticationHandler.AuthenticationScheme,
+                        configureOptions: null);
+                break;
+
+            default:
+                throw new InvalidOperationException($"Invalid authentication type '{config.Type}'.");
+        }
+
+        return services;
     }
 
     /// <summary>

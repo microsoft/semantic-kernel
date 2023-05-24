@@ -3,13 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.Identity.Web;
-using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.Options;
 using SemanticKernel.Service.Utilities;
 
@@ -38,13 +34,6 @@ internal static class ServicesExtensions
 
         var foo = services.BuildServiceProvider().GetService<IOptions<AIServiceOptions>>();
 
-        // Authorization configuration
-        services.AddOptions<ChatAuthenticationOptions>()
-            .Bind(configuration.GetSection(ChatAuthenticationOptions.PropertyName))
-            .ValidateOnStart()
-            .ValidateDataAnnotations()
-            .PostConfigure(TrimStringProperties);
-
         // Memory store configuration
         services.AddOptions<MemoriesStoreOptions>()
             .Bind(configuration.GetSection(MemoriesStoreOptions.PropertyName))
@@ -55,7 +44,7 @@ internal static class ServicesExtensions
         return services;
     }
 
-    internal static IServiceCollection AddCopilotChatUtilities(this IServiceCollection services)
+    internal static IServiceCollection AddUtilities(this IServiceCollection services)
     {
         return services.AddScoped<AskConverter>();
     }
@@ -78,34 +67,6 @@ internal static class ServicesExtensions
                             .AllowAnyHeader();
                     });
             });
-        }
-
-        return services;
-    }
-
-    /// <summary>
-    /// Add authentication services
-    /// </summary>
-    internal static IServiceCollection AddCopilotChatAuthentication(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddScoped<IAuthInfo, AuthInfo>();
-        var config = services.BuildServiceProvider().GetRequiredService<IOptions<ChatAuthenticationOptions>>().Value;
-        switch (config.Type)
-        {
-            case ChatAuthenticationOptions.AuthenticationType.AzureAd:
-                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApi(configuration.GetSection($"{ChatAuthenticationOptions.PropertyName}:AzureAd"));
-                break;
-
-            case ChatAuthenticationOptions.AuthenticationType.None:
-                services.AddAuthentication(PassThroughAuthenticationHandler.AuthenticationScheme)
-                    .AddScheme<AuthenticationSchemeOptions, PassThroughAuthenticationHandler>(
-                        authenticationScheme: PassThroughAuthenticationHandler.AuthenticationScheme,
-                        configureOptions: null);
-                break;
-
-            default:
-                throw new InvalidOperationException($"Invalid authentication type '{config.Type}'.");
         }
 
         return services;

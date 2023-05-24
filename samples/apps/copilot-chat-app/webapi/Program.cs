@@ -45,14 +45,14 @@ public sealed class Program
             .AddCopilotChatOptions(builder.Configuration)
             .AddCopilotChatPlannerServices()
             .AddPersistentChatStore()
-            .AddCopilotChatUtilities();
+            .AddUtilities()
+            .AddCopilotChatAuthentication(builder.Configuration)
+            .AddCopilotChatAuthorization();
 
         // Add in the rest of the services.
         builder.Services
             .AddApplicationInsightsTelemetry()
             .AddLogging(logBuilder => logBuilder.AddApplicationInsights())
-            .AddCopilotChatAuthentication(builder.Configuration)
-            .AddCopilotChatAuthorization()
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
             .AddCors()

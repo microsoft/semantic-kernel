@@ -6,6 +6,9 @@ using SemanticKernel.Service.Models;
 
 namespace SemanticKernel.Service.Utilities;
 
+/// <summary>
+/// Converts <see cref="Ask"/> variables to <see cref="ContextVariables"/>, inserting some system variables along the way.
+/// </summary>
 public class AskConverter
 {
     private readonly IAuthInfo _authInfo;
