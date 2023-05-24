@@ -230,7 +230,7 @@
       "label": "run (Copilot Chat)",
       "detail": "Run all copilot chat components",
       "group": "test",
-      "dependsOn": ["run (CopilotChatApi)", "run (CopilotChatApp)"],
+      "dependsOn": ["run (CopilotChatWebApi)", "run (CopilotChatApp)"],
       "dependsOrder": "parallel"
     },
     // Copilot Setup
@@ -339,12 +339,12 @@
     },
     // Copilot Chat Api
     {
-      "label": "build (CopilotChatApi)",
+      "label": "build (CopilotChatWebApi)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatApi.csproj",
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary",
         "/property:DebugType=portable"
@@ -353,13 +353,13 @@
       "group": "build"
     },
     {
-      "label": "run (CopilotChatApi)",
+      "label": "run (CopilotChatWebApi)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "run",
         "--project",
-        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatApi.csproj"
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -370,14 +370,14 @@
       }
     },
     {
-      "label": "watch (CopilotChatApi)",
+      "label": "watch (CopilotChatWebApi)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatApi.csproj"
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "build"
