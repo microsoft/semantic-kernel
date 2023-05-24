@@ -67,7 +67,6 @@ public sealed class TextChunkerTests
         Assert.Equal(expected, result);
     }
 
-
     [Fact]
     public void CanSplitTextParagraphs()
     {

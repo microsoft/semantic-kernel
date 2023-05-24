@@ -181,7 +181,7 @@ public static class TextChunker
     private static (List<string>, bool) Split(List<string> input, int maxTokens, ReadOnlySpan<char> separators, bool trim)
     {
         bool inputWasSplit = false;
-        List<string> result = new List<string>();
+        List<string> result = new();
         int count = input.Count;
         for (int i = 0; i < count; i++)
         {
@@ -195,7 +195,7 @@ public static class TextChunker
     private static (List<string>, bool) Split(ReadOnlySpan<char> input, string? inputString, int maxTokens, ReadOnlySpan<char> separators, bool trim)
     {
         Debug.Assert(inputString is null || input.SequenceEqual(inputString.AsSpan()));
-        List<string> result = new List<string>();
+        List<string> result = new();
         var inputWasSplit = false;
         if (TokenCount(input.Length) > maxTokens)
         {
