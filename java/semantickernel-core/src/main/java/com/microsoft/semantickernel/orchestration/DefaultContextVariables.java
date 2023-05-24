@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-// Copyright (c) Microsoft. All rights reserved.
-
 import com.microsoft.semantickernel.skilldefinition.CaseInsensitiveMap;
 
 import reactor.util.annotation.NonNull;

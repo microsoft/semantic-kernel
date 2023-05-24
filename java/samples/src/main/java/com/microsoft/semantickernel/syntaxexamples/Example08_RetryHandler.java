@@ -1,4 +1,5 @@
-package com.microsoft.semantickernel.syntaxexamples;// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;

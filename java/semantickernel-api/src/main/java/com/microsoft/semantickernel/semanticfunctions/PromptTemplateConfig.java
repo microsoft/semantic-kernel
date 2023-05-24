@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.semanticfunctions; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

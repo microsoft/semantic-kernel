@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.templateengine;
 
 import com.microsoft.semantickernel.templateengine.blocks.*;
 
@@ -169,10 +168,9 @@ public class CodeTokenizer {
 
             if (currentTokenType == TokenTypes.None) {
                 if (!spaceSeparatorFound) {
-                    throw new TemplateException();
-                    // TODO error code
-                    // throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                    //       "Tokens must be separated by one space least");
+                    throw new TemplateException(
+                            TemplateException.ErrorCodes.SyntaxError,
+                            "Tokens must be separated by one space least");
                 }
 
                 if (isQuote(currentChar)) {
@@ -205,10 +203,9 @@ public class CodeTokenizer {
                 break;
 
             case None:
-                throw new TemplateException();
-                // TODO error code
-                // throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                //        "Tokens must be separated by one space least");
+                throw new TemplateException(
+                        TemplateException.ErrorCodes.SyntaxError,
+                        "Tokens must be separated by one space least");
         }
 
         return blocks;

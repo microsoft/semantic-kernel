@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.templateengine;
 
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
 import com.microsoft.semantickernel.templateengine.blocks.CodeBlock;
 import com.microsoft.semantickernel.templateengine.blocks.CodeRendering;
 import com.microsoft.semantickernel.templateengine.blocks.TextRendering;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,7 +27,7 @@ import java.util.List;
 // immutable when invoked within the template
 /// </summary>
 public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
-    // private readonly ILogger _log;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPromptTemplateEngine.class);
 
     private final TemplateTokenizer tokenizer;
 
@@ -46,9 +48,8 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
         if (validate) {
             blocks.forEach(
                     block -> {
-                        // TODO ERROR MESSAGE
                         if (!block.isValid()) {
-                            throw new TemplateException();
+                            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError);
                         }
                     });
         }
@@ -76,13 +77,15 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
                             } else if (block instanceof CodeRendering) {
                                 return ((CodeBlock) block).renderCodeAsync(context);
                             } else {
-                                // const string error = "Unexpected block type, the block doesn't
-                                // have a rendering method";
-                                //    this._log.LogError(error);
-                                //    throw new
-                                // TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, error);
+                                String message =
+                                        "Unexpected block type, the block doesn't have a rendering"
+                                                + " method";
+                                LOGGER.error(message);
+                                return Mono.error(
+                                        new TemplateException(
+                                                TemplateException.ErrorCodes.UnexpectedBlockType,
+                                                message));
                             }
-                            return Mono.just("");
                         })
                 .collectList()
                 .map(

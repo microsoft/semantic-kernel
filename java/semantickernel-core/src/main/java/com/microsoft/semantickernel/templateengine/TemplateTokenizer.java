@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.templateengine;
 
 import com.microsoft.semantickernel.templateengine.blocks.Block;
 import com.microsoft.semantickernel.templateengine.blocks.CodeBlock;
@@ -69,7 +68,7 @@ public class TemplateTokenizer {
             return Collections.singletonList(new TextBlock(text));
         }
 
-        List<Block> blocks = new ArrayList<Block>();
+        List<Block> blocks = new ArrayList<>();
 
         int endOfLastBlock = 0;
 
@@ -148,12 +147,10 @@ public class TemplateTokenizer {
                             switch (codeBlocks.get(0).getType()) {
                                 case Variable:
                                     if (codeBlocks.size() > 1) {
-                                        throw new TemplateException();
-                                        // TODO errorcode
-                                        // throw new
-                                        // TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                                        //        $"Invalid token detected after the variable:
-                                        // {contentWithoutDelimiters}");
+                                        throw new TemplateException(
+                                                TemplateException.ErrorCodes.SyntaxError,
+                                                "Invalid token detected after the variable: "
+                                                        + contentWithoutDelimiters);
                                     }
 
                                     blocks.add(codeBlocks.get(0));
@@ -161,12 +158,10 @@ public class TemplateTokenizer {
 
                                 case Value:
                                     if (codeBlocks.size() > 1) {
-                                        throw new TemplateException();
-                                        // TODO errorcode
-                                        // throw new
-                                        // TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                                        //        $"Invalid token detected after the value:
-                                        // {contentWithoutDelimiters}");
+                                        throw new TemplateException(
+                                                TemplateException.ErrorCodes.SyntaxError,
+                                                "Invalid token detected after the value: "
+                                                        + contentWithoutDelimiters);
                                     }
 
                                     blocks.add(codeBlocks.get(0));
@@ -174,12 +169,10 @@ public class TemplateTokenizer {
 
                                 case FunctionId:
                                     if (codeBlocks.size() > 2) {
-                                        throw new TemplateException();
-                                        // TODO errorcode
-                                        // throw new
-                                        // TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                                        //        $"Functions support only one parameter:
-                                        // {contentWithoutDelimiters}");
+                                        throw new TemplateException(
+                                                TemplateException.ErrorCodes.SyntaxError,
+                                                "Functions support only one parameter: "
+                                                        + contentWithoutDelimiters);
                                     }
 
                                     blocks.add(new CodeBlock(codeBlocks, contentWithoutDelimiters));
@@ -189,12 +182,10 @@ public class TemplateTokenizer {
                                 case Text:
                                 case Undefined:
                                 default:
-                                    throw new TemplateException();
-                                    // TODO errorcode
-                                    // throw new
-                                    // TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
-                                    //        $"Code tokenizer returned an incorrect first token
-                                    // type {codeBlocks[0].Type:G}");
+                                    throw new TemplateException(
+                                            TemplateException.ErrorCodes.UnexpectedBlockType,
+                                            "Code tokenizer returned an incorrect first token type "
+                                                    + codeBlocks.get(0).getType());
                             }
                         }
 

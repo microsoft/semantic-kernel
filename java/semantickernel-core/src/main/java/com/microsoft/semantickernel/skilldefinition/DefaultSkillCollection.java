@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.skilldefinition; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.skilldefinition;
 
 import com.microsoft.semantickernel.orchestration.SKFunction;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -63,27 +61,18 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
         this.skillCollection = new CaseInsensitiveMap<>();
     }
 
-    @CheckReturnValue
     public DefaultSkillCollection addSemanticFunction(SKFunction functionInstance) {
         FunctionCollection existingFunctionCollection;
-        if (!skillCollection.containsKey(functionInstance.getSkillName().toLowerCase())) {
-            existingFunctionCollection =
-                    new FunctionCollection(functionInstance.getSkillName().toLowerCase());
+        if (!skillCollection.containsKey(functionInstance.getSkillName())) {
+            existingFunctionCollection = new FunctionCollection(functionInstance.getSkillName());
+            skillCollection.put(functionInstance.getSkillName(), existingFunctionCollection);
         } else {
-            existingFunctionCollection =
-                    skillCollection.get(functionInstance.getSkillName().toLowerCase());
+            existingFunctionCollection = skillCollection.get(functionInstance.getSkillName());
         }
 
-        existingFunctionCollection =
-                existingFunctionCollection.put(
-                        functionInstance.getName().toLowerCase(), functionInstance);
+        existingFunctionCollection.put(functionInstance.getName(), functionInstance);
 
-        HashMap<String, FunctionCollection> clonedSkillCollection = new HashMap<>(skillCollection);
-
-        clonedSkillCollection.put(
-                functionInstance.getSkillName().toLowerCase(), existingFunctionCollection);
-
-        return new DefaultSkillCollection(clonedSkillCollection);
+        return this;
     }
 
     @Override
@@ -127,25 +116,21 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
     }
 
     public DefaultSkillCollection merge(DefaultSkillCollection in) {
-        HashMap<String, FunctionCollection> clone = new HashMap<>(skillCollection);
-
         in.asMap()
                 .entrySet()
                 .forEach(
                         entry -> {
-                            FunctionCollection existing = clone.get(entry.getKey().toLowerCase());
+                            FunctionCollection existing =
+                                    skillCollection.get(entry.getKey().toLowerCase());
                             if (existing == null) {
-                                clone.put(
+                                skillCollection.put(
                                         entry.getKey().toLowerCase(),
                                         new FunctionCollection(entry.getValue()));
                             } else {
-                                clone.put(
-                                        entry.getKey().toLowerCase(),
-                                        existing.merge(new FunctionCollection(entry.getValue())));
+                                existing.merge(new FunctionCollection(entry.getValue()));
                             }
                         });
-
-        return new DefaultSkillCollection(clone);
+        return this;
     }
 
     @Override

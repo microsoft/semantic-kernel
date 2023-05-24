@@ -102,13 +102,9 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      * @param functionInstance
      * @return Collection for fluent callse
      */
-    @CheckReturnValue
     public FunctionCollection put(String functionName, SKFunction<?, ?> functionInstance) {
-        HashMap<String, SKFunction<?, ?>> functionCollection =
-                new HashMap<>(this.functionCollection);
-        functionCollection.put(functionName.toLowerCase(), functionInstance);
-
-        return new FunctionCollection(skillName, functionCollection);
+        this.functionCollection.put(functionName.toLowerCase(), functionInstance);
+        return this;
     }
 
     /**
@@ -118,10 +114,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      * @return Collection for fluent calls
      */
     public FunctionCollection merge(FunctionCollection value) {
-        HashMap<String, SKFunction<?, ?>> mutable = new HashMap<>(functionCollection);
-
-        mutable.putAll(value.functionCollection);
-
-        return new FunctionCollection(skillName, mutable);
+        functionCollection.putAll(value.functionCollection);
+        return this;
     }
 }

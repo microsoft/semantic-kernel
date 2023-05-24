@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine.blocks; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.templateengine.blocks;
 
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 
-public class TextBlock extends Block implements TextRendering {
-
-    // internal override BlockTypes Type => BlockTypes.Text;
+public final class TextBlock extends Block implements TextRendering {
 
     public TextBlock(String text) {
         super(text, BlockTypes.Text);
@@ -25,18 +22,4 @@ public class TextBlock extends Block implements TextRendering {
     public TextBlock(String text, int startIndex, int stopIndex) {
         super(text.substring(startIndex, stopIndex), BlockTypes.Text);
     }
-    /*
-
-       public override bool IsValid(out string errorMsg)
-       {
-           errorMsg = "";
-           return true;
-       }
-
-       public string Render(ContextVariables? variables)
-       {
-           return this.Content;
-       }
-
-    */
 }
