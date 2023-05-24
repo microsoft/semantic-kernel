@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.builders;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -40,6 +41,8 @@ public enum BuildersSingleton {
             "com.microsoft.semantickernel.orchestration.DefaultSemanticSKContext$Builder";
     private static final String FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS =
             "com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine$Builder";
+    private static final String FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS =
+            "com.microsoft.semantickernel.memory.DefaultSemanticTextMemory$Builder";
 
     private final FunctionBuilders functionBuilders;
     private final Kernel.InternalBuilder kernelBuilder;
@@ -50,6 +53,8 @@ public enum BuildersSingleton {
     private final ContextVariables.Builder variables;
     private final SKContext.Builder context;
     private final PromptTemplateEngine.Builder promptTemplateEngine;
+
+    private final SemanticTextMemory.Builder semanticTextMemoryBuilder;
 
     BuildersSingleton() {
         try {
@@ -82,6 +87,9 @@ public enum BuildersSingleton {
             variables =
                     ServiceLoadUtil.findServiceLoader(
                             ContextVariables.Builder.class, FALLBACK_VARIABLE_BUILDER_CLASS);
+            semanticTextMemoryBuilder =
+                    ServiceLoadUtil.findServiceLoader(
+                            SemanticTextMemory.Builder.class, FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS);
 
             context =
                     ServiceLoadUtil.findServiceLoader(
@@ -151,5 +159,9 @@ public enum BuildersSingleton {
 
     public SKContext.Builder context() {
         return context;
+    }
+
+    public SemanticTextMemory.Builder getSemanticTextMemoryBuilder() {
+        return semanticTextMemoryBuilder;
     }
 }

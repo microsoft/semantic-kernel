@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.builders;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -34,6 +35,10 @@ public class SKBuilders {
 
     public static KernelConfig.Builder kernelConfig() {
         return new KernelConfig.Builder();
+    }
+
+    public static SemanticTextMemory.Builder semanticTextMemory() {
+        return BuildersSingleton.INST.getSemanticTextMemoryBuilder();
     }
 
     public static ReadOnlySkillCollection.Builder skillCollection() {
