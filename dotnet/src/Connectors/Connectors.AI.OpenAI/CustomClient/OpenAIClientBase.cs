@@ -20,9 +20,6 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.CustomClient;
 
-#pragma warning disable CA1063 // Class isn't publicly extensible and thus doesn't implement the full IDisposable pattern
-#pragma warning disable CA1816 // No derived types implement a finalizer
-
 /// <summary>Base type for OpenAI clients.</summary>
 public abstract class OpenAIClientBase
 {
@@ -33,7 +30,7 @@ public abstract class OpenAIClientBase
     /// <param name="logger">The ILogger used for logging. If null, a NullLogger instance will be used.</param>
     private protected OpenAIClientBase(HttpClient? httpClient, ILogger? logger = null)
     {
-        this._httpClient = httpClient ?? new HttpClient(s_defaultHttpClientHandler, disposeHandler: false);
+        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._log = logger ?? NullLogger.Instance;
     }
 
@@ -103,9 +100,6 @@ public abstract class OpenAIClientBase
     }
 
     #region private ================================================================================
-
-    // Shared singleton HttpClientHandler used when an existing HttpClient isn't provided
-    private static readonly HttpClientHandler s_defaultHttpClientHandler = new() { CheckCertificateRevocationList = true };
 
     // HTTP user agent sent to remote endpoints
     private const string HttpUserAgent = "Microsoft-Semantic-Kernel";

@@ -29,10 +29,9 @@ public static class Example41_HttpClientUsage
     /// </summary>
     private static void UseDefaultHttpClientAsync()
     {
-        var kernel = Kernel.Builder.Build();
-
-        // If you need to use the default HttpClient from the SK SDK, simply omit the argument for the httpMessageInvoker parameter.
-        kernel.Config.AddOpenAITextCompletionService("<model-id>", "<api-key>");
+        var kernel = Kernel.Builder
+            .WithOpenAITextCompletionService("<model-id>", "<api-key>") // If you need to use the default HttpClient from the SK SDK, simply omit the argument for the httpMessageInvoker parameter.
+            .Build();
     }
 
     /// <summary>
@@ -40,12 +39,12 @@ public static class Example41_HttpClientUsage
     /// </summary>
     private static void UseCustomHttpClientAsync()
     {
-        var kernel = Kernel.Builder.Build();
-
         using var httpClient = new HttpClient();
 
         // If you need to use a custom HttpClient, simply pass it as an argument for the httpClient parameter.
-        kernel.Config.AddOpenAITextCompletionService("<model-id>", "<api-key>", httpClient: httpClient);
+        var kernel = Kernel.Builder
+            .WithOpenAITextCompletionService("<model-id>", "<api-key>", httpClient: httpClient)
+            .Build();
     }
 
     /// <summary>
@@ -61,9 +60,9 @@ public static class Example41_HttpClientUsage
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
 
-            var kernel = Kernel.Builder.Build();
-
-            kernel.Config.AddOpenAITextCompletionService("<model-id>", "<api-key>", httpClient: factory.CreateClient());
+            var kernel = Kernel.Builder
+            .WithOpenAITextCompletionService("<model-id>", "<api-key>", httpClient: factory.CreateClient())
+            .Build();
 
             return kernel;
         });
@@ -89,9 +88,9 @@ public static class Example41_HttpClientUsage
         {
             var factory = sp.GetRequiredService<IHttpClientFactory>();
 
-            var kernel = Kernel.Builder.Build();
-
-            kernel.Config.AddOpenAITextCompletionService("<model-id>", "<api-key>", httpClient: factory.CreateClient("test-client"));
+            var kernel = Kernel.Builder
+            .WithOpenAITextCompletionService("<model-id>", "<api-key>", httpClient: factory.CreateClient("test-client"))
+            .Build();
 
             return kernel;
         });

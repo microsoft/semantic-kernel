@@ -11,8 +11,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Reliability;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
@@ -339,13 +337,6 @@ public static class OpenAIKernelBuilderExtensions
         return builder;
     }
 
-    private static HttpClient CreateHttpClient(this IDelegatingHandlerFactory handlerFactory, ILogger? logger)
-    {
-        var retryHandler = handlerFactory.Create(logger);
-        retryHandler.InnerHandler = new HttpClientHandler { CheckCertificateRevocationList = true };
-        return new HttpClient(retryHandler);
-    }
-
     #endregion
 
     #region Images
@@ -390,7 +381,8 @@ public static class OpenAIKernelBuilderExtensions
         if (httpClient == null)
         {
             var retryHandler = config.HttpHandlerFactory.Create(logger);
-            return new HttpClient(HttpHandlerProvider.Default, false); // We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
+            retryHandler.InnerHandler = NonDisposableHttpClientHandler.Instance;
+            return new HttpClient(retryHandler, false); // We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
         }
 
         return httpClient;
