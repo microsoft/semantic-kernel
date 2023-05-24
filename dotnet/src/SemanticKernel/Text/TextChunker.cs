@@ -85,7 +85,7 @@ public static class TextChunker
         var adjustedMaxTokensPerParagraph = maxTokensPerParagraph - overlapTokens;
 
         // Split long lines first
-        var truncatedLines = lines.SelectMany((line) => longLinesSplitter(line, adjustedMaxTokensPerParagraph));
+        var truncatedLines = lines.SelectMany((line) => longLinesSplitter(line, adjustedMaxTokensPerParagraph)).ToList();
 
         var paragraphs = BuildParagraph(truncatedLines, new StringBuilder(), new List<string>(), adjustedMaxTokensPerParagraph, longLinesSplitter);
         // distribute text more evenly in the last paragraphs when the last paragraph is too short.
@@ -117,10 +117,11 @@ public static class TextChunker
         {
             var lastParagraph = paragraphs.Last();
 
-            paragraphs = paragraphs.Zip(paragraphs.Skip(1), (currentParagraph, nextParagraph) => {
-                    var split = longLinesSplitter(nextParagraph, overlapTokens);
-                    return $"{ currentParagraph} {split.FirstOrDefault()}";
-             }).ToList();
+            paragraphs = paragraphs.Zip(paragraphs.Skip(1), (currentParagraph, nextParagraph) =>
+            {
+                var split = longLinesSplitter(nextParagraph, overlapTokens);
+                return $"{currentParagraph} {split.FirstOrDefault()}";
+            }).ToList();
 
             paragraphs.Add(lastParagraph);
         }
@@ -128,10 +129,10 @@ public static class TextChunker
         return paragraphs;
     }
 
-    private static List<string> BuildParagraph(IEnumerable<string> truncatedLines, StringBuilder paragraphBuilder, List<string> paragraphs, int maxTokensPerParagraph, Func<string, int, List<string>> longLinesSplitter)
+    private static List<string> BuildParagraph(List<string> truncatedLines, StringBuilder paragraphBuilder, List<string> paragraphs, int maxTokensPerParagraph, Func<string, int, List<string>> longLinesSplitter)
     {
         // Base case: no more elements in the list
-        if (!truncatedLines.Any())
+        if (truncatedLines.Count == 0)
         {
             // Adding any remaining paragraph
             if (paragraphBuilder.Length > 0)
@@ -154,7 +155,7 @@ public static class TextChunker
 
         paragraphBuilder.AppendLine(line);
 
-        return BuildParagraph(truncatedLines.Skip(1), paragraphBuilder, paragraphs, maxTokensPerParagraph, longLinesSplitter);
+        return BuildParagraph(truncatedLines.Skip(1).ToList(), paragraphBuilder, paragraphs, maxTokensPerParagraph, longLinesSplitter);
     }
 
     private static List<string> InternalSplitLines(string text, int maxTokensPerLine, bool trim, string?[] splitOptions)
