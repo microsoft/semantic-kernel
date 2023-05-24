@@ -135,6 +135,7 @@ export const registerSignalREvents = async (store: any) => {
             userId: 'bot',
             content: askResult.value,
             authorRole: AuthorRoles.Bot,
+            prompt: askResult.variables.find((v) => v.key === 'prompt')?.value,
             state: isPlan(askResult.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
         } as IChatMessage;
 

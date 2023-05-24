@@ -81,7 +81,7 @@ public class ChatController : ControllerBase, IDisposable
         }
 
         // Register plugins that have been enabled
-        await this.RegisterPlannerSkillsAsync(planner, openApiSkillsAuthHeaders, contextVariables);
+        await this.RegisterPlannerSkillsAsync(planner!, openApiSkillsAuthHeaders, contextVariables);
 
         // Get the function to invoke
         ISKFunction? function = null;
@@ -115,7 +115,7 @@ public class ChatController : ControllerBase, IDisposable
             return this.BadRequest(result.LastErrorDescription);
         }
 
-        AskResult chatSkillAskResult = new AskResult
+        AskResult chatSkillAskResult = new()
         {
             Value = result.Result,
             Variables = result.Variables.Select(

@@ -136,6 +136,60 @@ public class ChatSkill
     }
 
     /// <summary>
+    /// Extract the list of participants from the conversation history.
+    /// </summary>
+    [SKFunction("Extract chat participant list")]
+    [SKFunctionName("ExtractChatParticipantList")]
+    [SKFunctionContextParameter(Name = "chatId", Description = "Chat ID to extract history from")]
+    public async Task<string> ExtractChatParticipantListAsync(SKContext context)
+    {
+        var tokenLimit = this._promptOptions.CompletionTokenLimit;
+
+        var chatHistory = await this.ExtractChatHistoryLastNTokensAsync(context, tokenLimit, 1000);
+        chatHistory = chatHistory + this._promptOptions.MemoryAntiHallucination;
+
+        var historyTokenBudget =
+            tokenLimit -
+            this._promptOptions.ResponseTokenLimit -
+            Utilities.TokenCount(string.Join("\n", new string[]
+                {
+                    this._promptOptions.SystemDescription,
+                    this._promptOptions.MemoryAntiHallucination,
+                    chatHistory,
+                    this._promptOptions.SystemIntentForParticipantList
+                })
+            );
+
+        var prompt = $"{this._promptOptions.SystemIntentForParticipantList}\n{chatHistory}";
+
+        // Clone the context to avoid modifying the original context variables.
+        var intentExtractionContext = Utilities.CopyContextWithVariablesClone(context);
+        intentExtractionContext.Variables.Set("userIntent", prompt);
+        intentExtractionContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
+        intentExtractionContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
+        intentExtractionContext.Variables.Set("chatHistory", chatHistory);
+
+        var completionFunction = this._kernel.CreateSemanticFunction(
+            prompt,
+            skillName: nameof(ChatSkill),
+            description: "Complete the prompt.");
+
+        var result = await completionFunction.InvokeAsync(
+            intentExtractionContext,
+            settings: this.CreateIntentCompletionSettings()
+        );
+
+        if (result.ErrorOccurred)
+        {
+            context.Log.LogError("{0}: {1}", result.LastErrorDescription, result.LastException);
+            context.Fail(result.LastErrorDescription);
+            return string.Empty;
+        }
+
+        return $"Chat Participants: {result}";
+    }
+
+    /// <summary>
     /// Extract chat history.
     /// </summary>
     /// <param name="context">Contains the 'tokenLimit' controlling the length of the prompt.</param>
@@ -145,32 +199,8 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
     public async Task<string> ExtractChatHistoryAsync(SKContext context)
     {
-        var chatId = context["chatId"];
         var tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
-
-        var messages = await this._chatMessageRepository.FindByChatIdAsync(chatId);
-        var sortedMessages = messages.OrderByDescending(m => m.Timestamp);
-
-        var remainingToken = tokenLimit;
-        string historyText = "";
-        foreach (var chatMessage in sortedMessages)
-        {
-            var formattedMessage = chatMessage.ToFormattedString();
-            var tokenCount = Utilities.TokenCount(formattedMessage);
-
-            // Plan object is not meaningful content in generating chat response, exclude it
-            if (remainingToken - tokenCount > 0 && !formattedMessage.Contains("proposedPlan\\\":", StringComparison.InvariantCultureIgnoreCase))
-            {
-                historyText = $"{formattedMessage}\n{historyText}";
-                remainingToken -= tokenCount;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        return $"Chat history:\n{historyText.Trim()}";
+        return await this.ExtractChatHistoryLastNTokensAsync(context, tokenLimit, 0);
     }
 
     /// <summary>
@@ -206,10 +236,16 @@ public class ChatSkill
             return context;
         }
 
+        // Get Chat Participants:
+        var chatparticipants = await this.ExtractChatParticipantListAsync(context);
+        var removeString = "Chat Participants: ";
+        int index = chatparticipants.IndexOf(removeString, StringComparison.Ordinal);
+        chatparticipants = (index < 0) ? chatparticipants : chatparticipants.Remove(index, removeString.Length);
+
         // Clone the context to avoid modifying the original context variables.
         var chatContext = Utilities.CopyContextWithVariablesClone(context);
         chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
-        chatContext.Variables.Set("audience", chatContext["userName"]);
+        chatContext.Variables.Set("audience", chatparticipants);
 
         var response = chatContext.Variables.ContainsKey("userCancelledPlan")
             ? "I am sorry the plan did not meet your goals."
@@ -395,7 +431,7 @@ public class ChatSkill
             context.CancellationToken
         );
 
-        var chatHistory = this.ExtractChatHistoryAsync(chatHistoryContext);
+        var chatHistory = this.ExtractChatHistoryLastNTokensAsync(chatHistoryContext, tokenLimit);
 
         // Propagate the error
         if (chatHistoryContext.ErrorOccurred)
@@ -493,6 +529,39 @@ public class ChatSkill
         }
 
         return plan;
+    }
+
+    /// <summary>
+    /// Extract Chat History while specifying how many tokens to use.
+    /// </summary>
+    private async Task<string> ExtractChatHistoryLastNTokensAsync(SKContext context, int tokenLimit, int tokensToUse = 0)
+    {
+        var chatId = context["chatId"];
+
+        var messages = await this._chatMessageRepository.FindByChatIdAsync(chatId);
+        var sortedMessages = messages.OrderByDescending(m => m.Timestamp);
+
+        var remainingToken = tokensToUse > tokenLimit ? tokensToUse : tokenLimit;
+
+        string historyText = "";
+        foreach (var chatMessage in sortedMessages)
+        {
+            var formattedMessage = chatMessage.ToFormattedString();
+            var tokenCount = Utilities.TokenCount(formattedMessage);
+
+            // Plan object is not meaningful content in generating chat response, exclude it
+            if (remainingToken - tokenCount > 0 && !formattedMessage.Contains("proposedPlan\\\":", StringComparison.InvariantCultureIgnoreCase))
+            {
+                historyText = $"{formattedMessage}\n{historyText}";
+                remainingToken -= tokenCount;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return $"Chat history:\n{historyText.Trim()}";
     }
 
     /// <summary>

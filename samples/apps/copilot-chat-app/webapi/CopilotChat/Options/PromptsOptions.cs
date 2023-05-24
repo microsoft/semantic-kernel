@@ -74,6 +74,9 @@ public class PromptsOptions
     [Required, NotEmptyOrWhitespace] public string SystemIntent { get; set; } = string.Empty;
     [Required, NotEmptyOrWhitespace] public string SystemIntentContinuation { get; set; } = string.Empty;
 
+    // Chat Participant extraction 
+    [Required, NotEmptyOrWhitespace] public string SystemIntentForParticipantList { get; set; } = string.Empty;
+
     // Memory extraction
     [Required, NotEmptyOrWhitespace] public string SystemCognitive { get; set; } = string.Empty;
     [Required, NotEmptyOrWhitespace] public string MemoryFormat { get; set; } = string.Empty;
@@ -126,6 +129,7 @@ public class PromptsOptions
     {
         this.SystemDescription,
         this.SystemResponse,
+        "{{ChatSkill.ExtractChatParticipantList}}",
         "{{$userIntent}}",
         "{{$chatContext}}",
         this.SystemChatContinuation
