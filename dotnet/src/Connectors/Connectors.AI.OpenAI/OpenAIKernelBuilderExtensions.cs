@@ -389,7 +389,7 @@ public static class OpenAIKernelBuilderExtensions
         if (httpClient == null)
         {
             var retryHandler = config.HttpHandlerFactory.Create(logger);
-            return HttpClientProvider.GetClient(retryHandler);
+            return new HttpClient(HttpHandlerProvider.Default, false); // We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
         }
 
         return httpClient;
