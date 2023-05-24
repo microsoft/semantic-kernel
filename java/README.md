@@ -10,7 +10,7 @@ The Semantic Kernel for Java is an SDK that implements the key concepts of the S
 to be used in Java applications and services in an idiomatic way, and to be easily integrated with other Java libraries
 and frameworks.
 
-## Get Started
+## Get started
 
 To run the LLM prompts and semantic functions in this kernel, make sure you have
 an [Open AI API Key](https://openai.com/api/)
@@ -18,26 +18,25 @@ or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-servi
 
 ### Requirements
 
-To build the semantic kernel, you will need to have:
+To build the Semantic Kernel, you will need:
 
 - **Required**:
-    - [JDK 8](https://microsoft.com/openjdk/) or newer to build the Semantic Kernel library
-    - [JDK 17](https://microsoft.com/openjdk/) or newer to run samples
+    - [OpenJDK 17](https://microsoft.com/openjdk/) or newer
 
-### Build the semantic kernel
+### Build the Semantic Kernel
 
 1. Clone this repository
 
         git clone git@github.com:microsoft/semantic-kernel.git
 
-2. Build the semantic kernel
+2. Build the Semantic Kernel
 
         cd semantic-kernel/java
-        mvn install
+        ./mvnw install
 
-## Using the semantic kernel
+## Using the Semantic Kernel
 
-Check the `samples` folder for examples of how to use the semantic kernel.
+Check the `samples` folder for examples of how to use the Semantic Kernel for Java.
 
 ## Discord community
 
@@ -48,7 +47,7 @@ and get help from the community. We have a `#java` channel for Java-specific que
 
 ### Testing locally
 
-The project may contain integration tests that require an OpenAI key to run. To run the integration tests locally, you
+The project may contain end-to-end tests that require an OpenAI key to run. To run these tests locally, you
 will need to set the following environment variable:
 
 - `OPENAI_API_KEY` - the OpenAI API key.
@@ -65,11 +64,11 @@ on [how to get your Azure OpenAI credentials](https://learn.microsoft.com/en-us/
 
 To run the unit tests only, run the following command:
 
-    mvn package
+    ./mvnw package
 
 To run all tests, including integration tests that require an OpenAI key, run the following command:
 
-    mvn verify
+    ./mvnw verify
 
 ### Submitting a pull request
 

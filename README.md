@@ -101,6 +101,9 @@ Follow the links for more information and instructions about running these apps.
 - [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) or [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
 - [Yarn](https://yarnpkg.com/getting-started/install) is used for installing web apps' dependencies.
 
+## Deploy Semantic Kernel to Azure in a web app service ☁️
+
+Getting Semantic Kernel deployed to Azure as web app service is easy with one-click deployments. Click [here](https://aka.ms/sk-docs-azuredeploy) to learn more on how to deploy to Azure.
 
 ## Jupyter Notebooks ⚡
 

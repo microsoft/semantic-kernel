@@ -3,6 +3,7 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
+import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -36,19 +37,19 @@ public interface Kernel {
     PromptTemplateEngine getPromptTemplateEngine();
 
     /**
-     * Set the semantic memory to use.
+     * Return the memory store used by the kernel.
+     *
+     * @return the MemoryStore instance
+     */
+    MemoryStore getMemoryStore();
+
+    /**
+     * Set the SemanticTextMemory to use.
      *
      * @param memory {@link SemanticTextMemory} instance
      */
     void registerMemory(SemanticTextMemory memory);
 
-    /*
-        /// <summary>
-        /// Set the semantic memory to use
-        /// </summary>
-        /// <param name="memory">Semantic memory instance</param>
-        void RegisterMemory(ISemanticTextMemory memory);
-    */
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
      *
@@ -127,6 +128,7 @@ public interface Kernel {
     class Builder {
         @Nullable private KernelConfig kernelConfig = null;
         @Nullable private PromptTemplateEngine promptTemplateEngine = null;
+        @Nullable private MemoryStore memoryStore = null;
 
         public Builder setKernelConfig(KernelConfig kernelConfig) {
             this.kernelConfig = kernelConfig;
@@ -138,6 +140,11 @@ public interface Kernel {
             return this;
         }
 
+        public Builder withMemoryStore(MemoryStore memoryStore) {
+            this.memoryStore = memoryStore;
+            return this;
+        }
+
         public Kernel build() {
             if (kernelConfig == null) {
                 throw new IllegalStateException("Must provide a kernel configuration");
@@ -145,12 +152,14 @@ public interface Kernel {
 
             return BuildersSingleton.INST
                     .getKernelBuilder()
-                    .build(kernelConfig, promptTemplateEngine);
+                    .build(kernelConfig, promptTemplateEngine, memoryStore);
         }
     }
 
     interface InternalBuilder {
         Kernel build(
-                KernelConfig kernelConfig, @Nullable PromptTemplateEngine promptTemplateEngine);
+                KernelConfig kernelConfig,
+                @Nullable PromptTemplateEngine promptTemplateEngine,
+                @Nullable MemoryStore memoryStore);
     }
 }

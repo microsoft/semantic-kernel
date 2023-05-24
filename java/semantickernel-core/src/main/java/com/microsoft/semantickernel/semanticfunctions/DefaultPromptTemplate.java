@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.semanticfunctions; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.semanticfunctions;
 
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -128,4 +127,11 @@ public class DefaultPromptTemplate implements PromptTemplate {
     }
 
      */
+
+    public static final class Builder extends PromptTemplate.Builder {
+        @Override
+        public PromptTemplate build(String promptTemplate, PromptTemplateConfig config) {
+            return new DefaultPromptTemplate(promptTemplate, config);
+        }
+    }
 }

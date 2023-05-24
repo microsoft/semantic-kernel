@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.ai; // Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.ai;
 
 import com.microsoft.semantickernel.SKException;
 

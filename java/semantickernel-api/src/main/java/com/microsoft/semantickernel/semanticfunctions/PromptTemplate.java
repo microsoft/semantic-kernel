@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.semanticfunctions; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.semanticfunctions;
 
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -28,7 +27,9 @@ public interface PromptTemplate {
      */
     Mono<String> renderAsync(SKContext executionContext, PromptTemplateEngine promptTemplateEngine);
 
-    interface Builder {
-        PromptTemplate build(String promptTemplate, PromptTemplateConfig config);
+    abstract class Builder {
+        protected Builder() {}
+
+        public abstract PromptTemplate build(String promptTemplate, PromptTemplateConfig config);
     }
 }

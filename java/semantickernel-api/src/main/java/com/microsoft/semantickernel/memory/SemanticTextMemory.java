@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
+import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -100,4 +102,13 @@ public interface SemanticTextMemory {
      * @return A group of collection names.
      */
     public Mono<List<String>> getCollectionsAsync();
+
+    interface Builder {
+        Builder setStorage(@Nonnull MemoryStore storage);
+
+        Builder setEmbeddingGenerator(
+                @Nonnull EmbeddingGeneration<String, ? extends Number> embeddingGenerator);
+
+        SemanticTextMemory build();
+    }
 }

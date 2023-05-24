@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.builders;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -13,6 +14,8 @@ import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 public class SKBuilders {
+    // Prevent creating object
+    private SKBuilders() {}
 
     public static CompletionSKFunction.Builder completionFunctions() {
         return FunctionBuilders.getCompletionBuilder();
@@ -22,7 +25,7 @@ public class SKBuilders {
         return BuildersSingleton.INST.getTextCompletionBuilder();
     }
 
-    public static EmbeddingGeneration.Builder<String, Double> textEmbeddingGenerationService() {
+    public static EmbeddingGeneration.Builder<String, Float> textEmbeddingGenerationService() {
         return BuildersSingleton.INST.getTextEmbeddingGenerationBuilder();
     }
 
@@ -32,6 +35,10 @@ public class SKBuilders {
 
     public static KernelConfig.Builder kernelConfig() {
         return new KernelConfig.Builder();
+    }
+
+    public static SemanticTextMemory.Builder semanticTextMemory() {
+        return BuildersSingleton.INST.getSemanticTextMemoryBuilder();
     }
 
     public static ReadOnlySkillCollection.Builder skillCollection() {

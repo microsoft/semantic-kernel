@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.skilldefinition; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.skilldefinition;
 
 /// <summary>
 /// Class used to copy and export data from
