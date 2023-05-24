@@ -6,18 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Annotates a parameter to a native function */
+/** Annotates a parameter binding it to the "input" context variable */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface SKFunctionParameters {
-
-    String NO_DEFAULT_VALUE = "SKFunctionParameters__NO_INPUT_PROVIDED";
-
-    String description() default "";
-
-    String name() default "";
-
-    String defaultValue() default NO_DEFAULT_VALUE;
-
-    Class<?> type() default String.class;
-}
+public @interface SKFunctionInputAttribute {}
