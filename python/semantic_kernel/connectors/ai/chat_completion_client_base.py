@@ -17,3 +17,12 @@ class ChatCompletionClientBase(ABC):
         logger: Logger,
     ) -> str:
         pass
+
+    @abstractmethod
+    async def complete_chat_stream_async(
+        self,
+        messages: List[Tuple[str, str]],
+        settings: "ChatRequestSettings",
+        logger: Logger,
+    ):
+        pass
