@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 
 public class InlineFunctionExample {
     public static final String AZURE_CONF_PROPERTIES = "conf.properties";
@@ -136,7 +137,11 @@ public class InlineFunctionExample {
                 () -> {
                     LOGGER.info("Completed");
                     cdl.countDown();
-                });                
-        cdl.await();
+                });
+        try{
+            cdl.await();
+        }catch(InterruptedException e){
+            LOGGER.error("Error: {} ", e.getMessage());
+        }
     }
 }
