@@ -3,11 +3,11 @@ name: Build Java Semantic Kernel
 on:
   workflow_dispatch:
   push:
-    branches: [ "experimental-java", "java-dev" ]
+    branches: [ "experimental-java" ]
     paths:
       - 'java/**'
   pull_request:
-    branches: [ "experimental-java", "java-dev" ]
+    branches: [ "experimental-java" ]
     paths:
       - 'java/**'
 
@@ -47,7 +47,7 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: ./mvnw -B -Pbug-check -DskipTests -X -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+        run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
         working-directory: java
 
       - name: Run tests

@@ -3,15 +3,13 @@ name: Run Java Integration Tests and Samples
 on:
   workflow_dispatch:
   push:
-    branches: [ "experimental-java", "java-dev" ]
+    branches: [ "experimental-java" ]
     paths:
       - 'java/**'
-      - 'samples/java/**'
   pull_request:
-    branches: [ "experimental-java", "java-dev" ]
+    branches: [ "experimental-java" ]
     paths:
       - 'java/**'
-      - 'samples/java/**'
 
 permissions:
   contents: read
