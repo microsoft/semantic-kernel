@@ -45,7 +45,7 @@ internal sealed class OpenAIRestClient
         using HttpClient? localClient = httpClient != null ? null : new HttpClient();
         httpClient ??= localClient;
 
-        using HttpRequestMessage request = new HttpRequestMessage(
+        using HttpRequestMessage request = new(
             HttpMethod.Get,
             endpoint);
         request.Headers.Add("Authorization", $"Bearer {apiKey}");
@@ -60,7 +60,7 @@ internal sealed class OpenAIRestClient
 
         var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-        JsonSerializerOptions options = new JsonSerializerOptions();
+        JsonSerializerOptions options = new();
         options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
 
         return await JsonSerializer.DeserializeAsync<T>(
