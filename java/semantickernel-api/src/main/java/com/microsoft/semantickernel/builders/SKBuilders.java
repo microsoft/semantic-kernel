@@ -13,6 +13,8 @@ import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 public class SKBuilders {
+    // Prevent creating object
+    private SKBuilders() {}
 
     public static CompletionSKFunction.Builder completionFunctions() {
         return FunctionBuilders.getCompletionBuilder();
@@ -22,7 +24,7 @@ public class SKBuilders {
         return BuildersSingleton.INST.getTextCompletionBuilder();
     }
 
-    public static EmbeddingGeneration.Builder<String, Double> textEmbeddingGenerationService() {
+    public static EmbeddingGeneration.Builder<String, Float> textEmbeddingGenerationService() {
         return BuildersSingleton.INST.getTextEmbeddingGenerationBuilder();
     }
 

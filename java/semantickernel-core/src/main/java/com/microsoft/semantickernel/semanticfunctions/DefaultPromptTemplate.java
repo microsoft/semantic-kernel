@@ -127,4 +127,11 @@ public class DefaultPromptTemplate implements PromptTemplate {
     }
 
      */
+
+    public static final class Builder extends PromptTemplate.Builder {
+        @Override
+        public PromptTemplate build(String promptTemplate, PromptTemplateConfig config) {
+            return new DefaultPromptTemplate(promptTemplate, config);
+        }
+    }
 }

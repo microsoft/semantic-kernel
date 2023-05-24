@@ -13,6 +13,8 @@ import java.util.ServiceLoader;
 public class ServiceLoadUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceLoadUtil.class);
 
+    private ServiceLoadUtil() {}
+
     public static <T> T findServiceLoader(Class<T> clazz, String alternativeClassName) {
         List<T> services = findAllServiceLoaders(clazz);
         if (services.size() > 0) {
