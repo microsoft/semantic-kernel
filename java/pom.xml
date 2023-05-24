@@ -10,14 +10,9 @@
     <packaging>pom</packaging>
 
 
-    <!-- <properties>
-        <jdk.version>1.8</jdk.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.testSource>1.8</maven.compiler.testSource>
-        <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
+    <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties> -->
+    </properties>
 
     <modules>
         <module>openai-sdk</module>
@@ -140,6 +135,9 @@
         </profile>
         <profile>
             <id>compile-jdk17</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <maven.compiler.source>17</maven.compiler.source>
                 <maven.compiler.target>17</maven.compiler.target>
