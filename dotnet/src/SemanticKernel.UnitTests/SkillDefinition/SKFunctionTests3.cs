@@ -61,7 +61,7 @@ public sealed class SKFunctionTests3
         }
 
         // Assert
-        Assert.Equal(3, count);
+        Assert.Equal(2, count);
     }
 
     [Fact]
@@ -138,13 +138,8 @@ public sealed class SKFunctionTests3
         {
         }
 
-        [SKFunction("two")]
-        public void Invalid2(SKContext cx, string y)
-        {
-        }
-
         [SKFunction("three")]
-        public void Invalid3(string y, int n)
+        public void Invalid2(string y, int n)
         {
         }
     }
