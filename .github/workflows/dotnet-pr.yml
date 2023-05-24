@@ -1,14 +1,14 @@
 #
-# This workflow will build and run all unit tests.
+# This workflow will build and run all unit tests using dotnet docker containers,
+# each targeting a single version of the dotnet SDK.
 #
 
 name: dotnet-pr
 
 on:
-  workflow_dispatch:
   pull_request:
     branches: [ "main", "feature*" ]
-    
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -41,9 +41,14 @@ jobs:
 
   build:
     strategy:
+        fail-fast: false
         matrix:
-          os: [ubuntu-latest]
-          configuration: [Release, Debug]
+          include:
+          - { dotnet: '6.0', configuration: Debug, os: ubuntu-latest}
+          - { dotnet: '6.0', configuration: Release, os: ubuntu-latest }
+          - { dotnet: '7.0', configuration: Release, os: ubuntu-latest }
+          - { dotnet: '8.0-preview', configuration: Release, os: ubuntu-latest }
+
     runs-on: ${{ matrix.os }}
     needs: check-for-dotnet-changes
     env:
@@ -52,54 +57,31 @@ jobs:
     - uses: actions/checkout@v3
       with:
         clean: true
-
-    - name: Setup .NET
-      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.0.x
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.GPR_READ_TOKEN }}
-
-    - uses: actions/cache@v3
-      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
-      with:
-        path: ~/.nuget/packages
-        # Look to see if there is a cache hit for the corresponding requirements file
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget
-
+        
     - name: Find solutions
       shell: bash
       if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: echo "solutions=$(find ./ -type f -name "*.sln" | tr '\n' ' ')" >> $GITHUB_ENV
 
-    - name: Restore dependencies
-      shell: bash
+    - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
+      run: docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+
+    - name: Build dotnet solution
       if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: |
         for solution in ${{ env.solutions }}; do
-          dotnet restore $solution
+          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet build -c ${{ matrix.configuration }} /warnaserror /app/$solution"
         done
-
-    - name: Build
-      shell: bash
-      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
-      run: |
-        for solution in ${{ env.solutions }}; do
-          dotnet build $solution --no-restore --configuration ${{ matrix.configuration }}
-        done
-
+        
     - name: Find unit test projects
       shell: bash
       if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
-      run: echo "projects=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
-
-    - name: Test
-      shell: bash
+      run: echo "testprojects=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+      
+    - name: Run Unit Tests
       if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: |
-        for project in ${{ env.projects }}; do
-            dotnet test $project --no-build --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
+        for project in ${{ env.testprojects }}; do
+          docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
         done
