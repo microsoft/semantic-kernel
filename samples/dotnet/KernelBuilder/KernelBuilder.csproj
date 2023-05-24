@@ -3,6 +3,7 @@
     <PropertyGroup>
       <RootNamespace>KernelSetup</RootNamespace>
       <TargetFramework>net6.0</TargetFramework>
+      <RollForward>LatestMajor</RollForward>
       <OutputType>Exe</OutputType>
       <Nullable>enable</Nullable>
       <ImplicitUsings>enable</ImplicitUsings>
