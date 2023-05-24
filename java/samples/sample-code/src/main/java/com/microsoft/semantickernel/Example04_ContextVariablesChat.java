@@ -99,16 +99,15 @@ public class Example04_ContextVariablesChat {
     };
   }
 
-  public static void run (boolean useAzureOpenAI)
-          throws ExecutionException, InterruptedException, TimeoutException, IOException {
-    OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
-    Kernel kernel = Example00_GettingStarted.getKernel(client);
+    public static void run (Config.ClientType clientType) throws IOException, ExecutionException, InterruptedException, TimeoutException {
+        Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
 
     startChat(kernel);
   }
 
   public static void main (String[] args)
           throws ExecutionException, InterruptedException, TimeoutException, IOException {
-    run(false);
+      // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
+      run(Config.ClientType.OPEN_AI);
   }
 }

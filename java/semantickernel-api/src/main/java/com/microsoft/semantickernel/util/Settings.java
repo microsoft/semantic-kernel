@@ -54,17 +54,24 @@ public class Settings {
         }
     }
 
+    private static final String DEFAULT_OPEN_AI_CLIENT_ID = "openai";
+    private static final String DEFAULT_AZURE_OPEN_AI_CLIENT_ID = "azureopenai";
+
     public enum Property {
-        OPEN_AI_KEY("openai.key"),
-        OPEN_AI_ORGANIZATION_ID("openai.organizationid"),
-        AZURE_OPEN_AI_KEY("azureopenai.key"),
-        AZURE_OPEN_AI_ENDPOINT("azureopenai.endpoint"),
-        AZURE_OPEN_AI_DEPLOYMENT_NAME("azureopenai.deploymentname");
+        OPEN_AI_KEY(".key"),
+        OPEN_AI_ORGANIZATION_ID(".organizationid"),
+        AZURE_OPEN_AI_KEY(".key"),
+        AZURE_OPEN_AI_ENDPOINT(".endpoint"),
+        AZURE_OPEN_AI_DEPLOYMENT_NAME(".deploymentname");
 
-        public final String fileLabel;
+        public final String labelSuffix;
 
-        Property(String fileLabel) {
-            this.fileLabel = fileLabel;
+        Property(String labelSuffix) {
+            this.labelSuffix = labelSuffix;
+        }
+
+        String getPropertyNameForClientId(String clientSettingsId) {
+            return "client." + clientSettingsId + labelSuffix;
         }
     }
 
@@ -99,9 +106,20 @@ public class Settings {
      * @return OpenAISettings
      */
     public static OpenAISettings getOpenAISettingsFromFile(String path) throws IOException {
+        return getOpenAISettingsFromFile(path, DEFAULT_OPEN_AI_CLIENT_ID);
+    }
+
+    /**
+     * Returns an instance of OpenAISettings with key and organizationId from the properties file
+     *
+     * @param path Path to the properties file
+     * @param clientSettingsId ID of the client settings in the properties file schema
+     * @return OpenAISettings
+     */
+    public static OpenAISettings getOpenAISettingsFromFile(String path, String clientSettingsId) throws IOException {
         return new OpenAISettings(
-                Settings.getSettingsValueFromFile(path, Property.OPEN_AI_KEY),
-                Settings.getSettingsValueFromFile(path, Property.OPEN_AI_ORGANIZATION_ID, ""));
+                Settings.getSettingsValueFromFile(path, Property.OPEN_AI_KEY, clientSettingsId),
+                Settings.getSettingsValueFromFile(path, Property.OPEN_AI_ORGANIZATION_ID, clientSettingsId));
     }
 
     /**
@@ -113,11 +131,24 @@ public class Settings {
      */
     public static AzureOpenAISettings getAzureOpenAISettingsFromFile(String path)
             throws IOException {
+        return getAzureOpenAISettingsFromFile(path, DEFAULT_AZURE_OPEN_AI_CLIENT_ID);
+    }
+
+    /**
+     * Returns an instance of AzureOpenAISettings with key, endpoint and deploymentName from the
+     * properties file
+     *
+     * @param path Path to the properties file
+     * @param clientSettingsId ID of the client settings in the properties file schema
+     * @return AzureOpenAISettings
+     */
+    public static AzureOpenAISettings getAzureOpenAISettingsFromFile(String path, String clientSettingsId)
+            throws IOException {
         return new AzureOpenAISettings(
-                Settings.getSettingsValueFromFile(path, Property.AZURE_OPEN_AI_KEY),
-                Settings.getSettingsValueFromFile(path, Property.AZURE_OPEN_AI_ENDPOINT),
+                Settings.getSettingsValueFromFile(path, Property.AZURE_OPEN_AI_KEY, clientSettingsId),
+                Settings.getSettingsValueFromFile(path, Property.AZURE_OPEN_AI_ENDPOINT, clientSettingsId),
                 Settings.getSettingsValueFromFile(
-                        path, Property.AZURE_OPEN_AI_DEPLOYMENT_NAME, ""));
+                        path, Property.AZURE_OPEN_AI_DEPLOYMENT_NAME, clientSettingsId));
     }
 
     /**
@@ -148,20 +179,21 @@ public class Settings {
      *
      * @param settingsFile Properties file
      * @param property Property to retrieve from file
-     * @param defaultValue Default value of the Property
-     * @return String with the value
+     * @param clientSettingsId ID of the client settings in the properties file schema
      * @throws IOException
      */
     public static String getSettingsValueFromFile(
-            String settingsFile, Property property, String defaultValue) throws IOException {
+            String settingsFile, Property property, String clientSettingsId) throws IOException {
         File Settings = new File(settingsFile);
+
         try (FileInputStream fis = new FileInputStream(Settings.getAbsolutePath())) {
             Properties props = new Properties();
             props.load(fis);
-            return props.getProperty(property.fileLabel, defaultValue);
+
+            return props.getProperty(property.getPropertyNameForClientId(clientSettingsId));
         } catch (IOException e) {
             LOGGER.error(
-                    "Unable to load config value " + property.fileLabel + " from properties file",
+                    "Unable to load config value " + property.getPropertyNameForClientId(clientSettingsId) + " from properties file",
                     e);
             throw new IOException(settingsFile + " not configured properly");
         }

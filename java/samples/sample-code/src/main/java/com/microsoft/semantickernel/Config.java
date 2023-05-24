@@ -1,6 +1,7 @@
 package com.microsoft.semantickernel;
 
 import com.azure.core.credential.AzureKeyCredential;
+import com.azure.core.credential.TokenCredential;
 import com.microsoft.openai.AzureOpenAIClient;
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.openai.OpenAIClientBuilder;
@@ -12,26 +13,36 @@ public class Config {
 
     public static final String CONF_PROPERTIES = "java/samples/conf.properties";
 
-    /**
-     * Returns the client that will handle AzureOpenAI or OpenAI requests.
-     *
-     * @param useAzureOpenAI whether to use AzureOpenAI or OpenAI.
-     * @return client to be used by the kernel.
-     */
-    public static OpenAIAsyncClient getClient(boolean useAzureOpenAI) throws IOException {
-        if (useAzureOpenAI) {
-            Settings.AzureOpenAISettings settings = Settings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
+    public enum ClientType {
+        OPEN_AI {
+            @Override
+            public OpenAIAsyncClient getClient() throws IOException {
+                Settings.OpenAISettings settings = Settings.getOpenAISettingsFromFile(CONF_PROPERTIES);
 
-            return new AzureOpenAIClient(
-                    new com.azure.ai.openai.OpenAIClientBuilder()
-                            .endpoint(settings.getEndpoint())
-                            .credential(new AzureKeyCredential(settings.getKey()))
-                            .buildAsyncClient());
-        }
+                return new OpenAIClientBuilder()
+                        .setApiKey(settings.getKey())
+                        .build();
+            }
+        },
+        AZURE_OPEN_AI {
+            @Override
+            public OpenAIAsyncClient getClient()
+                 throws IOException {
+                    Settings.AzureOpenAISettings settings = Settings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
 
-        Settings.OpenAISettings settings = Settings.getOpenAISettingsFromFile(CONF_PROPERTIES);
-        return new OpenAIClientBuilder()
-                .setApiKey(settings.getKey())
-                .build();
+                    return new AzureOpenAIClient(
+                            new com.azure.ai.openai.OpenAIClientBuilder()
+                                    .endpoint(settings.getEndpoint())
+                                    .credential(new AzureKeyCredential(settings.getKey()))
+                                    .buildAsyncClient());
+            }
+        };
+
+        /**
+         * Returns the client that will handle AzureOpenAI or OpenAI requests.
+         *
+         * @return client to be used by the kernel.
+         */
+        public abstract OpenAIAsyncClient getClient() throws IOException;
     }
 }
