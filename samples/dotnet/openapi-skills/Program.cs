@@ -27,8 +27,6 @@ namespace OpenApiSkillsExample;
 /// </summary>
 internal sealed class Program
 {
-    private static ILogger<Program> logger;
-
     private static async Task Main(string[] args)
     {
         Console.WriteLine("Welcome to Semantic Kernel OpenAPI Skills Example!");
@@ -47,7 +45,7 @@ internal sealed class Program
                 .AddConsole()
                 .AddDebug());
 
-        logger = loggerFactory.CreateLogger<Program>();
+        ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
 
         // Initialize semantic kernel
         AIServiceOptions aiOptions = configuration.GetRequiredSection(AIServiceOptions.PropertyName).Get<AIServiceOptions>()
@@ -102,7 +100,7 @@ internal sealed class Program
 
             // Add GitHub's response, if any, to the chat history.
             int planResultTokenAllowance = (int)(aiOptions.TokenLimit * 0.25); // Allow up to 25% of our token limit to be from GitHub.
-            string planResult = await PlanGitHubSkill(gitHubOptions, planner, chatHistory, input, planResultTokenAllowance);
+            string planResult = await PlanGitHubSkill(gitHubOptions, planner, chatHistory, input, planResultTokenAllowance, logger);
             if (!string.IsNullOrWhiteSpace(planResult))
             {
                 chatHistory.AddUserMessage(planResult);
@@ -133,7 +131,8 @@ internal sealed class Program
     /// <summary>
     /// Run the planner to decide whether to run the GitHub skill function and add the result to the chat history.
     /// </summary>
-    private static async Task<string> PlanGitHubSkill(GitHubSkillOptions gitHubOptions, ActionPlanner planner, OpenAIChatHistory chatHistory, string input, int tokenAllowance)
+    private static async Task<string> PlanGitHubSkill(
+        GitHubSkillOptions gitHubOptions, ActionPlanner planner, OpenAIChatHistory chatHistory, string input, int tokenAllowance, ILogger logger)
     {
         // Ask the planner to create a plan based off the user's input. If the plan elicits no steps, continue normally.
         Plan plan = await planner.CreatePlanAsync(input);
@@ -154,7 +153,7 @@ internal sealed class Program
             return planContext.Result;
         }
 
-        if (!TryExtractJsonFromOpenApiPlanResult(planContext.Result, out string planResult))
+        if (!TryExtractJsonFromOpenApiPlanResult(planContext.Result, logger, out string planResult))
         {
             planResult = planContext.Result;
         }
@@ -196,7 +195,7 @@ internal sealed class Program
     /// <summary>
     /// Try to extract json from the planner response as if it were from an OpenAPI skill.
     /// </summary>
-    private static bool TryExtractJsonFromOpenApiPlanResult(string openApiSkillResponse, out string json)
+    private static bool TryExtractJsonFromOpenApiPlanResult(string openApiSkillResponse, ILogger logger, out string json)
     {
         try
         {
