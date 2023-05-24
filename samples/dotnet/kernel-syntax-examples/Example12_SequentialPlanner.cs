@@ -139,13 +139,13 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                        Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                        Env.Var("AZURE_OPENAI_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_KEY"))
+                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_KEY"))
             .WithAzureTextEmbeddingGenerationService(
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 

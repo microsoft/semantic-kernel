@@ -197,9 +197,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
         // If the function is invoked manually, the user might have left out the skill collection
         context.Skills ??= this._skillCollection;
 
-        return this.IsSemantic ?
-            InvokeSemanticAsync(context, settings) :
-            this._function(null, settings, context);
+        return this.IsSemantic
+            ? InvokeSemanticAsync(context, settings)
+            : this._function(null, settings, context);
 
         async Task<SKContext> InvokeSemanticAsync(SKContext context, CompleteRequestSettings? settings)
         {

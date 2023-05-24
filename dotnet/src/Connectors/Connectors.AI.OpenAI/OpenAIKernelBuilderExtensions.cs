@@ -43,12 +43,12 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
-            new AzureTextCompletion(
-                deploymentName,
-                endpoint,
-                apiKey,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
-                parameters.Logger),
+                new AzureTextCompletion(
+                    deploymentName,
+                    endpoint,
+                    apiKey,
+                    httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                    parameters.Logger),
             setAsDefault);
 
         return builder;
@@ -75,12 +75,12 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
-            new AzureTextCompletion(
-                deploymentName,
-                endpoint,
-                credentials,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
-                parameters.Logger),
+                new AzureTextCompletion(
+                    deploymentName,
+                    endpoint,
+                    credentials,
+                    httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                    parameters.Logger),
             setAsDefault);
 
         return builder;
@@ -107,12 +107,12 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
-            new OpenAITextCompletion(
-                modelId,
-                apiKey,
-                orgId,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
-                parameters.Logger),
+                new OpenAITextCompletion(
+                    modelId,
+                    apiKey,
+                    orgId,
+                    httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                    parameters.Logger),
             setAsDefault);
         return builder;
     }
@@ -142,12 +142,12 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
-            new AzureTextEmbeddingGeneration(
-                deploymentName,
-                endpoint,
-                apiKey,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
-                parameters.Logger),
+                new AzureTextEmbeddingGeneration(
+                    deploymentName,
+                    endpoint,
+                    apiKey,
+                    httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                    parameters.Logger),
             setAsDefault);
         return builder;
     }
@@ -173,12 +173,12 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
-            new AzureTextEmbeddingGeneration(
-                deploymentName,
-                endpoint,
-                credential,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
-                parameters.Logger),
+                new AzureTextEmbeddingGeneration(
+                    deploymentName,
+                    endpoint,
+                    credential,
+                    httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                    parameters.Logger),
             setAsDefault);
         return builder;
     }
@@ -204,12 +204,12 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
-            new OpenAITextEmbeddingGeneration(
-                modelId,
-                apiKey,
-                orgId,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
-                parameters.Logger),
+                new OpenAITextEmbeddingGeneration(
+                    modelId,
+                    apiKey,
+                    orgId,
+                    httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                    parameters.Logger),
             setAsDefault);
         return builder;
     }
@@ -367,11 +367,11 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<IImageGeneration>(serviceId, ((ILogger Logger, KernelConfig Config) parameters) =>
-            new OpenAIImageGeneration(
-                apiKey,
-                orgId,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
-                parameters.Logger),
+                new OpenAIImageGeneration(
+                    apiKey,
+                    orgId,
+                    httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                    parameters.Logger),
             setAsDefault);
 
         return builder;

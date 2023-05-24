@@ -483,16 +483,16 @@ public sealed class PlanTests : IDisposable
         if (useChatModel)
         {
             builder.WithAzureChatCompletionService(
-                        deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                        endpoint: azureOpenAIConfiguration.Endpoint,
-                        apiKey: azureOpenAIConfiguration.ApiKey);
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
         }
         else
         {
             builder.WithAzureTextCompletionService(
-                        deploymentName: azureOpenAIConfiguration.DeploymentName,
-                        endpoint: azureOpenAIConfiguration.Endpoint,
-                        apiKey: azureOpenAIConfiguration.ApiKey);
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
         }
 
         if (useEmbeddings)

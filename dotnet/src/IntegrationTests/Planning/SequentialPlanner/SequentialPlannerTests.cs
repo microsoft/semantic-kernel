@@ -129,9 +129,9 @@ public sealed class SequentialPlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureTextEmbeddingGenerationService(
-                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
                 .WithMemoryStorage(new VolatileMemoryStore());
         }
 

@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
+// ReSharper disable InconsistentNaming
 /**
  * The following examples show how to use SK SDK in applications using DI/IoC containers.
  */
@@ -42,9 +43,9 @@ public static class Example40_DIContainer
         collection.AddTransient<IKernel>((serviceProvider) =>
         {
             return Kernel.Builder
-            .WithLogger(serviceProvider.GetRequiredService<ILogger>())
-            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"))
-            .Build();
+                .WithLogger(serviceProvider.GetRequiredService<ILogger>())
+                .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"))
+                .Build();
         });
 
         //Registering class that uses Kernel to execute a skill

@@ -86,7 +86,7 @@ public class AIServiceCollection
 
         // Register the factory with the given name
         namedServices[name ?? DefaultKey] = objectFactory
-            ?? throw new InvalidOperationException("Service factory is an invalid format");
+                                            ?? throw new InvalidOperationException("Service factory is an invalid format");
     }
 
     /// <summary>
@@ -112,5 +112,5 @@ public class AIServiceCollection
 
     private bool HasDefault<T>() where T : IAIService
         => this._defaultIds.TryGetValue(typeof(T), out var defaultName)
-            && !string.IsNullOrEmpty(defaultName);
+           && !string.IsNullOrEmpty(defaultName);
 }

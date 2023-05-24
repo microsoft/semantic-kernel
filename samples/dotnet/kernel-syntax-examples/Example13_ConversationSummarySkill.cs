@@ -184,7 +184,7 @@ Jane: Goodbye!
                 Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_ENDPOINT"),
                 Env.Var("AZURE_OPENAI_KEY"))
-        .Build();
+            .Build();
 
         return kernel;
     }
