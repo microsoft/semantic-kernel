@@ -36,7 +36,7 @@ const useClasses = makeStyles({
                 visibility: 'visible',
             },
         },
-        height: '-webkit-fill-available',
+        height: ['-webkit-fill-available', '-moz-available'],
         ...shorthands.margin('4px'),
     },
     history: {
