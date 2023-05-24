@@ -3,7 +3,6 @@
 using System;
 using System.Net.Http;
 using System.Threading;
-using System.Threading.Tasks;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -36,7 +35,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Self instance</returns>
-    public static async Task<KernelBuilder> AddAzureOpenAIAsync(this KernelBuilder builder,
+    public static KernelBuilder WithAzureOpenAI(this KernelBuilder builder,
         string endpoint,
         string apiKey,
         HttpClient? httpClient = null,
@@ -44,10 +43,10 @@ public static class OpenAIKernelBuilderExtensions
         CancellationToken cancellationToken = default)
     {
         // Get list of (available) models on Azure OpenAI instance
-        var models = await AzureOpenAIRestClient.GetModelsAsync(endpoint, apiKey, httpClient, cancellationToken).ConfigureAwait(false);
+        var models = AzureOpenAIRestClient.GetModelsAsync(endpoint, apiKey, httpClient, cancellationToken).RunTaskSynchronously();
 
         // Get list of deployments
-        var deployments = await AzureOpenAIRestClient.GetDeploymentsAsync(endpoint, apiKey, httpClient, cancellationToken).ConfigureAwait(false);
+        var deployments = AzureOpenAIRestClient.GetDeploymentsAsync(endpoint, apiKey, httpClient, cancellationToken).RunTaskSynchronously();
 
         foreach (AzureDeploymentInfo d in deployments.Values)
         {
@@ -98,7 +97,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Self instance</returns>
-    public static async Task<KernelBuilder> AddOpenAIAsync(this KernelBuilder builder,
+    public static KernelBuilder WithOpenAI(this KernelBuilder builder,
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
@@ -106,7 +105,7 @@ public static class OpenAIKernelBuilderExtensions
         CancellationToken cancellationToken = default)
     {
         // Get list of (available) models on Azure OpenAI instance
-        var models = await OpenAIRestClient.GetModelsAsync(apiKey, organization, httpClient, cancellationToken).ConfigureAwait(false);
+        var models = OpenAIRestClient.GetModelsAsync(apiKey, organization, httpClient, cancellationToken).RunTaskSynchronously();
 
         foreach (var model in models.Values)
         {
