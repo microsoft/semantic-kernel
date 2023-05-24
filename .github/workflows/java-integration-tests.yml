@@ -52,7 +52,7 @@ jobs:
 
       # API tests run on JDK 17+
       - name: Run integration tests
-        run: ../mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+        run: ../mvnw -B -Pbug-check clean install --file pom.xml
         working-directory: java/api-test
         env:
           OPENAI_API_KEY: ""
@@ -63,6 +63,6 @@ jobs:
 
       # Samples build on JDK 17+
       - name: Build semantic-kernel samples
-        run: ../../../java/mvnw -B -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+        run: ../../../java/mvnw -B clean install --file pom.xml
         working-directory: samples/java/semantickernel-samples
         if: ${{ matrix.java-versions >= 17 }}
