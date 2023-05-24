@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.connectors.ai.openai.textembeddings;
 
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
-import com.microsoft.semantickernel.openai.clients.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 
 public class OpenAITextEmbeddingGenerationBuilder
         implements EmbeddingGeneration.Builder<String, Double> {

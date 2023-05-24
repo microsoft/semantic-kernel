@@ -1,9 +1,9 @@
 package com.microsoft.semantickernel;
 
 import com.azure.core.credential.AzureKeyCredential;
-import com.microsoft.openai.AzureOpenAIClient;
-import com.microsoft.openai.OpenAIAsyncClient;
-import com.microsoft.openai.OpenAIClientBuilder;
+import com.microsoft.semantickernel.openai.client.AzureOpenAIClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.OpenAIClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

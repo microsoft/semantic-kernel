@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel;
 
-import com.microsoft.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
 
 public class Example06MemoryAndEmbeddings {

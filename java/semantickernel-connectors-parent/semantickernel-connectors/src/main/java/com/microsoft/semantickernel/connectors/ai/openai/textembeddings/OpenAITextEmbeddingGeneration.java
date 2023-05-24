@@ -7,7 +7,7 @@ import com.azure.ai.openai.models.EmbeddingsOptions;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
-import com.microsoft.semantickernel.openai.clients.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 
 import reactor.core.publisher.Mono;
 

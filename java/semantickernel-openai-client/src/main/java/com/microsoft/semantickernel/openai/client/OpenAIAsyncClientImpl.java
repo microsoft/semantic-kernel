@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.openai.clients;
+package com.microsoft.semantickernel.openai.client;
 
 import com.azure.ai.openai.models.*;
 import com.azure.core.annotation.*;

@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel;
 
-import com.microsoft.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.azuresdk;
 
-import com.microsoft.semantickernel.openai.clients.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 
 public abstract class ClientBase {
     private final String modelId;

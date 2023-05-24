@@ -6,7 +6,7 @@ import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
-import com.microsoft.semantickernel.openai.clients.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 

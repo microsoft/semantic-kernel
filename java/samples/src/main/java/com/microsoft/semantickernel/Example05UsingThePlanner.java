@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel;
 
-import com.microsoft.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 

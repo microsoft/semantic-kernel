@@ -7,7 +7,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
-import com.microsoft.semantickernel.openai.clients.AzureOpenAIClient;
+import com.microsoft.semantickernel.openai.client.AzureOpenAIClient;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 
 import org.junit.jupiter.api.Test;

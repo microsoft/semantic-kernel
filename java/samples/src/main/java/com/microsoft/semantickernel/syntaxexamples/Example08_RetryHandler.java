@@ -5,7 +5,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
-import com.microsoft.openai.AzureOpenAIClient;
+import com.microsoft.semantickernel.openai.client.AzureOpenAIClient;
 import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;

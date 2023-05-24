@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-import com.microsoft.semantickernel.openai.clients.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 
 /** Interface for text embedding generation services */
 public interface EmbeddingGeneration<TValue, TEmbedding extends Number> {
