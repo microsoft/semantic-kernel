@@ -209,13 +209,6 @@ public class ChatSkill
             return string.Empty;
         }
 
-        // Skills run in the planner may modify the SKContext. Clone the context to avoid
-        // modifying the original context variables.
-        SKContext plannerContext = Utilities.CopyContextWithVariablesClone(context);
-
-        // Use the user intent message as the input to the plan.
-        plannerContext.Variables.Update(plannerContext["userIntent"]);
-
         // Check if plan exists in ask's context variables.
         // If plan was returned at this point, that means it was approved and should be run
         var planApproved = context.Variables.Get("proposedPlan", out var planJson);
@@ -260,7 +253,7 @@ public class ChatSkill
         else
         {
             // Create a plan and set it in context for approval.
-            Plan plan = await this._planner.CreatePlanAsync(plannerContext.Variables.Input);
+            Plan plan = await this._planner.CreatePlanAsync(context["userIntent"]);
 
             if (plan.Steps.Count > 0)
             {
