@@ -6,7 +6,7 @@ namespace Microsoft.SemanticKernel.Http;
 /// <summary>
 /// Provides the default HttpClientHandler instance for HTTP requests.
 /// </summary>
-internal sealed class HttpHandlerProvider
+internal static class HttpHandlerProvider
 {
     /// <summary>
     /// Gets the default HttpClientHandler instance.
