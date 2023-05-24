@@ -20,7 +20,7 @@
     </properties>
 
     <modules>
-        <module>openai-sdk</module>
+        <module>semantickernel-openai-client</module>
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
         <module>semantickernel-core</module>

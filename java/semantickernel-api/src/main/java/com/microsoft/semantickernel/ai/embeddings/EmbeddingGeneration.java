@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.ai.embeddings;
 
-import com.microsoft.openai.OpenAIAsyncClient;
-
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+
+import com.microsoft.semantickernel.openai.clients.OpenAIAsyncClient;
 
 /** Interface for text embedding generation services */
 public interface EmbeddingGeneration<TValue, TEmbedding extends Number> {

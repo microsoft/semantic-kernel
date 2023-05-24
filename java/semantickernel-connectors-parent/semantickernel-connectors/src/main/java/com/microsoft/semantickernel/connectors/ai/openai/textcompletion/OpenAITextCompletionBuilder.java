@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.textcompletion;
 
-import com.microsoft.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.clients.OpenAIAsyncClient;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 public class OpenAITextCompletionBuilder implements TextCompletion.Builder {

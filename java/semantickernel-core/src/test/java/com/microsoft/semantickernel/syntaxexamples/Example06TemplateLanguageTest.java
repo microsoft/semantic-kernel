@@ -3,11 +3,11 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
 
-import com.microsoft.openai.AzureOpenAIClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TimeSkill;
+import com.microsoft.semantickernel.openai.clients.AzureOpenAIClient;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;

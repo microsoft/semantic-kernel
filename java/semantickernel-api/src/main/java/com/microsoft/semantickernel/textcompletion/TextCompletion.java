@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.textcompletion;
 
-import com.microsoft.openai.OpenAIAsyncClient;
-
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+
+import com.microsoft.semantickernel.openai.clients.OpenAIAsyncClient;
 
 /** Interface for text completion services */
 public interface TextCompletion {
