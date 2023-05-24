@@ -127,7 +127,7 @@ public static class Program
         await Example40_DIContainer.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example41_OpenAIAutoconfigure.RunAsync();
+        Example41_OpenAIAutoconfigure.Run();
         Console.WriteLine("== DONE ==");
     }
 }

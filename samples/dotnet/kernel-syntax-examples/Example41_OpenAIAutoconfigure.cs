@@ -1,30 +1,42 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using RepoUtils;
 
-internal class Example41_OpenAIAutoconfigure
+internal sealed class Example41_OpenAIAutoconfigure
 {
-    public static async Task RunAsync()
+    public static void Run()
     {
-        Console.WriteLine("======== Open AI Auto-Configure ========");
-
-        IKernel openAIKernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
-            .WithOpenAI(Env.Var("OPENAI_API_KEY"))
-            .Build();
-
         Console.WriteLine("======== Azure Open AI Auto-Configure ========");
 
-        KernelBuilder builder2 = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log);
+        try
+        {
+            IKernel azureKernel = Kernel.Builder
+                .WithLogger(ConsoleLogger.Log)
+                .WithAzureOpenAI(
+                    endpoint: Env.Var("AZURE_OPENAI_ENDPOINT"),
+                    apiKey: Env.Var("AZURE_OPENAI_KEY"))
+                .Build();
+        }
+        catch (YourAppException)
+        {
+            ConsoleLogger.Log.LogInformation("Azure OpenAI keys not set. Skipping Azure OpenAI example.");
+        }
 
-        builder2 = await builder2.WithAzureOpenAIAsync(
-            endpoint: Env.Var("AZURE_OPENAI_ENDPOINT"),
-            apiKey: Env.Var("AZURE_OPENAI_KEY"));
+        Console.WriteLine("======== Open AI Auto-Configure ========");
 
-        IKernel azureKernel = builder2.Build();
+        try
+        {
+            IKernel openAIKernel = Kernel.Builder
+                .WithLogger(ConsoleLogger.Log)
+                .WithOpenAI(Env.Var("OPENAI_API_KEY"))
+                .Build();
+        }
+        catch (YourAppException)
+        {
+            ConsoleLogger.Log.LogInformation("OpenAI API key not set. Skipping OpenAI example.");
+        }
     }
 }
