@@ -137,30 +137,30 @@ internal sealed class Program
     {
         // Ask the planner to create a plan based off the user's input. If the plan elicits no steps, continue normally.
         Plan plan = await planner.CreatePlanAsync(input);
-        if (plan.Steps.Count > 0)
+
+        // Make sure the plan's state has the GitHub skill configuration values.
+        plan.State.Set("repo", gitHubOptions.Repository);
+        plan.State.Set("owner", gitHubOptions.Owner);
+
+        // Run the plan
+        SKContext planContext = await plan.InvokeAsync(logger: logger);
+        if (planContext.ErrorOccurred)
         {
-            // Make sure the plan's state has the GitHub skill configuration values.
-            plan.State.Set("repo", gitHubOptions.Repository);
-            plan.State.Set("owner", gitHubOptions.Owner);
-
-            // Run the plan
-            SKContext planContext = await plan.InvokeAsync(logger: logger);
-            if (planContext.ErrorOccurred)
-            {
-                logger.LogError("{0}", planContext.LastErrorDescription);
-            }
-
-            if (!TryExtractJsonFromOpenApiPlanResult(planContext.Result, out string planResult))
-            {
-                planResult = planContext.Result;
-            }
-
-            // GitHub responses can be very lengthy - optimize the output so we don't immediately go beyond token limits.
-            planResult = OptimizeGitHubPullRequestResponse(planResult, tokenAllowance);
-
-            return planResult;
+            logger.LogError("{0}", planContext.LastErrorDescription);
+            return string.Empty;
         }
-        return string.Empty;
+        else if (string.IsNullOrWhiteSpace(planContext.Result))
+        {
+            return planContext.Result;
+        }
+
+        if (!TryExtractJsonFromOpenApiPlanResult(planContext.Result, out string planResult))
+        {
+            planResult = planContext.Result;
+        }
+
+        // GitHub responses can be very lengthy - optimize the output so we don't immediately go beyond token limits.
+        return OptimizeGitHubPullRequestResponse(planResult, tokenAllowance);
     }
 
     /// <summary>
