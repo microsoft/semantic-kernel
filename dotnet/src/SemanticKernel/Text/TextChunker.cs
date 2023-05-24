@@ -10,8 +10,8 @@ namespace Microsoft.SemanticKernel.Text;
 
 /// <summary>
 /// Split text in chunks, attempting to leave meaning intact.
-/// For plain text, wasSplit looking at new lines first, then periods, and so on.
-/// For markdown, wasSplit looking at punctuation first, and so on.
+/// For plain text, split looking at new lines first, then periods, and so on.
+/// For markdown, split looking at punctuation first, and so on.
 /// </summary>
 public static class TextChunker
 {
@@ -22,7 +22,7 @@ public static class TextChunker
     /// <summary>
     /// Split plain text into lines.
     /// </summary>
-    /// <param name="text">Text to wasSplit</param>
+    /// <param name="text">Text to split</param>
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
     /// <returns>List of lines.</returns>
     public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine)
@@ -33,7 +33,7 @@ public static class TextChunker
     /// <summary>
     /// Split markdown text into lines.
     /// </summary>
-    /// <param name="text">Text to wasSplit</param>
+    /// <param name="text">Text to split</param>
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
     /// <returns>List of lines.</returns>
     public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine)
@@ -46,11 +46,11 @@ public static class TextChunker
     /// </summary>
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
-    /// <param name="overlap">Number  of overlap tokens between paragraphs</param>
+    /// <param name="overlapTokens">Number  of overlaped tokens between paragraphs</param>
     /// <returns>List of paragraphs.</returns>
-    public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlap = 0)
+    public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0)
     {
-        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlap,  (text, maxTokens) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions));
+        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, (text, maxTokens) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions));
     }
 
     /// <summary>
@@ -58,26 +58,36 @@ public static class TextChunker
     /// </summary>
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
-    /// <param name="overlap">Number  of overlap tokens between paragraphs</param>
+    /// <param name="overlapTokens">Number  of overlaped tokens between paragraphs</param>
     /// <returns>List of paragraphs.</returns>
-    public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph, int overlap = 0)
+    public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0)
     {
-        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlap, (text, maxTokens) => InternalSplitLines(text, maxTokens, trim: false, s_markdownSplitOptions));
+        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, (text, maxTokens) => InternalSplitLines(text, maxTokens, trim: false, s_markdownSplitOptions));
     }
 
-    private static List<string> InternalSplitTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlap, Func<string, int,  List<string>> longLinesSplitter)
+    private static List<string> InternalSplitTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens, Func<string, int, List<string>> longLinesSplitter)
     {
+        if (maxTokensPerParagraph <= 0)
+        {
+            throw new ArgumentException("maxTokensPerParagraph should be a positive number");
+        }
+
+        if (maxTokensPerParagraph <= overlapTokens)
+        {
+            throw new ArgumentException("overlapTokens can not be larger thatn maxTokensPerParagraph");
+        }
+
         if (lines.Count == 0)
         {
             return new List<string>();
         }
 
-        var adjustedMaxTokensPerParagraph = maxTokensPerParagraph - overlap;
+        var adjustedMaxTokensPerParagraph = maxTokensPerParagraph - overlapTokens;
 
         // Split long lines first
-        var truncatedLines = lines.SelectMany((line) => longLinesSplitter(line, adjustedMaxTokensPerParagraph)).ToList();
+        var truncatedLines = lines.SelectMany((line) => longLinesSplitter(line, adjustedMaxTokensPerParagraph));
 
-        var paragraphs = BuildParagraph(truncatedLines, new StringBuilder(), new List<string>(), adjustedMaxTokensPerParagraph - overlap, longLinesSplitter);
+        var paragraphs = BuildParagraph(truncatedLines, new StringBuilder(), new List<string>(), adjustedMaxTokensPerParagraph, longLinesSplitter);
         // distribute text more evenly in the last paragraphs when the last paragraph is too short.
         if (paragraphs.Count > 1)
         {
@@ -97,35 +107,36 @@ public static class TextChunker
                     var newSecondLastParagraph = string.Join(" ", secondLastParagraphTokens);
                     var newLastParagraph = string.Join(" ", lastParagraphTokens);
 
-                    paragraphs[paragraphs.Count - 2] = $"{newSecondLastParagraph} {newLastParagraph}" ;
+                    paragraphs[paragraphs.Count - 2] = $"{newSecondLastParagraph} {newLastParagraph}";
                     paragraphs.RemoveAt(paragraphs.Count - 1);
                 }
             }
         }
 
-        if (overlap > 0 &&  paragraphs.Count > 1)
+        if (overlapTokens > 0 && paragraphs.Count > 1)
         {
             var lastParagraph = paragraphs.Last();
-            paragraphs  =paragraphs.Zip(paragraphs.Skip(1), (currentParagraph, nextParagraph) =>
-            {
-                var split =  longLinesSplitter(nextParagraph, overlap);
-                return $"{ currentParagraph} {split.FirstOrDefault()}";
-            }).ToList();
+
+            paragraphs = paragraphs.Zip(paragraphs.Skip(1), (currentParagraph, nextParagraph) => {
+                    var split = longLinesSplitter(nextParagraph, overlapTokens);
+                    return $"{ currentParagraph} {split.FirstOrDefault()}";
+             }).ToList();
+
             paragraphs.Add(lastParagraph);
         }
 
         return paragraphs;
     }
 
-    private static List<string> BuildParagraph(IEnumerable<string> truncatedLines, StringBuilder paragraph, List<string> paragraphs, int maxTokensPerParagraph,  Func<string, int, List<string>> longLinesSplitter)
+    private static List<string> BuildParagraph(IEnumerable<string> truncatedLines, StringBuilder paragraphBuilder, List<string> paragraphs, int maxTokensPerParagraph, Func<string, int, List<string>> longLinesSplitter)
     {
         // Base case: no more elements in the list
         if (!truncatedLines.Any())
         {
             // Adding any remaining paragraph
-            if (paragraph.Length > 0)
+            if (paragraphBuilder.Length > 0)
             {
-                paragraphs.Add(paragraph.ToString().Trim());
+                paragraphs.Add(paragraphBuilder.ToString().Trim());
             }
             return paragraphs;
         }
@@ -133,17 +144,17 @@ public static class TextChunker
         // Recursive case
         string line = truncatedLines.First();
 
-        if (paragraph.Length > 0 && TokenCount(paragraph.Length) + TokenCount(line.Length) + 1 >= maxTokensPerParagraph)
+        if (paragraphBuilder.Length > 0 && TokenCount(paragraphBuilder.Length) + TokenCount(line.Length) + 1 >= maxTokensPerParagraph)
         {
-            paragraphs.Add(paragraph.ToString().Trim());
+            paragraphs.Add(paragraphBuilder.ToString().Trim());
 
-            // next paragraph
-            return BuildParagraph(truncatedLines,  new StringBuilder(), paragraphs, maxTokensPerParagraph, longLinesSplitter);
+            // next paragraph 
+            return BuildParagraph(truncatedLines, new StringBuilder(), paragraphs, maxTokensPerParagraph, longLinesSplitter);
         }
 
-        paragraph.AppendLine(line);
+        paragraphBuilder.AppendLine(line);
 
-        return BuildParagraph(truncatedLines.Skip(1), paragraph, paragraphs, maxTokensPerParagraph, longLinesSplitter);
+        return BuildParagraph(truncatedLines.Skip(1), paragraphBuilder, paragraphs, maxTokensPerParagraph, longLinesSplitter);
     }
 
     private static List<string> InternalSplitLines(string text, int maxTokensPerLine, bool trim, string?[] splitOptions)
@@ -173,14 +184,14 @@ public static class TextChunker
         int count = input.Count;
         for (int i = 0; i < count; i++)
         {
-            var (splits, wasSplit) = Split(input[i].AsSpan(), input[i], maxTokens, separators, trim);
+            var (splits, split) = Split(input[i].AsSpan(), input[i], maxTokens, separators, trim);
             result.AddRange(splits);
-            inputWasSplit |= wasSplit;
+            inputWasSplit |= split;
         }
         return (result, inputWasSplit);
     }
 
-    private static (List<string>,bool) Split(ReadOnlySpan<char> input, string? inputString, int maxTokens, ReadOnlySpan<char> separators, bool trim)
+    private static (List<string>, bool) Split(ReadOnlySpan<char> input, string? inputString, int maxTokens, ReadOnlySpan<char> separators, bool trim)
     {
         Debug.Assert(inputString is null || input.SequenceEqual(inputString.AsSpan()));
         List<string> result = new List<string>();
@@ -232,7 +243,7 @@ public static class TextChunker
                 var (splits1, split1) = Split(firstHalf, null, maxTokens, separators, trim);
                 result.AddRange(splits1);
                 var (splits2, split2) = Split(secondHalf, null, maxTokens, separators, trim);
-                result.AddRange(splits2) ;
+                result.AddRange(splits2);
 
                 inputWasSplit = split1 || split2;
                 return (result, inputWasSplit);
