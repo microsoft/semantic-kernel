@@ -40,7 +40,14 @@ internal static class AzureOpenAIRestClient
             httpClient,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        return modelList?.Data.ToDictionary(m => m.Id) ?? new(0);
+        Dictionary<string, AzureModelInfo> modelDictionary = new(modelList?.Data.Count ?? 0);
+        foreach (AzureModelInfo model in modelList?.Data ?? Enumerable.Empty<AzureModelInfo>())
+        {
+            // Note: .ToDictionary() doesn't work here because the model.Id is not unique.
+            modelDictionary[model.Id] = model;
+        }
+
+        return modelDictionary;
     }
 
     private static async Task<T?> GetRestDataAsync<T>(
