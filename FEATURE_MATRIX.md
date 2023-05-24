@@ -72,7 +72,7 @@
 
 ## Design Choices
 
-The overall architecture of the core kernel is consistent across Python and C#,
+The overall architecture of the core kernel is consistent across all languages,
 however, the code should follow common paradigms and style of each language.
 
 During the initial development phase, many Python best practices have been ignored
