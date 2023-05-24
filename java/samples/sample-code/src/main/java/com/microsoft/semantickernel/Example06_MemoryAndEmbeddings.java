@@ -24,12 +24,12 @@ public class Example06_MemoryAndEmbeddings {
     return kernel;
   }
 
-  public static void run (boolean useAzureOpenAI) throws IOException {
-    OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
-    Kernel kernel = getKernel(client);
+  public static void run (Config.ClientType clientType) throws IOException {
+    Kernel kernel = getKernel(clientType.getClient());
   }
 
   public static void main(String[] args) throws IOException {
-    run(false);
+    // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
+    run(Config.ClientType.OPEN_AI);
   }
 }

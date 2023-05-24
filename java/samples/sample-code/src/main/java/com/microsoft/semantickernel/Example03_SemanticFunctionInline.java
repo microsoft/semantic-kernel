@@ -115,15 +115,15 @@ public class Example03_SemanticFunctionInline {
         inlineFunction(kernel, propmt, "tldr", text);
     }
 
-    public static void run(boolean useAzureOpenAI) throws IOException {
-        OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
-        Kernel kernel = Example00_GettingStarted.getKernel(client);
+    public static void run (Config.ClientType clientType) throws IOException {
+        Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
 
         summarize(kernel);
         TLDR(kernel);
     }
 
     public static void main(String args[]) throws IOException {
-        run(false);
+        // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
+        run(Config.ClientType.OPEN_AI);
     }
 }

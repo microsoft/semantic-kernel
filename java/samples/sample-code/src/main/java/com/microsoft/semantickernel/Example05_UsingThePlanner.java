@@ -17,9 +17,8 @@ public class Example05_UsingThePlanner {
         return new SequentialPlanner(kernel, null, null);
     }
 
-    public static void run(boolean useAzureOpenAI) throws IOException {
-        OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
-        Kernel kernel = Example00_GettingStarted.getKernel(client);
+    public static void run (Config.ClientType clientType) throws IOException {
+        Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
 
         SequentialPlanner planner = getPlanner(kernel);
         System.out.println(planner.createPlanAsync(
@@ -30,7 +29,8 @@ public class Example05_UsingThePlanner {
     }
 
     public static void main(String[] args) throws IOException {
-        run(true);
+        // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
+        run(Config.ClientType.OPEN_AI);
     }
 
 }

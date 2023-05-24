@@ -24,7 +24,7 @@ public class Example06_TemplateLanguage {
         System.out.println("======== TemplateLanguage ========");
 
 
-        OpenAIAsyncClient client = Config.getClient(true);
+        OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
 
         KernelConfig kernelConfig = SKBuilders.kernelConfig()
                 .addTextCompletionService(
