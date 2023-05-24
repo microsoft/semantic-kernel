@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
+import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.*;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
@@ -35,13 +36,13 @@ public class DefaultKernel implements Kernel {
     private final KernelConfig kernelConfig;
     private final DefaultSkillCollection defaultSkillCollection;
     private final PromptTemplateEngine promptTemplateEngine;
-    @Nullable private SemanticTextMemory memory; // TODO: make this final
+    private MemoryStore memoryStore;
 
     @Inject
     public DefaultKernel(
             KernelConfig kernelConfig,
             PromptTemplateEngine promptTemplateEngine,
-            @Nullable SemanticTextMemory memory) {
+            MemoryStore memoryStore) {
         if (kernelConfig == null) {
             throw new IllegalArgumentException();
         }
@@ -49,12 +50,7 @@ public class DefaultKernel implements Kernel {
         this.kernelConfig = kernelConfig;
         this.promptTemplateEngine = promptTemplateEngine;
         this.defaultSkillCollection = new DefaultSkillCollection();
-
-        if (memory != null) {
-            this.memory = memory.copy();
-        } else {
-            this.memory = null;
-        }
+        this.memoryStore = memoryStore;
 
         kernelConfig.getSkills().forEach(this::registerSemanticFunction);
     }
@@ -189,8 +185,13 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
+    public MemoryStore getMemoryStore() {
+        return memoryStore;
+    }
+
+    @Override
     public void registerMemory(@Nonnull SemanticTextMemory memory) {
-        this.memory = memory != null ? memory.copy() : null;
+        throw new NotSupportedException("Not implemented");
     }
 
     @Override
@@ -208,9 +209,10 @@ public class DefaultKernel implements Kernel {
         if (pipeline == null || pipeline.length == 0) {
             throw new SKException("No parameters provided to pipeline");
         }
-
+        // TODO: The SemanticTextMemory can be null, but there should be a way to provide it.
+        //       Not sure registerMemory is the right way.
         Mono<SKContext<?>> pipelineBuilder =
-                Mono.just(pipeline[0].buildContext(variables, memory, getSkills()));
+                Mono.just(pipeline[0].buildContext(variables, null, getSkills()));
 
         for (SKFunction f : Arrays.asList(pipeline)) {
             pipelineBuilder =
@@ -232,7 +234,9 @@ public class DefaultKernel implements Kernel {
 
         @Override
         public Kernel build(
-                KernelConfig kernelConfig, @Nullable PromptTemplateEngine promptTemplateEngine) {
+                KernelConfig kernelConfig,
+                @Nullable PromptTemplateEngine promptTemplateEngine,
+                @Nullable MemoryStore memoryStore) {
             if (promptTemplateEngine == null) {
                 promptTemplateEngine = new DefaultPromptTemplateEngine();
             }
@@ -243,7 +247,7 @@ public class DefaultKernel implements Kernel {
                         "It is required to set a kernelConfig to build a kernel");
             }
 
-            return new DefaultKernel(kernelConfig, promptTemplateEngine, null);
+            return new DefaultKernel(kernelConfig, promptTemplateEngine, memoryStore);
         }
     }
 }

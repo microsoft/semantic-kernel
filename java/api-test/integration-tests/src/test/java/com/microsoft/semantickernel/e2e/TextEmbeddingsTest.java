@@ -8,7 +8,9 @@ import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.TextMemorySkill;
-import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
+import com.microsoft.semantickernel.memory.MemoryQueryResult;
+import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
@@ -17,8 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,13 +57,9 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
     @Test
     @EnabledIf("isAzureTestEnabled")
     public void testMemory() throws IOException {
-        String model = "text-embedding-ada-002";
-        EmbeddingGeneration<String, Float> embeddingGeneration =
-                new OpenAITextEmbeddingGeneration(getAzureOpenAIClient(), model);
 
-        Kernel kernel = buildTextEmbeddingsKernel();
-
-        ReadOnlyFunctionCollection memory = kernel.importSkill(new TextMemorySkill(), null);
+        Kernel kernel = buildTextCompletionKernel();
+        kernel.importSkill(new TextMemorySkill(), "aboutMe");
 
         String skPrompt =
                 "\n"
@@ -83,11 +79,64 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                     + "User: {{$userInput}}\n"
                     + "ChatBot: ";
 
-        Mono<CompletionSKContext> mono =
-                memory.getFunction("retrieve", CompletionSKFunction.class).invokeAsync("");
-        CompletionSKContext result = mono.block();
+        CompletionSKFunction chat =
+                kernel.getSemanticFunctionBuilder()
+                        .createFunction(
+                                skPrompt, "recall", "aboutMe", "TextEmbeddingTest#testMemory");
 
-        LOGGER.info(result.getResult());
+        VolatileMemoryStore volatileMemoryStore = new VolatileMemoryStore();
+        volatileMemoryStore.createCollectionAsync("aboutMe").block();
+
+        OpenAITextEmbeddingGeneration embeddingGeneration =
+                new OpenAITextEmbeddingGeneration(getAzureOpenAIClient(), "text-embedding-ada-002");
+
+        SemanticTextMemory memory =
+                SKBuilders.semanticTextMemory()
+                        .setEmbeddingGenerator(embeddingGeneration)
+                        .setStorage(volatileMemoryStore)
+                        .build();
+
+        CompletionSKContext context =
+                chat.buildContext(SKBuilders.variables().build(), memory, kernel.getSkills());
+
+        context.getSemanticMemory()
+                .saveInformationAsync("aboutMe", "My name is Andrea", "fact1", null, null)
+                .block();
+
+        context.getSemanticMemory()
+                .saveInformationAsync(
+                        "aboutMe", "I currently work as a tour guide", "fact2", null, null)
+                .block();
+
+        context.getSemanticMemory()
+                .saveInformationAsync(
+                        "aboutMe", "I've been living in Seattle since 2005", "fact3", null, null)
+                .block();
+
+        context.getSemanticMemory()
+                .saveInformationAsync(
+                        "aboutMe",
+                        "I visited France and Italy five times since 2015",
+                        "fact4",
+                        null,
+                        null)
+                .block();
+
+        context.getSemanticMemory()
+                .saveInformationAsync("aboutMe", "My family is from New York", "fact5", null, null)
+                .block();
+
+        String query = "Where are you from originally?";
+        List<MemoryQueryResult> results =
+                memory.searchAsync("aboutMe", query, 10, .5, false).block();
+        results.forEach(
+                result ->
+                        System.out.println(
+                                String.format(
+                                        "%s %s (relevance=%f)",
+                                        query,
+                                        result.getMetadata().getText(),
+                                        result.getRelevance())));
     }
 
     public void testEmbeddingGeneration(OpenAIAsyncClient client, int expectedEmbeddingSize) {
