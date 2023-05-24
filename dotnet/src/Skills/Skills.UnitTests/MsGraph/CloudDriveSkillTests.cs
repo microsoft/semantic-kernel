@@ -34,12 +34,12 @@ public class CloudDriveSkillTests : IDisposable
         // Arrange
         string anyFilePath = Guid.NewGuid().ToString();
 
-        Mock<ICloudDriveConnector> connectorMock = new Mock<ICloudDriveConnector>();
+        Mock<ICloudDriveConnector> connectorMock = new();
         connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         this._context.Variables.Set(Parameters.DestinationPath, Guid.NewGuid().ToString());
-        CloudDriveSkill target = new CloudDriveSkill(connectorMock.Object);
+        CloudDriveSkill target = new(connectorMock.Object);
 
         // Act
         await target.UploadFileAsync(anyFilePath, this._context);
@@ -55,11 +55,11 @@ public class CloudDriveSkillTests : IDisposable
         string anyFilePath = Guid.NewGuid().ToString();
         string anyLink = Guid.NewGuid().ToString();
 
-        Mock<ICloudDriveConnector> connectorMock = new Mock<ICloudDriveConnector>();
+        Mock<ICloudDriveConnector> connectorMock = new();
         connectorMock.Setup(c => c.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(anyLink);
 
-        CloudDriveSkill target = new CloudDriveSkill(connectorMock.Object);
+        CloudDriveSkill target = new(connectorMock.Object);
 
         // Act
         string actual = await target.CreateLinkAsync(anyFilePath, this._context);
@@ -74,14 +74,14 @@ public class CloudDriveSkillTests : IDisposable
     {
         string anyFilePath = Guid.NewGuid().ToString();
         string expectedContent = Guid.NewGuid().ToString();
-        using MemoryStream expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(expectedContent));
+        using MemoryStream expectedStream = new(Encoding.UTF8.GetBytes(expectedContent));
 
         // Arrange
-        Mock<ICloudDriveConnector> connectorMock = new Mock<ICloudDriveConnector>();
+        Mock<ICloudDriveConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetFileContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStream);
 
-        CloudDriveSkill target = new CloudDriveSkill(connectorMock.Object);
+        CloudDriveSkill target = new(connectorMock.Object);
 
         // Act
         string actual = await target.GetFileContentAsync(anyFilePath, this._context);

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -9,8 +10,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -20,6 +21,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Standard Semantic Kernel callable plan.
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class Plan : ISKFunction
 {
     /// <summary>
@@ -254,7 +256,7 @@ public sealed class Plan : ISKFunction
             if (result.ErrorOccurred)
             {
                 throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
-                    $"Error occurred while running plan step: {context.LastErrorDescription}", context.LastException);
+                    $"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
             }
 
             #region Update State
@@ -295,30 +297,37 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        // TODO - Eventually, we should be able to describe a plan and it's expected inputs/outputs
+        // TODO - Eventually, we should be able to describe a plan and its expected inputs/outputs
         return this.Function?.Describe() ?? new();
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(string input, SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
+    public Task<SKContext> InvokeAsync(
+        string? input = null,
+        CompleteRequestSettings? settings = null,
+        ISemanticTextMemory? memory = null,
+        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        context ??= new SKContext(new ContextVariables(), null!, null, log ?? NullLogger.Instance, cancellationToken);
+        if (input != null) { this.State.Update(input); }
 
-        context.Variables.Update(input);
+        SKContext context = new(
+            this.State,
+            memory: memory,
+            logger: logger,
+            cancellationToken: cancellationToken);
 
-        return this.InvokeAsync(context, settings, log, cancellationToken);
+        return this.InvokeAsync(context, settings);
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext? context = null, CompleteRequestSettings? settings = null, ILogger? log = null,
-        CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? settings = null)
     {
-        context ??= new SKContext(this.State, null!, null, log ?? NullLogger.Instance, cancellationToken);
-
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings, log, cancellationToken).ConfigureAwait(false);
+            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -328,7 +337,7 @@ public sealed class Plan : ISKFunction
                 return result;
             }
 
-            context.Variables.Update(result.Result.ToString());
+            context.Variables.Update(result.Result);
         }
         else
         {
@@ -526,7 +535,7 @@ public sealed class Plan : ISKFunction
             {
                 stepVariables.Set(param.Name, value);
             }
-            else if (this.State.Get(param.Name, out value))
+            else if (this.State.Get(param.Name, out value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(param.Name, value);
             }
@@ -579,4 +588,25 @@ public sealed class Plan : ISKFunction
     private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
 
     private const string DefaultResultKey = "PLAN.RESULT";
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay
+    {
+        get
+        {
+            string display = this.Description;
+
+            if (!string.IsNullOrWhiteSpace(this.Name))
+            {
+                display = $"{this.Name} ({display})";
+            }
+
+            if (this._steps.Count > 0)
+            {
+                display += $", Steps = {this._steps.Count}, NextStep = {this.NextStepIndex}";
+            }
+
+            return display;
+        }
+    }
 }

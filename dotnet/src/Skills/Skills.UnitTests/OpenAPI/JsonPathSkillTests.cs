@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.OpenAPI;
 using Xunit;
@@ -49,9 +47,9 @@ public class JsonPathSkillTests
     {
         var target = new JsonPathSkill();
 
-        ContextVariables variables = new ContextVariables(Json);
+        ContextVariables variables = new(Json);
         variables[JsonPathSkill.Parameters.JsonPath] = jsonPath;
-        SKContext context = new SKContext(variables, NullMemory.Instance, null, NullLogger.Instance);
+        SKContext context = new(variables);
 
         string actual = target.GetJsonElementValue(Json, context);
 
@@ -66,9 +64,9 @@ public class JsonPathSkillTests
     {
         var target = new JsonPathSkill();
 
-        ContextVariables variables = new ContextVariables(Json);
+        ContextVariables variables = new(Json);
         variables[JsonPathSkill.Parameters.JsonPath] = jsonPath;
-        SKContext context = new SKContext(variables, NullMemory.Instance, null, NullLogger.Instance);
+        SKContext context = new(variables);
 
         string actual = target.GetJsonElements(Json, context);
 

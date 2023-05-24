@@ -172,8 +172,8 @@ public static class KernelGrpcExtensions
             return context;
         }
 
-        var function = SKFunction.FromCustomMethod(
-            customFunction: ExecuteAsync,
+        var function = SKFunction.FromNativeFunction(
+            nativeFunction: ExecuteAsync,
             parameters: operationParameters.ToList(),
             description: operation.Name,
             skillName: skillName,

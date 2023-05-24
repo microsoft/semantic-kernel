@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -11,6 +13,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Semantic Kernel context.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKContext
 {
     /// <summary>
@@ -18,11 +21,6 @@ public sealed class SKContext
     /// </summary>
     /// <returns>Processed input, aka result</returns>
     public string Result => this.Variables.ToString();
-
-    // /// <summary>
-    // /// Whether an error occurred while executing functions in the pipeline.
-    // /// </summary>
-    // public bool ErrorOccurred => this.Variables.ErrorOccurred;
 
     /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
@@ -117,16 +115,16 @@ public sealed class SKContext
     /// <param name="logger">Logger for operations in context.</param>
     /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
     public SKContext(
-        ContextVariables variables,
-        ISemanticTextMemory memory,
-        IReadOnlySkillCollection? skills,
-        ILogger logger,
+        ContextVariables? variables = null,
+        ISemanticTextMemory? memory = null,
+        IReadOnlySkillCollection? skills = null,
+        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        this.Variables = variables;
-        this.Memory = memory;
-        this.Skills = skills;
-        this.Log = logger;
+        this.Variables = variables ?? new();
+        this.Memory = memory ?? NullMemory.Instance;
+        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
+        this.Log = logger ?? NullLogger.Instance;
         this.CancellationToken = cancellationToken;
     }
 
@@ -138,5 +136,52 @@ public sealed class SKContext
     public override string ToString()
     {
         return this.ErrorOccurred ? $"Error: {this.LastErrorDescription}" : this.Result;
+    }
+
+    /// <summary>
+    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
+    /// and a new set variables, so that variables can be modified without affecting the original context.
+    /// </summary>
+    /// <returns>A new context copied from the current one</returns>
+    public SKContext Clone()
+    {
+        return new SKContext(
+            variables: this.Variables.Clone(),
+            memory: this.Memory,
+            skills: this.Skills,
+            logger: this.Log,
+            cancellationToken: this.CancellationToken)
+        {
+            ErrorOccurred = this.ErrorOccurred,
+            LastErrorDescription = this.LastErrorDescription,
+            LastException = this.LastException
+        };
+    }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay
+    {
+        get
+        {
+            if (this.ErrorOccurred)
+            {
+                return $"Error: {this.LastErrorDescription}";
+            }
+
+            string display = this.Variables.DebuggerDisplay;
+
+            if (this.Skills is IReadOnlySkillCollection skills)
+            {
+                var view = skills.GetFunctionsView();
+                display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";
+            }
+
+            if (this.Memory is ISemanticTextMemory memory && memory is not NullMemory)
+            {
+                display += $", Memory = {memory.GetType().Name}";
+            }
+
+            return display;
+        }
     }
 }

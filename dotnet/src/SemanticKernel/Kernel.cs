@@ -15,6 +15,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -35,10 +36,10 @@ namespace Microsoft.SemanticKernel;
 public sealed class Kernel : IKernel, IDisposable
 {
     /// <inheritdoc/>
-    public KernelConfig Config => this._config;
+    public KernelConfig Config { get; }
 
     /// <inheritdoc/>
-    public ILogger Log => this._log;
+    public ILogger Log { get; }
 
     /// <inheritdoc/>
     public ISemanticTextMemory Memory => this._memory;
@@ -47,7 +48,7 @@ public sealed class Kernel : IKernel, IDisposable
     public IReadOnlySkillCollection Skills => this._skillCollection.ReadOnlySkillCollection;
 
     /// <inheritdoc/>
-    public IPromptTemplateEngine PromptTemplateEngine => this._promptTemplateEngine;
+    public IPromptTemplateEngine PromptTemplateEngine { get; }
 
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
@@ -58,20 +59,24 @@ public sealed class Kernel : IKernel, IDisposable
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
     /// <param name="skillCollection"></param>
+    /// <param name="aiServiceProvider"></param>
     /// <param name="promptTemplateEngine"></param>
     /// <param name="memory"></param>
     /// <param name="config"></param>
     /// <param name="log"></param>
     public Kernel(
         ISkillCollection skillCollection,
+        IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         KernelConfig config,
         ILogger log)
     {
-        this._log = log;
-        this._config = config;
+        this.Log = log;
+        this.Config = config;
+        this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
+        this._aiServiceProvider = aiServiceProvider;
         this._promptTemplateEngine = promptTemplateEngine;
         this._skillCollection = skillCollection;
     }
@@ -101,14 +106,14 @@ public sealed class Kernel : IKernel, IDisposable
         if (string.IsNullOrWhiteSpace(skillName))
         {
             skillName = SkillCollection.GlobalSkill;
-            this._log.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
+            this.Log.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
         }
         else
         {
-            this._log.LogTrace("Importing skill {0}", skillName);
+            this.Log.LogTrace("Importing skill {0}", skillName);
         }
 
-        Dictionary<string, ISKFunction> skill = ImportSkill(skillInstance, skillName, this._log);
+        Dictionary<string, ISKFunction> skill = ImportSkill(skillInstance, skillName, this.Log);
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
             f.Value.SetDefaultSkillCollection(this.Skills);
@@ -164,7 +169,7 @@ public sealed class Kernel : IKernel, IDisposable
             variables,
             this._memory,
             this._skillCollection.ReadOnlySkillCollection,
-            this._log,
+            this.Log,
             cancellationToken);
 
         int pipelineStepCount = -1;
@@ -172,7 +177,7 @@ public sealed class Kernel : IKernel, IDisposable
         {
             if (context.ErrorOccurred)
             {
-                this._log.LogError(
+                this.Log.LogError(
                     context.LastException,
                     "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastErrorDescription);
                 return context;
@@ -187,14 +192,14 @@ public sealed class Kernel : IKernel, IDisposable
 
                 if (context.ErrorOccurred)
                 {
-                    this._log.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
+                    this.Log.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
                         pipelineStepCount, f.SkillName, f.Name, context.LastErrorDescription);
                     return context;
                 }
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
-                this._log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
+                this.Log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
                     pipelineStepCount, f.SkillName, f.Name, e.Message);
                 context.Fail(e.Message, e);
                 return context;
@@ -211,32 +216,36 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext()
+    public SKContext CreateNewContext(CancellationToken cancellationToken = default)
     {
         return new SKContext(
-            new ContextVariables(),
-            this._memory,
-            this._skillCollection.ReadOnlySkillCollection,
-            this._log);
+            memory: this._memory,
+            skills: this._skillCollection.ReadOnlySkillCollection,
+            logger: this.Log,
+            cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public T GetService<T>(string? name = null)
+    public T GetService<T>(string? name = null) where T : IAIService
     {
-        // TODO: use .NET ServiceCollection (will require a lot of changes)
-        // TODO: support Connectors, IHttpFactory and IDelegatingHandlerFactory
+        var service = this._aiServiceProvider.GetService<T>(name);
+        if (service != null)
+        {
+            return service;
+        }
 
         if (typeof(T) == typeof(ITextCompletion))
         {
             name ??= this.Config.DefaultServiceId;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             if (!this.Config.TextCompletionServices.TryGetValue(name, out Func<IKernel, ITextCompletion> factory))
             {
                 throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' text completion service not available");
             }
 
-            var service = factory.Invoke(this);
-            return (T)service;
+            var serv = factory.Invoke(this);
+            return (T)serv;
         }
 
         if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
@@ -248,8 +257,8 @@ public sealed class Kernel : IKernel, IDisposable
                 throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' text embedding service not available");
             }
 
-            var service = factory.Invoke(this);
-            return (T)service;
+            var serv = factory.Invoke(this);
+            return (T)serv;
         }
 
         if (typeof(T) == typeof(IChatCompletion))
@@ -261,8 +270,8 @@ public sealed class Kernel : IKernel, IDisposable
                 throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' chat completion service not available");
             }
 
-            var service = factory.Invoke(this);
-            return (T)service;
+            var serv = factory.Invoke(this);
+            return (T)serv;
         }
 
         if (typeof(T) == typeof(IImageGeneration))
@@ -274,11 +283,12 @@ public sealed class Kernel : IKernel, IDisposable
                 throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' image generation service not available");
             }
 
-            var service = factory.Invoke(this);
-            return (T)service;
+            var serv = factory.Invoke(this);
+            return (T)serv;
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
-        throw new NotSupportedException("The kernel service collection doesn't support the type " + typeof(T).FullName);
+        throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
     }
 
     /// <summary>
@@ -295,11 +305,10 @@ public sealed class Kernel : IKernel, IDisposable
 
     #region private ================================================================================
 
-    private readonly ILogger _log;
-    private readonly KernelConfig _config;
     private readonly ISkillCollection _skillCollection;
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
+    private readonly IAIServiceProvider _aiServiceProvider;
 
     private ISKFunction CreateSemanticFunction(
         string skillName,
@@ -313,7 +322,7 @@ public sealed class Kernel : IKernel, IDisposable
                 $"Function type not supported: {functionConfig.PromptTemplateConfig}");
         }
 
-        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig, this._log);
+        ISKFunction func = SKFunction.FromSemanticConfig(skillName, functionName, functionConfig, this.Log);
 
         // Connect the function to the current kernel skill collection, in case the function
         // is invoked manually without a context and without a way to find other functions.

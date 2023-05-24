@@ -24,20 +24,50 @@ param(
 
     [string]
     # Package to deploy to web service
-    $PackageUri = 'https://skaasdeploy.blob.core.windows.net/api/skaas.zip',
+    $PackageUri = 'https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip',
 
     [string]
     # SKU for the Azure App Service plan
     $AppServiceSku = "B1",
+
+    [string]
+    # API key to access Semantic Kernel server's endpoints
+    $SemanticKernelApiKey = "$([guid]::NewGuid())",
+
+    [switch]
+    # Don't deploy Qdrant for memory storage - Use volatile memory instead
+    $NoQdrant,
+
+    [switch]
+    # Don't deploy Cosmos DB for chat storage - Use volatile memory instead
+    $NoCosmosDb,
+
+    [switch]
+    # Don't deploy Speech Services to enable speech as chat input
+    $NoSpeechServices,
 
     [switch]
     # Switches on verbose template deployment output
     $DebugDeployment
 )
 
+$jsonConfig = "
+{
+    `\`"name`\`": { `\`"value`\`": `\`"$DeploymentName`\`" },
+    `\`"packageUri`\`": { `\`"value`\`": `\`"$PackageUri`\`" },
+    `\`"appServiceSku`\`": { `\`"value`\`": `\`"$AppServiceSku`\`" },
+    `\`"semanticKernelApiKey`\`": { `\`"value`\`": `\`"$SemanticKernelApiKey`\`" },
+    `\`"deployQdrant`\`": { `\`"value`\`": $(If (!($NoQdrant)) {"true"} Else {"false"}) },
+    `\`"deployCosmosDB`\`": { `\`"value`\`": $(If (!($NoSpeechServices)) {"true"} Else {"false"}) },
+    `\`"deploySpeechServices`\`": { `\`"value`\`": $(If (!($NoSpeechServices)) {"true"} Else {"false"}) }
+}
+"
+
+$jsonConfig = $jsonConfig -replace '\s',''
+
 $ErrorActionPreference = "Stop"
 
-$templateFile = "$($PSScriptRoot)/sk.bicep"
+$templateFile = "$($PSScriptRoot)/sk-new.bicep"
 
 if (!$ResourceGroup)
 {
@@ -59,15 +89,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Validating template file..."
-az deployment group validate --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri appServiceSku=$AppServiceSku
+az deployment group validate --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters $jsonConfig
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
 Write-Host "Deploying..."
 if ($DebugDeployment) {
-    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --debug --parameters name=$DeploymentName packageUri=$PackageUri appServiceSku=$AppServiceSku
+    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --debug --parameters $jsonConfig
 }
 else {
-    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters name=$DeploymentName packageUri=$PackageUri appServiceSku=$AppServiceSku
+    az deployment group create --name $DeploymentName --resource-group $ResourceGroup --template-file $templateFile --parameters $jsonConfig
 }

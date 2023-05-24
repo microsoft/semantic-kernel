@@ -18,12 +18,7 @@ jobs:
         matrix:
           os: [ubuntu-latest, windows-latest]
           configuration: [Release, Debug]
-          dotnet-version: ['6.0.x', '7.0.x', '8.0.x']
-          include:
-          - configuration: Release
-          - os: ubuntu-latest
-            configuration: Debug
-            dotnet-version: 6.0.x
+          dotnet-version: ['6.0.x']
     runs-on: ${{ matrix.os }}
     env:
       NUGET_CERT_REVOCATION_MODE: offline
@@ -107,6 +102,6 @@ jobs:
     - name: Archive artifacts ${{ matrix.os }}-${{ matrix.configuration }}
       uses: actions/upload-artifact@v3
       with:
-        name: drop-${{ matrix.os }}-dotnet${{matrix.dotnet-version}}-${{ matrix.configuration }}
+        name: drop-${{ matrix.os }}-${{ matrix.configuration }}
         path: ./out
       if: ${{ github.event_name == 'push' }}

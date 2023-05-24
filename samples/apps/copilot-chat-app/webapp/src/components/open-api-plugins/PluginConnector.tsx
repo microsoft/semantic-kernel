@@ -66,15 +66,17 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
     const classes = useClasses();
 
     const usernameRequired = authRequirements.username;
+    const emailRequired = authRequirements.email;
     const passwordRequired = authRequirements.password;
     const accessTokenRequired = authRequirements.personalAccessToken;
     const msalRequired = authRequirements.Msal;
     const oauthRequired = authRequirements.OAuth;
 
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [accessToken, setAccessToken] = useState('');
-    const [apiPropertiesInput, setApiRequirmentsInput] = useState(apiProperties);
+    const [apiPropertiesInput, setApiRequirementsInput] = useState(apiProperties);
 
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -102,6 +104,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                     connectPlugin({
                         plugin: name,
                         username: username,
+                        email: email,
                         password: password,
                         accessToken: accessToken,
                         apiProperties: apiPropertiesInput,
@@ -164,7 +167,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                     </div>
                                 </>
                             )}
-                            {(usernameRequired || accessTokenRequired) && (
+                            {(usernameRequired || emailRequired || accessTokenRequired) && (
                                 <Body1Strong> Log in to {name} to continue</Body1Strong>
                             )}
                             {(msalRequired || oauthRequired) && (
@@ -185,6 +188,20 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                             setUsername(input.value);
                                         }}
                                         placeholder={`Enter your ${name} username`}
+                                    />
+                                </>
+                            )}
+                            {emailRequired && (
+                                <>
+                                    <Input
+                                        required
+                                        type="text"
+                                        id={'plugin-email-input'}
+                                        value={email}
+                                        onChange={(_e, input) => {
+                                            setEmail(input.value);
+                                        }}
+                                        placeholder={`Enter your ${name} email`}
                                     />
                                 </>
                             )}
@@ -237,7 +254,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                                     type="text"
                                                     id={'plugin-additional-info' + property}
                                                     onChange={(_e, input) => {
-                                                        setApiRequirmentsInput({
+                                                        setApiRequirementsInput({
                                                             ...apiPropertiesInput,
                                                             [property]: {
                                                                 ...propertyDetails,

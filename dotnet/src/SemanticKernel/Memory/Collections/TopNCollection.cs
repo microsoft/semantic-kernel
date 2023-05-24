@@ -12,17 +12,17 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// </summary>
 public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 {
-    private readonly int _maxItems;
     private readonly MinHeap<ScoredValue<T>> _heap;
     private bool _sorted = false;
 
     public TopNCollection(int maxItems)
     {
-        this._maxItems = maxItems;
+        this.MaxItems = maxItems;
         this._heap = new MinHeap<ScoredValue<T>>(ScoredValue<T>.Min(), maxItems);
     }
 
-    public int MaxItems => this._maxItems;
+    public int MaxItems { get; }
+
     public int Count => this._heap.Count;
 
     internal ScoredValue<T> this[int i] => this._heap[i];
@@ -47,7 +47,7 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
             this._sorted = false;
         }
 
-        if (this._heap.Count == this._maxItems)
+        if (this._heap.Count == this.MaxItems)
         {
             // Queue is full. We will need to dequeue the item with lowest weight
             if (value.Score <= this.Top.Score)

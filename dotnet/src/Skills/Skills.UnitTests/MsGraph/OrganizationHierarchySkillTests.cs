@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Moq;
@@ -22,7 +22,29 @@ public class OrganizationHierarchySkillTests : IDisposable
     public OrganizationHierarchySkillTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<SKContext>(output);
-        this._context = new SKContext(new ContextVariables(), NullMemory.Instance, null, this._logger, CancellationToken.None);
+        this._context = new SKContext(logger: this._logger, cancellationToken: CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task GetMyDirectReportsEmailAsyncSucceedsAsync()
+    {
+        // Arrange
+        string[] anyDirectReportsEmail = { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        Mock<IOrganizationHierarchyConnector> connectorMock = new();
+        connectorMock.Setup(c => c.GetDirectReportsEmailAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyDirectReportsEmail);
+        OrganizationHierarchySkill target = new(connectorMock.Object);
+
+        // Act
+        IEnumerable<string> actual = await target.GetMyDirectReportsEmailAsync(this._context);
+
+        // Assert
+        var set = new HashSet<string>(actual);
+        foreach (string directReportEmail in anyDirectReportsEmail)
+        {
+            Assert.Contains(directReportEmail, set);
+        }
+
+        connectorMock.VerifyAll();
     }
 
     [Fact]
@@ -30,9 +52,9 @@ public class OrganizationHierarchySkillTests : IDisposable
     {
         // Arrange
         string anyManagerEmail = Guid.NewGuid().ToString();
-        Mock<IOrganizationHierarchyConnector> connectorMock = new Mock<IOrganizationHierarchyConnector>();
+        Mock<IOrganizationHierarchyConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetManagerEmailAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyManagerEmail);
-        OrganizationHierarchySkill target = new OrganizationHierarchySkill(connectorMock.Object);
+        OrganizationHierarchySkill target = new(connectorMock.Object);
 
         // Act
         string actual = await target.GetMyManagerEmailAsync(this._context);
@@ -47,9 +69,9 @@ public class OrganizationHierarchySkillTests : IDisposable
     {
         // Arrange
         string anyManagerName = Guid.NewGuid().ToString();
-        Mock<IOrganizationHierarchyConnector> connectorMock = new Mock<IOrganizationHierarchyConnector>();
+        Mock<IOrganizationHierarchyConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetManagerNameAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyManagerName);
-        OrganizationHierarchySkill target = new OrganizationHierarchySkill(connectorMock.Object);
+        OrganizationHierarchySkill target = new(connectorMock.Object);
 
         // Act
         string actual = await target.GetMyManagerNameAsync(this._context);

@@ -16,14 +16,11 @@ public static class Example19_Qdrant
     public static async Task RunAsync()
     {
         int qdrantPort = int.Parse(Env.Var("QDRANT_PORT"), CultureInfo.InvariantCulture);
-        QdrantMemoryStore memoryStore = new QdrantMemoryStore(Env.Var("QDRANT_ENDPOINT"), qdrantPort, vectorSize: 1536, ConsoleLogger.Log);
+        QdrantMemoryStore memoryStore = new(Env.Var("QDRANT_ENDPOINT"), qdrantPort, vectorSize: 1536, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .Configure(c =>
-            {
-                c.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
-                c.AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
-            })
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
             .WithMemoryStorage(memoryStore)
             .Build();
 

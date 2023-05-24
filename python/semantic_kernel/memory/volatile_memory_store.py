@@ -79,7 +79,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             record {MemoryRecord} -- The record to upsert.
 
         Returns:
-            str -- The unqiue database key of the record.
+            str -- The unique database key of the record.
         """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
@@ -98,7 +98,7 @@ class VolatileMemoryStore(MemoryStoreBase):
             records {List[MemoryRecord]} -- The records to upsert.
 
         Returns:
-            List[str] -- The unqiue database keys of the records.
+            List[str] -- The unique database keys of the records.
         """
         if collection_name not in self._store:
             raise Exception(f"Collection '{collection_name}' does not exist")
