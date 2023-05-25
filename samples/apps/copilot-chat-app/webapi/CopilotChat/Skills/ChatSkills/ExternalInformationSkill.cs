@@ -117,11 +117,12 @@ public class ExternalInformationSkill
         else
         {
             // Create a plan and set it in context for approval.
-            Plan plan = await this._planner.CreatePlanAsync(userIntent);
+            var contextString = string.Join("\n", context.Variables.Where(v => v.Key != "userIntent").Select(v => $"{v.Key}: {v.Value}"));
+            Plan plan = await this._planner.CreatePlanAsync($"Given the following context, accomplish the user intent.\nContext:{contextString}\nUser Intent:{userIntent}");
 
             if (plan.Steps.Count > 0)
             {
-                // Merge any variables from the context into plan's state 
+                // Merge any variables from the context into plan's state
                 // as these will be used on plan execution.
                 // These context variables come from user input, so they are prioritized.
                 var variables = context.Variables;
