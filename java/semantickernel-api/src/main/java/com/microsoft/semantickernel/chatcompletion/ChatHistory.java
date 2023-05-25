@@ -1,0 +1,69 @@
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.chatcompletion;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class ChatHistory {
+
+    private final List<Message> messages;
+
+    public ChatHistory() {
+        this.messages = new ArrayList<>();
+    }
+
+    /**
+     * @return List of messages in the chat
+     */
+    public List<Message> getMessages() {
+        return Collections.unmodifiableList(messages);
+    }
+
+    public enum AuthorRoles {
+        Unknown,
+        System,
+        User,
+        Assistant
+    }
+
+    /** Chat message representation */
+    public static class Message {
+        private final AuthorRoles authorRoles;
+
+        private final String content;
+
+        /**
+         * Create a new instance
+         * @param authorRoles Role of message author
+         * @param content Message content
+         */
+        public Message(AuthorRoles authorRoles, String content) {
+            this.authorRoles = authorRoles;
+            this.content = content;
+        }
+
+        /**
+         * @return Role of the message author, e.g. user/assistant/system
+         */
+        public AuthorRoles getAuthorRoles() {
+            return authorRoles;
+        }
+
+        /**
+         * @return Message content
+         */
+        public String getContent() {
+            return content;
+        }
+    }
+
+    /**
+     * Add a message to the chat history
+     * @param authorRole Role of the message author
+     * @param content Message content
+     */
+    public void addMessage(AuthorRoles authorRole, String content) {
+        this.messages.add(new Message(authorRole, content));
+    }
+}

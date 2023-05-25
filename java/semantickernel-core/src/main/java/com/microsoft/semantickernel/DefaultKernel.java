@@ -4,6 +4,7 @@ package com.microsoft.semantickernel;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
@@ -64,6 +65,16 @@ public class DefaultKernel implements Kernel {
                 throw new KernelException(
                         KernelException.ErrorCodes.ServiceNotFound,
                         "No text completion service available");
+            }
+
+            return (T) factory.apply(this);
+        } else if (ChatCompletion.class.isAssignableFrom(clazz)) {
+            Function<Kernel, ChatCompletion> factory =
+                    kernelConfig.getChatCompletionServiceOrDefault(serviceId);
+            if (factory == null) {
+                throw new KernelException(
+                        KernelException.ErrorCodes.ServiceNotFound,
+                        "No chat completion service available");
             }
 
             return (T) factory.apply(this);
