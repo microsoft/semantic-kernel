@@ -1,26 +1,34 @@
 # Add 'kernel' label to any change within Connectors, Extensions, Skills, and tests directories
 kernel:
-  - "dotnet/src/Connectors/**/*"
-  - "dotnet/src/Extensions/**/*"
-  - "dotnet/src/Skills/**/*"
-  - "dotnet/src/IntegrationTests/**/*"
-  - "dotnet/src/SemanticKernel.UnitTests/**/*"
+  - dotnet/src/**/*
+  - python/**/*
+  - java/**/*
 
 # Add 'kernel.core' label to any change within the 'SemanticKernel', 'SemanticKernel.Abstractions', or 'SemanticKernel.MetaPackage' directories
 kernel.core:
   - dotnet/src/SemanticKernel/**/*
   - dotnet/src/SemanticKernel.Abstractions/**/*
   - dotnet/src/SemanticKernel.MetaPackage/**/*
-
-# Add 'python' label to any change within the 'python' directory
-python:
-  - python/**/*
+  - python/semantic_kernel**/*
+  - java/semantickernel-core/**/*
+  - java/semantickernel-core-skills/**/*
 
 # Add 'samples' label to any change within the 'samples' directory
 samples:
   - samples/**/*
+  - java/samples/**/*
 
-# Add '.NET' label to any change within samples or kernel 'dotnet' directories.
+# Add '.NET' label to any change to .NET kernel and .NET samples
 .NET:
   - dotnet/src/**/*
   - samples/**/dotnet/**/*
+
+# Add 'python' label to any change to python kernel and python samples
+python:
+  - python/**/*
+  - samples/**/python/**/*
+
+# Add 'java' label to any change to Java kernel and Java samples
+java:
+  - java/**/*
+  - samples/**/java/**/*
