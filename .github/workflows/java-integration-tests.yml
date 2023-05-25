@@ -63,6 +63,6 @@ jobs:
 
       # Samples build on JDK 17+
       - name: Build semantic-kernel samples
-        run: ../../../java/mvnw -B clean install --file pom.xml
-        working-directory: samples/java/semantickernel-samples
+        run: ../mvnw -B clean install --file pom.xml
+        working-directory: java/samples
         if: ${{ matrix.java-versions >= 17 }}
