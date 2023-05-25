@@ -41,11 +41,12 @@ public class TimeSkillTests
         Assert.Equal(expected.Month, returned.Month);
         Assert.Equal(expected.Year, returned.Year);
     }
+
     [Fact]
     public void LastMatchingDayBadInput()
     {
         TimeSkill skill = new TimeSkill();
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => skill.LastMatchingDay("not a day name"));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => skill.DateMatchingLastDayName("not a day name"));
         Assert.Equal("dayName", exception.ParamName);
     }
 
@@ -64,7 +65,7 @@ public class TimeSkillTests
         Assert.True(found);
 
         TimeSkill skill = new TimeSkill();
-        string result = skill.LastMatchingDay(dayName.ToString());
+        string result = skill.DateMatchingLastDayName(dayName.ToString());
         DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(date.Day, returned.Day);
         Assert.Equal(date.Month, returned.Month);

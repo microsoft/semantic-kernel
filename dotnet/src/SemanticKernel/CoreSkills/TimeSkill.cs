@@ -229,9 +229,9 @@ public class TimeSkill
     /// </example>
     /// <returns> The date of the last instance of this day name </returns>
     /// <exception cref="ArgumentOutOfRangeException">dayName is not a recognized name of a day of the week</exception>
-    [SKFunction("Get the date of the last day matching the supplied day name in English")]
+    [SKFunction("Get the date of the last day matching the supplied week day name in English. Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday, 16 May, 2023")]
     [SKFunctionInput(Description = "The day name to match")]
-    public string LastMatchingDay(string dayName)
+    public string DateMatchingLastDayName(string dayName)
     {
         if (!Enum.TryParse<DayOfWeek>(dayName, ignoreCase: true, out DayOfWeek dayOfWeek))
         {

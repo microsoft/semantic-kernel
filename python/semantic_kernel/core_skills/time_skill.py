@@ -196,9 +196,9 @@ class TimeSkill:
         return d.strftime("%A, %d %B, %Y")
 
     @sk_function(
-        description="Get the date of the last day matching the supplied day name in English"
-    )
-    def last_matching_day(self, day_name: str) -> str:
+        description="Get the date of the last day matching the supplied week day name in English. Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday, 16 May, 2023")]
+   )
+    def date_matching_last_day_name(self, day_name: str) -> str:
         """
         Get the date of the last day matching the supplied day name
 
@@ -209,7 +209,7 @@ class TimeSkill:
 
         Example:
              SKContext["input"] = "Sunday"
-             {{time.last_matching_day $input}} => Sunday, 7 May, 2023
+             {{time.date_matching_last_day_name $input}} => Sunday, 7 May, 2023
         """
         d = datetime.date.today()
         for i in range(1, 8):
