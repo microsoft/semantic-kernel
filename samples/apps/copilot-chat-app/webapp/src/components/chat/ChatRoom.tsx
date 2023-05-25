@@ -36,7 +36,7 @@ const useClasses = makeStyles({
                 visibility: 'visible',
             },
         },
-        height: '-webkit-fill-available',
+        height: '100%',
         ...shorthands.margin('4px'),
     },
     history: {
@@ -107,7 +107,7 @@ export const ChatRoom: React.FC = () => {
         const chatInput = {
             timestamp: new Date().getTime(),
             userId: account?.homeAccountId,
-            userName: account?.name as string,
+            userName: (account?.name ?? account?.username) as string,
             content: value,
             authorRole: AuthorRoles.User,
         };

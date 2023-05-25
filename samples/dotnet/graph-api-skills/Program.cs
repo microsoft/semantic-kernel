@@ -20,6 +20,8 @@ using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
 using DayOfWeek = System.DayOfWeek;
 
+namespace MsGraphSkillsExample;
+
 /// <summary>
 /// The static plan below is meant to emulate a plan generated from the following request:
 ///   "Summarize the content of cheese.txt and send me an email with the summary and a link to the file.
@@ -63,6 +65,18 @@ public sealed class Program
 
         MsGraphConfiguration graphApiConfiguration = candidateGraphApiConfig;
 
+        string? defaultCompletionServiceId = configuration["DefaultCompletionServiceId"];
+        if (string.IsNullOrWhiteSpace(defaultCompletionServiceId))
+        {
+            throw new InvalidOperationException("'DefaultCompletionServiceId' is not set in configuration.");
+        }
+
+        string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
+        {
+            throw new InvalidOperationException("Unable to determine current assembly directory.");
+        }
+
         #endregion
 
         // Initialize the Graph API client with interactive authentication and local caching.
@@ -93,22 +107,20 @@ public sealed class Program
         EmailSkill outlookSkill = new(new OutlookMailConnector(graphServiceClient), loggerFactory.CreateLogger<EmailSkill>());
 
         // Initialize the Semantic Kernel and and register connections with OpenAI/Azure OpenAI instances.
-        IKernel sk = Kernel.Builder.WithLogger(loggerFactory.CreateLogger<IKernel>()).Build();
-
-        var onedrive = sk.ImportSkill(oneDriveSkill, "onedrive");
-        var todo = sk.ImportSkill(todoSkill, "todo");
-        var outlook = sk.ImportSkill(outlookSkill, "outlook");
+        KernelBuilder builder = Kernel.Builder
+            .WithLogger(loggerFactory.CreateLogger<IKernel>());
 
         if (configuration.GetSection("AzureOpenAI:ServiceId").Value != null)
         {
             AzureOpenAIConfiguration? azureOpenAIConfiguration = configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
             if (azureOpenAIConfiguration != null)
             {
-                sk.Config.AddAzureTextCompletionService(
+                builder.WithAzureTextCompletionService(
                     deploymentName: azureOpenAIConfiguration.DeploymentName,
                     endpoint: azureOpenAIConfiguration.Endpoint,
                     apiKey: azureOpenAIConfiguration.ApiKey,
-                    serviceId: azureOpenAIConfiguration.ServiceId);
+                    serviceId: azureOpenAIConfiguration.ServiceId,
+                    setAsDefault: azureOpenAIConfiguration.ServiceId == defaultCompletionServiceId);
             }
         }
 
@@ -117,25 +129,19 @@ public sealed class Program
             OpenAIConfiguration? openAIConfiguration = configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
             if (openAIConfiguration != null)
             {
-                sk.Config.AddOpenAITextCompletionService(
+                builder.WithOpenAITextCompletionService(
                     modelId: openAIConfiguration.ModelId,
-                    apiKey: openAIConfiguration.ApiKey);
+                    apiKey: openAIConfiguration.ApiKey,
+                    serviceId: openAIConfiguration.ServiceId,
+                    setAsDefault: openAIConfiguration.ServiceId == defaultCompletionServiceId);
             }
         }
 
-        string? defaultCompletionServiceId = configuration["DefaultCompletionServiceId"];
-        if (string.IsNullOrWhiteSpace(defaultCompletionServiceId))
-        {
-            throw new InvalidOperationException("'DefaultCompletionServiceId' is not set in configuration.");
-        }
+        IKernel sk = builder.Build();
 
-        sk.Config.SetDefaultTextCompletionService(defaultCompletionServiceId);
-
-        string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
-        {
-            throw new InvalidOperationException("Unable to determine current assembly directory.");
-        }
+        var onedrive = sk.ImportSkill(oneDriveSkill, "onedrive");
+        var todo = sk.ImportSkill(todoSkill, "todo");
+        var outlook = sk.ImportSkill(outlookSkill, "outlook");
 
         string skillParentDirectory = RepoUtils.RepoFiles.SampleSkillsPath();
 

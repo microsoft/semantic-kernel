@@ -24,7 +24,7 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     {
         get
         {
-            if (!IsSupported)
+            if (!Embedding.IsSupported<TEmbedding>())
             {
                 ThrowNotSupportedEmbedding();
             }
@@ -40,17 +40,33 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     /// <exception cref="ArgumentException">An unsupported type is used as TEmbedding.</exception>
     /// <exception cref="ArgumentNullException">A <c>null</c> vector is passed in.</exception>
     [JsonConstructor]
-    public Embedding(IEnumerable<TEmbedding> vector)
+    public Embedding(IEnumerable<TEmbedding> vector) : this(vector, transferOwnership: false)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Embedding{TEmbedding}"/> class that contains either a copy of or the reference to the specified collection.
+    /// </summary>
+    /// <param name="vector">The source data.</param>
+    /// <param name="transferOwnership">
+    /// <see langword="true"/> to transfer logical ownership of <paramref name="vector"/> to this instance; after doing so,
+    /// the caller should no longer mutate the original array. <see langword="false"/> to instead make a copy of <paramref name="vector"/>.
+    /// </param>
+    /// <exception cref="ArgumentException">An unsupported type is used as TEmbedding.</exception>
+    /// <exception cref="ArgumentNullException">A <c>null</c> vector is passed in.</exception>
+    public Embedding(IEnumerable<TEmbedding> vector, bool transferOwnership)
     {
         Verify.NotNull(vector);
 
-        if (!IsSupported)
+        if (!Embedding.IsSupported<TEmbedding>())
         {
             ThrowNotSupportedEmbedding();
         }
 
-        // Create a local, protected copy
-        this._vector = vector.ToArray();
+        // Create a local, protected copy if transferOwnership is false or if the vector is not an array.
+        // If the vector is an array and transferOwnership is true, then we can use the array directly.
+        this._vector =
+            transferOwnership && vector is TEmbedding[] array ? array : vector.ToArray();
     }
 
     private static void ThrowNotSupportedEmbedding() =>
@@ -61,13 +77,6 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     /// </summary>
     [JsonPropertyName("vector")]
     public IEnumerable<TEmbedding> Vector => this._vector ?? Array.Empty<TEmbedding>();
-
-    /// <summary>
-    /// Gets a value that indicates whether <typeparamref name="TEmbedding"/> is supported.
-    /// </summary>
-    [JsonIgnore]
-    [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Following 'IsSupported' pattern of System.Numerics.")]
-    public static bool IsSupported => typeof(TEmbedding) == typeof(float) || typeof(TEmbedding) == typeof(double);
 
     /// <summary>
     /// <c>true</c> if the vector is empty.
@@ -149,12 +158,12 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     }
 
     /// <summary>
-    /// Implicit creation of an <see cref="Embedding{TEmbedding}"/> object from an array of data.>
+    /// Implicit creation of an <see cref="Embedding{TEmbedding}"/> object from an array of data.
     /// </summary>
     /// <param name="vector">An array of data.</param>
     public static explicit operator Embedding<TEmbedding>(TEmbedding[] vector)
     {
-        return new Embedding<TEmbedding>(vector);
+        return new Embedding<TEmbedding>(vector, transferOwnership: false);
     }
 
     /// <summary>
@@ -185,12 +194,32 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
 }
 
 /// <summary>
-/// Static class containing the supported types for <see cref="Embedding{TEmbedding}"/>.
+/// Provides functionality related to <see cref="Embedding{TEmbedding}"/>.
 /// </summary>
 public static class Embedding
 {
     /// <summary>
-    /// Types supported by the <see cref="Embedding{TEmbedding}"/> struct.
+    /// Gets whether the specified <typeparamref name="TEmbedding"/> is supported for use with <see cref="Embedding{TEmbedding}"/>.
     /// </summary>
-    public static readonly Type[] SupportedTypes = { typeof(float), typeof(double) };
+    /// <typeparam name="TEmbedding">The type to be checked.</typeparam>
+    /// <returns>
+    /// <see langword="true"/> if the type is supported; otherwise, <see langword="true"/>.
+    /// Currently only <see cref="float"/> and <see cref="double"/> are supported.
+    /// </returns>
+    public static bool IsSupported<TEmbedding>() => typeof(TEmbedding) == typeof(float) || typeof(TEmbedding) == typeof(double);
+
+    /// <summary>
+    /// Gets whether the specified <paramref name="type"/> is supported for use with <see cref="Embedding{TEmbedding}"/>.
+    /// </summary>
+    /// <param name="type">The type to be checked.</param>
+    /// <returns>
+    /// <see langword="true"/> if the type is supported; otherwise, <see langword="true"/>.
+    /// Currently only <see cref="float"/> and <see cref="double"/> are supported.
+    /// </returns>
+    public static bool IsSupported(Type type) => type == typeof(float) || type == typeof(double);
+
+    /// <summary>
+    /// Gets an enumerable of the types supported by the <see cref="Embedding{TEmbedding}"/> struct.
+    /// </summary>
+    public static IEnumerable<Type> SupportedTypes { get; } = Array.AsReadOnly(new Type[] { typeof(float), typeof(double) });
 }
