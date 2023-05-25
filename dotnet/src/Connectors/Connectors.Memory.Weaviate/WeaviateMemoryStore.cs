@@ -24,11 +24,10 @@ using Microsoft.SemanticKernel.Memory;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 
 /// <summary>
-///     An implementation of <see cref="IMemoryStore" /> for Weaviate.
+/// An implementation of <see cref="IMemoryStore" /> for Weaviate.
 /// </summary>
-/// <remarks>
-///     The Embedding data is saved to Weaviate instance specified in the constructor.
-///     The embedding data persists between subsequent instances and has similarity search capability.
+/// <remarks>The Embedding data is saved to Weaviate instance specified in the constructor.
+/// The embedding data persists between subsequent instances and has similarity search capability.
 /// </remarks>
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 public class WeaviateMemoryStore : IMemoryStore, IDisposable
@@ -85,7 +84,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         {
             this._httpClient = httpClient;
         }
-        
+
         this._httpClient.BaseAddress = new($"{scheme}://{host}:{port}/v1/");
     }
 
@@ -262,14 +261,14 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         }
         catch (HttpRequestException e)
         {
-            this._log.LogTrace("Request for vector failed {0}, for key {1}", e.Message, key);
+            this._log.LogTrace("Request for vector failed {0}", e.Message);
             return null;
         }
 
         WeaviateObject? weaviateObject = JsonSerializer.Deserialize<WeaviateObject>(responseContent, s_jsonSerializerOptions);
         if (weaviateObject == null)
         {
-            this._log.LogWarning("Unable to deserialize response to WeaviateObject, key: {0}", key);
+            this._log.LogWarning("Unable to deserialize response to WeaviateObject");
             return null;
         }
 

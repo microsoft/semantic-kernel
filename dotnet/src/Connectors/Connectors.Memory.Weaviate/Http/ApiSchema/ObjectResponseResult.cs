@@ -7,6 +7,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
 // ReSharper disable once ClassNeverInstantiated.Global
 internal sealed class ObjectResponseResult
 {
-    public JsonObject? Errors { get; set; } // TODO? should this be an object?
+    public JsonObject? Errors { get; set; }
     public string? Status { get; set; }
 }
