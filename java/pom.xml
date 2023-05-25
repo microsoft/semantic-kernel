@@ -106,16 +106,6 @@
             </snapshots>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
-        <repository>
-            <id>azure-sdk-for-java</id>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-java/maven/v1</url>
-        </repository>
     </repositories>
 
     <build>
