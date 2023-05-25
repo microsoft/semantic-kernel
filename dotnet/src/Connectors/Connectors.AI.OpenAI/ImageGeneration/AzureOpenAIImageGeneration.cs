@@ -90,6 +90,12 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             }
             return result;
         }
+        catch (Exception e) when (e is not AIException)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.UnknownError,
+                $"Something went wrong: {e.Message}", e);
+        }
         finally
         {
             response?.Dispose();
