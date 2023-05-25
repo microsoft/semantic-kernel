@@ -9,6 +9,7 @@
   <PropertyGroup>
     <RootNamespace>MsGraphSkillsExample</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
     <OutputType>Exe</OutputType>
     <NoWarn>CA1050</NoWarn>
     <!-- Suppress: "Declare types in namespaces" -->
