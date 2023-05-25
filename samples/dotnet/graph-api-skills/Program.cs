@@ -115,12 +115,18 @@ public sealed class Program
             AzureOpenAIConfiguration? azureOpenAIConfiguration = configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
             if (azureOpenAIConfiguration != null)
             {
-                builder.WithAzureTextCompletionService(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey,
-                    serviceId: azureOpenAIConfiguration.ServiceId,
-                    setAsDefault: azureOpenAIConfiguration.ServiceId == defaultCompletionServiceId);
+                builder.Configure(c =>
+                {
+                    c.AddAzureTextCompletionService(
+                        deploymentName: azureOpenAIConfiguration.DeploymentName,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey,
+                        serviceId: azureOpenAIConfiguration.ServiceId);
+                    if (azureOpenAIConfiguration.ServiceId == defaultCompletionServiceId)
+                    {
+                        c.SetDefaultTextCompletionService(azureOpenAIConfiguration.ServiceId);
+                    }
+                });
             }
         }
 
@@ -129,11 +135,17 @@ public sealed class Program
             OpenAIConfiguration? openAIConfiguration = configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
             if (openAIConfiguration != null)
             {
-                builder.WithOpenAITextCompletionService(
+                builder.Configure(c =>
+                {
+                    c.AddOpenAITextCompletionService(
                     modelId: openAIConfiguration.ModelId,
                     apiKey: openAIConfiguration.ApiKey,
-                    serviceId: openAIConfiguration.ServiceId,
-                    setAsDefault: openAIConfiguration.ServiceId == defaultCompletionServiceId);
+                    serviceId: openAIConfiguration.ServiceId);
+                    if (openAIConfiguration.ServiceId == defaultCompletionServiceId)
+                    {
+                        c.SetDefaultTextCompletionService(openAIConfiguration.ServiceId);
+                    }
+                });
             }
         }
 
