@@ -230,7 +230,7 @@
       "label": "run (Copilot Chat)",
       "detail": "Run all copilot chat components",
       "group": "test",
-      "dependsOn": ["run (CopilotChatApi)", "run (CopilotChatApp)"],
+      "dependsOn": ["run (CopilotChatWebApi)", "run (CopilotChatApp)"],
       "dependsOrder": "parallel"
     },
     // Copilot Setup
@@ -256,51 +256,19 @@
       "label": "setup (Copilot Chat)",
       "detail": "Setup (like setting secrets) for copilot chat app and api",
       "group": "test",
-      "dependsOn": [
-        "GetSecret (Completion:Key)",
-        "GetSecret (Embedding:Key)",
-        "GetSecret (Planner:Key)"
-      ],
+      "dependsOn": ["GetSecret (AIService:Key)"],
       "dependsOrder": "sequence"
       // TODO -- add tasks for configuring environment variables
     },
     {
-      "label": "GetSecret (Completion:Key)",
+      "label": "GetSecret (AIService:Key)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "user-secrets",
         "set",
-        "Completion:Key",
-        "${input:completionSecret}"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}/samples/apps/copilot-chat-app/webapi"
-      }
-    },
-    {
-      "label": "GetSecret (Embedding:Key)",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "user-secrets",
-        "set",
-        "Embedding:Key",
-        "${input:embeddingSecret}"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}/samples/apps/copilot-chat-app/webapi"
-      }
-    },
-    {
-      "label": "GetSecret (Planner:Key)",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "user-secrets",
-        "set",
-        "Planner:AIService:Key",
-        "${input:plannerSecret}"
+        "AIService:Key",
+        "${input:aiServiceSecret}"
       ],
       "options": {
         "cwd": "${workspaceFolder}/samples/apps/copilot-chat-app/webapi"
@@ -339,12 +307,12 @@
     },
     // Copilot Chat Api
     {
-      "label": "build (CopilotChatApi)",
+      "label": "build (CopilotChatWebApi)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatApi.csproj",
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary",
         "/property:DebugType=portable"
@@ -353,13 +321,13 @@
       "group": "build"
     },
     {
-      "label": "run (CopilotChatApi)",
+      "label": "run (CopilotChatWebApi)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "run",
         "--project",
-        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatApi.csproj"
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -370,14 +338,14 @@
       }
     },
     {
-      "label": "watch (CopilotChatApi)",
+      "label": "watch (CopilotChatWebApi)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatApi.csproj"
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "build"
@@ -500,24 +468,10 @@
       "description": "Enter a filter for the tests"
     },
     {
-      "id": "completionSecret",
+      "id": "aiServiceSecret",
       "type": "promptString",
       "default": "",
-      "description": "Enter a secret for completion",
-      "password": true
-    },
-    {
-      "id": "embeddingSecret",
-      "type": "promptString",
-      "default": "",
-      "description": "Enter a secret for embedding",
-      "password": true
-    },
-    {
-      "id": "plannerSecret",
-      "type": "promptString",
-      "default": "",
-      "description": "Enter a secret for planner",
+      "description": "Enter a secret for Copilot Chat AIService:Key",
       "password": true
     }
   ]
