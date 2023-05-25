@@ -25,6 +25,8 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 /// {{time.dayOfWeek}}       => Sunday
 /// {{time.hour}}            => 9 PM
 /// {{time.hourNumber}}      => 21
+/// {{time.daysAgo $days}}   => Sunday, January 12, 2025 9:15 PM
+/// {{time.lastMatchingDay $dayName}} => Sunday, 7 May, 2023
 /// {{time.minute}}          => 15
 /// {{time.minutes}}         => 15
 /// {{time.second}}          => 7
@@ -161,6 +163,23 @@ public class TimeSkill
     }
 
     /// <summary>
+    /// Get the date a provided number of days in the past
+    /// </summary>
+    /// <example>
+    /// SKContext["input"] = "3"
+    /// {{time.daysAgo}} => Sunday, January 12, 2025 9:15 PM
+    /// </example>
+    /// <returns> The date the provided number of days before today </returns>
+    [SKFunction("Get the date offset by a provided number of days from today")]
+    [SKFunctionInput(Description = "The number of days to offset from today")]
+    public string DaysAgo(string days)
+    {
+        var offset = double.Parse(days, CultureInfo.CurrentCulture);
+
+        return DateTimeOffset.Now.AddDays(-offset).ToString("D", CultureInfo.CurrentCulture);
+    }
+
+    /// <summary>
     /// Get the current day of the week
     /// </summary>
     /// <example>
@@ -200,6 +219,37 @@ public class TimeSkill
     {
         // Example: 21
         return DateTimeOffset.Now.ToString("HH", CultureInfo.CurrentCulture);
+    }
+
+    /// <summary>
+    /// Get the date of the previous day matching the supplied day name
+    /// </summary>
+    /// <example>
+    /// {{time.lastMatchingDay $dayName}} => Sunday, 7 May, 2023
+    /// </example>
+    /// <returns> The date of the last instance of this day name </returns>
+    /// <exception cref="ArgumentOutOfRangeException">dayName is not a recognized name of a day of the week</exception>
+    [SKFunction("Get the date of the last day matching the supplied week day name in English. Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday, 16 May, 2023")]
+    [SKFunctionInput(Description = "The day name to match")]
+    public string DateMatchingLastDayName(string dayName)
+    {
+        if (!Enum.TryParse<DayOfWeek>(dayName, ignoreCase: true, out DayOfWeek dayOfWeek))
+        {
+            throw new ArgumentOutOfRangeException(nameof(dayName), "Unrecognized day name");
+        }
+
+        DateTimeOffset dateTime = DateTimeOffset.Now;
+        // Walk backwards from the previous day for up to a week to find the matching day
+        for (int i = 1; i <= 7; ++i)
+        {
+            dateTime = dateTime.AddDays(-1);
+            if (dateTime.DayOfWeek == dayOfWeek)
+            {
+                break;
+            }
+        }
+
+        return dateTime.ToString("D", CultureInfo.CurrentCulture);
     }
 
     /// <summary>
