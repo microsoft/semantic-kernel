@@ -77,8 +77,7 @@ public class ChatSkill
         this._promptOptions = promptOptions.Value;
 
         this._semanticChatMemorySkill = new SemanticChatMemorySkill(
-            promptOptions,
-            chatMessageRepository);
+            promptOptions);
         this._documentMemorySkill = new DocumentMemorySkill(
             promptOptions,
             documentImportOptions);
@@ -280,7 +279,7 @@ public class ChatSkill
 
         // 4. Query relevant semantic memories
         var chatMemoriesTokenLimit = (int)(remainingToken * this._promptOptions.MemoriesResponseContextWeight);
-        var chatMemories = await this.QueryChatMemoriesAsync(chatContext, chatMemoriesTokenLimit);
+        var chatMemories = await this.QueryChatMemoriesAsync(chatContext, userIntent, chatMemoriesTokenLimit);
         if (chatContext.ErrorOccurred)
         {
             return string.Empty;
@@ -393,7 +392,7 @@ public class ChatSkill
     /// Helper function create the correct context variables to
     /// query chat memories from the chat memory store.
     /// </summary>
-    private Task<string> QueryChatMemoriesAsync(SKContext context, int tokenLimit)
+    private Task<string> QueryChatMemoriesAsync(SKContext context, string userIntent, int tokenLimit)
     {
         var contextVariables = new ContextVariables();
         contextVariables.Set("chatId", context["chatId"]);
@@ -407,7 +406,7 @@ public class ChatSkill
             context.CancellationToken
         );
 
-        var chatMemories = this._semanticChatMemorySkill.QueryChatMemoriesAsync(chatMemoriesContext);
+        var chatMemories = this._semanticChatMemorySkill.QueryMemoriesAsync(userIntent, chatMemoriesContext);
 
         // Propagate the error
         if (chatMemoriesContext.ErrorOccurred)

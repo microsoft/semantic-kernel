@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.CopilotChat.Options;
-using SemanticKernel.Service.CopilotChat.Storage;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
@@ -24,38 +23,30 @@ public class SemanticChatMemorySkill
     private readonly PromptsOptions _promptOptions;
 
     /// <summary>
-    /// A repository to save and retrieve chat messages.
-    /// </summary>
-    private readonly ChatMessageRepository _chatMessageRepository;
-
-    /// <summary>
     /// Create a new instance of SemanticChatMemorySkill.
     /// </summary>
     public SemanticChatMemorySkill(
-        IOptions<PromptsOptions> promptOptions,
-        ChatMessageRepository chatMessageRepository)
+        IOptions<PromptsOptions> promptOptions)
     {
         this._promptOptions = promptOptions.Value;
-        this._chatMessageRepository = chatMessageRepository;
     }
 
     /// <summary>
-    /// Query relevant memories based on the latest message.
+    /// Query relevant memories based on the query.
     /// </summary>
+    /// <param name="query">Query to match.</param>
     /// <param name="context">The SKContext</param>
     /// <returns>A string containing the relevant memories.</returns>
     [SKFunction("Query chat memories")]
-    [SKFunctionName("QueryChatMemories")]
+    [SKFunctionName("QueryMemories")]
+    [SKFunctionInput(Description = "Query to match.")]
     [SKFunctionContextParameter(Name = "chatId", Description = "Chat ID to query history from")]
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    public async Task<string> QueryChatMemoriesAsync(SKContext context)
+    public async Task<string> QueryMemoriesAsync(string query, SKContext context)
     {
         var chatId = context["chatId"];
         var tokenLimit = int.Parse(context["tokenLimit"], new NumberFormatInfo());
         var remainingToken = tokenLimit;
-
-        // Find the most recent message.
-        var latestMessage = await this._chatMessageRepository.FindLastByChatIdAsync(chatId);
 
         // Search for relevant memories.
         List<MemoryQueryResult> relevantMemories = new();
@@ -63,7 +54,7 @@ public class SemanticChatMemorySkill
         {
             var results = context.Memory.SearchAsync(
                 SemanticChatMemoryExtractor.MemoryCollectionName(chatId, memoryName),
-                latestMessage.ToString(),
+                query,
                 limit: 100,
                 minRelevanceScore: this._promptOptions.SemanticMemoryMinRelevance);
             await foreach (var memory in results)
