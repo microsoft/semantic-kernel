@@ -6,11 +6,11 @@ import { AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
 import { AuthHelper } from '../auth/AuthHelper';
 import { TokenHelper } from '../auth/TokenHelper';
 import { IAsk } from '../semantic-kernel/model/Ask';
-import { useSemanticKernel } from '../semantic-kernel/useSemanticKernel';
+import { SemanticKernelService } from '../services/SemanticKernelService';
 
 export const useConnectors = () => {
     const { instance, inProgress } = useMsal();
-    const sk = useSemanticKernel(process.env.REACT_APP_BACKEND_URI as string);
+    const sk = new SemanticKernelService(process.env.REACT_APP_BACKEND_URI as string);
     const plugins = useAppSelector((state: RootState) => state.plugins);
 
     /**
@@ -27,7 +27,7 @@ export const useConnectors = () => {
         pluginHeaderTag: AuthHeaderTags,
     ) => {
         return await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, scopes).then(async (token: string) => {
-            return await sk.invokeAsync(ask, skillName, functionName, await AuthHelper.getSKaaSAccessToken(instance), [
+            return await sk.invokeAsync(ask, skillName, functionName, await AuthHelper.getSKaaSAccessToken(instance, inProgress), [
                 {
                     headerTag: pluginHeaderTag,
                     authData: token,

@@ -4,15 +4,11 @@
 
 set -e
 
-# Parameters
-ClientId="$1"
-Tenant="${2:-common}"
-AzureOpenAIOrOpenAIKey="${3:-}"
-
-ScriptDir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+ScriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ScriptDir"
 
 # Start backend (in background)
-$ScriptDir/Start-Backend.sh $AzureOpenAIOrOpenAIKey &
+./Start-Backend.sh &
 
 # Start frontend
-$ScriptDir/Start-Frontend.sh $ClientId $Tenant
+./Start-Frontend.sh

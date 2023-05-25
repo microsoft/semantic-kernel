@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
@@ -51,8 +51,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Create a native function instance, wrapping a native object method
     /// </summary>
-    /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="methodSignature">Signature of the method to invoke</param>
+    /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
@@ -188,44 +188,28 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
-        string input,
-        SKContext? context = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? log = null,
-        CancellationToken cancellationToken = default)
+        SKContext context,
+        CompleteRequestSettings? settings = null)
     {
-        if (context == null)
-        {
-            log ??= NullLogger.Instance;
-            context = new SKContext(
-                new ContextVariables(""),
-                NullMemory.Instance,
-                this._skillCollection,
-                log,
-                cancellationToken);
-        }
-
-        context.Variables.Update(input);
-
-        return this.InvokeAsync(context, settings, log, cancellationToken);
+        return this.IsSemantic
+            ? this.InvokeSemanticAsync(context, settings)
+            : this.InvokeNativeAsync(context);
     }
 
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
-        SKContext? context = null,
+        string? input = null,
         CompleteRequestSettings? settings = null,
-        ILogger? log = null,
+        ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        if (context == null)
-        {
-            log ??= NullLogger.Instance;
-            context = new SKContext(new ContextVariables(""), NullMemory.Instance, null, log, cancellationToken);
-        }
+        SKContext context = new(
+            new ContextVariables(input),
+            skills: this._skillCollection,
+            logger: logger,
+            cancellationToken: cancellationToken);
 
-        return this.IsSemantic
-            ? this.InvokeSemanticAsync(context, settings)
-            : this.InvokeNativeAsync(context);
+        return this.InvokeAsync(context, settings);
     }
 
     /// <inheritdoc/>
@@ -263,6 +247,18 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public override string ToString()
+        => this.ToString(false);
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public string ToString(bool writeIndented)
+        => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
+
+    /// <summary>
     /// Finalizer.
     /// </summary>
     ~SKFunction()
@@ -272,6 +268,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     #region private
 
+    private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
+    private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly DelegateTypes _delegateType;
     private readonly Delegate _function;
     private readonly ILogger _log;

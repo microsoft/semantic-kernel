@@ -151,11 +151,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
             // Function in the global skill
             return skills.TryGetFunction(fBlock.FunctionName, out function);
         }
-        else
-        {
-            // Function within a specific skill
-            return skills.TryGetFunction(fBlock.SkillName, fBlock.FunctionName, out function);
-        }
+
+        // Function within a specific skill
+        return skills.TryGetFunction(fBlock.SkillName, fBlock.FunctionName, out function);
     }
 
     #endregion
