@@ -34,7 +34,7 @@ public class TimeSkillTests
     {
         double interval = 2;
         DateTime expected = DateTime.Now.AddDays(-interval);
-        TimeSkill skill = new TimeSkill();
+        var skill = new TimeSkill();
         string result = skill.DaysAgo(interval.ToString(CultureInfo.CurrentCulture));
         DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(expected.Day, returned.Day);
@@ -45,7 +45,7 @@ public class TimeSkillTests
     [Fact]
     public void LastMatchingDayBadInput()
     {
-        TimeSkill skill = new TimeSkill();
+        var skill = new TimeSkill();
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => skill.DateMatchingLastDayName("not a day name"));
         Assert.Equal("dayName", exception.ParamName);
     }
@@ -64,7 +64,7 @@ public class TimeSkillTests
         bool found = date.DayOfWeek == dayName;
         Assert.True(found);
 
-        TimeSkill skill = new TimeSkill();
+        var skill = new TimeSkill();
         string result = skill.DateMatchingLastDayName(dayName.ToString());
         DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(date.Day, returned.Day);
