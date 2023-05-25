@@ -99,6 +99,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         int limit = 1,
         double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
+        Dictionary<string, object>? filters = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken).ConfigureAwait(false);
@@ -109,6 +110,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
             limit: limit,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbeddings,
+            filters: filters,
             cancellationToken: cancellationToken);
 
         await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken))

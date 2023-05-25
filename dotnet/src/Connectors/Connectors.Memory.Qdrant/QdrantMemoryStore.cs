@@ -308,6 +308,7 @@ public class QdrantMemoryStore : IMemoryStore
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
+        Dictionary<string, object>? filters = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient
@@ -317,6 +318,7 @@ public class QdrantMemoryStore : IMemoryStore
                 threshold: minRelevanceScore,
                 top: limit,
                 withVectors: withEmbeddings,
+                filters: filters,
                 cancellationToken: cancellationToken)
             .GetAsyncEnumerator(cancellationToken);
 

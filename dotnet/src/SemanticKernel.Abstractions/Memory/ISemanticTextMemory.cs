@@ -79,6 +79,7 @@ public interface ISemanticTextMemory
     /// <param name="limit">How many results to return</param>
     /// <param name="minRelevanceScore">Minimum relevance score, from 0 to 1, where 1 means exact match.</param>
     /// <param name="withEmbeddings">Whether to return the embeddings of the memories found.</param>
+    /// <param name="filters">Optional filters to be used with the the memory storage</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memories found</returns>
     public IAsyncEnumerable<MemoryQueryResult> SearchAsync(
@@ -87,6 +88,7 @@ public interface ISemanticTextMemory
         int limit = 1,
         double minRelevanceScore = 0.7,
         bool withEmbeddings = false,
+        Dictionary<string, object>? filters = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>

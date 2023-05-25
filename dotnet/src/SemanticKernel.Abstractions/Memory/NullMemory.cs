@@ -70,6 +70,7 @@ public sealed class NullMemory : ISemanticTextMemory
         int limit = 1,
         double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
+        Dictionary<string, object>? filters = default,
         CancellationToken cancellationToken = default)
     {
         return AsyncEnumerable.Empty<MemoryQueryResult>();

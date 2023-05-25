@@ -140,6 +140,7 @@ public class VolatileMemoryStore : IMemoryStore
         int limit,
         double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
+        Dictionary<string, object>? filters = default,
         CancellationToken cancellationToken = default)
     {
         if (limit <= 0)

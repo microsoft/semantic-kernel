@@ -282,7 +282,8 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         double threshold,
         int top = 1,
         bool withVectors = false,
-        IEnumerable<string>? requiredTags = null,
+        Dictionary<string, object>? filters = default,
+        IEnumerable<string>? requiredTags = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Searching top {0} nearest vectors", top);
@@ -293,6 +294,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             .Create(collectionName)
             .SimilarTo(target)
             .HavingTags(requiredTags)
+            .WithFilters(filters)
             .WithScoreThreshold(threshold)
             .IncludePayLoad()
             .IncludeVectorData(withVectors)

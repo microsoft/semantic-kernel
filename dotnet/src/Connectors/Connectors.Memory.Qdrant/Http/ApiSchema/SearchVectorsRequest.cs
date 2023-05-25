@@ -68,6 +68,21 @@ internal sealed class SearchVectorsRequest : IValidatable
         return this;
     }
 
+    public SearchVectorsRequest WithFilters(Dictionary<string, object>? filters)
+    {
+        if (filters == null) { return this; }
+
+        foreach (var filter in filters)
+        {
+            if (!string.IsNullOrEmpty(filter.Key))
+            {
+                this.Filters.ValueMustMatch(filter.Key, filter.Value);
+            }
+        }
+
+        return this;
+    }
+
     public SearchVectorsRequest WithScoreThreshold(double threshold)
     {
         this.ScoreThreshold = threshold;
