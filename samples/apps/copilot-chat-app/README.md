@@ -1,5 +1,4 @@
 # Copilot Chat Sample Application
-> This  sample is for educational purposes only and is not recommended for production deployments.
 
 # About Copilot Chat
 This sample allows you to build your own integrated large language model chat copilot.
