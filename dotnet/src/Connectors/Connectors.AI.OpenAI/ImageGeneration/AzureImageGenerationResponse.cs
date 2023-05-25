@@ -30,7 +30,7 @@ public class AzureImageGenerationResponse
         /// <summary>
         /// Expiration time of the URL
         /// </summary>
-        [JsonPropertyName("ContentUrlExpiresAt")]
+        [JsonPropertyName("contentUrlExpiresAt")]
         public DateTime ContentUrlExpiresAt { get; set; }
         /// <summary>
         /// Creation time
