@@ -9,7 +9,6 @@ import { parsePlan } from '../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateMessageState } from '../../redux/features/conversations/conversationsSlice';
-import { Breakpoints } from '../../styles';
 import { convertToAnchorTags } from '../utils/TextUtils';
 import { PlanViewer } from './plan-viewer/PlanViewer';
 
@@ -19,9 +18,6 @@ const useClasses = makeStyles({
         flexDirection: 'row',
         maxWidth: '75%',
         ...shorthands.borderRadius(tokens.borderRadiusMedium),
-        ...Breakpoints.small({
-            maxWidth: '100%',
-        }),
     },
     debug: {
         position: 'absolute',
@@ -162,7 +158,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     return (
         <>
             <div className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}>
-                {!isMe && <Persona className={classes.persona} avatar={avatar} />}
+                {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
                 <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
                     <div className={classes.header}>
                         {!isMe && <Text weight="semibold">{fullName}</Text>}
