@@ -49,7 +49,6 @@ public class ChatController : ControllerBase, IDisposable
     /// </summary>
     /// <param name="kernel">Semantic kernel obtained through dependency injection.</param>
     /// <param name="planner">Planner to use to create function sequences.</param>
-    /// <param name="plannerOptions">Options for the planner.</param>
     /// <param name="ask">Prompt along with its parameters.</param>
     /// <param name="openApiSkillsAuthHeaders">Authentication headers to connect to OpenAPI Skills.</param>
     /// <returns>Results containing the response from the model.</returns>
