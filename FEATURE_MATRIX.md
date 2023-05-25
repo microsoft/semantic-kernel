@@ -22,7 +22,7 @@
 | AzureOpenAI                       | ✅ | ✅ | |
 | Hugging Face Inference API        | 🔄 | ❌ | Coming soon to Python, not all scenarios are covered for .NET |
 | Hugging Face Local                | ❌ | ✅ | |
-| Custom                            | ✅ | ✅ | Requires the user to define the service schema or rely on 3rd party dependencies in their application |
+| Custom                            | ✅ | 🔄 | Requires the user to define the service schema in their application |
 
 ## Tokenizers
 | | C# | Python | Notes |
@@ -41,29 +41,33 @@
 | MathSkill                         | ✅ | ✅ | |
 | TextSkill                         | ✅ | ✅ | |
 | TimeSkill                         | ✅ | ✅ | |
+| WaitSkill                         | ✅ | ❌ | |
 
 ## Planning
 | | C# | Python | Notes |
 |---|---|---|---|
-| Plan                              | ✅ | ❌ | |
-| SequentialPlanner                 | ✅ | ❌ | |
+| Plan | ✅ | ✅ | Need to port the Plan object |
+| BasicPlanner      | ❌ | ✅ |
+| SequentialPlanner | ✅ | ❌ | 
+| ActionPlanner     | ✅ | ❌ |
 
 ## Connectors and Skill Libraries
 | | C# | Python | Notes |
 |---|---|---|---|
 | Qdrant (Memory)                   | ✅ | ❌ | Vector optimized |
-| ChromaDb (Memory)                 | ❌ | ✅ | |
+| ChromaDb (Memory)                 | ❌ | 🔄 | |
 | Milvus (Memory)                   | ❌ | ❌ | Vector optimized |
 | Pinecone (Memory)                 | ✅ | ❌ | Vector optimized |
 | Weaviate (Memory)                 | ❌ | ❌ | Vector optimized |
 | CosmosDB (Memory)                 | ✅ | ❌ | CosmosDB is not optimized for vector storage |
 | Sqlite (Memory)                   | ✅ | ❌ | Sqlite is not optimized for vector storage |
 | Postgres (Memory)                 | ✅ | ❌ | Vector optimized (required the [pgvector](https://github.com/pgvector/pgvector) extension) |
-| Azure Cognitive Search            | 🔄 | ❌ | Azure Search backed by vector search coming soon |
+| Azure Cognitive Search            | ❌ | ❌ | |
 | MsGraph                           | ✅ | ❌ | Contains connectors for OneDrive, Outlook, ToDos, and Organization Hierarchies |
-| Document Skills                   | ✅ | ❌ | Currently only supports Word documents |
-| OpenAPI                           | ✅ | ❌ | |
-| Web Skills                        | ✅ | ❌ | |
+| Document and Data Loading Skills (i.e. pdf, csv, docx, pptx)  | ✅ | ❌ | Currently only supports Word documents |
+| OpenAPI / ChatGPT Plugins         | ✅ | ❌ | |
+| Web Search Skills (i.e. Bing, Google) | ✅ | ❌ | |
+| Text Chunkers                     | 🔄 | 🔄 | Several currently exist, but more can be done |
 
 # Design Choices
 
