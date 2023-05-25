@@ -15,7 +15,7 @@ public class SkFunctionBuilders implements FunctionBuilders {
     public static final CompletionSKFunction.Builder COMPLETION_BUILDERS =
             new InternalCompletionBuilder(null);
 
-    private static class InternalCompletionBuilder implements CompletionSKFunction.Builder {
+    private static class InternalCompletionBuilder extends CompletionSKFunction.Builder {
         private final @Nullable Kernel kernel;
 
         private InternalCompletionBuilder(@Nullable Kernel kernel) {

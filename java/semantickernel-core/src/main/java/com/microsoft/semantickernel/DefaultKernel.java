@@ -1,22 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
+import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
-import com.microsoft.semantickernel.orchestration.RegistrableSkFunction;
-import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.*;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -37,13 +36,13 @@ public class DefaultKernel implements Kernel {
     private final KernelConfig kernelConfig;
     private final DefaultSkillCollection defaultSkillCollection;
     private final PromptTemplateEngine promptTemplateEngine;
-    @Nullable private SemanticTextMemory memory; // TODO: make this final
+    private MemoryStore memoryStore;
 
     @Inject
     public DefaultKernel(
             KernelConfig kernelConfig,
             PromptTemplateEngine promptTemplateEngine,
-            @Nullable SemanticTextMemory memory) {
+            MemoryStore memoryStore) {
         if (kernelConfig == null) {
             throw new IllegalArgumentException();
         }
@@ -51,12 +50,7 @@ public class DefaultKernel implements Kernel {
         this.kernelConfig = kernelConfig;
         this.promptTemplateEngine = promptTemplateEngine;
         this.defaultSkillCollection = new DefaultSkillCollection();
-
-        if (memory != null) {
-            this.memory = memory.copy();
-        } else {
-            this.memory = null;
-        }
+        this.memoryStore = memoryStore;
 
         kernelConfig.getSkills().forEach(this::registerSemanticFunction);
     }
@@ -175,34 +169,6 @@ public class DefaultKernel implements Kernel {
         return FunctionBuilders.getCompletionBuilder(this);
     }
 
-    /*
-      private static FunctionCollection importSkill(Object skillInstance, String skillName) {
-
-
-        skillInstance.getClass().getMethods()
-                .
-        MethodInfo[] methods = skillInstance.GetType()
-                .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod);
-        log.LogTrace("Methods found {0}", methods.Length);
-
-        // Filter out null functions
-        IEnumerable<ISKFunction> functions = from method in methods select SKFunction.FromNativeMethod(method, skillInstance, skillName, log);
-        List<SKFunction> result = (from function in functions where function != null select function).ToList();
-        log.LogTrace("Methods imported {0}", result.Count);
-
-        // Fail if two functions have the same name
-        var uniquenessCheck = new HashSet<string>(from x in result select x.Name, StringComparer.OrdinalIgnoreCase);
-        if (result.Count > uniquenessCheck.Count)
-        {
-          throw new KernelException(
-                  KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                  "Function overloads are not supported, please differentiate function names");
-        }
-
-        return result;
-      }
-    */
-
     @Override
     public ReadOnlyFunctionCollection getSkill(String skillName) throws FunctionNotFound {
         ReadOnlyFunctionCollection functions = this.defaultSkillCollection.getFunctions(skillName);
@@ -218,47 +184,15 @@ public class DefaultKernel implements Kernel {
         return promptTemplateEngine;
     }
 
-    /*
-    private SKFunction createSemanticFunction(
-        String skillName, String functionName, SemanticFunctionConfig functionConfig) {
-
-
-      CompletionSKFunction func =
-          CompletionSKFunction.fromSemanticConfig(
-              skillName, functionName, functionConfig, promptTemplateEngine);
-
-      // Connect the function to the current kernel skill collection, in case the function
-      // is invoked manually without a context and without a way to find other functions.
-      func.setDefaultSkillCollection(this.skillCollection);
-
-      func.setAIConfiguration(
-          CompleteRequestSettings.fromCompletionConfig(
-              functionConfig.getConfig().getCompletionConfig()));
-
-      // Note: the service is instantiated using the kernel configuration state when the function
-      // is invoked
-      func.setAIService(() -> this.getService(null, TextCompletion.class));
-
-      this.skillCollection = this.skillCollection.addSemanticFunction(func);
-
-      return func;
-    }*/
+    @Override
+    public MemoryStore getMemoryStore() {
+        return memoryStore;
+    }
 
     @Override
     public void registerMemory(@Nonnull SemanticTextMemory memory) {
-        this.memory = memory != null ? memory.copy() : null;
+        throw new NotSupportedException("Not implemented");
     }
-
-    /// <inheritdoc/>
-    /*
-    public ReadOnlySKContext createNewContext() {
-        return ReadOnlySKContext.build(
-                ReadOnlyContextVariables.build(),
-                null,
-                () -> skillCollection);
-    }
-
-     */
 
     @Override
     public Mono<SKContext<?>> runAsync(SKFunction<?, ?>... pipeline) {
@@ -275,9 +209,10 @@ public class DefaultKernel implements Kernel {
         if (pipeline == null || pipeline.length == 0) {
             throw new SKException("No parameters provided to pipeline");
         }
-
+        // TODO: The SemanticTextMemory can be null, but there should be a way to provide it.
+        //       Not sure registerMemory is the right way.
         Mono<SKContext<?>> pipelineBuilder =
-                Mono.just(pipeline[0].buildContext(variables, memory, getSkills()));
+                Mono.just(pipeline[0].buildContext(variables, null, getSkills()));
 
         for (SKFunction f : Arrays.asList(pipeline)) {
             pipelineBuilder =
@@ -293,5 +228,26 @@ public class DefaultKernel implements Kernel {
         }
 
         return pipelineBuilder;
+    }
+
+    public static class Builder implements Kernel.InternalBuilder {
+
+        @Override
+        public Kernel build(
+                KernelConfig kernelConfig,
+                @Nullable PromptTemplateEngine promptTemplateEngine,
+                @Nullable MemoryStore memoryStore) {
+            if (promptTemplateEngine == null) {
+                promptTemplateEngine = new DefaultPromptTemplateEngine();
+            }
+
+            if (kernelConfig == null) {
+                throw new AIException(
+                        AIException.ErrorCodes.InvalidConfiguration,
+                        "It is required to set a kernelConfig to build a kernel");
+            }
+
+            return new DefaultKernel(kernelConfig, promptTemplateEngine, memoryStore);
+        }
     }
 }

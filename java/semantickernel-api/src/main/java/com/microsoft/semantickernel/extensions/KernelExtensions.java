@@ -21,6 +21,8 @@ import java.util.Map;
 public class KernelExtensions {
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelExtensions.class);
 
+    private KernelExtensions() {}
+
     public static Map<String, SemanticFunctionConfig> importSemanticSkillFromDirectory(
             String parentDirectory, String skillDirectoryName) {
 

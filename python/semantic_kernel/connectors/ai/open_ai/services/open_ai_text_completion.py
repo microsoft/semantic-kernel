@@ -57,6 +57,22 @@ class OpenAITextCompletion(TextCompletionClientBase):
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> str:
+        # TODO: tracking on token counts/etc.
+        response = await self._send_completion_request(prompt, request_settings, False)
+        return response.choices[0].text
+
+    # TODO: complete w/ multiple...
+
+    async def complete_stream_async(
+        self, prompt: str, request_settings: CompleteRequestSettings
+    ):
+        response = await self._send_completion_request(prompt, request_settings, True)
+        async for chunk in response:
+            yield chunk.choices[0].text
+
+    async def _send_completion_request(
+        self, prompt: str, request_settings: CompleteRequestSettings, stream: bool
+    ):
         """
         Completes the given prompt. Returns a single string completion.
         Cannot return multiple completions. Cannot return logprobs.
@@ -114,6 +130,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 presence_penalty=request_settings.presence_penalty,
                 frequency_penalty=request_settings.frequency_penalty,
                 max_tokens=request_settings.max_tokens,
+                stream=stream,
                 stop=(
                     request_settings.stop_sequences
                     if request_settings.stop_sequences is not None
@@ -127,9 +144,4 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 "OpenAI service failed to complete the prompt",
                 ex,
             )
-
-        # TODO: tracking on token counts/etc.
-
-        return response.choices[0].text
-
-    # TODO: complete w/ multiple...
+        return response
