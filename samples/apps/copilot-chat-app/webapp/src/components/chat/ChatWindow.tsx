@@ -11,7 +11,12 @@ import {
     Popover,
     PopoverSurface,
     PopoverTrigger,
+    SelectTabData,
+    SelectTabEvent,
     shorthands,
+    Tab,
+    TabList,
+    TabValue,
     tokens,
     Tooltip,
 } from '@fluentui/react-components';
@@ -24,6 +29,7 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
+import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
 import { ShareBotMenu } from './ShareBotMenu';
 
@@ -80,6 +86,19 @@ const useClasses = makeStyles({
         alignSelf: 'end',
         ...shorthands.gap(tokens.spacingVerticalS),
     },
+    content: {
+        ...shorthands.gridArea('content'),
+        overflowY: 'auto',
+    },
+    contentOuter: {
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    contentInner: {
+        width: '100%',
+    },
 });
 
 export const ChatWindow: React.FC = () => {
@@ -109,6 +128,11 @@ export const ChatWindow: React.FC = () => {
             }
         }
         setIsEditing(!isEditing);
+    };
+
+    const [selectedValue, setSelectedValue] = React.useState<TabValue>('chat');
+    const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
+        setSelectedValue(data.value);
     };
 
     const onClose = async () => {
@@ -142,11 +166,9 @@ export const ChatWindow: React.FC = () => {
                         avatar={{ image: { src: conversations[selectedId].botProfilePicture } }}
                         presence={{ status: 'available' }}
                     />
-                    {
-                        <Label size="large" weight="semibold">
-                            {chatName}
-                        </Label>
-                    }
+                    <Label size="large" weight="semibold">
+                        {chatName}
+                    </Label>
                     <Popover open={isEditing}>
                         <PopoverTrigger disableButtonEnhancement>
                             <Tooltip content={'Edit conversation name'} relationship="label">
@@ -168,22 +190,29 @@ export const ChatWindow: React.FC = () => {
                                 className={classes.input}
                                 onKeyDown={handleKeyDown}
                             />
-                            <div className={classes.buttons}>
-                                <Button appearance="secondary" onClick={onClose}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" appearance="primary" onClick={onSave}>
-                                    Save
-                                </Button>
-                            </div>
                         </PopoverSurface>
                     </Popover>
-                </div>
-                <div className={classes.controls}>
-                    <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
+                    <TabList selectedValue={selectedValue} onTabSelect={onTabSelect}>
+                        <Tab id="chat" value="chat">
+                            Chat
+                        </Tab>
+                        <Tab id="sources" value="sources">
+                            Sources
+                        </Tab>
+                    </TabList>
+                    <div className={classes.controls}>
+                        <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
+                    </div>
                 </div>
             </div>
-            <ChatRoom />
+            <div className={classes.content}>
+                <div className={classes.contentOuter}>
+                    <div className={classes.contentInner}>
+                        {selectedValue === 'chat' && <ChatRoom />}
+                        {selectedValue === 'sources' && <ChatResourceList chatSessionId={selectedId} />}
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

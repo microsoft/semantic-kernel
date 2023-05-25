@@ -1,13 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Text;
@@ -44,6 +38,7 @@ public class DocumentImportController : ControllerBase
     private readonly ILogger<DocumentImportController> _logger;
     private readonly DocumentMemoryOptions _options;
     private readonly ChatSessionRepository _chatSessionRepository;
+    private readonly ChatMemorySourceRepository _chatMemorySourceRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -51,11 +46,13 @@ public class DocumentImportController : ControllerBase
     public DocumentImportController(
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<DocumentImportController> logger,
-        ChatSessionRepository chatSessionRepository)
+        ChatSessionRepository chatSessionRepository,
+        ChatMemorySourceRepository chatMemorySourceRepository)
     {
         this._options = documentMemoryOptions.Value;
         this._logger = logger;
         this._chatSessionRepository = chatSessionRepository;
+        this._chatMemorySourceRepository = chatMemorySourceRepository;
     }
 
     /// <summary>
@@ -111,6 +108,15 @@ public class DocumentImportController : ControllerBase
             }
 
             await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm);
+
+            // add the document info to storage
+            // TODO: Do upsert instead of create.
+            var _ = this._chatMemorySourceRepository.CreateAsync(new MemorySource(
+                documentImportForm.ChatSessionId,
+                formFile.FileName,
+                documentImportForm.UserDisplayName,
+                SourceType.File,
+                null));
         }
         catch (Exception ex) when (ex is ArgumentOutOfRangeException)
         {
@@ -191,7 +197,7 @@ public class DocumentImportController : ControllerBase
             await kernel.Memory.SaveInformationAsync(
                 collection: targetCollectionName,
                 text: paragraph,
-                id: Guid.NewGuid().ToString(),
+                id: Guid.NewGuid().ToString(), // TODO: We can link the memory record with the MemorySource item.
                 description: $"Document: {documentName}");
         }
 

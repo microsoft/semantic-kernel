@@ -1,14 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.SemanticKernel;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -28,6 +23,7 @@ public class ChatHistoryController : ControllerBase
     private readonly ChatSessionRepository _chatSessionRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
     private readonly PromptsOptions _promptOptions;
+    private readonly ChatMemorySourceRepository _chatMemorySourceRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryController"/> class.
@@ -36,16 +32,19 @@ public class ChatHistoryController : ControllerBase
     /// <param name="chatSessionRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
     /// <param name="promptsOptions">The prompts options.</param>
+    /// <param name="chatMemorySourceRepository">The chat memory resource repository.</param>
     public ChatHistoryController(
         ILogger<ChatHistoryController> logger,
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
-        IOptions<PromptsOptions> promptsOptions)
+        IOptions<PromptsOptions> promptsOptions,
+        ChatMemorySourceRepository chatMemorySourceRepository)
     {
         this._logger = logger;
         this._chatSessionRepository = chatSessionRepository;
         this._chatMessageRepository = chatMessageRepository;
         this._promptOptions = promptsOptions.Value;
+        this._chatMemorySourceRepository = chatMemorySourceRepository;
     }
 
     /// <summary>
@@ -174,6 +173,24 @@ public class ChatHistoryController : ControllerBase
         await this._chatSessionRepository.UpdateAsync(chat);
 
         return this.Ok(chat);
+    }
+
+    /// <summary>
+    /// Service API to get a list of imported documents.
+    /// </summary>
+    [Authorize]
+    [Route("chatSession/{chatId:guid}/documents")]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<MemorySource>>> GetDocumentsAsync(
+        [FromServices] IKernel kernel,
+        Guid chatId)
+    {
+        this._logger.LogInformation("Get imported documents of chat session {0}", chatId);
+
+        return this.Ok(await this._chatMemorySourceRepository.FindByChatSessionIdAsync(chatId.ToString()));
     }
 
     # region Private
