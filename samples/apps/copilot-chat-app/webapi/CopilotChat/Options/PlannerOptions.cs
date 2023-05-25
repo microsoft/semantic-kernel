@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Newtonsoft.Json;
+
 namespace SemanticKernel.Service.CopilotChat.Options;
 
 /// <summary>
@@ -12,5 +14,6 @@ public class PlannerOptions
     /// <summary>
     /// Define if the planner must be Sequential or not.
     /// </summary>
-    public bool IsSequential { get; set; } = false;
+    [JsonProperty("Type")]
+    public string PlannerType { get; set; } = string.Empty;
 }

@@ -47,7 +47,7 @@ public class CopilotChatPlanner
             return Task.FromResult(new Plan(goal));
         }
 
-        if (this._plannerOptions?.IsSequential == true)
+        if (this._plannerOptions?.PlannerType == "Sequential")
         {
             return new SequentialPlanner(this.Kernel).CreatePlanAsync(goal);
         }
