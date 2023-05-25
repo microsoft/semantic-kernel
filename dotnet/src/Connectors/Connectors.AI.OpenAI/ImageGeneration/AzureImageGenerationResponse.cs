@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
@@ -12,7 +13,8 @@ public class AzureImageGenerationResponse
         [JsonPropertyName("caption")]
         public string Caption { get; set; } = string.Empty;
         [JsonPropertyName("contentUrl")]
-        public string Content { get; set; } = string.Empty;
+        [SuppressMessage("Design", "CA1056:URI return values should not be strings", Justification = "Using the original value")]
+        public string ContentUrl { get; set; } = string.Empty;
         [JsonPropertyName("ContentUrlExpiresAt")]
         public DateTime ContentUrlExpiresAt { get; set; }
         [JsonPropertyName("createdDateTime")]

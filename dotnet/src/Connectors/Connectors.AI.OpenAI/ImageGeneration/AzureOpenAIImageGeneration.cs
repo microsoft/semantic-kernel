@@ -42,7 +42,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         {
             throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");
         }
-        return result.Result.Content;
+        return result.Result.ContentUrl;
     }
     private async Task<AzureImageGenerationResponse> EnsureImageGenerationAsync(string url, string? requestBody, CancellationToken cancellationToken = default)
     {
