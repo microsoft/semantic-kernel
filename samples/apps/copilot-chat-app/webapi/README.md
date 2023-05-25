@@ -46,14 +46,14 @@ You can start the WebApi service using the command-line, Visual Studio Code, or 
    ```
 
 ## Visual Studio Code
-1. build (CopilotChatApi)
-2. run (CopilotChatApi)
-3. [optional] watch (CopilotChatApi)
+1. build (CopilotChatWebApi)
+2. run (CopilotChatWebApi)
+3. [optional] watch (CopilotChatWebApi)
 
 ## Visual Studio (2022 or newer)
 1. Open the solution file in Visual Studio 2022 or newer (`semantic-kernel/dotnet/SK-dotnet.sln`).
 1. In the solution explorer expand the `samples` folder.
-1. Right-click on the `CopilotChatApi` and select `Set as Startup Project`.
+1. Right-click on the `CopilotChatWebApi` and select `Set as Startup Project`.
 1. Start debugging by pressing `F5` or selecting the menu item `Debug`->`Start Debugging`.
 
 # (Optional) Enabling the Qdrant Memory Store
