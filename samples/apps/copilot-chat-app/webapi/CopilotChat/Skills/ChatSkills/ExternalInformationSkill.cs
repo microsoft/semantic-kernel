@@ -117,7 +117,7 @@ public class ExternalInformationSkill
         else
         {
             // Create a plan and set it in context for approval.
-            Plan plan = await this._planner.CreatePlanAsync(context["userIntent"]);
+            Plan plan = await this._planner.CreatePlanAsync(userIntent);
 
             if (plan.Steps.Count > 0)
             {
