@@ -451,7 +451,7 @@ public class ChatSkill
     /// </summary>
     private Task<string> AcquireExternalInformationAsync(SKContext context, string userIntent, int tokenLimit)
     {
-        var contextVariables = new ContextVariables();
+        var contextVariables = context.Variables.Clone();
         contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
         if (context.Variables.Get("proposedPlan", out string? proposedPlan))
         {
