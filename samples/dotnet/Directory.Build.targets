@@ -1,0 +1,9 @@
+<Project>
+  <!-- Only run 'dotnet format' on dev machines, Release builds. Skip on GitHub Actions -->
+  <!-- as this runs in its own Actions job. -->
+  <Target Name="DotnetFormatOnBuild" BeforeTargets="Build"
+          Condition=" '$(Configuration)' == 'Release' AND '$(GITHUB_ACTIONS)' == '' ">
+    <Message Text="Running dotnet format" Importance="high" />
+    <Exec Command="dotnet format --no-restore -v diag $(ProjectFileName)" />
+  </Target>
+</Project>
