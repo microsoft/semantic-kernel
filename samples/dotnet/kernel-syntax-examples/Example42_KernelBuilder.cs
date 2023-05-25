@@ -5,18 +5,21 @@
 // You can access the builder using either Kernel.Builder or KernelBuilder.
 
 #pragma warning disable CA1852
-#pragma warning disable CA1050
 
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Services;
+using System;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Polly;
@@ -25,7 +28,6 @@ using Polly.Retry;
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
 {
-
     public static void Run()
     {
 #pragma warning disable CA1852 // Seal internal types
@@ -64,20 +66,20 @@ public static class Example42_KernelBuilder
         var logger = NullLogger.Instance;
         var memoryStorage = new VolatileMemoryStore();
         var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", logger: logger);
-        var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
+        using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var skills = new SkillCollection();
         var templateEngine = new PromptTemplateEngine(logger);
         var config = new KernelConfig();
 
-        var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), logger);
-        var httpClient = new HttpClient(httpHandler);
+        using var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), logger);
+        using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureTextCompletion("deploymentName", "https://...", "apiKey", httpClient, logger);
         aiServices.SetService("foo", Factory);
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, config, logger);
+        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, config, logger);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies
@@ -169,9 +171,9 @@ public static class Example42_KernelBuilder
                 .Handle<AIException>(ex => ex.ErrorCode == AIException.ErrorCodes.Throttling)
                 .WaitAndRetryAsync(new[]
                     {
-                    TimeSpan.FromSeconds(2),
-                    TimeSpan.FromSeconds(4),
-                    TimeSpan.FromSeconds(8)
+                        TimeSpan.FromSeconds(2),
+                        TimeSpan.FromSeconds(4),
+                        TimeSpan.FromSeconds(8)
                     },
                     (ex, timespan, retryCount, _) => log.LogWarning(ex,
                         "Error executing action [attempt {0} of 3], pausing {1}ms",
