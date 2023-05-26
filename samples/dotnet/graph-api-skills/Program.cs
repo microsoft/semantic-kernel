@@ -155,7 +155,7 @@ public sealed class Program
         var todo = sk.ImportSkill(todoSkill, "todo");
         var outlook = sk.ImportSkill(outlookSkill, "outlook");
 
-        string skillParentDirectory = RepoUtils.RepoFiles.SampleSkillsPath();
+        string skillParentDirectory = RepoFiles.SampleSkillsPath();
 
         IDictionary<string, ISKFunction> summarizeSkills =
             sk.ImportSemanticSkillFromDirectory(skillParentDirectory, "SummarizeSkill");
