@@ -29,7 +29,7 @@ public interface ITrustService
     /// - This is called for semantic functions before rendering the prompt template.
     /// - This is called for native functions before calling the native function implementation.
     ///
-    /// If the return is false, this means the context will be tagged as untrusted.
+    /// If the return is false, this means the result of the function will be tagged as untrusted.
     ///
     /// The implementation might depend on the application needs. A simple sample implementation
     /// could be accomplished by analyzing the variables in the context, if they are all trusted, then
@@ -40,7 +40,7 @@ public interface ITrustService
     /// </summary>
     /// <param name="func">Instance of the function being called</param>
     /// <param name="context">The current execution context</param>
-    /// <returns>Should return true if the context is to be considered trusted, or false otherwise</returns>
+    /// <returns>Should return whether the result of the function should be considered trusted dependending on the context</returns>
     Task<bool> ValidateContextAsync(ISKFunction func, SKContext context);
 
     /// <summary>
@@ -48,7 +48,7 @@ public interface ITrustService
     /// rendered using the given template, and before calling the text completion with the rendered prompt.
     ///
     /// It should return the content to be used in the completion client as a TrustAwareString, which will include
-    /// trust information. If the TrustAwareString returned is not trusted, this means the context will be tagged as untrusted.
+    /// trust information. If the TrustAwareString returned is not trusted, this means the result of the function will be tagged as untrusted.
     ///
     /// After the template is rendered, the context might be tagged as untrusted because the template might contain function calls
     /// that turned the context into untrusted when rendered.

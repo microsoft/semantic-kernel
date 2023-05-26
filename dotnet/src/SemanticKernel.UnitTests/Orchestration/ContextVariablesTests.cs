@@ -370,6 +370,26 @@ public class ContextVariablesTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void UpdateKeepingTrustStateSucceeds(bool isTrusted)
+    {
+        // Arrange
+        string someContent = Guid.NewGuid().ToString();
+        string someNewContent = Guid.NewGuid().ToString();
+        ContextVariables variables = new(new TrustAwareString(someContent, isTrusted));
+
+        // Assert
+        AssertContextVariable(variables, ContextVariables.MainKey, someContent, isTrusted);
+
+        // Act
+        variables.UpdateKeepingTrustState(someNewContent);
+
+        // Assert
+        AssertContextVariable(variables, ContextVariables.MainKey, someNewContent, isTrusted);
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void SetWithTrustSucceeds(bool isTrusted)
@@ -492,6 +512,41 @@ public class ContextVariablesTests
         AssertContextVariable(target, ContextVariables.MainKey, mainContent, false);
         AssertContextVariable(target, anyName0, anyContent0, false);
         AssertContextVariable(target, anyName1, anyContent1, false);
+    }
+
+    [Fact]
+    public void CallUntrustInputSucceeds()
+    {
+        // Arrange
+        string mainContent = Guid.NewGuid().ToString();
+        string anyName0 = Guid.NewGuid().ToString();
+        string anyContent0 = Guid.NewGuid().ToString();
+        string anyName1 = Guid.NewGuid().ToString();
+        string anyContent1 = Guid.NewGuid().ToString();
+        ContextVariables target = new(TrustAwareString.Trusted(mainContent));
+
+        // Act - Default set with string should be trusted
+        target.Set(anyName0, anyContent0);
+        target.Set(anyName1, anyContent1);
+
+        // Assert
+        // Assert everything is trusted
+        Assert.True(target.IsAllTrusted());
+        Assert.True(target.Input.IsTrusted);
+        AssertContextVariable(target, ContextVariables.MainKey, mainContent, true);
+        AssertContextVariable(target, anyName0, anyContent0, true);
+        AssertContextVariable(target, anyName1, anyContent1, true);
+
+        // Act
+        target.UntrustInput();
+
+        // Assert
+        // Assert the input is untrusted but everything else was kept trusted
+        Assert.False(target.IsAllTrusted());
+        Assert.False(target.Input.IsTrusted);
+        AssertContextVariable(target, ContextVariables.MainKey, mainContent, false);
+        AssertContextVariable(target, anyName0, anyContent0, true);
+        AssertContextVariable(target, anyName1, anyContent1, true);
     }
 
     private static void AssertContextVariable(ContextVariables variables, string name, string expectedValue, bool expectedIsTrusted)

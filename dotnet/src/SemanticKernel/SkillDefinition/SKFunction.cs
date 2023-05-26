@@ -186,9 +186,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
             Verify.NotNull(client);
             Verify.NotNull(requestSettings);
 
-            // Validates if the context is trusted before rendering the prompt
-            var isContextTrusted = await func.TrustServiceInstance.ValidateContextAsync(func, context).ConfigureAwait(false);
-
             try
             {
                 string renderedPrompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
@@ -200,7 +197,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
                 string completion = await client.CompleteAsync(prompt.Value, requestSettings, context.CancellationToken).ConfigureAwait(false);
 
-                context.UpdateResult(completion, isContextTrusted && prompt.IsTrusted);
+                // Update the result with the completion
+                context.Variables.UpdateKeepingTrustState(completion);
+
+                // Flag the result as untrusted if the prompt has been considered untrusted
+                if (!prompt.IsTrusted)
+                {
+                    context.UntrustResult();
+                }
             }
             catch (AIException ex)
             {
@@ -240,9 +244,38 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null)
+    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null)
     {
-        // ???
+        // If the function is invoked manually, the user might have left out the skill collection
+        context.Skills ??= this._skillCollection;
+
+        var validateContextResult = await this.TrustServiceInstance.ValidateContextAsync(this, context).ConfigureAwait(false);
+
+        var result = this.IsSemantic ?
+            await InvokeSemanticAsync(context, settings).ConfigureAwait(false) :
+            await InvokeNativeAsync(context, settings).ConfigureAwait(false);
+
+        // If the context has been considered untrusted, make sure the output of the function is also untrusted
+        if (!validateContextResult)
+        {
+            result.UntrustResult();
+        }
+
+        return result;
+
+        async Task<SKContext> InvokeSemanticAsync(SKContext context, CompleteRequestSettings? settings)
+        {
+            var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context).ConfigureAwait(false);
+
+            context.Variables.Update(resultContext.Variables);
+
+            return context;
+        }
+
+        Task<SKContext> InvokeNativeAsync(SKContext context, CompleteRequestSettings? settings)
+        {
+            return this._function(null, settings, context);
+        }
     }
 
     /// <inheritdoc/>
@@ -253,7 +286,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        // ???
+        SKContext context = new(
+            new ContextVariables(input),
+            memory: memory,
+            skills: this._skillCollection,
+            logger: logger,
+            cancellationToken: cancellationToken);
+
+        return this.InvokeAsync(context, settings);
     }
 
     /// <inheritdoc/>
@@ -477,7 +517,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             if (!hasStringParam && parameters[i].ParameterType == typeof(string))
             {
                 hasStringParam = true;
-                parameterFuncs[i] = static (SKContext ctx) => ctx.Variables.Input;
+                parameterFuncs[i] = static (SKContext ctx) => ctx.Variables.Input.Value;
             }
             else if (!hasContextParam && parameters[i].ParameterType == typeof(SKContext))
             {
@@ -500,7 +540,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             returnFunc = static (result, context) =>
             {
-                context.Variables.Update((string?)result);
+                context.Variables.UpdateKeepingTrustState((string?)result);
                 return Task.FromResult(context);
             };
         }
@@ -520,7 +560,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             returnFunc = async static (result, context) =>
             {
-                context.Variables.Update(await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
+                context.Variables.UpdateKeepingTrustState(await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
                 return context;
             };
         }

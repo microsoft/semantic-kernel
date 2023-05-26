@@ -60,9 +60,21 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// <param name="content">The new input value, for the next function in the pipeline, or as a result for the user
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
-    public ContextVariables Update(string content)
+    public ContextVariables Update(string? content)
     {
         return this.Update(TrustAwareString.Trusted(content));
+    }
+
+    /// <summary>
+    /// Updates the main input text with the new value after a function is complete.
+    /// This will keep the trust state of the current input set.
+    /// </summary>
+    /// <param name="content">The new input value, for the next function in the pipeline, or as a result for the user
+    /// if the pipeline reached the end.</param>
+    /// <returns>The current instance</returns>
+    public ContextVariables UpdateKeepingTrustState(string? content)
+    {
+        return this.Update(new TrustAwareString(content, this.Input.IsTrusted));
     }
 
     /// <summary>
@@ -206,6 +218,14 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
             // Note: we don't use an internal setter for better multi-threading
             this._variables[item.Key] = TrustAwareString.Untrusted(item.Value.Value);
         }
+    }
+
+    /// <summary>
+    /// Make the input variable untrusted.
+    /// </summary>
+    public void UntrustInput()
+    {
+        this.Update(TrustAwareString.Untrusted(this.Input.Value));
     }
 
     /// <summary>

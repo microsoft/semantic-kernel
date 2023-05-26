@@ -50,7 +50,7 @@ public sealed class TrustService : ITrustService
     /// </summary>
     /// <param name="func">Instance of the function being called</param>
     /// <param name="context">The current execution context</param>
-    /// <returns>Should return true if the context is to be considered trusted, or false otherwise</returns>
+    /// <returns>Should return whether the result of the function should be considered trusted dependending on the context</returns>
     /// <exception cref="UntrustedContentException">Raised when the context is untrusted and the function is sensitive</exception>
     public Task<bool> ValidateContextAsync(ISKFunction func, SKContext context)
     {
