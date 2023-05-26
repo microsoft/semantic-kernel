@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
+import { Button, Input, InputOnChangeData, makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
-import { FC } from 'react';
+import { Dismiss20Regular, Filter20Regular } from '@fluentui/react-icons';
+import { FC, useState } from 'react';
+import { useChat } from '../../../libs/useChat';
 import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
@@ -44,22 +46,74 @@ const useClasses = makeStyles({
         alignItems: 'center',
         height: '4.8em',
     },
+    input: {
+        ...shorthands.padding(tokens.spacingHorizontalNone),
+        ...shorthands.border(tokens.borderRadiusNone),
+        width: 'calc(100% - 24px)',
+        backgroundColor: 'transparent',
+        fontSize: '20px',
+    },
 });
 
 export const ChatList: FC = () => {
     const classes = useClasses();
-    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const chat = useChat();
+
+    const [isFiltering, setIsFiltering] = useState(false);
+    const [searchString, setSearchString] = useState('');
+
+    const { conversations, filteredConversations, selectedId } = useAppSelector(
+        (state: RootState) => state.conversations,
+    );
+    const displayedConversations = isFiltering ? filteredConversations : conversations;
+
+    const onFilterClick = () => {
+        setIsFiltering(!isFiltering);
+    };
+
+    const onFilterCancel = () => {
+        chat.clearConversationsFilter();
+        setSearchString('');
+        setIsFiltering(!isFiltering);
+    };
+
+    const onSearch = (ev: any, data: InputOnChangeData) => {
+        ev.preventDefault();
+        setSearchString(data.value);
+        chat.filterChats(data.value);
+    };
 
     return (
         <div className={classes.root}>
             <div className={classes.header}>
-                <Text weight="bold" size={500}>
-                    Conversations
-                </Text>
-                <NewBotMenu />
+                {!isFiltering && (
+                    <>
+                        <Text weight="bold" size={500}>
+                            Conversations
+                        </Text>
+                        <div>
+                            <Button icon={<Filter20Regular />} appearance="transparent" onClick={onFilterClick} />
+                            <NewBotMenu />
+                        </div>
+                    </>
+                )}
+                {isFiltering && (
+                    <>
+                        <Input
+                            placeholder="Filter by name"
+                            className={classes.input}
+                            value={searchString}
+                            onChange={onSearch}
+                            autoFocus
+                        />
+                        <div>
+                            <Button icon={<Dismiss20Regular />} appearance="transparent" onClick={onFilterCancel} />
+                        </div>
+                    </>
+                )}
             </div>
             <Tree aria-label={'chat list'} className={classes.list}>
-                {Object.keys(conversations).map((id) => {
+                {Object.keys(displayedConversations).map((id) => {
                     const convo = conversations[id];
                     const messages = convo.messages;
                     const lastMessage = convo.messages.length - 1;

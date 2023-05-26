@@ -186,7 +186,12 @@ export const useChat = () => {
                     };
                 }
 
-                dispatch(setConversations(loadedConversations));
+                dispatch(
+                    setConversations({
+                        conversations: loadedConversations,
+                        filteredConversations: loadedConversations,
+                    }),
+                );
                 dispatch(setSelectedConversation(chatSessions[0].id));
             } else {
                 // No chats exist, create first chat window
@@ -200,6 +205,31 @@ export const useChat = () => {
 
             return false;
         }
+    };
+
+    const filterChats = async (searchString: string) => {
+        const filteredChats: Conversations = {};
+        for (var key in conversations) {
+            if (conversations[key].title.toLowerCase().includes(searchString.toLowerCase())) {
+                filteredChats[key] = conversations[key];
+            }
+        }
+
+        dispatch(
+            setConversations({
+                conversations: conversations,
+                filteredConversations: filteredChats,
+            }),
+        );
+    };
+
+    const clearConversationsFilter = async () => {
+        dispatch(
+            setConversations({
+                conversations: conversations,
+                filteredConversations: conversations,
+            }),
+        );
     };
 
     const downloadBot = async (chatId: string) => {
@@ -248,6 +278,8 @@ export const useChat = () => {
         createChat,
         loadChats,
         getResponse,
+        filterChats,
+        clearConversationsFilter,
         downloadBot,
         uploadBot,
     };

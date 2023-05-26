@@ -9,8 +9,12 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
     name: 'conversations',
     initialState,
     reducers: {
-        setConversations: (state: ConversationsState, action: PayloadAction<Conversations>) => {
-            state.conversations = action.payload;
+        setConversations: (
+            state: ConversationsState,
+            action: PayloadAction<{ conversations: Conversations; filteredConversations: Conversations }>,
+        ) => {
+            state.conversations = action.payload.conversations;
+            state.filteredConversations = action.payload.filteredConversations;
         },
         editConversationTitle: (state: ConversationsState, action: PayloadAction<ConversationTitleChange>) => {
             const id = action.payload.id;
