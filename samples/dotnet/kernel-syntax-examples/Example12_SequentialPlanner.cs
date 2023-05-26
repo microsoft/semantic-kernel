@@ -230,7 +230,7 @@ internal static class Example12_SequentialPlanner
         }
         catch (KernelException e)
         {
-            Console.WriteLine($"Step - Execution failed:");
+            Console.WriteLine("Step - Execution failed:");
             Console.WriteLine(e.Message);
         }
 
