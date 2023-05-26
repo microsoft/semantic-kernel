@@ -40,7 +40,7 @@ public interface ITrustService
     /// </summary>
     /// <param name="func">Instance of the function being called</param>
     /// <param name="context">The current execution context</param>
-    /// <returns>Should return whether the result of the function should be considered trusted dependending on the context</returns>
+    /// <returns>Should return whether the result of the function should be considered trusted depending on the context</returns>
     Task<bool> ValidateContextAsync(ISKFunction func, SKContext context);
 
     /// <summary>

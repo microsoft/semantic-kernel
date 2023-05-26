@@ -246,14 +246,26 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null)
     {
+        async Task<SKContext> InvokeSemanticAsync(SKContext contextParam, CompleteRequestSettings? settingsPAram)
+        {
+            var resultContext = await this._function(this._aiService?.Value, settingsPAram ?? this._aiRequestSettings, contextParam).ConfigureAwait(false);
+            contextParam.Variables.Update(resultContext.Variables);
+            return contextParam;
+        }
+
+        Task<SKContext> InvokeNativeAsync(SKContext contextParam, CompleteRequestSettings? settingsParam)
+        {
+            return this._function(null, settingsParam, contextParam);
+        }
+
         // If the function is invoked manually, the user might have left out the skill collection
         context.Skills ??= this._skillCollection;
 
         var validateContextResult = await this.TrustServiceInstance.ValidateContextAsync(this, context).ConfigureAwait(false);
 
-        var result = this.IsSemantic ?
-            await InvokeSemanticAsync(context, settings).ConfigureAwait(false) :
-            await InvokeNativeAsync(context, settings).ConfigureAwait(false);
+        var result = this.IsSemantic
+            ? await InvokeSemanticAsync(context, settings).ConfigureAwait(false)
+            : await InvokeNativeAsync(context, settings).ConfigureAwait(false);
 
         // If the context has been considered untrusted, make sure the output of the function is also untrusted
         if (!validateContextResult)
@@ -262,20 +274,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
 
         return result;
-
-        async Task<SKContext> InvokeSemanticAsync(SKContext context, CompleteRequestSettings? settings)
-        {
-            var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context).ConfigureAwait(false);
-
-            context.Variables.Update(resultContext.Variables);
-
-            return context;
-        }
-
-        Task<SKContext> InvokeNativeAsync(SKContext context, CompleteRequestSettings? settings)
-        {
-            return this._function(null, settings, context);
-        }
     }
 
     /// <inheritdoc/>
