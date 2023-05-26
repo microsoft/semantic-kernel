@@ -9,6 +9,7 @@ import { parsePlan } from '../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateMessageState } from '../../redux/features/conversations/conversationsSlice';
+import { Breakpoints } from '../../styles';
 import { convertToAnchorTags } from '../utils/TextUtils';
 import { PlanViewer } from './plan-viewer/PlanViewer';
 
@@ -18,6 +19,9 @@ const useClasses = makeStyles({
         flexDirection: 'row',
         maxWidth: '75%',
         ...shorthands.borderRadius(tokens.borderRadiusMedium),
+        ...Breakpoints.small({
+            maxWidth: '100%',
+        }),
     },
     debug: {
         position: 'absolute',
