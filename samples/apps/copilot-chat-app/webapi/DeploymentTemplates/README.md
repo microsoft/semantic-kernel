@@ -13,6 +13,8 @@ This document details how to deploy Semantic Kernel as a backend service that ca
 
 - F1 and D1 SKUs for the App Service Plans are not currently supported for this deployment.
 
+- Using the templates and scripts below, only deploy one instance of Semantic Kernel to a given resource group. Also do not change the name of your deployment or its resources once deployed. The reason behind this restriction is that once virtual networks, subnets and applications are tied together, they need to be disentangled in the proper order before being deleted or modified, which is not something bicep or ARM templates can do. Consequently, deploying an alternate deployment within a resource group that already contains one will lead to resource conflicts.
+
 
 # Deploying with a new Azure OpenAI instance
 You can deploy an instance of Semantic Kernel in a web app service within a resource group that bears the name YOUR_DEPLOYMENT_NAME preceded by the "rg-" prefix using any of the following methods.
@@ -125,7 +127,11 @@ This will get you to the CORS page where you can add your allowed hosts.
 # Deploying your custom version of Semantic Kernel
 You can build and upload a customized version of the Semantic Kernel service.
 
-To do so, clone the code from this repo then modify it to your needs (for example, by adding your own skills). Once that is done, go into the ../semantic-kernel/samples/apps/copilot-chat-app/webapi
+You can use the standard methods available to [deploy an ASP.net web app](https://learn.microsoft.com/en-us/azure/app-service/quickstart-dotnetcore?pivots=development-environment-vs&tabs=net70) in order to do so.
+
+Alternatively, you can follow the steps below to manually build and upload your customized version of the Semantic Kernel service to Azure.
+
+Modify the code to your needs (for example, by adding your own skills). Once that is done, go into the ../semantic-kernel/samples/apps/copilot-chat-app/webapi
 directory and enter the following command:
 ```powershell
 dotnet publish CopilotChatWebApi.csproj --configuration Release --arch x64 --os win
@@ -136,7 +142,7 @@ This will create the following directory, which will contain all the files neede
 
 Zip the contents of that directory then put the resulting zip file on the web.
 
-Put its URI in the "Package Uri" field in the web deployment page you access through the "Deploy to Azure" buttons above, or use its URI as the value for the PackageUri parameter of the Powershell scripts above.
+Put its URI in the "Package Uri" field in the web deployment page you access through the "Deploy to Azure" buttons above, or use its URI as the value for the PackageUri parameter of the Powershell scripts above. Make sure that your zip file is publicly readable.
 
 Your deployment will then use your customized deployment package.
 
