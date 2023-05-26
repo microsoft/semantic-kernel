@@ -13,7 +13,6 @@ using Xunit;
 namespace SemanticKernel.Connectors.UnitTests.Memory;
 public abstract class MemoryStorageTestBase
 {
-    //private int _collectionID = 0;
     protected virtual string CreateRandomCollectionName()
     {
         return $"Collection_{Guid.NewGuid()}";
