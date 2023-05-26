@@ -1,6 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Button, Input, InputOnChangeData, makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
+import {
+    Button,
+    Input,
+    InputOnChangeData,
+    makeStyles,
+    mergeClasses,
+    shorthands,
+    Text,
+    tokens,
+} from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 import { Dismiss20Regular, Filter20Regular } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
@@ -8,6 +17,7 @@ import { useChat } from '../../../libs/useChat';
 import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { Breakpoints } from '../../../styles';
 import { ChatListItem } from './ChatListItem';
 import { NewBotMenu } from './NewBotMenu';
 
@@ -16,6 +26,7 @@ const useClasses = makeStyles({
         ...shorthands.overflow('hidden'),
         display: 'flex',
         width: '25%',
+        minWidth: '5rem',
         backgroundColor: '#F0F0F0',
         flexDirection: 'column',
         '@media (max-width: 25%)': {
@@ -35,6 +46,7 @@ const useClasses = makeStyles({
         '&::-webkit-scrollbar-track': {
             backgroundColor: 'transparent',
         },
+        alignItems: 'stretch',
     },
     header: {
         ...shorthands.padding(tokens.spacingVerticalXXS, tokens.spacingHorizontalXS),
@@ -45,6 +57,14 @@ const useClasses = makeStyles({
         marginLeft: '1em',
         alignItems: 'center',
         height: '4.8em',
+        ...Breakpoints.small({
+            justifyContent: 'center',
+        }),
+    },
+    title: {
+        ...Breakpoints.small({
+            display: 'none',
+        }),
     },
     input: {
         ...shorthands.padding(tokens.spacingHorizontalNone),
@@ -88,7 +108,7 @@ export const ChatList: FC = () => {
             <div className={classes.header}>
                 {!isFiltering && (
                     <>
-                        <Text weight="bold" size={500}>
+                        <Text weight="bold" size={500} className={classes.title}>
                             Conversations
                         </Text>
                         <div>
@@ -101,7 +121,7 @@ export const ChatList: FC = () => {
                     <>
                         <Input
                             placeholder="Filter by name"
-                            className={classes.input}
+                            className={mergeClasses(classes.input, classes.title)}
                             value={searchString}
                             onChange={onSearch}
                             autoFocus
@@ -117,14 +137,17 @@ export const ChatList: FC = () => {
                     const convo = conversations[id];
                     const messages = convo.messages;
                     const lastMessage = convo.messages.length - 1;
+                    const isSelected = id === selectedId;
+
                     return (
                         <TreeItem
                             key={id}
                             leaf
-                            style={id === selectedId ? { background: tokens.colorNeutralBackground1 } : undefined}
+                            style={isSelected ? { background: tokens.colorNeutralBackground1 } : undefined}
                         >
                             <ChatListItem
                                 id={id}
+                                isSelected={isSelected}
                                 header={convo.title}
                                 timestamp={convo.lastUpdatedTimestamp ?? messages[lastMessage].timestamp}
                                 preview={
