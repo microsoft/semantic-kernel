@@ -13,7 +13,6 @@ using Xunit;
 namespace SemanticKernel.Connectors.UnitTests.Memory;
 public abstract class MemoryStorageTestBase
 {
-
     //private int _collectionID = 0;
     protected virtual string CreateRandomCollectionName()
     {
@@ -39,12 +38,11 @@ public abstract class MemoryStorageTestBase
         return Task.CompletedTask;
     }
 
-
     protected virtual async Task WithStorageAsync(Func<IMemoryStore, Task> factAsync)
     {
         var store = await this.CreateStoreAsync();
         await factAsync(store);
-        await CloseStoreAsync(store);
+        await this.CloseStoreAsync(store);
     }
 
     [Fact]
