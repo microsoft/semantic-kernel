@@ -126,7 +126,7 @@ public sealed class RedisMemoryStore : IMemoryStore
         await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), new[] {
             new HashEntry("key", record.Key),
             new HashEntry("metadata", record.GetSerializedMetadata()),
-            new HashEntry("embedding", MemoryMarshal.Cast<float, byte>(record.Embedding.Vector.ToArray()).ToArray()),
+            new HashEntry("embedding", MemoryMarshal.Cast<float, byte>(record.Embedding.AsReadOnlySpan()).ToArray()),
             new HashEntry("timestamp", ToTimestampLong(record.Timestamp))
         }, flags: CommandFlags.None).ConfigureAwait(false);
 
@@ -169,7 +169,7 @@ public sealed class RedisMemoryStore : IMemoryStore
         }
 
         var query = new Query($"*=>[KNN {limit} @embedding $embedding AS vector_score]")
-                    .AddParam("embedding", MemoryMarshal.Cast<float, byte>(embedding.Vector.ToArray()).ToArray())
+                    .AddParam("embedding", MemoryMarshal.Cast<float, byte>(embedding.AsReadOnlySpan()).ToArray())
                     .SetSortBy("vector_score")
                     .ReturnFields("key", "metadata", "embedding", "timestamp", "vector_score")
                     .Limit(0, limit)

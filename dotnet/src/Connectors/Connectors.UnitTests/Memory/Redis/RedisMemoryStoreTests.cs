@@ -99,7 +99,7 @@ public class RedisMemoryStoreTests
     private void MockHashSet(string collection, MemoryRecord record, Action? callback = null)
     {
         string redisKey = $"sk-memory:{collection}:{record.Metadata.Id}";
-        byte[] embedding = MemoryMarshal.Cast<float, byte>(record.Embedding.Vector.ToArray()).ToArray();
+        byte[] embedding = MemoryMarshal.Cast<float, byte>(record.Embedding.AsReadOnlySpan()).ToArray();
         long timestamp = record.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
 
         this._mockDatabase
@@ -202,7 +202,7 @@ public class RedisMemoryStoreTests
         foreach (var item in embeddings)
         {
             long timestamp = item.Value.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
-            byte[] embedding = MemoryMarshal.Cast<float, byte>(item.Value.Embedding.Vector.ToArray()).ToArray();
+            byte[] embedding = MemoryMarshal.Cast<float, byte>(item.Value.Embedding.AsReadOnlySpan()).ToArray();
             redisResults.Add(RedisResult.Create($"sk-memory:{collection}:{item.Value.Metadata.Id}", ResultType.BulkString));
             redisResults.Add(RedisResult.Create(
                 new RedisResult[]
@@ -356,7 +356,7 @@ public class RedisMemoryStoreTests
             timestamp: null);
         string collection = "random collection";
         string redisKey = $"sk-memory:{collection}:{testRecord.Metadata.Id}";
-        byte[] embedding = MemoryMarshal.Cast<float, byte>(testRecord.Embedding.Vector.ToArray()).ToArray();
+        byte[] embedding = MemoryMarshal.Cast<float, byte>(testRecord.Embedding.AsReadOnlySpan()).ToArray();
         this._mockDatabase
             .Setup<Task>(x => x.HashSetAsync(
                 It.Is<RedisKey>(x => x == redisKey),
