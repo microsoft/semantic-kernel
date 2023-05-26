@@ -129,5 +129,8 @@ public static class Program
 
         Example41_HttpClientUsage.Run();
         Console.WriteLine("== DONE ==");
+
+        Example42_KernelBuilder.Run();
+        Console.WriteLine("== DONE ==");
     }
 }
