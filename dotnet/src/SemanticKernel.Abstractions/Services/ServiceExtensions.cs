@@ -3,6 +3,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Services;
+
 internal static class AIServiceProviderExtensions
 {
     /// <summary>
