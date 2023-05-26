@@ -1,11 +1,10 @@
 package com.microsoft.semantickernel;
 
 import com.azure.core.credential.AzureKeyCredential;
-import com.azure.core.credential.TokenCredential;
 import com.microsoft.openai.AzureOpenAIClient;
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.openai.OpenAIClientBuilder;
-import com.microsoft.semantickernel.util.Settings;
+import com.microsoft.semantickernel.util.ClientSettings;
 
 import java.io.IOException;
 
@@ -17,7 +16,7 @@ public class Config {
         OPEN_AI {
             @Override
             public OpenAIAsyncClient getClient() throws IOException {
-                Settings.OpenAISettings settings = Settings.getOpenAISettingsFromFile(CONF_PROPERTIES);
+                ClientSettings.OpenAISettings settings = ClientSettings.getOpenAISettingsFromFile(CONF_PROPERTIES);
 
                 return new OpenAIClientBuilder()
                         .setApiKey(settings.getKey())
@@ -28,7 +27,7 @@ public class Config {
             @Override
             public OpenAIAsyncClient getClient()
                  throws IOException {
-                    Settings.AzureOpenAISettings settings = Settings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
+                    ClientSettings.AzureOpenAISettings settings = ClientSettings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
 
                     return new AzureOpenAIClient(
                             new com.azure.ai.openai.OpenAIClientBuilder()
