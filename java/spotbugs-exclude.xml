@@ -15,11 +15,41 @@
     <Field name="_storage"/>
     <Bug pattern="EI_EXPOSE_REP2"/>
   </Match>
-
+  
   <Match>
     <Class name="com.microsoft.semantickernel.orchestration.planner.DefaultSequentialPlannerSKFunction"/>
     <Field name="delegate"/>
     <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.Kernel$Builder"/>
+    <Method name="withMemoryStore"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.DefaultKernel"/>
+    <Field name="memoryStore"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.DefaultKernel"/>
+    <Method name="getMemoryStore"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.memory.DefaultSemanticTextMemory$Builder"/>
+    <Method name="setStorage"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection"/>
+    <Method name="getSkillCollection"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
   </Match>
 
 </FindBugsFilter>

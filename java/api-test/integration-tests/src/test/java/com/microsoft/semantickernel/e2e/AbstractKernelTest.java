@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
+import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -33,7 +34,10 @@ public class AbstractKernelTest {
                         .addTextCompletionService(model, kernel -> textCompletion)
                         .build();
 
-        return SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+        return SKBuilders.kernel()
+                .setKernelConfig(kernelConfig)
+                .withMemoryStore(new VolatileMemoryStore())
+                .build();
     }
 
     public static OpenAIAsyncClient getOpenAIClient() throws IOException {
