@@ -402,7 +402,7 @@ public abstract class ClientBase
                     throw new AIException(
                         AIException.ErrorCodes.InvalidRequest,
                         $"The request is not valid, HTTP status: {e.Status}",
-                        e.Message);
+                        e.Message, e);
 
                 case (int)HttpStatusCodeType.Unauthorized:
                 case (int)HttpStatusCodeType.Forbidden:
@@ -412,7 +412,7 @@ public abstract class ClientBase
                     throw new AIException(
                         AIException.ErrorCodes.AccessDenied,
                         $"The request is not authorized, HTTP status: {e.Status}",
-                        e.Message);
+                        e.Message, e);
 
                 case (int)HttpStatusCodeType.RequestTimeout:
                     throw new AIException(
@@ -423,7 +423,7 @@ public abstract class ClientBase
                     throw new AIException(
                         AIException.ErrorCodes.Throttling,
                         $"Too many requests, HTTP status: {e.Status}",
-                        e.Message);
+                        e.Message, e);
 
                 case (int)HttpStatusCodeType.InternalServerError:
                 case (int)HttpStatusCodeType.NotImplemented:
@@ -434,13 +434,13 @@ public abstract class ClientBase
                     throw new AIException(
                         AIException.ErrorCodes.ServiceError,
                         $"The service failed to process the request, HTTP status:{e.Status}",
-                        e.Message);
+                        e.Message, e);
 
                 default:
                     throw new AIException(
                         AIException.ErrorCodes.UnknownError,
                         $"Unexpected HTTP response, status: {e.Status}",
-                        e.Message);
+                        e.Message, e);
             }
         }
         catch (Exception e) when (e is not AIException)

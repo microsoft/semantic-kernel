@@ -10,7 +10,7 @@ const useClasses = makeStyles({
         paddingTop: '0.8rem',
         paddingBottom: '0.8rem',
         paddingRight: '1rem',
-        width: '-webkit-fill-available',
+        width: '93%',
     },
     avatar: {
         flexShrink: '0',

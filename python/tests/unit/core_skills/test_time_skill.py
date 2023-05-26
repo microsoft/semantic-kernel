@@ -5,6 +5,7 @@ import semantic_kernel as sk
 from semantic_kernel.core_skills.time_skill import TimeSkill
 
 test_mock_now = datetime.datetime(2031, 1, 12, 12, 24, 56, tzinfo=datetime.timezone.utc)
+test_mock_today = datetime.date(2031, 1, 12)
 
 
 def test_can_be_instantiated():
@@ -31,6 +32,22 @@ def test_now():
     with mock.patch("datetime.datetime", wraps=datetime.datetime) as dt:
         dt.now.return_value = test_mock_now
         assert skill.now() == "Sunday, January 12, 2031 12:24 PM"
+
+
+def test_days_ago():
+    skill = TimeSkill()
+
+    with mock.patch("datetime.date", wraps=datetime.date) as dt:
+        dt.today.return_value = test_mock_today
+        assert skill.days_ago(1) == "Saturday, 11 January, 2031"
+
+
+def test_date_matching_last_day_name():
+    skill = TimeSkill()
+
+    with mock.patch("datetime.date", wraps=datetime.date) as dt:
+        dt.today.return_value = test_mock_today
+        assert skill.date_matching_last_day_name("Friday") == "Friday, 10 January, 2031"
 
 
 def test_utc_now():

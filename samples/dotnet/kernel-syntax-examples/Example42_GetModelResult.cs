@@ -4,19 +4,20 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example41_GetModelResult
+public static class Example42_GetModelResult
 {
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Inline Function Definition + Result ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
             .Build();
 
@@ -39,19 +40,13 @@ Event: {{$input}}
         // Using InvokeAsync
         var textResult = await excuseFunction.InvokeAsync("I missed the F1 final race");
         Console.WriteLine(textResult);
-        Console.WriteLine(JsonSerializer.Serialize(
-            textResult.LastPromptResults,
-            new JsonSerializerOptions() { WriteIndented = true }
-        ));
+        Console.WriteLine(textResult.LastPromptResults?.AsJson());
         Console.WriteLine();
 
         // Using the Kernel RunAsync
         textResult = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
         Console.WriteLine(textResult);
-        Console.WriteLine(JsonSerializer.Serialize(
-            textResult.GetOpenAILastPromptResult()?.Usage,
-            new JsonSerializerOptions() { WriteIndented = true }
-        ));
+        Console.WriteLine(textResult.GetOpenAILastPromptResult()?.Usage.AsJson());
         Console.WriteLine();
 
         // Using the Text Completion directly
@@ -60,10 +55,40 @@ Event: {{$input}}
 
         IReadOnlyList<ITextCompletionResult> completionResults = await textCompletion.GetCompletionsAsync(prompt, new CompleteRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
         Console.WriteLine(await completionResults[0].GetCompletionAsync());
-        Console.WriteLine(JsonSerializer.Serialize(
-            completionResults[0].GetOpenAILastResultData()?.Usage,
-            new JsonSerializerOptions() { WriteIndented = true }
-        ));
+        Console.WriteLine(completionResults[0].GetOpenAILastResultData()?.Usage.AsJson());
         Console.WriteLine();
+
+        // Getting the error details
+        kernel = new KernelBuilder()
+            .WithOpenAITextCompletionService("text-davinci-003", "Invalid Key")
+            .Build();
+        var errorFunction = kernel.CreateSemanticFunction(FunctionDefinition);
+        var failedContext = await kernel.RunAsync("sorry I forgot your birthday", errorFunction);
+
+        if (failedContext.ErrorOccurred)
+        {
+            Console.WriteLine(OutputExceptionDetail(failedContext.LastException?.InnerException));
+        }
+
+        string OutputExceptionDetail(Exception? exception)
+        {
+            return exception switch
+            {
+                RequestFailedException requestException => new { requestException.Status, requestException.Message }.AsJson(),
+                AIException aiException => new { ErrorCode = aiException.ErrorCode.ToString(), aiException.Message, aiException.Detail }.AsJson(),
+                { } e => new { e.Message }.AsJson(),
+                _ => string.Empty
+            };
+        }
+    }
+}
+
+public static class ObjectExtensions
+{
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
+
+    public static string AsJson(this object obj)
+    {
+        return JsonSerializer.Serialize(obj, s_jsonOptions);
     }
 }
