@@ -140,7 +140,7 @@ public class MarkupSkill
     [SKFunctionName("RunMarkup")]
     public async Task<SKContext> RunMarkupAsync(SKContext context)
     {
-        var docString = context.Variables.Input;
+        string docString = context.Variables.Input;
         var plan = docString.FromMarkup("Run a piece of xml markup", context);
 
         Console.WriteLine("Markup plan:");
