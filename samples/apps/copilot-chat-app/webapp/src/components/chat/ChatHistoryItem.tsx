@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { useMsal } from '@azure/msal-react';
-import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
+import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, DialogTrigger, Persona, Text, Tooltip, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
+import { Info16Regular } from '@fluentui/react-icons';
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
@@ -59,6 +60,12 @@ const useClasses = makeStyles({
     canvas: {
         width: '100%',
         textAlign: 'center',
+    },
+    infoButton: {
+        ...shorthands.padding(0),
+        ...shorthands.margin(0),
+        minWidth: 'auto',
+        marginLeft: 'auto', // align to right
     },
 });
 
@@ -166,7 +173,35 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                 <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
                     <div className={classes.header}>
                         {!isMe && <Text weight="semibold">{fullName}</Text>}
-                        <Text className={mergeClasses(classes.time, classes.alignEnd)}>{time}</Text>
+                        <Text className={classes.time}>{time}</Text>
+                        {isBot &&
+                            <Dialog>
+                                <DialogTrigger disableButtonEnhancement>
+                                    <Tooltip content={'Show prompt'} relationship="label">
+                                        <Button className={classes.infoButton}
+                                        icon={<Info16Regular />}
+                                        appearance="transparent"
+                                        onClick={() => console.log('Edit message')} />
+                                    </Tooltip>
+                                </DialogTrigger>
+                                <DialogSurface>
+                                    <DialogBody>
+                                        <DialogTitle>Prompt</DialogTitle>
+                                        <DialogContent>
+                                            {(message.prompt === undefined || message.prompt === '')
+                                                ? 'Empty'
+                                                : message.prompt.split('\n').map((paragraph) => <p>{paragraph}</p>)
+                                            }
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <DialogTrigger disableButtonEnhancement>
+                                                <Button appearance="secondary">Close</Button>
+                                            </DialogTrigger>
+                                        </DialogActions>
+                                    </DialogBody>
+                                </DialogSurface>
+                            </Dialog>
+                        }
                     </div>
                     {!isPlan && (
                         <div
