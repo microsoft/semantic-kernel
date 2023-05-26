@@ -126,8 +126,8 @@ public class EmbeddingTests
     public void ItTransfersOwnershipWhenRequested()
     {
         // Assert
-        Assert.False(ReferenceEquals(_vector, new Embedding<float>(_vector).Vector));
-        Assert.False(ReferenceEquals(_vector, new Embedding<float>(_vector, transferOwnership: false).Vector));
-        Assert.True(ReferenceEquals(_vector, new Embedding<float>(_vector, transferOwnership: true).Vector));
+        Assert.False(ReferenceEquals(this._vector, new Embedding<float>(this._vector).Vector));
+        Assert.False(ReferenceEquals(this._vector, new Embedding<float>(this._vector, transferOwnership: false).Vector));
+        Assert.True(ReferenceEquals(this._vector, new Embedding<float>(this._vector, transferOwnership: true).Vector));
     }
 }

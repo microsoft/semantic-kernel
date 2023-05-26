@@ -22,20 +22,16 @@ public static class CopilotChatSemanticKernelExtensions
     /// </summary>
     public static IServiceCollection AddCopilotChatPlannerServices(this IServiceCollection services)
     {
-        IOptions<PlannerOptions>? plannerOptions = services.BuildServiceProvider().GetService<IOptions<PlannerOptions>>();
-        if (plannerOptions != null && plannerOptions.Value.Enabled)
-        {
-            services.AddScoped<CopilotChatPlanner>(sp => new CopilotChatPlanner(Kernel.Builder
-                .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
-                .WithConfiguration(
-                    new KernelConfig().AddPlannerBackend(
-                        sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
-                ) // TODO verify planner has AI service configured
-                .Build()));
+        services.AddScoped<CopilotChatPlanner>(sp => new CopilotChatPlanner(Kernel.Builder
+            .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
+            .WithConfiguration(
+                new KernelConfig().AddPlannerBackend(
+                    sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
+            ) // TODO verify planner has AI service configured
+            .Build()));
 
-            // Register Planner skills (AI plugins) here.
-            // TODO: Move planner skill registration from ChatController to here.
-        }
+        // Register Planner skills (AI plugins) here.
+        // TODO: Move planner skill registration from ChatController to here.
 
         return services;
     }
@@ -51,16 +47,10 @@ public static class CopilotChatSemanticKernelExtensions
                 chatMessageRepository: sp.GetRequiredService<ChatMessageRepository>(),
                 chatSessionRepository: sp.GetRequiredService<ChatSessionRepository>(),
                 promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
+                documentImportOptions: sp.GetRequiredService<IOptions<DocumentMemoryOptions>>(),
                 planner: sp.GetRequiredService<CopilotChatPlanner>(),
-                plannerOptions: sp.GetRequiredService<IOptions<PlannerOptions>>().Value,
                 logger: sp.GetRequiredService<ILogger<ChatSkill>>()),
             nameof(ChatSkill));
-
-        // Document memory skill
-        kernel.ImportSkill(new DocumentMemorySkill(
-                sp.GetRequiredService<IOptions<PromptsOptions>>(),
-                sp.GetRequiredService<IOptions<DocumentMemoryOptions>>().Value),
-            nameof(DocumentMemorySkill));
 
         return kernel;
     }

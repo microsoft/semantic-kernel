@@ -8,6 +8,7 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 /// <summary>
 /// Unit tests of <see cref="KernelConfigOpenAIExtensions"/>.
 /// </summary>
+[System.Obsolete("All the methods of this class are deprecated and it will be removed in one of the next SK SDK versions.")]
 public class KernelConfigOpenAIExtensionsTests
 {
     [Fact]
