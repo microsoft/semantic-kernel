@@ -43,7 +43,16 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     }
 
     public ContextVariables appendToVariable(@NonNull String key, @NonNull String content) {
-        return setVariable(key, this.variables.get(key) + content);
+        String existing = this.variables.get(key);
+
+        String newVal;
+        if (existing == null) {
+            newVal = content;
+        } else {
+            newVal = existing + content;
+        }
+
+        return setVariable(key, newVal);
     }
 
     @Override
