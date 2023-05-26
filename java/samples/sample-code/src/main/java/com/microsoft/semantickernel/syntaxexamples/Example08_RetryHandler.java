@@ -13,7 +13,7 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import com.microsoft.semantickernel.util.Settings;
+import com.microsoft.semantickernel.util.ClientSettings;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -30,7 +30,7 @@ public class Example08_RetryHandler {
                 .setMaxRetries(3)
         );
 
-        Settings.AzureOpenAISettings settings = Settings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
+        ClientSettings.AzureOpenAISettings settings = ClientSettings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
         AzureOpenAIClient client = new AzureOpenAIClient(
                 new OpenAIClientBuilder()
                         .retryOptions(retryOptions)

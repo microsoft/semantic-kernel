@@ -9,8 +9,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class Settings {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Settings.class);
+public class ClientSettings {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientSettings.class);
 
     public static class OpenAISettings {
         private final String key;
@@ -82,8 +82,8 @@ public class Settings {
      */
     public static OpenAISettings getOpenAISettingsFromEnv() {
         return new OpenAISettings(
-                Settings.getSettingsValueFromEnv(Property.OPEN_AI_KEY),
-                Settings.getSettingsValueFromEnv(Property.OPEN_AI_ORGANIZATION_ID));
+                ClientSettings.getSettingsValueFromEnv(Property.OPEN_AI_KEY),
+                ClientSettings.getSettingsValueFromEnv(Property.OPEN_AI_ORGANIZATION_ID));
     }
 
     /**
@@ -94,9 +94,9 @@ public class Settings {
      */
     public static AzureOpenAISettings getAzureOpenAISettingsFromEnv() {
         return new AzureOpenAISettings(
-                Settings.getSettingsValueFromEnv(Property.AZURE_OPEN_AI_KEY),
-                Settings.getSettingsValueFromEnv(Property.AZURE_OPEN_AI_ENDPOINT),
-                Settings.getSettingsValueFromEnv(Property.AZURE_OPEN_AI_DEPLOYMENT_NAME));
+                ClientSettings.getSettingsValueFromEnv(Property.AZURE_OPEN_AI_KEY),
+                ClientSettings.getSettingsValueFromEnv(Property.AZURE_OPEN_AI_ENDPOINT),
+                ClientSettings.getSettingsValueFromEnv(Property.AZURE_OPEN_AI_DEPLOYMENT_NAME));
     }
 
     /**
@@ -116,10 +116,12 @@ public class Settings {
      * @param clientSettingsId ID of the client settings in the properties file schema
      * @return OpenAISettings
      */
-    public static OpenAISettings getOpenAISettingsFromFile(String path, String clientSettingsId) throws IOException {
+    public static OpenAISettings getOpenAISettingsFromFile(String path, String clientSettingsId)
+            throws IOException {
         return new OpenAISettings(
-                Settings.getSettingsValueFromFile(path, Property.OPEN_AI_KEY, clientSettingsId),
-                Settings.getSettingsValueFromFile(path, Property.OPEN_AI_ORGANIZATION_ID, clientSettingsId));
+                ClientSettings.getSettingsValueFromFile(path, Property.OPEN_AI_KEY, clientSettingsId),
+                ClientSettings.getSettingsValueFromFile(
+                        path, Property.OPEN_AI_ORGANIZATION_ID, clientSettingsId));
     }
 
     /**
@@ -142,12 +144,14 @@ public class Settings {
      * @param clientSettingsId ID of the client settings in the properties file schema
      * @return AzureOpenAISettings
      */
-    public static AzureOpenAISettings getAzureOpenAISettingsFromFile(String path, String clientSettingsId)
-            throws IOException {
+    public static AzureOpenAISettings getAzureOpenAISettingsFromFile(
+            String path, String clientSettingsId) throws IOException {
         return new AzureOpenAISettings(
-                Settings.getSettingsValueFromFile(path, Property.AZURE_OPEN_AI_KEY, clientSettingsId),
-                Settings.getSettingsValueFromFile(path, Property.AZURE_OPEN_AI_ENDPOINT, clientSettingsId),
-                Settings.getSettingsValueFromFile(
+                ClientSettings.getSettingsValueFromFile(
+                        path, Property.AZURE_OPEN_AI_KEY, clientSettingsId),
+                ClientSettings.getSettingsValueFromFile(
+                        path, Property.AZURE_OPEN_AI_ENDPOINT, clientSettingsId),
+                ClientSettings.getSettingsValueFromFile(
                         path, Property.AZURE_OPEN_AI_DEPLOYMENT_NAME, clientSettingsId));
     }
 
@@ -193,7 +197,9 @@ public class Settings {
             return props.getProperty(property.getPropertyNameForClientId(clientSettingsId));
         } catch (IOException e) {
             LOGGER.error(
-                    "Unable to load config value " + property.getPropertyNameForClientId(clientSettingsId) + " from properties file",
+                    "Unable to load config value "
+                            + property.getPropertyNameForClientId(clientSettingsId)
+                            + " from properties file",
                     e);
             throw new IOException(settingsFile + " not configured properly");
         }
