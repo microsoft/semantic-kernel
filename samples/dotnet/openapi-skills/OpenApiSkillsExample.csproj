@@ -2,6 +2,7 @@
   <PropertyGroup>
     <RootNamespace></RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
     <OutputType>Exe</OutputType>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
