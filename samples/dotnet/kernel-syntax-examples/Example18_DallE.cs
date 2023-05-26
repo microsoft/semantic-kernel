@@ -17,11 +17,11 @@ public static class Example18_DallE
 {
     public static async Task RunAsync()
     {
-        await OpenAI_DallE();
-        await Azure_OpenAI_DallE();
+        await OpenAIDallEAsync();
+        await AzureOpenAIDallEAsync();
     }
 
-    public static async Task OpenAI_DallE()
+    public static async Task OpenAIDallEAsync()
     {
         Console.WriteLine("======== OpenAI Dall-E 2 Image Generation ========");
 
@@ -90,7 +90,7 @@ public static class Example18_DallE
         */
     }
 
-    public static async Task Azure_OpenAI_DallE()
+    public static async Task AzureOpenAIDallEAsync()
     {
         Console.WriteLine("========Azure OpenAI Dall-E 2 Image Generation ========");
 
