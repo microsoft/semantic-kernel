@@ -88,13 +88,13 @@ export const ChatList: FC = () => {
     const displayedConversations = isFiltering ? filteredConversations : conversations;
 
     const onFilterClick = () => {
-        setIsFiltering(!isFiltering);
+        setIsFiltering(true);
     };
 
     const onFilterCancel = () => {
         chat.clearConversationsFilter();
         setSearchString('');
-        setIsFiltering(!isFiltering);
+        setIsFiltering(false);
     };
 
     const onSearch = (ev: any, data: InputOnChangeData) => {
