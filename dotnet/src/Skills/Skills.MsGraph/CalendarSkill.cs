@@ -89,7 +89,7 @@ public class CalendarSkill
     [SKFunctionContextParameter(Name = Parameters.Attendees, Description = "Event attendees, separated by ',' or ';'.")]
     public async Task AddEventAsync(string subject, SKContext context)
     {
-        ContextVariables memory = context.Variables;
+        ContextVariables variables = context.Variables;
 
         if (string.IsNullOrWhiteSpace(subject))
         {
@@ -97,13 +97,13 @@ public class CalendarSkill
             return;
         }
 
-        if (!memory.Get(Parameters.Start, out string start))
+        if (!variables.Get(Parameters.Start, out string start))
         {
             context.Fail($"Missing variable {Parameters.Start}.");
             return;
         }
 
-        if (!memory.Get(Parameters.End, out string end))
+        if (!variables.Get(Parameters.End, out string end))
         {
             context.Fail($"Missing variable {Parameters.End}.");
             return;
@@ -111,22 +111,22 @@ public class CalendarSkill
 
         CalendarEvent calendarEvent = new()
         {
-            Subject = memory.Input,
+            Subject = variables.Input,
             Start = DateTimeOffset.Parse(start, CultureInfo.InvariantCulture.DateTimeFormat),
             End = DateTimeOffset.Parse(end, CultureInfo.InvariantCulture.DateTimeFormat)
         };
 
-        if (memory.Get(Parameters.Location, out string location))
+        if (variables.Get(Parameters.Location, out string location))
         {
             calendarEvent.Location = location;
         }
 
-        if (memory.Get(Parameters.Content, out string content))
+        if (variables.Get(Parameters.Content, out string content))
         {
             calendarEvent.Content = content;
         }
 
-        if (memory.Get(Parameters.Attendees, out string attendees))
+        if (variables.Get(Parameters.Attendees, out string attendees))
         {
             calendarEvent.Attendees = attendees.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
         }
