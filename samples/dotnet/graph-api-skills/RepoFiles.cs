@@ -3,7 +3,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace RepoUtils;
+namespace MsGraphSkillsExample;
 
 public static class RepoFiles
 {
