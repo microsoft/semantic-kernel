@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -220,12 +221,16 @@ public class ChatSkill
             return context;
         }
 
+        // Retrieve the prompt used to generate the response
+        // and return it to the caller via the context variables.
+        var prompt = chatContext.Variables.ContainsKey("prompt")
+            ? chatContext.Variables["prompt"]
+            : string.Empty;
+        context.Variables.Set("prompt", prompt);
+
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            var prompt = chatContext.Variables.ContainsKey("prompt")
-                ? chatContext.Variables["prompt"]
-                : string.Empty;
             await this.SaveNewResponseAsync(response, prompt, chatId);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
@@ -298,7 +303,8 @@ public class ChatSkill
         }
 
         // 6. Fill in the chat history if there is any token budget left
-        var chatContextText = string.Join("\n", new string[] { chatMemories, documentMemories, planResult });
+        var chatContextComponents = new List<string>() { chatMemories, documentMemories, planResult };
+        var chatContextText = string.Join("\n\n", chatContextComponents.Where(c => !string.IsNullOrEmpty(c)));
         var chatContextTextTokenCount = remainingToken - Utilities.TokenCount(chatContextText);
         if (chatContextTextTokenCount > 0)
         {
@@ -328,6 +334,9 @@ public class ChatSkill
             context: chatContext,
             settings: this.CreateChatResponseCompletionSettings()
         );
+
+        // Allow the caller to view the prompt used to generate the response
+        chatContext.Variables.Set("prompt", renderedPrompt);
 
         if (chatContext.ErrorOccurred)
         {
