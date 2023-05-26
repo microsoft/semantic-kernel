@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -222,7 +223,10 @@ public class ChatSkill
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            await this.SaveNewResponseAsync(response, chatId);
+            var prompt = chatContext.Variables.ContainsKey("prompt")
+                ? chatContext.Variables["prompt"]
+                : string.Empty;
+            await this.SaveNewResponseAsync(response, prompt, chatId);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -310,8 +314,13 @@ public class ChatSkill
         chatContext.Variables.Set("UserIntent", userIntent);
         chatContext.Variables.Set("ChatContext", chatContextText);
 
-        var completionFunction = this._kernel.CreateSemanticFunction(
+        var promptRenderer = new PromptTemplateEngine();
+        var renderedPrompt = await promptRenderer.RenderAsync(
             this._promptOptions.SystemChatPrompt,
+            chatContext);
+
+        var completionFunction = this._kernel.CreateSemanticFunction(
+            renderedPrompt,
             skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
@@ -497,13 +506,14 @@ public class ChatSkill
     /// Save a new response to the chat history.
     /// </summary>
     /// <param name="response">Response from the chat.</param>
+    /// <param name="prompt">Prompt used to generate the response.</param>
     /// <param name="chatId">The chat ID</param>
-    private async Task SaveNewResponseAsync(string response, string chatId)
+    private async Task SaveNewResponseAsync(string response, string prompt, string chatId)
     {
         // Make sure the chat exists.
         await this._chatSessionRepository.FindByIdAsync(chatId);
 
-        var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response);
+        var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response, prompt);
         await this._chatMessageRepository.CreateAsync(chatMessage);
     }
 
