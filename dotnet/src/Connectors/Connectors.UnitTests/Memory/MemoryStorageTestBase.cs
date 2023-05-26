@@ -21,28 +21,30 @@ public abstract class MemoryStorageTestBase
     }
 
     /// <summary>
-    /// Create <see cref="IMemoryStore"/>IMemoryStore instance for unit tests
+    /// Create <see cref="IMemoryStore"/> instance for unit tests
     /// </summary>
     /// <remarks>
-    /// you can override <see cref="WithStorageAsync"/> in case you need extra init/clean up control
+    /// you can override <see cref="CloseStoreAsync"/> in case you need extra clean up control
     /// </remarks>
     /// <returns><see cref="IMemoryStore"/> The instance for tests</returns>
     protected abstract Task<IMemoryStore> CreateStoreAsync();
+
     /// <summary>
-    /// Get IMemoryStore instance and invoke test cases with it.
-    /// <para>Override it to add your own init/clean up code.</para>
+    /// Overide to add cleanup code for your <see cref="IMemoryStore"/> instance after unit test
     /// </summary>
-    /// <example>
-    /// This is the default implementation of <see cref="CreateStoreAsync"/>
-    /// <code>
-    /// await factAsync(await this.CreateStoreAsync());
-    /// </code>
-    /// </example>
-    /// <param name="factAsync">Unit test case</param>
+    /// <param name="memoryStore"></param>
     /// <returns></returns>
+    protected virtual Task CloseStoreAsync(IMemoryStore memoryStore)
+    {
+        return Task.CompletedTask;
+    }
+
+
     protected virtual async Task WithStorageAsync(Func<IMemoryStore, Task> factAsync)
     {
-        await factAsync(await this.CreateStoreAsync());
+        var store = await this.CreateStoreAsync();
+        await factAsync(store);
+        await CloseStoreAsync(store);
     }
 
     [Fact]
