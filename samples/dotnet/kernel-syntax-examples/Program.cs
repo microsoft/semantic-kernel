@@ -131,7 +131,10 @@ public static class Program
         Example41_HttpClientUsage.Run();
         Console.WriteLine("== DONE ==");
 
-        await Example42_Redis.RunAsync();
+        Example42_KernelBuilder.Run();
+        Console.WriteLine("== DONE ==");
+
+        await Example43_Redis.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }

@@ -9,7 +9,7 @@ using RepoUtils;
 using StackExchange.Redis;
 
 // ReSharper disable once InconsistentNaming
-public static class Example42_Redis
+public static class Example43_Redis
 {
     private const string MemoryCollectionName = "redis-test";
 
