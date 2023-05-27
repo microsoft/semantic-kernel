@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Security;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Security;
 /// A string wrapper that carries trust information.
 /// All field are readonly.
 /// </summary>
+[DebuggerDisplay("Value = {Value}, IsTrusted = {IsTrusted}")]
 public class TrustAwareString : IEquatable<TrustAwareString>
 {
     /// <summary>
