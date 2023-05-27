@@ -1,4 +1,12 @@
 <Project>
+  <!--
+    NOTE: Please DO NOT ADD properties that are requrired for the sample projects.
+
+    Sample projects should be self-contained, such that they can be copied out of the repo and run in isolation.
+    Packages specified here are analyzers and are intented to maintain code consistency in the Semantic Kernel repo.
+    Any project-specific dependencies should be specified in the project's own .csproj file.
+  -->
+
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" >
       <PrivateAssets>all</PrivateAssets>

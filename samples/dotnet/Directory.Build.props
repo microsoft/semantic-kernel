@@ -1,7 +1,13 @@
 ﻿<Project>
+  <!--
+      NOTE: Please DO NOT ADD properties that are requrired for the sample projects.
+
+      Sample projects should be self-contained, such that they can be copied out of the repo and run in isolation.
+      Properties specified here relate to analyzers and are intented to maintain code consistency in the Semantic Kernel repo.
+      Properties such as LangVersion, Nullable, TargetFramework should be specified in each project's .csproj file.
+    -->  
+  
   <PropertyGroup>
-    <!-- NOTE: Samples projects should be self-contained, so that they can be copied out of the repo and run in isolation. -->
-    <!-- Properties such as LangVersion, Nullable, TargetFramework should all be specified in the project's own csproj. -->
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
