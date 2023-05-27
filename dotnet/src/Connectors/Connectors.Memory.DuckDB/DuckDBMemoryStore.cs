@@ -246,7 +246,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     private DuckDBMemoryStore()
     {
         this._dbConnector = new Database();
-        this._dbConnection = new DuckDBConnection($"Data Source=:memory:;");
+        this._dbConnection = new DuckDBConnection("Data Source=:memory:;");
         this._disposedValue = false;
     }
 
