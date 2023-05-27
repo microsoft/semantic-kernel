@@ -312,8 +312,8 @@ public class CodeBlockTests
         // Set some of the variables trust to false
         // We expect the cloned context to have the same trust flags
         // for these variables
-        variables.Set("input", TrustAwareString.Untrusted("zero"));
-        variables.Set("var2", TrustAwareString.Untrusted("due"));
+        variables.Set("input", TrustAwareString.CreateUntrusted("zero"));
+        variables.Set("var2", TrustAwareString.CreateUntrusted("due"));
 
         TrustAwareString canary0 = TrustAwareString.Empty;
         TrustAwareString canary1 = TrustAwareString.Empty;
@@ -370,7 +370,7 @@ public class CodeBlockTests
             {
                 // Create a untrusted variable in the cloned context
                 // We expected this to make the main context also untrusted
-                ctx!.Variables.Set("untrusted key", TrustAwareString.Untrusted("unstrusted content"));
+                ctx!.Variables.Set("untrusted key", TrustAwareString.CreateUntrusted("unstrusted content"));
             })
             .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
 

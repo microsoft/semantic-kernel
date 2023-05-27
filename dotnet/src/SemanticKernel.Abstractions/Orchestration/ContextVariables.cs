@@ -38,7 +38,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// By default the content will be trusted.
     /// </summary>
     /// <param name="content">Optional value for the main variable of the context.</param>
-    public ContextVariables(string? content) : this(TrustAwareString.Trusted(content)) { }
+    public ContextVariables(string? content) : this(TrustAwareString.CreateTrusted(content)) { }
 
     /// <summary>
     /// Updates the main input text with the new value after a function is complete.
@@ -62,7 +62,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// <returns>The current instance</returns>
     public ContextVariables Update(string? content)
     {
-        return this.Update(TrustAwareString.Trusted(content));
+        return this.Update(TrustAwareString.CreateTrusted(content));
     }
 
     /// <summary>
@@ -132,7 +132,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// TODO: support for more complex data types, and plan for rendering these values into prompt templates.
     public void Set(string name, string value)
     {
-        this.Set(name, TrustAwareString.Trusted(value));
+        this.Set(name, TrustAwareString.CreateTrusted(value));
     }
 
     /// <summary>
@@ -183,7 +183,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
             // TODO: we could plan to replace string usages in the kernel
             // with TrustAwareString, so here "value" could directly be a trust aware string
             // including trust information
-            this._variables[name] = TrustAwareString.Trusted(value);
+            this._variables[name] = TrustAwareString.CreateTrusted(value);
         }
     }
 
@@ -216,7 +216,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
         foreach (var item in this._variables.ToList())
         {
             // Note: we don't use an internal setter for better multi-threading
-            this._variables[item.Key] = TrustAwareString.Untrusted(item.Value.Value);
+            this._variables[item.Key] = TrustAwareString.CreateUntrusted(item.Value.Value);
         }
     }
 
@@ -225,7 +225,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// </summary>
     public void UntrustInput()
     {
-        this.Update(TrustAwareString.Untrusted(this.Input.Value));
+        this.Update(TrustAwareString.CreateUntrusted(this.Input.Value));
     }
 
     /// <summary>
