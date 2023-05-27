@@ -1,16 +1,15 @@
 # Kernel Feature Matrix by Language
 
 **Legend**
-✅ - Feature implemented
 
-🔄 - Feature partially implemented (see associated Note column)
-
-❌ - Feature not implemented
+    ✅ - Feature implemented
+    🔄 - Feature partially implemented (see associated Note column)
+    ❌ - Feature not implemented
 
 ## AI Services
 
-| | C# | Python | Java | Notes |
-|---|---|---|---|---|
+|                                   |  C#  | Python | Java | Notes |
+|-----------------------------------|:----:|:------:|:----:|-------|
 | TextGeneration                    | ✅ | ✅ | ✅ | Example: Text-Davinci-003 |
 | TextEmbeddings                    | ✅ | ✅ | ✅ | Example: Text-Embeddings-Ada-002 |
 | ChatCompletion                    | ✅ | ✅ | ❌ | Example: GPT4, Chat-GPT |
@@ -18,8 +17,8 @@
 
 ## AI Service Endpoints
 
-| | C# | Python | Java| Notes |
-|---|---|---|---|---|
+|                                   |  C#  | Python | Java | Notes |
+|-----------------------------------|:----:|:------:|:----:|-------|
 | OpenAI                            | ✅ | ✅ | ✅ | |
 | AzureOpenAI                       | ✅ | ✅ | ✅ | |
 | Hugging Face Inference API        | 🔄 | ❌ | ❌ | Coming soon to Python, not all scenarios are covered for .NET |
@@ -28,16 +27,16 @@
 
 ## Tokenizers
 
-| | C# | Python | Java | Notes |
-|---|---|---|---|---|
+|                                   |  C#  | Python | Java | Notes |
+|-----------------------------------|:----:|:------:|:----:|-------|
 | GPT2                              | ✅ | ✅ | ✅ | |
 | GPT3                              | ✅ | ❌ | ❌ | |
-| tiktoken                          | 🔄 | ❌ | Coming soon to Python and C#. Can be manually added to Python via `pip install tiktoken` |
+| tiktoken                          | 🔄 | ❌ | ❌ | Coming soon to Python and C#. Can be manually added to Python via `pip install tiktoken` |
 
 ## Core Skills
 
-| | C# | Python | Java | Notes |
-|---|---|---|---|---|
+|                                   |  C#  | Python | Java | Notes |
+|-----------------------------------|:----:|:------:|:----:|-------|
 | TextMemorySkill                   | ✅ | ✅ | 🔄 | |
 | ConversationSummarySkill          | ✅ | ✅ | ❌ | |
 | FileIOSkill                       | ✅ | ✅ | ❌ | |
@@ -49,31 +48,31 @@
 
 ## Planning
 
-| | C# | Python | Java | Notes |
-|---|---|---|---|---|
-| Plan              | ✅ | ✅ | ❌ | Need to port the Plan object model |
-| BasicPlanner      | ❌ | ✅ | ❌ | |
-| ActionPlanner     | ✅ | ❌ | ❌ | |
-| SequentialPlanner | ✅ | ❌ | ❌ | |
+|                                   |  C#  | Python | Java | Notes |
+|-----------------------------------|:----:|:------:|:----:|-------|
+| Plan                              | ✅ | ✅ | ❌ | Need to port the Plan object model |
+| BasicPlanner                      | ❌ | ✅ | ❌ | |
+| ActionPlanner                     | ✅ | ❌ | ❌ | |
+| SequentialPlanner                 | ✅ | ❌ | ❌ | |
 
 ## Connectors and Skill Libraries
 
-| | C# | Python | Java | Notes |
-|---|---|---|---|---|
-| Qdrant (Memory)                   | ✅ | ❌ | ❌ | Vector optimized |
+|                                   |  C#  | Python | Java | Notes |
+|-----------------------------------|:----:|:------:|:----:|-------|
+| Qdrant (Memory)                   | ✅ | ❌ | ❌ | |
 | ChromaDb (Memory)                 | ❌ | 🔄 | ❌ | |
-| Milvus (Memory)                   | ❌ | ❌ | ❌ | Vector optimized |
-| Pinecone (Memory)                 | ✅ | ❌ | ❌ | Vector optimized |
-| Weaviate (Memory)                 | ❌ | ❌ | ❌ | Vector optimized |
+| Milvus (Memory)                   | ❌ | ❌ | ❌ | |
+| Pinecone (Memory)                 | ✅ | ❌ | ❌ | |
+| Weaviate (Memory)                 | ❌ | ❌ | ❌ | |
 | CosmosDB (Memory)                 | ✅ | ❌ | ❌ | CosmosDB is not optimized for vector storage |
 | Sqlite (Memory)                   | ✅ | ❌ | ❌ | Sqlite is not optimized for vector storage |
 | Postgres (Memory)                 | ✅ | ❌ | ❌ | Vector optimized (required the [pgvector](https://github.com/pgvector/pgvector) extension) |
-| Azure Cognitive Search            | ❌ | ❌ | ❌ | |
+| Azure Cognitive Search            | ✅ | 🔄 | ❌ | |
 | MsGraph                           | ✅ | ❌ | ❌ | Contains connectors for OneDrive, Outlook, ToDos, and Organization Hierarchies |
 | Document and Data Loading Skills (i.e. pdf, csv, docx, pptx)  | ✅ | ❌ | ❌ | Currently only supports Word documents |
 | OpenAPI                           | ✅ | ❌ | ❌ | |
 | Web Search Skills (i.e. Bing, Google) | ✅ | ❌ | ❌ | |
-| Text Chunkers                     | 🔄 | 🔄 | ❌ | Several currently exist, but more can be done |
+| Text Chunkers                     | 🔄 | 🔄 | ❌ | |
 
 ## Design Choices
 
