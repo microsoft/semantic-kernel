@@ -1,23 +1,10 @@
 ﻿<Project>
   <PropertyGroup>
-    <!-- Default properties inherited by all projects. Projects can override. -->
+    <!-- NOTE: Samples projects should be self-contained, so that they can be copied out of the repo and run in isolation. -->
+    <!-- Properties such as LangVersion, Nullable, TargetFramework should all be specified in the project's own csproj. -->
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <AnalysisLevel>latest</AnalysisLevel>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>10</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <IsPackable>disable</IsPackable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>portable</DebugType>
   </PropertyGroup>
 </Project>
