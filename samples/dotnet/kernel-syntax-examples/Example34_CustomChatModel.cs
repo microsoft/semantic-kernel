@@ -23,7 +23,7 @@ public sealed class MyChatCompletionService : IChatCompletion
 {
     private const string OutputAssistantResult = "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)";
 
-    public ChatHistory CreateNewChat(string instructions = "")
+    public ChatHistory CreateNewChat(string? instructions = null)
     {
         var chatHistory = new ChatHistory();
 
