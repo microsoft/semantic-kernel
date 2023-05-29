@@ -15,8 +15,8 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
-using SKChatMessage = Microsoft.SemanticKernel.AI.ChatCompletion.ChatMessage;
 using ChatMessage = Azure.AI.OpenAI.ChatMessage;
+using SKChatMessage = Microsoft.SemanticKernel.AI.ChatCompletion.ChatMessage;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
