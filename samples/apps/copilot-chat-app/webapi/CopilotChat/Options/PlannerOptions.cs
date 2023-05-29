@@ -15,5 +15,6 @@ public class PlannerOptions
     /// Define if the planner must be Sequential or not.
     /// </summary>
     [JsonProperty("Type")]
-    public string PlannerType { get; set; } = string.Empty;
+    [Required]
+    public string Type { get; set; } = string.Empty;
 }
