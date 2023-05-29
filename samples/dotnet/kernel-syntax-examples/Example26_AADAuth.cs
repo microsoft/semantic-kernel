@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
 
 /**
@@ -50,7 +49,7 @@ public static class Example26_AADAuth
             .Build();
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat();
+        var chatHistory = chatGPT.CreateNewChat();
 
         // User message
         chatHistory.AddUserMessage("Tell me a joke about hourglasses");

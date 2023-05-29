@@ -42,7 +42,7 @@ public static class Example40_MultiChatCompletion
 
     private static async Task RunChatAsync(IChatCompletion chatCompletion)
     {
-        var chatHistory = (OpenAIChatHistory)chatCompletion.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = chatCompletion.CreateNewChat("You are a librarian, expert about books");
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");

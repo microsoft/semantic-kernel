@@ -58,7 +58,7 @@ public static class Example41_MultiStreamingChatCompletion
 
         var consoleLinesPerResult = 10;
 
-        var chatHistory = (OpenAIChatHistory)chatCompletion.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = chatCompletion.CreateNewChat("You are a librarian, expert about books");
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for 5 random title names for sci-fi books");
