@@ -15,8 +15,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
-using ChatMessage = Azure.AI.OpenAI.ChatMessage;
-using SKChatMessage = Microsoft.SemanticKernel.AI.ChatCompletion.ChatMessage;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -158,7 +156,7 @@ public abstract class ClientBase
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Streaming of generated chat message in string format</returns>
     private protected async IAsyncEnumerable<IChatStreamingResult> InternalGenerateStreamingChatMessageAsync(
-        IEnumerable<SKChatMessage> chat,
+        IEnumerable<ChatMessageBase> chat,
         ChatRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -272,7 +270,7 @@ public abstract class ClientBase
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, IEnumerable<SKChatMessage> chatHistory)
+    private static ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt < 1 ||
             requestSettings.ResultsPerPrompt > 128)
@@ -299,7 +297,7 @@ public abstract class ClientBase
             }
         }
 
-        foreach (SKChatMessage message in chatHistory)
+        foreach (var message in chatHistory)
         {
             ValidateChatAuthors(message.Role, out var validRole);
 

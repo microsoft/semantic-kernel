@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
-public class ChatHistory : List<ChatMessage>
+public class ChatHistory : List<ChatMessageBase>
 {
     [Obsolete("This enumeration is deprecated, use AuthorRole struct instead")]
     public enum AuthorRoles
@@ -18,9 +18,9 @@ public class ChatHistory : List<ChatMessage>
         Assistant = 2,
     }
 
-    private sealed class PrivateChatMessage : ChatMessage
+    private sealed class ChatMessage : ChatMessageBase
     {
-        public PrivateChatMessage(AuthorRole authorRole, string content) : base(authorRole, content)
+        public ChatMessage(AuthorRole authorRole, string content) : base(authorRole, content)
         {
         }
     }
@@ -29,7 +29,7 @@ public class ChatHistory : List<ChatMessage>
     /// Chat message representation
     /// </summary>
     [Obsolete("This class is deprecated, using instances of this class will not be supported")]
-    public class Message : ChatMessage
+    public class Message : ChatMessageBase
     {
         /// <summary>
         /// Role of the message author, e.g. user/assistant/system
@@ -50,7 +50,7 @@ public class ChatHistory : List<ChatMessage>
     /// <summary>
     /// List of messages in the chat
     /// </summary>
-    public List<ChatMessage> Messages => this;
+    public List<ChatMessageBase> Messages => this;
 
     /// <summary>
     /// Add a message to the chat history
@@ -70,7 +70,7 @@ public class ChatHistory : List<ChatMessage>
     /// <param name="content">Message content</param>
     public void AddMessage(AuthorRole authorRole, string content)
     {
-        this.Add(new PrivateChatMessage(authorRole, content));
+        this.Add(new ChatMessage(authorRole, content));
     }
 
     /// <summary>

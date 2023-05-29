@@ -52,7 +52,7 @@ public sealed class MyChatCompletionService : IChatCompletion
 
 public class MyChatStreamingResult : IChatStreamingResult
 {
-    private readonly ChatMessage _message;
+    private readonly ChatMessageBase _message;
     private readonly MyRoles _role;
 
     public MyChatStreamingResult(MyRoles role, string content)
@@ -61,12 +61,12 @@ public class MyChatStreamingResult : IChatStreamingResult
         this._message = new MyChatMessage(role, content);
     }
 
-    public Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(this._message);
     }
 
-    public async IAsyncEnumerable<ChatMessage> GetChatMessageStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageBase> GetChatMessageStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var streamedOutput = this._message.Content.Split(' ');
         foreach (string word in streamedOutput)
@@ -77,7 +77,7 @@ public class MyChatStreamingResult : IChatStreamingResult
     }
 }
 
-public class MyChatMessage : ChatMessage
+public class MyChatMessage : ChatMessageBase
 {
     public MyChatMessage(MyRoles role, string content) : base(new AuthorRole(role.ToString()), content)
     {

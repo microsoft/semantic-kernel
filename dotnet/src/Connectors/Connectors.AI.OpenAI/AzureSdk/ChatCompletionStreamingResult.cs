@@ -9,7 +9,7 @@ using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using SKChatMessage = Microsoft.SemanticKernel.AI.ChatCompletion.ChatMessage;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -19,11 +19,12 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletio
 
     public ChatStreamingResult(StreamingChatChoice choice)
     {
+        Verify.NotNull(choice);
         this._choice = choice;
     }
 
     /// <inheritdoc/>
-    public async Task<SemanticKernel.AI.ChatCompletion.ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
         var chatMessage = await this._choice.GetMessageStreaming(cancellationToken)
                                                 .LastOrDefaultAsync(cancellationToken)
@@ -31,18 +32,18 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletio
 
         if (chatMessage is null)
         {
-            throw new AIException(AIException.ErrorCodes.UnknownError);
+            throw new AIException(AIException.ErrorCodes.UnknownError, "Unable to get chat message from stream");
         }
 
-        return new OpenAIChatMessage(chatMessage);
+        return new SKChatMessage(chatMessage);
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<SKChatMessage> GetChatMessageStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageBase> GetChatMessageStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
         {
-            yield return new OpenAIChatMessage(message);
+            yield return new SKChatMessage(message);
         }
     }
 

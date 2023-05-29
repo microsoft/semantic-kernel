@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// <summary>
 /// Chat message abstraction
 /// </summary>
-public abstract class ChatMessage
+public abstract class ChatMessageBase
 {
     /// <summary>
     /// Role of the author of the message
@@ -18,11 +18,11 @@ public abstract class ChatMessage
     public string Content { get; set; }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="ChatMessage"/> class
+    /// Creates a new instance of the <see cref="ChatMessageBase"/> class
     /// </summary>
     /// <param name="Role">Role of the author of the message</param>
     /// <param name="Content">Content of the message</param>
-    protected ChatMessage(AuthorRole Role, string Content)
+    protected ChatMessageBase(AuthorRole Role, string Content)
     {
         this.Role = Role;
         this.Content = Content;
