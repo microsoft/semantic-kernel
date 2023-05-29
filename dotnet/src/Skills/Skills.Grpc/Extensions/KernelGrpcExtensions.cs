@@ -145,7 +145,7 @@ public static class KernelGrpcExtensions
                 foreach (var parameter in operationParameters)
                 {
                     //A try to resolve argument parameter name.
-                    if (context.Variables.Get(parameter.Name, out var value))
+                    if (context.Variables.Get(parameter.Name, out string value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
@@ -178,6 +178,7 @@ public static class KernelGrpcExtensions
             description: operation.Name,
             skillName: skillName,
             functionName: operation.Name,
+            isSensitive: false,
             log: kernel.Log);
 
         return kernel.RegisterCustomFunction(skillName, function);

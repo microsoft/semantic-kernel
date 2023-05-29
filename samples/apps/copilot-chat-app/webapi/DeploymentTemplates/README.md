@@ -1,15 +1,19 @@
 # Deploying Semantic Kernel to Azure in a web app service
 
+This document details how to deploy Semantic Kernel as a backend service that can be used by other applications or by a frontend such as the one for [Copilot Chat](../../webapp/README.md).
+
 ## Things to know
 - Access to Azure OpenAI is currently limited as we navigate high demand, upcoming product improvements, and Microsoft’s commitment to responsible AI. 
   For more details and information on applying for access, go [here](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/overview?ocid=AID3051475#how-do-i-get-access-to-azure-openai).
-  For region availability of Azure OpenAI, see the [availability map](https://azure.microsoft.com/en-us/explore/global-infrastructure/products-by-region/?products=cognitive-services).
+  For regional availability of Azure OpenAI, see the [availability map](https://azure.microsoft.com/en-us/explore/global-infrastructure/products-by-region/?products=cognitive-services).
   
-- Due to the limited availability of Azure OpenAI, consider using the same Azure OpenAI instance for multiple deployments of the Semantic Kernel web api and CopilotChat:
+- Due to the limited availability of Azure OpenAI, consider using the same Azure OpenAI instance for multiple deployments of the Semantic Kernel web API and CopilotChat:
   - [Deploying with an existing Azure OpenAI account](#deploying-with-an-existing-azure-openai-account)
   - [Deploying with an existing OpenAI account](#deploying-with-an-existing-openai-account)
 
 - F1 and D1 SKUs for the App Service Plans are not currently supported for this deployment.
+
+- Using the templates and scripts below, only deploy one instance of Semantic Kernel to a given resource group. Also do not change the name of your deployment or its resources once deployed. The reason behind this restriction is that once virtual networks, subnets and applications are tied together, they need to be disentangled in the proper order before being deleted or modified, which is not something bicep or ARM templates can do. Consequently, deploying an alternate deployment within a resource group that already contains one will lead to resource conflicts.
 
 
 # Deploying with a new Azure OpenAI instance
@@ -96,8 +100,11 @@ If the service itself if functioning properly but you keep getting errors (perha
 check that you have correctly entered the values for the following settings:
 - AIService:AzureOpenAI
 - AIService:Endpoint
+- AIService:Models:Completion
+- AIService:Models:Embedding
+- AIService:Models:Planner
 
-Both Completion:Endpoint and Embedding:Endpoint are ignored for OpenAI instances from [openai.com](https://openai.com) but MUST be properly populated when using Azure OpenAI instances.
+AIService:Endpoint is ignored for OpenAI instances from [openai.com](https://openai.com) but MUST be properly populated when using Azure OpenAI instances.
 
 # Authorization
 All of the server's endpoints other than the /probe one require authorization to access.
@@ -120,7 +127,11 @@ This will get you to the CORS page where you can add your allowed hosts.
 # Deploying your custom version of Semantic Kernel
 You can build and upload a customized version of the Semantic Kernel service.
 
-To do so, clone the code from this repo then modify it to your needs (for example, by adding your own skills). Once that is done, go into the ../semantic-kernel/samples/apps/copilot-chat-app/webapi
+You can use the standard methods available to [deploy an ASP.net web app](https://learn.microsoft.com/en-us/azure/app-service/quickstart-dotnetcore?pivots=development-environment-vs&tabs=net70) in order to do so.
+
+Alternatively, you can follow the steps below to manually build and upload your customized version of the Semantic Kernel service to Azure.
+
+Modify the code to your needs (for example, by adding your own skills). Once that is done, go into the ../semantic-kernel/samples/apps/copilot-chat-app/webapi
 directory and enter the following command:
 ```powershell
 dotnet publish CopilotChatWebApi.csproj --configuration Release --arch x64 --os win
@@ -131,12 +142,12 @@ This will create the following directory, which will contain all the files neede
 
 Zip the contents of that directory then put the resulting zip file on the web.
 
-Put its URI in the "Package Uri" field in the web deployment page you access through the "Deploy to Azure" buttons above, or use its URI as the value for the PackageUri parameter of the Powershell scripts above.
+Put its URI in the "Package Uri" field in the web deployment page you access through the "Deploy to Azure" buttons above, or use its URI as the value for the PackageUri parameter of the Powershell scripts above. Make sure that your zip file is publicly readable.
 
 Your deployment will then use your customized deployment package.
 
 
-## Cleaning up
+# Cleaning up
 Once you are done with your resources, you can delete them from the Azure portal. You can also simply delete the resource group in which they are from the portal or through the
 following [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/) command:
 ```powershell
