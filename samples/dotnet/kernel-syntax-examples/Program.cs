@@ -130,7 +130,10 @@ public static class Program
         Example41_HttpClientUsage.Run();
         Console.WriteLine("== DONE ==");
 
-        await Example42_GetModelResult.RunAsync();
+        Example42_KernelBuilder.Run();
+        Console.WriteLine("== DONE ==");
+
+        await Example43_GetModelResult.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
