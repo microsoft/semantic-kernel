@@ -7,18 +7,6 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
-public abstract class ChatMessage
-{
-    public AuthorRole Role { get; set; }
-    public string Content { get; set; }
-
-    protected ChatMessage(AuthorRole Role, string Content)
-    {
-        this.Role = Role;
-        this.Content = Content;
-    }
-}
-
 public class ChatHistory : List<ChatMessage>
 {
     [Obsolete("This enumeration is deprecated, use AuthorRole struct instead")]
@@ -85,16 +73,28 @@ public class ChatHistory : List<ChatMessage>
         this.Add(new PrivateChatMessage(authorRole, content));
     }
 
+    /// <summary>
+    /// Add a user message to the chat history
+    /// </summary>
+    /// <param name="content">Message content</param>
     public void AddUserMessage(string content)
     {
         this.AddMessage(AuthorRole.User, content);
     }
 
+    /// <summary>
+    /// Add an assistant message to the chat history
+    /// </summary>
+    /// <param name="content">Message content</param>
     public void AddAssistantMessage(string content)
     {
         this.AddMessage(AuthorRole.Assistant, content);
     }
 
+    /// <summary>
+    /// Add a system message to the chat history
+    /// </summary>
+    /// <param name="content">Message content</param>
     public void AddSystemMessage(string content)
     {
         this.AddMessage(AuthorRole.System, content);

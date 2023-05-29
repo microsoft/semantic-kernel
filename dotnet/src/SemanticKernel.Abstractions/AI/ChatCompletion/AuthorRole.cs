@@ -4,8 +4,6 @@ using System;
 using System.ComponentModel;
 using Microsoft.SemanticKernel.Diagnostics;
 
-#pragma warning disable CA1710
-
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
