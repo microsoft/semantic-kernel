@@ -26,16 +26,20 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeClient"/> class.
     /// </summary>
-    /// <param name="pineconeEnvironment"></param>
-    /// <param name="apiKey"></param>
-    /// <param name="logger"></param>
-    public PineconeClient(string pineconeEnvironment, string apiKey, ILogger? logger = null)
+    /// <param name="pineconeEnvironment">The environment for Pinecone.</param>
+    /// <param name="apiKey">The API key for accessing Pinecone services.</param>
+    /// <param name="logger">An optional logger instance for logging.</param>
+    /// <param name="httpClient">An optional HttpClient instance for making HTTP requests.</param>
+    public PineconeClient(string pineconeEnvironment, string apiKey, ILogger? logger = null, HttpClient? httpClient = null)
     {
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
         this._logger = logger ?? NullLogger<PineconeClient>.Instance;
-        this._httpClient = new HttpClient(HttpHandlers.CheckCertificateRevocation);
+#pragma warning disable CS0618 // Type or member is obsolete
+        this._httpClient = httpClient ?? new HttpClient(HttpHandlers.CheckCertificateRevocation);
+#pragma warning restore CS0618 // Type or member is obsolete
+        this._disposeHttpClient = httpClient == null;
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }
 
@@ -526,7 +530,10 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        this._httpClient.Dispose();
+        if (this._disposeHttpClient)
+        {
+            this._httpClient.Dispose();
+        }
     }
 
     #region private ================================================================================
@@ -534,6 +541,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
     private readonly string _pineconeEnvironment;
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
+    private readonly bool _disposeHttpClient;
 
     private readonly KeyValuePair<string, string> _authHeader;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
