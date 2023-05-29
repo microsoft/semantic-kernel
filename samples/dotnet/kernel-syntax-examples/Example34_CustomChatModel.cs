@@ -6,10 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to plug use a custom chat model.
@@ -124,14 +121,7 @@ public static class Example34_CustomChatModel
     {
         Console.WriteLine("======== Custom LLM - Chat Completion ========");
 
-        IChatCompletion Factory(ILogger l) => new MyChatCompletionService();
-
-        IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithDefaultAIService<IChatCompletion>(Factory)
-            .Build();
-
-        IChatCompletion customChat = kernel.GetService<IChatCompletion>();
+        IChatCompletion customChat = new MyChatCompletionService();
 
         await StartChatAsync(customChat);
     }
@@ -157,14 +147,7 @@ public static class Example34_CustomChatModel
     {
         Console.WriteLine("======== Custom LLM - Chat Completion Streaming ========");
 
-        IChatCompletion Factory(ILogger l) => new MyChatCompletionService();
-
-        IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithDefaultAIService<IChatCompletion>(Factory)
-            .Build();
-
-        IChatCompletion customChat = kernel.GetService<IChatCompletion>();
+        IChatCompletion customChat = new MyChatCompletionService();
 
         await StartStreamingChatAsync(customChat);
     }
