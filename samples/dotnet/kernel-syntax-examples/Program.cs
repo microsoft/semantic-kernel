@@ -130,10 +130,13 @@ public static class Program
         Example41_HttpClientUsage.Run();
         Console.WriteLine("== DONE ==");
 
-        await Example40_MultiChatCompletion.RunAsync();
+        Example42_KernelBuilder.Run();
         Console.WriteLine("== DONE ==");
 
-        await Example41_MultiStreamingChatCompletion.RunAsync();
+        await Example43_MultiChatCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example44_MultiStreamingChatCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }

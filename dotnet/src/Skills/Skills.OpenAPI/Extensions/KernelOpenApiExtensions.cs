@@ -273,7 +273,7 @@ public static class KernelOpenApiExtensions
                 foreach (var parameter in restOperationParameters)
                 {
                     // A try to resolve argument by alternative parameter name
-                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && context.Variables.Get(parameter.AlternativeName!, out var value))
+                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && context.Variables.Get(parameter.AlternativeName!, out string value))
                     {
                         arguments.Add(parameter.Name, value);
                         continue;
@@ -324,6 +324,7 @@ public static class KernelOpenApiExtensions
             description: operation.Description,
             skillName: skillName,
             functionName: operation.Id,
+            isSensitive: false,
             log: kernel.Log);
 
         return kernel.RegisterCustomFunction(skillName, function);

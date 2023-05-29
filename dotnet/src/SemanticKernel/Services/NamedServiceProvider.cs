@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Services;
+
 public class NamedServiceProvider<TService> : INamedServiceProvider<TService>
 {
     // A dictionary that maps a service type to a nested dictionary of names and service instances or factories

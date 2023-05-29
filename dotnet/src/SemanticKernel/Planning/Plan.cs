@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -79,6 +80,14 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     [JsonIgnore]
     public bool IsSemantic { get; private set; }
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public bool IsSensitive { get; private set; } = false;
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public ITrustService TrustServiceInstance { get; private set; } = TrustService.DefaultTrusted;
 
     /// <inheritdoc/>
     [JsonIgnore]
@@ -267,14 +276,14 @@ public sealed class Plan : ISKFunction
             // Update Plan Result in State with matching outputs (if any)
             if (this.Outputs.Intersect(step.Outputs).Any())
             {
-                this.State.Get(DefaultResultKey, out var currentPlanResult);
+                this.State.Get(DefaultResultKey, out string currentPlanResult);
                 this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult.Trim(), resultValue));
             }
 
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.Variables.Get(item, out var val))
+                if (result.Variables.Get(item, out string val))
                 {
                     this.State.Set(item, val);
                 }
@@ -397,7 +406,7 @@ public sealed class Plan : ISKFunction
 
         foreach (var varName in orderedMatches)
         {
-            result = variables.Get(varName, out var value)
+            result = variables.Get(varName, out string value)
                 ? result.Replace($"${varName}", value)
                 : this.State.Get(varName, out value)
                     ? result.Replace($"${varName}", value)
@@ -462,13 +471,13 @@ public sealed class Plan : ISKFunction
     /// <returns>The updated context.</returns>
     private SKContext UpdateContextWithOutputs(SKContext context)
     {
-        var resultString = this.State.Get(DefaultResultKey, out var result) ? result : this.State.ToString();
+        var resultString = this.State.Get(DefaultResultKey, out string result) ? result : this.State.ToString();
         context.Variables.Update(resultString);
 
         // copy previous step's variables to the next step
         foreach (var item in this._steps[this.NextStepIndex - 1].Outputs)
         {
-            if (this.State.Get(item, out var val))
+            if (this.State.Get(item, out string val))
             {
                 context.Variables.Set(item, val);
             }
@@ -531,7 +540,7 @@ public sealed class Plan : ISKFunction
                 continue;
             }
 
-            if (variables.Get(param.Name, out var value))
+            if (variables.Get(param.Name, out string value))
             {
                 stepVariables.Set(param.Name, value);
             }
@@ -544,7 +553,7 @@ public sealed class Plan : ISKFunction
         foreach (var item in step.Parameters)
         {
             // Don't overwrite variable values that are already set
-            if (stepVariables.Get(item.Key, out _))
+            if (stepVariables.Get(item.Key, out string _))
             {
                 continue;
             }
@@ -554,7 +563,7 @@ public sealed class Plan : ISKFunction
             {
                 stepVariables.Set(item.Key, expandedValue);
             }
-            else if (variables.Get(item.Key, out var value))
+            else if (variables.Get(item.Key, out string value))
             {
                 stepVariables.Set(item.Key, value);
             }
@@ -578,6 +587,8 @@ public sealed class Plan : ISKFunction
         this.SkillName = function.SkillName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
+        this.IsSensitive = function.IsSensitive;
+        this.TrustServiceInstance = function.TrustServiceInstance;
         this.RequestSettings = function.RequestSettings;
     }
 
