@@ -18,12 +18,12 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 /// </summary>
 public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneration, IDisposable
 {
-    private const string HttpUserAgent = "Microsoft Semantic Kernel";
+    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
 
     private readonly string _model;
-    private readonly Uri _endpoint;
+    private readonly Uri? _endpoint;
     private readonly HttpClient _httpClient;
-    private readonly HttpClientHandler? _httpClientHandler;
+    private readonly bool _disposeHttpClient = true;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
@@ -31,6 +31,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions.")]
     public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
         Verify.NotNull(endpoint);
@@ -40,8 +41,6 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._model = model;
 
         this._httpClient = new(httpClientHandler);
-
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }
 
     /// <summary>
@@ -58,10 +57,25 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         this._endpoint = endpoint;
         this._model = model;
 
-        this._httpClientHandler = new() { CheckCertificateRevocationList = true };
-        this._httpClient = new(this._httpClientHandler);
+        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
+    }
 
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
+    /// </summary>
+    /// <param name="model">Model to use for service API call.</param>
+    /// <param name="endpoint">Endpoint for service API call.</param>
+    /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
+    public HuggingFaceTextEmbeddingGeneration(string model, string? endpoint = null, HttpClient? httpClient = null)
+    {
+        Verify.NotNullOrWhiteSpace(model);
+
+        this._endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint);
+        this._model = model;
+
+        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
     }
 
     /// <inheritdoc/>
@@ -73,8 +87,10 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     /// <inheritdoc/>
     public void Dispose()
     {
-        this._httpClient.Dispose();
-        this._httpClientHandler?.Dispose();
+        if (this._disposeHttpClient)
+        {
+            this._httpClient.Dispose();
+        }
     }
 
     #region private ================================================================================
@@ -98,9 +114,11 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
             using var httpRequestMessage = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri($"{this._endpoint}/{this._model}"),
+                RequestUri = this.GetRequestUri(),
                 Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
             };
+
+            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
 
             var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -115,6 +133,32 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
                 AIException.ErrorCodes.UnknownError,
                 $"Something went wrong: {e.Message}", e);
         }
+    }
+
+    /// <summary>
+    /// Retrieves the request URI based on the provided endpoint and model information.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="Uri"/> object representing the request URI.
+    /// </returns>
+    private Uri GetRequestUri()
+    {
+        string? baseUrl = null;
+
+        if (this._endpoint?.AbsoluteUri != null)
+        {
+            baseUrl = this._endpoint!.AbsoluteUri;
+        }
+        else if (this._httpClient.BaseAddress?.AbsoluteUri != null)
+        {
+            baseUrl = this._httpClient.BaseAddress!.AbsoluteUri;
+        }
+        else
+        {
+            throw new AIException(AIException.ErrorCodes.InvalidConfiguration, "No endpoint or HTTP client base address has been provided");
+        }
+
+        return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
     }
 
     #endregion

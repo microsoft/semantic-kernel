@@ -22,9 +22,10 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";
 
     private readonly string _model;
-    private readonly Uri _endpoint;
+    private readonly Uri? _endpoint;
     private readonly HttpClient _httpClient;
-    private readonly HttpClientHandler? _httpClientHandler;
+    private readonly bool _disposeHttpClient = true;
+    private readonly string? _apiKey;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
@@ -32,6 +33,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions.")]
     public HuggingFaceTextCompletion(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
         Verify.NotNull(endpoint);
@@ -41,8 +43,6 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         this._model = model;
 
         this._httpClient = new(httpClientHandler);
-
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
     }
 
     /// <summary>
@@ -59,10 +59,8 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         this._endpoint = endpoint;
         this._model = model;
 
-        this._httpClientHandler = new() { CheckCertificateRevocationList = true };
-        this._httpClient = new(this._httpClientHandler);
-
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
+        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
     }
 
     /// <summary>
@@ -73,12 +71,12 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     /// <param name="endpoint">Endpoint for service API call.</param>
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions.")]
     public HuggingFaceTextCompletion(string apiKey, string model, HttpClientHandler httpClientHandler, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model, httpClientHandler)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
-
-        this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+        this._apiKey = apiKey;
     }
 
     /// <summary>
@@ -89,12 +87,31 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="apiKey">HuggingFace API key, see https://huggingface.co/docs/api-inference/quicktour#running-inference-with-api-requests.</param>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="endpoint">Endpoint for service API call.</param>
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions.")]
     public HuggingFaceTextCompletion(string apiKey, string model, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
+        this._apiKey = apiKey;
+    }
 
-        this._httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
+    /// Using HuggingFace API for service call, see https://huggingface.co/docs/api-inference/index.
+    /// </summary>
+    /// <param name="model">Model to use for service API call.</param>
+    /// <param name="endpoint">Endpoint for service API call.</param>
+    /// <param name="apiKey">HuggingFace API key, see https://huggingface.co/docs/api-inference/quicktour#running-inference-with-api-requests.</param>
+    /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
+    public HuggingFaceTextCompletion(string model, string? endpoint = null, string? apiKey = null, HttpClient? httpClient = null)
+    {
+        Verify.NotNull(model);
+        this._model = model;
+        this._apiKey = apiKey;
+        this._endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint);
+
+        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
     }
 
     /// <inheritdoc/>
@@ -121,8 +138,10 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this._httpClient.Dispose();
-        this._httpClientHandler?.Dispose();
+        if (this._disposeHttpClient)
+        {
+            this._httpClient.Dispose();
+        }
     }
 
     #region private ================================================================================
@@ -139,9 +158,15 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
             using var httpRequestMessage = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri($"{this._endpoint}/{this._model}"),
-                Content = new StringContent(JsonSerializer.Serialize(completionRequest))
+                RequestUri = this.GetRequestUri(),
+                Content = new StringContent(JsonSerializer.Serialize(completionRequest)),
             };
+
+            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
+            if (!string.IsNullOrEmpty(this._apiKey))
+            {
+                httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+            }
 
             using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
@@ -166,6 +191,28 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
                 AIException.ErrorCodes.UnknownError,
                 $"Something went wrong: {e.Message}", e);
         }
+    }
+
+    /// <summary>
+    /// Retrieves the request URI based on the provided endpoint and model information.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="Uri"/> object representing the request URI.
+    /// </returns>
+    private Uri GetRequestUri()
+    {
+        var baseUrl = HuggingFaceApiEndpoint;
+
+        if (this._endpoint?.AbsoluteUri != null)
+        {
+            baseUrl = this._endpoint!.AbsoluteUri;
+        }
+        else if (this._httpClient.BaseAddress?.AbsoluteUri != null)
+        {
+            baseUrl = this._httpClient.BaseAddress!.AbsoluteUri;
+        }
+
+        return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
     }
 
     #endregion
