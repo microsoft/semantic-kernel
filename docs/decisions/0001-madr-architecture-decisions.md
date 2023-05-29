@@ -37,9 +37,9 @@ Chosen option:
 
 How would we use ADR's to track technical decisions?
 
-1. Copy [docs/decisions/adr-template.md](docs/decisions/adr-template.md) to docs/decisions/NNNN-title-with-dashes.md, where NNNN indicates the next number in sequence.
+1. Copy docs/decisions/adr-template.md to docs/decisions/NNNN-title-with-dashes.md, where NNNN indicates the next number in sequence.
     1. Check for existing PR's to make sure you use the correct sequence number.
-    2. There is also a short form template [docs/decisions/adr-short-template.md](docs/decisions/adr-short-template.md)
+    2. There is also a short form template docs/decisions/adr-short-template.md
 2. Edit NNNN-title-with-dashes.md.
     1. Status must initially be `proposed`
     2. List of `deciders` must include the aliases of the people who will sign off on the decision.
