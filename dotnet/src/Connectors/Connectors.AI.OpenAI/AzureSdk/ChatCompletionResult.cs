@@ -17,10 +17,8 @@ internal sealed class ChatResult : IChatResult, ITextCompletionResult
         this._choice = choice;
     }
 
-    public Task<IChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult<IChatMessage>(new ChatMessageAdapter(this._choice.Message));
-    }
+    public Task<SemanticKernel.AI.ChatCompletion.ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult<SemanticKernel.AI.ChatCompletion.ChatMessage>(new OpenAIChatMessage(this._choice.Message));
 
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {

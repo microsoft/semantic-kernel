@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
@@ -24,27 +23,21 @@ public static class Example40_MultiChatCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureChatCompletionService(
+        AzureChatCompletion azureChatCompletion = new(
             Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
             Env.Var("AZURE_OPENAI_ENDPOINT"),
             Env.Var("AZURE_OPENAI_KEY"));
 
-        IChatCompletion completion = kernel.GetService<IChatCompletion>();
-
-        await RunChatAsync(completion);
+        await RunChatAsync(azureChatCompletion);
     }
 
     private static async Task OpenAIMultiChatCompletionAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"), serviceId: "gpt-3.5-turbo");
+        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
-        IChatCompletion completion = kernel.GetService<IChatCompletion>();
-
-        await RunChatAsync(completion);
+        await RunChatAsync(openAIChatCompletion);
     }
 
     private static async Task RunChatAsync(IChatCompletion chatCompletion)
@@ -67,7 +60,7 @@ public static class Example40_MultiChatCompletion
         // First bot assistant message
         foreach (IChatResult chatCompletionResult in await chatCompletion.GetChatCompletionsAsync(chatHistory, chatRequestSettings))
         {
-            IChatMessage chatMessage = await chatCompletionResult.GetChatMessageAsync();
+            ChatMessage chatMessage = await chatCompletionResult.GetChatMessageAsync();
             chatHistory.Add(chatMessage);
             await MessageOutputAsync(chatHistory);
         }

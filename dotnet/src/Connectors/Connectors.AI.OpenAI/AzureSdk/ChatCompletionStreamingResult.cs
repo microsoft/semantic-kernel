@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using SKChatMessage = Microsoft.SemanticKernel.AI.ChatCompletion.ChatMessage;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -21,30 +23,26 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletio
     }
 
     /// <inheritdoc/>
-    public async Task<IChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    public async Task<SemanticKernel.AI.ChatCompletion.ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
-        ChatMessage? chatMessage = null;
-        await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
-        {
-            // As it loops thru the stream, the return ChatMessage is an updated/concatenated version of the previous ChatMessage
-            chatMessage = message;
-        }
-        // As it leaves the streaming loop, the return ChatMessage is the final version of the ChatMessage to present in a non-streaming behavior
+        var chatMessage = await this._choice.GetMessageStreaming(cancellationToken)
+                                                .LastOrDefaultAsync(cancellationToken)
+                                                .ConfigureAwait(false);
 
         if (chatMessage is null)
         {
             throw new AIException(AIException.ErrorCodes.UnknownError);
         }
 
-        return new ChatMessageAdapter(chatMessage);
+        return new OpenAIChatMessage(chatMessage);
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<IChatMessage> GetChatMessageStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<SKChatMessage> GetChatMessageStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
         {
-            yield return new ChatMessageAdapter(message);
+            yield return new OpenAIChatMessage(message);
         }
     }
 
@@ -55,7 +53,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletio
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (IChatMessage result in this.GetChatMessageStreamingAsync(cancellationToken).ConfigureAwait(false))
+        await foreach (var result in this.GetChatMessageStreamingAsync(cancellationToken).ConfigureAwait(false))
         {
             yield return result.Content;
         }

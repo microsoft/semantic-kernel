@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
@@ -28,27 +27,21 @@ public static class Example41_MultiStreamingChatCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion - Raw Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureChatCompletionService(
+        AzureChatCompletion azureChatCompletion = new(
             Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
             Env.Var("AZURE_OPENAI_ENDPOINT"),
             Env.Var("AZURE_OPENAI_KEY"));
 
-        var completion = kernel.GetService<IChatCompletion>();
-
-        await StreamingChatCompletionAsync(completion);
+        await StreamingChatCompletionAsync(azureChatCompletion);
     }
 
     private static async Task OpenAIMultiStreamingChatCompletionAsync()
     {
         Console.WriteLine("======== Open AI - Multiple Text Completion - Raw Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"), serviceId: "gpt-3.5-turbo");
+        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
-        var completion = kernel.GetService<IChatCompletion>();
-
-        await StreamingChatCompletionAsync(completion);
+        await StreamingChatCompletionAsync(openAIChatCompletion);
     }
 
     private static async Task StreamingChatCompletionAsync(IChatCompletion chatCompletion)
@@ -94,7 +87,7 @@ public static class Example41_MultiStreamingChatCompletion
 
         await foreach (var chatMessage in result.GetChatMessageStreamingAsync())
         {
-            string role = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(chatMessage.Role);
+            string role = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(chatMessage.Role.Label);
             message += chatMessage.Content;
 
             lock (s_lockObject)

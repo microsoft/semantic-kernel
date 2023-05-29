@@ -15,6 +15,8 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
+using SKChatMessage = Microsoft.SemanticKernel.AI.ChatCompletion.ChatMessage;
+using ChatMessage = Azure.AI.OpenAI.ChatMessage;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -156,7 +158,7 @@ public abstract class ClientBase
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Streaming of generated chat message in string format</returns>
     private protected async IAsyncEnumerable<IChatStreamingResult> InternalGenerateStreamingChatMessageAsync(
-        IEnumerable<IChatMessage> chat,
+        IEnumerable<SKChatMessage> chat,
         ChatRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -270,7 +272,7 @@ public abstract class ClientBase
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, IEnumerable<IChatMessage> chatHistory)
+    private static ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, IEnumerable<SKChatMessage> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt < 1 ||
             requestSettings.ResultsPerPrompt > 128)
@@ -297,7 +299,7 @@ public abstract class ClientBase
             }
         }
 
-        foreach (IChatMessage message in chatHistory)
+        foreach (SKChatMessage message in chatHistory)
         {
             ValidateChatAuthors(message.Role, out var validRole);
 
@@ -307,17 +309,16 @@ public abstract class ClientBase
         return options;
     }
 
-    private static void ValidateChatAuthors(string role, out ChatRole validRole)
+    private static void ValidateChatAuthors(AuthorRole role, out ChatRole validRole)
     {
-        Verify.NotNullOrWhiteSpace(role);
+        validRole = new ChatRole(role.Label);
 
-        validRole = role.ToUpperInvariant() switch
+        if (validRole != ChatRole.User &&
+            validRole != ChatRole.System &&
+            validRole != ChatRole.Assistant)
         {
-            "USER" => ChatRole.User,
-            "ASSISTANT" => ChatRole.Assistant,
-            "SYSTEM" => ChatRole.System,
-            _ => throw new ArgumentException($"Invalid chat message author: {role}")
-        };
+            throw new ArgumentException($"Invalid chat message author: {role}");
+        }
     }
 
     private static void ValidateMaxTokens(int maxTokens)

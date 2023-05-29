@@ -7,9 +7,21 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
-public class ChatHistory : List<IChatMessage>
+public abstract class ChatMessage
 {
-    [Obsolete("This enum is deprecated, using it will not be supported")]
+    public AuthorRole Role { get; set; }
+    public string Content { get; set; }
+
+    protected ChatMessage(AuthorRole Role, string Content)
+    {
+        this.Role = Role;
+        this.Content = Content;
+    }
+}
+
+public class ChatHistory : List<ChatMessage>
+{
+    [Obsolete("This enumeration is deprecated, use AuthorRole struct instead")]
     public enum AuthorRoles
     {
         Unknown = -1,
@@ -18,47 +30,46 @@ public class ChatHistory : List<IChatMessage>
         Assistant = 2,
     }
 
+    private sealed class PrivateChatMessage : ChatMessage
+    {
+        public PrivateChatMessage(AuthorRole authorRole, string content) : base(authorRole, content)
+        {
+        }
+    }
+
     /// <summary>
     /// Chat message representation
     /// </summary>
     [Obsolete("This class is deprecated, using instances of this class will not be supported")]
-    public class Message : IChatMessage
+    public class Message : ChatMessage
     {
         /// <summary>
         /// Role of the message author, e.g. user/assistant/system
         /// </summary>
-        private AuthorRoles AuthorRole { get; set; }
-
-        public string Role => this.AuthorRole.ToString();
-
-        /// <summary>
-        /// Message content
-        /// </summary>
-        public string Content { get; set; }
+        public AuthorRoles AuthorRole { get; set; }
 
         /// <summary>
         /// Create a new instance
         /// </summary>
         /// <param name="authorRole">Role of message author</param>
         /// <param name="content">Message content</param>
-        public Message(AuthorRoles authorRole, string content)
+        public Message(AuthorRoles authorRole, string content) : base(new AuthorRole(authorRole.ToString()), content)
         {
             this.AuthorRole = authorRole;
-            this.Content = content;
         }
     }
 
     /// <summary>
     /// List of messages in the chat
     /// </summary>
-    public List<IChatMessage> Messages => this;
+    public List<ChatMessage> Messages => this;
 
     /// <summary>
     /// Add a message to the chat history
     /// </summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    [Obsolete("This method is deprecated, use Add(IChatMessage) instead")]
+    [Obsolete("This method with AuthorRoles enumeration is deprecated, use AddMessage(AuthorRole struct, string) instead")]
     public void AddMessage(AuthorRoles authorRole, string content)
     {
         this.Add(new Message(authorRole, content));
@@ -67,10 +78,25 @@ public class ChatHistory : List<IChatMessage>
     /// <summary>
     /// Add a message to the chat history
     /// </summary>
-    /// <param name="message">New message instance</param>
-    [Obsolete("This method is deprecated, use Add(IChatMessage) instead")]
-    public void AddMessage(IChatMessage message)
+    /// <param name="authorRole">Role of the message author</param>
+    /// <param name="content">Message content</param>
+    public void AddMessage(AuthorRole authorRole, string content)
     {
-        this.Add(message);
+        this.Add(new PrivateChatMessage(authorRole, content));
+    }
+
+    public void AddUserMessage(string content)
+    {
+        this.AddMessage(AuthorRole.User, content);
+    }
+
+    public void AddAssistantMessage(string content)
+    {
+        this.AddMessage(AuthorRole.Assistant, content);
+    }
+
+    public void AddSystemMessage(string content)
+    {
+        this.AddMessage(AuthorRole.System, content);
     }
 }

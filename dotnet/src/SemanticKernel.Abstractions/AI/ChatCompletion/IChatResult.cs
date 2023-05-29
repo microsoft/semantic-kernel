@@ -12,5 +12,5 @@ public interface IChatResult
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Current chat message content</returns>
-    Task<IChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default);
+    Task<ChatMessage> GetChatMessageAsync(CancellationToken cancellationToken = default);
 }
