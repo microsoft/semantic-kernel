@@ -107,8 +107,8 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     {
         Verify.NotNull(model);
         this._model = model;
-        this._apiKey = apiKey;
         this._endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint);
+        this._apiKey = apiKey;
 
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
