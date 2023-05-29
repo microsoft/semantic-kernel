@@ -1,30 +1,37 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pinecone
-import json
-
-from typing import Dict, List, Optional, Tuple
-from copy import deepcopy
 from logging import Logger
+from typing import List, Optional, Tuple
 
-from numpy import array, linalg, ndarray
+import pinecone
+from numpy import ndarray
+from pinecone import FetchResponse, IndexDescription
 
+from semantic_kernel.connectors.memory.pinecone.utils import (
+    build_payload,
+    parse_payload,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
+
+# Limitations set by Pinecone at https://docs.pinecone.io/docs/limits
+MAX_DIMENSIONALITY = 20000
+MAX_UPSERT_BATCH_SIZE = 100
+MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE = 10000
+MAX_QUERY_WITH_METADATA_BATCH_SIZE = 1000
+MAX_FETCH_BATCH_SIZE = 1000
+MAX_DELETE_BATCH_SIZE = 1000
 
 
 class PineconeMemoryStore(MemoryStoreBase):
     _logger: Logger
     _pinecone_api_key: str
     _pinecone_environment: str
-    
 
-    def __init__(self, api_key: str, environment: str, logger: Optional[Logger] = None) -> None:
-        self._pinecone_api_key = api_key
-        self._pinecone_environment = environment
-        self._logger = logger or NullLogger()
-
+    def __init__(
+        self, api_key: str, environment: str, logger: Optional[Logger] = None
+    ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
         Arguments:
@@ -32,41 +39,73 @@ class PineconeMemoryStore(MemoryStoreBase):
             pinecone_environment {str} -- The Pinecone environment key/type.
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
+        self._pinecone_api_key = api_key
+        self._pinecone_environment = environment
+        self._logger = logger or NullLogger()
 
-        pinecone.init(api_key=self._pinecone_api_key, environment=self._pinecone_environment)
-         
+        pinecone.init(
+            api_key=self._pinecone_api_key, environment=self._pinecone_environment
+        )
+    
+    def get_collections(self) -> List[str]:
+        return pinecone.list_indexes()
+
     async def create_collection_async(
-            self,
-            collection_name: str,
-            dimension_num: int,
-            distance_type: Optional[str] = "cosine",
-            num_of_pods: Optional[int] = 1,
-            replica_num: Optional[int] = 0,
-            type_of_pod: Optional[str]="p1.x1") -> None:
+        self,
+        collection_name: str,
+        dimension_num: int,
+        distance_type: Optional[str] = "cosine",
+        num_of_pods: Optional[int] = 1,
+        replica_num: Optional[int] = 0,
+        type_of_pod: Optional[str] = "p1.x1",
+        metadata_config: Optional[dict] = None,
+    ) -> None:
         """Creates a new collection in Pinecone if it does not exist.
-            This function creates an index without a metadata configuration using the
-            Pinecone default to index all metadata.
+            This function creates an index, by default the following index
+            settings are used: metric = cosine, pods = 1, replicas = 0,
+            pod_type = p1.x1, metadata_config = None.
 
         Arguments:
-            collection_name {str} -- The name of the collection to create. 
+            collection_name {str} -- The name of the collection to create.
             In Pinecone, a collection is represented as an index. The concept
-            of "collection" in Pinecone is just a static copy of an index. 
-            dimension {int} -- The dimension of the embeddings in the collection.
+            of "collection" in Pinecone is just a static copy of an index.
+            dimension {int} -- The dimension of embeddings in the collection.
 
         Returns:
             None
         """
+        if dimension_num > MAX_DIMENSIONALITY:
+            raise ValueError(
+                f"Dimensionality of {dimension_num} exceeds "
+                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+            )
 
         if collection_name in pinecone.list_indexes():
             pass
         else:
-            pinecone.create_index(name=collection_name, 
-                    dimension=dimension_num, 
-                      metric=distance_type, 
-                      pods=num_of_pods, 
-                      replicas=replica_num, 
-                      pod_type=type_of_pod)
-            
+            pinecone.create_index(
+                name=collection_name,
+                dimension=dimension_num,
+                metric=distance_type,
+                pods=num_of_pods,
+                replicas=replica_num,
+                pod_type=type_of_pod,
+                metadata_config=metadata_config,
+            )
+
+    async def describe_collection_async(
+        self, collection_name: str
+    ) -> Optional[IndexDescription]:
+        """Gets the description of the index.
+        Arguments:
+            collection_name {str} -- The name of the index to get.
+        Returns:
+            Optional[dict] -- The index.
+        """
+        if collection_name in pinecone.list_indexes():
+            return pinecone.describe_index(collection_name)
+        return None
+
     async def get_collections_async(
         self,
     ) -> List[str]:
@@ -112,28 +151,18 @@ class PineconeMemoryStore(MemoryStoreBase):
         """
         if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
-        
+
         collection = pinecone.Index(collection_name)
 
-        metadata_info = json.dumps(record._metadata)
-
         upsert_response = collection.upsert(
-            vectors=[
-                {
-                'id':record._id, 
-                'values':record._embedding, 
-                'metadata':metadata_info,
-                },
-            ],
-            namespace=''
+            vectors=[(record._id, record.embedding.tolist(), build_payload(record))],
+            namespace="",
         )
 
-        if upsert_response.upsertedCount is None:
-            raise Exception(f"Error upserting record: {upsert_response.text}")
-        
+        if upsert_response.upserted_count is None:
+            raise Exception(f"Error upserting record: {upsert_response.message}")
+
         return record._id
-
-
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -149,26 +178,26 @@ class PineconeMemoryStore(MemoryStoreBase):
         """
         if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
-        
-        collection = pinecone.Index(collection_name)
-        metadata_info = {}
 
-        for record in records:
-            upsert_response = collection.upsert(
-            vectors=[
-                {
-                'id':record._id, 
-                'values':record._embedding, 
-                'metadata':metadata_info,
-                },
-            ],
-            namespace=''
+        collection = pinecone.Index(collection_name)
+
+        vectors = [
+            (
+                record._id,
+                record.embedding.tolist(),
+                build_payload(record),
+            )
+            for record in records
+        ]
+
+        upsert_response = collection.upsert(
+            vectors, namespace="", batch_size=MAX_UPSERT_BATCH_SIZE
         )
 
-            if upsert_response.upsertedCount is None:
-                raise Exception(f"Error upserting record: {upsert_response.text}")
-            else:
-                return [record._id for record in records]
+        if upsert_response.upserted_count is None:
+            raise Exception(f"Error upserting record: {upsert_response.message}")
+        else:
+            return [record._id for record in records]
 
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool = False
@@ -186,17 +215,13 @@ class PineconeMemoryStore(MemoryStoreBase):
         if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        collection_info = pinecone.describe_index(collection_name)
-        collection = pinecone.Index(collection_name) 
+        collection = pinecone.Index(collection_name)
+        fetch_response = collection.fetch([key])
 
-        result = MemoryRecord(id=collection_info['id'])
+        if len(fetch_response.vectors) == 0:
+            raise KeyError(f"Record with key '{key}' does not exist")
 
-        if not with_embedding:
-            # create copy of results without embeddings
-            result = deepcopy(result)
-            result._embedding = None
-
-        return result
+        return parse_payload(fetch_response.vectors[key], with_embedding)
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
@@ -211,21 +236,16 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             List[MemoryRecord] -- The records.
         """
-        if collection_name not in self._store:
+        if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        results = [
-            self._store[collection_name][key]
-            for key in keys
-            if key in self._store[collection_name]
+        fetch_response = await self.__get_batch_async(
+            collection_name, keys, with_embeddings
+        )
+        return [
+            parse_payload(fetch_response.vectors[key], with_embeddings)
+            for key in fetch_response.vectors.keys()
         ]
-
-        if not with_embeddings:
-            # create copy of results without embeddings
-            for result in results:
-                result = deepcopy(result)
-                result._embedding = None
-        return results
 
     async def remove_async(self, collection_name: str, key: str) -> None:
         """Removes a record.
@@ -240,7 +260,8 @@ class PineconeMemoryStore(MemoryStoreBase):
         if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        pinecone.delete_index(collection_name)
+        collection = pinecone.Index(collection_name)
+        collection.delete([key])
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
         """Removes a batch of records.
@@ -255,9 +276,10 @@ class PineconeMemoryStore(MemoryStoreBase):
         if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        for key in keys:
-            if key in self._store[collection_name]:
-                del self._store[collection_name][key]
+        collection = pinecone.Index(collection_name)
+        for i in range(0, len(keys), MAX_DELETE_BATCH_SIZE):
+            collection.delete(keys[i : i + MAX_DELETE_BATCH_SIZE])
+        collection.delete(keys)
 
     async def get_nearest_match_async(
         self,
@@ -277,14 +299,14 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        collection = pinecone.Index(collection_name)
-
-        responses = collection.query(embedding, top_k=1, include_metadata=True)
-
-        record = MemoryRecord(id=responses[0].id, embedding=responses[0].values)
-        result = (record, responses[0].score)
-
-        return result
+        matches = await self.get_nearest_matches_async(
+            collection_name=collection_name,
+            embedding=embedding,
+            limit=1,
+            min_relevance_score=min_relevance_score,
+            with_embeddings=with_embedding,
+        )
+        return matches[0]
 
     async def get_nearest_matches_async(
         self,
@@ -306,82 +328,63 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
-        if collection_name not in self._store:
-            return []
+        if collection_name not in pinecone.list_indexes():
+            raise Exception(f"Collection '{collection_name}' does not exist")
 
-        # Get all the records in the collection
-        memory_records = list(self._store[collection_name].values())
+        collection = pinecone.Index(collection_name)
 
-        # Convert the collection of embeddings into a numpy array (stacked)
-        embeddings = array([x._embedding for x in memory_records], dtype=float)
-        embeddings = embeddings.reshape(embeddings.shape[0], -1)
-
-        # If the query embedding has shape (1, embedding_size),
-        # reshape it to (embedding_size,)
-        if len(embedding.shape) == 2:
-            embedding = embedding.reshape(
-                embedding.shape[1],
+        if limit > MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE:
+            raise Exception(
+                "Limit must be less than or equal to "
+                + f"{MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE}"
             )
-
-        # Use numpy to get the cosine similarity between the query
-        # embedding and all the embeddings in the collection
-        similarity_scores = self.compute_similarity_scores(embedding, embeddings)
-
-        # Then, sort the results by the similarity score
-        sorted_results = sorted(
-            zip(memory_records, similarity_scores),
-            key=lambda x: x[1],
-            reverse=True,
+        elif limit > MAX_QUERY_WITH_METADATA_BATCH_SIZE:
+            query_response = collection.query(
+                vector=embedding.tolist(),
+                top_k=limit,
+                include_values=False,
+                include_metadata=False,
+            )
+            keys = [match.id for match in query_response.matches]
+            fetch_response = await self.__get_batch_async(
+                collection_name, keys, with_embeddings
+            )
+            vectors = fetch_response.vectors
+            for match in query_response.matches:
+                vectors[match.id].update(match)
+            matches = [vectors[key] for key in vectors.keys()]
+        else:
+            query_response = collection.query(
+                vector=embedding.tolist(),
+                top_k=limit,
+                include_values=with_embeddings,
+                include_metadata=True,
+            )
+            matches = query_response.matches
+        if min_relevance_score is not None:
+            matches = [match for match in matches if match.score >= min_relevance_score]
+        return (
+            [
+                (
+                    parse_payload(match, with_embeddings),
+                    match["score"],
+                )
+                for match in matches
+            ]
+            if len(matches) > 0
+            else []
         )
 
-        # Then, filter out the results that are below the minimum relevance score
-        filtered_results = [x for x in sorted_results if x[1] >= min_relevance_score]
-
-        # Then, take the top N results
-        top_results = filtered_results[:limit]
-
-        if not with_embeddings:
-            # create copy of results without embeddings
-            for result in top_results:
-                result = deepcopy(result)
-                result[0]._embedding = None
-        return top_results
-
-    def compute_similarity_scores(
-        self, embedding: ndarray, embedding_array: ndarray
-    ) -> ndarray:
-        """Computes the cosine similarity scores between a query embedding and a group of embeddings.
-
-        Arguments:
-            embedding {ndarray} -- The query embedding.
-            embedding_array {ndarray} -- The group of embeddings.
-
-        Returns:
-            ndarray -- The cosine similarity scores.
-        """
-        query_norm = linalg.norm(embedding)
-        collection_norm = linalg.norm(embedding_array, axis=1)
-
-        # Compute indices for which the similarity scores can be computed
-        valid_indices = (query_norm != 0) & (collection_norm != 0)
-
-        # Initialize the similarity scores with -1 to distinguish the cases
-        # between zero similarity from orthogonal vectors and invalid similarity
-        similarity_scores = array([-1.0] * embedding_array.shape[0])
-
-        if valid_indices.any():
-            similarity_scores[valid_indices] = embedding.dot(
-                embedding_array[valid_indices].T
-            ) / (query_norm * collection_norm[valid_indices])
-            if not valid_indices.all():
-                self._logger.warning(
-                    "Some vectors in the embedding collection are zero vectors."
-                    "Ignoring cosine similarity score computation for those vectors."
+    async def __get_batch_async(
+        self, collection_name: str, keys: List[str], with_embeddings: bool = False
+    ) -> "FetchResponse":
+        index = pinecone.Index(collection_name)
+        if len(keys) > MAX_FETCH_BATCH_SIZE:
+            fetch_response = index.fetch(keys[0:MAX_FETCH_BATCH_SIZE])
+            for i in range(MAX_FETCH_BATCH_SIZE, len(keys), MAX_FETCH_BATCH_SIZE):
+                fetch_response.vectors.update(
+                    index.fetch(keys[i : i + MAX_FETCH_BATCH_SIZE]).vectors
                 )
         else:
-            raise ValueError(
-                f"Invalid vectors, cannot compute cosine similarity scores"
-                f"for zero vectors"
-                f"{embedding_array} or {embedding}"
-            )
-        return similarity_scores
+            fetch_response = index.fetch(keys)
+        return fetch_response
