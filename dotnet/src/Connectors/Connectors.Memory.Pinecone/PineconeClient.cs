@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
@@ -21,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 /// <summary>
 /// A client for the Pinecone API
 /// </summary>
-public sealed class PineconeClient : IPineconeClient, IDisposable
+public sealed class PineconeClient : IPineconeClient
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeClient"/> class.
@@ -36,10 +35,7 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
         this._logger = logger ?? NullLogger<PineconeClient>.Instance;
-#pragma warning disable CS0618 // Type or member is obsolete
-        this._httpClient = httpClient ?? new HttpClient(HttpHandlers.CheckCertificateRevocation);
-#pragma warning restore CS0618 // Type or member is obsolete
-        this._disposeHttpClient = httpClient == null;
+        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }
 
@@ -527,21 +523,11 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         this._logger.LogDebug("Collection created. {0}", indexName);
     }
 
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        if (this._disposeHttpClient)
-        {
-            this._httpClient.Dispose();
-        }
-    }
-
     #region private ================================================================================
 
     private readonly string _pineconeEnvironment;
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
-    private readonly bool _disposeHttpClient;
 
     private readonly KeyValuePair<string, string> _authHeader;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
