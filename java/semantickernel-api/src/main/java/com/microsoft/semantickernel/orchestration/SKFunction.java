@@ -148,6 +148,13 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
 
     ContextType buildContext();
 
+    /**
+     * Build a context cloning the state of the given context
+     *
+     * @param toClone The context to clone
+     */
+    ContextType buildContext(SKContext toClone);
+
     Mono<ContextType> invokeWithCustomInputAsync(
             ContextVariables variablesClone,
             SemanticTextMemory semanticMemory,

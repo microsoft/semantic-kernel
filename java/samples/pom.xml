@@ -13,9 +13,11 @@
         <com.uber.nullaway.version>0.10.10</com.uber.nullaway.version>
         <google.errorprone.core.version>2.19.1</google.errorprone.core.version>
         <log4j2.version>2.20.0</log4j2.version>
-        <maven.compiler.plugin.version>2.11.0</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source>17</maven.compiler.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencyManagement>
@@ -88,7 +90,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>{maven.compiler-plugin.version}</version>
+                        <version>${maven.compiler.plugin.version}</version>
                         <configuration>
                             <source>${maven.compiler.release}</source>
                             <target>${maven.compiler.release}</target>
