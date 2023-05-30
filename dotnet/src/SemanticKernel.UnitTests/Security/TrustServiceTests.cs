@@ -63,7 +63,7 @@ public sealed class TrustServiceTests
             .WithTrustService(trustService).Build();
         var aiService = MockAIService();
         // The input here is set as untrusted
-        var context = new ContextVariables(TrustAwareString.Untrusted("my input"));
+        var context = new ContextVariables(TrustAwareString.CreateUntrusted("my input"));
 
         factory.Setup(x => x.Invoke(It.IsAny<(ILogger, KernelConfig)>())).Returns(aiService.Object);
 
@@ -135,7 +135,7 @@ public sealed class TrustServiceTests
 
         // Mock this to make the context untrusted when the template is rendered
         promptTemplate.Setup(x => x.RenderAsync(It.IsAny<SKContext>()))
-            .Callback<SKContext>(ctx => ctx.Variables.Update(TrustAwareString.Untrusted("some untrusted content")))
+            .Callback<SKContext>(ctx => ctx.Variables.Update(TrustAwareString.CreateUntrusted("some untrusted content")))
             .ReturnsAsync("unsafe prompt");
 
         promptTemplate
@@ -200,7 +200,7 @@ public sealed class TrustServiceTests
             .WithTrustService(trustService).Build();
         var aiService = MockAIService();
         // Here the input is untrusted
-        var context = new ContextVariables(TrustAwareString.Untrusted("my input"));
+        var context = new ContextVariables(TrustAwareString.CreateUntrusted("my input"));
 
         factory.Setup(x => x.Invoke(It.IsAny<(ILogger, KernelConfig)>())).Returns(aiService.Object);
 

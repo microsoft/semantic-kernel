@@ -73,7 +73,7 @@ internal sealed class VarBlock : Block, ITextRendering
             throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, ErrMsg);
         }
 
-        if (variables.Get(this.Name, out string value))
+        if (variables.TryGetValue(this.Name, out string? value))
         {
             return value;
         }
