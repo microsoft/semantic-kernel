@@ -54,11 +54,10 @@ public static class Example23_OpenApiSkill_GitHub
             var number = pullRequests.First["number"];
             return number?.ToString() ?? string.Empty;
         }
-        else
-        {
-            Console.WriteLine("No pull requests found.");
-            return string.Empty;
-        }
+
+        Console.WriteLine("No pull requests found.");
+
+        return string.Empty;
     }
 
     public static async Task GetPullRequestFromGitHubAsync(BearerAuthenticationProvider authenticationProvider, string pullNumber)
