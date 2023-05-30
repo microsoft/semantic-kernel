@@ -75,26 +75,27 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     async def complete_chat_stream_async(
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
     ):
-        # set up multiple threads to parse the response if the user
-        # requests multiple responses
+        # If the request asks for multiple responses, we need to keep track of them
         if request_settings.number_of_responses > 1:
-            completions = [None] * request_settings.number_of_responses
+            completions = [''] * request_settings.number_of_responses
 
         response = await self._send_chat_request(messages, request_settings, True)
 
-        # async for chunk in response:
-        #     async for choice in chunk.choices:
-        #         yield _parse_choices(chunk, i) 
-
+        # parse the completion text(s) and yield them
+        max_index = request_settings.number_of_responses - 1
         async for chunk in response:
-            i = 0
-            print(chunk)
-            yield None
-            # for choice in chunk.choices:
-            #     print(choice)
-            #     completions[i] = _parse_choices(chunk, i)
-            #     i += 1
-            # yield completions
+            text, index = _parse_choices(chunk)
+            # if multiple responses are requested, keep track of them
+            if request_settings.number_of_responses > 1:
+                completions[index] = text
+                if index % max_index == 0:
+                    yield completions
+                    completions = [''] * request_settings.number_of_responses
+                else:
+                    continue
+            # if only one response is requested, yield it
+            else:
+                yield text
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
@@ -225,13 +226,14 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 #         message += choice.delta.content
 #     yield message
 
-def _parse_choices(chunk, choice_number):
+def _parse_choices(chunk):
     message = ""
-    if "role" in chunk.choices[choice_number-1].delta:
-        message += chunk.choices[choice_number-1].delta.role + ": "
-    if "content" in chunk.choices[choice_number-1].delta:
-        message += chunk.choices[choice_number-1].delta.content
-
-    yield message
+    if "role" in chunk.choices[0].delta:
+        message += chunk.choices[0].delta.role + ": "
+    if "content" in chunk.choices[0].delta:
+        message += chunk.choices[0].delta.content
+    
+    index = chunk.choices[0].index
+    return message, index
 
 
