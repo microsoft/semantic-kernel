@@ -55,7 +55,8 @@ public class Embedding<EmbeddingType extends Number> {
      */
     public Embedding(List<EmbeddingType> vector) {
         //        Verify.NotNull(vector, nameof(vector));
-        this.vector = vector != null ? Collections.unmodifiableList(vector) : Collections.emptyList();
+        this.vector =
+                vector != null ? Collections.unmodifiableList(vector) : Collections.emptyList();
     }
 
     @Override
@@ -75,8 +76,12 @@ public class Embedding<EmbeddingType extends Number> {
 
     @Override
     public String toString() {
-        return "Embedding{" +
-                "vector=" + vector.stream().limit(3).map(String::valueOf).collect(Collectors.joining(", ", "[", vector.size() > 3 ? "...]" : "]")) +
-                '}';
+        return "Embedding{"
+                + "vector="
+                + vector.stream()
+                        .limit(3)
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(", ", "[", vector.size() > 3 ? "...]" : "]"))
+                + '}';
     }
 }

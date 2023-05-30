@@ -160,10 +160,7 @@ public class MemoryRecord extends DataEntryBase {
 
     @Override
     public String toString() {
-        return "MemoryRecord{" +
-                "embedding=" + embedding +
-                ", metadata=" + metadata +
-                '}';
+        return "MemoryRecord{" + "embedding=" + embedding + ", metadata=" + metadata + '}';
     }
 
     /*

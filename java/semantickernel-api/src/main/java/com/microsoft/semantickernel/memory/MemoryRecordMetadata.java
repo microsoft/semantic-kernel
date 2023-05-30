@@ -122,13 +122,24 @@ public class MemoryRecordMetadata {
 
     @Override
     public String toString() {
-        return "MemoryRecordMetadata{" +
-                "isReference=" + isReference +
-                ", externalSourceName='" + externalSourceName + '\'' +
-                ", id='" + id + '\'' +
-                ", description='" + description + '\'' +
-                ", text='" + text + '\'' +
-                ", additionalMetadata='" + additionalMetadata + '\'' +
-                '}';
+        return "MemoryRecordMetadata{"
+                + "isReference="
+                + isReference
+                + ", externalSourceName='"
+                + externalSourceName
+                + '\''
+                + ", id='"
+                + id
+                + '\''
+                + ", description='"
+                + description
+                + '\''
+                + ", text='"
+                + text
+                + '\''
+                + ", additionalMetadata='"
+                + additionalMetadata
+                + '\''
+                + '}';
     }
 }
