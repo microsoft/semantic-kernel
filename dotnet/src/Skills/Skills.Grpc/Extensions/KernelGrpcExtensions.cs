@@ -181,7 +181,7 @@ public static class KernelGrpcExtensions
             isSensitive: false,
             log: kernel.Log);
 
-        return kernel.RegisterCustomFunction(skillName, function);
+        return kernel.RegisterCustomFunction(function);
     }
 
     #endregion
