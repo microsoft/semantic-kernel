@@ -80,10 +80,9 @@ public interface IKernel
     /// <summary>
     /// Registers a custom function in the internal skill collection.
     /// </summary>
-    /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="customFunction">The custom function to register.</param>
     /// <returns>A C# function wrapping the function execution logic.</returns>
-    ISKFunction RegisterCustomFunction(string skillName, ISKFunction customFunction);
+    ISKFunction RegisterCustomFunction(ISKFunction customFunction);
 
     /// <summary>
     /// Import a set of functions from the given skill. The functions must have the `SKFunction` attribute.
@@ -93,7 +92,7 @@ public interface IKernel
     /// <param name="skillName">Name of the skill for skill collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <param name="trustService">Service used for trust checks (if null will use the default registered in the kernel).</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName = "", ITrustService? trustService = null);
+    IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null, ITrustService? trustService = null);
 
     /// <summary>
     /// Set the semantic memory to use
