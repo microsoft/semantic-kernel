@@ -107,16 +107,18 @@ public class DocumentImportController : ControllerBase
                     return this.BadRequest($"Unsupported file type: {fileType}");
             }
 
-            await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm);
-
-            // add the document info to storage
-            // TODO: Do upsert instead of create.
-            var _ = this._chatMemorySourceRepository.CreateAsync(new MemorySource(
+            var existingMemorySource = (await this._chatMemorySourceRepository.FindByNameAsync(formFile.FileName)).FirstOrDefault();
+            var newMemorySource = new MemorySource(
                 documentImportForm.ChatSessionId,
                 formFile.FileName,
                 documentImportForm.UserDisplayName,
                 SourceType.File,
-                null));
+                existingMemorySource?.Id,
+                null);
+
+            await this._chatMemorySourceRepository.UpsertAsync(newMemorySource);
+
+            await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, newMemorySource.Id);
         }
         catch (Exception ex) when (ex is ArgumentOutOfRangeException)
         {
@@ -179,8 +181,8 @@ public class DocumentImportController : ControllerBase
     /// <param name="kernel">The kernel instance from the service</param>
     /// <param name="content">The file content read from the uploaded document</param>
     /// <param name="documentImportForm">The document upload form that contains additional necessary info</param>
-    /// <returns></returns>
-    private async Task ParseDocumentContentToMemoryAsync(IKernel kernel, string content, DocumentImportForm documentImportForm)
+    /// <param name="memorySourceId">The ID of the MemorySource that the document content is linked to</param>
+    private async Task ParseDocumentContentToMemoryAsync(IKernel kernel, string content, DocumentImportForm documentImportForm, string memorySourceId)
     {
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
         var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global
@@ -192,19 +194,20 @@ public class DocumentImportController : ControllerBase
         var lines = TextChunker.SplitPlainTextLines(content, this._options.DocumentLineSplitMaxTokens);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, this._options.DocumentParagraphSplitMaxLines);
 
-        foreach (var paragraph in paragraphs)
+        for (var i = 0; i < paragraphs.Count; i++)
         {
+            var paragraph = paragraphs[i];
             await kernel.Memory.SaveInformationAsync(
                 collection: targetCollectionName,
                 text: paragraph,
-                id: Guid.NewGuid().ToString(), // TODO: We can link the memory record with the MemorySource item.
+                id: $"{memorySourceId}-{i}",
                 description: $"Document: {documentName}");
         }
 
         this._logger.LogInformation(
             "Parsed {0} paragraphs from local file {1}",
             paragraphs.Count,
-            Path.GetFileName(documentImportForm.FormFile?.FileName)
+            documentName
         );
     }
 

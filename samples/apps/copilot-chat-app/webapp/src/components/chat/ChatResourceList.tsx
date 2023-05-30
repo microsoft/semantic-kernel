@@ -1,27 +1,29 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import {
+    Avatar,
+    PresenceBadgeStatus,
+    Table,
     TableBody,
     TableCell,
-    TableRow,
-    Table,
+    TableCellLayout,
     TableHeader,
     TableHeaderCell,
-    TableCellLayout,
-    PresenceBadgeStatus,
-    Avatar,
+    TableRow,
+    makeStyles,
     shorthands,
     tokens,
-    makeStyles,
 } from '@fluentui/react-components';
+import { DocumentPdfRegular, DocumentTextRegular } from '@fluentui/react-icons';
 import * as React from 'react';
-import { DocumentPdfRegular } from '@fluentui/react-icons';
-import { useChat } from '../../libs/useChat';
 import { ChatMemorySource } from '../../libs/models/ChatMemorySource';
+import { useChat } from '../../libs/useChat';
 
 const useClasses = makeStyles({
     root: {
         ...shorthands.margin(tokens.spacingVerticalM, tokens.spacingHorizontalM),
+    },
+    table: {
         backgroundColor: tokens.colorNeutralBackground1,
     },
     tableHeader: {
@@ -48,7 +50,7 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatSessionI
     const items = resources.map((item) => ({
         name: {
             label: item.name,
-            icon: <DocumentPdfRegular /> /* TODO: change icon based on file extension */,
+            icon: getFileIconByFileExtension(item.name),
             url: item.hyperlink,
         },
         updatedOn: {
@@ -68,43 +70,53 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatSessionI
     ];
 
     return (
-        <Table arial-label="External resource table" className={classes.root}>
-            <TableHeader>
-                <TableRow>
-                    {columns.map((column) => (
-                        <TableHeaderCell key={column.columnKey}>
-                            <span className={classes.tableHeader}>{column.label}</span>
-                        </TableHeaderCell>
-                    ))}
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {items.map((item) => (
-                    <TableRow key={item.name.label}>
-                        <TableCell>
-                            <TableCellLayout media={item.name.icon}>
-                                <a href={item.name.url}>{item.name.label}</a>
-                            </TableCellLayout>
-                        </TableCell>
-                        <TableCell>{item.updatedOn.label}</TableCell>
-                        <TableCell>
-                            <TableCellLayout
-                                media={
-                                    <Avatar
-                                        aria-label={item.sharedBy.label}
-                                        name={item.sharedBy.label}
-                                        badge={{
-                                            status: item.sharedBy.status as PresenceBadgeStatus,
-                                        }}
-                                    />
-                                }
-                            >
-                                {item.sharedBy.label}
-                            </TableCellLayout>
-                        </TableCell>
+        <div className={classes.root}>
+            <Table aria-label="External resource table" className={classes.table}>
+                <TableHeader>
+                    <TableRow>
+                        {columns.map((column) => (
+                            <TableHeaderCell key={column.columnKey}>
+                                <span className={classes.tableHeader}>{column.label}</span>
+                            </TableHeaderCell>
+                        ))}
                     </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody>
+                    {items.map((item) => (
+                        <TableRow key={item.name.label}>
+                            <TableCell>
+                                <TableCellLayout media={item.name.icon}>
+                                    <a href={item.name.url}>{item.name.label}</a>
+                                </TableCellLayout>
+                            </TableCell>
+                            <TableCell>{item.updatedOn.label}</TableCell>
+                            <TableCell>
+                                <TableCellLayout
+                                    media={
+                                        <Avatar
+                                            aria-label={item.sharedBy.label}
+                                            name={item.sharedBy.label}
+                                            badge={{
+                                                status: item.sharedBy.status as PresenceBadgeStatus,
+                                            }}
+                                        />
+                                    }
+                                >
+                                    {item.sharedBy.label}
+                                </TableCellLayout>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
     );
 };
+
+function getFileIconByFileExtension(fileName: string) {
+    const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.') + 1);
+    if (extension === 'pdf') {
+        return <DocumentPdfRegular />;
+    }
+    return <DocumentTextRegular />;
+}

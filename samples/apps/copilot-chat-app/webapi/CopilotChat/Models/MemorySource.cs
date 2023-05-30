@@ -59,9 +59,9 @@ public class MemorySource : IStorageEntity
     [JsonPropertyName("updatedOn")]
     public DateTimeOffset UpdatedOn { get; set; }
 
-    public MemorySource(string chatSessionId, string name, string sharedBy, SourceType type, Uri? hyperlink)
+    public MemorySource(string chatSessionId, string name, string sharedBy, SourceType type, string? id, Uri? hyperlink)
     {
-        this.Id = Guid.NewGuid().ToString();
+        this.Id = id ?? Guid.NewGuid().ToString();
         this.ChatSessionId = chatSessionId;
         this.Name = name;
         this.SourceType = type;

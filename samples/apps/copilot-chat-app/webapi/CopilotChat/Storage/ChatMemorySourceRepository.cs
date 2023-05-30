@@ -24,4 +24,14 @@ public class ChatMemorySourceRepository : Repository<MemorySource>
     {
         return base.StorageContext.QueryEntitiesAsync(e => e.ChatSessionId == chatSessionId);
     }
+
+    /// <summary>
+    /// Finds chat memory sources by name
+    /// </summary>
+    /// <param name="name">Name</param>
+    /// <returns>A list of memory sources with the given name.</returns>
+    public Task<IEnumerable<MemorySource>> FindByNameAsync(string name)
+    {
+        return base.StorageContext.QueryEntitiesAsync(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+    }
 }
