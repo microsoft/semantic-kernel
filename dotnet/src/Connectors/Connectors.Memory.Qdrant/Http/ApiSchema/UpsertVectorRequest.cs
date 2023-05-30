@@ -21,6 +21,16 @@ internal sealed class UpsertVectorRequest
         return this;
     }
 
+    public UpsertVectorRequest UpsertRange(IEnumerable<QdrantVectorRecord> vectorRecords)
+    {
+        foreach (var vectorRecord in vectorRecords)
+        {
+            this.UpsertVector(vectorRecord);
+        }
+
+        return this;
+    }
+
     public HttpRequestMessage Build()
     {
         return HttpRequest.CreatePutRequest(
