@@ -93,7 +93,7 @@ public interface IKernel
     /// <param name="skillName">Name of the skill for skill collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <param name="trustService">Service used for trust checks (if null will use the default registered in the kernel).</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName = "", ITrustService? trustService = null);
+    IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null, ITrustService? trustService = null);
 
     /// <summary>
     /// Set the semantic memory to use
