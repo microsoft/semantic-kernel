@@ -144,7 +144,7 @@ internal static class SemanticKernelExtensions
                     config.Weaviate.Scheme, config.Weaviate.Host, config.Weaviate.Port, config.Weaviate.ApiKey, null, sp.GetRequiredService<ILogger<WeaviateMemoryStore>>()));
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
                     sp.GetRequiredService<IMemoryStore>(),
-                    sp.GetRequiredService<IOptionsSnapshot<AIServiceOptions>>().Get(AIServiceOptions.EmbeddingPropertyName)
+                    sp.GetRequiredService<IOptions<AIServiceOptions>>().Value
                         .ToTextEmbeddingsService(logger: sp.GetRequiredService<ILogger<AIServiceOptions>>())));
                 break;
 

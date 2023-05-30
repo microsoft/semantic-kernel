@@ -19,7 +19,7 @@ public static class Example41_Weaviate
         string endpoint = Env.Var("WEAVIATE_ENDPOINT");
         int weaviatePort = int.Parse(Env.Var("WEAVIATE_PORT"), CultureInfo.InvariantCulture);
         string apiKey = Env.Var("WEAVIATE_APIKEY");
-        WeaviateMemoryStore memoryStore = new WeaviateMemoryStore(scheme, endpoint, weaviatePort, apiKey, logger: ConsoleLogger.Log);
+        WeaviateMemoryStore memoryStore = new(scheme, endpoint, weaviatePort, apiKey, logger: ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .Configure(c =>
