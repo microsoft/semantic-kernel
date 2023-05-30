@@ -55,17 +55,14 @@ public abstract class ClientBase
 
         if (response == null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions not found");
+            throw new OpenAIInvalidResponseException<Completions>(null, "Text completions null response");
         }
 
         var responseData = response.Value;
 
-        if (responseData.Choices.Count < 1)
+        if (responseData.Choices.Count == 0)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions not found")
-            {
-                Data = { { "ResponseData", responseData } }
-            };
+            throw new OpenAIInvalidResponseException<Completions>(responseData, "Text completions not found");
         }
 
         return responseData.Choices.Select(choice => new TextCompletionResult(responseData, choice)).ToList();
@@ -118,15 +115,12 @@ public abstract class ClientBase
 
             if (response == null)
             {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text embedding null response");
+                throw new OpenAIInvalidResponseException<Embeddings>(null, "Text embedding null response");
             }
 
-            if (response.Value.Data.Count < 1)
+            if (response.Value.Data.Count == 0)
             {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text embedding not found")
-                {
-                    Data = { { "ResponseData", response.Value } }
-                };
+                throw new OpenAIInvalidResponseException<Embeddings>(response.Value, "Text embedding not found");
             }
 
             EmbeddingItem x = response.Value.Data[0];
@@ -160,15 +154,12 @@ public abstract class ClientBase
 
         if (response == null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions null response");
+            throw new OpenAIInvalidResponseException<ChatCompletions>(null, "Chat completions null response");
         }
 
-        if (response.Value.Choices.Count < 1)
+        if (response.Value.Choices.Count == 0)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found")
-            {
-                Data = { { "ResponseData", response.Value } }
-            };
+            throw new OpenAIInvalidResponseException<ChatCompletions>(response.Value, "Chat completions not found");
         }
 
         return response.Value.Choices[0].Message.Content;
@@ -206,21 +197,25 @@ public abstract class ClientBase
         Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
             () => this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        using StreamingChatCompletions streamingChatCompletions = response.Value;
-
         if (response is null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions null response");
+            throw new OpenAIInvalidResponseException<StreamingChatCompletions>(null, "Chat completions null response");
         }
 
-        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
+        using StreamingChatCompletions streamingChatCompletions = response.Value;
+
+        var choices = await response.Value.GetChoicesStreaming(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        if (choices.Count == 0)
+        {
+            throw new OpenAIInvalidResponseException<StreamingChatCompletions>(streamingChatCompletions, "Streaming chat completions not found");
+        }
+
+        foreach (StreamingChatChoice choice in choices)
         {
             await foreach (ChatMessage message in choice.GetMessageStreaming(cancellationToken))
             {
                 yield return message.Content;
             }
-
-            yield return Environment.NewLine;
         }
     }
 

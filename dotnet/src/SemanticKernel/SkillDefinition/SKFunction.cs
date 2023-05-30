@@ -379,36 +379,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         return completionResult.ToString();
     }
 
-    private static object? GetCompletionsResponseData(IReadOnlyList<ITextCompletionResult> completions)
-    {
-        var resultsData = completions.Select(c => c.ModelResult).ToArray();
-
-        return resultsData;
-    }
-
-    internal enum DelegateTypes
-    {
-        Unknown = 0,
-        Void = 1,
-        OutString = 2,
-        OutTaskString = 3,
-        InSKContext = 4,
-        InSKContextOutString = 5,
-        InSKContextOutTaskString = 6,
-        ContextSwitchInSKContextOutTaskSKContext = 7,
-        InString = 8,
-        InStringOutString = 9,
-        InStringOutTaskString = 10,
-        InStringAndContext = 11,
-        InStringAndContextOutString = 12,
-        InStringAndContextOutTaskString = 13,
-        ContextSwitchInStringAndContextOutTaskContext = 14,
-        InStringOutTask = 15,
-        InContextOutTask = 16,
-        InStringAndContextOutTask = 17,
-        OutTask = 18
-    }
-
     internal SKFunction(
         Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> delegateFunction,
         IList<ParameterView> parameters,
