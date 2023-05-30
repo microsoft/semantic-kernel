@@ -148,7 +148,9 @@ async def test_upsert_batch_async_and_get_batch_async(
     await memory.upsert_batch_async("test-collection", [memory_record1, memory_record2])
 
     results = await memory.get_batch_async(
-        "test-collection", [memory_record1._id, memory_record2._id], with_embeddings=True
+        "test-collection",
+        [memory_record1._id, memory_record2._id],
+        with_embeddings=True,
     )
 
     assert len(results) >= 2
@@ -204,10 +206,7 @@ async def test_get_nearest_match_async(
     test_embedding[0] = test_embedding[0] + 0.01
 
     result = await memory.get_nearest_match_async(
-        "test-collection",
-        test_embedding,
-        min_relevance_score=0.0,
-        with_embedding=True
+        "test-collection", test_embedding, min_relevance_score=0.0, with_embedding=True
     )
     assert result is not None
     assert result[0]._id == memory_record1._id

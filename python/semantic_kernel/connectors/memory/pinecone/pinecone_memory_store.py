@@ -46,7 +46,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         pinecone.init(
             api_key=self._pinecone_api_key, environment=self._pinecone_environment
         )
-    
+
     def get_collections(self) -> List[str]:
         return pinecone.list_indexes()
 
