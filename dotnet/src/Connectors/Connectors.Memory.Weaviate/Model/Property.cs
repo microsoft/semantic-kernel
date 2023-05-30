@@ -2,7 +2,7 @@
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 
-internal class Property
+internal sealed class Property
 {
     public string? Name { get; set; }
     public string[]? DataType { get; set; }

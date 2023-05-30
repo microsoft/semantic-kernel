@@ -116,4 +116,6 @@ docker-compose up -d
 
 This will launch both the Weaviate and Contextionary instances.
 
+The Weaviate instance API key is set to "my-secret-key" by default.
+
 > To stop the container, open Docker Desktop and stop the containers.

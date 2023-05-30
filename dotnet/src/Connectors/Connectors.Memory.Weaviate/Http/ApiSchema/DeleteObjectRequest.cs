@@ -8,7 +8,7 @@ internal sealed class DeleteObjectRequest
 {
     public string? Class { get; set; }
     public string? Id { get; set; }
-    
+
     public HttpRequestMessage Build()
     {
         return HttpRequest.CreateDeleteRequest($"objects/{this.Class}/{this.Id}");

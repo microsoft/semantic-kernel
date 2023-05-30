@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 internal sealed class BatchResponse : WeaviateObject
 {
     public Deprecation[]? Deprecations { get; set; }

@@ -20,6 +20,7 @@ services:
       BACKUP_FILESYSTEM_PATH: "/tmp/backups"
       CLUSTER_GOSSIP_BIND_PORT: "7100"
       CLUSTER_DATA_BIND_PORT: "7101"
+      AUTHENTICATION_APIKEY_ALLOWED_KEYS: 'my-secret-key'
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/v1" ]
       interval: 1m

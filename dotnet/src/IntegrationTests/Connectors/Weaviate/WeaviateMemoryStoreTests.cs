@@ -16,13 +16,14 @@ namespace SemanticKernel.IntegrationTests.Connectors.Weaviate;
 /// Tests for <see cref="s_weaviateMemoryStore" /> collection and upsert operations.
 /// These tests can be run by launching a Weaviate instance using the docker-compose.yml
 /// file found in this directory.
+///
+/// The Weaviate instance API key is set in the Docker Container as "my-secret-key".
 /// </summary>
 [Collection("Sequential")]
 public class WeaviateMemoryStoreTests
 {
     private static readonly HttpClient s_httpClient = new();
-    
-    private static readonly WeaviateMemoryStore s_weaviateMemoryStore = new("http", "localhost", 8080, httpClient: s_httpClient);
+    private static readonly WeaviateMemoryStore s_weaviateMemoryStore = new("http", "localhost", 8080, "my-secret-key", httpClient: s_httpClient);
 
     [Fact(Skip = "Do not run on CI")]
     public async Task EnsureConflictingCollectionNamesAreHandledForCreateAsync()
