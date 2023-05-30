@@ -4,10 +4,16 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Security;
+
+#pragma warning disable CA1710 // ContextVariables doesn't end in Dictionary or Collection
+#pragma warning disable CA1725, RCS1168 // Uses "name" instead of "key" for some public APIs
+#pragma warning disable CS8767 // Reference type nullability doesn't match because netstandard2.0 surface area isn't nullable reference type annotated
+// TODO: support more complex data types, and plan for rendering these values into prompt templates.
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -17,13 +23,8 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DebuggerTypeProxy(typeof(ContextVariables.TypeProxy))]
-public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwareString>>
+public sealed class ContextVariables : IDictionary<string, TrustAwareString>
 {
-    /// <summary>
-    /// In the simplest scenario, the data is an input string, stored here.
-    /// </summary>
-    public TrustAwareString Input => this._variables[MainKey];
-
     /// <summary>
     /// Constructor for context variables.
     /// </summary>
@@ -39,6 +40,25 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// </summary>
     /// <param name="content">Optional value for the main variable of the context.</param>
     public ContextVariables(string? content) : this(TrustAwareString.CreateTrusted(content)) { }
+
+    /// <summary>
+    /// Create a copy of the current instance with a copy of the internal data
+    /// </summary>
+    /// <returns>Copy of the current instance</returns>
+    public ContextVariables Clone()
+    {
+        var clone = new ContextVariables();
+        foreach (KeyValuePair<string, TrustAwareString> x in this._variables)
+        {
+            clone.Set(x.Key, x.Value);
+        }
+
+        return clone;
+    }
+
+    /// <summary>Gets the main input string.</summary>
+    /// <remarks>If the main input string was removed from the collection, an empty string will be returned.</remarks>
+    public TrustAwareString Input => this._variables.TryGetValue(MainKey, out TrustAwareString? value) ? value : TrustAwareString.Empty;
 
     /// <summary>
     /// Updates the main input text with the new value after a function is complete.
@@ -129,7 +149,6 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// </summary>
     /// <param name="name">Variable name</param>
     /// <param name="value">Value to store</param>
-    /// TODO: support for more complex data types, and plan for rendering these values into prompt templates.
     public void Set(string name, string value)
     {
         this.Set(name, TrustAwareString.CreateTrusted(value));
@@ -141,6 +160,8 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// <param name="name">Variable name</param>
     /// <param name="trustAwareValue">Variable value as a string with trust information</param>
     /// <returns>Whether the value exists in the context variables</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Use the TryGetValue method or indexer instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public bool Get(string name, out TrustAwareString trustAwareValue)
     {
         if (this._variables.TryGetValue(name, out TrustAwareString result))
@@ -150,7 +171,6 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
         }
 
         trustAwareValue = TrustAwareString.Empty;
-
         return false;
     }
 
@@ -160,6 +180,8 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// <param name="name">Variable name</param>
     /// <param name="value">Value</param>
     /// <returns>Whether the value exists in the context variables</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Use the TryGetValue method or indexer instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public bool Get(string name, out string value)
     {
         var exists = this.Get(name, out TrustAwareString trustAwareValue);
@@ -167,6 +189,39 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
         value = trustAwareValue.Value;
 
         return exists;
+    }
+
+    /// <summary>
+    /// Gets the variable value associated with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the variable to get.</param>
+    /// <param name="value">
+    /// When this method returns, contains the variable value associated with the specified name, if the variable is found;
+    /// otherwise, null.
+    /// </param>
+    /// <returns>true if the <see cref="ContextVariables"/> contains a variable with the specified name; otherwise, false.</returns>
+    public bool TryGetValue(string name, [NotNullWhen(true)] out TrustAwareString? value) =>
+        this._variables.TryGetValue(name, out value);
+
+    /// <summary>
+    /// Gets the variable value associated with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the variable to get.</param>
+    /// <param name="value">
+    /// When this method returns, contains the variable value associated with the specified name, if the variable is found;
+    /// otherwise, null.
+    /// </param>
+    /// <returns>true if the <see cref="ContextVariables"/> contains a variable with the specified name; otherwise, false.</returns>
+    public bool TryGetValue(string name, [NotNullWhen(true)] out string? value)
+    {
+        if (this._variables.TryGetValue(name, out TrustAwareString? trustAwareValue))
+        {
+            value = trustAwareValue.Value;
+            return true;
+        }
+
+        value = null;
+        return false;
     }
 
     /// <summary>
@@ -188,13 +243,13 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     }
 
     /// <summary>
-    /// Returns true if there is a variable with the given name
+    /// Determines whether the <see cref="ContextVariables"/> contains the specified variable.
     /// </summary>
-    /// <param name="key"></param>
-    /// <returns>True if there is a variable with the given name, false otherwise</returns>
-    public bool ContainsKey(string key)
+    /// <param name="name">The name of the variable to locate.</param>
+    /// <returns>true if the <see cref="ContextVariables"/> contains a variable with the specified name; otherwise, false.</returns>
+    public bool ContainsKey(string name)
     {
-        return this._variables.ContainsKey(key);
+        return this._variables.ContainsKey(name);
     }
 
     /// <summary>
@@ -203,7 +258,14 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// <returns></returns>
     public bool IsAllTrusted()
     {
-        return this._variables.Values.All(v => v.IsTrusted);
+        foreach (var pair in this._variables)
+        {
+            if (!pair.Value.IsTrusted)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     /// <summary>
@@ -211,9 +273,7 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// </summary>
     public void UntrustAll()
     {
-        // Create a copy of the variables map iterator with ToList to avoid
-        // iterating in the map while updating it
-        foreach (var item in this._variables.ToList())
+        foreach (var item in this._variables)
         {
             // Note: we don't use an internal setter for better multi-threading
             this._variables[item.Key] = TrustAwareString.CreateUntrusted(item.Value.Value);
@@ -232,45 +292,37 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, TrustAwa
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
-    public override string ToString()
-    {
-        return this.Input;
-    }
+    public override string ToString() => this.Input;
 
     /// <summary>
     /// Get an enumerator that iterates through the context variables.
     /// </summary>
     /// <returns>An enumerator that iterates through the context variables</returns>
-    public IEnumerator<KeyValuePair<string, TrustAwareString>> GetEnumerator()
-    {
-        return this._variables.GetEnumerator();
-    }
+    public IEnumerator<KeyValuePair<string, TrustAwareString>> GetEnumerator() => this._variables.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
+    IEnumerator IEnumerable.GetEnumerator() => this._variables.GetEnumerator();
+    void IDictionary<string, TrustAwareString>.Add(string key, TrustAwareString value) => ((IDictionary<string, TrustAwareString>)this._variables).Add(key, value);
+    bool IDictionary<string, TrustAwareString>.Remove(string key) => ((IDictionary<string, TrustAwareString>)this._variables).Remove(key);
+    void ICollection<KeyValuePair<string, TrustAwareString>>.Add(KeyValuePair<string, TrustAwareString> item) => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).Add(item);
+    void ICollection<KeyValuePair<string, TrustAwareString>>.Clear() => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).Clear();
+    bool ICollection<KeyValuePair<string, TrustAwareString>>.Contains(KeyValuePair<string, TrustAwareString> item) => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).Contains(item);
+    void ICollection<KeyValuePair<string, TrustAwareString>>.CopyTo(KeyValuePair<string, TrustAwareString>[] array, int arrayIndex) => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).CopyTo(array, arrayIndex);
+    bool ICollection<KeyValuePair<string, TrustAwareString>>.Remove(KeyValuePair<string, TrustAwareString> item) => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).Remove(item);
+    ICollection<string> IDictionary<string, TrustAwareString>.Keys => ((IDictionary<string, TrustAwareString>)this._variables).Keys;
+    ICollection<TrustAwareString> IDictionary<string, TrustAwareString>.Values => ((IDictionary<string, TrustAwareString>)this._variables).Values;
+    int ICollection<KeyValuePair<string, TrustAwareString>>.Count => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).Count;
+    bool ICollection<KeyValuePair<string, TrustAwareString>>.IsReadOnly => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).IsReadOnly;
+    TrustAwareString IDictionary<string, TrustAwareString>.this[string key]
     {
-        return this._variables.GetEnumerator();
-    }
-
-    /// <summary>
-    /// Create a copy of the current instance with a copy of the internal data
-    /// </summary>
-    /// <returns>Copy of the current instance</returns>
-    public ContextVariables Clone()
-    {
-        var clone = new ContextVariables();
-        foreach (KeyValuePair<string, TrustAwareString> x in this._variables)
-        {
-            clone.Set(x.Key, x.Value);
-        }
-
-        return clone;
+        get => ((IDictionary<string, TrustAwareString>)this._variables)[key];
+        set => ((IDictionary<string, TrustAwareString>)this._variables)[key] = value;
     }
 
     internal const string MainKey = "INPUT";
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     internal string DebuggerDisplay =>
-        this._variables.TryGetValue(MainKey, out var input) && !string.IsNullOrEmpty(input.Value)
+        this.TryGetValue(MainKey, out string? input) && !string.IsNullOrEmpty(input)
             ? $"Variables = {this._variables.Count}, Input = {input}"
             : $"Variables = {this._variables.Count}";
 
