@@ -99,13 +99,14 @@ export const ChatList: FC = () => {
     const onSearch = (ev: any, data: InputOnChangeData) => {
         ev.preventDefault();
 
-        const filteredConversations: Conversations = {};
         if (data.value !== '') {
+            const filteredConversations: Conversations = {};
             for (var key in conversations) {
                 if (conversations[key].title.toLowerCase().includes(data.value.toLowerCase())) {
                     filteredConversations[key] = conversations[key];
                 }
             }
+
             setConversationsView(filteredConversations);
         } else {
             // If no search string, show full conversations list
