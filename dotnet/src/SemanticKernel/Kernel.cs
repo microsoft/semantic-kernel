@@ -108,7 +108,7 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName = "", ITrustService? trustService = null)
+    public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null, ITrustService? trustService = null)
     {
         if (string.IsNullOrWhiteSpace(skillName))
         {
@@ -122,7 +122,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         Dictionary<string, ISKFunction> skill = ImportSkill(
             skillInstance,
-            skillName,
+            skillName!,
             // Use the default trust service registered if none is provided
             trustService ?? this.TrustServiceInstance,
             this.Log
