@@ -47,15 +47,10 @@ public static class CopilotChatSemanticKernelExtensions
                 chatMessageRepository: sp.GetRequiredService<ChatMessageRepository>(),
                 chatSessionRepository: sp.GetRequiredService<ChatSessionRepository>(),
                 promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
+                documentImportOptions: sp.GetRequiredService<IOptions<DocumentMemoryOptions>>(),
                 planner: sp.GetRequiredService<CopilotChatPlanner>(),
                 logger: sp.GetRequiredService<ILogger<ChatSkill>>()),
             nameof(ChatSkill));
-
-        // Document memory skill
-        kernel.ImportSkill(new DocumentMemorySkill(
-                sp.GetRequiredService<IOptions<PromptsOptions>>(),
-                sp.GetRequiredService<IOptions<DocumentMemoryOptions>>().Value),
-            nameof(DocumentMemorySkill));
 
         return kernel;
     }

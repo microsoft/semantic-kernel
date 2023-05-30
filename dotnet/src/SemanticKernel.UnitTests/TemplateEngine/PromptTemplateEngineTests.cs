@@ -190,7 +190,7 @@ public sealed class PromptTemplateEngineTests
         {
             // Input value should be "BAR" because the variable $myVar is passed in
             this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
-            return Task.FromResult(cx.Variables.Input);
+            return Task.FromResult(cx.Variables.Input.Value);
         }
 
         ISKFunction? func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
