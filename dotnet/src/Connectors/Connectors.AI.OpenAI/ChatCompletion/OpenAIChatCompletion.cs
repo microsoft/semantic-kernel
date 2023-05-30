@@ -54,7 +54,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     }
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string instructions = "")
+    public ChatHistory CreateNewChat(string? instructions = null)
     {
         return InternalCreateNewChat(instructions);
     }

@@ -14,7 +14,7 @@ public interface IChatCompletion : IAIService
     /// </summary>
     /// <param name="instructions">Optional chat instructions for the AI service</param>
     /// <returns>Chat object</returns>
-    ChatHistory CreateNewChat(string instructions = "");
+    ChatHistory CreateNewChat(string? instructions = null);
 
     /// <summary>
     /// Get chat completion results for the prompt and settings.

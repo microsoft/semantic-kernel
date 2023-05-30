@@ -18,7 +18,9 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
  */
 public sealed class MyChatCompletionService : IChatCompletion
 {
-    public ChatHistory CreateNewChat(string instructions = "")
+    private const string OutputAssistantResult = "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)";
+
+    public ChatHistory CreateNewChat(string? instructions = null)
     {
         var chatHistory = new MyChatHistory();
 

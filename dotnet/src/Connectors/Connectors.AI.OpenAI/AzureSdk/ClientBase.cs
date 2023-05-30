@@ -188,7 +188,7 @@ public abstract class ClientBase
     /// </summary>
     /// <param name="instructions">Optional chat instructions for the AI service</param>
     /// <returns>Chat object</returns>
-    private protected static OpenAIChatHistory InternalCreateNewChat(string instructions = "")
+    private protected static OpenAIChatHistory InternalCreateNewChat(string? instructions = null)
     {
         return new OpenAIChatHistory(instructions);
     }
