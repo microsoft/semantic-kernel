@@ -59,7 +59,7 @@ public class CloudDriveSkill
     [SKFunction("Upload a small file to OneDrive (less than 4MB).")]
     public async Task UploadFileAsync(string filePath, SKContext context)
     {
-        if (!context.Variables.Get(Parameters.DestinationPath, out string destinationPath))
+        if (!context.Variables.TryGetValue(Parameters.DestinationPath, out string? destinationPath))
         {
             context.Fail($"Missing variable {Parameters.DestinationPath}.");
             return;

@@ -59,12 +59,12 @@ public sealed class TrustAwareStringTest
     public void EqualsAndGetHashCodeSucceeds()
     {
         // Arrange
-        var trustedValue0 = TrustAwareString.Trusted("some value 0");
-        var trustedValue0Copy = TrustAwareString.Trusted("some value 0");
-        var untrustedValue0 = TrustAwareString.Untrusted("some value 0");
-        var untrustedValue0Copy = TrustAwareString.Untrusted("some value 0");
-        var trustedValue1 = TrustAwareString.Trusted("some value 1");
-        var untrustedValue1 = TrustAwareString.Trusted("some value 1");
+        var trustedValue0 = TrustAwareString.CreateTrusted("some value 0");
+        var trustedValue0Copy = TrustAwareString.CreateTrusted("some value 0");
+        var untrustedValue0 = TrustAwareString.CreateUntrusted("some value 0");
+        var untrustedValue0Copy = TrustAwareString.CreateUntrusted("some value 0");
+        var trustedValue1 = TrustAwareString.CreateTrusted("some value 1");
+        var untrustedValue1 = TrustAwareString.CreateTrusted("some value 1");
         var stringValue0 = "some value 0";
         int someObj = 10;
 
