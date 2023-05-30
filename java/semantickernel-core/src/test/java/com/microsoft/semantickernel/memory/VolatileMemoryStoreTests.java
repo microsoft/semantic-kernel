@@ -13,7 +13,9 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 class VolatileMemoryStoreTests {
     private VolatileMemoryStore _db;
@@ -550,12 +552,12 @@ class VolatileMemoryStoreTests {
             assertEquals("test0", topNResult.getT1().getMetadata().getId());
             assertTrue(topNResult.getT2().doubleValue() >= threshold);
         }
-/*
+
         @Test
-        void GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
+        void getNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
         {
             // Arrange
-            var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
+            Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
             int topN = 4;
             String collection = "test_collection" + this._collectionNum;
             this._collectionNum++;
@@ -563,25 +565,29 @@ class VolatileMemoryStoreTests {
 
             for (int i = 0; i < 10; i++)
             {
-                MemoryRecord testRecord = MemoryRecord.LocalRecord(
-                    id: "test" + i,
-                    text: "text" + i,
-                    description: "description" + i,
-                    embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
-                _ = await this._db.UpsertAsync(collection, testRecord);
+                MemoryRecord testRecord = MemoryRecord.localRecord(
+                    "test" + i,
+                    "text" + i,
+                    "description" + i,
+                        new Embedding<>(Arrays.asList(1f, 1f, 1f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+                this._db.upsertAsync(collection, testRecord).block();
             }
 
             // Act
-            var topNResults = this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToEnumerable().ToArray();
-            IEnumerable<String> topNKeys = topNResults.Select(x => x.Item1.Key).ToImmutableSortedSet();
+            Collection<Tuple2<MemoryRecord, Number>> topNResults = this._db.getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true).block();
+            Collection<String> topNKeys = topNResults.stream().map(tuple -> tuple.getT1().getKey()).sorted().collect(Collectors.toList());
 
             // Assert
-            assertEquals(topN, topNResults.Length);
-            assertEquals(topN, topNKeys.Count());
-
-            for (int i = 0; i < topNResults.Length; i++)
+            assertEquals(topN, topNResults.size());
+            assertEquals(topN, topNKeys.size());
+            for (Iterator<Tuple2<MemoryRecord, Number>> iterator = topNResults.iterator(); iterator.hasNext();)
             {
-                int compare = topNResults[i].Item2.CompareTo(0.75);
+                Tuple2<MemoryRecord, Number> tuple = iterator.next();
+                int compare = Double.compare(tuple.getT2().doubleValue(),0.75);
+                assertTrue(topNKeys.contains(tuple.getT1().getKey()));
                 assertTrue(compare >= 0);
             }
         }
@@ -594,16 +600,16 @@ class VolatileMemoryStoreTests {
             String collection = "test_collection" + this._collectionNum;
             this._collectionNum++;
             this._db.createCollectionAsync(collection).block();
-            IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+            Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
 
             // Act
-            var keys = this._db.UpsertBatchAsync(collection, records);
-            var resultRecords = this._db.GetBatchAsync(collection, keys.ToEnumerable());
+            Collection<String> keys = this._db.upsertBatchAsync(collection, records).block();
+            Collection<MemoryRecord> resultRecords = this._db.getBatchAsync(collection, keys, false).block();
 
             // Assert
             assertNotNull(keys);
-            assertEquals(numRecords, keys.ToEnumerable().Count());
-            assertEquals(numRecords, resultRecords.ToEnumerable().Count());
+            assertEquals(numRecords, keys.size());
+            assertEquals(numRecords, resultRecords.size());
         }
 
         @Test
@@ -614,16 +620,16 @@ class VolatileMemoryStoreTests {
             String collection = "test_collection" + this._collectionNum;
             this._collectionNum++;
             this._db.createCollectionAsync(collection).block();
-            IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
-            var keys = this._db.UpsertBatchAsync(collection, records);
+            Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
+            Collection<String> keys = this._db.upsertBatchAsync(collection, records).block();
 
             // Act
-            var results = this._db.GetBatchAsync(collection, keys.ToEnumerable());
+            Collection<MemoryRecord> results = this._db.getBatchAsync(collection, keys, false).block();
 
             // Assert
             assertNotNull(keys);
             assertNotNull(results);
-            assertEquals(numRecords, results.ToEnumerable().Count());
+            assertEquals(numRecords, results.size());
         }
 
         @Test
@@ -634,19 +640,19 @@ class VolatileMemoryStoreTests {
             String collection = "test_collection" + this._collectionNum;
             this._collectionNum++;
             this._db.createCollectionAsync(collection).block();
-            IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+            Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
 
-            List<String> keys = new List<String>();
-            await foreach (var key in this._db.UpsertBatchAsync(collection, records))
+            List<String> keys = new ArrayList<>();
+            for (String key : this._db.upsertBatchAsync(collection, records).block())
             {
-                keys.Add(key);
+                keys.add(key);
             }
 
             // Act
-            await this._db.RemoveBatchAsync(collection, keys);
+            this._db.removeBatchAsync(collection, keys);
 
             // Assert
-            await foreach (var result in this._db.GetBatchAsync(collection, keys))
+            for (MemoryRecord result : this._db.getBatchAsync(collection, keys, false).block())
             {
                 assertNull(result);
             }
@@ -656,20 +662,20 @@ class VolatileMemoryStoreTests {
         void CollectionsCanBeDeletedAsync()
         {
             // Arrange
-            var collections = this._db.GetCollectionsAsync().ToEnumerable();
-            int numCollections = collections.Count();
-            assertTrue(numCollections == this._collectionNum);
+            Collection<String> collections = this._db.getCollectionsAsync().block();
+            int numCollections = collections.size();
+            assertEquals(this._collectionNum, numCollections);
 
             // Act
-            foreach (var collection in collections)
+            for (String collection : collections)
             {
-                await this._db.DeleteCollectionAsync(collection);
+                this._db.deleteCollectionAsync(collection);
             }
 
             // Assert
-            collections = this._db.GetCollectionsAsync().ToEnumerable();
-            numCollections = collections.Count();
-            assertTrue(numCollections == 0);
+            collections = this._db.getCollectionsAsync().block();
+            numCollections = collections.size();
+            assertEquals(0, numCollections);
             this._collectionNum = 0;
         }
 
@@ -681,8 +687,7 @@ class VolatileMemoryStoreTests {
             this._collectionNum++;
 
             // Act
-            await assertThrowsAsync<MemoryException>(() => this._db.DeleteCollectionAsync(collection));
+            assertThrows(MemoryException.class, () -> this._db.deleteCollectionAsync(collection).block());
         }
 
-     */
 }
