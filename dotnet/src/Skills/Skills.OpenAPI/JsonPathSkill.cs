@@ -35,7 +35,7 @@ public class JsonPathSkill
             return string.Empty;
         }
 
-        if (!context.Variables.Get(Parameters.JsonPath, out string jsonPath))
+        if (!context.Variables.TryGetValue(Parameters.JsonPath, out string? jsonPath))
         {
             context.Fail($"Missing variable {Parameters.JsonPath}.");
             return string.Empty;
@@ -62,7 +62,7 @@ public class JsonPathSkill
             return string.Empty;
         }
 
-        if (!context.Variables.Get(Parameters.JsonPath, out string jsonPath))
+        if (!context.Variables.TryGetValue(Parameters.JsonPath, out string? jsonPath))
         {
             context.Fail($"Missing variable {Parameters.JsonPath}.");
             return string.Empty;
