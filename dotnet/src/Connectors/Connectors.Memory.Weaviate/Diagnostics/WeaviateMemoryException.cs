@@ -5,6 +5,8 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Diagnostics;
 
+#pragma warning disable RCS1194 // Implement exception constructors
+
 /// <summary>
 /// Exception thrown for errors related to the Weaviate connector.
 /// </summary>
