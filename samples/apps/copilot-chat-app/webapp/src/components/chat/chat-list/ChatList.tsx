@@ -83,6 +83,7 @@ export const ChatList: FC = () => {
     const [conversationsView, setConversationsView] = useState(conversations);
 
     useEffect(() => {
+        // Ensure local component state is in line with app state
         setConversationsView(conversations);
     }, [conversations]);
 
@@ -98,14 +99,14 @@ export const ChatList: FC = () => {
     const onSearch = (ev: any, data: InputOnChangeData) => {
         ev.preventDefault();
 
-        const filteredChats: Conversations = {};
+        const filteredConversations: Conversations = {};
         if (data.value !== '') {
             for (var key in conversations) {
                 if (conversations[key].title.toLowerCase().includes(data.value.toLowerCase())) {
-                    filteredChats[key] = conversations[key];
+                    filteredConversations[key] = conversations[key];
                 }
             }
-            setConversationsView(filteredChats);
+            setConversationsView(filteredConversations);
         } else {
             // If no search string, show full conversations list
             setConversationsView(conversations);
