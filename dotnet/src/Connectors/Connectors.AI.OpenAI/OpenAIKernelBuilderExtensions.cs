@@ -5,12 +5,12 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Reliability;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
@@ -46,7 +46,7 @@ public static class OpenAIKernelBuilderExtensions
                 deploymentName,
                 endpoint,
                 apiKey,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
 
@@ -78,7 +78,7 @@ public static class OpenAIKernelBuilderExtensions
                 deploymentName,
                 endpoint,
                 credentials,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
 
@@ -110,7 +110,7 @@ public static class OpenAIKernelBuilderExtensions
                 modelId,
                 apiKey,
                 orgId,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
         return builder;
@@ -145,7 +145,7 @@ public static class OpenAIKernelBuilderExtensions
                 deploymentName,
                 endpoint,
                 apiKey,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
         return builder;
@@ -176,7 +176,7 @@ public static class OpenAIKernelBuilderExtensions
                 deploymentName,
                 endpoint,
                 credential,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
         return builder;
@@ -207,7 +207,7 @@ public static class OpenAIKernelBuilderExtensions
                 modelId,
                 apiKey,
                 orgId,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
         return builder;
@@ -243,7 +243,7 @@ public static class OpenAIKernelBuilderExtensions
             deploymentName,
             endpoint,
             apiKey,
-            httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+            GetHttpClient(parameters.Config, httpClient, parameters.Logger),
             parameters.Logger);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
@@ -283,7 +283,7 @@ public static class OpenAIKernelBuilderExtensions
             deploymentName,
             endpoint,
             credentials,
-            httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+            GetHttpClient(parameters.Config, httpClient, parameters.Logger),
             parameters.Logger);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
@@ -323,7 +323,7 @@ public static class OpenAIKernelBuilderExtensions
             modelId,
             apiKey,
             orgId,
-            httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+            GetHttpClient(parameters.Config, httpClient, parameters.Logger),
             parameters.Logger);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
@@ -335,13 +335,6 @@ public static class OpenAIKernelBuilderExtensions
         }
 
         return builder;
-    }
-
-    private static HttpClient CreateHttpClient(this IDelegatingHandlerFactory handlerFactory, ILogger? logger)
-    {
-        var retryHandler = handlerFactory.Create(logger);
-        retryHandler.InnerHandler = new HttpClientHandler { CheckCertificateRevocationList = true };
-        return new HttpClient(retryHandler);
     }
 
     #endregion
@@ -365,15 +358,34 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService(serviceId, ((ILogger Logger, KernelConfig Config) parameters) =>
+        builder.WithAIService<IImageGeneration>(serviceId, ((ILogger Logger, KernelConfig Config) parameters) =>
             new OpenAIImageGeneration(
                 apiKey,
                 orgId,
-                httpClient ?? parameters.Config.HttpHandlerFactory.CreateHttpClient(parameters.Logger),
+                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
 
         return builder;
+    }
+
+    /// <summary>
+    /// Retrieves an instance of HttpClient.
+    /// </summary>
+    /// <param name="config">The kernel configuration.</param>
+    /// <param name="httpClient">An optional pre-existing instance of HttpClient.</param>
+    /// <param name="logger">An optional logger.</param>
+    /// <returns>An instance of HttpClient.</returns>
+    private static HttpClient GetHttpClient(KernelConfig config, HttpClient? httpClient, ILogger? logger)
+    {
+        if (httpClient == null)
+        {
+            var retryHandler = config.HttpHandlerFactory.Create(logger);
+            retryHandler.InnerHandler = NonDisposableHttpClientHandler.Instance;
+            return new HttpClient(retryHandler, false); // We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
+        }
+
+        return httpClient;
     }
 
     #endregion

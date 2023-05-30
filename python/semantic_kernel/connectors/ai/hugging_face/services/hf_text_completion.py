@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
+from threading import Thread
 from typing import Optional
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -99,6 +100,38 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                     "Unsupported hugging face pipeline task: only \
                         text-generation, text2text-generation, and summarization are supported.",
                 )
+
+        except Exception as e:
+            raise AIException("Hugging Face completion failed", e)
+
+    async def complete_stream_async(
+        self, prompt: str, request_settings: CompleteRequestSettings
+    ):
+        try:
+            import transformers
+
+            generation_config = transformers.GenerationConfig(
+                temperature=request_settings.temperature,
+                top_p=request_settings.top_p,
+                max_new_tokens=request_settings.max_tokens,
+                pad_token_id=50256,  # EOS token
+            )
+            tokenizer = transformers.AutoTokenizer.from_pretrained(self._model_id)
+            streamer = transformers.TextIteratorStreamer(tokenizer)
+            args = {"prompt": prompt}
+            kwargs = {
+                "num_return_sequences": 1,
+                "generation_config": generation_config,
+                "streamer": streamer,
+            }
+
+            thread = Thread(target=self.generator, args=args, kwargs=kwargs)
+            thread.start()
+
+            for new_text in streamer:
+                yield new_text
+
+            thread.join()
 
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
