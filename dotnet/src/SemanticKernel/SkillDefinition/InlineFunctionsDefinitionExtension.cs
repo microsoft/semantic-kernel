@@ -41,7 +41,7 @@ public static class InlineFunctionsDefinitionExtension
         this IKernel kernel,
         string promptTemplate,
         string? functionName = null,
-        string skillName = "",
+        string? skillName = null,
         string? description = null,
         int maxTokens = 256,
         double temperature = 0,
@@ -94,7 +94,7 @@ public static class InlineFunctionsDefinitionExtension
         string promptTemplate,
         PromptTemplateConfig config,
         string? functionName = null,
-        string skillName = "",
+        string? skillName = null,
         ITrustService? trustService = null)
     {
         functionName ??= RandomFunctionName();
@@ -109,7 +109,7 @@ public static class InlineFunctionsDefinitionExtension
         // TODO: manage overwrites, potentially error out
         return string.IsNullOrEmpty(skillName)
             ? kernel.RegisterSemanticFunction(functionName, functionConfig, trustService)
-            : kernel.RegisterSemanticFunction(skillName, functionName, functionConfig, trustService);
+            : kernel.RegisterSemanticFunction(skillName!, functionName, functionConfig, trustService);
     }
 
     private static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");
