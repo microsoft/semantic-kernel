@@ -80,10 +80,9 @@ public interface IKernel
     /// <summary>
     /// Registers a custom function in the internal skill collection.
     /// </summary>
-    /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="customFunction">The custom function to register.</param>
     /// <returns>A C# function wrapping the function execution logic.</returns>
-    ISKFunction RegisterCustomFunction(string skillName, ISKFunction customFunction);
+    ISKFunction RegisterCustomFunction(ISKFunction customFunction);
 
     /// <summary>
     /// Import a set of functions from the given skill. The functions must have the `SKFunction` attribute.

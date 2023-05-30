@@ -137,13 +137,11 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterCustomFunction(string skillName, ISKFunction customFunction)
+    public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
     {
         // Note this does not accept the trustService, it is already defined
         // when the custom function is created, so the kernel will not override
 
-        // Future-proofing the name not to contain special chars
-        Verify.ValidSkillName(skillName);
         Verify.NotNull(customFunction);
 
         customFunction.SetDefaultSkillCollection(this.Skills);
