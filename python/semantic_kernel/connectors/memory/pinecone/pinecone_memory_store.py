@@ -147,7 +147,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             record {MemoryRecord} -- The record to upsert.
 
         Returns:
-            str -- The unqiue database key of the record. In Pinecone, this is the record ID.
+            str -- The unique database key of the record. In Pinecone, this is the record ID.
         """
         if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
@@ -174,7 +174,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             records {List[MemoryRecord]} -- The records to upsert.
 
         Returns:
-            List[str] -- The unqiue database keys of the records.
+            List[str] -- The unique database keys of the records.
         """
         if collection_name not in pinecone.list_indexes():
             raise Exception(f"Collection '{collection_name}' does not exist")
