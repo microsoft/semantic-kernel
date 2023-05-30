@@ -12,11 +12,11 @@ import {
 } from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 import { Dismiss20Regular, Filter20Regular } from '@fluentui/react-icons';
-import { FC, useState } from 'react';
-import { useChat } from '../../../libs/useChat';
+import { FC, useEffect, useState } from 'react';
 import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { Conversations } from '../../../redux/features/conversations/ConversationsState';
 import { Breakpoints } from '../../../styles';
 import { ChatListItem } from './ChatListItem';
 import { NewBotMenu } from './NewBotMenu';
@@ -77,30 +77,39 @@ const useClasses = makeStyles({
 
 export const ChatList: FC = () => {
     const classes = useClasses();
-    const chat = useChat();
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     const [isFiltering, setIsFiltering] = useState(false);
-    const [searchString, setSearchString] = useState('');
+    const [conversationsView, setConversationsView] = useState(conversations);
 
-    const { conversations, filteredConversations, selectedId } = useAppSelector(
-        (state: RootState) => state.conversations,
-    );
-    const displayedConversations = isFiltering ? filteredConversations : conversations;
+    useEffect(() => {
+        setConversationsView(conversations);
+    }, [conversations]);
 
     const onFilterClick = () => {
         setIsFiltering(true);
     };
 
     const onFilterCancel = () => {
-        chat.clearConversationsFilter();
-        setSearchString('');
+        setConversationsView(conversations);
         setIsFiltering(false);
     };
 
     const onSearch = (ev: any, data: InputOnChangeData) => {
         ev.preventDefault();
-        setSearchString(data.value);
-        chat.filterChats(data.value);
+
+        const filteredChats: Conversations = {};
+        if (data.value !== '') {
+            for (var key in conversations) {
+                if (conversations[key].title.toLowerCase().includes(data.value.toLowerCase())) {
+                    filteredChats[key] = conversations[key];
+                }
+            }
+            setConversationsView(filteredChats);
+        } else {
+            // If no search string, show full conversations list
+            setConversationsView(conversations);
+        }
     };
 
     return (
@@ -122,7 +131,6 @@ export const ChatList: FC = () => {
                         <Input
                             placeholder="Filter by name"
                             className={mergeClasses(classes.input, classes.title)}
-                            value={searchString}
                             onChange={onSearch}
                             autoFocus
                         />
@@ -133,7 +141,7 @@ export const ChatList: FC = () => {
                 )}
             </div>
             <Tree aria-label={'chat list'} className={classes.list}>
-                {Object.keys(displayedConversations).map((id) => {
+                {Object.keys(conversationsView).map((id) => {
                     const convo = conversations[id];
                     const messages = convo.messages;
                     const lastMessage = convo.messages.length - 1;

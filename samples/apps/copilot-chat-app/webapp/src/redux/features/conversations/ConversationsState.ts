@@ -9,13 +9,11 @@ export type Conversations = {
 
 export interface ConversationsState {
     conversations: Conversations;
-    filteredConversations: Conversations;
     selectedId: string;
 }
 
 export const initialState: ConversationsState = {
     conversations: {},
-    filteredConversations: {},
     selectedId: '',
 };
 
