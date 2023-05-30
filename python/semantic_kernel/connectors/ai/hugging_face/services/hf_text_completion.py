@@ -84,15 +84,29 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 max_new_tokens=request_settings.max_tokens,
                 pad_token_id=50256,  # EOS token
             )
-            result = self.generator(
-                prompt, num_return_sequences=1, generation_config=generation_config
+
+            do_sample = request_settings.number_of_responses > 1
+            
+            results = self.generator(
+                prompt, do_sample=do_sample, num_return_sequences=request_settings.number_of_responses, generation_config=generation_config
             )
 
+            completions = list()
             if self._task == "text-generation" or self._task == "text2text-generation":
-                return result[0]["generated_text"]
+                for response in results:
+                    completions.append(response["generated_text"])
+                if len(completions) == 1:
+                    return completions[0]
+                else:
+                    return completions
 
             elif self._task == "summarization":
-                return result[0]["summary_text"]
+                for response in results:
+                    completions.append(response["summary_text"])
+                if len(completions) == 1:
+                    return completions[0]
+                else:
+                    return completions
 
             else:
                 raise AIException(
@@ -120,7 +134,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             streamer = transformers.TextIteratorStreamer(tokenizer)
             args = {"prompt": prompt}
             kwargs = {
-                "num_return_sequences": 1,
+                "num_return_sequences": request_settings.number_of_responses,
                 "generation_config": generation_config,
                 "streamer": streamer,
             }

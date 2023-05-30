@@ -2,6 +2,8 @@
 
 from logging import Logger
 from typing import Any, List, Optional, Tuple
+from concurrent import futures
+import threading
 
 import openai
 
@@ -65,17 +67,34 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         # TODO: tracking on token counts/etc.
         response = await self._send_chat_request(messages, request_settings, False)
 
-        return response.choices[0].message.content
+        if len(response.choices) == 1:
+            return response.choices[0].message.content
+        else:
+            return [choice.message.content for choice in response.choices]
 
     async def complete_chat_stream_async(
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
     ):
+        # set up multiple threads to parse the response if the user
+        # requests multiple responses
+        if request_settings.number_of_responses > 1:
+            completions = [None] * request_settings.number_of_responses
+
         response = await self._send_chat_request(messages, request_settings, True)
+
+        # async for chunk in response:
+        #     async for choice in chunk.choices:
+        #         yield _parse_choices(chunk, i) 
+
         async for chunk in response:
-            if "role" in chunk.choices[0].delta:
-                yield chunk.choices[0].delta.role + ": "
-            if "content" in chunk.choices[0].delta:
-                yield chunk.choices[0].delta.content
+            i = 0
+            print(chunk)
+            yield None
+            # for choice in chunk.choices:
+            #     print(choice)
+            #     completions[i] = _parse_choices(chunk, i)
+            #     i += 1
+            # yield completions
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
@@ -184,6 +203,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 presence_penalty=request_settings.presence_penalty,
                 frequency_penalty=request_settings.frequency_penalty,
                 max_tokens=request_settings.max_tokens,
+                n=request_settings.number_of_responses,
                 stream=stream,
             )
         except Exception as ex:
@@ -196,3 +216,22 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         # TODO: tracking on token counts/etc.
 
         return response
+
+# def _parse_choices(choice):
+#     message = ""
+#     if "role" in choice.delta:
+#         message += choice.delta.role + ": "
+#     if "content" in choice.delta:
+#         message += choice.delta.content
+#     yield message
+
+def _parse_choices(chunk, choice_number):
+    message = ""
+    if "role" in chunk.choices[choice_number-1].delta:
+        message += chunk.choices[choice_number-1].delta.role + ": "
+    if "content" in chunk.choices[choice_number-1].delta:
+        message += chunk.choices[choice_number-1].delta.content
+
+    yield message
+
+
