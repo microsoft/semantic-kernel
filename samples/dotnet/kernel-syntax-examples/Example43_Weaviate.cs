@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example41_Weaviate
+public static class Example43_Weaviate
 {
     private const string MemoryCollectionName = "weaviate-test";
 

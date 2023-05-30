@@ -133,7 +133,7 @@ public static class Program
         Example42_KernelBuilder.Run();
         Console.WriteLine("== DONE ==");
       
-        await Example41_Weaviate.RunAsync();
+        await Example43_Weaviate.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
