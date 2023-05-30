@@ -104,4 +104,4 @@ docker-compose up -d
 
 This will launch both the Weaviate and Contextionary instances.
 
-> To stop the container, open Docker Dekstop and stop the containers.
+> To stop the container, open Docker Desktop and stop the containers.
