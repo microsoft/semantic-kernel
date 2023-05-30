@@ -302,13 +302,13 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
+    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFiltersAsync(
         string collectionName,
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
-        Dictionary<string, object>? filters = default,
+        IEnumerable<MemoryFilter>? filters = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient
@@ -365,12 +365,13 @@ public class QdrantMemoryStore : IMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        var results = this.GetNearestMatchesAsync(
+        var results = this.GetNearestMatchesWithFiltersAsync(
             collectionName: collectionName,
             embedding: embedding,
             minRelevanceScore: minRelevanceScore,
             limit: 1,
             withEmbeddings: withEmbedding,
+            filters: null,
             cancellationToken: cancellationToken);
 
         var record = await results.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);

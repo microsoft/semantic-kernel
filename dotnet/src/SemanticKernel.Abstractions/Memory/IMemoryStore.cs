@@ -107,7 +107,6 @@ public interface IMemoryStore
     /// <param name="limit">The maximum number of similarity results to return.</param>
     /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
-    /// <param name="filters">Filter pairs (key,value) used to filter the results.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A group of tuples where item1 is a <see cref="MemoryRecord"/> and item2 is its similarity score as a <see cref="double"/>.</returns>
     IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -116,7 +115,26 @@ public interface IMemoryStore
         int limit,
         double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
-        Dictionary<string, object>? filters = default,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the nearest matches to the <see cref="Embedding{Single}"/> of type <see cref="float"/> with payload meeting filtering conditions. Does not guarantee that the collection exists.
+    /// </summary>
+    /// <param name="collectionName">The name associated with a collection of embeddings.</param>
+    /// <param name="embedding">The <see cref="Embedding{Single}"/> to compare the collection's embeddings with.</param>
+    /// <param name="limit">The maximum number of similarity results to return.</param>
+    /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
+    /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
+    /// <param name="filters">The filters to apply to the vectors before search.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A group of tuples where item1 is a <see cref="MemoryRecord"/> and item2 is its similarity score as a <see cref="double"/>.</returns>
+    IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFiltersAsync(
+        string collectionName,
+        Embedding<float> embedding,
+        int limit,
+        double minRelevanceScore = 0.0,
+        bool withEmbeddings = false,
+        IEnumerable<MemoryFilter>? filters = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>

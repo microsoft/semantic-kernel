@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -73,7 +74,7 @@ public interface IQdrantVectorDbClient
         double threshold,
         int top = 1,
         bool withVectors = false,
-        Dictionary<string, object>? filters = default,
+        IEnumerable<MemoryFilter>? filters = default,
         IEnumerable<string>? requiredTags = default,
         CancellationToken cancellationToken = default);
 

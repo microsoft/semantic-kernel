@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Memory;
+using static Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema.QdrantFilter;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
@@ -13,7 +15,7 @@ internal sealed class SearchVectorsRequest : IValidatable
     public IEnumerable<float> StartingVector { get; set; } = System.Array.Empty<float>();
 
     [JsonPropertyName("filter")]
-    public Filter Filters { get; set; }
+    public QdrantFilter Filters { get; set; }
 
     [JsonPropertyName("limit")]
     public int Limit { get; set; }
@@ -68,15 +70,61 @@ internal sealed class SearchVectorsRequest : IValidatable
         return this;
     }
 
-    public SearchVectorsRequest WithFilters(Dictionary<string, object>? filters)
+    public SearchVectorsRequest WithFilters(IEnumerable<MemoryFilter>? filters)
     {
         if (filters == null) { return this; }
 
         foreach (var filter in filters)
         {
-            if (!string.IsNullOrEmpty(filter.Key))
+            if (!string.IsNullOrEmpty(filter.Field))
             {
-                this.Filters.ValueMustMatch(filter.Key, filter.Value);
+                switch (filter.Operator)
+                {
+                    case MemoryFieldOperator.Equals:
+                        this.Filters.Must(new MatchCondition
+                        {
+                            Key = filter.Field,
+                            Match = new Match { Value = filter.Value }
+                        });
+                        break;
+                    case MemoryFieldOperator.GreaterThan:
+                        this.Filters.Must(new RangeCondition
+                        {
+                            Key = filter.Field,
+                            Range = new Range { GreaterThan = (float)filter.Value }
+                        });
+                        break;
+                    case MemoryFieldOperator.LowerThan:
+                        this.Filters.Must(new RangeCondition
+                        {
+                            Key = filter.Field,
+                            Range = new Range { LowerThan = (float)filter.Value }
+                        });
+                        break;
+                    case MemoryFieldOperator.GreaterThanOrEqual:
+                        this.Filters.Must(new RangeCondition
+                        {
+                            Key = filter.Field,
+                            Range = new Range { GreaterThanOrEqual = (float)filter.Value }
+                        });
+                        break;
+                    case MemoryFieldOperator.LowerThanOrEqual:
+                        this.Filters.Must(new RangeCondition
+                        {
+                            Key = filter.Field,
+                            Range = new Range { LowerThanOrEqual = (float)filter.Value }
+                        });
+                        break;
+                    case MemoryFieldOperator.Contains:
+                        this.Filters.Must(new MatchCondition
+                        {
+                            Key = filter.Field,
+                            Match = new Match { Text = filter.Value }
+                        });
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -134,74 +182,6 @@ internal sealed class SearchVectorsRequest : IValidatable
             payload: this);
     }
 
-    internal sealed class Filter : IValidatable
-    {
-        internal sealed class Match : IValidatable
-        {
-            [JsonPropertyName("value")]
-            public object Value { get; set; }
-
-            public Match()
-            {
-                this.Value = string.Empty;
-            }
-
-            public void Validate()
-            {
-            }
-        }
-
-        internal sealed class Must : IValidatable
-        {
-            [JsonPropertyName("key")]
-            public string Key { get; set; }
-
-            [JsonPropertyName("match")]
-            public Match Match { get; set; }
-
-            public Must()
-            {
-                this.Match = new();
-                this.Key = string.Empty;
-            }
-
-            public Must(string key, object value) : this()
-            {
-                this.Key = key;
-                this.Match.Value = value;
-            }
-
-            public void Validate()
-            {
-                Verify.NotNull(this.Key, "The filter key is NULL");
-                Verify.NotNull(this.Match, "The filter match is NULL");
-            }
-        }
-
-        [JsonPropertyName("must")]
-        public List<Must> Conditions { get; set; }
-
-        internal Filter()
-        {
-            this.Conditions = new();
-        }
-
-        internal Filter ValueMustMatch(string key, object value)
-        {
-            this.Conditions.Add(new Must(key, value));
-            return this;
-        }
-
-        public void Validate()
-        {
-            Verify.NotNull(this.Conditions, "Filter conditions are NULL");
-            foreach (var x in this.Conditions)
-            {
-                x.Validate();
-            }
-        }
-    }
-
     #region private ================================================================================
 
     private readonly string _collectionName;
@@ -209,7 +189,7 @@ internal sealed class SearchVectorsRequest : IValidatable
     private SearchVectorsRequest(string collectionName)
     {
         this._collectionName = collectionName;
-        this.Filters = new Filter();
+        this.Filters = new QdrantFilter();
         this.WithPayload = false;
         this.WithVector = false;
 

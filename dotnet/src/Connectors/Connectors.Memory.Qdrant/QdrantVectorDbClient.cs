@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -282,7 +283,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         double threshold,
         int top = 1,
         bool withVectors = false,
-        Dictionary<string, object>? filters = default,
+        IEnumerable<MemoryFilter>? filters = default,
         IEnumerable<string>? requiredTags = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
