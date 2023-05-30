@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -43,9 +44,10 @@ public sealed class SKContext
     public Exception? LastException { get; private set; }
 
     /// <summary>
-    /// When a prompt is resolved, this will contain the model details of the last prompt result.
+    /// When a prompt is processed, aka the current data after any model results processing occurred.
+    /// (One prompt can have multiple results).
     /// </summary>
-    public object? LastPromptResults { get; set; }
+    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
 
     /// <summary>
     /// The token to monitor for cancellation requests.

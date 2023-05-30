@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Microsoft.SemanticKernel;
@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example42_GetModelResult
+public static class Example43_GetModelResult
 {
     public static async Task RunAsync()
     {
@@ -40,22 +40,22 @@ Event: {{$input}}
         // Using InvokeAsync
         var textResult = await excuseFunction.InvokeAsync("I missed the F1 final race");
         Console.WriteLine(textResult);
-        Console.WriteLine(textResult.LastPromptResults?.AsJson());
+        Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAIResult()).AsJson());
         Console.WriteLine();
 
         // Using the Kernel RunAsync
         textResult = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
         Console.WriteLine(textResult);
-        Console.WriteLine(textResult.GetOpenAILastPromptResult()?.Usage.AsJson());
+        Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAIResult()?.Usage.AsJson());
         Console.WriteLine();
 
         // Using the Text Completion directly
         var textCompletion = kernel.GetService<ITextCompletion>();
-        var prompt = FunctionDefinition.Replace($"{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
+        var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
         IReadOnlyList<ITextCompletionResult> completionResults = await textCompletion.GetCompletionsAsync(prompt, new CompleteRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
         Console.WriteLine(await completionResults[0].GetCompletionAsync());
-        Console.WriteLine(completionResults[0].GetOpenAILastResultData()?.Usage.AsJson());
+        Console.WriteLine(completionResults[0].ModelResult.GetOpenAIResult().Usage.AsJson());
         Console.WriteLine();
 
         // Getting the error details
@@ -80,15 +80,5 @@ Event: {{$input}}
                 _ => string.Empty
             };
         }
-    }
-}
-
-public static class ObjectExtensions
-{
-    private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
-
-    public static string AsJson(this object obj)
-    {
-        return JsonSerializer.Serialize(obj, s_jsonOptions);
     }
 }

@@ -5,23 +5,24 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
 internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingResult
 {
-    private readonly TextCompletionResponse _responseData;
+    private readonly ModelResult _responseData;
 
     public TextCompletionStreamingResult(TextCompletionResponse responseData)
     {
-        this._responseData = responseData;
+        this._responseData = new ModelResult(responseData);
     }
 
-    public object? ResultData => this._responseData;
+    public ModelResult ModelResult => this._responseData;
 
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this._responseData.Text ?? string.Empty);
+        return Task.FromResult(this._responseData.GetResult<TextCompletionResponse>().Text ?? string.Empty);
     }
 
     public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)

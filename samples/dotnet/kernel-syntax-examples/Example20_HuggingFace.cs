@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -32,9 +31,10 @@ public static class Example20_HuggingFace
         var result = await questionAnswerFunction.InvokeAsync("What is New York?");
 
         Console.WriteLine(result);
-        Console.WriteLine(JsonSerializer.Serialize(
-            result.GetHuggingFaceLastResultData(),
-            new JsonSerializerOptions() { WriteIndented = true }
-        ));
+
+        foreach (var modelResult in result.ModelResults)
+        {
+            Console.WriteLine(modelResult.GetHuggingFaceResult().AsJson());
+        }
     }
 }

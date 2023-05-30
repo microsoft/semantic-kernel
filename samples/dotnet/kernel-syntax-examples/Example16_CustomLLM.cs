@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 /**
@@ -40,6 +41,13 @@ public class MyTextCompletionService : ITextCompletion
 
 public class MyTextCompletionStreamingResult : ITextCompletionStreamingResult
 {
+    private readonly ModelResult _modelResult = new(new
+    {
+        Content = Text,
+        Message = "This is my model raw response",
+        Tokens = Text.Split(' ').Length
+    });
+
     private const string Text = @" ..output from your custom model... Example:
 AI is awesome because it can help us solve complex problems, enhance our creativity,
 and improve our lives in many ways. AI can perform tasks that are too difficult,
@@ -48,12 +56,7 @@ exploring space. AI can also augment our abilities and inspire us to create new 
 of art, music, or literature. AI can also improve our well-being and happiness by
 providing personalized recommendations, entertainment, and assistance. AI is awesome";
 
-    public object? ResultData => new
-    {
-        Content = Text,
-        Message = "This is my model raw response",
-        Tokens = Text.Split(' ').Length
-    };
+    public ModelResult ModelResult => this._modelResult;
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
@@ -110,7 +113,7 @@ public static class Example16_CustomLLM
 
         // Details of the my custom model response
         Console.WriteLine(JsonSerializer.Serialize(
-            result.LastPromptResults,
+            result.ModelResults,
             new JsonSerializerOptions() { WriteIndented = true }
         ));
     }

@@ -21,6 +21,8 @@ using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
+#pragma warning disable format
+
 /// <summary>
 /// Standard Semantic Kernel callable function.
 /// SKFunction is used to extend one C# <see cref="Delegate"/>, <see cref="Func{T, TResult}"/>, <see cref="Action"/>,
@@ -206,7 +208,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 {
                     context.UntrustResult();
                 }
-                context.LastPromptResults = completionResults.Select(c => c.ResultData).ToArray();
+                context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
             }
             catch (AIException ex)
             {
@@ -379,7 +381,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private static object? GetCompletionsResponseData(IReadOnlyList<ITextCompletionResult> completions)
     {
-        var resultsData = completions.Select(c => c.ResultData).ToArray();
+        var resultsData = completions.Select(c => c.ModelResult).ToArray();
 
         return resultsData;
     }
