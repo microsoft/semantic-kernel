@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
+import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
+
 import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatMessage;
@@ -11,15 +13,15 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatHistory;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import java.util.Arrays;
-
-import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
 
 public class Example17ChatGPTTest {
 
@@ -91,9 +93,9 @@ public class Example17ChatGPTTest {
                                         msg -> {
                                             return msg != null
                                                     && msg.getMessages()
-                                                    .get(msg.getMessages().size() - 1)
-                                                    .getContent()
-                                                    .equals(message);
+                                                            .get(msg.getMessages().size() - 1)
+                                                            .getContent()
+                                                            .equals(message);
                                         })))
                 .thenReturn(Mono.just(completion));
     }

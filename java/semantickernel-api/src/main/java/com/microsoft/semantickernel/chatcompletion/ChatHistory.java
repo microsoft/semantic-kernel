@@ -4,7 +4,9 @@ package com.microsoft.semantickernel.chatcompletion;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+/** Provides a history of messages between the User, Assistant and System */
 public class ChatHistory {
 
     private final List<Message> messages;
@@ -18,6 +20,16 @@ public class ChatHistory {
      */
     public List<Message> getMessages() {
         return Collections.unmodifiableList(messages);
+    }
+
+    /**
+     * @return The most recent message in chat
+     */
+    public Optional<Message> getLastMessage() {
+        if (messages.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(messages.get(messages.size() - 1));
     }
 
     public enum AuthorRoles {
@@ -35,6 +47,7 @@ public class ChatHistory {
 
         /**
          * Create a new instance
+         *
          * @param authorRoles Role of message author
          * @param content Message content
          */
@@ -60,6 +73,7 @@ public class ChatHistory {
 
     /**
      * Add a message to the chat history
+     *
      * @param authorRole Role of the message author
      * @param content Message content
      */

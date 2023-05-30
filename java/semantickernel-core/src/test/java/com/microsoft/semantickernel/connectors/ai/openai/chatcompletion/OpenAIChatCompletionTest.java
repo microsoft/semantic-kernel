@@ -54,8 +54,7 @@ public class OpenAIChatCompletionTest {
 
         // First user message
         chatHistory.addUserMessage(message);
-        ChatHistory.Message createdMessage =
-                chatHistory.getMessages().get(chatHistory.getMessages().size() - 1);
+        ChatHistory.Message createdMessage = chatHistory.getLastMessage().get();
         Assertions.assertEquals(ChatHistory.AuthorRoles.User, createdMessage.getAuthorRoles());
         Assertions.assertEquals(message, createdMessage.getContent());
 
