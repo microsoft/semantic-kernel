@@ -274,7 +274,9 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
 
         DateTimeOffset? timestamp = weaviateObject.Properties == null
             ? null
-            : Convert.ToDateTime(weaviateObject.Properties["sk_timestamp"].ToString(), CultureInfo.InvariantCulture);
+            : weaviateObject.Properties.TryGetValue("sk_timestamp", out object value)
+                ? Convert.ToDateTime(value.ToString(), CultureInfo.InvariantCulture)
+                : null;
 
         MemoryRecord record = new(
             key: weaviateObject.Id!,
@@ -380,13 +382,20 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         foreach (JsonNode? json in jsonArray)
         {
             string id = json!["_additional"]!["id"]!.GetValue<string>();
-            IEnumerable<float> floats = json["_additional"]!["vector"]!.AsArray().Select(a => a!.GetValue<float>());
+            Embedding<float> vector = Embedding<float>.Empty;
+            if (json["_additional"]!["vector"] != null)
+            {
+                IEnumerable<float> floats = json["_additional"]!["vector"]!.AsArray().Select(a => a!.GetValue<float>());
+                vector = new(floats);
+            }
+
             string text = json["sk_text"]!.GetValue<string>();
             string description = json["sk_description"]!.GetValue<string>();
-            Embedding<float> vector = new(floats);
             string additionalMetadata = json["sk_additional_metadata"]!.GetValue<string>();
             string key = json["sk_id"]!.GetValue<string>();
-            string timestamp = json["sk_timestamp"]!.GetValue<string>();
+            DateTime? timestamp = json["sk_timestamp"] != null
+                ? Convert.ToDateTime(json["sk_timestamp"]!.GetValue<string>(), CultureInfo.InvariantCulture) 
+                : null;
 
             MemoryRecord memoryRecord = MemoryRecord.LocalRecord(
                 id,
@@ -395,7 +404,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
                 vector,
                 additionalMetadata,
                 key,
-                Convert.ToDateTime(timestamp, CultureInfo.InvariantCulture));
+                timestamp);
 
             double distance = json["_additional"]!["distance"]!.GetValue<double>();
 
