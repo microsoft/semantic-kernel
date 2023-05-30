@@ -147,7 +147,7 @@ public sealed class TrustServiceTests
         );
 
         // Make this untrusted
-        variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.Untrusted(extraVar));
+        variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.CreateUntrusted(extraVar));
 
         // Act
         var result = await kernel.RunAsync(variables, notSensitiveEchoFunction);
@@ -174,7 +174,7 @@ public sealed class TrustServiceTests
         );
 
         // Make this untrusted
-        variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.Untrusted(extraVar));
+        variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.CreateUntrusted(extraVar));
 
         // Act
         var result = await kernel.RunAsync(variables, sensitiveEchoFunction);
@@ -199,7 +199,7 @@ public sealed class TrustServiceTests
         );
 
         // Make this untrusted
-        variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.Untrusted(extraVar));
+        variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.CreateUntrusted(extraVar));
 
         // Act
         var result = await kernel.RunAsync(variables, notSensitiveEchoFunction);
@@ -225,7 +225,7 @@ public sealed class TrustServiceTests
         );
 
         // Make this untrusted
-        variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.Untrusted(extraVar));
+        variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.CreateUntrusted(extraVar));
 
         // Act
         var result = await kernel.RunAsync(variables, sensitiveEchoFunction);

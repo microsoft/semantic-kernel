@@ -6,30 +6,29 @@ using System.Diagnostics;
 namespace Microsoft.SemanticKernel.Security;
 
 /// <summary>
-/// A string wrapper that carries trust information.
-/// All field are readonly.
+/// Provides an immutable string that carries trust information.
 /// </summary>
 [DebuggerDisplay("Value = {Value}, IsTrusted = {IsTrusted}")]
-public class TrustAwareString : IEquatable<TrustAwareString>
+public sealed class TrustAwareString : IEquatable<TrustAwareString>
 {
     /// <summary>
-    /// Create a new empty trust aware string (default trusted).
+    /// Gets a trusted empty string.
     /// </summary>
-    public static TrustAwareString Empty => new(string.Empty, true);
+    public static TrustAwareString Empty { get; } = new(string.Empty, isTrusted: true);
 
     /// <summary>
     /// Create a new trusted string.
     /// </summary>
     /// <param name="value">The raw string value</param>
     /// <returns>TrustAwareString</returns>
-    public static TrustAwareString Trusted(string? value) => new(value, true);
+    public static TrustAwareString CreateTrusted(string? value) => new(value, isTrusted: true);
 
     /// <summary>
     /// Create a new untrusted string.
     /// </summary>
     /// <param name="value">The raw string value</param>
     /// <returns>TrustAwareString</returns>
-    public static TrustAwareString Untrusted(string? value) => new(value, false);
+    public static TrustAwareString CreateUntrusted(string? value) => new(value, isTrusted: false);
 
     /// <summary>
     /// The raw string value.
