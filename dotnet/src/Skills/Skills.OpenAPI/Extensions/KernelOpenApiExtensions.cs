@@ -327,7 +327,7 @@ public static class KernelOpenApiExtensions
             isSensitive: false,
             log: kernel.Log);
 
-        return kernel.RegisterCustomFunction(skillName, function);
+        return kernel.RegisterCustomFunction(function);
     }
 
     #endregion
