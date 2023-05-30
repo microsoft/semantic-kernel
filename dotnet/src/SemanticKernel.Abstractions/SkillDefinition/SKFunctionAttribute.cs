@@ -19,11 +19,22 @@ public sealed class SKFunctionAttribute : Attribute
     public string Description { get; }
 
     /// <summary>
+    /// Whether the function is set to be sensitive (default false).
+    /// When a function is sensitive, the default trust service will throw an exception
+    /// if the function is invoked passing in some untrusted input (or context, or prompt).
+    /// </summary>
+    public bool IsSensitive { get; }
+
+    /// <summary>
     /// Tag a C# function as a native function available to SK.
     /// </summary>
     /// <param name="description">Function description, to be used by the planner to auto-discover functions.</param>
-    public SKFunctionAttribute(string description)
+    /// <param name="isSensitive">Whether the function is set to be sensitive (default false).</param>
+    public SKFunctionAttribute(
+        string description,
+        bool isSensitive = false)
     {
         this.Description = description;
+        this.IsSensitive = isSensitive;
     }
 }

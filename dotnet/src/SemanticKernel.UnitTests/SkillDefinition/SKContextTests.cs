@@ -64,6 +64,44 @@ public class SKContextTests
         Assert.Equal("ciao", result.Result);
     }
 
+    [Fact]
+    public void ItCanUntrustAll()
+    {
+        // Arrange
+        var variables = new ContextVariables();
+        var target = new SKContext(variables);
+
+        // Assert
+        Assert.True(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, true);
+
+        // Act
+        target.UntrustAll();
+
+        // Assert
+        Assert.False(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, false);
+    }
+
+    [Fact]
+    public void ItCanUntrustResult()
+    {
+        // Arrange
+        var variables = new ContextVariables();
+        var target = new SKContext(variables);
+
+        // Assert
+        Assert.True(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, true);
+
+        // Act
+        target.UntrustResult();
+
+        // Assert
+        Assert.False(target.IsTrusted);
+        AssertIsInputTrusted(target.Variables, false);
+    }
+
     private sealed class Parrot
     {
         [SKFunction("say something")]
@@ -72,5 +110,11 @@ public class SKContextTests
         {
             return text;
         }
+    }
+
+    private static void AssertIsInputTrusted(ContextVariables variables, bool expectedIsTrusted)
+    {
+        // Assert isTrusted matches
+        Assert.Equal(expectedIsTrusted, variables.Input.IsTrusted);
     }
 }
