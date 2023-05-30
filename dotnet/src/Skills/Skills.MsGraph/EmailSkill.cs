@@ -77,13 +77,13 @@ public class EmailSkill
     [SKFunctionContextParameter(Name = Parameters.Subject, Description = "Subject of the email")]
     public async Task SendEmailAsync(string content, SKContext context)
     {
-        if (!context.Variables.Get(Parameters.Recipients, out string recipients))
+        if (!context.Variables.TryGetValue(Parameters.Recipients, out string? recipients))
         {
             context.Fail($"Missing variable {Parameters.Recipients}.");
             return;
         }
 
-        if (!context.Variables.Get(Parameters.Subject, out string subject))
+        if (!context.Variables.TryGetValue(Parameters.Subject, out string? subject))
         {
             context.Fail($"Missing variable {Parameters.Subject}.");
             return;
@@ -104,8 +104,8 @@ public class EmailSkill
         DefaultValue = "0")]
     public async Task<string> GetEmailMessagesAsync(SKContext context)
     {
-        context.Variables.Get(Parameters.MaxResults, out string maxResultsString);
-        context.Variables.Get(Parameters.Skip, out string skipString);
+        context.Variables.TryGetValue(Parameters.MaxResults, out string? maxResultsString);
+        context.Variables.TryGetValue(Parameters.Skip, out string? skipString);
         this._logger.LogInformation("Getting email messages with query options top: '{0}', skip:'{1}'.", maxResultsString, skipString);
 
         string selectString = "subject,receivedDateTime,bodyPreview";
