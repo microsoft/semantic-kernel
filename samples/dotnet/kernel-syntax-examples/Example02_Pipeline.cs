@@ -23,8 +23,8 @@ public static class Example02_Pipeline
         var text = kernel.ImportSkill(new TextSkill());
 
         SKContext result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
-            text["LStrip"],
-            text["RStrip"],
+            text["TrimStart"],
+            text["TrimEnd"],
             text["Uppercase"]);
 
         Console.WriteLine(result);
