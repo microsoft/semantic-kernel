@@ -70,64 +70,11 @@ internal sealed class SearchVectorsRequest : IValidatable
         return this;
     }
 
-    public SearchVectorsRequest WithFilters(IEnumerable<MemoryFilter>? filters)
+    public SearchVectorsRequest WithFilters(QdrantFilter? filters)
     {
         if (filters == null) { return this; }
 
-        foreach (var filter in filters)
-        {
-            if (!string.IsNullOrEmpty(filter.Field))
-            {
-                switch (filter.Operator)
-                {
-                    case MemoryFieldOperator.Equals:
-                        this.Filters.Must(new MatchCondition
-                        {
-                            Key = filter.Field,
-                            Match = new Match { Value = filter.Value }
-                        });
-                        break;
-                    case MemoryFieldOperator.GreaterThan:
-                        this.Filters.Must(new RangeCondition
-                        {
-                            Key = filter.Field,
-                            Range = new Range { GreaterThan = (float)filter.Value }
-                        });
-                        break;
-                    case MemoryFieldOperator.LowerThan:
-                        this.Filters.Must(new RangeCondition
-                        {
-                            Key = filter.Field,
-                            Range = new Range { LowerThan = (float)filter.Value }
-                        });
-                        break;
-                    case MemoryFieldOperator.GreaterThanOrEqual:
-                        this.Filters.Must(new RangeCondition
-                        {
-                            Key = filter.Field,
-                            Range = new Range { GreaterThanOrEqual = (float)filter.Value }
-                        });
-                        break;
-                    case MemoryFieldOperator.LowerThanOrEqual:
-                        this.Filters.Must(new RangeCondition
-                        {
-                            Key = filter.Field,
-                            Range = new Range { LowerThanOrEqual = (float)filter.Value }
-                        });
-                        break;
-                    case MemoryFieldOperator.Contains:
-                        this.Filters.Must(new MatchCondition
-                        {
-                            Key = filter.Field,
-                            Match = new Match { Text = filter.Value }
-                        });
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
+        this.Filters = filters;
         return this;
     }
 

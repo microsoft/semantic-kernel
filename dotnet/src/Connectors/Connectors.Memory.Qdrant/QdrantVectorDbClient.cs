@@ -281,9 +281,9 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         string collectionName,
         IEnumerable<float> target,
         double threshold,
+        QdrantFilter? filters = default,
         int top = 1,
         bool withVectors = false,
-        IEnumerable<MemoryFilter>? filters = default,
         IEnumerable<string>? requiredTags = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

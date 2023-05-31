@@ -82,7 +82,11 @@ public sealed class SKContext
     /// </summary>
     public ISemanticTextMemory Memory { get; }
 
-    public ISemanticTextMemoryWithFiltering<TFilter> Memory { get; }
+
+    public ISemanticTextMemory<TFilter>? GetFilterableMemory<TFilter>()
+    {
+        return this.Memory as ISemanticTextMemory<TFilter>;
+    }
 
     /// <summary>
     /// Read only skills collection

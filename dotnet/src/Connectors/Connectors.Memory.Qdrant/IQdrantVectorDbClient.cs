@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -63,18 +64,18 @@ public interface IQdrantVectorDbClient
     /// <param name="collectionName">The name assigned to a collection of vectors.</param>
     /// <param name="target">The vector to compare the collection's vectors with.</param>
     /// <param name="threshold">The minimum relevance threshold for returned results.</param>
+    /// <param name="filters">Filter applied during search.</param>
     /// <param name="top">The maximum number of similarity results to return.</param>
     /// <param name="withVectors">Whether to include the vector data in the returned results.</param>
-    /// <param name="filters">Filter pairs (key,value) used to filter the results.</param>
     /// <param name="requiredTags">Qdrant tags used to filter the results.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public IAsyncEnumerable<(QdrantVectorRecord, double)> FindNearestInCollectionAsync(
         string collectionName,
         IEnumerable<float> target,
         double threshold,
+        QdrantFilter? filters = default,
         int top = 1,
         bool withVectors = false,
-        IEnumerable<MemoryFilter>? filters = default,
         IEnumerable<string>? requiredTags = default,
         CancellationToken cancellationToken = default);
 

@@ -10,12 +10,50 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
 
+public sealed class SemanticTextMemory<TFilter> : SemanticTextMemory, ISemanticTextMemory<TFilter>
+{
+    private readonly IMemoryStore<TFilter> _storageWithFilters;
+    public SemanticTextMemory(
+        IMemoryStore storage,
+        ITextEmbeddingGeneration embeddingGenerator,
+        IMemoryStore<TFilter> storageWithFilters) : base(storage, embeddingGenerator)
+    {
+        this._storageWithFilters = storageWithFilters;
+    }
+
+    public async IAsyncEnumerable<MemoryQueryResult> SearchAsync(
+        string collection,
+        string query,
+        TFilter filters,
+        int limit = 1,
+        double minRelevanceScore = 0.7,
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken).ConfigureAwait(false);
+
+        IAsyncEnumerable<(MemoryRecord, double)> results = this._storageWithFilters.GetNearestMatchesAsync(
+            collectionName: collection,
+            embedding: queryEmbedding,
+            filters: filters,
+            limit: limit,
+            minRelevanceScore: minRelevanceScore,
+            withEmbeddings: withEmbeddings,
+            cancellationToken: cancellationToken);
+
+        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken))
+        {
+            yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
+        }
+    }
+}
+
 /// <summary>
 /// Implementation of <see cref="ISemanticTextMemory"/>./>.
 /// </summary>
-public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
+public class SemanticTextMemory : ISemanticTextMemory, IDisposable
 {
-    private readonly ITextEmbeddingGeneration _embeddingGenerator;
+    protected readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly IMemoryStore _storage;
 
     public SemanticTextMemory(
@@ -99,7 +137,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         int limit = 1,
         double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
-        Dictionary<string, object>? filters = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken).ConfigureAwait(false);
@@ -110,7 +147,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
             limit: limit,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbeddings,
-            filters: filters,
             cancellationToken: cancellationToken);
 
         await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken))

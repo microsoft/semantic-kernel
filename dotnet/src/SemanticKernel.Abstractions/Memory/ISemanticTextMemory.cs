@@ -6,6 +6,29 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Memory;
 
+public interface ISemanticTextMemory<TFilter> : ISemanticTextMemory
+{
+    /// <summary>
+    /// Find some information in memory
+    /// </summary>
+    /// <param name="collection">Collection to search</param>
+    /// <param name="query">What to search for</param>
+    /// <param name="filters">Filters to be applied during search</param>
+    /// <param name="limit">How many results to return</param>
+    /// <param name="minRelevanceScore">Minimum relevance score, from 0 to 1, where 1 means exact match.</param>
+    /// <param name="withEmbeddings">Whether to return the embeddings of the memories found.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Memories found</returns>
+    public IAsyncEnumerable<MemoryQueryResult> SearchAsync(
+        string collection,
+        string query,
+        TFilter filters,
+        int limit = 1,
+        double minRelevanceScore = 0.7,
+        bool withEmbeddings = false,
+        CancellationToken cancellationToken = default);
+}
+
 /// <summary>
 /// An interface for semantic memory that creates and recalls memories associated with text.
 /// </summary>
@@ -79,7 +102,6 @@ public interface ISemanticTextMemory
     /// <param name="limit">How many results to return</param>
     /// <param name="minRelevanceScore">Minimum relevance score, from 0 to 1, where 1 means exact match.</param>
     /// <param name="withEmbeddings">Whether to return the embeddings of the memories found.</param>
-    /// <param name="filters">Optional filters to be used with the the memory storage</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memories found</returns>
     public IAsyncEnumerable<MemoryQueryResult> SearchAsync(
@@ -88,7 +110,6 @@ public interface ISemanticTextMemory
         int limit = 1,
         double minRelevanceScore = 0.7,
         bool withEmbeddings = false,
-        Dictionary<string, object>? filters = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>
