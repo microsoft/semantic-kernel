@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
-internal sealed class QdrantFilter : IValidatable
+public sealed class QdrantFilter : IValidatable
 {
     [JsonPropertyName("must")]
     public List<Condition> Conditions { get; set; } = new();
@@ -19,7 +19,7 @@ internal sealed class QdrantFilter : IValidatable
         }
     }
 
-    internal QdrantFilter Must(params Condition[] conditions)
+    public QdrantFilter Must(params Condition[] conditions)
     {
         this.Conditions.AddRange(conditions);
         return this;
@@ -36,19 +36,18 @@ internal sealed class QdrantFilter : IValidatable
     }
 
     internal QdrantFilter CoordinatesWithinRadius(string key,
-        Coordinates center,
-        float radius)
+        GeoRadius radius)
     {
         this.Conditions.Add(new GeoRadiusCondition
         {
             Key = key,
-            GeoRadius = new GeoRadius(center, radius)
+            GeoRadius = radius
         });
 
         return this;
     }
 
-    internal abstract class Condition : IValidatable
+    public abstract class Condition : IValidatable
     {
         [JsonPropertyName("key")]
         public string Key { get; set; } = string.Empty;
@@ -56,7 +55,7 @@ internal sealed class QdrantFilter : IValidatable
         public abstract void Validate();
     }
 
-    internal sealed class MatchCondition : Condition, IValidatable
+    public sealed class MatchCondition : Condition, IValidatable
     {
         [JsonPropertyName("match")]
         public Match? Match { get; set; }
@@ -69,7 +68,7 @@ internal sealed class QdrantFilter : IValidatable
         }
     }
 
-    internal sealed class RangeCondition : Condition
+    public sealed class RangeCondition : Condition
     {
         [JsonPropertyName("range")]
         public Range? Range { get; set; }
@@ -82,7 +81,7 @@ internal sealed class QdrantFilter : IValidatable
         }
     }
 
-    internal sealed class GeoBoundingBoxCondition : Condition, IValidatable
+    public sealed class GeoBoundingBoxCondition : Condition, IValidatable
     {
         [JsonPropertyName("geo_bounding_box")]
         public GeoBoundingBox? GeoBoundingBox { get; set; }
@@ -95,7 +94,7 @@ internal sealed class QdrantFilter : IValidatable
         }
     }
 
-    internal sealed class GeoRadiusCondition : Condition, IValidatable
+    public sealed class GeoRadiusCondition : Condition, IValidatable
     {
         [JsonPropertyName("geo_radius")]
         public GeoRadius? GeoRadius { get; set; }
@@ -108,7 +107,7 @@ internal sealed class QdrantFilter : IValidatable
         }
     }
 
-    internal sealed class Range : IValidatable
+    public sealed class Range : IValidatable
     {
         public float? GreaterThan { get; set; }
         public float? GreaterThanOrEqual { get; set; }
@@ -124,7 +123,7 @@ internal sealed class QdrantFilter : IValidatable
                 "No range conditions are specified");
         }
     }
-    internal class Match : IValidatable
+    public class Match : IValidatable
     {
         public object? Value { get; set; }
         public object? Text { get; set; }
@@ -142,7 +141,7 @@ internal sealed class QdrantFilter : IValidatable
         }
     }
 
-    internal class GeoRadius : IValidatable
+    public class GeoRadius : IValidatable
     {
         public GeoRadius(Coordinates center, float radius)
         {
@@ -159,7 +158,7 @@ internal sealed class QdrantFilter : IValidatable
         }
     }
 
-    internal class GeoBoundingBox : IValidatable
+    public class GeoBoundingBox : IValidatable
     {
         public GeoBoundingBox(Coordinates bottomRight, Coordinates topLeft)
         {
@@ -177,7 +176,7 @@ internal sealed class QdrantFilter : IValidatable
         }
     }
 
-    internal class Coordinates : IValidatable
+    public class Coordinates : IValidatable
     {
         public Coordinates(float latitude, float longitude)
         {

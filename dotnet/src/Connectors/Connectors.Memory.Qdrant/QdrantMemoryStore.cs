@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -20,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 /// <remarks>The Embedding data is saved to a Qdrant Vector database instance specified in the constructor by url and port.
 /// The embedding data persists between subsequent instances and has similarity search capability.
 /// </remarks>
-public class QdrantMemoryStore : IMemoryStore
+public class QdrantMemoryStore : IMemoryStore<QdrantFilter>
 {
     /// <summary>
     /// The Qdrant Vector database memory store logger.
@@ -302,13 +303,12 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFiltersAsync(
+    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
-        IEnumerable<MemoryFilter>? filters = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient
@@ -318,7 +318,6 @@ public class QdrantMemoryStore : IMemoryStore
                 threshold: minRelevanceScore,
                 top: limit,
                 withVectors: withEmbeddings,
-                filters: filters,
                 cancellationToken: cancellationToken)
             .GetAsyncEnumerator(cancellationToken);
 
@@ -365,13 +364,12 @@ public class QdrantMemoryStore : IMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        var results = this.GetNearestMatchesWithFiltersAsync(
+        var results = this.GetNearestMatchesAsync(
             collectionName: collectionName,
             embedding: embedding,
             minRelevanceScore: minRelevanceScore,
             limit: 1,
             withEmbeddings: withEmbedding,
-            filters: null,
             cancellationToken: cancellationToken);
 
         var record = await results.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
@@ -433,5 +431,9 @@ public class QdrantMemoryStore : IMemoryStore
         return vectorData;
     }
 
+    public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFiltersAsync(string collectionName, Embedding<float> embedding, QdrantFilter filters, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
     #endregion
 }
