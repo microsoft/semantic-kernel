@@ -3,6 +3,7 @@
 from typing import Optional, Tuple
 from dotenv import dotenv_values
 
+
 def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     """
     Reads the OpenAI API key and organization ID from the .env file.
