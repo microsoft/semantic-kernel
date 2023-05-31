@@ -14,6 +14,7 @@ public class AzureImageGenerationRequest
     /// </summary>
     [JsonPropertyName("caption")]
     public string Caption { get; set; } = string.Empty;
+
     /// <summary>
     /// Image Size
     /// </summary>

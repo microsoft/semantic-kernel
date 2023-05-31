@@ -14,12 +14,14 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
+
 public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
     /// <summary>
     /// Azure OpenAI REST API endpoint
     /// </summary>
     private readonly string _endpoint;
+
     /// <summary>
     /// Azure OpenAI API key
     /// </summary>
@@ -37,6 +39,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         this._endpoint = $"{endpoint}dalle/text-to-image?api-version=2022-08-03-preview";
         this._apiKey = apiKey;
     }
+
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
@@ -45,6 +48,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
+
         var requestBody = Json.Serialize(new AzureImageGenerationRequest()
         {
             Caption = description,
@@ -55,6 +59,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         {
             throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response not contains result");
         }
+
         return result.Result.ContentUrl;
     }
 
@@ -67,6 +72,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             {
                 response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
             }
+
             var responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var result = this.JsonDeserialize<AzureImageGenerationResponse>(responseJson);
             while (result.Status != "Succeeded")
@@ -75,6 +81,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
                 {
                     throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Not found operation-location");
                 }
+
                 var operationLocation = locationValues.First();
                 if (response.Headers.TryGetValues("retry-after", out var retryValues))
                 {
@@ -84,10 +91,12 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
                         await Task.Delay(TimeSpan.FromSeconds(retry), cancellationToken).ConfigureAwait(false);
                     }
                 }
+
                 response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
                 responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 result = this.JsonDeserialize<AzureImageGenerationResponse>(responseJson);
             }
+
             return result;
         }
         catch (Exception e) when (e is not AIException)
@@ -101,6 +110,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             response?.Dispose();
         }
     }
+
     /// <summary>Adds headers to use for Azure OpenAI HTTP requests.</summary>
     private protected override void AddRequestHeaders(HttpRequestMessage request)
     {
