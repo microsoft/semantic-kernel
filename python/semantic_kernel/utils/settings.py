@@ -95,7 +95,7 @@ def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
                 environment = "=".join(parts).strip().strip('"')
                 continue
 
-    assert api_key is not None, "OpenAI API key not found in .env file"
-
-    # It's okay if the org ID is not found (not required)
+    assert api_key is not None, "Pinecone API key not found in .env file"
+    assert environment is not None, "Pinecone environment not found in .env file"
+    
     return api_key, environment
