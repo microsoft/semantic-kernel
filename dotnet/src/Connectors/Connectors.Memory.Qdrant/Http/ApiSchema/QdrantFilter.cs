@@ -60,7 +60,7 @@ public sealed class QdrantFilter : IValidatable
         [JsonPropertyName("match")]
         public Match? Match { get; set; }
 
-        public override void Validate()
+        public sealed override void Validate()
         {
             Verify.NotNullOrEmpty(this.Key, "Match key is NULL");
             Verify.NotNull(this.Match, "Match condition is NULL");
@@ -73,7 +73,7 @@ public sealed class QdrantFilter : IValidatable
         [JsonPropertyName("range")]
         public Range? Range { get; set; }
 
-        public override void Validate()
+        public sealed override void Validate()
         {
             Verify.NotNullOrEmpty(this.Key, "Match key is NULL");
             Verify.NotNull(this.Range, "Range condition is NULL");
@@ -86,7 +86,7 @@ public sealed class QdrantFilter : IValidatable
         [JsonPropertyName("geo_bounding_box")]
         public GeoBoundingBox? GeoBoundingBox { get; set; }
 
-        public override void Validate()
+        public sealed override void Validate()
         {
             Verify.NotNullOrEmpty(this.Key, "Match key is NULL");
             Verify.NotNull(this.GeoBoundingBox, "Geo bounding box condition is NULL");
@@ -99,7 +99,7 @@ public sealed class QdrantFilter : IValidatable
         [JsonPropertyName("geo_radius")]
         public GeoRadius? GeoRadius { get; set; }
 
-        public override void Validate()
+        public sealed override void Validate()
         {
             Verify.NotNullOrEmpty(this.Key, "Match key is NULL");
             Verify.NotNull(this.GeoRadius, "Geo radius condition is NULL");
@@ -109,9 +109,13 @@ public sealed class QdrantFilter : IValidatable
 
     public sealed class Range : IValidatable
     {
+        [JsonPropertyName("gt")]
         public float? GreaterThan { get; set; }
+        [JsonPropertyName("gte")]
         public float? GreaterThanOrEqual { get; set; }
+        [JsonPropertyName("lt")]
         public float? LowerThan { get; set; }
+        [JsonPropertyName("lte")]
         public float? LowerThanOrEqual { get; set; }
 
         public void Validate()
@@ -125,9 +129,13 @@ public sealed class QdrantFilter : IValidatable
     }
     public class Match : IValidatable
     {
+        [JsonPropertyName("value")]
         public object? Value { get; set; }
+        [JsonPropertyName("text")]
         public object? Text { get; set; }
+        [JsonPropertyName("any")]
         public List<object>? Any { get; set; }
+        [JsonPropertyName("except")]
         public List<object>? Except { get; set; }
 
         public void Validate()
@@ -149,7 +157,9 @@ public sealed class QdrantFilter : IValidatable
             this.Radius = radius;
         }
 
+        [JsonPropertyName("center")]
         public Coordinates Center { get; set; }
+        [JsonPropertyName("radius")]
         public float Radius { get; set; }
 
         public void Validate()
@@ -166,7 +176,9 @@ public sealed class QdrantFilter : IValidatable
             this.TopLeft = topLeft;
         }
 
+        [JsonPropertyName("bottom_right")]
         public Coordinates BottomRight { get; set; }
+        [JsonPropertyName("top_left")]
         public Coordinates TopLeft { get; set; }
 
         public void Validate()
@@ -184,7 +196,9 @@ public sealed class QdrantFilter : IValidatable
             this.Longitude = longitude;
         }
 
+        [JsonPropertyName("lat")]
         public float Latitude { get; set; }
+        [JsonPropertyName("lon")]
         public float Longitude { get; set; }
 
         public void Validate()
