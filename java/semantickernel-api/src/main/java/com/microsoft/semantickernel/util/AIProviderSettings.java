@@ -1,31 +1,72 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.util;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Properties;
 
-public abstract class AIProviderSettings<T extends AIProviderSettings<T>> {
-    public abstract T fromEnv();
-    public abstract T fromFile(String path) throws IOException;
-    public abstract T fromFile(String path, String clientSettingsId) throws IOException;
-    private static String getPropertyNameForClientId(String clientSettingsId, String propertyName) {
-        return "client." + clientSettingsId + "." + propertyName;
+public class AIProviderSettings {
+    /**
+     * Returns an instance of OpenAISettings with key and organizationId from the environment
+     *
+     * @return OpenAISettings
+     */
+    public static OpenAISettings getOpenAISettingsFromEnv() {
+        return new OpenAISettings().fromEnv();
     }
-    protected String getSettingsValueFromEnv(String property) {
-        return System.getenv(property);
+
+    /**
+     * Returns an instance of AzureOpenAISettings with key, endpoint and deploymentName from the
+     * environment
+     *
+     * @return AzureOpenAISettings
+     */
+    public static AzureOpenAISettings getAzureOpenAISettingsFromEnv() {
+        return new AzureOpenAISettings().fromEnv();
     }
-    protected String getSettingsValueFromFile(
-            String settingsFile, String property, String clientSettingsId) throws IOException {
-        File Settings = new File(settingsFile);
 
-        try (FileInputStream fis = new FileInputStream(Settings.getAbsolutePath())) {
-            Properties props = new Properties();
-            props.load(fis);
+    /**
+     * Returns an instance of OpenAISettings with key and organizationId from the properties file
+     *
+     * @param path Path to the properties file
+     * @return OpenAISettings
+     */
+    public static OpenAISettings getOpenAISettingsFromFile(String path) throws IOException {
+        return new OpenAISettings().fromFile(path);
+    }
 
-            return props.getProperty(getPropertyNameForClientId(clientSettingsId, property));
-        } catch (IOException e) {
-            throw new IOException(settingsFile + " not configured properly");
-        }
+    /**
+     * Returns an instance of OpenAISettings with key and organizationId from the properties file
+     *
+     * @param path Path to the properties file
+     * @param clientSettingsId ID of the client settings in the properties file schema
+     * @return OpenAISettings
+     */
+    public static OpenAISettings getOpenAISettingsFromFile(String path, String clientSettingsId)
+            throws IOException {
+        return new OpenAISettings().fromFile(path, clientSettingsId);
+    }
+
+    /**
+     * Returns an instance of AzureOpenAISettings with key, endpoint and deploymentName from the
+     * properties file
+     *
+     * @param path Path to the properties file
+     * @return AzureOpenAISettings
+     */
+    public static AzureOpenAISettings getAzureOpenAISettingsFromFile(String path)
+            throws IOException {
+        return new AzureOpenAISettings().fromFile(path);
+    }
+
+    /**
+     * Returns an instance of AzureOpenAISettings with key, endpoint and deploymentName from the
+     * properties file
+     *
+     * @param path Path to the properties file
+     * @param clientSettingsId ID of the client settings in the properties file schema
+     * @return AzureOpenAISettings
+     */
+    public static AzureOpenAISettings getAzureOpenAISettingsFromFile(
+            String path, String clientSettingsId) throws IOException {
+        return new AzureOpenAISettings().fromFile(path, clientSettingsId);
     }
 }

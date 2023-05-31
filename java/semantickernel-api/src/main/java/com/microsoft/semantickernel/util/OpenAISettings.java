@@ -2,7 +2,7 @@ package com.microsoft.semantickernel.util;
 
 import java.io.IOException;
 
-public class OpenAISettings extends AIProviderSettings<OpenAISettings> {
+public class OpenAISettings extends ClientSettings<OpenAISettings> {
     private String key;
     private String organizationId;
     private static final String DEFAULT_CLIENT_ID = "openai";
