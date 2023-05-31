@@ -57,16 +57,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           available_commands="Available commands:
-            * \`/spotless\` - runs \`./mvnw verify -Pbug-check\`
+            * \`/spotless\` - runs \`./mvnw process-sources -DskipTests -Pbug-check\`
             * \`/help\` - displays available commands
           "
           if [[ "$COMMAND" == "spotless" ]]; then
-            ./mvnw verify -Pbug-check
+            ./mvnw process-sources -DskipTests -Pbug-check
             if git diff --quiet; then
               gh pr comment $NUMBER --body "Already up-to-date"
               exit 0 # success
             fi
-            git commit -a -m "./mvnw verify -Pbug-check"
+            git commit -a -m "./mvnw process-sources -DskipTests -Pbug-check"
             git push
           elif [[ "$COMMAND" == "help" ]]; then
             gh pr comment $NUMBER --body "$available_commands"
