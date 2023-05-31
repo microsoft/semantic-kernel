@@ -38,7 +38,6 @@
         <maven.jxr-plugin.version>3.3.0</maven.jxr-plugin.version>
         <!-- TODO: 2.0.x https://github.com/mojohaus/license-maven-plugin/issues/358 fixed -->
         <maven.license-plugin.version>1.20</maven.license-plugin.version>
-        <maven.nexus-staging-maven-plugin.version>1.6.13</maven.nexus-staging-maven-plugin.version>
         <maven.pmd-plugin.version>3.20.0</maven.pmd-plugin.version>
         <maven.project-info-reports-plugin.version>3.4.2</maven.project-info-reports-plugin.version>
         <maven.rat-plugin.version>0.15</maven.rat-plugin.version>
@@ -368,18 +367,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>${maven.nexus-staging-maven-plugin.version}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                    <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
-                </configuration>
             </plugin>
         </plugins>
 
