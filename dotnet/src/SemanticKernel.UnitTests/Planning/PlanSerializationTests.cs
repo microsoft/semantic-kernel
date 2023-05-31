@@ -356,7 +356,7 @@ public sealed class PlanSerializationTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
             .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
-                c.Variables.Get("variables", out string v);
+                c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
@@ -428,7 +428,7 @@ public sealed class PlanSerializationTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
             .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
-                c.Variables.Get("variables", out string v);
+                c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));

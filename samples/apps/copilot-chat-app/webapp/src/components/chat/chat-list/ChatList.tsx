@@ -1,11 +1,22 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
+import {
+    Button,
+    Input,
+    InputOnChangeData,
+    makeStyles,
+    mergeClasses,
+    shorthands,
+    Text,
+    tokens,
+} from '@fluentui/react-components';
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
-import { FC } from 'react';
+import { Dismiss20Regular, Filter20Regular } from '@fluentui/react-icons';
+import { FC, useEffect, useState } from 'react';
 import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { Conversations } from '../../../redux/features/conversations/ConversationsState';
 import { Breakpoints } from '../../../styles';
 import { ChatListItem } from './ChatListItem';
 import { NewBotMenu } from './NewBotMenu';
@@ -55,22 +66,84 @@ const useClasses = makeStyles({
             display: 'none',
         }),
     },
+    input: {
+        ...shorthands.padding(tokens.spacingHorizontalNone),
+        ...shorthands.border(tokens.borderRadiusNone),
+        width: 'calc(100% - 24px)',
+        backgroundColor: 'transparent',
+        fontSize: '20px',
+    },
 });
 
 export const ChatList: FC = () => {
     const classes = useClasses();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
+    const [isFiltering, setIsFiltering] = useState(false);
+    const [conversationsView, setConversationsView] = useState(conversations);
+
+    useEffect(() => {
+        // Ensure local component state is in line with app state
+        setConversationsView(conversations);
+    }, [conversations]);
+
+    const onFilterClick = () => {
+        setIsFiltering(true);
+    };
+
+    const onFilterCancel = () => {
+        setConversationsView(conversations);
+        setIsFiltering(false);
+    };
+
+    const onSearch = (ev: any, data: InputOnChangeData) => {
+        ev.preventDefault();
+
+        if (data.value !== '') {
+            const filteredConversations: Conversations = {};
+            for (var key in conversations) {
+                if (conversations[key].title.toLowerCase().includes(data.value.toLowerCase())) {
+                    filteredConversations[key] = conversations[key];
+                }
+            }
+
+            setConversationsView(filteredConversations);
+        } else {
+            // If no search string, show full conversations list
+            setConversationsView(conversations);
+        }
+    };
+
     return (
         <div className={classes.root}>
             <div className={classes.header}>
-                <Text weight="bold" size={500} className={classes.title}>
-                    Conversations
-                </Text>
-                <NewBotMenu />
+                {!isFiltering && (
+                    <>
+                        <Text weight="bold" size={500} className={classes.title}>
+                            Conversations
+                        </Text>
+                        <div>
+                            <Button icon={<Filter20Regular />} appearance="transparent" onClick={onFilterClick} />
+                            <NewBotMenu />
+                        </div>
+                    </>
+                )}
+                {isFiltering && (
+                    <>
+                        <Input
+                            placeholder="Filter by name"
+                            className={mergeClasses(classes.input, classes.title)}
+                            onChange={onSearch}
+                            autoFocus
+                        />
+                        <div>
+                            <Button icon={<Dismiss20Regular />} appearance="transparent" onClick={onFilterCancel} />
+                        </div>
+                    </>
+                )}
             </div>
             <Tree aria-label={'chat list'} className={classes.list}>
-                {Object.keys(conversations).map((id) => {
+                {Object.keys(conversationsView).map((id) => {
                     const convo = conversations[id];
                     const messages = convo.messages;
                     const lastMessage = convo.messages.length - 1;
