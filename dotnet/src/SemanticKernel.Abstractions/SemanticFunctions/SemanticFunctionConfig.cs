@@ -22,7 +22,9 @@ public sealed class SemanticFunctionConfig
     /// </summary>
     /// <param name="config">Prompt template configuration.</param>
     /// <param name="template">Prompt template.</param>
-    public SemanticFunctionConfig(PromptTemplateConfig config, IPromptTemplate template)
+    public SemanticFunctionConfig(
+        PromptTemplateConfig config,
+        IPromptTemplate template)
     {
         this.PromptTemplateConfig = config;
         this.PromptTemplate = template;

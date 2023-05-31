@@ -1,23 +1,29 @@
 # Copilot Chat Sample Application
-> This  sample is for educational purposes only and is not recommended for production deployments.
+
+> This sample is for educational purposes only and is not recommended for production deployments.
 
 # About Copilot Chat
+
 This sample allows you to build your own integrated large language model chat copilot.
-This is an enriched intelligence app, with multiple dynamic components including 
+This is an enriched intelligence app, with multiple dynamic components including
 command messages, user intent, and memories.
 
-The chat prompt and response will evolve as the conversation between the user and the application proceeds. 
+The chat prompt and response will evolve as the conversation between the user and the application proceeds.
 This chat experience is orchestrated with Semantic Kernel and a Copilot Chat skill containing numerous
 functions that work together to construct each response.
 
 ![UI Sample](images/UI-Sample.png)
 
 # Automated Setup and Local Deployment
+
 Refer to [./scripts/README.md](./scripts/README.md) for automated configuration and local deployment of CopilotChat.
 
 # Manual Setup and Local Deployment
+
 ## Configure your environment
+
 Before you get started, make sure you have the following requirements in place:
+
 - [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
 - [Node.js](https://nodejs.org/)
 - [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) - After installation, run `yarn --version` in a terminal window to ensure you are running v1.22.19.
@@ -25,6 +31,7 @@ Before you get started, make sure you have the following requirements in place:
 - [Visual Studio Code](https://code.visualstudio.com/Download) **(Optional)** 
 
 ## Start the WebApi Backend Server
+
 The sample uses two applications, a front-end web UI, and a back-end API server.
 First, let’s set up and verify the back-end API server is running.
 
@@ -33,10 +40,10 @@ First, let’s set up and verify the back-end API server is running.
    - For Linux run `dotnet dev-certs https`
    > **Note:** It is recommended you close all instances of your web browser after installing the developer certificates.
 
-1. Navigate to `samples/apps/copilot-chat-app/webapi` and open `appsettings.json`
+2. Navigate to `samples/apps/copilot-chat-app/webapi` and open `appsettings.json`
    - Update the `AIService` configuration section:
      - Update `Type` to the AI service you will be using (i.e., `AzureOpenAI` or `OpenAI`).
-     - If your are using Azure OpenAI, update `Endpoint` to your Azure OpenAI resource Endpoint address (e.g.,  
+     - If your are using Azure OpenAI, update `Endpoint` to your Azure OpenAI resource Endpoint address (e.g.,
        `http://contoso.openai.azure.com`).
         > If you are using OpenAI, this property will be ignored.
      - Set your Azure OpenAI or OpenAI key by opening a terminal in the webapi project directory and using `dotnet user-secrets`
@@ -50,7 +57,7 @@ First, let’s set up and verify the back-end API server is running.
        - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effective for generating embeddings.
    
    - **(Optional)** To enable speech-to-text for chat input, update the `AzureSpeech` configuration section:
-     > If you have not already, you will need to [create an Azure Speech resource](https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices) 
+     > If you have not already, you will need to [create an Azure Speech resource](https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices)
        (see [./webapi/appsettings.json](webapi/appsettings.json) for more details).
      - Update `Region` to whichever region is appropriate for your speech sdk instance.
      - Set your Azure speech key by opening a terminal in the webapi project directory and setting
@@ -59,21 +66,22 @@ First, let’s set up and verify the back-end API server is running.
        dotnet user-secrets set "AzureSpeech:Key" "MY_AZURE_SPEECH_KEY" 
        ```
 
-1. Build and run the back-end API server
+3. Build and run the back-end API server
     1. Open a terminal and navigate to `samples/apps/copilot-chat-app/webapi`
     
-    1. Run `dotnet build` to build the project.
+    2. Run `dotnet build` to build the project.
     
-    1. Run `dotnet run` to start the server.
+    3. Run `dotnet run` to start the server.
     
-    1. Verify the back-end server is responding, open a web browser and navigate to `https://localhost:40443/probe`
-       > The first time accessing the probe you may get a warning saying that there is a problem with website's certificate. 
+    4. Verify the back-end server is responding, open a web browser and navigate to `https://localhost:40443/probe`
+       > The first time accessing the probe you may get a warning saying that there is a problem with website's certificate.
          Select the option to accept/continue - this is expected when running a service on `localhost`
          It is important to do this, as your browser may need to accept the certificate before allowing the frontend to communicate with the backend.
 
       > You may also need to acknowledge the Windows Defender Firewall, and allow the app to communicate over private or public networks as appropriate.
 
-## Start the WebApp FrontEnd application 
+## Start the WebApp FrontEnd application
+
 1. Build and start the front-end application
    1. You will need an Azure Active Directory (AAD) application registration. 
       > For more details on creating an application registration, go [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
@@ -81,7 +89,7 @@ First, let’s set up and verify the back-end API server is running.
       - Select `Accounts in any organizational directory and personal Microsoft Accounts` as supported account types for this sample.
       - Make a note of the `Application (client) ID` from the Azure Portal, we will use of it later.
 
-   1. Open a terminal and navigate to `samples/apps/copilot-chat-app/webapp` Copy `env.example` into a new 
+   2. Open a terminal and navigate to `samples/apps/copilot-chat-app/webapp` Copy `.env.example` into a new
       file `.env` and update the `REACT_APP_AAD_CLIENT_ID` with the AAD application (Client) ID created above.
       For example:
       ```bash
@@ -96,53 +104,63 @@ First, let’s set up and verify the back-end API server is running.
       REACT_APP_SK_API_KEY={Your API Key, should be the same as Authorization:ApiKey from appsettings.json}
       ```
 
-   1. To build and run the front-end application
+   3. To build and run the front-end application
       ```bash
       yarn install
       yarn start
       ```
    
-   1. With the back end and front end running, your web browser should automatically launch and navigate to `http://localhost:3000`
+   4. With the back end and front end running, your web browser should automatically launch and navigate to `http://localhost:3000`
       > The first time running the front-end application may take a minute or so to start.
    
-   1. Sign in with a Microsoft personal account or a "Work or School" account. 
+   5. Sign in with a Microsoft personal account or a "Work or School" account.
    
-   1. Consent permission for the application to read your profile information (i.e., your name).
+   6. Consent permission for the application to read your profile information (i.e., your name).
     
     If you you experience any errors or issues, consult the troubleshooting section below.
 
-1. Have fun! 
+2. Have fun!
    > **Note:** Each chat interaction will call Azure OpenAI/OpenAI which will use tokens that you may be billed for.
 
 # Troubleshooting
 
 ## 1. Unable to load chats. Details: interaction_in_progress: Interaction is currently in progress. 
-The WebApp can display this error when the application is configured for an active directory tenant, (e.g., personal/MSA accounts) and the browser attempts to use single sign-on with an account from another tenant (e.g., work or school account). Either user a private/incognito browser tab or clear your browser credentials/cookies.
+
+The WebApp can display this error when the application is configured for an active directory tenant,
+(e.g., personal/MSA accounts) and the browser attempts to use single sign-on with an account from
+another tenant (e.g., work or school account). Either user a private/incognito browser tab or clear
+your browser credentials/cookies.
 
 ## 2. Issues using text completion models, such as `text-davinci-003`
+
 CopilotChat supports chat completion models, such as `gpt-3.5-*` and `gpt-4-*`.
 See [OpenAI's model compatibility](https://platform.openai.com/docs/models/model-endpoint-compatibility) for
 the complete list of current models supporting chat completions.
 
-## 3. Localhost SSL certificate errors
+## 3. Localhost SSL certificate errors / CORS errors
+
 ![](images/Cert-Issue.png)
 
-If you are stopped at an error message similar to the one above, your browser may be blocking the front-end access 
+If you are stopped at an error message similar to the one above, your browser may be blocking the front-end access
 to the back end while waiting for your permission to connect. To resolve this, try the following:
 
 1. Confirm the backend service is running by opening a web browser, and navigating to `https://localhost:40443/probe`
    - You should see a confirmation message: `Semantic Kernel service is up and running`
-1. If your browser asks you to acknowledge the risks of visiting an insecurewebsite, you must acknowledge the 
+2. If your browser asks you to acknowledge the risks of visiting an insecure website, you must acknowledge the
    message before the front end will be allowed to connect to the back-end server. 
    - Acknowledge, continue, and navigate until you see the message Semantic Kernel service is up and running
-1. Navigate to `http://localhost:3000` or refresh the page to use the Copilot Chat application.
+3. Navigate to `http://localhost:3000` or refresh the page to use the Copilot Chat application.
 
 ## 4. Have Yarn version 2.x or 3.x
-The webapp uses packages that are only supported by classic Yarn (v1.x). If you have Yarn v2.x+, run the following commands in your preferred shell to flip Yarn to the classic version.
+
+The webapp uses packages that are only supported by classic Yarn (v1.x). If you have Yarn v2.x+, run
+the following commands in your preferred shell to flip Yarn to the classic version.
+
 ```shell
 npm install -g yarn
 yarn set version classic
 ```
+
 You can confirm the active Yarn version by running `yarn --version`.
 
 # Additional resources
