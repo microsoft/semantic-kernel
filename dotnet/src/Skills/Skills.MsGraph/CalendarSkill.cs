@@ -97,13 +97,13 @@ public class CalendarSkill
             return;
         }
 
-        if (!variables.Get(Parameters.Start, out string start))
+        if (!variables.TryGetValue(Parameters.Start, out string? start))
         {
             context.Fail($"Missing variable {Parameters.Start}.");
             return;
         }
 
-        if (!variables.Get(Parameters.End, out string end))
+        if (!variables.TryGetValue(Parameters.End, out string? end))
         {
             context.Fail($"Missing variable {Parameters.End}.");
             return;
@@ -116,17 +116,17 @@ public class CalendarSkill
             End = DateTimeOffset.Parse(end, CultureInfo.InvariantCulture.DateTimeFormat)
         };
 
-        if (variables.Get(Parameters.Location, out string location))
+        if (variables.TryGetValue(Parameters.Location, out string? location))
         {
             calendarEvent.Location = location;
         }
 
-        if (variables.Get(Parameters.Content, out string content))
+        if (variables.TryGetValue(Parameters.Content, out string? content))
         {
             calendarEvent.Content = content;
         }
 
-        if (variables.Get(Parameters.Attendees, out string attendees))
+        if (variables.TryGetValue(Parameters.Attendees, out string? attendees))
         {
             calendarEvent.Attendees = attendees.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
         }
@@ -143,8 +143,8 @@ public class CalendarSkill
     [SKFunctionContextParameter(Name = Parameters.Skip, Description = "Optional number of events to skip before retrieving results.", DefaultValue = "0")]
     public async Task<string> GetCalendarEventsAsync(SKContext context)
     {
-        context.Variables.Get(Parameters.MaxResults, out string maxResultsString);
-        context.Variables.Get(Parameters.Skip, out string skipString);
+        context.Variables.TryGetValue(Parameters.MaxResults, out string? maxResultsString);
+        context.Variables.TryGetValue(Parameters.Skip, out string? skipString);
         this._logger.LogInformation("Getting calendar events with query options top: '{0}', skip:'{1}'.", maxResultsString, skipString);
 
         string selectString = "start,subject,organizer,location";
