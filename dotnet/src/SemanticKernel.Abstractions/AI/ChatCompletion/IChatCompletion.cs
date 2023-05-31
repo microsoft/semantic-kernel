@@ -14,7 +14,7 @@ public interface IChatCompletion : IAIService
     /// </summary>
     /// <param name="instructions">Optional chat instructions for the AI service</param>
     /// <returns>Chat object</returns>
-    public ChatHistory CreateNewChat(string instructions = "");
+    public ChatHistory CreateNewChat(string? instructions = null);
 
     /// <summary>
     /// Generate a new chat message

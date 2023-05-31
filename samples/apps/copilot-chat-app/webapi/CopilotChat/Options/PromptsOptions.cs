@@ -131,7 +131,7 @@ public class PromptsOptions
         this.SystemChatContinuation
     };
 
-    internal string SystemChatPrompt => string.Join("\n", this.SystemChatPromptComponents);
+    internal string SystemChatPrompt => string.Join("\n\n", this.SystemChatPromptComponents);
 
     internal double ResponseTemperature { get; } = 0.7;
     internal double ResponseTopP { get; } = 1;
