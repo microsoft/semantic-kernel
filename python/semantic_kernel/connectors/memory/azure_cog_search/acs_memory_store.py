@@ -101,17 +101,15 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         fields = [
             SimpleField(
-                name="collection_name", type=SearchFieldDataType.String, key=True
+                name="vector_id",
+                type=SearchFieldDataType.String,
+                searchable=True,
+                retrievable=True,
+                key=True
             ),
             SearchableField(
                 name="timestamp",
                 type=SearchFieldDataType.DateTimeOffset,
-                searchable=True,
-                retrievable=True,
-            ),
-            SearchableField(
-                name="vector_id",
-                type=SearchFieldDataType.String,
                 searchable=True,
                 retrievable=True,
             ),
@@ -130,6 +128,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                 vector_search_configuration="az-vector-config",
             ),
         ]
+        ## Covert complex type to json string - Utils.py
 
         vector_search = VectorSearch(
             algorithm_configurations=[
@@ -150,8 +149,6 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             name="az-semantic-config",
             prioritized_fields=PrioritizedFields(
                 title_field=SemanticField(field_name="collection_name"),
-                prioritized_keywords_fields=[SemanticField(field_name="vector")],
-                prioritized_content_fields=[SemanticField(field_name="payload")],
             ),
         )
 
@@ -188,7 +185,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         """Gets the a collections based upon collection name.
 
         Returns:
-            CollectionInfo -- Collection Information from Qdrant about collection.
+            SearchIndex -- Collection Information from ACS about collection.
         """
         collection_result = await self._cogsearch_indexclient.get_index(
             name=collection_name
