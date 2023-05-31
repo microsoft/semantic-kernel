@@ -3,17 +3,18 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
-public interface IChatCompletion
+public interface IChatCompletion : IAIService
 {
     /// <summary>
     /// Create a new empty chat instance
     /// </summary>
     /// <param name="instructions">Optional chat instructions for the AI service</param>
     /// <returns>Chat object</returns>
-    public ChatHistory CreateNewChat(string instructions = "");
+    public ChatHistory CreateNewChat(string? instructions = null);
 
     /// <summary>
     /// Generate a new chat message

@@ -31,11 +31,11 @@ public class JsonPathSkill
     {
         if (string.IsNullOrWhiteSpace(json))
         {
-            context.Fail($"Missing input JSON.");
+            context.Fail("Missing input JSON.");
             return string.Empty;
         }
 
-        if (!context.Variables.Get(Parameters.JsonPath, out string jsonPath))
+        if (!context.Variables.TryGetValue(Parameters.JsonPath, out string? jsonPath))
         {
             context.Fail($"Missing variable {Parameters.JsonPath}.");
             return string.Empty;
@@ -58,11 +58,11 @@ public class JsonPathSkill
     {
         if (string.IsNullOrWhiteSpace(json))
         {
-            context.Fail($"Missing input JSON.");
+            context.Fail("Missing input JSON.");
             return string.Empty;
         }
 
-        if (!context.Variables.Get(Parameters.JsonPath, out string jsonPath))
+        if (!context.Variables.TryGetValue(Parameters.JsonPath, out string? jsonPath))
         {
             context.Fail($"Missing variable {Parameters.JsonPath}.");
             return string.Empty;

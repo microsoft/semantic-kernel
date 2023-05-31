@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
-#pragma warning disable CA1032 // Implement standard exception constructors
+#pragma warning disable RCS1194 // Implement exception constructors
 
 /// <summary>
 /// Exception thrown for errors related to the Qdrant connector.

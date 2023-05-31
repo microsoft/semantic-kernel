@@ -112,5 +112,25 @@ public static class Program
 
         await Example35_GrpcSkills.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example36_MultiCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example37_MultiStreamingCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example38_Pinecone.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example39_Postgres.RunAsync();
+
+        await Example40_DIContainer.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        Example41_HttpClientUsage.Run();
+        Console.WriteLine("== DONE ==");
+
+        Example42_KernelBuilder.Run();
+        Console.WriteLine("== DONE ==");
     }
 }

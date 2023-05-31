@@ -347,7 +347,7 @@ public sealed class PlanTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
             .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
-                c.Variables.Get("variables", out var v);
+                c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
@@ -508,7 +508,7 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(plan);
-        Assert.Equal($"Child 3 heard Child 2 is happy about Child 1 output!Write a poem or joke - this just happened.", plan.State.ToString());
+        Assert.Equal("Child 3 heard Child 2 is happy about Child 1 output!Write a poem or joke - this just happened.", plan.State.ToString());
         nodeFunction1.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
         childFunction1.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
         childFunction2.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
@@ -571,7 +571,7 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal($"Here is a poem about Cleopatra", result.Result);
+        Assert.Equal("Here is a poem about Cleopatra", result.Result);
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
     }
 
@@ -595,7 +595,7 @@ public sealed class PlanTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
             .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
-                c.Variables.Get("type", out var t);
+                c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
             .Returns(() => Task.FromResult(returnContext));
@@ -612,7 +612,7 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal($"Here is a poem about Cleopatra", result.Result);
+        Assert.Equal("Here is a poem about Cleopatra", result.Result);
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Once);
     }
 
@@ -636,7 +636,7 @@ public sealed class PlanTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
             .Callback<SKContext, CompleteRequestSettings?>((c, s) =>
             {
-                c.Variables.Get("type", out var t);
+                c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
             .Returns(() => Task.FromResult(returnContext));
@@ -650,7 +650,7 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal($"Here is a poem about Cleopatra", result.Result);
+        Assert.Equal("Here is a poem about Cleopatra", result.Result);
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Once);
 
         plan = new Plan(mockFunction.Object);
@@ -671,7 +671,7 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal($"Here is a joke about Medusa", result.Result);
+        Assert.Equal("Here is a joke about Medusa", result.Result);
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Exactly(2));
     }
 
@@ -695,7 +695,7 @@ public sealed class PlanTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
             .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
-                c.Variables.Get("type", out var t);
+                c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
             .Returns(() => Task.FromResult(returnContext));
@@ -712,7 +712,7 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal($"Here is a joke about Medusa", result.Result);
+        Assert.Equal("Here is a joke about Medusa", result.Result);
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Once);
 
         planStep = new Plan(mockFunction.Object);
@@ -728,7 +728,7 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal($"Here is a poem about Medusa", result.Result);
+        Assert.Equal("Here is a poem about Medusa", result.Result);
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Exactly(2));
 
         planStep = new Plan(mockFunction.Object);
@@ -750,7 +750,7 @@ public sealed class PlanTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal($"Here is a joke about Cleopatra", result.Result);
+        Assert.Equal("Here is a joke about Cleopatra", result.Result);
         mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Exactly(3));
     }
 

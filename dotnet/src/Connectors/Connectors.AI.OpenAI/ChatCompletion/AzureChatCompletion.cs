@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,25 +72,26 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     }
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string instructions = "")
+    public ChatHistory CreateNewChat(string? instructions = null)
     {
         return InternalCreateNewChat(instructions);
     }
 
     /// <inheritdoc/>
-    public Task<string> CompleteAsync(
+    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken).ToAsyncEnumerable();
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> CompleteStreamAsync(string text,
+    public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
+        string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextUsingChatStreamAsync(text, requestSettings, cancellationToken);
+        return Task.FromResult(this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken) as IReadOnlyList<ITextCompletionResult>);
     }
 }

@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -9,6 +10,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -97,12 +99,13 @@ public sealed class SequentialPlannerTests
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<CancellationToken>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
             It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>()
+            It.IsAny<SemanticFunctionConfig>(),
+            It.IsAny<ITrustService?>()
         )).Returns(mockFunctionFlowFunction.Object);
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object);
@@ -159,8 +162,7 @@ public sealed class SequentialPlannerTests
         var functionsView = new FunctionsView();
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
 
-        var planString =
-            @"<plan>notvalid<</plan>";
+        var planString = "<plan>notvalid<</plan>";
         var returnContext = new SKContext(
             new ContextVariables(planString),
             memory.Object,
@@ -185,12 +187,13 @@ public sealed class SequentialPlannerTests
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<CancellationToken>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
             It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>()
+            It.IsAny<SemanticFunctionConfig>(),
+            It.IsAny<ITrustService?>()
         )).Returns(mockFunctionFlowFunction.Object);
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object);

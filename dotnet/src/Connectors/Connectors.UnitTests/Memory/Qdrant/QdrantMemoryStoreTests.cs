@@ -29,9 +29,9 @@ public class QdrantMemoryStoreTests
     private readonly string _description = "description";
     private readonly string _description2 = "description2";
     private readonly string _description3 = "description3";
-    private readonly Embedding<float> _embedding = new Embedding<float>(new float[] { 1, 1, 1 });
-    private readonly Embedding<float> _embedding2 = new Embedding<float>(new float[] { 2, 2, 2 });
-    private readonly Embedding<float> _embedding3 = new Embedding<float>(new float[] { 3, 3, 3 });
+    private readonly Embedding<float> _embedding = new(new float[] { 1, 1, 1 });
+    private readonly Embedding<float> _embedding2 = new(new float[] { 2, 2, 2 });
+    private readonly Embedding<float> _embedding3 = new(new float[] { 3, 3, 3 });
 
     [Fact]
     public void ConnectionCanBeInitialized()
@@ -116,6 +116,9 @@ public class QdrantMemoryStoreTests
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<Task>(x => x.DeleteCollectionAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()));
+        mockQdrantClient
+            .Setup<Task>(x => x.DoesCollectionExistAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(true));
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 

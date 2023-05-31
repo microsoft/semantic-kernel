@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Service.Model;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace SemanticKernel.Service.Models;
 
 public class Ask
 {

@@ -92,7 +92,7 @@ E-mail these ideas to my significant other. Translate it to French."
             {"function": "WriterSkill.Brainstorm"},
             {"function": "EdgarAllenPoeSkill.Poe"},
             {"function": "WriterSkill.EmailTo", "args": {"recipient": "significant_other"}},
-            {"function": "translate", "args": {"language": "French"}}
+            {"function": "WriterSkill.Translate", "args": {"language": "French"}}
         ]
     }
 

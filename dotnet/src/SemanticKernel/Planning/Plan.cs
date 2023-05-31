@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -10,7 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -19,6 +22,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Standard Semantic Kernel callable plan.
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class Plan : ISKFunction
 {
     /// <summary>
@@ -76,6 +80,14 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     [JsonIgnore]
     public bool IsSemantic { get; private set; }
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public bool IsSensitive { get; private set; } = false;
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public ITrustService TrustServiceInstance { get; private set; } = TrustService.DefaultTrusted;
 
     /// <inheritdoc/>
     [JsonIgnore]
@@ -253,7 +265,7 @@ public sealed class Plan : ISKFunction
             if (result.ErrorOccurred)
             {
                 throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
-                    $"Error occurred while running plan step: {context.LastErrorDescription}", context.LastException);
+                    $"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
             }
 
             #region Update State
@@ -264,14 +276,14 @@ public sealed class Plan : ISKFunction
             // Update Plan Result in State with matching outputs (if any)
             if (this.Outputs.Intersect(step.Outputs).Any())
             {
-                this.State.Get(DefaultResultKey, out var currentPlanResult);
-                this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult.Trim(), resultValue));
+                this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult);
+                this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult?.Trim(), resultValue));
             }
 
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.Variables.Get(item, out var val))
+                if (result.Variables.TryGetValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -302,6 +314,7 @@ public sealed class Plan : ISKFunction
     public Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
+        ISemanticTextMemory? memory = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
@@ -309,6 +322,7 @@ public sealed class Plan : ISKFunction
 
         SKContext context = new(
             this.State,
+            memory: memory,
             logger: logger,
             cancellationToken: cancellationToken);
 
@@ -316,7 +330,9 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null)
+    public async Task<SKContext> InvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? settings = null)
     {
         if (this.Function is not null)
         {
@@ -330,7 +346,7 @@ public sealed class Plan : ISKFunction
                 return result;
             }
 
-            context.Variables.Update(result.Result.ToString());
+            context.Variables.Update(result.Result);
         }
         else
         {
@@ -390,11 +406,9 @@ public sealed class Plan : ISKFunction
 
         foreach (var varName in orderedMatches)
         {
-            result = variables.Get(varName, out var value)
-                ? result.Replace($"${varName}", value)
-                : this.State.Get(varName, out value)
-                    ? result.Replace($"${varName}", value)
-                    : result.Replace($"${varName}", string.Empty);
+            result = result.Replace($"${varName}",
+                variables.TryGetValue(varName, out string? value) || this.State.TryGetValue(varName, out value) ? value :
+                string.Empty);
         }
 
         return result;
@@ -455,13 +469,13 @@ public sealed class Plan : ISKFunction
     /// <returns>The updated context.</returns>
     private SKContext UpdateContextWithOutputs(SKContext context)
     {
-        var resultString = this.State.Get(DefaultResultKey, out var result) ? result : this.State.ToString();
+        var resultString = this.State.TryGetValue(DefaultResultKey, out string? result) ? result : this.State.ToString();
         context.Variables.Update(resultString);
 
         // copy previous step's variables to the next step
         foreach (var item in this._steps[this.NextStepIndex - 1].Outputs)
         {
-            if (this.State.Get(item, out var val))
+            if (this.State.TryGetValue(item, out string? val))
             {
                 context.Variables.Set(item, val);
             }
@@ -524,11 +538,11 @@ public sealed class Plan : ISKFunction
                 continue;
             }
 
-            if (variables.Get(param.Name, out var value))
+            if (variables.TryGetValue(param.Name, out string? value))
             {
                 stepVariables.Set(param.Name, value);
             }
-            else if (this.State.Get(param.Name, out value) && !string.IsNullOrEmpty(value))
+            else if (this.State.TryGetValue(param.Name, out value) && !string.IsNullOrEmpty(value))
             {
                 stepVariables.Set(param.Name, value);
             }
@@ -537,7 +551,7 @@ public sealed class Plan : ISKFunction
         foreach (var item in step.Parameters)
         {
             // Don't overwrite variable values that are already set
-            if (stepVariables.Get(item.Key, out _))
+            if (stepVariables.ContainsKey(item.Key))
             {
                 continue;
             }
@@ -547,11 +561,11 @@ public sealed class Plan : ISKFunction
             {
                 stepVariables.Set(item.Key, expandedValue);
             }
-            else if (variables.Get(item.Key, out var value))
+            else if (variables.TryGetValue(item.Key, out string? value))
             {
                 stepVariables.Set(item.Key, value);
             }
-            else if (this.State.Get(item.Key, out value))
+            else if (this.State.TryGetValue(item.Key, out value))
             {
                 stepVariables.Set(item.Key, value);
             }
@@ -571,6 +585,8 @@ public sealed class Plan : ISKFunction
         this.SkillName = function.SkillName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
+        this.IsSensitive = function.IsSensitive;
+        this.TrustServiceInstance = function.TrustServiceInstance;
         this.RequestSettings = function.RequestSettings;
     }
 
@@ -581,4 +597,25 @@ public sealed class Plan : ISKFunction
     private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
 
     private const string DefaultResultKey = "PLAN.RESULT";
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay
+    {
+        get
+        {
+            string display = this.Description;
+
+            if (!string.IsNullOrWhiteSpace(this.Name))
+            {
+                display = $"{this.Name} ({display})";
+            }
+
+            if (this._steps.Count > 0)
+            {
+                display += $", Steps = {this._steps.Count}, NextStep = {this.NextStepIndex}";
+            }
+
+            return display;
+        }
+    }
 }
