@@ -119,7 +119,13 @@ public class BotController : ControllerBase
         // 2. Update the app's chat storage.
         foreach (var message in bot.ChatHistory)
         {
-            var chatMessage = new ChatMessage(message.UserId, message.UserName, chatId, message.Content, ChatMessage.AuthorRoles.Participant)
+            var chatMessage = new ChatMessage(
+                message.UserId,
+                message.UserName,
+                chatId,
+                message.Content,
+                message.Prompt,
+                ChatMessage.AuthorRoles.Participant)
             {
                 Timestamp = message.Timestamp
             };

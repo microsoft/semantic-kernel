@@ -153,7 +153,7 @@ public static class Example25_ReadOnlyMemoryStore
             throw new System.NotImplementedException();
         }
 
-        public IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> record, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
