@@ -71,3 +71,21 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
     assert endpoint is not None, "Azure OpenAI endpoint not found in .env file"
 
     return deployment or "", api_key, endpoint
+
+
+def postgres_settings_from_dot_env() -> str:
+    connection_string = None
+    with open(".env", "r") as f:
+        lines = f.readlines()
+
+        for line in lines:
+            if line.startswith("POSTGRES_CONNECTION_STRING"):
+                parts = line.split("=")[1:]
+                connection_string = "=".join(parts).strip().strip('"')
+                continue
+
+    assert (
+        connection_string is not None
+    ), "Postgres connection string not found in .env file"
+
+    return connection_string
