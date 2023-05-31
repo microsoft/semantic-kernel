@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.semanticfunctions;
 /** Semantic function configuration */
 public class SemanticFunctionConfig {
     private final PromptTemplateConfig config;
+
     /** Prompt template */
     private final PromptTemplate template;
 
