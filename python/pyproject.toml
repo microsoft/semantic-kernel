@@ -20,7 +20,6 @@ pytest = "7.2.0"
 ruff = "^0.0.257"
 pytest-asyncio = "^0.21.0"
 
-
 [tool.poetry.group.hugging_face.dependencies]
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
@@ -33,6 +32,7 @@ chromadb = "^0.3.23"
 profile = "black"
 
 [tool.ruff]
+select = ["E", "F", "I"]
 line-length = 120
 
 [build-system]
