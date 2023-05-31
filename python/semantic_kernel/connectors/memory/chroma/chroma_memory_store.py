@@ -171,7 +171,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             documents=record._text,
             ids=record._id,
         )
-
+        self._client.persist()
         return record._id
 
     async def upsert_batch_async(
@@ -262,6 +262,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         collection = await self.get_collection_async(collection_name=collection_name)
         if collection is not None:
             collection.delete(ids=keys)
+            self._client.persist()
 
     async def get_nearest_matches_async(
         self,
