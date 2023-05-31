@@ -7,6 +7,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{FA3720F1-C99A-49B2-9577-A940257098BF}"
+	ProjectSection(SolutionItems) = preProject
+		..\samples\dotnet\Directory.Build.props = ..\samples\dotnet\Directory.Build.props
+		..\samples\dotnet\Directory.Build.targets = ..\samples\dotnet\Directory.Build.targets
+		..\samples\dotnet\Directory.Packages.props = ..\samples\dotnet\Directory.Packages.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoadPromptsFromCloud", "..\samples\dotnet\kernel-extension-load-prompts-from-cloud\LoadPromptsFromCloud.csproj", "{A05BF65E-085E-476C-B88A-9DA93F005416}"
 EndProject
@@ -29,7 +34,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.editorconfig = ..\.editorconfig
 		..\.gitignore = ..\.gitignore
 		Directory.Build.props = Directory.Build.props
-		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
 		..\.github\workflows\dotnet-format.yml = ..\.github\workflows\dotnet-format.yml
 		..\README.md = ..\README.md

@@ -85,7 +85,7 @@ public class DocumentSkill
     [SKFunctionContextParameter(Name = Parameters.FilePath, Description = "Destination file path")]
     public async Task AppendTextAsync(string text, SKContext context)
     {
-        if (!context.Variables.Get(Parameters.FilePath, out string filePath))
+        if (!context.Variables.TryGetValue(Parameters.FilePath, out string? filePath))
         {
             context.Fail($"Missing variable {Parameters.FilePath}.");
             return;

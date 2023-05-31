@@ -30,6 +30,13 @@ internal sealed class DeleteVectorsRequest : IValidatable
         return this;
     }
 
+    public DeleteVectorsRequest DeleteRange(IEnumerable<string> qdrantPointIds)
+    {
+        Verify.NotNull(qdrantPointIds, "The point ID collection is NULL");
+        this.Ids.AddRange(qdrantPointIds);
+        return this;
+    }
+
     public HttpRequestMessage Build()
     {
         this.Validate();
