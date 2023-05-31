@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "type": "completion",
+  "description": "Remove a list of entities from a given text in a coherent manner. Returns the text without the entities in the list",
+  "completion": {
+    "max_tokens": 1024,
+    "temperature": 0.0,
+    "top_p": 0.1,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "input": {
+    "parameters": [
+      {
+        "name": "input",
+        "description": "The text from which the entities are to be removed, and the entities themselves",
+        "defaultValue": ""
+      }
+    ]
+  }
+}
