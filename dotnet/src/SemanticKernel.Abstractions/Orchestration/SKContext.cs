@@ -83,8 +83,16 @@ public sealed class SKContext
     public ISemanticTextMemory Memory { get; }
 
 
-    public ISemanticTextMemory<TFilter>? GetFilterableMemory<TFilter>()
+    /// <summary>
+    /// Semantic memory with filtering capabilities
+    /// </summary>
+    public ISemanticTextMemory? GetFilterableMemory<TFilter>()
     {
+        if (this.Memory == null)
+        {
+            return null;
+        }
+
         return this.Memory as ISemanticTextMemory<TFilter>;
     }
 

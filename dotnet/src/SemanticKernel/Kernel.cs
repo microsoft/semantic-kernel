@@ -46,6 +46,17 @@ public sealed class Kernel : IKernel, IDisposable
     public ISemanticTextMemory Memory => this._memory;
 
     /// <inheritdoc/>
+    public ISemanticTextMemory? GetFilterableMemory<TFilter>()
+    {
+        if (this._memory == null)
+        {
+            return null;
+        }
+
+        return this._memory as ISemanticTextMemory<TFilter>;
+    }
+
+    /// <inheritdoc/>
     public IReadOnlySkillCollection Skills => this._skillCollection.ReadOnlySkillCollection;
 
     /// <inheritdoc/>
