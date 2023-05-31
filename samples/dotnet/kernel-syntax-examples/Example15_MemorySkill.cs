@@ -36,7 +36,7 @@ public static class Example15_MemorySkill
         kernel.ImportSkill(new TextMemorySkill());
 
         // Build a semantic function that saves info to memory
-        const string SaveFunctionDefinition = @"{{save $info}}";
+        const string SaveFunctionDefinition = "{{save $info}}";
         var memorySaver = kernel.CreateSemanticFunction(SaveFunctionDefinition);
 
         var context = kernel.CreateNewContext();
