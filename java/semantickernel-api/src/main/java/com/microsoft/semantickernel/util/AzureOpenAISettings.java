@@ -2,7 +2,7 @@ package com.microsoft.semantickernel.util;
 
 import java.io.IOException;
 
-public class AzureOpenAISettings extends AIProviderSettings<AzureOpenAISettings> {
+public class AzureOpenAISettings extends ClientSettings<AzureOpenAISettings> {
 
     private static final String DEFAULT_CLIENT_ID = "azureopenai";
     private String key;
