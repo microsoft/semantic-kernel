@@ -55,10 +55,10 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings,
+        ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGenerateChatMessageAsync(chat, requestSettings ?? new(), cancellationToken);
+        return this.InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -67,7 +67,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGenerateStreamingChatMessageAsync(chat, requestSettings ?? new(), cancellationToken);
+        return this.InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -79,18 +79,18 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGetTextCompletionStreamingAsChatAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetChatStreamingResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGetTextCompletionAsChatAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 }

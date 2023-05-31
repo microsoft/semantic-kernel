@@ -39,7 +39,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletio
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ChatMessageBase> GetChatMessageStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
         {
@@ -54,7 +54,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletio
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var result in this.GetChatMessageStreamingAsync(cancellationToken).ConfigureAwait(false))
+        await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
         {
             yield return result.Content;
         }

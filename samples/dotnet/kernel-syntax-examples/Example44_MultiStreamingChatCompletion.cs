@@ -85,7 +85,7 @@ public static class Example44_MultiStreamingChatCompletion
     {
         string message = string.Empty;
 
-        await foreach (var chatMessage in result.GetChatMessageStreamingAsync())
+        await foreach (var chatMessage in result.GetStreamingChatMessageAsync())
         {
             string role = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(chatMessage.Role.Label);
             message += chatMessage.Content;

@@ -63,7 +63,7 @@ public class MyChatStreamingResult : IChatStreamingResult
         return Task.FromResult(this._message);
     }
 
-    public async IAsyncEnumerable<ChatMessageBase> GetChatMessageStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var streamedOutput = this._message.Content.Split(' ');
         foreach (string word in streamedOutput)

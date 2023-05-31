@@ -51,18 +51,17 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <returns> true if left and right are both null or have equivalent labels; false otherwise </returns>
     public static bool operator ==(AuthorRole left, AuthorRole right)
     {
-        if (Object.ReferenceEquals(left, null) != Object.ReferenceEquals(right, null))
-        {
-            return false;
-        }
-        else if (Object.ReferenceEquals(left, null))
+        if (Object.ReferenceEquals(left, right))
         {
             return true;
         }
-        else
+
+        if (Object.ReferenceEquals(left, null) || Object.ReferenceEquals(right, null))
         {
-            return left.Equals(right);
+            return false;
         }
+
+        return left.Equals(right);
     }
 
     /// <summary>

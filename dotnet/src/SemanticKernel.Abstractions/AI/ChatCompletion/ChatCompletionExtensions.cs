@@ -28,7 +28,7 @@ public static class ChatCompletionExtensions
 
         await foreach (var chatCompletionResult in chatCompletionResults)
         {
-            await foreach (var chatMessageStream in chatCompletionResult.GetChatMessageStreamingAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var chatMessageStream in chatCompletionResult.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return chatMessageStream.Content;
             }
