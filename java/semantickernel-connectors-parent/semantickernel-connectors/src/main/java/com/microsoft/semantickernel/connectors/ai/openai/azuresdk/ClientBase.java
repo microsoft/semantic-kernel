@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.ai.openai.azuresdk; // Copyright (c) Microsoft. All
-// rights reserved.
+package com.microsoft.semantickernel.connectors.ai.openai.azuresdk;
 
 import com.microsoft.openai.OpenAIAsyncClient;
 

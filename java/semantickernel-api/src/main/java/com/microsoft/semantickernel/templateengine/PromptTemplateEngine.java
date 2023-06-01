@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.templateengine;
 
 import com.microsoft.semantickernel.orchestration.SKContext;
 
@@ -31,7 +30,9 @@ public interface PromptTemplateEngine {
      */
     Mono<String> renderAsync(String templateText, SKContext context);
 
-    interface Builder {
-        PromptTemplateEngine build();
+    abstract class Builder {
+        protected Builder() {}
+
+        public abstract PromptTemplateEngine build();
     }
 }

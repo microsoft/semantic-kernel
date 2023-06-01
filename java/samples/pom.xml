@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.microsoft.semantickernel</groupId>
     <artifactId>samples</artifactId>
     <version>0.2.0-SNAPSHOT</version>
+    <!-- TODO: Consider inheriting from parent -->
 
     <properties>
-        <jdk.version>17</jdk.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <com.uber.nullaway.version>0.10.10</com.uber.nullaway.version>
+        <google.errorprone.core.version>2.19.1</google.errorprone.core.version>
+        <log4j2.version>2.20.0</log4j2.version>
+        <maven.compiler.plugin.version>2.11.0</maven.compiler.plugin.version>
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -50,22 +53,20 @@
             <artifactId>semantickernel-core-skills</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.20.0</version>
+            <version>${log4j2.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.20.0</version>
+            <version>${log4j2.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
-            <version>2.20.0</version>
+            <version>${log4j2.version}</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantickernel.extensions</groupId>
@@ -87,30 +88,32 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.10.1</version>
+                        <version>{maven.compiler-plugin.version}</version>
                         <configuration>
-                            <source>17</source>
-                            <target>17</target>
-                            <encoding>UTF-8</encoding>
+                            <source>${maven.compiler.release}</source>
+                            <target>${maven.compiler.release}</target>
+                            <encoding>${project.build.sourceEncoding}</encoding>
                             <showWarnings>true</showWarnings>
                             <compilerArgs>
                                 <arg>-XDcompilePolicy=simple</arg>
 
                                 <!-- Remove exclusions when more project is stable -->
-                                <arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=com.microsoft.semantickernel
-                                    -Xep:AlmostJavadoc:OFF -Xep:MissingSummary:OFF -Xep:UnusedVariable:OFF -Xep:EmptyBlockTag:OFF
+                                <arg>-Xplugin:ErrorProne
+                                    -XepOpt:NullAway:AnnotatedPackages=com.microsoft.semantickernel
+                                    -Xep:AlmostJavadoc:OFF -Xep:MissingSummary:OFF
+                                    -Xep:UnusedVariable:OFF -Xep:EmptyBlockTag:OFF
                                 </arg>
                             </compilerArgs>
                             <annotationProcessorPaths>
                                 <path>
                                     <groupId>com.google.errorprone</groupId>
                                     <artifactId>error_prone_core</artifactId>
-                                    <version>2.18.0</version>
+                                    <version>${google.errorprone.core.version}</version>
                                 </path>
                                 <path>
                                     <groupId>com.uber.nullaway</groupId>
                                     <artifactId>nullaway</artifactId>
-                                    <version>0.10.10</version>
+                                    <version>${com.uber.nullaway.version}</version>
                                 </path>
                             </annotationProcessorPaths>
                         </configuration>

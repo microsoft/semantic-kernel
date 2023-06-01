@@ -10,11 +10,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface SKFunctionParameters {
-    String description();
 
-    String name();
+    String NO_DEFAULT_VALUE = "SKFunctionParameters__NO_INPUT_PROVIDED";
 
-    String defaultValue();
+    String description() default "";
 
-    Class<?> type();
+    String name() default "";
+
+    String defaultValue() default NO_DEFAULT_VALUE;
+
+    Class<?> type() default String.class;
 }

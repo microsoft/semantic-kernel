@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.ai.embeddings; // Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.ai.embeddings;
 
 import com.microsoft.openai.OpenAIAsyncClient;
 

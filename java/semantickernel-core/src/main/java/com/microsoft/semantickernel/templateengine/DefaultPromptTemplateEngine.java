@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.templateengine; // Copyright (c) Microsoft. All rights
-// reserved.
+package com.microsoft.semantickernel.templateengine;
 
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
@@ -124,8 +123,7 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
          */
     }
 
-    public static class Builder implements PromptTemplateEngine.Builder {
-
+    public static final class Builder extends PromptTemplateEngine.Builder {
         @Override
         public PromptTemplateEngine build() {
             return new DefaultPromptTemplateEngine();

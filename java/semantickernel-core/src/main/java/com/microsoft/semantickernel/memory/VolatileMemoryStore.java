@@ -1,18 +1,24 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
+import com.microsoft.semantickernel.ai.EmbeddingVector;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-import com.microsoft.semantickernel.exceptions.NotSupportedException;
 
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.ToDoubleFunction;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -28,8 +34,7 @@ public class VolatileMemoryStore implements MemoryStore {
     public Mono<Void> createCollectionAsync(@Nonnull String collectionName) {
         if (this._store.containsKey(collectionName)) {
             throw new MemoryException(
-                    MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION,
-                    String.format("Could not create collection %s", collectionName));
+                    MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, collectionName);
         }
         this._store.putIfAbsent(collectionName, new ConcurrentHashMap<>());
         return Mono.empty();
@@ -49,8 +54,7 @@ public class VolatileMemoryStore implements MemoryStore {
     public Mono<Void> deleteCollectionAsync(@Nonnull String collectionName) {
         if (!this._store.containsKey(collectionName)) {
             throw new MemoryException(
-                    MemoryException.ErrorCodes.FAILED_TO_DELETE_COLLECTION,
-                    String.format("Could not delete collection %s", collectionName));
+                    MemoryException.ErrorCodes.FAILED_TO_DELETE_COLLECTION, collectionName);
         }
         this._store.remove(collectionName);
         return Mono.empty();
@@ -152,83 +156,83 @@ public class VolatileMemoryStore implements MemoryStore {
         return Mono.empty();
     }
 
+    @SuppressWarnings("unchecked")
+    private static EmbeddingVector<Number> upcastEmbeddingVector(List<? extends Number> list) {
+        return new EmbeddingVector<Number>((List<Number>) list);
+    }
+
+    private static final ToDoubleFunction<Tuple2<MemoryRecord, ? extends Number>>
+            extractSimilarity = tuple -> tuple.getT2().doubleValue();
+
     @Override
-    public Mono<Collection<Tuple2<MemoryRecord, Double>>> getNearestMatchesAsync(
+    public Mono<Collection<Tuple2<MemoryRecord, Number>>> getNearestMatchesAsync(
             @Nonnull String collectionName,
-            @Nonnull Embedding<Float> embedding,
+            @Nonnull Embedding<? extends Number> embedding,
             int limit,
             double minRelevanceScore,
             boolean withEmbeddings) {
 
-        return Mono.error(new NotSupportedException("Pending implementation"));
-        //        if (limit <= 0) {
-        //            return Mono.just(Collections.emptyList());
-        //        }
-        //
-        //        Map<String,MemoryRecord> collection = getCollection(collectionName);
-        //        Collection<MemoryRecord> embeddingCollection = collection.values();
-        //        if (embeddingCollection == null || embeddingCollection.isEmpty()) {
-        //            return Mono.just(Collections.emptyList());
-        //        }
-        //
-        //        List<Tuple2<MemoryRecord, Double>> nearestMatches = new ArrayList<>();
-        //        embeddingCollection.forEach(record -> {
-        //            if (record != null) {
-        //                double similarity = embedding.cosineSimilarity(record.getEmbedding());
-        //                if (similarity >= minRelevanceScore) {
-        //                    if (withEmbeddings) {
-        //                        nearestMatches.add(new Tuple2<>(record, similarity));
-        //                    } else {
-        //                        nearestMatches.add(new
-        // Tuple2<>(MemoryRecord.fromMetadata(record.getMetadata(), null,
-        // record.getMetadata().getId(), record.getTimestamp()), similarity));
-        //                    }
-        //                }
-        //            }
-        //        });
-        //
-        //
-        //        EmbeddingReadOnlySpan<Float> embeddingSpan = new(embedding.AsReadOnlySpan());
-        //
-        //        TopNCollection<MemoryRecord> embeddings = new(limit);
-        //
-        //        foreach (var record in embeddingCollection)
-        //        {
-        //            if (record != null)
-        //            {
-        //                double similarity = embedding
-        //                    .AsReadOnlySpan()
-        //                    .CosineSimilarity(record.Embedding.AsReadOnlySpan());
-        //                if (similarity >= minRelevanceScore)
-        //                {
-        //                    var entry = withEmbeddings ? record :
-        // MemoryRecord.FromMetadata(record.Metadata, Embedding<Float>.Empty, record.Key,
-        // record.Timestamp);
-        //                    embeddings.Add(new(entry, similarity));
-        //                }
-        //            }
-        //        }
-        //
-        //        embeddings.SortByScore();
-        //
-        //        return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
+        if (limit <= 0) {
+            return Mono.just(Collections.emptyList());
+        }
+
+        Map<String, MemoryRecord> collection = getCollection(collectionName);
+        if (collection == null || collection.isEmpty()) {
+            return Mono.just(Collections.emptyList());
+        }
+
+        Collection<MemoryRecord> embeddingCollection = collection.values();
+
+        // Upcast the embedding vector to a Number to get around compiler complaining about type
+        // mismatches.
+        EmbeddingVector<Number> embeddingVector = upcastEmbeddingVector(embedding.getVector());
+
+        Collection<Tuple2<MemoryRecord, Number>> nearestMatches = new ArrayList<>();
+        embeddingCollection.forEach(
+                record -> {
+                    if (record != null) {
+                        EmbeddingVector<Number> recordVector =
+                                upcastEmbeddingVector(record.getEmbedding().getVector());
+                        double similarity = embeddingVector.cosineSimilarity(recordVector);
+                        if (similarity >= minRelevanceScore) {
+                            if (withEmbeddings) {
+                                nearestMatches.add(Tuples.of(record, similarity));
+                            } else {
+                                nearestMatches.add(
+                                        Tuples.of(
+                                                MemoryRecord.fromMetadata(
+                                                        record.getMetadata(),
+                                                        null,
+                                                        record.getMetadata().getId(),
+                                                        record.getTimestamp()),
+                                                similarity));
+                            }
+                        }
+                    }
+                });
+        return Mono.just(
+                nearestMatches.stream()
+                        .sorted(Comparator.comparingDouble(extractSimilarity).reversed())
+                        .limit(limit)
+                        .collect(Collectors.toList()));
     }
 
     @Override
-    public Mono<Tuple2<MemoryRecord, Double>> getNearestMatchAsync(
+    public Mono<Tuple2<MemoryRecord, ? extends Number>> getNearestMatchAsync(
             @Nonnull String collectionName,
-            @Nonnull Embedding<Float> embedding,
+            @Nonnull Embedding<? super Number> embedding,
             double minRelevanceScore,
             boolean withEmbedding) {
-        return Mono.error(new NotSupportedException("Pending implementation"));
-        //        return await this.GetNearestMatchesAsync(
-        //            collectionName: collectionName,
-        //            embedding: embedding,
-        //            limit: 1,
-        //            minRelevanceScore: minRelevanceScore,
-        //            withEmbeddings: withEmbedding,
-        //            cancellationToken:
-        // cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+
+        return getNearestMatchesAsync(
+                        collectionName, embedding, 1, minRelevanceScore, withEmbedding)
+                .flatMap(
+                        nearestMatches -> {
+                            if (nearestMatches.isEmpty()) {
+                                return Mono.empty();
+                            }
+                            return Mono.just(nearestMatches.iterator().next());
+                        });
     }
 
     protected Map<String, MemoryRecord> getCollection(@Nonnull String collectionName) {
@@ -236,9 +240,7 @@ public class VolatileMemoryStore implements MemoryStore {
         if (collection == null) {
             throw new MemoryException(
                     MemoryException.ErrorCodes.ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION,
-                    String.format(
-                            "Attempted to access a memory collection that does not exist: %s",
-                            collectionName));
+                    collectionName);
         }
         return collection;
     }

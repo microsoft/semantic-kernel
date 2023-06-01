@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.coreskills; // Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.coreskills;
 
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -61,14 +61,11 @@ public class TextMemorySkill {
                             name = collectionParam,
                             description =
                                     "Memories collection associated with the memory to retrieve",
-                            defaultValue = DefaultCollection,
-                            type = String.class)
+                            defaultValue = DefaultCollection)
                     String collection,
             @SKFunctionParameters(
                             name = KeyParam,
-                            description = "The key associated with the memory to retrieve",
-                            defaultValue = "",
-                            type = String.class)
+                            description = "The key associated with the memory to retrieve")
                     String key) {
 
         SemanticTextMemory memory = context.getSemanticMemory();

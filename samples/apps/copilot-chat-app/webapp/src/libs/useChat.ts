@@ -148,6 +148,7 @@ export const useChat = () => {
                 userName: 'bot',
                 userId: 'bot',
                 content: result.value,
+                prompt: result.variables.find((v) => v.key === 'prompt')?.value,
                 authorRole: AuthorRoles.Bot,
                 state: isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
             };

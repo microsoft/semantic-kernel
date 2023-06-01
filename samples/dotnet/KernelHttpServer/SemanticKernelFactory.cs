@@ -46,17 +46,15 @@ internal static class SemanticKernelFactory
         switch (config.CompletionConfig.AIService)
         {
             case AIService.OpenAI:
-                builder.WithOpenAITextCompletionService(
+                builder.Configure(c => c.AddOpenAIChatCompletionService(
                     config.CompletionConfig.DeploymentOrModelId,
-                    config.CompletionConfig.Key,
-                    config.CompletionConfig.ServiceId);
+                    config.CompletionConfig.Key));
                 break;
             case AIService.AzureOpenAI:
-                builder.WithAzureTextCompletionService(
+                builder.Configure(c => c.AddAzureChatCompletionService(
                     config.CompletionConfig.DeploymentOrModelId,
                     config.CompletionConfig.Endpoint,
-                    config.CompletionConfig.Key,
-                    serviceId: config.CompletionConfig.ServiceId);
+                    config.CompletionConfig.Key));
                 break;
             default:
                 break;
@@ -67,17 +65,15 @@ internal static class SemanticKernelFactory
             switch (config.EmbeddingConfig.AIService)
             {
                 case AIService.OpenAI:
-                    builder.WithOpenAITextEmbeddingGenerationService(
+                    builder.Configure(c => c.AddOpenAITextEmbeddingGenerationService(
                         config.EmbeddingConfig.DeploymentOrModelId,
-                        config.EmbeddingConfig.Key,
-                        serviceId: config.EmbeddingConfig.ServiceId);
+                        config.EmbeddingConfig.Key));
                     break;
                 case AIService.AzureOpenAI:
-                    builder.WithAzureTextEmbeddingGenerationService(
+                    builder.Configure(c => c.AddAzureTextEmbeddingGenerationService(
                         config.EmbeddingConfig.DeploymentOrModelId,
                         config.EmbeddingConfig.Endpoint,
-                        config.EmbeddingConfig.Key,
-                        serviceId: config.EmbeddingConfig.ServiceId);
+                        config.EmbeddingConfig.Key));
                     break;
                 default:
                     break;

@@ -89,7 +89,7 @@ public class CalendarSkill
     [SKFunctionContextParameter(Name = Parameters.Attendees, Description = "Event attendees, separated by ',' or ';'.")]
     public async Task AddEventAsync(string subject, SKContext context)
     {
-        ContextVariables memory = context.Variables;
+        ContextVariables variables = context.Variables;
 
         if (string.IsNullOrWhiteSpace(subject))
         {
@@ -97,13 +97,13 @@ public class CalendarSkill
             return;
         }
 
-        if (!memory.Get(Parameters.Start, out string start))
+        if (!variables.TryGetValue(Parameters.Start, out string? start))
         {
             context.Fail($"Missing variable {Parameters.Start}.");
             return;
         }
 
-        if (!memory.Get(Parameters.End, out string end))
+        if (!variables.TryGetValue(Parameters.End, out string? end))
         {
             context.Fail($"Missing variable {Parameters.End}.");
             return;
@@ -111,22 +111,22 @@ public class CalendarSkill
 
         CalendarEvent calendarEvent = new()
         {
-            Subject = memory.Input,
+            Subject = variables.Input,
             Start = DateTimeOffset.Parse(start, CultureInfo.InvariantCulture.DateTimeFormat),
             End = DateTimeOffset.Parse(end, CultureInfo.InvariantCulture.DateTimeFormat)
         };
 
-        if (memory.Get(Parameters.Location, out string location))
+        if (variables.TryGetValue(Parameters.Location, out string? location))
         {
             calendarEvent.Location = location;
         }
 
-        if (memory.Get(Parameters.Content, out string content))
+        if (variables.TryGetValue(Parameters.Content, out string? content))
         {
             calendarEvent.Content = content;
         }
 
-        if (memory.Get(Parameters.Attendees, out string attendees))
+        if (variables.TryGetValue(Parameters.Attendees, out string? attendees))
         {
             calendarEvent.Attendees = attendees.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
         }
@@ -143,8 +143,8 @@ public class CalendarSkill
     [SKFunctionContextParameter(Name = Parameters.Skip, Description = "Optional number of events to skip before retrieving results.", DefaultValue = "0")]
     public async Task<string> GetCalendarEventsAsync(SKContext context)
     {
-        context.Variables.Get(Parameters.MaxResults, out string maxResultsString);
-        context.Variables.Get(Parameters.Skip, out string skipString);
+        context.Variables.TryGetValue(Parameters.MaxResults, out string? maxResultsString);
+        context.Variables.TryGetValue(Parameters.Skip, out string? skipString);
         this._logger.LogInformation("Getting calendar events with query options top: '{0}', skip:'{1}'.", maxResultsString, skipString);
 
         string selectString = "start,subject,organizer,location";
