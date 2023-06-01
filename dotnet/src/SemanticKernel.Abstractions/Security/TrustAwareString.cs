@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Security;
 
 /// <summary>
 /// Provides an immutable string that carries trust information.
 /// </summary>
+[DebuggerDisplay("Value = {Value}, IsTrusted = {IsTrusted}")]
 public sealed class TrustAwareString : IEquatable<TrustAwareString>
 {
     /// <summary>
