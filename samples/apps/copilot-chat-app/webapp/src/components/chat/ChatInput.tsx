@@ -115,7 +115,6 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                 SetDocumentImporting(true);
                 await documentImportService.importDocumentAsync(
                     account!.homeAccountId!,
-                    account!.username,
                     selectedId,
                     documentFile,
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),

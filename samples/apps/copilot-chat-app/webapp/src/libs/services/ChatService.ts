@@ -149,7 +149,7 @@ export class ChatService extends BaseService {
     public getChatMemorySourcesAsync = async (chatId: string, accessToken: string): Promise<ChatMemorySource[]> => {
         const result = await this.getResponseAsync<ChatMemorySource[]>(
             {
-                commandPath: `chatSession/${chatId}/documents`,
+                commandPath: `chatSession/${chatId}/sources`,
                 method: 'GET',
             },
             accessToken,

@@ -6,16 +6,20 @@ using SemanticKernel.Service.CopilotChat.Storage;
 
 namespace SemanticKernel.Service.CopilotChat.Models;
 
-public enum SourceType
-{
-    File,
-}
-
 /// <summary>
 /// The external memory source.
 /// </summary>
 public class MemorySource : IStorageEntity
 {
+    /// <summary>
+    /// Type of the memory source.
+    /// </summary>
+    public enum MemorySourceType
+    {
+        // A file source.
+        File,
+    }
+
     /// <summary>
     /// Source ID that is persistent and unique.
     /// </summary>
@@ -33,7 +37,7 @@ public class MemorySource : IStorageEntity
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     [JsonPropertyName("sourceType")]
-    public SourceType SourceType { get; set; } = SourceType.File;
+    public MemorySourceType SourceType { get; set; } = MemorySourceType.File;
 
     /// <summary>
     /// The name of the source.
@@ -48,7 +52,7 @@ public class MemorySource : IStorageEntity
     public Uri? HyperLink { get; set; } = null;
 
     /// <summary>
-    /// The user name who shared the source.
+    /// The user ID of who shared the source.
     /// </summary>
     [JsonPropertyName("sharedBy")]
     public string SharedBy { get; set; } = string.Empty;
@@ -66,7 +70,7 @@ public class MemorySource : IStorageEntity
     {
     }
 
-    public MemorySource(string chatId, string name, string sharedBy, SourceType type, string? id, Uri? hyperlink)
+    public MemorySource(string chatId, string name, string sharedBy, MemorySourceType type, string? id, Uri? hyperlink)
     {
         this.Id = id ?? Guid.NewGuid().ToString();
         this.ChatId = chatId;

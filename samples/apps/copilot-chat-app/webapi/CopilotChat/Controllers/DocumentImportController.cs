@@ -16,6 +16,7 @@ using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
+using static SemanticKernel.Service.CopilotChat.Models.MemorySource;
 
 namespace SemanticKernel.Service.CopilotChat.Controllers;
 
@@ -43,8 +44,8 @@ public class DocumentImportController : ControllerBase
 
     private readonly ILogger<DocumentImportController> _logger;
     private readonly DocumentMemoryOptions _options;
-    private readonly ChatSessionRepository _chatSessionRepository;
-    private readonly ChatMemorySourceRepository _chatMemorySourceRepository;
+    private readonly ChatSessionRepository _sessionRepository;
+    private readonly ChatMemorySourceRepository _sourceRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -52,13 +53,13 @@ public class DocumentImportController : ControllerBase
     public DocumentImportController(
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<DocumentImportController> logger,
-        ChatSessionRepository chatSessionRepository,
-        ChatMemorySourceRepository chatMemorySourceRepository)
+        ChatSessionRepository sessionRepository,
+        ChatMemorySourceRepository sourceRepository)
     {
         this._options = documentMemoryOptions.Value;
         this._logger = logger;
-        this._chatSessionRepository = chatSessionRepository;
-        this._chatMemorySourceRepository = chatMemorySourceRepository;
+        this._sessionRepository = sessionRepository;
+        this._sourceRepository = sourceRepository;
     }
 
     /// <summary>
@@ -113,20 +114,20 @@ public class DocumentImportController : ControllerBase
                     return this.BadRequest($"Unsupported file type: {fileType}");
             }
 
-            var existingMemorySource = (await this._chatMemorySourceRepository.FindByNameAsync(formFile.FileName)).FirstOrDefault();
+            var existingMemorySource = (await this._sourceRepository.FindByNameAsync(formFile.FileName)).FirstOrDefault();
             var newMemorySource = new MemorySource(
                 documentImportForm.ChatId.ToString(),
                 formFile.FileName,
-                documentImportForm.UserName,
-                SourceType.File,
+                documentImportForm.UserId,
+                MemorySourceType.File,
                 existingMemorySource?.Id,
                 null);
 
-            await this._chatMemorySourceRepository.UpsertAsync(newMemorySource);
+            await this._sourceRepository.UpsertAsync(newMemorySource);
 
             await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, newMemorySource.Id);
         }
-        catch (Exception ex) when (ex is ArgumentOutOfRangeException)
+        catch (ArgumentOutOfRangeException ex)
         {
             return this.BadRequest(ex.Message);
         }
@@ -225,7 +226,7 @@ public class DocumentImportController : ControllerBase
     /// <returns>A boolean indicating whether the user has access to the chat session.</returns>
     private async Task<bool> UserHasAccessToChatAsync(string userId, Guid chatId)
     {
-        var chatSessions = await this._chatSessionRepository.FindByUserIdAsync(userId);
+        var chatSessions = await this._sessionRepository.FindByUserIdAsync(userId);
         return chatSessions.Any(c => c.Id == chatId.ToString());
     }
 }

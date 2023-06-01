@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import {
-    Avatar,
-    PresenceBadgeStatus,
     Table,
     TableBody,
     TableCell,
@@ -66,7 +64,6 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
     const columns = [
         { columnKey: 'name', label: 'Name' },
         { columnKey: 'updatedOn', label: 'Updated on' },
-        { columnKey: 'sharedBy', label: 'Shared by' },
     ];
 
     return (
@@ -90,21 +87,6 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
                                 </TableCellLayout>
                             </TableCell>
                             <TableCell>{item.updatedOn.label}</TableCell>
-                            <TableCell>
-                                <TableCellLayout
-                                    media={
-                                        <Avatar
-                                            aria-label={item.sharedBy.label}
-                                            name={item.sharedBy.label}
-                                            badge={{
-                                                status: item.sharedBy.status as PresenceBadgeStatus,
-                                            }}
-                                        />
-                                    }
-                                >
-                                    {item.sharedBy.label}
-                                </TableCellLayout>
-                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
