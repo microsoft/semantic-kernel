@@ -37,14 +37,15 @@ interface ChatResourceListProps {
 
 export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) => {
     const classes = useClasses();
-    const { getChatMemorySources } = useChat();
+    const chat = useChat();
     const [resources, setResources] = React.useState<ChatMemorySource[]>([]);
 
     React.useEffect(() => {
-        getChatMemorySources(chatId).then((sources) => {
+        chat.getChatMemorySources(chatId).then((sources) => {
             setResources(sources);
         });
-    }, [chatId, getChatMemorySources]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [chatId]);
 
     const items = resources.map((item) => ({
         name: {
