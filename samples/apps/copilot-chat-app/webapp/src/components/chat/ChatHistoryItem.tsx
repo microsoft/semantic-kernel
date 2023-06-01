@@ -12,6 +12,7 @@ import { updateMessageState } from '../../redux/features/conversations/conversat
 import { Breakpoints } from '../../styles';
 import { convertToAnchorTags } from '../utils/TextUtils';
 import { PlanViewer } from './plan-viewer/PlanViewer';
+import { PromptDetails } from './prompt-details/PromptDetails';
 
 const useClasses = makeStyles({
     root: {
@@ -166,7 +167,8 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                 <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
                     <div className={classes.header}>
                         {!isMe && <Text weight="semibold">{fullName}</Text>}
-                        <Text className={mergeClasses(classes.time, classes.alignEnd)}>{time}</Text>
+                        <Text className={classes.time}>{time}</Text>
+                        {isBot && <PromptDetails message={message} />}
                     </div>
                     {!isPlan && (
                         <div
