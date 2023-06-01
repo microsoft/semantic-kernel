@@ -240,7 +240,6 @@ public abstract class ClientBase
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > 128)
         {
-            // <see cref="CompletionsOptions.ChoicesPerPrompt"/> must be in range between 1 and 128.
             throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, "The value must be in range between 1 and 128, inclusive.");
         }
 
@@ -274,7 +273,6 @@ public abstract class ClientBase
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > 128)
         {
-            // <see cref="CompletionsOptions.ChoicesPerPrompt"/> must be in range between 1 and 128.
             throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, "The value must be in range between 1 and 128, inclusive.");
         }
 
