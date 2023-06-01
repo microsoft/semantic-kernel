@@ -381,7 +381,7 @@ public sealed class TrustServiceTests
         [SKFunction("Echoes a given text", isSensitive: false)]
         public string NotSensitiveEcho(SKContext context)
         {
-            context.Variables.Get("extraVar", out string extraVar);
+            context.Variables.TryGetValue("extraVar", out string? extraVar);
 
             return context.Variables.Input + extraVar;
         }
@@ -389,7 +389,7 @@ public sealed class TrustServiceTests
         [SKFunction("Echoes a given text", isSensitive: true)]
         public string SensitiveEcho(SKContext context)
         {
-            context.Variables.Get("extraVar", out string extraVar);
+            context.Variables.TryGetValue("extraVar", out string? extraVar);
 
             return context.Variables.Input + extraVar;
         }

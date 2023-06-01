@@ -69,7 +69,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public static ISKFunction? FromNativeMethod(
         MethodInfo methodSignature,
         object? methodContainerInstance = null,
-        string skillName = "",
+        string? skillName = null,
         ITrustService? trustService = null,
         ILogger? log = null)
     {
@@ -94,7 +94,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         return new SKFunction(
             delegateFunction: methodDetails.Function,
             parameters: methodDetails.Parameters,
-            skillName: skillName,
+            skillName: skillName!,
             functionName: methodDetails.Name,
             isSemantic: false,
             description: methodDetails.Description,
