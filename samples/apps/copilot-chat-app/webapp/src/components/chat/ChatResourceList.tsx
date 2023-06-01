@@ -79,16 +79,18 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {items.map((item) => (
-                        <TableRow key={item.name.label}>
-                            <TableCell>
-                                <TableCellLayout media={item.name.icon}>
-                                    <a href={item.name.url}>{item.name.label}</a>
-                                </TableCellLayout>
-                            </TableCell>
-                            <TableCell>{item.createdOn.label}</TableCell>
-                        </TableRow>
-                    ))}
+                    {items
+                        .sort((a, b) => a.createdOn.timestamp - b.createdOn.timestamp)
+                        .map((item) => (
+                            <TableRow key={item.name.label}>
+                                <TableCell>
+                                    <TableCellLayout media={item.name.icon}>
+                                        <a href={item.name.url}>{item.name.label}</a>
+                                    </TableCellLayout>
+                                </TableCell>
+                                <TableCell>{item.createdOn.label}</TableCell>
+                            </TableRow>
+                        ))}
                 </TableBody>
             </Table>
         </div>

@@ -114,18 +114,24 @@ public class DocumentImportController : ControllerBase
                     return this.BadRequest($"Unsupported file type: {fileType}");
             }
 
-            var existingMemorySource = (await this._sourceRepository.FindByNameAsync(formFile.FileName)).FirstOrDefault();
-            var newMemorySource = new MemorySource(
+            var memorySource = new MemorySource(
                 documentImportForm.ChatId.ToString(),
                 formFile.FileName,
                 documentImportForm.UserId,
                 MemorySourceType.File,
-                existingMemorySource?.Id,
                 null);
 
-            await this._sourceRepository.UpsertAsync(newMemorySource);
+            await this._sourceRepository.UpsertAsync(memorySource);
 
-            await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, newMemorySource.Id);
+            try
+            {
+                await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, memorySource.Id);
+            }
+            catch (Exception exception)
+            {
+                await this._sourceRepository.DeleteAsync(memorySource);
+                throw exception;
+            }
         }
         catch (ArgumentOutOfRangeException ex)
         {

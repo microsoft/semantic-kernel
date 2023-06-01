@@ -70,9 +70,9 @@ public class MemorySource : IStorageEntity
     {
     }
 
-    public MemorySource(string chatId, string name, string sharedBy, MemorySourceType type, string? id, Uri? hyperlink)
+    public MemorySource(string chatId, string name, string sharedBy, MemorySourceType type, Uri? hyperlink)
     {
-        this.Id = id ?? Guid.NewGuid().ToString();
+        this.Id = Guid.NewGuid().ToString();
         this.ChatId = chatId;
         this.Name = name;
         this.SourceType = type;
