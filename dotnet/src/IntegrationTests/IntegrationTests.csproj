@@ -41,10 +41,10 @@
 
   <ItemGroup>
     <None Update="testsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="testsettings.development.json" Condition="Exists('testsettings.development.json')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Content Include="TemplateLanguage\tests.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

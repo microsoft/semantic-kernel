@@ -29,21 +29,25 @@ public sealed class KernelConfig
     /// <summary>
     /// Text completion service factories
     /// </summary>
+    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
     public Dictionary<string, Func<IKernel, ITextCompletion>> TextCompletionServices { get; } = new();
 
     /// <summary>
     /// Chat completion service factories
     /// </summary>
+    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
     public Dictionary<string, Func<IKernel, IChatCompletion>> ChatCompletionServices { get; } = new();
 
     /// <summary>
     /// Text embedding generation service factories
     /// </summary>
+    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
     public Dictionary<string, Func<IKernel, IEmbeddingGeneration<string, float>>> TextEmbeddingGenerationServices { get; } = new();
 
     /// <summary>
     /// Image generation service factories
     /// </summary>
+    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
     public Dictionary<string, Func<IKernel, IImageGeneration>> ImageGenerationServices { get; } = new();
 
     /// <summary>
@@ -58,6 +62,7 @@ public sealed class KernelConfig
     /// <param name="serviceId">Id used to identify the service</param>
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig AddTextCompletionService(
         Func<IKernel, ITextCompletion> serviceFactory,
         string? serviceId = null)
@@ -87,6 +92,7 @@ public sealed class KernelConfig
     /// <param name="serviceId">Id used to identify the service</param>
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig AddChatCompletionService(
         Func<IKernel, IChatCompletion> serviceFactory,
         string? serviceId = null)
@@ -116,6 +122,7 @@ public sealed class KernelConfig
     /// <param name="serviceId">Id used to identify the service</param>
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig AddTextEmbeddingGenerationService(
         Func<IKernel, IEmbeddingGeneration<string, float>> serviceFactory,
         string? serviceId = null)
@@ -145,6 +152,7 @@ public sealed class KernelConfig
     /// <param name="serviceId">Id used to identify the service</param>
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig AddImageGenerationService(
         Func<IKernel, IImageGeneration> serviceFactory,
         string? serviceId = null)
@@ -201,6 +209,7 @@ public sealed class KernelConfig
     /// <param name="serviceId">Identifier of completion service to use.</param>
     /// <returns>The updated kernel configuration.</returns>
     /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithDefaultAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig SetDefaultTextCompletionService(string serviceId)
     {
         if (!this.TextCompletionServices.ContainsKey(serviceId))
@@ -220,6 +229,7 @@ public sealed class KernelConfig
     /// <param name="serviceId">Identifier of text embedding service to use.</param>
     /// <returns>The updated kernel configuration.</returns>
     /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithDefaultAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig SetDefaultTextEmbeddingGenerationService(string serviceId)
     {
         if (!this.TextEmbeddingGenerationServices.ContainsKey(serviceId))
@@ -241,6 +251,7 @@ public sealed class KernelConfig
     /// Remove all text completion services.
     /// </summary>
     /// <returns>The updated kernel configuration.</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public KernelConfig RemoveAllTextCompletionServices()
     {
         this.TextCompletionServices.Clear();
@@ -251,6 +262,7 @@ public sealed class KernelConfig
     /// Remove all chat completion services.
     /// </summary>
     /// <returns>The updated kernel configuration.</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public KernelConfig RemoveAllChatCompletionServices()
     {
         this.ChatCompletionServices.Clear();
@@ -261,6 +273,7 @@ public sealed class KernelConfig
     /// Remove all text embedding generation services.
     /// </summary>
     /// <returns>The updated kernel configuration.</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public KernelConfig RemoveAllTextEmbeddingGenerationServices()
     {
         this.TextEmbeddingGenerationServices.Clear();

@@ -10,11 +10,11 @@ import { SemanticKernelService } from '../services/SemanticKernelService';
 
 export const useConnectors = () => {
     const { instance, inProgress } = useMsal();
-    const sk = new SemanticKernelService(process.env.REACT_APP_BACKEND_URI as string);
+    const kernel = new SemanticKernelService(process.env.REACT_APP_BACKEND_URI as string);
     const plugins = useAppSelector((state: RootState) => state.plugins);
 
     /**
-     * Helper function to invoke SK skills
+     * Helper function to invoke Semantic Kernel skills
      * using custom token header containing
      * Msal access token for downstream plug-ins.
      * scopes should be limited to only permissions needed for the skill
@@ -27,7 +27,7 @@ export const useConnectors = () => {
         pluginHeaderTag: AuthHeaderTags,
     ) => {
         return await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, scopes).then(async (token: string) => {
-            return await sk.invokeAsync(ask, skillName, functionName, await AuthHelper.getSKaaSAccessToken(instance, inProgress), [
+            return await kernel.invokeAsync(ask, skillName, functionName, await AuthHelper.getSKaaSAccessToken(instance, inProgress), [
                 {
                     headerTag: pluginHeaderTag,
                     authData: token,
@@ -37,7 +37,7 @@ export const useConnectors = () => {
     };
 
     /**
-     * Helper function to invoke SK skills
+     * Helper function to invoke Semantic Kernel skills
      * using MS Graph API token
      */
     const invokeSkillWithGraphToken = async (ask: IAsk, skillName: string, functionName: string) => {
@@ -51,7 +51,7 @@ export const useConnectors = () => {
     };
 
     /*
-     * Once enabled, each plugin will have a custom dedicated header in every SK request
+     * Once enabled, each plugin will have a custom dedicated header in every Semantic Kernel request
      * containing respective auth information (i.e., token, encoded client info, etc.)
      * that the server can use to authenticate to the downstream APIs
      */

@@ -31,7 +31,7 @@ const useClasses = makeStyles({
     root: {
         display: 'flex',
         flexDirection: 'column',
-        width: '-webkit-fill-available',
+        width: '100%',
         backgroundColor: '#F5F5F5',
         boxShadow: 'rgb(0 0 0 / 25%) 0 0.2rem 0.4rem -0.075rem',
     },
@@ -73,7 +73,7 @@ const useClasses = makeStyles({
         width: '398px',
     },
     input: {
-        width: '-webkit-fill-available',
+        width: '100%',
     },
     buttons: {
         display: 'flex',
@@ -137,7 +137,7 @@ export const ChatWindow: React.FC = () => {
             <div className={classes.header}>
                 <div className={classes.title}>
                     <Persona
-                        key={'SK Bot'}
+                        key={'Semantic Kernel Bot'}
                         size="medium"
                         avatar={{ image: { src: conversations[selectedId].botProfilePicture } }}
                         presence={{ status: 'available' }}

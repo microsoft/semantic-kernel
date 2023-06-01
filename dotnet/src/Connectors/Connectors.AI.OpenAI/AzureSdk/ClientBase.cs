@@ -113,7 +113,7 @@ public abstract class ClientBase
 
             EmbeddingItem x = response.Value.Data[0];
 
-            result.Add(new Embedding<float>(x.Embedding));
+            result.Add(new Embedding<float>(x.Embedding, transferOwnership: true));
         }
 
         return result;
@@ -203,7 +203,7 @@ public abstract class ClientBase
     /// </summary>
     /// <param name="instructions">Optional chat instructions for the AI service</param>
     /// <returns>Chat object</returns>
-    private protected static ChatHistory InternalCreateNewChat(string instructions = "")
+    private protected static ChatHistory InternalCreateNewChat(string? instructions = null)
     {
         return new OpenAIChatHistory(instructions);
     }
