@@ -139,7 +139,7 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                                 },
                             });
                         }}
-                        placeholder="Enter your deployment id here, ie: my-deployment"
+                        placeholder="Enter your deployment name here, ie: my-deployment"
                     />
                     <Label htmlFor="oaiendpoint">Endpoint</Label>
                     <Input
