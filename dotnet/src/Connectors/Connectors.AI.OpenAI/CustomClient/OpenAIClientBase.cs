@@ -162,6 +162,7 @@ public abstract class OpenAIClientBase
                 {
                     request.Content = content;
                 }
+
                 response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             }
 
@@ -248,5 +249,6 @@ public abstract class OpenAIClientBase
                 $"Something went wrong: {e.Message}", e);
         }
     }
+
     #endregion
 }
