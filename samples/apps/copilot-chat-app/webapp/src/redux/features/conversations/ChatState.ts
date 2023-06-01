@@ -10,4 +10,5 @@ export interface ChatState {
     messages: IChatMessage[];
     botProfilePicture: string;
     lastUpdatedTimestamp?: number;
+    input: string;
 }
