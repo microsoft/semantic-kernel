@@ -44,13 +44,7 @@ public class DocumentImportForm
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
-    /// The user display name
-    /// TODO: Is this okay for privacy? We need the display name for a friendly UI.
+    /// Name of the user who sent this file.
     /// </summary>
-    public string UserDisplayName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The Chat session ID.
-    /// </summary>
-    public string ChatSessionId { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
 }

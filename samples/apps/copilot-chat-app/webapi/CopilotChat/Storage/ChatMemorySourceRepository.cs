@@ -1,9 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using SemanticKernel.Service.CopilotChat.Models;
 
 namespace SemanticKernel.Service.CopilotChat.Storage;
 
+/// <summary>
+/// A repository for chat messages.
+/// </summary>
 public class ChatMemorySourceRepository : Repository<MemorySource>
 {
     /// <summary>
@@ -18,11 +24,11 @@ public class ChatMemorySourceRepository : Repository<MemorySource>
     /// <summary>
     /// Finds chat memory sources by chat session id
     /// </summary>
-    /// <param name="chatSessionId">The chat session id.</param>
+    /// <param name="chatId">The chat session id.</param>
     /// <returns>A list of memory sources of the given chat session.</returns>
-    public Task<IEnumerable<MemorySource>> FindByChatSessionIdAsync(string chatSessionId)
+    public Task<IEnumerable<MemorySource>> FindByChatIdAsync(string chatId)
     {
-        return base.StorageContext.QueryEntitiesAsync(e => e.ChatSessionId == chatSessionId);
+        return base.StorageContext.QueryEntitiesAsync(e => e.ChatId == chatId);
     }
 
     /// <summary>

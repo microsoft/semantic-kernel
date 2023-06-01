@@ -1,7 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Service.CopilotChat.Models;
@@ -37,14 +43,14 @@ public class ChatHistoryController : ControllerBase
         ILogger<ChatHistoryController> logger,
         ChatSessionRepository chatSessionRepository,
         ChatMessageRepository chatMessageRepository,
-        IOptions<PromptsOptions> promptsOptions,
-        ChatMemorySourceRepository chatMemorySourceRepository)
+        ChatMemorySourceRepository chatMemorySourceRepository,
+        IOptions<PromptsOptions> promptsOptions)
     {
         this._logger = logger;
         this._chatSessionRepository = chatSessionRepository;
         this._chatMessageRepository = chatMessageRepository;
-        this._promptOptions = promptsOptions.Value;
         this._chatMemorySourceRepository = chatMemorySourceRepository;
+        this._promptOptions = promptsOptions.Value;
     }
 
     /// <summary>
@@ -190,7 +196,7 @@ public class ChatHistoryController : ControllerBase
     {
         this._logger.LogInformation("Get imported documents of chat session {0}", chatId);
 
-        return this.Ok(await this._chatMemorySourceRepository.FindByChatSessionIdAsync(chatId.ToString()));
+        return this.Ok(await this._chatMemorySourceRepository.FindByChatIdAsync(chatId.ToString()));
     }
 
     # region Private

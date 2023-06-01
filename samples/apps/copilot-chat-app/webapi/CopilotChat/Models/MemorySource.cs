@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json.Serialization;
 using SemanticKernel.Service.CopilotChat.Storage;
 
@@ -12,7 +13,6 @@ public enum SourceType
 
 /// <summary>
 /// The external memory source.
-/// TODO: Should this part of the kernel or app?
 /// </summary>
 public class MemorySource : IStorageEntity
 {
@@ -20,13 +20,13 @@ public class MemorySource : IStorageEntity
     /// Source ID that is persistent and unique.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// The Chat session id.
+    /// The Chat ID.
     /// </summary>
-    [JsonPropertyName("chatSessionId")]
-    public string ChatSessionId { get; set; }
+    [JsonPropertyName("chatId")]
+    public string ChatId { get; set; } = string.Empty;
 
     /// <summary>
     /// The type of the source.
@@ -39,7 +39,7 @@ public class MemorySource : IStorageEntity
     /// The name of the source.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// The external link to the source.
@@ -59,10 +59,17 @@ public class MemorySource : IStorageEntity
     [JsonPropertyName("updatedOn")]
     public DateTimeOffset UpdatedOn { get; set; }
 
-    public MemorySource(string chatSessionId, string name, string sharedBy, SourceType type, string? id, Uri? hyperlink)
+    /// <summary>
+    /// Empty constructor for serialization.
+    /// </summary>
+    public MemorySource()
+    {
+    }
+
+    public MemorySource(string chatId, string name, string sharedBy, SourceType type, string? id, Uri? hyperlink)
     {
         this.Id = id ?? Guid.NewGuid().ToString();
-        this.ChatSessionId = chatSessionId;
+        this.ChatId = chatId;
         this.Name = name;
         this.SourceType = type;
         this.HyperLink = hyperlink;

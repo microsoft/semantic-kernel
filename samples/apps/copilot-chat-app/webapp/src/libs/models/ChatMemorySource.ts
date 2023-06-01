@@ -2,7 +2,7 @@
 
 export interface ChatMemorySource {
     id: string;
-    chatSessionId: string;
+    chatId: string;
     sourceType: string;
     name: string;
     hyperlink?: string;

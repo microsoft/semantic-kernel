@@ -209,7 +209,7 @@ export const ChatWindow: React.FC = () => {
                 <div className={classes.contentOuter}>
                     <div className={classes.contentInner}>
                         {selectedValue === 'chat' && <ChatRoom />}
-                        {selectedValue === 'files' && <ChatResourceList chatSessionId={selectedId} />}
+                        {selectedValue === 'files' && <ChatResourceList chatId={selectedId} />}
                     </div>
                 </div>
             </div>

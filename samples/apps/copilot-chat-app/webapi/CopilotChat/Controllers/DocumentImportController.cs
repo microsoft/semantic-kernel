@@ -1,7 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Text;
@@ -109,9 +115,9 @@ public class DocumentImportController : ControllerBase
 
             var existingMemorySource = (await this._chatMemorySourceRepository.FindByNameAsync(formFile.FileName)).FirstOrDefault();
             var newMemorySource = new MemorySource(
-                documentImportForm.ChatSessionId,
+                documentImportForm.ChatId.ToString(),
                 formFile.FileName,
-                documentImportForm.UserDisplayName,
+                documentImportForm.UserName,
                 SourceType.File,
                 existingMemorySource?.Id,
                 null);
