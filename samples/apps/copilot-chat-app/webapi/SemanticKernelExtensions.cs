@@ -106,7 +106,7 @@ internal static class SemanticKernelExtensions
                 services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
                     sp.GetRequiredService<IMemoryStore>(),
-                    (ITextEmbeddingGeneration)sp.GetRequiredService<IOptions<AIServiceOptions>>().Value
+                    sp.GetRequiredService<IOptions<AIServiceOptions>>().Value
                         .ToTextEmbeddingsService(logger: sp.GetRequiredService<ILogger<AIServiceOptions>>())));
                 break;
 
@@ -129,7 +129,7 @@ internal static class SemanticKernelExtensions
                 });
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
                     sp.GetRequiredService<IMemoryStore>(),
-                    (ITextEmbeddingGeneration)sp.GetRequiredService<IOptions<AIServiceOptions>>().Value
+                    sp.GetRequiredService<IOptions<AIServiceOptions>>().Value
                         .ToTextEmbeddingsService(logger: sp.GetRequiredService<ILogger<AIServiceOptions>>())));
                 break;
 
