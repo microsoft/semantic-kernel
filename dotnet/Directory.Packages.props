@@ -13,7 +13,6 @@
     <PackageVersion Include="System.Text.Json" Version="[7.0.2, )" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="[1.0.0-beta.5, )" />
     <!-- Microsoft.Extensions.Logging -->
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="[7.0.0, )" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="[7.0.0, )" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="[7.0.0, )" />
     <!-- Microsoft.Extensions.Configuration -->
