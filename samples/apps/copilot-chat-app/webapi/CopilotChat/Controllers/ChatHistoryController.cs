@@ -37,8 +37,8 @@ public class ChatHistoryController : ControllerBase
     /// <param name="logger">The logger.</param>
     /// <param name="chatSessionRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
-    /// <param name="promptsOptions">The prompts options.</param>
     /// <param name="chatMemorySourceRepository">The chat memory resource repository.</param>
+    /// <param name="promptsOptions">The prompts options.</param>
     public ChatHistoryController(
         ILogger<ChatHistoryController> logger,
         ChatSessionRepository chatSessionRepository,
