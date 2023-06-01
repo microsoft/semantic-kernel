@@ -80,6 +80,7 @@ export const useChat = () => {
                         messages: chatMessages,
                         users: [loggedInUser],
                         botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
+                        input: '',
                     };
 
                     dispatch(addConversation(newChat));
@@ -184,6 +185,7 @@ export const useChat = () => {
                         users: [loggedInUser],
                         messages: chatMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
+                        input: '',
                     };
                 }
 
