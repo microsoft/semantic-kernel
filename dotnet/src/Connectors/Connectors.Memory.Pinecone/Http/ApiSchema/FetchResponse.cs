@@ -20,7 +20,7 @@ internal sealed class FetchResponse
     /// <param name="vectors">vectors.</param>
     /// <param name="nameSpace">An index namespace name.</param>
     [JsonConstructor]
-    public FetchResponse(Dictionary<string, PineconeDocument> vectors, string nameSpace = "")
+    public FetchResponse(Dictionary<string, PineconeDocument> vectors, string? nameSpace = null)
     {
         this.Vectors = vectors;
         this.Namespace = nameSpace;

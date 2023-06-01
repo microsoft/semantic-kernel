@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -88,11 +89,13 @@ public interface IKernel
     /// Import a set of functions from the given skill. The functions must have the `SKFunction` attribute.
     /// Once these functions are imported, the prompt templates can use functions to import content at runtime.
     /// </summary>
+    /// <typeparam name="TSkill">The type of the skill being added.</typeparam>
     /// <param name="skillInstance">Instance of a class containing functions</param>
     /// <param name="skillName">Name of the skill for skill collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <param name="trustService">Service used for trust checks (if null will use the default registered in the kernel).</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null, ITrustService? trustService = null);
+    IDictionary<string, ISKFunction> ImportSkill<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TSkill>(
+        TSkill skillInstance, string? skillName = null, ITrustService? trustService = null);
 
     /// <summary>
     /// Set the semantic memory to use

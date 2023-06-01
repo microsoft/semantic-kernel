@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
@@ -76,7 +77,8 @@ internal sealed class GetVectorsRequest
     {
         return HttpRequest.CreatePostRequest(
             $"/collections/{this.Collection}/points",
-            payload: this);
+            payload: this,
+            SourceGenerationContext.Default.GetVectorsRequest);
     }
 
     #region private ================================================================================

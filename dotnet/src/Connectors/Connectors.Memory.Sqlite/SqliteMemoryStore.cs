@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 
@@ -236,7 +237,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
 
         await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken))
         {
-            Embedding<float>? vector = JsonSerializer.Deserialize<Embedding<float>>(dbEntry.EmbeddingString);
+            Embedding<float>? vector = JsonSerializer.Deserialize(dbEntry.EmbeddingString, SourceGenerationContext.Default.EmbeddingSingle);
 
             var record = MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
 
@@ -254,7 +255,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             collection: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding),
+            embedding: JsonSerializer.Serialize(record.Embedding, SourceGenerationContext.Default.EmbeddingSingle),
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -264,7 +265,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             collection: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding),
+            embedding: JsonSerializer.Serialize(record.Embedding, SourceGenerationContext.Default.EmbeddingSingle),
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -285,7 +286,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         {
             return MemoryRecord.FromJsonMetadata(
                 json: entry.Value.MetadataString,
-                JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString),
+                JsonSerializer.Deserialize(entry.Value.EmbeddingString, SourceGenerationContext.Default.EmbeddingSingle),
                 entry.Value.Key,
                 ParseTimestamp(entry.Value.Timestamp));
         }

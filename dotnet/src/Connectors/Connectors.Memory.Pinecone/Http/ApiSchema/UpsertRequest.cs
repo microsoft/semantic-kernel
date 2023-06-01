@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
@@ -41,7 +42,7 @@ internal sealed class UpsertRequest
 
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage request = HttpRequest.CreatePostRequest("/vectors/upsert", this);
+        HttpRequestMessage request = HttpRequest.CreatePostRequest("/vectors/upsert", this, SourceGenerationContext.Default.UpsertRequest);
 
         request.Headers.Add("accept", "application/json");
 

@@ -118,7 +118,7 @@ internal sealed class RestApiOperationRunner
         var result = new JsonObject
         {
             { "content", content },
-            { "contentType", responseMessage.Content.Headers.ContentType.ToString() }
+            { "contentType", responseMessage.Content.Headers.ContentType?.ToString() }
         };
 
         return result;

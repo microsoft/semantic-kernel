@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers.Settings;
 
@@ -19,7 +20,7 @@ internal static class GPT3Settings
     /// <summary>Lazy load the cached encoding table (encoder.json).</summary>
     private static readonly Lazy<Dictionary<string, int>> s_encoder = new(() =>
     {
-        return JsonSerializer.Deserialize<Dictionary<string, int>>(EmbeddedResource.ReadEncodingTable())
+        return JsonSerializer.Deserialize(EmbeddedResource.ReadEncodingTable(), SourceGenerationContext.Default.DictionaryStringInt32)
                ?? throw new AIException(AIException.ErrorCodes.InvalidConfiguration,
                    "Encoding table deserialization returned NULL");
     });

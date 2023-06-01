@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -57,7 +58,7 @@ public class QdrantVectorRecord
     /// <returns>Serialized payload</returns>
     public string GetSerializedPayload()
     {
-        return JsonSerializer.Serialize(this.Payload);
+        return JsonSerializer.Serialize(this.Payload, SourceGenerationContext.Default.DictionaryStringObject);
     }
 
     /// <summary>
@@ -71,7 +72,7 @@ public class QdrantVectorRecord
     /// <exception cref="QdrantMemoryException">Qdrant exception</exception>
     public static QdrantVectorRecord FromJsonMetadata(string pointId, IEnumerable<float> embedding, string json, List<string>? tags = null)
     {
-        var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+        var payload = JsonSerializer.Deserialize(json, SourceGenerationContext.Default.DictionaryStringObject);
         if (payload != null)
         {
             return new QdrantVectorRecord(pointId, embedding, payload, tags);

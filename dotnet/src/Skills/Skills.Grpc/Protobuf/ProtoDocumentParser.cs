@@ -128,7 +128,7 @@ internal class ProtoDocumentParser
         var fieldInfo = typeof(FieldDescriptorProto.Type).GetField(type.ToString());
 
         //Get protobuf type name from enum attribute - [global::ProtoBuf.ProtoEnum(Name = @"TYPE_DOUBLE")]
-        var attribute = (ProtoEnumAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(ProtoEnumAttribute));
+        var attribute = fieldInfo != null ? (ProtoEnumAttribute?)Attribute.GetCustomAttribute(fieldInfo, typeof(ProtoEnumAttribute)) : null;
 
         if (attribute == null)
         {

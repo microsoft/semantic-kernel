@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
 
@@ -135,7 +136,7 @@ public class TextMemorySkill
         }
 
         context.Log.LogTrace("Done looking for memories in collection '{0}')", collection);
-        return limitInt == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
+        return limitInt == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text), SourceGenerationContext.Default.IEnumerableString);
     }
 
     /// <summary>

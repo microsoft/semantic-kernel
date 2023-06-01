@@ -4,6 +4,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -127,7 +128,7 @@ public class MemoryRecord : DataEntryBase
         string? key = null,
         DateTimeOffset? timestamp = null)
     {
-        var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
+        var metadata = JsonSerializer.Deserialize(json, SourceGenerationContext.WithGeneralOptions.MemoryRecordMetadata);
         return metadata != null
             ? new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp)
             : throw new MemoryException(
@@ -158,6 +159,6 @@ public class MemoryRecord : DataEntryBase
     /// <returns>The memory record's metadata serialized to a json string.</returns>
     public string GetSerializedMetadata()
     {
-        return JsonSerializer.Serialize(this.Metadata);
+        return JsonSerializer.Serialize(this.Metadata, SourceGenerationContext.Default.MemoryRecordMetadata);
     }
 }

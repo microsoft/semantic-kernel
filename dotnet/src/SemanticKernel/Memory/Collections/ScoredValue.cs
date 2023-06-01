@@ -45,7 +45,7 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
         return new ScoredValue<T>(src.Key, src.Value);
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return (obj is ScoredValue<T> other) && this.Equals(other);
     }

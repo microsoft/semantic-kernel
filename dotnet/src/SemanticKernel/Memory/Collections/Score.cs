@@ -39,7 +39,7 @@ public readonly struct Score : IComparable<Score>, IEquatable<Score>
         return this.Value.ToString(CultureInfo.InvariantCulture.NumberFormat);
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return (obj is Score other) && this.Equals(other);
     }

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
@@ -33,7 +34,6 @@ public sealed class PineconeClient : IPineconeClient
     {
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
-        this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
         this._logger = logger ?? NullLogger<PineconeClient>.Instance;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
@@ -69,7 +69,7 @@ public sealed class PineconeClient : IPineconeClient
             yield break;
         }
 
-        FetchResponse? data = JsonSerializer.Deserialize<FetchResponse>(responseContent, this._jsonSerializerOptions);
+        FetchResponse? data = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.WithPineconeOptions.FetchResponse);
 
         if (data == null)
         {
@@ -122,7 +122,7 @@ public sealed class PineconeClient : IPineconeClient
             yield break;
         }
 
-        QueryResponse? queryResponse = JsonSerializer.Deserialize<QueryResponse>(responseContent, this._jsonSerializerOptions);
+        QueryResponse? queryResponse = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.WithPineconeOptions.QueryResponse);
 
         if (queryResponse == null)
         {
@@ -229,7 +229,7 @@ public sealed class PineconeClient : IPineconeClient
                 throw;
             }
 
-            UpsertResponse? data = JsonSerializer.Deserialize<UpsertResponse>(responseContent, this._jsonSerializerOptions);
+            UpsertResponse? data = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.WithPineconeOptions.UpsertResponse);
 
             if (data == null)
             {
@@ -343,7 +343,7 @@ public sealed class PineconeClient : IPineconeClient
             throw;
         }
 
-        IndexStats? result = JsonSerializer.Deserialize<IndexStats>(responseContent, this._jsonSerializerOptions);
+        IndexStats? result = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.WithPineconeOptions.IndexStats);
 
         if (result != null)
         {
@@ -364,7 +364,7 @@ public sealed class PineconeClient : IPineconeClient
 
         (HttpResponseMessage _, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
 
-        string[]? indices = JsonSerializer.Deserialize<string[]?>(responseContent, this._jsonSerializerOptions);
+        string[]? indices = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.WithPineconeOptions.StringArray);
 
         if (indices == null)
         {
@@ -477,7 +477,7 @@ public sealed class PineconeClient : IPineconeClient
             throw;
         }
 
-        PineconeIndex? indexDescription = JsonSerializer.Deserialize<PineconeIndex>(responseContent, this._jsonSerializerOptions);
+        PineconeIndex? indexDescription = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.WithPineconeOptions.PineconeIndex);
 
         if (indexDescription == null)
         {
@@ -530,7 +530,6 @@ public sealed class PineconeClient : IPineconeClient
     private readonly HttpClient _httpClient;
 
     private readonly KeyValuePair<string, string> _authHeader;
-    private readonly JsonSerializerOptions _jsonSerializerOptions;
     private readonly ConcurrentDictionary<string, string> _indexHostMapping;
     private const int MaxBatchSize = 100;
 
@@ -567,7 +566,7 @@ public sealed class PineconeClient : IPineconeClient
 
     private async Task<string> GetIndexHostAsync(string indexName, CancellationToken cancellationToken = default)
     {
-        if (this._indexHostMapping.TryGetValue(indexName, out string indexHost))
+        if (this._indexHostMapping.TryGetValue(indexName, out string? indexHost))
         {
             return indexHost;
         }

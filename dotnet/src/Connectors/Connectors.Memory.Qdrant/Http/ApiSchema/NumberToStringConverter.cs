@@ -11,11 +11,6 @@ internal sealed class NumberToStringConverter : JsonConverter<string>
 {
     public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (typeToConvert != typeof(string))
-        {
-            throw new NotSupportedException($"{nameof(typeToConvert)}: {typeToConvert}");
-        }
-
         switch (reader.TokenType)
         {
             case JsonTokenType.String:

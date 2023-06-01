@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Planning.ActionPlanner</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planning.Action</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />

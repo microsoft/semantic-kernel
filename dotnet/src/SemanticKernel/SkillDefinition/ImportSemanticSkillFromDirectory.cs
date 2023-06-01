@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -96,7 +97,7 @@ public static class ImportSemanticSkillFromDirectoryExtension
                     config = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
                 }
 
-                kernel.Log.LogTrace("Config {0}: {1}", functionName, config.ToJson());
+                kernel.Log.LogTrace("Config {0}: {1}", functionName, JsonSerializer.Serialize(config, CoreSourceGenerationContext.WithGeneralOptions.PromptTemplateConfig));
 
                 // Load prompt template
                 var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngine);

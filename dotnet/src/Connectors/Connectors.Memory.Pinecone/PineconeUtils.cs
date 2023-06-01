@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
@@ -57,7 +58,6 @@ public static class PineconeUtils
         Converters =
         {
             new PodTypeJsonConverter(),
-            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         }
     };
 
@@ -86,7 +86,7 @@ public static class PineconeUtils
                 continue;
             }
 
-            if (!document.Metadata.TryGetValue("text", out object value))
+            if (!document.Metadata.TryGetValue("text", out object? value))
             {
                 yield return document;
 
@@ -172,7 +172,7 @@ public static class PineconeUtils
         using MemoryStream stream = new();
         using Utf8JsonWriter writer = new(stream);
 
-        JsonSerializer.Serialize(writer, metadata);
+        JsonSerializer.Serialize(writer, metadata, SourceGenerationContext.Default.DictionaryStringObject);
 
         return (int)stream.Length;
     }

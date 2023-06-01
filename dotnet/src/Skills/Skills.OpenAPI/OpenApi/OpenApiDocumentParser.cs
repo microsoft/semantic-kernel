@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -27,11 +28,13 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 {
     /// <inheritdoc/>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(jsonObject.ToJson()));
+        using var memoryStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(jsonObject, SourceGenerationContext.WithGeneralOptions.JsonObject));
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
@@ -89,6 +92,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="stream">The original OpenAPI document stream.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>OpenAPI document with downgraded document version.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
     {
         var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false);
@@ -132,15 +137,17 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="stream">The YAML/JSON content stream.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>JSON content stream.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     private static async Task<JsonObject?> ConvertContentToJsonAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         var serializer = new SharpYaml.Serialization.Serializer();
 
         var obj = serializer.Deserialize(stream);
 
-        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj)));
+        using var memoryStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(obj));
 
-        return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await JsonSerializer.DeserializeAsync(memoryStream, SourceGenerationContext.Default.JsonObject, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -233,8 +240,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 parameter.Name,
                 parameter.Schema.Type,
                 parameter.Required,
-                (RestApiOperationParameterLocation)Enum.Parse(typeof(RestApiOperationParameterLocation), parameter.In.ToString()),
-                (RestApiOperationParameterStyle)Enum.Parse(typeof(RestApiOperationParameterStyle), parameter.Style.ToString()),
+                (RestApiOperationParameterLocation)Enum.Parse(typeof(RestApiOperationParameterLocation), parameter.In.ToString()!),
+                (RestApiOperationParameterStyle)Enum.Parse(typeof(RestApiOperationParameterStyle), parameter.Style.ToString()!),
                 parameter.Schema.Items?.Type,
                 GetParameterValue(parameter.Name, parameter.Schema.Default),
                 parameter.Description

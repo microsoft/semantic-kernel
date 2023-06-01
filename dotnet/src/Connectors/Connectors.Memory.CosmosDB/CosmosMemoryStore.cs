@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb;
 
@@ -141,7 +142,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
         {
             var result = response.Resource;
 
-            float[]? vector = withEmbedding ? System.Text.Json.JsonSerializer.Deserialize<float[]>(result.EmbeddingString) : System.Array.Empty<float>();
+            float[]? vector = withEmbedding ? System.Text.Json.JsonSerializer.Deserialize(result.EmbeddingString, SourceGenerationContext.Default.SingleArray) : System.Array.Empty<float>();
 
             if (vector != null)
             {
@@ -181,7 +182,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
             CollectionId = this.ToCosmosFriendlyId(collectionName),
             Id = record.Key,
             Timestamp = record.Timestamp,
-            EmbeddingString = System.Text.Json.JsonSerializer.Serialize(record.Embedding.Vector),
+            EmbeddingString = System.Text.Json.JsonSerializer.Serialize(record.Embedding.Vector, SourceGenerationContext.Default.IEnumerableSingle),
             MetadataString = record.GetSerializedMetadata()
         };
 
@@ -303,7 +304,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
 
             foreach (var item in items)
             {
-                var vector = System.Text.Json.JsonSerializer.Deserialize<float[]>(item.EmbeddingString);
+                var vector = System.Text.Json.JsonSerializer.Deserialize(item.EmbeddingString, SourceGenerationContext.Default.SingleArray);
 
                 if (vector != null)
                 {

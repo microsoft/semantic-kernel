@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
@@ -152,7 +153,7 @@ public class PineconeDocument
             .Where(x => !propertiesToSkip.Contains(x.Key))
             .ToDictionary(x => x.Key, x => x.Value);
 
-        return JsonSerializer.Serialize(distinctMetadata);
+        return JsonSerializer.Serialize(distinctMetadata, SourceGenerationContext.Default.DictionaryStringObject);
     }
 
     internal UpdateVectorRequest ToUpdateRequest()

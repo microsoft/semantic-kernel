@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,6 +11,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -80,17 +80,15 @@ public sealed class ActionPlanner
         this._context.Variables.Update(goal);
 
         SKContext result = await this._plannerFunction.InvokeAsync(this._context).ConfigureAwait(false);
+        if (result.ErrorOccurred)
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Failed to create a plan", result.LastException);
+        }
 
         ActionPlanResponse? planData;
         try
         {
-            planData = JsonSerializer.Deserialize<ActionPlanResponse?>(result.ToString(), new JsonSerializerOptions
-            {
-                AllowTrailingCommas = true,
-                DictionaryKeyPolicy = null,
-                DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-                PropertyNameCaseInsensitive = true,
-            });
+            planData = JsonSerializer.Deserialize<ActionPlanResponse>(result.Result, SourceGenerationContext.WithOptions.ActionPlanResponse);
         }
         catch (Exception e)
         {
@@ -126,7 +124,7 @@ public sealed class ActionPlanner
         {
             if (p.Value != null)
             {
-                plan.State[p.Key] = p.Value.ToString();
+                plan.State[p.Key] = p.Value.ToString()!;
             }
         }
 

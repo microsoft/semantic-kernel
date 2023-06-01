@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,5 +20,7 @@ internal interface IOpenApiDocumentParser
     /// <param name="stream">Stream containing OpenAPI document to parse.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>List of rest operations.</returns>
+    [RequiresUnreferencedCode("Implementation may use SharpYaml.Serialization.Serializer.Deserialize to parse YAML.")]
+    [RequiresDynamicCode("Implementation may use SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     Task<IList<RestApiOperation>> ParseAsync(Stream stream, CancellationToken cancellationToken);
 }

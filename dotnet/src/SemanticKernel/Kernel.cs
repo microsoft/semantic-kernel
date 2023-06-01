@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -108,12 +109,13 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null, ITrustService? trustService = null)
+    public IDictionary<string, ISKFunction> ImportSkill<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TSkill>(
+        TSkill skillInstance, string? skillName = null, ITrustService? trustService = null)
     {
         if (string.IsNullOrWhiteSpace(skillName))
         {
             skillName = SkillCollection.GlobalSkill;
-            this.Log.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
+            this.Log.LogTrace("Importing skill {0} in the global namespace", typeof(TSkill).FullName);
         }
         else
         {
@@ -253,7 +255,7 @@ public sealed class Kernel : IKernel, IDisposable
             name ??= this.Config.DefaultServiceId;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            if (!this.Config.TextCompletionServices.TryGetValue(name, out Func<IKernel, ITextCompletion> factory))
+            if (!this.Config.TextCompletionServices.TryGetValue(name, out Func<IKernel, ITextCompletion>? factory))
             {
                 throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' text completion service not available");
             }
@@ -266,7 +268,7 @@ public sealed class Kernel : IKernel, IDisposable
         {
             name ??= this.Config.DefaultServiceId;
 
-            if (!this.Config.TextEmbeddingGenerationServices.TryGetValue(name, out Func<IKernel, IEmbeddingGeneration<string, float>> factory))
+            if (!this.Config.TextEmbeddingGenerationServices.TryGetValue(name, out Func<IKernel, IEmbeddingGeneration<string, float>>? factory))
             {
                 throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' text embedding service not available");
             }
@@ -279,7 +281,7 @@ public sealed class Kernel : IKernel, IDisposable
         {
             name ??= this.Config.DefaultServiceId;
 
-            if (!this.Config.ChatCompletionServices.TryGetValue(name, out Func<IKernel, IChatCompletion> factory))
+            if (!this.Config.ChatCompletionServices.TryGetValue(name, out Func<IKernel, IChatCompletion>? factory))
             {
                 throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' chat completion service not available");
             }
@@ -292,7 +294,7 @@ public sealed class Kernel : IKernel, IDisposable
         {
             name ??= this.Config.DefaultServiceId;
 
-            if (!this.Config.ImageGenerationServices.TryGetValue(name, out Func<IKernel, IImageGeneration> factory))
+            if (!this.Config.ImageGenerationServices.TryGetValue(name, out Func<IKernel, IImageGeneration>? factory))
             {
                 throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' image generation service not available");
             }
@@ -367,10 +369,12 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="trustService">Service used for trust checks</param>
     /// <param name="log">Application logger</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ITrustService? trustService, ILogger log)
+    private static Dictionary<string, ISKFunction> ImportSkill<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TSkill>(
+        TSkill skillInstance,
+        string skillName, ITrustService? trustService, ILogger log)
     {
         log.LogTrace("Importing skill name: {0}", skillName);
-        MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
+        MethodInfo[] methods = typeof(TSkill).GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
         log.LogTrace("Methods found {0}", methods.Length);
 
         // Filter out null functions and fail if two functions have the same name

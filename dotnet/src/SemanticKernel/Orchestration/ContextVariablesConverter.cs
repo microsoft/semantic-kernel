@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -10,7 +11,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Converter for <see cref="ContextVariables"/> to/from JSON.
 /// </summary>
-public class ContextVariablesConverter : JsonConverter<ContextVariables>
+internal sealed class ContextVariablesConverter : JsonConverter<ContextVariables>
 {
     /// <summary>
     /// Read the JSON and convert to ContextVariables
@@ -19,12 +20,12 @@ public class ContextVariablesConverter : JsonConverter<ContextVariables>
     /// <param name="typeToConvert">The type to convert.</param>
     /// <param name="options">The JSON serializer options.</param>
     /// <returns>The deserialized <see cref="ContextVariables"/>.</returns>
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The type information needed for Deserialize is provided via options.")]
+    [UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode", Justification = "The type information needed for Deserialize is provided via options.")]
     public override ContextVariables Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var keyValuePairs = JsonSerializer.Deserialize<IEnumerable<KeyValuePair<string, string>>>(ref reader, options);
         var context = new ContextVariables();
-
-        foreach (var kvp in keyValuePairs!)
+        foreach (var kvp in JsonSerializer.Deserialize<IEnumerable<KeyValuePair<string, string>>>(ref reader, options)!)
         {
             if (string.IsNullOrWhiteSpace(kvp.Key))
             {

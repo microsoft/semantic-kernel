@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Resources;
@@ -37,6 +38,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromUrlAsync(
         this IKernel kernel,
         string skillName,
@@ -71,6 +74,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromResourceAsync(
         this IKernel kernel,
         string skillName,
@@ -110,6 +115,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromDirectoryAsync(
         this IKernel kernel,
         string parentDirectory,
@@ -151,6 +158,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="retryConfiguration">Optional retry configuration.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromFileAsync(
         this IKernel kernel,
         string skillName,

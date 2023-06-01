@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
@@ -140,7 +141,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
             {
                 Method = HttpMethod.Post,
                 RequestUri = this.GetRequestUri(),
-                Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
+                Content = new StringContent(JsonSerializer.Serialize(embeddingRequest, SourceGenerationContext.Default.TextEmbeddingRequest)),
             };
 
             httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
@@ -148,7 +149,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
             var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
+            var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body, SourceGenerationContext.Default.TextEmbeddingResponse);
 
             return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding!, transferOwnership: true)).ToList()!;
         }

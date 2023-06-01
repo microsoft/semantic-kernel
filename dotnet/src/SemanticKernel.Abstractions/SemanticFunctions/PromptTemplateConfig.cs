@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
@@ -187,7 +188,7 @@ public class PromptTemplateConfig
     /// <returns>Prompt template configuration.</returns>
     public static PromptTemplateConfig FromJson(string json)
     {
-        var result = Json.Deserialize<PromptTemplateConfig>(json);
+        var result = JsonSerializer.Deserialize(json, SourceGenerationContext.WithGeneralOptions.PromptTemplateConfig);
         return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
     }
 }

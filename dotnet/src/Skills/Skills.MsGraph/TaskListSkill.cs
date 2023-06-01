@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
 using Microsoft.SemanticKernel.Skills.MsGraph.Models;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Skills.MsGraph;
 
@@ -124,6 +125,6 @@ public class TaskListSkill
         IEnumerable<TaskManagementTask> tasks = await this._connector.GetTasksAsync(defaultTaskList.Id, includeCompleted, context.CancellationToken)
             .ConfigureAwait(false);
 
-        return JsonSerializer.Serialize(tasks);
+        return JsonSerializer.Serialize(tasks, SourceGenerationContext.Default.IEnumerableTaskManagementTask);
     }
 }

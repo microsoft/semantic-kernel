@@ -15,6 +15,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -102,7 +103,7 @@ public sealed class Plan : ISKFunction
     public Plan(string goal)
     {
         this.Description = goal;
-        this.SkillName = this.GetType().FullName;
+        this.SkillName = this.GetType().FullName!;
     }
 
     /// <summary>
@@ -177,7 +178,7 @@ public sealed class Plan : ISKFunction
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
     public static Plan FromJson(string json, SKContext? context = null)
     {
-        var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
+        var plan = JsonSerializer.Deserialize<Plan>(json, IncludeFieldsSourceGenerationContext.Default.Plan) ?? new Plan(string.Empty);
 
         if (context != null)
         {
@@ -194,7 +195,7 @@ public sealed class Plan : ISKFunction
     /// <returns>Plan serialized using JSON format</returns>
     public string ToJson(bool indented = false)
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
+        return JsonSerializer.Serialize(this, indented ? CoreSourceGenerationContext.Indented.Plan : CoreSourceGenerationContext.Default.Plan);
     }
 
     /// <summary>

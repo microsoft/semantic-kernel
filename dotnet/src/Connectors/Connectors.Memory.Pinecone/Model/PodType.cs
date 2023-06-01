@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -95,32 +93,41 @@ internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
     public override PodType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         string? stringValue = reader.GetString();
-
-        object? enumValue = Enum
-            .GetValues(typeToConvert)
-            .Cast<object?>()
-            .FirstOrDefault(value => value != null && typeToConvert.GetMember(value.ToString())[0]
-                .GetCustomAttribute(typeof(EnumMemberAttribute)) is EnumMemberAttribute enumMemberAttr && enumMemberAttr.Value == stringValue);
-
-        if (enumValue != null)
+        return stringValue switch
         {
-            return (PodType)enumValue;
-        }
-
-        throw new JsonException($"Unable to parse '{stringValue}' as a PodType enum.");
+            "s1.x1" => PodType.S1X1,
+            "s1.x2" => PodType.S1X2,
+            "s1.x4" => PodType.S1X4,
+            "s1.x8" => PodType.S1X8,
+            "p1.x1" => PodType.P1X1,
+            "p1.x2" => PodType.P1X2,
+            "p1.x4" => PodType.P1X4,
+            "p1.x8" => PodType.P1X8,
+            "p2.x1" => PodType.P2X1,
+            "p2.x2" => PodType.P2X2,
+            "p2.x4" => PodType.P2X4,
+            "p2.x8" => PodType.P2X8,
+            _ => throw new JsonException($"Unable to parse '{stringValue}'"),
+        };
     }
 
     public override void Write(Utf8JsonWriter writer, PodType value, JsonSerializerOptions options)
     {
-        EnumMemberAttribute? enumMemberAttr = value.GetType().GetMember(value.ToString())[0].GetCustomAttribute(typeof(EnumMemberAttribute)) as EnumMemberAttribute;
-
-        if (enumMemberAttr != null)
+        writer.WriteStringValue(value switch
         {
-            writer.WriteStringValue(enumMemberAttr.Value);
-        }
-        else
-        {
-            throw new JsonException($"Unable to find EnumMember attribute for PodType '{value}'.");
-        }
+            PodType.S1X1 => "s1.x1",
+            PodType.S1X2 => "s1.x2",
+            PodType.S1X4 => "s1.x4",
+            PodType.S1X8 => "s1.x8",
+            PodType.P1X1 => "p1.x1",
+            PodType.P1X2 => "p1.x2",
+            PodType.P1X4 => "p1.x4",
+            PodType.P1X8 => "p1.x8",
+            PodType.P2X1 => "p2.x1",
+            PodType.P2X2 => "p2.x2",
+            PodType.P2X4 => "p2.x4",
+            PodType.P2X8 => "p2.x8",
+            _ => throw new JsonException($"Unable to find value '{value}'."),
+        });
     }
 }

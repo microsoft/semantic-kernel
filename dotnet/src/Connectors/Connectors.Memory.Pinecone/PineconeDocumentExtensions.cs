@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
@@ -37,8 +38,7 @@ public static class PineconeDocumentExtensions
 
         if (!string.IsNullOrEmpty(memoryRecord.Metadata.AdditionalMetadata))
         {
-            JsonSerializerOptions options = PineconeUtils.DefaultSerializerOptions;
-            var additionalMetaData = JsonSerializer.Deserialize<Dictionary<string, object>>(memoryRecord.Metadata.AdditionalMetadata, options);
+            var additionalMetaData = JsonSerializer.Deserialize(memoryRecord.Metadata.AdditionalMetadata, SourceGenerationContext.WithPineconeOptions.DictionaryStringObject);
 
             if (additionalMetaData != null)
             {

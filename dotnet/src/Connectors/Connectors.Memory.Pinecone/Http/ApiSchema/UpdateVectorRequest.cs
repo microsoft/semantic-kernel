@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
@@ -86,7 +87,7 @@ internal sealed class UpdateVectorRequest
     public HttpRequestMessage Build()
     {
         HttpRequestMessage? request = HttpRequest.CreatePostRequest(
-            "/vectors/update", this);
+            "/vectors/update", this, SourceGenerationContext.Default.UpdateVectorRequest);
 
         request.Headers.Add("accept", "application/json");
 

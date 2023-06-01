@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,6 +11,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
 using Microsoft.SemanticKernel.Skills.MsGraph.Models;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Skills.MsGraph;
 
@@ -176,10 +176,6 @@ public class CalendarSkill
 
         return JsonSerializer.Serialize(
             value: events,
-            options: new JsonSerializerOptions
-            {
-                WriteIndented = false,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            });
+            jsonTypeInfo: SourceGenerationContext.Default.IEnumerableCalendarEvent);
     }
 }

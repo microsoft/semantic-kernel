@@ -3,6 +3,7 @@
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
@@ -47,7 +48,7 @@ internal sealed class ConfigureIndexRequest
     public HttpRequestMessage Build()
     {
         HttpRequestMessage? request = HttpRequest.CreatePatchRequest(
-            $"/databases/{this.IndexName}", this);
+            $"/databases/{this.IndexName}", this, SourceGenerationContext.Default.ConfigureIndexRequest);
 
         request.Headers.Add("accept", "text/plain");
 

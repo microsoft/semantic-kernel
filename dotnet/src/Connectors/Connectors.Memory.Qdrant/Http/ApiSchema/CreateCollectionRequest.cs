@@ -4,6 +4,7 @@ using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
@@ -30,7 +31,8 @@ internal sealed class CreateCollectionRequest
     {
         return HttpRequest.CreatePutRequest(
             $"collections/{this.CollectionName}?wait=true",
-            payload: this);
+            payload: this,
+            SourceGenerationContext.Default.CreateCollectionRequest);
     }
 
     internal sealed class VectorSettings : IValidatable

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -26,12 +27,12 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <summary>
     /// The endpoint for the Qdrant service.
     /// </summary>
-    public string BaseAddress => this._httpClient.BaseAddress.ToString();
+    public string BaseAddress => this._httpClient.BaseAddress!.ToString();
 
     /// <summary>
     /// The port for the Qdrant service.
     /// </summary>
-    public int Port => this._httpClient.BaseAddress.Port;
+    public int Port => this._httpClient.BaseAddress!.Port;
 
     /// <summary>
     /// The constructor for the QdrantVectorDbClient.
@@ -79,7 +80,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             yield break;
         }
 
-        var data = JsonSerializer.Deserialize<GetVectorsResponse>(responseContent);
+        var data = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.Default.GetVectorsResponse);
 
         if (data == null)
         {
@@ -129,7 +130,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
             return null;
         }
 
-        var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
+        var data = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.Default.SearchVectorsResponse);
 
         if (data == null)
         {
@@ -171,7 +172,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         try
         {
             response.EnsureSuccessStatusCode();
-            var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+            var result = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.Default.QdrantResponse);
             if (result?.Status == "ok")
             {
                 this._log.LogDebug("Vector being deleted");
@@ -210,7 +211,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         try
         {
             response.EnsureSuccessStatusCode();
-            var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+            var result = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.Default.QdrantResponse);
             if (result?.Status == "ok")
             {
                 this._log.LogDebug("Vector being deleted");
@@ -241,7 +242,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         try
         {
             response.EnsureSuccessStatusCode();
-            var result = JsonSerializer.Deserialize<UpsertVectorResponse>(responseContent);
+            var result = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.Default.UpsertVectorResponse);
             if (result?.Status == "ok")
             {
                 this._log.LogDebug("Vectors upserted");
@@ -291,7 +292,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
 
         response.EnsureSuccessStatusCode();
 
-        var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
+        var data = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.Default.SearchVectorsResponse);
 
         if (data == null)
         {
@@ -409,7 +410,7 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         using var request = ListCollectionsRequest.Create().Build();
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        var collections = JsonSerializer.Deserialize<ListCollectionsResponse>(responseContent);
+        var collections = JsonSerializer.Deserialize(responseContent, SourceGenerationContext.Default.ListCollectionsResponse);
 
         foreach (var collection in collections?.Result?.Collections ?? Enumerable.Empty<ListCollectionsResponse.CollectionResult.CollectionDescription>())
         {

@@ -3,40 +3,37 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http;
 
 internal static class HttpRequest
 {
-    public static HttpRequestMessage CreateGetRequest(string url, object? payload = null)
+    private static readonly HttpMethod s_patch = new("PATCH");
+
+    public static HttpRequestMessage CreateGetRequest(string url)
     {
-        return new HttpRequestMessage(HttpMethod.Get, url)
-        {
-            Content = GetJsonContent(payload)
-        };
+        return new HttpRequestMessage(HttpMethod.Get, url);
     }
 
-    public static HttpRequestMessage CreatePostRequest(string url, object? payload = null)
+    public static HttpRequestMessage CreatePostRequest(string url)
+    {
+        return new HttpRequestMessage(HttpMethod.Post, url);
+    }
+
+    public static HttpRequestMessage CreatePostRequest<TPayload>(string url, TPayload payload, JsonTypeInfo<TPayload> typeInfo)
     {
         return new HttpRequestMessage(HttpMethod.Post, url)
         {
-            Content = GetJsonContent(payload)
+            Content = GetJsonContent(payload, typeInfo)
         };
     }
 
-    public static HttpRequestMessage CreatePutRequest(string url, object? payload = null)
+    public static HttpRequestMessage CreatePatchRequest<TPayload>(string url, TPayload payload, JsonTypeInfo<TPayload> typeInfo)
     {
-        return new HttpRequestMessage(HttpMethod.Put, url)
+        return new HttpRequestMessage(s_patch, url)
         {
-            Content = GetJsonContent(payload)
-        };
-    }
-
-    public static HttpRequestMessage CreatePatchRequest(string url, object? payload = null)
-    {
-        return new HttpRequestMessage(new HttpMethod("PATCH"), url)
-        {
-            Content = GetJsonContent(payload)
+            Content = GetJsonContent(payload, typeInfo)
         };
     }
 
@@ -45,14 +42,16 @@ internal static class HttpRequest
         return new HttpRequestMessage(HttpMethod.Delete, url);
     }
 
-    private static StringContent? GetJsonContent(object? payload)
+    private static ByteArrayContent? GetJsonContent<TPayload>(TPayload payload, JsonTypeInfo<TPayload> typeInfo)
     {
-        if (payload == null)
+        ByteArrayContent? content = null;
+
+        if (payload is not null)
         {
-            return null;
+            content = new ByteArrayContent(payload is string s ? Encoding.UTF8.GetBytes(s) : JsonSerializer.SerializeToUtf8Bytes(payload, typeInfo));
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
         }
 
-        string strPayload = payload is string s ? s : JsonSerializer.Serialize(payload, PineconeUtils.DefaultSerializerOptions);
-        return new StringContent(strPayload, Encoding.UTF8, "application/json");
+        return content;
     }
 }

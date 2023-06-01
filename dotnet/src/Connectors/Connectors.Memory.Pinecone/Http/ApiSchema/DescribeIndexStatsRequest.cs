@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
@@ -34,7 +35,7 @@ internal sealed class DescribeIndexStatsRequest
     {
         HttpRequestMessage request = this.Filter == null
             ? HttpRequest.CreatePostRequest("/describe_index_stats")
-            : HttpRequest.CreatePostRequest("/describe_index_stats", this);
+            : HttpRequest.CreatePostRequest("/describe_index_stats", this, SourceGenerationContext.Default.DescribeIndexStatsRequest);
 
         request.Headers.Add("accept", "application/json");
 

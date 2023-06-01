@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
@@ -53,7 +53,7 @@ public abstract class OpenAIClientBase
         string requestBody,
         CancellationToken cancellationToken = default)
     {
-        var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
+        var result = await this.ExecutePostRequestAsync(url, requestBody, SourceGenerationContext.Default.TextEmbeddingResponse, cancellationToken).ConfigureAwait(false);
         if (result.Embeddings is not { Count: >= 1 })
         {
             throw new AIException(
@@ -79,7 +79,7 @@ public abstract class OpenAIClientBase
         Func<ImageGenerationResponse.Image, string> extractResponseFunc,
         CancellationToken cancellationToken = default)
     {
-        var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
+        var result = await this.ExecutePostRequestAsync(url, requestBody, SourceGenerationContext.Default.ImageGenerationResponse, cancellationToken).ConfigureAwait(false);
         return result.Images.Select(extractResponseFunc).ToList();
     }
 
@@ -87,7 +87,7 @@ public abstract class OpenAIClientBase
     {
         try
         {
-            JsonNode? root = JsonSerializer.Deserialize<JsonNode>(jsonResponsePayload);
+            JsonNode? root = JsonSerializer.Deserialize(jsonResponsePayload, SourceGenerationContext.Default.JsonNode);
 
             return root?["error"]?["message"]?.GetValue<string>();
         }
@@ -114,7 +114,7 @@ public abstract class OpenAIClientBase
     /// </summary>
     private readonly HttpClient _httpClient;
 
-    private async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
+    private async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, JsonTypeInfo<T> jsonTypeInfo, CancellationToken cancellationToken = default)
     {
         HttpResponseMessage? response = null;
         try
@@ -201,7 +201,7 @@ public abstract class OpenAIClientBase
                 }
             }
 
-            var result = Json.Deserialize<T>(responseJson);
+            var result = JsonSerializer.Deserialize(responseJson, jsonTypeInfo);
             if (result is null)
             {
                 throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");

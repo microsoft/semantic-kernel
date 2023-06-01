@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 
@@ -95,7 +96,8 @@ internal sealed class QueryRequest
 
         HttpRequestMessage? request = HttpRequest.CreatePostRequest(
             "/query",
-            this);
+            this,
+            SourceGenerationContext.Default.QueryRequest);
 
         request.Headers.Add("accept", "application/json");
 

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -42,6 +43,8 @@ public static class KernelOpenApiExtensions
     /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(
         this IKernel kernel,
         string skillName,
@@ -78,6 +81,8 @@ public static class KernelOpenApiExtensions
     /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     public static Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(
         this IKernel kernel,
         string skillName,
@@ -114,6 +119,8 @@ public static class KernelOpenApiExtensions
     /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken"></param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromDirectoryAsync(
         this IKernel kernel,
         string parentDirectory,
@@ -158,6 +165,8 @@ public static class KernelOpenApiExtensions
     /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromFileAsync(
         this IKernel kernel,
         string skillName,
@@ -192,6 +201,8 @@ public static class KernelOpenApiExtensions
     /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [RequiresUnreferencedCode("Uses SharpYaml to parse unknown types.")]
+    [RequiresDynamicCode("Uses SharpYaml to parse unknown types and JsonSerializer to serialize instances of those unknown types")]
     public static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiSkillAsync(
         this IKernel kernel,
         Stream documentStream,

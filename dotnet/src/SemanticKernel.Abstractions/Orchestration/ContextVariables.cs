@@ -164,7 +164,7 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool Get(string name, out TrustAwareString trustAwareValue)
     {
-        if (this._variables.TryGetValue(name, out TrustAwareString result))
+        if (this._variables.TryGetValue(name, out TrustAwareString? result))
         {
             trustAwareValue = result;
             return true;

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -11,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Skills.Web.Bing;
 
@@ -50,7 +50,7 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
         string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         this._logger.LogTrace("Response content received: {0}", json);
 
-        BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
+        BingSearchResponse? data = JsonSerializer.Deserialize(json, SourceGenerationContext.Default.BingSearchResponse);
         WebPage[]? results = data?.WebPages?.Value;
 
         return results == null ? Enumerable.Empty<string>() : results.Select(x => x.Snippet);
@@ -72,25 +72,19 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-        Justification = "Class is instantiated through deserialization.")]
-    private sealed class BingSearchResponse
+    internal sealed class BingSearchResponse
     {
         [JsonPropertyName("webPages")]
         public WebPages? WebPages { get; set; }
     }
 
-    [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-        Justification = "Class is instantiated through deserialization.")]
-    private sealed class WebPages
+    internal sealed class WebPages
     {
         [JsonPropertyName("value")]
         public WebPage[]? Value { get; set; }
     }
 
-    [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-        Justification = "Class is instantiated through deserialization.")]
-    private sealed class WebPage
+    internal sealed class WebPage
     {
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;

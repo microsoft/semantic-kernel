@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
@@ -42,7 +43,8 @@ internal sealed class DeleteVectorsRequest : IValidatable
         this.Validate();
         return HttpRequest.CreatePostRequest(
             $"collections/{this._collectionName}/points/delete",
-            payload: this);
+            payload: this,
+            SourceGenerationContext.Default.DeleteVectorsRequest);
     }
 
     #region private ================================================================================

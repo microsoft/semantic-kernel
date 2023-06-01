@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Skills.Web;
 
@@ -50,6 +51,6 @@ public class WebSearchEngineSkill
 
         return countInt == 1
             ? results.FirstOrDefault() ?? string.Empty
-            : JsonSerializer.Serialize(results);
+            : JsonSerializer.Serialize(results, SourceGenerationContext.Default.IEnumerableString);
     }
 }

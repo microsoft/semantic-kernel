@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
@@ -160,7 +161,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
             {
                 Method = HttpMethod.Post,
                 RequestUri = this.GetRequestUri(),
-                Content = new StringContent(JsonSerializer.Serialize(completionRequest)),
+                Content = new StringContent(JsonSerializer.Serialize(completionRequest, SourceGenerationContext.Default.TextCompletionRequest)),
             };
 
             httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
@@ -174,7 +175,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
 
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
+            List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize(body, SourceGenerationContext.Default.ListTextCompletionResponse);
 
             if (completionResponse is null)
             {

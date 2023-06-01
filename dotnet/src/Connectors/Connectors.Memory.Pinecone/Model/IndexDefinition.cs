@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
@@ -156,7 +157,7 @@ public class IndexDefinition
     /// </summary>
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage request = HttpRequest.CreatePostRequest("/databases", this);
+        HttpRequestMessage request = HttpRequest.CreatePostRequest("/databases", this, SourceGenerationContext.Default.IndexDefinition);
 
         request.Headers.Add("accept", "text/plain");
 

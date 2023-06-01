@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
@@ -35,7 +36,8 @@ internal sealed class UpsertVectorRequest
     {
         return HttpRequest.CreatePutRequest(
             $"collections/{this.Collection}/points?wait=true",
-            payload: this);
+            payload: this,
+            SourceGenerationContext.Default.UpsertVectorRequest);
     }
 
     [JsonIgnore]

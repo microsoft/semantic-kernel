@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -47,6 +49,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public bool IsSensitive { get; }
 
     /// <inheritdoc/>
+    [JsonIgnore]
     public ITrustService TrustServiceInstance => this._trustService;
 
     /// <inheritdoc/>
@@ -344,12 +347,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// JSON serialized string representation of the function.
     /// </summary>
     public string ToString(bool writeIndented)
-        => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
+        => JsonSerializer.Serialize(this, writeIndented ? CoreSourceGenerationContext.Indented.SKFunction : CoreSourceGenerationContext.Default.SKFunction);
 
     #region private
 
-    private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
-    private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> _function;
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
@@ -621,6 +622,5 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{this.Name} ({this.Description})";
-
     #endregion
 }
