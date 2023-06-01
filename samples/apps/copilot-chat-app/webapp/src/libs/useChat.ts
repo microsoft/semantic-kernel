@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { useAccount, useMsal } from '@azure/msal-react';
+import * as React from 'react';
 import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
 import { RootState } from '../redux/app/store';
@@ -245,12 +246,13 @@ export const useChat = () => {
         return botProfilePictures[index % botProfilePictures.length];
     };
 
-    const getChatMemorySources = async (chatId: string): Promise<ChatMemorySource[]> => {
+    // useCallback() here since this is used in a useEffect() hook in `ChatResourceList`
+    const getChatMemorySources = React.useCallback(async (chatId: string): Promise<ChatMemorySource[]> => {
         return await chatService.getChatMemorySourcesAsync(
             chatId,
             await AuthHelper.getSKaaSAccessToken(instance, inProgress),
         );
-    };
+    }, []);
 
     return {
         getChatUserById,
