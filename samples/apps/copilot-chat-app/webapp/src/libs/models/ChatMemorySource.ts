@@ -7,5 +7,5 @@ export interface ChatMemorySource {
     name: string;
     hyperlink?: string;
     sharedBy: string;
-    updatedOn: number;
+    createdOn: number;
 }

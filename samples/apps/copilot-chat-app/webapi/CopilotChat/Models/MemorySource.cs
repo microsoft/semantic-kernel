@@ -58,10 +58,10 @@ public class MemorySource : IStorageEntity
     public string SharedBy { get; set; } = string.Empty;
 
     /// <summary>
-    /// When the source is updated in the bot.
+    /// When the source is created in the bot.
     /// </summary>
-    [JsonPropertyName("updatedOn")]
-    public DateTimeOffset UpdatedOn { get; set; }
+    [JsonPropertyName("createdOn")]
+    public DateTimeOffset CreatedOn { get; set; }
 
     /// <summary>
     /// Empty constructor for serialization.
@@ -78,6 +78,6 @@ public class MemorySource : IStorageEntity
         this.SourceType = type;
         this.HyperLink = hyperlink;
         this.SharedBy = sharedBy;
-        this.UpdatedOn = DateTimeOffset.Now;
+        this.CreatedOn = DateTimeOffset.Now;
     }
 }

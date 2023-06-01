@@ -51,19 +51,19 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
             icon: getFileIconByFileExtension(item.name),
             url: item.hyperlink,
         },
-        updatedOn: {
-            label: new Date(item.updatedOn).toLocaleTimeString([], {
+        createdOn: {
+            label: new Date(item.createdOn).toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit',
             }),
-            timestamp: item.updatedOn,
+            timestamp: item.createdOn,
         },
         sharedBy: { label: item.sharedBy, status: 'available' },
     }));
 
     const columns = [
         { columnKey: 'name', label: 'Name' },
-        { columnKey: 'updatedOn', label: 'Updated on' },
+        { columnKey: 'createdOn', label: 'Created on' },
     ];
 
     return (
@@ -86,7 +86,7 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
                                     <a href={item.name.url}>{item.name.label}</a>
                                 </TableCellLayout>
                             </TableCell>
-                            <TableCell>{item.updatedOn.label}</TableCell>
+                            <TableCell>{item.createdOn.label}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
