@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
@@ -33,6 +34,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<string>(),
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 null,
@@ -68,6 +70,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<string>(),
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
                 1,
                 false,
                 null,
@@ -77,6 +80,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<string>(),
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
                 1,
                 true,
                 null,
@@ -86,6 +90,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<string>(),
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
                 3,
                 false,
                 null,
@@ -95,6 +100,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<string>(),
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
                 3,
                 true,
                 null,
@@ -112,6 +118,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<string>(),
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 null,
@@ -131,6 +138,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<string>(),
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 null,
@@ -164,6 +172,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<string>(),
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 null,
@@ -183,6 +192,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<string>(),
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 null,
@@ -206,6 +216,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<string>(),
                 It.IsAny<IEnumerable<float>>(),
                 It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
                 null,
@@ -223,5 +234,46 @@ public class QdrantMemoryStoreTests3
 
         // Assert
         Assert.Empty(similarityResults);
+    }
+
+    [Fact]
+    public async Task ItPassesQdrantFilterToQdrantClient()
+    {
+        // Arrange
+        var filters = new QdrantFilter();
+        var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
+        mockQdrantClient
+            .Setup<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
+                It.IsAny<string>(),
+                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<double>(),
+                It.IsAny<QdrantFilter>(),
+                It.IsAny<int>(),
+                It.IsAny<bool>(),
+                null,
+                It.IsAny<CancellationToken>()))
+            .Returns(AsyncEnumerable.Empty<(QdrantVectorRecord, double)>());
+
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+
+        // Act
+        await vectorStore.GetNearestMatchesAsync(
+            collectionName: "test_collection",
+            embedding: this._embedding,
+            filters: filters,
+            limit: 3,
+            minRelevanceScore: 0.0).ToListAsync();
+
+        // Assert
+        mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
+                It.IsAny<string>(),
+                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<double>(),
+                It.Is<QdrantFilter>(qf => qf == filters),
+                It.IsAny<int>(),
+                It.IsAny<bool>(),
+                null,
+                It.IsAny<CancellationToken>()),
+            Times.Once());
     }
 }

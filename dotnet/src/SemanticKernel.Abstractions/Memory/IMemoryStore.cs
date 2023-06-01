@@ -134,6 +134,10 @@ public interface IMemoryStore
         CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// An interface for storing and retrieving indexed <see cref="MemoryRecord"/> objects in a data store with support for metadata filtering.
+/// </summary>
+/// <typeparam name="TFilter">Type of filter used for metada filtering.</typeparam>
 public interface IMemoryStore<TFilter> : IMemoryStore
 {
     /// <summary>
@@ -141,7 +145,7 @@ public interface IMemoryStore<TFilter> : IMemoryStore
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="embedding">The <see cref="Embedding{Single}"/> to compare the collection's embeddings with.</param>
-    /// <param name="filters">The filters to apply to the vectors before search.</param>
+    /// <param name="filters">Filters to be applied during search.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
     /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>

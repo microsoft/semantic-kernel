@@ -86,7 +86,7 @@ public static class SKContextSequentialPlannerExtensions
             // Search for functions that match the semantic query.
             var memories = context.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery!, config.MaxRelevantFunctions, config.RelevancyThreshold.Value,
                 false,
-                cancellationToken: context.CancellationToken);
+                context.CancellationToken);
 
             // Add functions that were found in the search results.
             result.AddRange(await GetRelevantFunctionsAsync(context, availableFunctions, memories).ConfigureAwait(false));

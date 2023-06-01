@@ -10,50 +10,12 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
 
-public sealed class SemanticTextMemory<TFilter> : SemanticTextMemory, ISemanticTextMemory<TFilter>
-{
-    private readonly IMemoryStore<TFilter> _storageWithFilters;
-    public SemanticTextMemory(
-        IMemoryStore storage,
-        ITextEmbeddingGeneration embeddingGenerator,
-        IMemoryStore<TFilter> storageWithFilters) : base(storage, embeddingGenerator)
-    {
-        this._storageWithFilters = storageWithFilters;
-    }
-
-    public async IAsyncEnumerable<MemoryQueryResult> SearchAsync(
-        string collection,
-        string query,
-        TFilter filters,
-        int limit = 1,
-        double minRelevanceScore = 0.7,
-        bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken).ConfigureAwait(false);
-
-        IAsyncEnumerable<(MemoryRecord, double)> results = this._storageWithFilters.GetNearestMatchesAsync(
-            collectionName: collection,
-            embedding: queryEmbedding,
-            filters: filters,
-            limit: limit,
-            minRelevanceScore: minRelevanceScore,
-            withEmbeddings: withEmbeddings,
-            cancellationToken: cancellationToken);
-
-        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken))
-        {
-            yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
-        }
-    }
-}
-
 /// <summary>
 /// Implementation of <see cref="ISemanticTextMemory"/>./>.
 /// </summary>
 public class SemanticTextMemory : ISemanticTextMemory, IDisposable
 {
-    protected readonly ITextEmbeddingGeneration _embeddingGenerator;
+    private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly IMemoryStore _storage;
 
     public SemanticTextMemory(
@@ -163,10 +125,64 @@ public class SemanticTextMemory : ISemanticTextMemory, IDisposable
 
     public void Dispose()
     {
-        // ReSharper disable once SuspiciousTypeConversion.Global
-        if (this._embeddingGenerator is IDisposable emb) { emb.Dispose(); }
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-        // ReSharper disable once SuspiciousTypeConversion.Global
-        if (this._storage is IDisposable storage) { storage.Dispose(); }
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            if (this._embeddingGenerator is IDisposable emb) { emb.Dispose(); }
+
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            if (this._storage is IDisposable storage) { storage.Dispose(); }
+        }
+    }
+}
+
+public sealed class SemanticTextMemory<TFilter> : SemanticTextMemory, ISemanticTextMemory<TFilter>
+{
+    private readonly IMemoryStore<TFilter> _storage;
+    private readonly ITextEmbeddingGeneration _embeddingGenerator;
+
+    public SemanticTextMemory(
+        IMemoryStore<TFilter> storage,
+        ITextEmbeddingGeneration embeddingGenerator) : base(storage, embeddingGenerator)
+    {
+        this._embeddingGenerator = embeddingGenerator;
+        this._storage = storage;
+    }
+
+    public async IAsyncEnumerable<MemoryQueryResult> SearchAsync(
+        string collection,
+        string query,
+        TFilter filters,
+        int limit = 1,
+        double minRelevanceScore = 0.7,
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken).ConfigureAwait(false);
+
+        IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
+            collectionName: collection,
+            embedding: queryEmbedding,
+            filters: filters,
+            limit: limit,
+            minRelevanceScore: minRelevanceScore,
+            withEmbeddings: withEmbeddings,
+            cancellationToken: cancellationToken);
+
+        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken))
+        {
+            yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
+        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
     }
 }
