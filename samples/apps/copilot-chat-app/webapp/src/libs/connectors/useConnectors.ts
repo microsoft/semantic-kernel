@@ -1,54 +1,9 @@
-import { useMsal } from '@azure/msal-react';
-import { Constants } from '../../Constants';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
-import { AuthHelper } from '../auth/AuthHelper';
-import { TokenHelper } from '../auth/TokenHelper';
-import { IAsk } from '../semantic-kernel/model/Ask';
-import { SemanticKernelService } from '../services/SemanticKernelService';
 
 export const useConnectors = () => {
-    const { instance, inProgress } = useMsal();
-    const kernel = new SemanticKernelService(process.env.REACT_APP_BACKEND_URI as string);
     const plugins = useAppSelector((state: RootState) => state.plugins);
-
-    /**
-     * Helper function to invoke Semantic Kernel skills
-     * using custom token header containing
-     * Msal access token for downstream plug-ins.
-     * scopes should be limited to only permissions needed for the skill
-     */
-    const invokeSkillWithMsalToken = async (
-        ask: IAsk,
-        skillName: string,
-        functionName: string,
-        scopes: Array<string>,
-        pluginHeaderTag: AuthHeaderTags,
-    ) => {
-        return await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, scopes).then(async (token: string) => {
-            return await kernel.invokeAsync(ask, skillName, functionName, await AuthHelper.getSKaaSAccessToken(instance, inProgress), [
-                {
-                    headerTag: pluginHeaderTag,
-                    authData: token,
-                },
-            ]);
-        });
-    };
-
-    /**
-     * Helper function to invoke Semantic Kernel skills
-     * using MS Graph API token
-     */
-    const invokeSkillWithGraphToken = async (ask: IAsk, skillName: string, functionName: string) => {
-        return await invokeSkillWithMsalToken(
-            ask,
-            skillName,
-            functionName,
-            Constants.msGraphScopes,
-            AuthHeaderTags.MsGraph,
-        );
-    };
 
     /*
      * Once enabled, each plugin will have a custom dedicated header in every Semantic Kernel request
@@ -76,8 +31,6 @@ export const useConnectors = () => {
     };
 
     return {
-        invokeSkillWithMsalToken,
-        invokeSkillWithGraphToken,
         getEnabledPlugins,
     };
 };
