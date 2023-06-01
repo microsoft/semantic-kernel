@@ -50,7 +50,7 @@ public static class Example43_Weaviate
         Console.WriteLine("== Retrieving Memories Through the Kernel ==");
         MemoryQueryResult? lookup = await kernel.Memory.GetAsync(MemoryCollectionName, key1);
         Console.WriteLine(lookup != null ? lookup.Metadata.Text : "ERROR: memory not found");
-        
+
         Console.WriteLine("== Similarity Searching Memories: My favorite color is orange ==");
         var searchResults = kernel.Memory.SearchAsync(MemoryCollectionName, "My favorite color is orange", limit: 3, minRelevanceScore: 0.8);
 

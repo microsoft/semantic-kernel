@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace SemanticKernel.Service.Options;
 
@@ -11,12 +11,12 @@ public class WeaviateOptions
     /// Gets or sets the scheme (e.g. http or https).
     /// </summary>
     public string Scheme { get; set; } = "http";
-    
+
     /// <summary>
     /// Gets or sets the endpoint protocol and host (e.g. http://localhost).
     /// </summary>
     public string Host { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// Gets or sets the api key.
     /// </summary>

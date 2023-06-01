@@ -4,7 +4,9 @@ using System;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 
+#pragma warning disable CA1812 // 'Deprecation' is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it 'static' (Module in Visual Basic).
 internal sealed class Deprecation
+#pragma warning restore CA1812 // 'Deprecation' is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it 'static' (Module in Visual Basic).
 {
     public string? ApiType { get; set; }
     public string? Id { get; set; }

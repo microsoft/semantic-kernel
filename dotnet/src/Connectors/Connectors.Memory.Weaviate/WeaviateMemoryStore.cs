@@ -34,7 +34,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
 {
     // Regex to ensure Weaviate class names confirm to the naming convention
     // https://weaviate.io/developers/weaviate/configuration/schema-configuration#class
-    private static readonly Regex s_classNameRegEx = new(@"[^0-9a-zA-Z]+", RegexOptions.Compiled);
+    private static readonly Regex s_classNameRegEx = new("[^0-9a-zA-Z]+", RegexOptions.Compiled);
 
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
@@ -95,7 +95,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionAsync(string collectionName, CancellationToken cancel = default)
+    public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
@@ -106,7 +106,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
             .Create(className, ToWeaviateFriendlyClassDescription(collectionName))
             .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
         CreateClassSchemaResponse? result = JsonSerializer.Deserialize<CreateClassSchemaResponse>(responseContent, s_jsonSerializerOptions);
 
         try
@@ -129,7 +129,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancel = default)
+    public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
@@ -137,7 +137,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         this._log.LogTrace("Does collection exist: {0}, with class name: {1}:", collectionName, className);
 
         using HttpRequestMessage request = GetClassRequest.Create(className).Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         // Needs to return a non-404 AND collection name should match
         bool exists = response.StatusCode != HttpStatusCode.NotFound;
@@ -167,12 +167,12 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancel = default)
+    public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Listing collections");
 
         using HttpRequestMessage request = GetSchemaRequest.Create().Build();
-        (HttpResponseMessage _, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
+        (HttpResponseMessage _, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
 
@@ -184,17 +184,17 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancel = default)
+    public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
-        if (await this.DoesCollectionExistAsync(collectionName, cancel).ConfigureAwait(false))
+        if (await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
             string className = ToWeaviateFriendlyClassName(collectionName);
             this._log.LogTrace("Deleting collection: {0}, with class name: {1}", collectionName, className);
 
             using HttpRequestMessage request = DeleteSchemaRequest.Create(className).Build();
-            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
+            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -209,16 +209,16 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancel = default)
+    public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
-        return await this.UpsertBatchAsync(collectionName, new[] { record }, cancel).FirstOrDefaultAsync(cancel).ConfigureAwait(false) ?? string.Empty;
+        return await this.UpsertBatchAsync(collectionName, new[] { record }, cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records,
-        [EnumeratorCancellation] CancellationToken cancel = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
@@ -232,7 +232,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         }
 
         using HttpRequestMessage request = requestBuilder.Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         response.EnsureSuccessStatusCode();
         BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonSerializerOptions);
@@ -243,7 +243,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancel = default)
+    public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
         Verify.NotNullOrEmpty(key, "Key is empty");
@@ -254,7 +254,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
             Additional = withEmbedding ? new[] { "vector" } : null
         }.Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
         try
         {
             response.EnsureSuccessStatusCode();
@@ -291,11 +291,11 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
 
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancel = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (string? key in keys)
         {
-            MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancel).ConfigureAwait(false);
+            MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
             if (record != null)
             {
                 yield return record;
@@ -308,7 +308,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task RemoveAsync(string collectionName, string key, CancellationToken cancel = default)
+    public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
         Verify.NotNull(key, "Key is NULL");
@@ -323,7 +323,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         };
         using HttpRequestMessage request = requestBuilder.Build();
 
-        (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
+        (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -337,9 +337,9 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancel = default)
+    public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(async k => await this.RemoveAsync(collectionName, k, cancel).ConfigureAwait(false))).ConfigureAwait(false);
+        await Task.WhenAll(keys.Select(async k => await this.RemoveAsync(collectionName, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -349,7 +349,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancel = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Searching top {0} nearest vectors", limit);
         Verify.NotNull(embedding, "The given vector is NULL");
@@ -364,7 +364,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
             WithVector = withEmbeddings
         }.Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancel).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         GraphResponse? data = JsonSerializer.Deserialize<GraphResponse>(responseContent, s_jsonSerializerOptions);
@@ -394,7 +394,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
             string additionalMetadata = json["sk_additional_metadata"]!.GetValue<string>();
             string key = json["sk_id"]!.GetValue<string>();
             DateTime? timestamp = json["sk_timestamp"] != null
-                ? Convert.ToDateTime(json["sk_timestamp"]!.GetValue<string>(), CultureInfo.InvariantCulture) 
+                ? Convert.ToDateTime(json["sk_timestamp"]!.GetValue<string>(), CultureInfo.InvariantCulture)
                 : null;
 
             MemoryRecord memoryRecord = MemoryRecord.LocalRecord(
@@ -423,7 +423,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         Embedding<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
         IAsyncEnumerable<(MemoryRecord, double)> results = this.GetNearestMatchesAsync(
             collectionName,
@@ -431,9 +431,9 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
             minRelevanceScore: minRelevanceScore,
             limit: 1,
             withEmbeddings: withEmbedding,
-            cancel: cancel);
+            cancellationToken: cancellationToken);
 
-        (MemoryRecord, double) record = await results.FirstOrDefaultAsync(cancel).ConfigureAwait(false);
+        (MemoryRecord, double) record = await results.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         return (record.Item1, record.Item2);
     }
