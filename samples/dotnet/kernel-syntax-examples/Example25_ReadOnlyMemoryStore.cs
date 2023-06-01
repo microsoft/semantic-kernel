@@ -3,12 +3,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
+
+#pragma warning disable CA2201 // System.Exception is not sufficiently specific - this is a sample
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
 // ReSharper disable once InconsistentNaming
 /// <summary>
@@ -43,7 +49,7 @@ public static class Example25_ReadOnlyMemoryStore
 
     private sealed class ReadOnlyMemoryStore : IMemoryStore
     {
-        private readonly IEnumerable<MemoryRecord>? _memoryRecords = null;
+        private readonly MemoryRecord[]? _memoryRecords = null;
         private readonly int _vectorSize = 3;
 
         public ReadOnlyMemoryStore(string valueString)
@@ -52,7 +58,6 @@ public static class Example25_ReadOnlyMemoryStore
             s_jsonVectorEntries = s_jsonVectorEntries.Replace(" ", string.Empty, StringComparison.Ordinal);
             this._memoryRecords = JsonSerializer.Deserialize<MemoryRecord[]>(valueString);
 
-#pragma warning disable CA2201 // System.Exception is not sufficiently specific - this is a sample
             if (this._memoryRecords == null)
             {
                 throw new Exception("Unable to deserialize memory records");
@@ -80,10 +85,19 @@ public static class Example25_ReadOnlyMemoryStore
             return Task.FromResult(this._memoryRecords?.FirstOrDefault(x => x.Key == key));
         }
 
-        public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            return this._memoryRecords?.Where(x => keys.Contains(x.Key)).ToAsyncEnumerable() ?? AsyncEnumerable.Empty<MemoryRecord>();
+            if (this._memoryRecords is not null)
+            {
+                foreach (var memoryRecord in this._memoryRecords)
+                {
+                    if (keys.Contains(memoryRecord.Key))
+                    {
+                        yield return memoryRecord;
+                    }
+                }
+            }
         }
 
         public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
@@ -95,22 +109,27 @@ public static class Example25_ReadOnlyMemoryStore
             bool withEmbedding = false, CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            return await this.GetNearestMatchesAsync(
+            await foreach (var item in this.GetNearestMatchesAsync(
                 collectionName: collectionName,
                 embedding: embedding,
                 limit: 1,
                 minRelevanceScore: minRelevanceScore,
                 withEmbeddings: withEmbedding,
-                cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken);
+                cancellationToken: cancellationToken).ConfigureAwait(false))
+            {
+                return item;
+            }
+
+            return default;
         }
 
-        public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit,
-            double minRelevanceScore = 0, bool withEmbeddings = false, CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit,
+            double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            if (this._memoryRecords == null || !this._memoryRecords.Any())
+            if (this._memoryRecords == null || this._memoryRecords.Length == 0)
             {
-                return AsyncEnumerable.Empty<(MemoryRecord, double)>();
+                yield break;
             }
 
             if (embedding.Count != this._vectorSize)
@@ -118,14 +137,11 @@ public static class Example25_ReadOnlyMemoryStore
                 throw new Exception($"Embedding vector size {embedding.Count} does not match expected size of {this._vectorSize}");
             }
 
-            EmbeddingReadOnlySpan<float> embeddingSpan = new(embedding.AsReadOnlySpan());
-
             TopNCollection<MemoryRecord> embeddings = new(limit);
 
             foreach (var item in this._memoryRecords)
             {
-                EmbeddingReadOnlySpan<float> itemSpan = new(item.Embedding.AsReadOnlySpan());
-                double similarity = embeddingSpan.CosineSimilarity(itemSpan);
+                double similarity = embedding.AsReadOnlySpan().CosineSimilarity(item.Embedding.AsReadOnlySpan());
                 if (similarity >= minRelevanceScore)
                 {
                     embeddings.Add(new(item, similarity));
@@ -134,9 +150,11 @@ public static class Example25_ReadOnlyMemoryStore
 
             embeddings.SortByScore();
 
-            return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
+            foreach (var item in embeddings)
+            {
+                yield return (item.Value, item.Score.Value);
+            }
         }
-#pragma warning restore CA2201
 
         public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
         {
