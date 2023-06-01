@@ -70,7 +70,7 @@ public sealed class QdrantFilter : IValidatable
         }
     }
 
-    public sealed class RangeCondition : Condition
+    public sealed class RangeCondition : Condition, IValidatable
     {
         [JsonPropertyName("range")]
         public Range? Range { get; set; }
