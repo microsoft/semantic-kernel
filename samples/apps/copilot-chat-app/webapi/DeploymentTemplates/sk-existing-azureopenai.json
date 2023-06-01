@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "4839684037842675002"
+      "templateHash": "4414214024449267703"
     }
   },
   "parameters": {
@@ -163,7 +163,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "15747785251033980045"
+              "templateHash": "13834272519683618494"
             }
           },
           "parameters": {
@@ -376,145 +376,152 @@
               "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('asp-{0}-skweb', variables('uniqueName')))]",
                 "httpsOnly": true,
-                "virtualNetworkSubnetId": "[reference(resourceId('Microsoft.Network/virtualNetworks', 'vnet-semantickernel'), '2021-05-01').subnets[0].id]",
-                "siteConfig": {
-                  "alwaysOn": true,
-                  "cors": {
-                    "allowedOrigins": [
-                      "http://localhost:3000"
-                    ],
-                    "supportCredentials": true
+                "virtualNetworkSubnetId": "[reference(resourceId('Microsoft.Network/virtualNetworks', 'vnet-semantickernel'), '2021-05-01').subnets[0].id]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', format('asp-{0}-skweb', variables('uniqueName')))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'vnet-semantickernel')]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2022-09-01",
+              "name": "[format('{0}/{1}', format('app-{0}-skweb', variables('uniqueName')), 'web')]",
+              "properties": {
+                "alwaysOn": true,
+                "cors": {
+                  "allowedOrigins": [
+                    "http://localhost:3000"
+                  ],
+                  "supportCredentials": true
+                },
+                "detailedErrorLoggingEnabled": true,
+                "minTlsVersion": "1.2",
+                "netFrameworkVersion": "v6.0",
+                "use32BitWorkerProcess": false,
+                "vnetRouteAllEnabled": true,
+                "appSettings": [
+                  {
+                    "name": "AIService:Type",
+                    "value": "[parameters('aiService')]"
                   },
-                  "detailedErrorLoggingEnabled": true,
-                  "minTlsVersion": "1.2",
-                  "netFrameworkVersion": "v6.0",
-                  "use32BitWorkerProcess": false,
-                  "vnetRouteAllEnabled": true,
-                  "appSettings": [
-                    {
-                      "name": "AIService:Type",
-                      "value": "[parameters('aiService')]"
-                    },
-                    {
-                      "name": "AIService:Endpoint",
-                      "value": "[if(parameters('deployNewAzureOpenAI'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').endpoint, parameters('endpoint'))]"
-                    },
-                    {
-                      "name": "AIService:Key",
-                      "value": "[if(parameters('deployNewAzureOpenAI'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').key1, parameters('apiKey'))]"
-                    },
-                    {
-                      "name": "AIService:Models:Completion",
-                      "value": "[parameters('completionModel')]"
-                    },
-                    {
-                      "name": "AIService:Models:Embedding",
-                      "value": "[parameters('embeddingModel')]"
-                    },
-                    {
-                      "name": "AIService:Models:Planner",
-                      "value": "[parameters('plannerModel')]"
-                    },
-                    {
-                      "name": "Authorization:Type",
-                      "value": "[if(empty(parameters('semanticKernelApiKey')), 'None', 'ApiKey')]"
-                    },
-                    {
-                      "name": "Authorization:ApiKey",
-                      "value": "[parameters('semanticKernelApiKey')]"
-                    },
-                    {
-                      "name": "ChatStore:Type",
-                      "value": "[if(parameters('deployCosmosDB'), 'cosmos', 'volatile')]"
-                    },
-                    {
-                      "name": "ChatStore:Cosmos:Database",
-                      "value": "CopilotChat"
-                    },
-                    {
-                      "name": "ChatStore:Cosmos:ChatSessionsContainer",
-                      "value": "chatsessions"
-                    },
-                    {
-                      "name": "ChatStore:Cosmos:ChatMessagesContainer",
-                      "value": "chatmessages"
-                    },
-                    {
-                      "name": "ChatStore:Cosmos:ConnectionString",
-                      "value": "[if(parameters('deployCosmosDB'), listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(format('cosmos-{0}', variables('uniqueName')))), '2023-04-15').connectionStrings[0].connectionString, '')]"
-                    },
-                    {
-                      "name": "MemoriesStore:Type",
-                      "value": "[if(parameters('deployQdrant'), 'Qdrant', 'Volatile')]"
-                    },
-                    {
-                      "name": "MemoriesStore:Qdrant:Host",
-                      "value": "[if(parameters('deployQdrant'), format('https://{0}', reference(resourceId('Microsoft.Web/sites', format('app-{0}-qdrant', variables('uniqueName'))), '2022-09-01').defaultHostName), '')]"
-                    },
-                    {
-                      "name": "MemoriesStore:Qdrant:Port",
-                      "value": "443"
-                    },
-                    {
-                      "name": "AzureSpeech:Region",
-                      "value": "[variables('location')]"
-                    },
-                    {
-                      "name": "AzureSpeech:Key",
-                      "value": "[if(parameters('deploySpeechServices'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('cog-{0}', variables('uniqueName'))), '2022-12-01').key1, '')]"
-                    },
-                    {
-                      "name": "AllowedOrigins",
-                      "value": "[[*]"
-                    },
-                    {
-                      "name": "Kestrel:Endpoints:Https:Url",
-                      "value": "https://localhost:443"
-                    },
-                    {
-                      "name": "Logging:LogLevel:Default",
-                      "value": "Warning"
-                    },
-                    {
-                      "name": "Logging:LogLevel:SemanticKernel.Service",
-                      "value": "Warning"
-                    },
-                    {
-                      "name": "Logging:LogLevel:Microsoft.SemanticKernel",
-                      "value": "Warning"
-                    },
-                    {
-                      "name": "Logging:LogLevel:Microsoft.AspNetCore.Hosting",
-                      "value": "Warning"
-                    },
-                    {
-                      "name": "Logging:LogLevel:Microsoft.Hosting.Lifetimel",
-                      "value": "Warning"
-                    },
-                    {
-                      "name": "ApplicationInsights:ConnectionString",
-                      "value": "[reference(resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName'))), '2020-02-02').ConnectionString]"
-                    },
-                    {
-                      "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                      "value": "[reference(resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName'))), '2020-02-02').ConnectionString]"
-                    },
-                    {
-                      "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
-                      "value": "~2"
-                    }
-                  ]
-                }
+                  {
+                    "name": "AIService:Endpoint",
+                    "value": "[if(parameters('deployNewAzureOpenAI'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').endpoint, parameters('endpoint'))]"
+                  },
+                  {
+                    "name": "AIService:Key",
+                    "value": "[if(parameters('deployNewAzureOpenAI'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName'))), '2022-12-01').key1, parameters('apiKey'))]"
+                  },
+                  {
+                    "name": "AIService:Models:Completion",
+                    "value": "[parameters('completionModel')]"
+                  },
+                  {
+                    "name": "AIService:Models:Embedding",
+                    "value": "[parameters('embeddingModel')]"
+                  },
+                  {
+                    "name": "AIService:Models:Planner",
+                    "value": "[parameters('plannerModel')]"
+                  },
+                  {
+                    "name": "Authorization:Type",
+                    "value": "[if(empty(parameters('semanticKernelApiKey')), 'None', 'ApiKey')]"
+                  },
+                  {
+                    "name": "Authorization:ApiKey",
+                    "value": "[parameters('semanticKernelApiKey')]"
+                  },
+                  {
+                    "name": "ChatStore:Type",
+                    "value": "[if(parameters('deployCosmosDB'), 'cosmos', 'volatile')]"
+                  },
+                  {
+                    "name": "ChatStore:Cosmos:Database",
+                    "value": "CopilotChat"
+                  },
+                  {
+                    "name": "ChatStore:Cosmos:ChatSessionsContainer",
+                    "value": "chatsessions"
+                  },
+                  {
+                    "name": "ChatStore:Cosmos:ChatMessagesContainer",
+                    "value": "chatmessages"
+                  },
+                  {
+                    "name": "ChatStore:Cosmos:ConnectionString",
+                    "value": "[if(parameters('deployCosmosDB'), listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(format('cosmos-{0}', variables('uniqueName')))), '2023-04-15').connectionStrings[0].connectionString, '')]"
+                  },
+                  {
+                    "name": "MemoriesStore:Type",
+                    "value": "[if(parameters('deployQdrant'), 'Qdrant', 'Volatile')]"
+                  },
+                  {
+                    "name": "MemoriesStore:Qdrant:Host",
+                    "value": "[if(parameters('deployQdrant'), format('https://{0}', reference(resourceId('Microsoft.Web/sites', format('app-{0}-qdrant', variables('uniqueName'))), '2022-09-01').defaultHostName), '')]"
+                  },
+                  {
+                    "name": "MemoriesStore:Qdrant:Port",
+                    "value": "443"
+                  },
+                  {
+                    "name": "AzureSpeech:Region",
+                    "value": "[variables('location')]"
+                  },
+                  {
+                    "name": "AzureSpeech:Key",
+                    "value": "[if(parameters('deploySpeechServices'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', format('cog-{0}', variables('uniqueName'))), '2022-12-01').key1, '')]"
+                  },
+                  {
+                    "name": "AllowedOrigins",
+                    "value": "[[*]"
+                  },
+                  {
+                    "name": "Kestrel:Endpoints:Https:Url",
+                    "value": "https://localhost:443"
+                  },
+                  {
+                    "name": "Logging:LogLevel:Default",
+                    "value": "Warning"
+                  },
+                  {
+                    "name": "Logging:LogLevel:SemanticKernel.Service",
+                    "value": "Warning"
+                  },
+                  {
+                    "name": "Logging:LogLevel:Microsoft.SemanticKernel",
+                    "value": "Warning"
+                  },
+                  {
+                    "name": "Logging:LogLevel:Microsoft.AspNetCore.Hosting",
+                    "value": "Warning"
+                  },
+                  {
+                    "name": "Logging:LogLevel:Microsoft.Hosting.Lifetimel",
+                    "value": "Warning"
+                  },
+                  {
+                    "name": "ApplicationInsights:ConnectionString",
+                    "value": "[reference(resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName'))), '2020-02-02').ConnectionString]"
+                  },
+                  {
+                    "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                    "value": "[reference(resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName'))), '2020-02-02').ConnectionString]"
+                  },
+                  {
+                    "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                    "value": "~2"
+                  }
+                ]
               },
               "dependsOn": [
                 "[resourceId('Microsoft.Insights/components', format('appi-{0}', variables('uniqueName')))]",
-                "[resourceId('Microsoft.Web/serverfarms', format('asp-{0}-skweb', variables('uniqueName')))]",
                 "[resourceId('Microsoft.Web/sites', format('app-{0}-qdrant', variables('uniqueName')))]",
+                "[resourceId('Microsoft.Web/sites', format('app-{0}-skweb', variables('uniqueName')))]",
                 "[resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(format('cosmos-{0}', variables('uniqueName'))))]",
-                "[resourceId('Microsoft.OperationalInsights/workspaces', format('la-{0}', variables('uniqueName')))]",
                 "[resourceId('Microsoft.CognitiveServices/accounts', format('ai-{0}', variables('uniqueName')))]",
-                "[resourceId('Microsoft.CognitiveServices/accounts', format('cog-{0}', variables('uniqueName')))]",
-                "[resourceId('Microsoft.Network/virtualNetworks', 'vnet-semantickernel')]"
+                "[resourceId('Microsoft.CognitiveServices/accounts', format('cog-{0}', variables('uniqueName')))]"
               ]
             },
             {
@@ -526,7 +533,8 @@
                 "packageUri": "[parameters('packageUri')]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', format('app-{0}-skweb', variables('uniqueName')))]"
+                "[resourceId('Microsoft.Web/sites', format('app-{0}-skweb', variables('uniqueName')))]",
+                "[resourceId('Microsoft.Web/sites/config', format('app-{0}-skweb', variables('uniqueName')), 'web')]"
               ]
             },
             {
@@ -552,7 +560,7 @@
               "name": "[format('{0}/{1}', format('app-{0}-skweb', variables('uniqueName')), 'Microsoft.ApplicationInsights.AzureWebSites')]",
               "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', format('app-{0}-skweb', variables('uniqueName')))]",
-                "[resourceId('Microsoft.Web/sites/virtualNetworkConnections', format('app-{0}-skweb', variables('uniqueName')), 'webSubnetConnection')]"
+                "[resourceId('Microsoft.Web/sites/extensions', format('app-{0}-skweb', variables('uniqueName')), 'MSDeploy')]"
               ]
             },
             {
@@ -768,7 +776,6 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', format('app-{0}-skweb', variables('uniqueName')))]",
-                "[resourceId('Microsoft.Web/sites/extensions', format('app-{0}-skweb', variables('uniqueName')), 'MSDeploy')]",
                 "[resourceId('Microsoft.Network/virtualNetworks', 'vnet-semantickernel')]"
               ]
             },
