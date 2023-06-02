@@ -2,13 +2,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using RepoUtils;
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 /**
  * The following example shows how to plug into SK a custom text completion model.
@@ -28,12 +29,9 @@ public class MyTextCompletionService : ITextCompletion
         });
     }
 
-    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return new List<ITextCompletionStreamingResult>()
-        {
-            new MyTextCompletionStreamingResult()
-        }.ToAsyncEnumerable();
+        yield return new MyTextCompletionStreamingResult();
     }
 }
 
