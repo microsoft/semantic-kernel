@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, List, Optional, Tuple
-from concurrent import futures
-import threading
+from typing import Any, List, Optional, Tuple, Union
 
 import openai
 
@@ -63,7 +61,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
     async def complete_chat_async(
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
-    ) -> str:
+    ) -> Union[str, List[str]]:
         # TODO: tracking on token counts/etc.
         response = await self._send_chat_request(messages, request_settings, False)
 
@@ -82,7 +80,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             text, index = _parse_choices(chunk)
             # if multiple responses are requested, keep track of them
             if request_settings.number_of_responses > 1:
-                completions = [''] * request_settings.number_of_responses
+                completions = [""] * request_settings.number_of_responses
                 completions[index] = text
                 yield completions
             # if only one response is requested, yield it
@@ -91,7 +89,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
-    ) -> str:
+    ) -> Union[str, List[str]]:
         """
         Completes the given prompt.
 
@@ -114,7 +112,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         response = await self._send_chat_request(
             prompt_to_message, chat_settings, False
         )
-        
+
         if len(response.choices) == 1:
             return response.choices[0].message.content
         else:
@@ -139,7 +137,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             text, index = _parse_choices(chunk)
             # if multiple responses are requested, keep track of them
             if request_settings.number_of_responses > 1:
-                completions = [''] * request_settings.number_of_responses
+                completions = [""] * request_settings.number_of_responses
                 completions[index] = text
                 yield completions
             # if only one response is requested, yield it
@@ -222,6 +220,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
         return response
 
+
 # def _parse_choices(choice):
 #     message = ""
 #     if "role" in choice.delta:
@@ -230,14 +229,13 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 #         message += choice.delta.content
 #     yield message
 
+
 def _parse_choices(chunk):
     message = ""
     if "role" in chunk.choices[0].delta:
         message += chunk.choices[0].delta.role + ": "
     if "content" in chunk.choices[0].delta:
         message += chunk.choices[0].delta.content
-    
+
     index = chunk.choices[0].index
     return message, index
-
-

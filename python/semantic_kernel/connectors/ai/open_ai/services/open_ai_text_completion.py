@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Optional
+from typing import Any, List, Optional, Union
 
 import openai
 
@@ -56,7 +56,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
-    ) -> str:
+    ) -> Union[str, List[str]]:
         # TODO: tracking on token counts/etc.
         response = await self._send_completion_request(prompt, request_settings, False)
 
@@ -75,7 +75,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
         async for chunk in response:
             if request_settings.number_of_responses > 1:
                 for choice in chunk.choices:
-                    completions = [''] * request_settings.number_of_responses
+                    completions = [""] * request_settings.number_of_responses
                     completions[choice.index] = choice.text
                     yield completions
             else:

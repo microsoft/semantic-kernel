@@ -52,7 +52,9 @@ class PromptTemplateConfig:
         config.completion.presence_penalty = completion_dict.get("presence_penalty")
         config.completion.frequency_penalty = completion_dict.get("frequency_penalty")
         config.completion.max_tokens = completion_dict.get("max_tokens")
-        config.completion.number_of_responses = completion_dict.get("number_of_responses")
+        config.completion.number_of_responses = completion_dict.get(
+            "number_of_responses"
+        )
         config.completion.stop_sequences = completion_dict.get("stop_sequences", [])
         config.default_services = data.get("default_services", [])
 

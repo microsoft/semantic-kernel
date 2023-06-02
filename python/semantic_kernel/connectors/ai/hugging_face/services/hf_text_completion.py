@@ -1,10 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-import asyncio
 from threading import Thread
-# from multiprocessing import Process
-from typing import Optional
+from typing import List, Optional, Union
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -66,7 +64,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
-    ) -> str:
+    ) -> Union[str, List[str]]:
         try:
             import transformers
 
@@ -77,13 +75,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 pad_token_id=50256,  # EOS token
             )
 
-            # For multiple completion results, we need to use a greedy search
-            do_sample = request_settings.number_of_responses > 1
-            
             results = self.generator(
-                prompt, do_sample=do_sample,
+                prompt,
+                do_sample=True,
                 num_return_sequences=request_settings.number_of_responses,
-                generation_config=generation_config
+                generation_config=generation_config,
             )
 
             completions = list()
@@ -118,6 +114,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     ):
         """
         Streams a text completion using a Hugging Face model.
+        Note that this method does not support multiple responses.
 
         Arguments:
             prompt {str} -- Prompt to complete.
@@ -148,7 +145,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             kwargs = {
                 "num_return_sequences": request_settings.number_of_responses,
                 "generation_config": generation_config,
-                "streamer": streamer
+                "streamer": streamer,
+                "do_sample": True,
             }
 
             # See https://github.com/huggingface/transformers/blob/main/src/transformers/generation/streamers.py#L159
@@ -159,6 +157,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 yield new_text
 
             thread.join()
-            
+
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
