@@ -72,6 +72,7 @@ public class WeaviateMemoryException : SKException
             ErrorCodes.FailedToGetVectorData => "Failed to get vector data",
             ErrorCodes.FailedToRemoveVectorData => "Failed to remove vector data",
             ErrorCodes.CollectionNameConflict => "Naming conflict for the collection name",
+            ErrorCodes.FailedToCreateCollection => "Failed to create the collection",
             _ => $"Unknown error ({errorCode:G})",
         };
 
@@ -83,11 +84,6 @@ public class WeaviateMemoryException : SKException
     /// </summary>
     public enum ErrorCodes
     {
-        /// <summary>
-        ///     Unknown error.
-        /// </summary>
-        UnknownError,
-
         /// <summary>
         ///     Failed to upsert the vector.
         /// </summary>
@@ -115,6 +111,6 @@ public class WeaviateMemoryException : SKException
         ///     both transformed to the class name of SKthiscollection - even though
         ///     semantic kernel would consider them as unique collection names.
         /// </summary>
-        CollectionNameConflict
+        CollectionNameConflict,
     }
 }

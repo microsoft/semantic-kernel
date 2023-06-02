@@ -6,7 +6,7 @@ using System.Net.Http;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
 
 // ReSharper disable once ClassCannotBeInstantiated
-internal sealed class GraphGetRequest
+internal sealed class CreateGraphRequest
 {
 #pragma warning disable CS8618
     public string Class { get; set; }

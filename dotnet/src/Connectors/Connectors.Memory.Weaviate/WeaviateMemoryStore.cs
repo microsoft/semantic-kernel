@@ -36,6 +36,12 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     // https://weaviate.io/developers/weaviate/configuration/schema-configuration#class
     private static readonly Regex s_classNameRegEx = new("[^0-9a-zA-Z]+", RegexOptions.Compiled);
 
+    /// <summary>
+    /// This is used as a prefix for Weaviate class names to indicate that they are
+    /// owned, controlled and managed by Semantic Kernel.
+    /// </summary>
+    private const string ClassNamePrefix = "SK";
+
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -59,21 +65,10 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         this._log = logger ?? NullLogger<WeaviateMemoryStore>.Instance;
         if (httpClient == null)
         {
-            if (string.IsNullOrEmpty(apiKey))
+            this._httpClient = new();
+            if (!string.IsNullOrEmpty(apiKey))
             {
-                this._httpClient = new();
-            }
-            else
-            {
-                this._httpClient = new()
-                {
-                    DefaultRequestHeaders =
-                    {
-                        {
-                            "authorization", apiKey
-                        }
-                    }
-                };
+                this._httpClient.DefaultRequestHeaders.Add("authorization", apiKey);
             }
 
             // If not passed an HttpClient, then it is the responsibility of this class
@@ -154,7 +149,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
                 // ReSharper disable once CommentTypo
                 // Check that we don't have an accidental conflict.
                 // For example a collectionName of '__this_collection' and 'this_collection' are
-                // both transformed to the class name of SKthiscollection - even though the external
+                // both transformed to the class name of <classNamePrefix>thiscollection - even though the external
                 // system could consider them as unique collection names.
                 if (existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
                 {
@@ -332,7 +327,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         }
         catch (HttpRequestException e)
         {
-            this._log.LogError(e, "Vector delete request failed: {0}", e.Message);
+            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToRemoveVectorData, "Vector delete request failed", e);
         }
     }
 
@@ -355,7 +350,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         Verify.NotNull(embedding, "The given vector is NULL");
         string className = ToWeaviateFriendlyClassName(collectionName);
 
-        using HttpRequestMessage request = new GraphGetRequest
+        using HttpRequestMessage request = new CreateGraphRequest
         {
             Class = className,
             Vector = embedding.Vector,
@@ -366,55 +361,66 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-
-        GraphResponse? data = JsonSerializer.Deserialize<GraphResponse>(responseContent, s_jsonSerializerOptions);
-
-        if (data == null)
-        {
-            this._log.LogWarning("Unable to deserialize Search response");
-            yield break;
-        }
-
         List<(MemoryRecord, double)> result = new();
-        JsonArray jsonArray = data.Data["Get"]![className]!.AsArray();
 
-        // ReSharper disable once LoopCanBeConvertedToQuery
-        foreach (JsonNode? json in jsonArray)
+        try
         {
-            string id = json!["_additional"]!["id"]!.GetValue<string>();
-            Embedding<float> vector = Embedding<float>.Empty;
-            if (json["_additional"]!["vector"] != null)
+            GraphResponse? data = JsonSerializer.Deserialize<GraphResponse>(responseContent, s_jsonSerializerOptions);
+
+            if (data == null)
             {
-                IEnumerable<float> floats = json["_additional"]!["vector"]!.AsArray().Select(a => a!.GetValue<float>());
-                vector = new(floats);
+                this._log.LogWarning("Unable to deserialize Search response");
+                yield break;
             }
 
-            string text = json["sk_text"]!.GetValue<string>();
-            string description = json["sk_description"]!.GetValue<string>();
-            string additionalMetadata = json["sk_additional_metadata"]!.GetValue<string>();
-            string key = json["sk_id"]!.GetValue<string>();
-            DateTime? timestamp = json["sk_timestamp"] != null
-                ? Convert.ToDateTime(json["sk_timestamp"]!.GetValue<string>(), CultureInfo.InvariantCulture)
-                : null;
+            JsonArray jsonArray = data.Data["Get"]![className]!.AsArray();
 
-            MemoryRecord memoryRecord = MemoryRecord.LocalRecord(
-                id,
-                text,
-                description,
-                vector,
-                additionalMetadata,
-                key,
-                timestamp);
-
-            double distance = json["_additional"]!["distance"]!.GetValue<double>();
-
-            result.Add((memoryRecord, distance));
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (JsonNode? json in jsonArray)
+            {
+                MemoryRecord memoryRecord = DeserializeToMemoryRecord(json);
+                double distance = json!["_additional"]!["distance"]!.GetValue<double>();
+                result.Add((memoryRecord, distance));
+            }
+        }
+        catch (Exception exception)
+        {
+            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToGetVectorData, "Unable to deserialize Weaviate object", exception);
         }
 
         foreach ((MemoryRecord, double) kv in result)
         {
             yield return kv;
         }
+    }
+
+    private static MemoryRecord DeserializeToMemoryRecord(JsonNode? json)
+    {
+        string id = json!["_additional"]!["id"]!.GetValue<string>();
+        Embedding<float> vector = Embedding<float>.Empty;
+        if (json["_additional"]!["vector"] != null)
+        {
+            IEnumerable<float> floats = json["_additional"]!["vector"]!.AsArray().Select(a => a!.GetValue<float>());
+            vector = new(floats);
+        }
+
+        string text = json["sk_text"]!.GetValue<string>();
+        string description = json["sk_description"]!.GetValue<string>();
+        string additionalMetadata = json["sk_additional_metadata"]!.GetValue<string>();
+        string key = json["sk_id"]!.GetValue<string>();
+        DateTime? timestamp = json["sk_timestamp"] != null
+            ? Convert.ToDateTime(json["sk_timestamp"]!.GetValue<string>(), CultureInfo.InvariantCulture)
+            : null;
+
+        MemoryRecord memoryRecord = MemoryRecord.LocalRecord(
+            id,
+            text,
+            description,
+            vector,
+            additionalMetadata,
+            key,
+            timestamp);
+        return memoryRecord;
     }
 
     /// <inheritdoc />
@@ -447,14 +453,14 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     // Convert a collectionName to a valid Weaviate class name
     private static string ToWeaviateFriendlyClassName(string collectionName)
     {
-        // Prefix class names with SK to ensure proper case for Weaviate Classes
-        return $"SK{s_classNameRegEx.Replace(collectionName, string.Empty)}";
+        // Prefix class names with to ensure proper case for Weaviate Classes
+        return $"{ClassNamePrefix}{s_classNameRegEx.Replace(collectionName, string.Empty)}";
     }
 
     // Check to see if a class name is possibly a semantic kernel collection
     private static bool IsPossibleSemanticKernelCollection(string collectionName)
     {
-        if (!collectionName.StartsWith("SK", StringComparison.Ordinal))
+        if (!collectionName.StartsWith(ClassNamePrefix, StringComparison.Ordinal))
         {
             return false;
         }
