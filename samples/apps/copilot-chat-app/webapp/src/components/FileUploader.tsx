@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { makeStyles } from '@fluentui/react-components';
-import { Input } from '@fluentui/react-northstar';
 import React, { forwardRef } from 'react';
 
 const useClasses = makeStyles({
@@ -39,8 +38,8 @@ export const FileUploader: React.FC<FileUploaderProps> = forwardRef<HTMLInputEle
         );
 
         return (
-            <Input
-                inputRef={ref}
+            <input
+                ref={ref}
                 type="file"
                 id="fileInput"
                 className={classes.root}
