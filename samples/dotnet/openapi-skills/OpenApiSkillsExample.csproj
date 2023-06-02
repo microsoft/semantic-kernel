@@ -1,16 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
-    <UserSecretsId>1fd3b652-7d77-44f6-ba67-f6f7ffeb330b</UserSecretsId>
-  </PropertyGroup>
-  <Import Project="$(RepoRoot)/dotnet/Directory.Build.targets" />
-  <Import Project="$(RepoRoot)/dotnet/Directory.Build.props" />
-
   <PropertyGroup>
     <RootNamespace></RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
     <OutputType>Exe</OutputType>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,8 +30,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="0.14.547.1-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.OpenAPI" Version="0.14.547.1-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="0.15.230531.5-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.OpenAPI" Version="0.15.230531.5-preview" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,5 +39,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
 </Project>

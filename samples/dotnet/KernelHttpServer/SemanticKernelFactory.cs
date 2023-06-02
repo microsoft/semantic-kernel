@@ -46,17 +46,15 @@ internal static class SemanticKernelFactory
         switch (config.CompletionConfig.AIService)
         {
             case AIService.OpenAI:
-                builder.WithOpenAITextCompletionService(
-                    config.CompletionConfig.DeploymentOrModelId,
-                    config.CompletionConfig.Key,
-                    config.CompletionConfig.ServiceId);
+                builder.WithOpenAIChatCompletionService(
+                    modelId: config.CompletionConfig.DeploymentOrModelId,
+                    apiKey: config.CompletionConfig.Key);
                 break;
             case AIService.AzureOpenAI:
-                builder.WithAzureTextCompletionService(
-                    config.CompletionConfig.DeploymentOrModelId,
-                    config.CompletionConfig.Endpoint,
-                    config.CompletionConfig.Key,
-                    serviceId: config.CompletionConfig.ServiceId);
+                builder.WithAzureChatCompletionService(
+                    deploymentName: config.CompletionConfig.DeploymentOrModelId,
+                    endpoint: config.CompletionConfig.Endpoint,
+                    apiKey: config.CompletionConfig.Key);
                 break;
             default:
                 break;
@@ -68,16 +66,14 @@ internal static class SemanticKernelFactory
             {
                 case AIService.OpenAI:
                     builder.WithOpenAITextEmbeddingGenerationService(
-                        config.EmbeddingConfig.DeploymentOrModelId,
-                        config.EmbeddingConfig.Key,
-                        serviceId: config.EmbeddingConfig.ServiceId);
+                        modelId: config.EmbeddingConfig.DeploymentOrModelId,
+                        apiKey: config.EmbeddingConfig.Key);
                     break;
                 case AIService.AzureOpenAI:
                     builder.WithAzureTextEmbeddingGenerationService(
-                        config.EmbeddingConfig.DeploymentOrModelId,
-                        config.EmbeddingConfig.Endpoint,
-                        config.EmbeddingConfig.Key,
-                        serviceId: config.EmbeddingConfig.ServiceId);
+                        deploymentName: config.EmbeddingConfig.DeploymentOrModelId,
+                        endpoint: config.EmbeddingConfig.Endpoint,
+                        apiKey: config.EmbeddingConfig.Key);
                     break;
                 default:
                     break;

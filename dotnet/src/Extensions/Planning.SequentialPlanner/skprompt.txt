@@ -77,7 +77,7 @@ To create a plan, follow these steps:
     <function.AuthorAbility.Summarize/>
     <function.Magician.TranslateTo translate_to_language="French" setContextVariable="TRANSLATED_SUMMARY"/>
     <function._GLOBAL_FUNCTIONS_.GetEmailAddress input="John Doe" setContextVariable="EMAIL_ADDRESS"/>
-    <function._GLOBAL_FUNCTIONS_.SendEmail input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
+    <function._GLOBAL_FUNCTIONS_.SendEmail input="$TRANSLATED_SUMMARY" recipient="$EMAIL_ADDRESS"/>
 </plan><!-- END -->
 
 [AVAILABLE FUNCTIONS]
