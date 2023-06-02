@@ -373,7 +373,8 @@
                 "alwaysOn": true,
                 "cors": {
                   "allowedOrigins": [
-                    "http://localhost:3000"
+                    "http://localhost:3000",
+                    "https://localhost:3000"
                   ],
                   "supportCredentials": true
                 },
