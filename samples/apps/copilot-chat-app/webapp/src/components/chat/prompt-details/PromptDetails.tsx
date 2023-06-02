@@ -34,7 +34,9 @@ export const PromptDetails: React.FC<IPromptDetailsProps> = ({ message }) => {
                     <DialogContent>
                         {(message.prompt === undefined || message.prompt === '')
                             ? 'Empty'
-                            : message.prompt.split('\n').map((paragraph) => <p>{paragraph}</p>)
+                            : message.prompt.split('\n').map(
+                                (paragraph, idx) => <p key={'prompt-details-'+idx}>{paragraph}</p>
+                            )
                         }
                     </DialogContent>
                     <DialogActions>
