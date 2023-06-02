@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount, useMsal } from '@azure/msal-react';
+import { useMsal } from '@azure/msal-react';
 import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
 import { RootState } from '../redux/app/store';
@@ -32,8 +32,8 @@ import { IChatUser } from './models/ChatUser';
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
-    const { instance, accounts, inProgress } = useMsal();
-    const account = useAccount(accounts[0] || {});
+    const { instance, inProgress } = useMsal();
+    const account = instance.getActiveAccount();
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
     const connectors = useConnectors();
