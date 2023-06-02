@@ -38,7 +38,7 @@ public class AppInsightsTelemetryService : ITelemetryService
             { "success", success.ToString() },
         };
 
-        this._telemetryClient.TrackEvent("TrackSkillFunction", properties);
+        this._telemetryClient.TrackEvent("SkillFunction", properties);
     }
 
     /// <summary>
