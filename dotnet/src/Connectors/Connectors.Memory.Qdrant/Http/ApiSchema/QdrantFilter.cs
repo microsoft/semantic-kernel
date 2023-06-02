@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
@@ -8,7 +9,12 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
 public sealed class QdrantFilter : IValidatable
 {
+    // Coping with serializing properties of derived classes
+    // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-6-0#serialize-properties-of-derived-classes
     [JsonPropertyName("must")]
+    public List<object> SerializableConditions => this.Conditions.Cast<object>().ToList();
+
+    [JsonIgnore]
     public List<Condition> Conditions { get; set; } = new();
 
     public void Validate()
@@ -132,18 +138,23 @@ public sealed class QdrantFilter : IValidatable
                 "No range conditions are specified");
         }
     }
+
     public class Match : IValidatable
     {
         [JsonPropertyName("value")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public object? Value { get; set; }
 
         [JsonPropertyName("text")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public object? Text { get; set; }
 
         [JsonPropertyName("any")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<object>? Any { get; set; }
 
         [JsonPropertyName("except")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<object>? Except { get; set; }
 
         public void Validate()
