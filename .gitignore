@@ -407,6 +407,7 @@ FodyWeavers.xsd
 *.cer
 *.crt
 *.key
+*.pem
 
 .env
 certs/
