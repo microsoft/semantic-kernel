@@ -16,8 +16,10 @@ public class Config {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Config.class);
 
-    public static final String OPEN_AI_CONF_PROPERTIES = "samples/java/semantickernel-samples/conf.openai.properties";
-    public static final String AZURE_CONF_PROPERTIES = "samples/java/semantickernel-samples/conf.azure.properties";
+    public static final String OPEN_AI_CONF_PROPERTIES =
+            System.getProperty("OPENAI_CONF_PROPERITES","samples/java/semantickernel-samples/conf.openai.properties");
+    public static final String AZURE_CONF_PROPERTIES =
+            System.getProperty("AZURE_CONF_PROPERTIES", "samples/java/semantickernel-samples/conf.azure.properties");
 
 
     public static String getOpenAIKey(String conf) {
@@ -35,7 +37,7 @@ public class Config {
             props.load(fis);
             return props.getProperty(propertyName);
         } catch (IOException e) {
-            LOGGER.error("Unable to load config value " + propertyName + " from file" + configFile, e);
+            LOGGER.error("Unable to load config value " + propertyName + " from file" + configFile);
             throw new RuntimeException(configFile + " not configured properly");
         }
     }

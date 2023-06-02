@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
+import com.microsoft.semantickernel.memory.MemoryConfiguration;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.*;
@@ -36,13 +37,13 @@ public class DefaultKernel implements Kernel {
     private final KernelConfig kernelConfig;
     private final DefaultSkillCollection defaultSkillCollection;
     private final PromptTemplateEngine promptTemplateEngine;
-    private MemoryStore memoryStore;
+    private SemanticTextMemory memory;
 
     @Inject
     public DefaultKernel(
             KernelConfig kernelConfig,
             PromptTemplateEngine promptTemplateEngine,
-            MemoryStore memoryStore) {
+            SemanticTextMemory memory) {
         if (kernelConfig == null) {
             throw new IllegalArgumentException();
         }
@@ -50,7 +51,7 @@ public class DefaultKernel implements Kernel {
         this.kernelConfig = kernelConfig;
         this.promptTemplateEngine = promptTemplateEngine;
         this.defaultSkillCollection = new DefaultSkillCollection();
-        this.memoryStore = memoryStore;
+        this.memory = memory;
 
         kernelConfig.getSkills().forEach(this::registerSemanticFunction);
     }
@@ -185,13 +186,12 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public MemoryStore getMemoryStore() {
-        return memoryStore;
+    public SemanticTextMemory getMemory() {
+        return memory;
     }
 
-    @Override
     public void registerMemory(@Nonnull SemanticTextMemory memory) {
-        throw new NotSupportedException("Not implemented");
+        this.memory = memory;
     }
 
     @Override
@@ -236,6 +236,7 @@ public class DefaultKernel implements Kernel {
         public Kernel build(
                 KernelConfig kernelConfig,
                 @Nullable PromptTemplateEngine promptTemplateEngine,
+                @Nullable SemanticTextMemory memory,
                 @Nullable MemoryStore memoryStore) {
             if (promptTemplateEngine == null) {
                 promptTemplateEngine = new DefaultPromptTemplateEngine();
@@ -247,7 +248,13 @@ public class DefaultKernel implements Kernel {
                         "It is required to set a kernelConfig to build a kernel");
             }
 
-            return new DefaultKernel(kernelConfig, promptTemplateEngine, memoryStore);
+            DefaultKernel kernel = new DefaultKernel(kernelConfig, promptTemplateEngine, memory);
+
+            if (memoryStore != null) {
+                MemoryConfiguration.useMemory(kernel, memoryStore, null);
+            }
+
+            return kernel;
         }
     }
 }
