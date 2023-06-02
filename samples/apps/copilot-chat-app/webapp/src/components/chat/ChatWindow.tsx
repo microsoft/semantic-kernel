@@ -86,19 +86,6 @@ const useClasses = makeStyles({
         alignSelf: 'end',
         ...shorthands.gap(tokens.spacingVerticalS),
     },
-    content: {
-        ...shorthands.gridArea('content'),
-        overflowY: 'auto',
-    },
-    contentOuter: {
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-    },
-    contentInner: {
-        width: '100%',
-    },
 });
 
 export const ChatWindow: React.FC = () => {
@@ -130,9 +117,9 @@ export const ChatWindow: React.FC = () => {
         setIsEditing(!isEditing);
     };
 
-    const [selectedValue, setSelectedValue] = React.useState<TabValue>('chat');
+    const [selectedTab, setSelectedTab] = React.useState<TabValue>('chat');
     const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
-        setSelectedValue(data.value);
+        setSelectedTab(data.value);
     };
 
     const onClose = async () => {
@@ -192,7 +179,7 @@ export const ChatWindow: React.FC = () => {
                             />
                         </PopoverSurface>
                     </Popover>
-                    <TabList selectedValue={selectedValue} onTabSelect={onTabSelect}>
+                    <TabList selectedValue={selectedTab} onTabSelect={onTabSelect}>
                         <Tab id="chat" value="chat">
                             Chat
                         </Tab>
@@ -205,14 +192,8 @@ export const ChatWindow: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className={classes.content}>
-                <div className={classes.contentOuter}>
-                    <div className={classes.contentInner}>
-                        {selectedValue === 'chat' && <ChatRoom />}
-                        {selectedValue === 'files' && <ChatResourceList chatId={selectedId} />}
-                    </div>
-                </div>
-            </div>
+            {selectedTab === 'chat' && <ChatRoom />}
+            {selectedTab === 'files' && <ChatResourceList chatId={selectedId} />}
         </div>
     );
 };

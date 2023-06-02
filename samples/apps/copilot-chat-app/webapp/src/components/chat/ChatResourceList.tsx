@@ -16,6 +16,7 @@ import { DocumentPdfRegular, DocumentTextRegular } from '@fluentui/react-icons';
 import * as React from 'react';
 import { ChatMemorySource } from '../../libs/models/ChatMemorySource';
 import { useChat } from '../../libs/useChat';
+import { timestampToDateString } from '../utils/TextUtils';
 
 const useClasses = makeStyles({
     root: {
@@ -25,7 +26,7 @@ const useClasses = makeStyles({
         backgroundColor: tokens.colorNeutralBackground1,
     },
     tableHeader: {
-        fontWeight: '600',
+        fontWeight: tokens.fontSizeBase600,
     },
 });
 
@@ -52,13 +53,9 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
             url: item.hyperlink,
         },
         createdOn: {
-            label: new Date(item.createdOn).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-            }),
+            label: timestampToDateString(item.createdOn),
             timestamp: item.createdOn,
         },
-        sharedBy: { label: item.sharedBy, status: 'available' },
     }));
 
     const columns = [
@@ -88,7 +85,9 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
                                         <a href={item.name.url}>{item.name.label}</a>
                                     </TableCellLayout>
                                 </TableCell>
-                                <TableCell>{item.createdOn.label}</TableCell>
+                                <TableCell title={new Date(item.createdOn.timestamp).toLocaleString()}>
+                                    {item.createdOn.label}
+                                </TableCell>
                             </TableRow>
                         ))}
                 </TableBody>
