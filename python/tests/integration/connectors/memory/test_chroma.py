@@ -116,6 +116,7 @@ async def test_upsert_and_get_async(memory_record1):
     assert result._additional_metadata == "additional metadata"
     assert result._timestamp == "timestamp"
 
+
 @pytest.mark.asyncio
 async def test_upsert_and_get_async_with_no_embedding(memory_record1):
     memory = ChromaMemoryStore()
