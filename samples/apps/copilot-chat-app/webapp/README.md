@@ -6,17 +6,29 @@ production deployments.
 See [../README.md](../README.md) for complete instructions on setting up and running the application.
 
 ## How to use HTTPS for local development
-If you need to run Copilot Chat with HTTPS, you need to create a certificate and sign it with a Certificate Authority (CA) that is trusted locally by your device and browser. You can do that easily with [mkcert](https://github.com/FiloSottile/mkcert#installation).
+If you want to run Copilot Chat with HTTPS, you need to create a certificate and sign it with a Certificate Authority (CA) that is trusted locally by your device and browser. You can do that easily with [mkcert](https://github.com/FiloSottile/mkcert#installation).
 
 1. From an elevated shell, run
+
+    ### Windows
+    On Windows, use [Chocolatey](https://chocolatey.org/)
     ```
     choco install mkcert
     ```
+
+    ### MacOS
+    On macOS, use [Homebrew](https://brew.sh/)
+    ```
+    brew install mkcert
+    ```
+
+    For installation on other OS and advanced topics (i.e., supported root stores), see the [official mkcert installation guide](https://github.com/FiloSottile/mkcert#installation). 
+
 1. Create a new local CA by running
     ```
     mkcert -install
     ```
-1. Create a new certificate for all hostnames you wish to run the app on. 
+1. Create a new certificate with all hostnames you wish to run the app on. 
     > It is recommend you do this at the /WebApp directory level. 
 
     Run
@@ -34,7 +46,9 @@ If you need to run Copilot Chat with HTTPS, you need to create a certificate and
 
     It will expire on 1 September 2025
     ```
-1. In the [WebApp .env](./.env) file, uncomment lines 11-13 and populate lines 12 and 13 with the certificate and key files generated in the step above.
+
+    > **Warning**: (from the developers of mkcert) the rootCA-key.pem file that mkcert automatically generates gives complete power to intercept secure requests from your machine. Do not share it.
+1. In the WebApp `.env` file, uncomment the following lines and populate with your respective certificate and key files generated in the step above.
     ```
     ...
     # To enable HTTPS, uncomment the following lines
@@ -55,7 +69,7 @@ If you need to run Copilot Chat with HTTPS, you need to create a certificate and
     ...
     ```
 1. Add the same URLs (with ports!) as SPA redirect URIs to your AAD app registration. This can be done in Azure Portal ([https://portal.azure.com](https://ms.portal.azure.com/#home)).
-1. Restart the `webapi` and `WebApp`, and Copilot Chat should be running locally with HTTPS!
+1. Restart the `webapi` and `WebApp`, and Copilot Chat should be running locally with HTTPS.
 
 
 ## Authentication

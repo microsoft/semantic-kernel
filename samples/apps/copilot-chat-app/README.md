@@ -109,7 +109,7 @@ First, let’s set up and verify the back-end API server is running.
       yarn install
       yarn start
       ```
-      > To run the WebApp with HTTPs, see [How to use HTTPS for local development](./WebApp/README.md#how-to-use-https-for-local-development).
+      > To run the WebApp with HTTPs, see the `How to use HTTPS for local development section` in [./WebApp/README.md](./WebApp/README.md).
 
    4. With the back end and front end running, your web browser should automatically launch and navigate to `http://localhost:3000`
       > The first time running the front-end application may take a minute or so to start.
