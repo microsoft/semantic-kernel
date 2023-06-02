@@ -42,7 +42,6 @@ internal static class SemanticKernelExtensions
             IKernel kernel = Kernel.Builder
                 .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
                 .WithMemory(sp.GetRequiredService<ISemanticTextMemory>())
-                .WithConfiguration(sp.GetRequiredService<KernelConfig>())
                 .WithCompletionBackend(sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
                 .WithEmbeddingBackend(sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
                 .Build();
