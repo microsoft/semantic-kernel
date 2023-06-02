@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
 internal sealed class NumberToStringConverter : JsonConverter<string>
 {
     public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -36,3 +37,4 @@ internal sealed class NumberToStringConverter : JsonConverter<string>
         writer.WriteStringValue(@value);
     }
 }
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
