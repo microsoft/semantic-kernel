@@ -95,8 +95,8 @@ class KernelSettings(pdt.BaseSettings):
             return (
                 # First: values passed into __init__
                 init_settings,
-                # # Second: values present in cls.SETTINGS_PATH file if present
-                # yaml_config_source,
+                # Second: values present in cls.SETTINGS_PATH file if present
+                yaml_config_source,
                 # Third: values present in environment variables
                 env_settings,
                 # Finally: values present in file secrets if any
