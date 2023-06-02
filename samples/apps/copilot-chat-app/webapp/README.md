@@ -63,7 +63,7 @@ Option 2: Using [mkcert](https://github.com/FiloSottile/mkcert#installation)
     ```
 1. Create a new certificate with all hostnames you wish to run the app on.
 
-    > It is recommend you do this at the /WebApp directory level.
+    > It is recommend you do this at the /webapp directory level.
 
     Run
 
@@ -88,7 +88,7 @@ Option 2: Using [mkcert](https://github.com/FiloSottile/mkcert#installation)
 
 ### Step 2: Configuring Copilot Chat to use the certificate
 
-1. In the WebApp `.env` file, uncomment the following lines and populate with your respective certificate and key files generated in the step above.
+1. In the webapp `.env` file, uncomment the following lines and populate with your respective certificate and key files generated in the step above.
     ```
     ...
     # To enable HTTPS, uncomment the following lines
@@ -121,7 +121,7 @@ Learn more about it here: https://learn.microsoft.com/en-us/azure/active-directo
 
 Aside from debugging within browsers, you can launch a debug session in Visual Studio.
 
-1. Open the webapp folder (i.e.`/samples/apps/copilot-chat-app/WebApp`) in Visual Studio Code.
+1. Open the webapp folder (i.e.`/samples/apps/copilot-chat-app/webapp`) in Visual Studio Code.
 2. Go to "Run and Debug" and select on the "Launch Edge against localhost".
     > Go [here](https://code.visualstudio.com/docs/typescript/typescript-debugging) to learn more about debugging client-code in Visual Studio Code.
 
@@ -129,7 +129,7 @@ Aside from debugging within browsers, you can launch a debug session in Visual S
 
 By default, we run the app using `yarn start`, which starts a local development server. This enables some additional development behaviors and debuggings features, such as `React.StrictMode`, which will render the app twice to find bugs caused by impure rendering.
 
-If you want to serve a production build of the WebApp (as static files) without any development-specific features,
+If you want to serve a production build of the `webapp` (as static files) without any development-specific features,
 
 1. Run
 
