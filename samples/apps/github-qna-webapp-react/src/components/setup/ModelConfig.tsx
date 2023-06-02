@@ -359,9 +359,12 @@ const getOpenAiModels = async (apiKey: string, onFailureCallback: (errorMessage?
 };
 
 const isValidOpenAIConfig = async (resourceInput: IResourceInput, model: string, modelType: ModelType) => {
-    const modelObject = modelType === ModelType.Completion ? 'completions' : 'embeddings';
+    const modelObject = modelType === ModelType.Completion ? 'chat/completions' : 'embeddings';
     const inputText = 'Tell me a short joke.';
-    const bodyInput = modelType === ModelType.Completion ? { prompt: inputText } : { input: inputText };
+    const bodyInput =
+        modelType === ModelType.Completion
+            ? { messages: [{ role: 'user', content: inputText }] }
+            : { input: inputText };
 
     return fetch('https://api.openai.com/v1/' + modelObject, {
         method: 'POST',
