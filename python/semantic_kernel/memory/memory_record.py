@@ -92,7 +92,7 @@ class MemoryRecord:
         text: str,
         description: Optional[str],
         additional_metadata: Optional[str],
-        embedding: ndarray
+        embedding: ndarray,
     ) -> "MemoryRecord":
         """Create a local record.
 

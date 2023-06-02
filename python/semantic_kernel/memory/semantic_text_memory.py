@@ -62,7 +62,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             text=text,
             description=description,
             additional_metadata=additional_metadata,
-            embedding=embedding
+            embedding=embedding,
         )
 
         await self._storage.upsert_async(collection_name=collection, record=data)
@@ -99,7 +99,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             external_id=external_id,
             source_name=external_source_name,
             description=description,
-            additional_metadata=additional_metadata, 
+            additional_metadata=additional_metadata,
             embedding=embedding,
         )
 

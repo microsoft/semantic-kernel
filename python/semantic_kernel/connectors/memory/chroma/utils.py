@@ -22,7 +22,9 @@ def camel_to_snake(camel_str):
     return snake_str
 
 
-def query_results_to_records(results: "QueryResult", with_embedding: bool) -> List[MemoryRecord]:
+def query_results_to_records(
+    results: "QueryResult", with_embedding: bool
+) -> List[MemoryRecord]:
     # if results has only one record, it will be a list instead of a nested list
     # this is to make sure that results is always a nested list
     # {'ids': ['test_id1'], 'embeddings': [[...]], 'documents': ['sample text1'], 'metadatas': [{...}]}
@@ -33,7 +35,7 @@ def query_results_to_records(results: "QueryResult", with_embedding: bool) -> Li
                 results[k] = [v]
     except IndexError:
         return []
-    
+
     if with_embedding:
         memory_records = [
             (
