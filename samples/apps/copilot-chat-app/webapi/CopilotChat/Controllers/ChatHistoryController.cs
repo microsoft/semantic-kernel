@@ -35,9 +35,9 @@ public class ChatHistoryController : ControllerBase
     /// Initializes a new instance of the <see cref="ChatHistoryController"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="chatSessionRepository">The chat session repository.</param>
-    /// <param name="chatMessageRepository">The chat message repository.</param>
-    /// <param name="chatMemorySourceRepository">The chat memory resource repository.</param>
+    /// <param name="sessionRepository">The chat session repository.</param>
+    /// <param name="messageRepository">The chat message repository.</param>
+    /// <param name="sourceRepository">The chat memory resource repository.</param>
     /// <param name="promptsOptions">The prompts options.</param>
     public ChatHistoryController(
         ILogger<ChatHistoryController> logger,
