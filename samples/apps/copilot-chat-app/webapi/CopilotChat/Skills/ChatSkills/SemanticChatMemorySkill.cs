@@ -80,6 +80,12 @@ public class SemanticChatMemorySkill
             }
         }
 
+        if (string.IsNullOrEmpty(memoryText))
+        {
+            // No relevant memories found
+            return string.Empty;
+        }
+
         return $"Past memories (format: [memory type] <label>: <details>):\n{memoryText.Trim()}";
     }
 }
