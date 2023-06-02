@@ -20,6 +20,7 @@ export interface IChatMessage {
     userId: string;
     content: string;
     id?: string;
+    prompt?: string;
     authorRole: AuthorRoles;
     debug?: string;
     state?: ChatMessageState; // if plan needs approval
