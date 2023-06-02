@@ -17,12 +17,16 @@ export const NewBotMenu: FC = () => {
     const dispatch = useAppDispatch();
     const chat = useChat();
     const fileHandler = useFile();
+    // It needs to keep the menu open keep the FileUploader reference
+    // when the file uploader is clicked.
+    const [isNewBotMenuOpen, setIsNewBotMenuOpen] = useState(false);
     const [isJoiningBot, setIsJoiningBot] = useState(false);
 
     const fileUploaderRef = useRef<HTMLInputElement>(null);
 
     const onAddChat = () => {
         chat.createChat();
+        setIsNewBotMenuOpen(false);
     };
 
     const onUpload = useCallback(
@@ -34,6 +38,7 @@ export const NewBotMenu: FC = () => {
                         addAlert({ message: `Failed to parse uploaded file. ${error.message}`, type: AlertType.Error }),
                     ),
                 );
+            setIsNewBotMenuOpen(false);
         },
         [fileHandler, chat, dispatch],
     );
@@ -43,17 +48,19 @@ export const NewBotMenu: FC = () => {
     };
 
     const onJoinCancel = () => {
+        setIsNewBotMenuOpen(false);
         setIsJoiningBot(false);
     };
 
     return (
         <div>
-            <Menu>
+            <Menu open={isNewBotMenuOpen}>
                 <MenuTrigger disableButtonEnhancement>
                     <Tooltip content="Create new conversation" relationship="label">
                         <Button
                             icon={<BotAdd20Regular />}
                             appearance="transparent"
+                            onClick={() => setIsNewBotMenuOpen(!isNewBotMenuOpen)}
                         />
                     </Tooltip>
                 </MenuTrigger>
@@ -64,14 +71,14 @@ export const NewBotMenu: FC = () => {
                         </MenuItem>
                         <MenuItem
                             icon={<ArrowUploadRegular />}
-                            onClick={() => fileUploaderRef && fileUploaderRef.current && fileUploaderRef.current.click()}
+                            onClick={() => fileUploaderRef.current?.click()}
                         >
                             <div>Upload a Bot</div>
                             <FileUploader
                                 ref={fileUploaderRef}
                                 acceptedExtensions={['.txt', '.json']}
                                 onSelectedFile={onUpload}
-                                />
+                            />
                         </MenuItem>
                         <MenuItem icon={<PeopleTeamAddRegular />} onClick={onJoinClick}>
                             Join a Bot
