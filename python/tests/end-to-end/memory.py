@@ -107,12 +107,18 @@ async def chat(
 async def main() -> None:
     kernel = sk.Kernel()
 
-    api_key, org_id = sk.openai_settings_from_dot_env()
+    openai_settings = sk.load_settings().openai
     kernel.add_text_completion_service(
-        "dv", sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id)
+        "dv",
+        sk_oai.OpenAITextCompletion(
+            "text-davinci-003", openai_settings.api_key, openai_settings.org_id
+        ),
     )
     kernel.add_text_embedding_generation_service(
-        "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
+        "ada",
+        sk_oai.OpenAITextEmbedding(
+            "text-embedding-ada-002", openai_settings.api_key, openai_settings.org_id
+        ),
     )
 
     kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())

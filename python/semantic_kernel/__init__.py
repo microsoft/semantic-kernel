@@ -13,16 +13,22 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
+from semantic_kernel.settings import (
+    KernelSettings,
+    OpenAISettings,
+    load_settings,
+)
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import (
     azure_openai_settings_from_dot_env,
-    openai_settings_from_dot_env,
 )
 
 __all__ = [
     "Kernel",
     "NullLogger",
-    "openai_settings_from_dot_env",
+    "KernelSettings",
+    "OpenAISettings",
+    "load_settings",
     "azure_openai_settings_from_dot_env",
     "PromptTemplateConfig",
     "PromptTemplate",

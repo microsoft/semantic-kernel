@@ -16,9 +16,12 @@ flowery prose.
 
 kernel = sk.Kernel()
 
-api_key, org_id = sk.openai_settings_from_dot_env()
+openai_settings = sk.load_settings().openai
 kernel.add_chat_service(
-    "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
+    "chat-gpt",
+    sk_oai.OpenAIChatCompletion(
+        "gpt-3.5-turbo", openai_settings.api_key, openai_settings.org_id
+    ),
 )
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(

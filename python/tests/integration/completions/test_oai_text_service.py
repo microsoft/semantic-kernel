@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
+from semantic_kernel.settings import OpenAISettings
 from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
@@ -8,11 +9,9 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 @pytest.mark.asyncio
 async def test_oai_text_completion_with_skills(
-    setup_tldr_function_for_oai_models, get_oai_config
+    setup_tldr_function_for_oai_models, openai_settings: OpenAISettings
 ):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
-
-    api_key, org_id = get_oai_config
 
     print("* Service: OpenAI Text Completion")
     print("* Endpoint: OpenAI")
@@ -20,7 +19,9 @@ async def test_oai_text_completion_with_skills(
 
     kernel.add_chat_service(
         "davinci-003",
-        sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id=org_id),
+        sk_oai.OpenAITextCompletion(
+            "text-davinci-003", openai_settings.api_key, org_id=openai_settings.org_id
+        ),
     )
 
     # Create the semantic function

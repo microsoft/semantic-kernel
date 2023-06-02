@@ -5,15 +5,16 @@ import os
 import pytest
 
 import semantic_kernel as sk
+from semantic_kernel.settings import KernelSettings, OpenAISettings, load_settings
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def create_kernel():
     kernel = sk.Kernel()
     return kernel
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def get_aoai_config():
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
@@ -27,13 +28,18 @@ def get_aoai_config():
     return deployment_name, api_key, endpoint
 
 
-@pytest.fixture(scope="session")
-def get_oai_config():
-    if "Python_Integration_Tests" in os.environ:
-        api_key = os.environ["OpenAI__ApiKey"]
-        org_id = None
-    else:
-        # Load credentials from .env file
-        api_key, org_id = sk.openai_settings_from_dot_env()
+@pytest.fixture()
+def kernel_settings() -> KernelSettings:
+    """Settings used for testing.
 
-    return api_key, org_id
+    NOTE: See the `tests/unit/test_settings.py::test_load_settings` test for a test that
+    ensures that we can load the settings in the test environment. If that test fails,
+    then any test depending on this fixture will also fail.
+    """
+    return load_settings()
+
+
+@pytest.fixture()
+def openai_settings(kernel_settings: KernelSettings) -> OpenAISettings:
+    """OpenAI settings used for testing."""
+    return kernel_settings.openai

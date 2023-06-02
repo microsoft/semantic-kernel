@@ -54,16 +54,13 @@ async def test_oai_summarize_conversation_using_skill(
 ):
     kernel, chatTranscript = setup_summarize_conversation_using_skill
 
-    if "Python_Integration_Tests" in os.environ:
-        api_key = os.environ["OpenAI__ApiKey"]
-        org_id = None
-    else:
-        # Load credentials from .env file
-        api_key, org_id = sk.openai_settings_from_dot_env()
+    openai_settings = sk.load_settings().openai
 
     kernel.add_text_completion_service(
         "davinci-003",
-        sk_oai.OpenAITextCompletion("text-davinci-003", api_key, org_id=org_id),
+        sk_oai.OpenAITextCompletion(
+            "text-davinci-003", openai_settings.api_key, org_id=openai_settings.org_id
+        ),
     )
 
     conversationSummarySkill = kernel.import_skill(
