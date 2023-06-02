@@ -81,7 +81,7 @@ public class AppInsightsTelemetryService : ITelemetryService
 
         return new Dictionary<string, string>
         {
-            { "userId", userId ?? UnknownUserId }
+            { "userId", GetUserIdFromHttpContext(this._httpContextAccessor) }
         };
     }
 }
