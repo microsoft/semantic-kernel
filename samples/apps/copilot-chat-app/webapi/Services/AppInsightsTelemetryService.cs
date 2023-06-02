@@ -46,7 +46,7 @@ public class AppInsightsTelemetryService : ITelemetryService
     /// </summary>
     /// <param name="contextAccessor">The http context accessor</param>
     /// <returns></returns>
-    public static string? GetUserIdFromHttpContext(IHttpContextAccessor contextAccessor)
+    public static string GetUserIdFromHttpContext(IHttpContextAccessor contextAccessor)
     {
         var context = contextAccessor.HttpContext;
         if (context == null)
