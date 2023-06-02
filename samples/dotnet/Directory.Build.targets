@@ -1,0 +1,17 @@
+<Project>
+  <!-- 
+    NOTE: Please DO NOT ADD targets that are required for the sample projects.
+    
+    Sample projects should be self-contained, such that they can be copied out of the repo and run in isolation.
+    The targets specified here are only intended only to maintain code consistency in the Semantic Kernel repo.
+    Project-specific build targets should be specified in the project's own .csproj file.
+  -->
+
+  <!-- Only run 'dotnet format' on dev machines, Release builds. Skip on GitHub Actions -->
+  <!-- as this runs in its own Actions job. -->
+  <Target Name="DotnetFormatOnBuild" BeforeTargets="Build"
+          Condition=" '$(Configuration)' == 'Release' AND '$(GITHUB_ACTIONS)' == '' ">
+    <Message Text="Running dotnet format" Importance="high" />
+    <Exec Command="dotnet format --no-restore -v diag $(ProjectFileName)" />
+  </Target>
+</Project>
