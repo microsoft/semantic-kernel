@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "4414214024449267703"
+      "templateHash": "11779741438695372787"
     }
   },
   "parameters": {
@@ -163,7 +163,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "13834272519683618494"
+              "templateHash": "11121756795286782434"
             }
           },
           "parameters": {
@@ -401,6 +401,7 @@
                 "netFrameworkVersion": "v6.0",
                 "use32BitWorkerProcess": false,
                 "vnetRouteAllEnabled": true,
+                "webSocketsEnabled": true,
                 "appSettings": [
                   {
                     "name": "AIService:Type",
@@ -872,6 +873,41 @@
               "properties": {
                 "resource": {
                   "id": "chatsessions",
+                  "indexingPolicy": {
+                    "indexingMode": "consistent",
+                    "automatic": true,
+                    "includedPaths": [
+                      {
+                        "path": "/*"
+                      }
+                    ],
+                    "excludedPaths": [
+                      {
+                        "path": "/\"_etag\"/?"
+                      }
+                    ]
+                  },
+                  "partitionKey": {
+                    "paths": [
+                      "/id"
+                    ],
+                    "kind": "Hash",
+                    "version": 2
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat')]"
+              ]
+            },
+            {
+              "condition": "[parameters('deployCosmosDB')]",
+              "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+              "apiVersion": "2023-04-15",
+              "name": "[format('{0}/{1}/{2}', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat', 'chatparticipants')]",
+              "properties": {
+                "resource": {
+                  "id": "chatparticipants",
                   "indexingPolicy": {
                     "indexingMode": "consistent",
                     "automatic": true,
