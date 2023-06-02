@@ -38,7 +38,7 @@ public class AppInsightsTelemetryService : ITelemetryService
             { "success", success.ToString() },
         };
 
-        this._telemetryClient.TrackEvent("CompletionEvent", properties);
+        this._telemetryClient.TrackEvent("TrackSkillFunction", properties);
     }
 
     /// <summary>
@@ -77,7 +77,6 @@ public class AppInsightsTelemetryService : ITelemetryService
     private Dictionary<string, string> BuildDefaultProperties()
     {
         string? userId = GetUserIdFromHttpContext(this._httpContextAccessor);
-        DateTime currentTime = DateTime.UtcNow;
 
         return new Dictionary<string, string>
         {
