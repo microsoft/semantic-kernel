@@ -73,7 +73,13 @@ class OpenAITextCompletion(TextCompletionClientBase):
         response = await self._send_completion_request(prompt, request_settings, True)
 
         async for chunk in response:
-            yield [choice.text for choice in chunk.choices]
+            if request_settings.number_of_responses > 1:
+                for choice in chunk.choices:
+                    completions = [''] * request_settings.number_of_responses
+                    completions[choice.index] = choice.text
+                    yield completions
+            else:
+                yield chunk.choices[0].text
 
     async def _send_completion_request(
         self, prompt: str, request_settings: CompleteRequestSettings, stream: bool

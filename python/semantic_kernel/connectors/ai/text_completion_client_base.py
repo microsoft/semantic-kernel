@@ -46,7 +46,7 @@ class TextCompletionClientBase(ABC):
             settings {CompleteRequestSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging.
 
-        Returns:
-            A stream of strings representing the response(s) from the LLM.
+        Yields:
+            A stream representing the response(s) from the LLM.
         '''
         pass

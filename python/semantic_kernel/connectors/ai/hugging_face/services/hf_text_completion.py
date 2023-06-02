@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
+import asyncio
 from threading import Thread
+# from multiprocessing import Process
 from typing import Optional
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -65,16 +67,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> str:
-        """
-        Completes a prompt using the Hugging Face model.
-
-        Arguments:
-            prompt {str} -- Prompt to complete.
-            request_settings {CompleteRequestSettings} -- Request settings.
-
-        Returns:
-            str -- Completion result.
-        """
         try:
             import transformers
 
@@ -85,10 +77,13 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 pad_token_id=50256,  # EOS token
             )
 
+            # For multiple completion results, we need to use a greedy search
             do_sample = request_settings.number_of_responses > 1
             
             results = self.generator(
-                prompt, do_sample=do_sample, num_return_sequences=request_settings.number_of_responses, generation_config=generation_config
+                prompt, do_sample=do_sample,
+                num_return_sequences=request_settings.number_of_responses,
+                generation_config=generation_config
             )
 
             completions = list()
@@ -121,6 +116,22 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     async def complete_stream_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ):
+        """
+        Streams a text completion using a Hugging Face model.
+
+        Arguments:
+            prompt {str} -- Prompt to complete.
+            request_settings {CompleteRequestSettings} -- Request settings.
+
+        Yields:
+            str -- Completion result.
+        """
+        if request_settings.number_of_responses > 1:
+            raise AIException(
+                AIException.ErrorCodes.InvalidConfiguration,
+                "HuggingFace TextIteratorStreamer does not stream multiple responses in a parseable format. \
+                    If you need multiple responses, please use the complete_async method.",
+            )
         try:
             import transformers
 
@@ -130,15 +141,17 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 max_new_tokens=request_settings.max_tokens,
                 pad_token_id=50256,  # EOS token
             )
+
             tokenizer = transformers.AutoTokenizer.from_pretrained(self._model_id)
             streamer = transformers.TextIteratorStreamer(tokenizer)
-            args = {"prompt": prompt}
+            args = {prompt}
             kwargs = {
                 "num_return_sequences": request_settings.number_of_responses,
                 "generation_config": generation_config,
-                "streamer": streamer,
+                "streamer": streamer
             }
 
+            # See https://github.com/huggingface/transformers/blob/main/src/transformers/generation/streamers.py#L159
             thread = Thread(target=self.generator, args=args, kwargs=kwargs)
             thread.start()
 
@@ -146,6 +159,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 yield new_text
 
             thread.join()
-
+            
         except Exception as e:
             raise AIException("Hugging Face completion failed", e)
