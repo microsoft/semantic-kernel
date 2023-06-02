@@ -69,8 +69,4 @@
       <_Parameter1>false</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\dotnet\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
-  </ItemGroup>
 </Project>

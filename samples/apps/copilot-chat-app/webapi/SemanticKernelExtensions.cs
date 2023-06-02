@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -128,20 +127,6 @@ internal static class SemanticKernelExtensions
                     return new QdrantMemoryStore(new QdrantVectorDbClient(
                         config.Qdrant.Host, config.Qdrant.VectorSize, port: config.Qdrant.Port, httpClient: httpClient, log: sp.GetRequiredService<ILogger<IQdrantVectorDbClient>>()));
                 });
-                services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
-                    sp.GetRequiredService<IMemoryStore>(),
-                    sp.GetRequiredService<IOptions<AIServiceOptions>>().Value
-                        .ToTextEmbeddingsService(logger: sp.GetRequiredService<ILogger<AIServiceOptions>>())));
-                break;
-
-            case MemoriesStoreOptions.MemoriesStoreType.Weaviate:
-                if (config.Weaviate == null)
-                {
-                    throw new InvalidOperationException("MemoriesStore type is Weaviate and Weaviate configuration is null.");
-                }
-
-                services.AddSingleton<IMemoryStore>(sp => new WeaviateMemoryStore(
-                    config.Weaviate.Scheme, config.Weaviate.Host, config.Weaviate.Port, config.Weaviate.ApiKey, null, sp.GetRequiredService<ILogger<WeaviateMemoryStore>>()));
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
                     sp.GetRequiredService<IMemoryStore>(),
                     sp.GetRequiredService<IOptions<AIServiceOptions>>().Value
