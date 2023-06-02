@@ -127,7 +127,8 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         # Current version of ChromeDB reject camel case collection names.
         self._client.delete_collection(name=camel_to_snake(collection_name))
-        self._client.persist()
+        if self._persist_directory is not None:
+            self._client.persist()
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """Checks if a collection exists.
@@ -172,7 +173,8 @@ class ChromaMemoryStore(MemoryStoreBase):
             documents=record._text,
             ids=record._id,
         )
-        self._client.persist()
+        if self._persist_directory is not None:
+            self._client.persist()
         return record._id
 
     async def upsert_batch_async(
