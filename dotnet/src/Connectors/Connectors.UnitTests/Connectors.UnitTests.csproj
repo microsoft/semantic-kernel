@@ -22,7 +22,7 @@
     </PackageReference>
   </ItemGroup>
 
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/InternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />

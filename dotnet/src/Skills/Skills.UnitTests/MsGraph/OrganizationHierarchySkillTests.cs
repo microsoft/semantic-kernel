@@ -35,7 +35,7 @@ public class OrganizationHierarchySkillTests : IDisposable
         OrganizationHierarchySkill target = new(connectorMock.Object);
 
         // Act
-        IEnumerable<string> actual = await target.GetMyDirectReportsEmailAsync(this._context);
+        IEnumerable<string> actual = await target.GetMyDirectReportsEmailAsync();
 
         // Assert
         var set = new HashSet<string>(actual);
@@ -57,7 +57,7 @@ public class OrganizationHierarchySkillTests : IDisposable
         OrganizationHierarchySkill target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetMyManagerEmailAsync(this._context);
+        string actual = await target.GetMyManagerEmailAsync();
 
         // Assert
         Assert.Equal(anyManagerEmail, actual);
@@ -74,7 +74,7 @@ public class OrganizationHierarchySkillTests : IDisposable
         OrganizationHierarchySkill target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetMyManagerNameAsync(this._context);
+        string actual = await target.GetMyManagerNameAsync();
 
         // Assert
         Assert.Equal(anyManagerName, actual);

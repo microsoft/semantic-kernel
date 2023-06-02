@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -221,7 +222,7 @@ public sealed class TrustServiceTests
 
     private sealed class MySkill
     {
-        [SKFunction("Function1", isSensitive: true)]
+        [SKFunction(isSensitive: true), Description("Function1")]
         public void Function1()
         {
         }
