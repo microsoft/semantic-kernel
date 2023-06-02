@@ -519,13 +519,28 @@
     </repositories>
 
     <profiles>
+         <profile>
+            <id>compile-jdk8</id>
+            <properties>
+                <maven.compiler.source>1.8</maven.compiler.source>
+                <maven.compiler.target>1.8</maven.compiler.target>
+            </properties>
+        </profile>
+        <profile>
+            <id>compile-jdk17</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <maven.compiler.source>17</maven.compiler.source>
+                <maven.compiler.target>17</maven.compiler.target>
+            </properties>
+        </profile>
         <profile>
             <id>bug-check</id>
-
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-
             <build>
                 <plugins>
                     <plugin>
