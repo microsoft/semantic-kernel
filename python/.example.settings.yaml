@@ -1,0 +1,9 @@
+# This file is an example of the settings.yaml file that should be created
+# in `~/.semantic_kernel` directory to configure SemanticKernel.
+# The file should be named `settings.yaml` and should be in the following format:
+openai:
+  api_key: <YOUR_API_KEY>
+  org_id: <OPTIONAL_ORG_ID>
+  api_type: <OPTIONAL_API_TYPE>
+  api_version: <OPTIONAL_API_VERSION>
+  endpoint: <OPTIONAL_ENDPOINT>

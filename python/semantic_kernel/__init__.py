@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from pathlib import Path
+
 from semantic_kernel import core_skills, memory
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.context_variables import ContextVariables
@@ -23,6 +25,9 @@ from semantic_kernel.utils.settings import (
     azure_openai_settings_from_dot_env,
 )
 
+# Path to the `python` directory
+PYTHON_REPO_ROOT = Path(__file__).parent.parent
+
 __all__ = [
     "Kernel",
     "NullLogger",
@@ -39,4 +44,5 @@ __all__ = [
     "SKContext",
     "memory",
     "core_skills",
+    "PYTHON_REPO_ROOT",
 ]

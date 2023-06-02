@@ -7,6 +7,7 @@ import pytest
 from dotenv import dotenv_values
 from pydantic.env_settings import SettingsSourceCallable
 
+from semantic_kernel import PYTHON_REPO_ROOT
 from semantic_kernel.settings import KernelSettings, load_settings
 
 
@@ -125,3 +126,35 @@ def test_load_settings_from_os_environ(dotenv_overrides: t.Dict[str, str]) -> No
     ), "dotenv file should be empty otherwise this test has no point."
     assert settings.openai.api_key == dotenv_overrides["OPENAI__API_KEY"]
     assert settings.openai.org_id == dotenv_overrides["OPENAI__ORG_ID"]
+
+
+@pytest.fixture()
+def temp_settings_yaml_file() -> t.Iterator[None]:
+    """Override `settings.yaml` file in `~/.semantic_kernel` with
+    `python/.example.settings.yaml."""
+    settings_path = Path.home() / ".semantic_kernel" / "settings.yaml"
+    original_contents = settings_path.read_text()
+    new_contents = (PYTHON_REPO_ROOT / ".example.settings.yaml").read_text()
+    settings_path.write_text(new_contents)
+    try:
+        yield
+    finally:
+        settings_path.write_text(original_contents)
+
+
+@pytest.mark.usefixtures("temp_settings_yaml_file")
+def test_load_settings_from_yaml_file() -> None:
+    """I should be able to load the settings from a yaml file.
+
+    NOTE: This test tests multiple things:
+    1. That the settings are being loaded from the yaml file.
+    2. That the settings are being loaded from the correct location.
+    3. That the template given in `python/.example.settings.yaml` file is correct.
+    This test  might fail if any one of the above is not true.
+    """
+    settings = load_settings()
+    assert settings.openai.api_key == "<YOUR_API_KEY>"
+    assert settings.openai.org_id == "<OPTIONAL_ORG_ID>"
+    assert settings.openai.api_type == "<OPTIONAL_API_TYPE>"
+    assert settings.openai.api_version == "<OPTIONAL_API_VERSION>"
+    assert settings.openai.endpoint == "<OPTIONAL_ENDPOINT>"
