@@ -11,7 +11,6 @@ internal sealed class SearchVectorsResponse : QdrantResponse
     internal sealed class ScoredPoint
     {
         [JsonPropertyName("id")]
-        [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
         public string Id { get; }
 
         [JsonPropertyName("version")]
