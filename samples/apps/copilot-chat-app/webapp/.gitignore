@@ -1,1 +1,4 @@
 /build
+
+*.pem
+*-key.pem
