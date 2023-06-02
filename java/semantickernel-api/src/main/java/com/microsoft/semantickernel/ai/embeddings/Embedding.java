@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.ai.embeddings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a strongly typed vector of numeric data.
@@ -43,7 +44,7 @@ public class Embedding<EmbeddingType extends Number> {
     // unsupported.</exception>
     //    /// <exception cref="ArgumentNullException">A <c>null</c> vector is passed in.</exception>
     public Embedding() {
-        this.vector = new ArrayList<>();
+        this.vector = Collections.emptyList();
     }
 
     /**
@@ -54,6 +55,33 @@ public class Embedding<EmbeddingType extends Number> {
      */
     public Embedding(List<EmbeddingType> vector) {
         //        Verify.NotNull(vector, nameof(vector));
-        this.vector = Collections.unmodifiableList(vector);
+        this.vector =
+                vector != null ? Collections.unmodifiableList(vector) : Collections.emptyList();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Embedding<?> embedding = (Embedding<?>) o;
+
+        return vector.equals(embedding.vector);
+    }
+
+    @Override
+    public int hashCode() {
+        return vector.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Embedding{"
+                + "vector="
+                + vector.stream()
+                        .limit(3)
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(", ", "[", vector.size() > 3 ? "...]" : "]"))
+                + '}';
     }
 }
