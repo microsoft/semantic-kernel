@@ -18,6 +18,21 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
     /// <summary>
+    /// Constants of success status
+    /// </summary>
+    private const string SucceededStatus = "SUCCEEDED";
+
+    /// <summary>
+    /// Maximum retry times for the Azure Dall-E API
+    /// </summary>
+    private const int MaxRetryCount = 5;
+
+    /// <summary>
+    /// Default retry wait time in seconds
+    /// </summary>
+    private const int DefaultRetryAfter = 6;
+
+    /// <summary>
     /// Azure OpenAI REST API endpoint
     /// </summary>
     private readonly string _endpoint;
@@ -36,7 +51,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="logger">Application logger</param>
     public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILogger? logger = null) : base(httpClient, logger)
     {
-        this._endpoint = $"{endpoint}dalle/text-to-image?api-version=2022-08-03-preview";
+        this._endpoint = $"{endpoint}openai/images/generations:submit?api-version=2023-06-01-preview";
         this._apiKey = apiKey;
     }
 
@@ -49,23 +64,26 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
 
-        var requestBody = Json.Serialize(new AzureImageGenerationRequest()
+        var requestBody = Json.Serialize(new ImageGenerationRequest
         {
-            Caption = description,
-            Resolution = $"{width}x{height}"
+            Prompt = description,
+            Size = $"{width}x{height}",
+            Count = 1
         });
-        var result = await this.EnsureImageGenerationAsync(this._endpoint, requestBody, cancellationToken).ConfigureAwait(false);
+
+        var result = await this.GetImageGenerationAsync(this._endpoint, requestBody, cancellationToken).ConfigureAwait(false);
         if (result.Result == null)
         {
             throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response not contains result");
         }
 
-        return result.Result.ContentUrl;
+        return result.Result.Images[0].Url;
     }
 
-    private async Task<AzureImageGenerationResponse> EnsureImageGenerationAsync(string url, string? requestBody, CancellationToken cancellationToken = default)
+    private async Task<AzureImageGenerationResponse> GetImageGenerationAsync(string url, string? requestBody, CancellationToken cancellationToken = default)
     {
         HttpResponseMessage? response = null;
+        var retryCount = 0;
         try
         {
             using (var content = new StringContent(requestBody, Encoding.UTF8, "application/json"))
@@ -75,29 +93,41 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
             var responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var result = this.JsonDeserialize<AzureImageGenerationResponse>(responseJson);
-            while (result.Status != "Succeeded")
+
+            if (!response.Headers.TryGetValues("operation-location", out var locationValues) || string.IsNullOrWhiteSpace(locationValues.FirstOrDefault()))
             {
-                if (!response.Headers.TryGetValues("operation-location", out var locationValues) || string.IsNullOrWhiteSpace(locationValues.FirstOrDefault()))
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Not found operation-location");
+            }
+
+            var operationLocation = locationValues.First();
+            while (true)
+            {
+                if (SucceededStatus == result.Status.ToUpperInvariant())
                 {
-                    throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Not found operation-location");
+                    return result;
                 }
 
-                var operationLocation = locationValues.First();
-                if (response.Headers.TryGetValues("retry-after", out var retryValues))
+                if (MaxRetryCount == retryCount)
                 {
-                    var retryValue = retryValues.FirstOrDefault();
-                    if (int.TryParse(retryValue, out var retry))
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(retry), cancellationToken).ConfigureAwait(false);
-                    }
+                    throw new AIException(AIException.ErrorCodes.RequestTimeout, "Reached maximum retry attempts");
+                }
+
+                if (response.Headers.TryGetValues("retry-after", out var afterValues) && long.TryParse(afterValues.FirstOrDefault(), out var after))
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(after), cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(DefaultRetryAfter), cancellationToken).ConfigureAwait(false);
                 }
 
                 response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
                 responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 result = this.JsonDeserialize<AzureImageGenerationResponse>(responseJson);
-            }
 
-            return result;
+                // increase retry count
+                retryCount++;
+            }
         }
         catch (Exception e) when (e is not AIException)
         {

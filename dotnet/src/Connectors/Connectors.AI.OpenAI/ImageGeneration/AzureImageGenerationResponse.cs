@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
@@ -12,41 +10,10 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 public class AzureImageGenerationResponse
 {
     /// <summary>
-    /// Azure OpenAI Image response
-    /// </summary>
-    public sealed class AzureImageGenerationResult
-    {
-        /// <summary>
-        /// Image Description
-        /// </summary>
-        [JsonPropertyName("caption")]
-        public string Caption { get; set; } = string.Empty;
-
-        /// <summary>
-        /// URL to the image created
-        /// </summary>
-        [JsonPropertyName("contentUrl")]
-        [SuppressMessage("Design", "CA1056:URI return values should not be strings", Justification = "Using the original value")]
-        public string ContentUrl { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Expiration time of the URL
-        /// </summary>
-        [JsonPropertyName("contentUrlExpiresAt")]
-        public DateTime ContentUrlExpiresAt { get; set; }
-
-        /// <summary>
-        /// Creation time
-        /// </summary>
-        [JsonPropertyName("createdDateTime")]
-        public DateTime CreatedDateTime { get; set; }
-    }
-
-    /// <summary>
     /// Image generation result
     /// </summary>
     [JsonPropertyName("result")]
-    public AzureImageGenerationResult? Result { get; set; }
+    public ImageGenerationResponse? Result { get; set; }
 
     /// <summary>
     /// Request Id
@@ -59,4 +26,16 @@ public class AzureImageGenerationResponse
     /// </summary>
     [JsonPropertyName("status")]
     public string Status { get; set; } = string.Empty;
+
+    /// <summary>
+    ///  Creation time
+    /// </summary>
+    [JsonPropertyName("created")]
+    public int Created { get; set; }
+
+    /// <summary>
+    /// Expiration time of the URL
+    /// </summary>
+    [JsonPropertyName("expires")]
+    public int Expires { get; set; }
 }
