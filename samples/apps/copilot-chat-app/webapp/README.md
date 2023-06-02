@@ -22,11 +22,15 @@ Option 1: Reusuing the [dotnet dev-certs](https://learn.microsoft.com/en-us/dotn
 
 1. Open a terminal and navigate to `samples/apps/copilot-chat-app/webapi`.
 1. Run
+
     ```
     dotnet dev-certs https -ep ../webapp/local-cert.crt --no-password --trust --format PEM
     ```
+
     This will create a certificate for `localhost`, trust it, and export it to a PEM file including the private key.
+
     > Note: The `--no-password` flag specifies that a password will not be used for the key on export. This is intended for testing use only.
+
 1. The certificate and key are now exported as a pair of files in PEM format at the root of this directory (/webapp):
     - local-cert.crt
     - local-cert.key
