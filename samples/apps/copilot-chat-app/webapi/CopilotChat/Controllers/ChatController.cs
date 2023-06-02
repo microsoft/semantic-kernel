@@ -100,7 +100,7 @@ public class ChatController : ControllerBase, IDisposable
         if (ask.Variables.Where(v => v.Key == "chatId").Any())
         {
             var chatId = ask.Variables.Where(v => v.Key == "chatId").First().Value;
-            await messageRelayHubContext.Clients.All.SendAsync(GeneratingResponseClientCall, chatId, true);
+            await messageRelayHubContext.Clients.Group(chatId).SendAsync(GeneratingResponseClientCall, chatId, true);
         }
 
         // Run the function.
@@ -126,8 +126,8 @@ public class ChatController : ControllerBase, IDisposable
         if (ask.Variables.Where(v => v.Key == "chatId").Any())
         {
             var chatId = ask.Variables.Where(v => v.Key == "chatId").First().Value;
-            await messageRelayHubContext.Clients.All.SendAsync(ReceiveResponseClientCall, chatSkillAskResult, chatId);
-            await messageRelayHubContext.Clients.All.SendAsync(GeneratingResponseClientCall, chatId, false);
+            await messageRelayHubContext.Clients.Group(chatId).SendAsync(ReceiveResponseClientCall, chatSkillAskResult, chatId);
+            await messageRelayHubContext.Clients.Group(chatId).SendAsync(GeneratingResponseClientCall, chatId, false);
         }
 
         return this.Ok(chatSkillAskResult);
