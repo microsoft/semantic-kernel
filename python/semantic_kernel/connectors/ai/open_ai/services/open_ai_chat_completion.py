@@ -221,15 +221,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         return response
 
 
-# def _parse_choices(choice):
-#     message = ""
-#     if "role" in choice.delta:
-#         message += choice.delta.role + ": "
-#     if "content" in choice.delta:
-#         message += choice.delta.content
-#     yield message
-
-
 def _parse_choices(chunk):
     message = ""
     if "role" in chunk.choices[0].delta:
