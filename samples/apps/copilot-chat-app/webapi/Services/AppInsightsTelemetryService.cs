@@ -55,7 +55,7 @@ public class AppInsightsTelemetryService : ITelemetryService
         }
 
         var user = context.User;
-        if (user == null || user.Identity == null || !user.Identity.IsAuthenticated)
+        if (user?.Identity?.IsAuthenticated != true)
         {
             return UnknownUserId;
         }
