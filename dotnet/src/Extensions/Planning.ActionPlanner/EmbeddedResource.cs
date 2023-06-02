@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Microsoft.SemanticKernel.Planning.Action;
 
-internal sealed class EmbeddedResource
+internal static class EmbeddedResource
 {
     private static readonly string? s_namespace = typeof(EmbeddedResource).Namespace;
 
