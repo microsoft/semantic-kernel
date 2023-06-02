@@ -16,17 +16,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--Setting version overrides to minimum supported version, to maximize compatibility.-->
-    <PackageReference Include="Microsoft.Bcl.HashCode" VersionOverride="[1.1.0, )" />
-    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="[6.0.0, )" />
-    <PackageReference Include="System.Linq.Async" VersionOverride="[6.0.1, )" />
-    <PackageReference Include="System.Text.Json" VersionOverride="[6.0.0, )" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Core" />
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
-    <InternalsVisibleTo Include="IntegrationTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
   </ItemGroup>
 </Project>
