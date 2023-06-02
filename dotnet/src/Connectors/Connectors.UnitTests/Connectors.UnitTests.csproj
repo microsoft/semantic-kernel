@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Connectors.UnitTests</AssemblyName>
@@ -21,6 +21,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/InternalUtilities.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />

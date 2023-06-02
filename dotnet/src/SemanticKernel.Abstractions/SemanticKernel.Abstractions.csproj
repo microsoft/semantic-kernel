@@ -19,14 +19,12 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Core" />
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
-    <InternalsVisibleTo Include="IntegrationTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
   </ItemGroup>
 </Project>
