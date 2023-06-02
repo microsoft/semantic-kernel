@@ -140,6 +140,7 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
     cors: {
       allowedOrigins: [
         'http://localhost:3000'
+        'https://localhost:3000'
       ]
       supportCredentials: true
     }
