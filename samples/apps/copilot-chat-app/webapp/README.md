@@ -42,7 +42,7 @@ If you need to run Copilot Chat with HTTPS, you need to create a certificate and
     SSL_CRT_FILE=localhost+1.pem # Replace with your locally-trusted cert file
     SSL_KEY_FILE=localhost+1-key.pem # Replace with your locally-trusted cert key
     ```
-1. In the [webapi appsettings.json](../webapi/appsettings.json) file, find the `"AllowedOrigins"` section, and add the URLs you'll be running the apps on already with `https` prefixed. i.e., from the example hostnames above, the `"AllowedOrigins"` section should look like:
+1. In the [webapi appsettings.json](../webapi/appsettings.json) file, find the `"AllowedOrigins"` section, and add the URLs (with ports!) that you'll be running the apps on already with `https` prefixed. i.e., from the example hostnames above, the `"AllowedOrigins"` section should look like:
     ```
     ...
     // CORS
