@@ -378,20 +378,26 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="maxRetryCount">Maximum number of retries for HTTP requests.</param>
+    /// <param name="defaultRetryAfter">Default retry wait time in seconds for HTTP requests.</param>
     /// <returns>Self instance</returns>
     public static KernelBuilder WithAzureOpenAIImageGenerationService(this KernelBuilder builder,
         string endpoint,
         string apiKey,
         string? serviceId = null,
         bool setAsDefault = false,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        int maxRetryCount = 5,
+        int defaultRetryAfter = 6)
     {
         builder.WithAIService<IImageGeneration>(serviceId, ((ILogger Logger, KernelConfig Config) parameters) =>
             new AzureOpenAIImageGeneration(
                 endpoint,
                 apiKey,
                 GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger),
+                parameters.Logger,
+                maxRetryCount,
+                defaultRetryAfter),
             setAsDefault);
 
         return builder;

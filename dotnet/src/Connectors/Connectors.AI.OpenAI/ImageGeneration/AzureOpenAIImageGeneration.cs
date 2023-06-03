@@ -25,12 +25,12 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <summary>
     /// Maximum retry times for the Azure Dall-E API
     /// </summary>
-    private const int MaxRetryCount = 5;
+    private readonly int _maxRetryCount;
 
     /// <summary>
     /// Default retry wait time in seconds
     /// </summary>
-    private const int DefaultRetryAfter = 6;
+    private readonly int _defaultRetryAfter;
 
     /// <summary>
     /// Azure OpenAI REST API endpoint
@@ -49,10 +49,14 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
-    public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILogger? logger = null) : base(httpClient, logger)
+    /// <param name="maxRetryCount">Maximum number of retries for HTTP requests.</param>
+    /// <param name="defaultRetryAfter">Default retry wait time in seconds for HTTP requests.</param>
+    public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILogger? logger = null, int maxRetryCount = 5, int defaultRetryAfter = 6) : base(httpClient, logger)
     {
         this._endpoint = $"{endpoint}openai/images/generations:submit?api-version=2023-06-01-preview";
         this._apiKey = apiKey;
+        this._maxRetryCount = maxRetryCount;
+        this._defaultRetryAfter = defaultRetryAfter;
     }
 
     /// <inheritdoc/>
@@ -107,7 +111,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
                     return result;
                 }
 
-                if (MaxRetryCount == retryCount)
+                if (this._maxRetryCount == retryCount)
                 {
                     throw new AIException(AIException.ErrorCodes.RequestTimeout, "Reached maximum retry attempts");
                 }
@@ -118,7 +122,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
                 }
                 else
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(DefaultRetryAfter), cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromSeconds(this._defaultRetryAfter), cancellationToken).ConfigureAwait(false);
                 }
 
                 response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
