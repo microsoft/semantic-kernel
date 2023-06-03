@@ -102,7 +102,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             var operationLocation = locationValues.First();
             while (true)
             {
-                if (SucceededStatus == result.Status.ToUpperInvariant())
+                if (result.Status.Equals(SucceededStatus, StringComparison.OrdinalIgnoreCase))
                 {
                     return result;
                 }
