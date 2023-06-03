@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Planning.Action;
 /// </summary>
 internal sealed class ActionPlanResponse
 {
-    public class PlanData
+    public sealed class PlanData
     {
         /// <summary>
         /// Rationale given by the LLM for choosing the function

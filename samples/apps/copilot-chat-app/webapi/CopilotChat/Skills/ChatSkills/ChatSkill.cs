@@ -352,7 +352,7 @@ public class ChatSkill
     /// </summary>
     private async Task<string> GetUserIntentAsync(SKContext context)
     {
-        if (!context.Variables.Get("planUserIntent", out string? userIntent))
+        if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
             var contextVariables = new ContextVariables();
             contextVariables.Set("chatId", context["chatId"]);
@@ -471,7 +471,7 @@ public class ChatSkill
     {
         var contextVariables = context.Variables.Clone();
         contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-        if (context.Variables.Get("proposedPlan", out string? proposedPlan))
+        if (context.Variables.TryGetValue("proposedPlan", out string? proposedPlan))
         {
             contextVariables.Set("proposedPlan", proposedPlan);
         }
