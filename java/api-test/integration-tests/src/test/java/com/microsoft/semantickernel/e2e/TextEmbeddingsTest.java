@@ -12,14 +12,16 @@ import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TextEmbeddingsTest extends AbstractKernelTest {
 
@@ -130,9 +132,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                 result ->
                         System.out.printf(
                                 "%s %s (relevance=%f)%n",
-                                query,
-                                result.getMetadata().getText(),
-                                result.getRelevance()));
+                                query, result.getMetadata().getText(), result.getRelevance()));
     }
 
     public void testEmbeddingGeneration(OpenAIAsyncClient client, int expectedEmbeddingSize) {
@@ -148,8 +148,9 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                 .generateEmbeddingsAsync(data)
                 .block()
                 .forEach(
-                        embedding -> Assertions.assertEquals(
-                                expectedEmbeddingSize, embedding.getVector().size()));
+                        embedding ->
+                                Assertions.assertEquals(
+                                        expectedEmbeddingSize, embedding.getVector().size()));
     }
 
     private Kernel buildTextEmbeddingsKernel() throws IOException {

@@ -10,11 +10,13 @@ import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.openai.client.AzureOpenAIClient;
 import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
+import org.junit.jupiter.api.condition.EnabledIf;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-import org.junit.jupiter.api.condition.EnabledIf;
 
 @EnabledIf("isAzureTestEnabled")
 public class AbstractKernelTest {
@@ -39,7 +41,9 @@ public class AbstractKernelTest {
 
     public static OpenAIAsyncClient getOpenAIClient() throws IOException {
         String apiKey = getToken(CONF_OPENAI_PROPERTIES);
-        return new com.microsoft.semantickernel.openai.client.OpenAIClientBuilder().setApiKey(apiKey).build();
+        return new com.microsoft.semantickernel.openai.client.OpenAIClientBuilder()
+                .setApiKey(apiKey)
+                .build();
     }
 
     public static OpenAIAsyncClient getAzureOpenAIClient() throws IOException {

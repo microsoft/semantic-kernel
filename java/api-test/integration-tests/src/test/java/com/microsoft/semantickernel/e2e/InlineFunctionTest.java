@@ -5,13 +5,16 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import java.io.IOException;
-import java.util.ArrayList;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class InlineFunctionTest extends AbstractKernelTest {
 

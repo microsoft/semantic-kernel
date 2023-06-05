@@ -9,6 +9,10 @@ import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,8 +20,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class InlineFunctionExample {
     public static final String AZURE_CONF_PROPERTIES = "conf.properties";
@@ -26,7 +28,8 @@ public class InlineFunctionExample {
 
     private static final String API_KEY;
     private static final String ENDPOINT;
-    private static final String TEXT_TO_SUMMARIZE = """
+    private static final String TEXT_TO_SUMMARIZE =
+            """
             Demo (ancient Greek poet)
                From Wikipedia, the free encyclopedia
                Demo or Damo (Greek: Δεμώ, Δαμώ; fl. c. AD 200) was a Greek woman of the
@@ -57,12 +60,13 @@ public class InlineFunctionExample {
                 phrase throughout the Iliad and Odyssey.[a][2];
                 """;
 
-    static{
+    static {
         try {
             API_KEY = getToken();
             ENDPOINT = getEndpoint();
         } catch (IOException e) {
-            throw new ExceptionInInitializerError ("Error reading config file or properties. " + e.getMessage());
+            throw new ExceptionInInitializerError(
+                    "Error reading config file or properties. " + e.getMessage());
         }
     }
 
@@ -74,8 +78,7 @@ public class InlineFunctionExample {
         return getConfigValue("endpoint");
     }
 
-    private static String getConfigValue(String propertyName)
-            throws IOException {
+    private static String getConfigValue(String propertyName) throws IOException {
         String propertyValue;
         Path configPath = Paths.get(System.getProperty("user.home"), ".oai", AZURE_CONF_PROPERTIES);
         Properties props = new Properties();
@@ -92,49 +95,54 @@ public class InlineFunctionExample {
     }
 
     public static void main(String[] args) {
-        OpenAIAsyncClient client = new AzureOpenAIClient(
-                new OpenAIClientBuilder()
-                        .endpoint(ENDPOINT)
-                        .credential(new AzureKeyCredential(API_KEY))
-                        .buildAsyncClient());
+        OpenAIAsyncClient client =
+                new AzureOpenAIClient(
+                        new OpenAIClientBuilder()
+                                .endpoint(ENDPOINT)
+                                .credential(new AzureKeyCredential(API_KEY))
+                                .buildAsyncClient());
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, MODEL);
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
-        KernelConfig kernelConfig = new KernelConfig.Builder()
-                .addTextCompletionService(MODEL, kernel -> textCompletion)
-                .build();
+        KernelConfig kernelConfig =
+                new KernelConfig.Builder()
+                        .addTextCompletionService(MODEL, kernel -> textCompletion)
+                        .build();
 
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
 
-        CompletionSKFunction summarize = kernel.getSemanticFunctionBuilder()
-                .createFunction(
-                        prompt,
-                        "summarize",
-                        null,
-                        null,
-                        new PromptTemplateConfig.CompletionConfig(
-                                0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
+        CompletionSKFunction summarize =
+                kernel.getSemanticFunctionBuilder()
+                        .createFunction(
+                                prompt,
+                                "summarize",
+                                null,
+                                null,
+                                new PromptTemplateConfig.CompletionConfig(
+                                        0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
 
         if (summarize == null) {
             LOGGER.error("Null function");
             return;
         }
 
-        CountDownLatch cdl = new CountDownLatch(1);        
-        summarize.invokeAsync(TEXT_TO_SUMMARIZE).subscribe(
-                context -> LOGGER.info("Result: {} ", context.getResult()),
-                error -> {
-                    LOGGER.error("Error: {} ", error.getMessage());
-                    cdl.countDown();
-                },
-                () -> {
-                    LOGGER.info("Completed");
-                    cdl.countDown();
-                });
-        try{
+        CountDownLatch cdl = new CountDownLatch(1);
+        summarize
+                .invokeAsync(TEXT_TO_SUMMARIZE)
+                .subscribe(
+                        context -> LOGGER.info("Result: {} ", context.getResult()),
+                        error -> {
+                            LOGGER.error("Error: {} ", error.getMessage());
+                            cdl.countDown();
+                        },
+                        () -> {
+                            LOGGER.info("Completed");
+                            cdl.countDown();
+                        });
+        try {
             cdl.await();
-        }catch(InterruptedException e){
+        } catch (InterruptedException e) {
             LOGGER.error("Error: {} ", e.getMessage());
         }
     }

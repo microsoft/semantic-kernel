@@ -10,13 +10,16 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import java.io.IOException;
-import java.util.ArrayList;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class KernelTest extends AbstractKernelTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelTest.class);
@@ -26,9 +29,9 @@ public class KernelTest extends AbstractKernelTest {
                 kernel.getSemanticFunctionBuilder()
                         .createFunction(
                                 """
-                                        {{$input}}
+                                {{$input}}
 
-                                        One line TLDR with the fewest words.""",
+                                One line TLDR with the fewest words.""",
                                 null,
                                 "",
                                 null,
@@ -37,15 +40,14 @@ public class KernelTest extends AbstractKernelTest {
 
         String text1 =
                 """
-                        1st Law of Thermodynamics - Energy cannot be created or destroyed.
-                        2nd Law of Thermodynamics - For a spontaneous process, the entropy of the universe increases.
-                        3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero entropy""";
+                   1st Law of Thermodynamics - Energy cannot be created or destroyed.
+                   2nd Law of Thermodynamics - For a spontaneous process, the entropy of the universe increases.
+                   3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero entropy""";
 
         Mono<CompletionSKContext> mono = summarize.invokeAsync(text1);
         CompletionSKContext result = mono.block();
 
-        if (result != null)
-            LOGGER.info("Result: " + result.getResult());
+        if (result != null) LOGGER.info("Result: " + result.getResult());
     }
 
     public static Kernel buildKernel(OpenAIAsyncClient client, String model) {
