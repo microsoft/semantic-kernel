@@ -82,7 +82,7 @@ You can also deploy by clicking on:
 
 
 # Verifying the deployment
-To make sure your web app service is running, go to <!-- markdown-link-check-disable -->https://YOUR_INSTANCE_NAME.azurewebsites.net/probe<!-- markdown-link-check-enable-->
+To make sure your web app service is running, go to <!-- markdown-link-check-disable -->https://YOUR_INSTANCE_NAME.azurewebsites.net/healthz<!-- markdown-link-check-enable-->
 
 To get your instance's URL, click on the "Go to resource group" button you see at the end of your deployment. Then click on the resource whose name starts with "app-".
 
@@ -107,7 +107,7 @@ check that you have correctly entered the values for the following settings:
 AIService:Endpoint is ignored for OpenAI instances from [openai.com](https://openai.com) but MUST be properly populated when using Azure OpenAI instances.
 
 # Authorization
-All of the server's endpoints other than the /probe one require authorization to access.
+All of the server's endpoints other than the /healthz one require authorization to access.
 By default, the deployment templates set up the server so that an API key is required to access its endpoints.
 
 AAD authentication and authorization can also be set up manually after the automated deployment is done.

@@ -23,20 +23,19 @@ Copy and paste the following code into your project, with your Azure OpenAI key 
 ```csharp
 using Microsoft.SemanticKernel;
 
-var kernel = Kernel.Builder.Build();
+var builder = new KernelBuilder();
 
-// Azure OpenAI
-kernel.Config.AddAzureTextCompletionService(
-    "text-davinci-003",                  // Azure OpenAI Deployment Name
-    "https://contoso.openai.azure.com/", // Azure OpenAI Endpoint
-    "...your Azure OpenAI Key...",       // Azure OpenAI Key
-);
+builder.WithAzureTextCompletionService(
+         "text-davinci-003",                  // Azure OpenAI Deployment Name
+         "https://contoso.openai.azure.com/", // Azure OpenAI Endpoint
+         "...your Azure OpenAI Key...");      // Azure OpenAI Key
 
 // Alternative using OpenAI
-// kernel.Config.AddOpenAITextCompletionService(
-//     "text-davinci-003",               // OpenAI Model name
-//     "...your OpenAI API Key..."       // OpenAI API Key
-// );
+//builder.WithOpenAITextCompletionService(
+//         "text-davinci-003",               // OpenAI Model name
+//         "...your OpenAI API Key...");     // OpenAI API Key
+
+var kernel = builder.Build();
 
 var prompt = @"{{$input}}
 
