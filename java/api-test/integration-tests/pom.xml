@@ -19,6 +19,7 @@
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
             <artifactId>semantickernel-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
