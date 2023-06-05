@@ -175,10 +175,10 @@ class ChromaMemoryStore(MemoryStoreBase):
             documents=record._text,
             ids=record._key,
         )
-        
+
         if self._persist_directory is not None:
             self._client.persist()
-        return  record._key
+        return record._key
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
