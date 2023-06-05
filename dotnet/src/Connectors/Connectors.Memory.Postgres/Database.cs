@@ -67,19 +67,32 @@ internal sealed class Database
     /// <returns></returns>
     public async Task CreateTableAsync(NpgsqlConnection conn, int vectorSize, CancellationToken cancellationToken = default)
     {
-        await this.CreatePgVectorExtensionAsync(conn, cancellationToken).ConfigureAwait(false);
-
         using NpgsqlCommand cmd = conn.CreateCommand();
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
         cmd.CommandText = $@"
             CREATE TABLE IF NOT EXISTS {TableName} (
                 collection TEXT,
                 key TEXT,
-                metadata TEXT,
+                metadata JSONB,
                 embedding vector({vectorSize}),
                 timestamp BIGINT,
                 PRIMARY KEY(collection, key))";
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+        await this.MigrateAsync(conn, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Migrate column types from older versions.
+    /// </summary>
+    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    private async Task MigrateAsync(NpgsqlConnection conn, CancellationToken cancellationToken = default)
+    {
+        using NpgsqlCommand cmd = conn.CreateCommand();
+        cmd.CommandText = $"ALTER TABLE {TableName} ALTER COLUMN metadata TYPE JSONB USING metadata::JSONB";
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -107,16 +120,12 @@ internal sealed class Database
     /// <returns></returns>
     public async Task CreateCollectionAsync(NpgsqlConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
-        if (await this.DoesCollectionExistsAsync(conn, collectionName, cancellationToken).ConfigureAwait(false))
-        {
-            // Collection already exists
-            return;
-        }
-
         using NpgsqlCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
             INSERT INTO {TableName} (collection, key)
-            VALUES(@collection, '')";
+            VALUES(@collection, '')
+            ON CONFLICT (collection, key)
+            DO NOTHING";
         cmd.Parameters.AddWithValue("@collection", collectionName);
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -143,7 +152,7 @@ internal sealed class Database
             DO UPDATE SET metadata=@metadata, embedding=@embedding, timestamp=@timestamp";
         cmd.Parameters.AddWithValue("@collection", collectionName);
         cmd.Parameters.AddWithValue("@key", key);
-        cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
+        cmd.Parameters.AddWithValue("@metadata", NpgsqlTypes.NpgsqlDbType.Jsonb, metadata ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@embedding", embedding ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@timestamp", timestamp ?? (object)DBNull.Value);
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
