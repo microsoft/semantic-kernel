@@ -92,10 +92,15 @@ public class ChatHistoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetChatSessionByIdAsync(Guid chatId)
     {
-        var chat = await this._sessionRepository.FindByIdAsync(chatId.ToString());
-        if (chat == null)
+        ChatSession? chat = null;
+        try
         {
-            return this.NotFound($"Chat of id {chatId} not found.");
+            // Make sure the chat session exists
+            chat = await this._sessionRepository.FindByIdAsync(chatId.ToString());
+        }
+        catch (KeyNotFoundException)
+        {
+            return this.NotFound($"No chat session found for chat id '{chatId}'.");
         }
 
         return this.Ok(chat);
@@ -169,10 +174,15 @@ public class ChatHistoryController : ControllerBase
     {
         string chatId = chatParameters.Id;
 
-        ChatSession? chat = await this._sessionRepository.FindByIdAsync(chatId);
-        if (chat == null)
+        ChatSession? chat = null;
+        try
         {
-            return this.NotFound($"Chat of id {chatId} not found.");
+            // Make sure the chat session exists
+            chat = await this._sessionRepository.FindByIdAsync(chatId);
+        }
+        catch (KeyNotFoundException)
+        {
+            return this.NotFound($"No chat session found for chat id '{chatId}'.");
         }
 
         chat.Title = chatParameters.Title;
@@ -195,6 +205,16 @@ public class ChatHistoryController : ControllerBase
         Guid chatId)
     {
         this._logger.LogInformation("Get imported sources of chat session {0}", chatId);
+
+        try
+        {
+            // Make sure the chat session exists
+            await this._sessionRepository.FindByIdAsync(chatId.ToString());
+        }
+        catch (KeyNotFoundException)
+        {
+            return this.NotFound($"No chat session found for chat id '{chatId}'.");
+        }
 
         return this.Ok(await this._sourceRepository.FindByChatIdAsync(chatId.ToString()));
     }

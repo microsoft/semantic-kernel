@@ -27,7 +27,6 @@ import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
 import botIcon3 from '../assets/bot-icons/bot-icon-3.png';
 import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
 import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
-import { ChatMemorySource } from './models/ChatMemorySource';
 import { IChatUser } from './models/ChatUser';
 
 import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
@@ -249,11 +248,18 @@ export const useChat = () => {
         return botProfilePictures[index % botProfilePictures.length];
     };
 
-    const getChatMemorySources = async (chatId: string): Promise<ChatMemorySource[]> => {
-        return await chatService.getChatMemorySourcesAsync(
-            chatId,
-            await AuthHelper.getSKaaSAccessToken(instance, inProgress),
-        );
+    const getChatMemorySources = async (chatId: string) => {
+        try {
+            return await chatService.getChatMemorySourcesAsync(
+                chatId,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            const errorMessage = `Unable to get chat files. Details: ${e.message ?? e}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+
+        return [];
     };
 
     /*
