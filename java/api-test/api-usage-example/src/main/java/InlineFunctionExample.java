@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
-import com.microsoft.openai.AzureOpenAIClient;
-import com.microsoft.openai.OpenAIAsyncClient;
+
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.AzureOpenAIClient;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -19,7 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.CountDownLatch;
 
 public class InlineFunctionExample {
@@ -27,13 +28,13 @@ public class InlineFunctionExample {
     private static final Logger LOGGER = LoggerFactory.getLogger(InlineFunctionExample.class);
     private static final String MODEL = "text-davinci-003";
 
-    private static String API_KEY = "";
-    private static String ENDPOINT = "";
+    private static final String API_KEY;
+    private static final String ENDPOINT;
 
     static{
         try {
-            API_KEY = getToken(AZURE_CONF_PROPERTIES);
-            ENDPOINT = getEndpoint(AZURE_CONF_PROPERTIES);
+            API_KEY = getToken();
+            ENDPOINT = getEndpoint();
         } catch (IOException e) {
             throw new ExceptionInInitializerError ("Error reading config file or properties. " + e.getMessage());
         }
@@ -70,18 +71,18 @@ public class InlineFunctionExample {
                 phrase throughout the Iliad and Odyssey.[a][2];
                 """;
 
-    private static String getToken(String configName) throws IOException {
-        return getConfigValue(configName, "token");
+    private static String getToken() throws IOException {
+        return getConfigValue("token");
     }
 
-    private static String getEndpoint(String configName) throws IOException {
-        return getConfigValue(configName, "endpoint");
+    private static String getEndpoint() throws IOException {
+        return getConfigValue("endpoint");
     }
 
-    private static String getConfigValue(String configName, String propertyName)
+    private static String getConfigValue(String propertyName)
             throws IOException {
-        String propertyValue = "";
-        Path configPath = Paths.get(System.getProperty("user.home"), ".oai", configName);
+        String propertyValue;
+        Path configPath = Paths.get(System.getProperty("user.home"), ".oai", AZURE_CONF_PROPERTIES);
         Properties props = new Properties();
         try (var reader = Files.newBufferedReader(configPath)) {
             props.load(reader);
@@ -127,9 +128,7 @@ public class InlineFunctionExample {
 
         CountDownLatch cdl = new CountDownLatch(1);        
         summarize.invokeAsync(TEXT_TO_SUMMARIZE).subscribe(
-                context -> {
-                    LOGGER.info("Result: {} ", context.getResult());
-                },
+                context -> LOGGER.info("Result: {} ", context.getResult()),
                 error -> {
                     LOGGER.error("Error: {} ", error.getMessage());
                     cdl.countDown();

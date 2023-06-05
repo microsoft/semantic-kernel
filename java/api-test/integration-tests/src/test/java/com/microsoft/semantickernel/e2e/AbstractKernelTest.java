@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.e2e;
 
-import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
-import com.microsoft.openai.AzureOpenAIClient;
-import com.microsoft.openai.OpenAIAsyncClient;
+
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.AzureOpenAIClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -42,14 +42,14 @@ public class AbstractKernelTest {
 
     public static OpenAIAsyncClient getOpenAIClient() throws IOException {
         String apiKey = getToken(CONF_OPENAI_PROPERTIES);
-        return new com.microsoft.openai.OpenAIClientBuilder().setApiKey(apiKey).build();
+        return new com.microsoft.semantickernel.openai.client.OpenAIClientBuilder().setApiKey(apiKey).build();
     }
 
     public static OpenAIAsyncClient getAzureOpenAIClient() throws IOException {
         String apiKey = getToken(AZURE_CONF_PROPERTIES);
 
         com.azure.ai.openai.OpenAIAsyncClient client =
-                new OpenAIClientBuilder()
+                new com.azure.ai.openai.OpenAIClientBuilder()
                         .endpoint(getEndpoint(AZURE_CONF_PROPERTIES))
                         .credential(new AzureKeyCredential(apiKey))
                         .buildAsyncClient();

@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.e2e;
 
-import com.microsoft.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
+
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -42,7 +43,10 @@ public class KernelTest extends AbstractKernelTest {
         CompletionSKFunction summarize =
                 kernel.getSemanticFunctionBuilder()
                         .createFunction(
-                                "{{$input}}\n" + "\n" + "One line TLDR with the fewest words.",
+                                """
+                                        {{$input}}
+
+                                        One line TLDR with the fewest words.""",
                                 null,
                                 "",
                                 null,
@@ -50,16 +54,16 @@ public class KernelTest extends AbstractKernelTest {
                                         0, 0, 0, 0, 256, new ArrayList<>()));
 
         String text1 =
-                "1st Law of Thermodynamics - Energy cannot be created or destroyed.\n"
-                    + "2nd Law of Thermodynamics - For a spontaneous process, the entropy of the"
-                    + " universe increases.\n"
-                    + "3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero"
-                    + " entropy";
+                """
+                        1st Law of Thermodynamics - Energy cannot be created or destroyed.
+                        2nd Law of Thermodynamics - For a spontaneous process, the entropy of the universe increases.
+                        3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero entropy""";
 
         Mono<CompletionSKContext> mono = summarize.invokeAsync(text1);
         CompletionSKContext result = mono.block();
 
-        LOGGER.info("Result: " + result.getResult());
+        if (result != null)
+            LOGGER.info("Result: " + result.getResult());
     }
 
     public static Kernel buildKernel(OpenAIAsyncClient client, String model) {
