@@ -6,7 +6,7 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-from semantic_kernel.connectors.memory import weaviate_memory_store
+from semantic_kernel.connectors.memory.weaviate import weaviate_memory_store
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 if not sys.platform.startswith("linux") or sys.version_info < (3, 9):
@@ -14,7 +14,7 @@ if not sys.platform.startswith("linux") or sys.version_info < (3, 9):
         "test_weaviate_memory_store uses embedded weaviate which only runs on Linux with Python 3.9+ at the moment",
         allow_module_level=True,
     )
-    
+
 
 @pytest.fixture
 def documents():
@@ -67,7 +67,8 @@ def documents():
 
 @pytest.fixture
 def memory_store():
-    config = weaviate_memory_store.WeaviateConfig(use_embed=True)
+    # startup period default is 5, but integration tests are flaky without a higher value
+    config = weaviate_memory_store.WeaviateConfig(use_embed=True, startup_period=10)
     store = weaviate_memory_store.WeaviateMemoryStore(config)
     store.client.schema.delete_all()
     yield store
