@@ -51,8 +51,8 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
                 {
                     <Avatar
                         className={classes.root}
-                        key={account?.name}
-                        name={account?.name}
+                        key={account?.name ?? account?.username}
+                        name={account?.name ?? account?.username}
                         size={28}
                         badge={{ status: 'available' }}
                     />
@@ -62,7 +62,7 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
                 <MenuList>
                     <MenuItem className={classes.persona}>
                         <Persona
-                            name={account?.name}
+                            name={account?.name ?? account?.username}
                             secondaryText={account?.username}
                             presence={{ status: 'available' }}
                             avatar={{ color: 'colorful' }}

@@ -11,7 +11,6 @@ dotnet/.config
 *.user
 *.userosscache
 *.sln.docstates
-nuget.config
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -408,6 +407,7 @@ FodyWeavers.xsd
 *.cer
 *.crt
 *.key
+*.pem
 
 .env
 certs/
@@ -467,3 +467,6 @@ data/chatstore*
 # Java build
 java/**/target
 java/.mvn/wrapper/maven-wrapper.jar
+
+# Java settings
+conf.properties

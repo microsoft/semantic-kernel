@@ -16,6 +16,7 @@ using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.CopilotChat.Extensions;
+using SemanticKernel.Service.CopilotChat.Storage;
 using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service;
@@ -41,7 +42,8 @@ internal static class SemanticKernelExtensions
             IKernel kernel = Kernel.Builder
                 .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
                 .WithMemory(sp.GetRequiredService<ISemanticTextMemory>())
-                .WithConfiguration(sp.GetRequiredService<KernelConfig>())
+                .WithCompletionBackend(sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
+                .WithEmbeddingBackend(sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
                 .Build();
 
             sp.GetRequiredService<RegisterSkillsWithKernel>()(sp, kernel);
@@ -51,13 +53,8 @@ internal static class SemanticKernelExtensions
         // Semantic memory
         services.AddSemanticTextMemory();
 
-        // AI backends
-        services.AddScoped<KernelConfig>(serviceProvider => new KernelConfig()
-            .AddCompletionBackend(serviceProvider.GetRequiredService<IOptions<AIServiceOptions>>().Value)
-            .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptions<AIServiceOptions>>().Value));
-
         // Register skills
-        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkills);
+        services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkillsAsync);
 
         return services;
     }
@@ -65,7 +62,7 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Register the skills with the kernel.
     /// </summary>
-    private static Task RegisterSkills(IServiceProvider sp, IKernel kernel)
+    private static Task RegisterSkillsAsync(IServiceProvider sp, IKernel kernel)
     {
         // Copilot chat skills
         kernel.RegisterCopilotChatSkills(sp);
@@ -117,11 +114,12 @@ internal static class SemanticKernelExtensions
 
                 services.AddSingleton<IMemoryStore>(sp =>
                 {
-                    HttpClient httpClient = new HttpClient(new HttpClientHandler { CheckCertificateRevocationList = true });
+                    HttpClient httpClient = new(new HttpClientHandler { CheckCertificateRevocationList = true });
                     if (!string.IsNullOrWhiteSpace(config.Qdrant.Key))
                     {
                         httpClient.DefaultRequestHeaders.Add("api-key", config.Qdrant.Key);
                     }
+
                     return new QdrantMemoryStore(new QdrantVectorDbClient(
                         config.Qdrant.Host, config.Qdrant.VectorSize, port: config.Qdrant.Port, httpClient: httpClient, log: sp.GetRequiredService<ILogger<IQdrantVectorDbClient>>()));
                 });
@@ -143,19 +141,25 @@ internal static class SemanticKernelExtensions
             default:
                 throw new InvalidOperationException($"Invalid 'MemoriesStore' type '{config.Type}'.");
         }
+
+        // High level semantic memory implementations, such as Azure Cognitive Search, do not allow for providing embeddings when storing memories.
+        // We wrap the memory store in an optional memory store to allow controllers to pass dependency injection validation and potentially optimize
+        // for a lower-level memory implementation (e.g. Qdrant). Lower level memory implementations (i.e., IMemoryStore) allow for reusing embeddings,
+        // whereas high level memory implementation (i.e., ISemanticTextMemory) assume embeddings get recalculated on every write.
+        services.AddSingleton<OptionalIMemoryStore>(sp => new OptionalIMemoryStore() { MemoryStore = sp.GetService<IMemoryStore>() });
     }
 
     /// <summary>
     /// Add the completion backend to the kernel config
     /// </summary>
-    private static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions options)
+    private static KernelBuilder WithCompletionBackend(this KernelBuilder kernelBuilder, AIServiceOptions options)
     {
         return options.Type switch
         {
             AIServiceOptions.AIServiceType.AzureOpenAI
-                => kernelConfig.AddAzureChatCompletionService(options.Models.Completion, options.Endpoint, options.Key),
+                => kernelBuilder.WithAzureChatCompletionService(options.Models.Completion, options.Endpoint, options.Key),
             AIServiceOptions.AIServiceType.OpenAI
-                => kernelConfig.AddOpenAIChatCompletionService(options.Models.Completion, options.Key),
+                => kernelBuilder.WithOpenAIChatCompletionService(options.Models.Completion, options.Key),
             _
                 => throw new ArgumentException($"Invalid {nameof(options.Type)} value in '{AIServiceOptions.PropertyName}' settings."),
         };
@@ -164,14 +168,14 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Add the embedding backend to the kernel config
     /// </summary>
-    private static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceOptions options)
+    private static KernelBuilder WithEmbeddingBackend(this KernelBuilder kernelBuilder, AIServiceOptions options)
     {
         return options.Type switch
         {
             AIServiceOptions.AIServiceType.AzureOpenAI
-                => kernelConfig.AddAzureTextEmbeddingGenerationService(options.Models.Embedding, options.Endpoint, options.Key),
+                => kernelBuilder.WithAzureTextEmbeddingGenerationService(options.Models.Embedding, options.Endpoint, options.Key),
             AIServiceOptions.AIServiceType.OpenAI
-                => kernelConfig.AddOpenAITextEmbeddingGenerationService(options.Models.Embedding, options.Key),
+                => kernelBuilder.WithOpenAITextEmbeddingGenerationService(options.Models.Embedding, options.Key),
             _
                 => throw new ArgumentException($"Invalid {nameof(options.Type)} value in '{AIServiceOptions.PropertyName}' settings."),
         };
@@ -183,7 +187,7 @@ internal static class SemanticKernelExtensions
     /// <param name="options">The service configuration</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
-    private static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions options,
+    private static ITextEmbeddingGeneration ToTextEmbeddingsService(this AIServiceOptions options,
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {

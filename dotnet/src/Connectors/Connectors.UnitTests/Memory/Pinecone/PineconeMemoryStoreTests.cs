@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -101,11 +101,11 @@ public class PineconeMemoryStoreTests
             .Returns(new string[] { "test1", "test2" }.ToAsyncEnumerable());
 
         // Act
-        string[] collections = await this._pineconeMemoryStore.GetCollectionsAsync().ToArrayAsync();
+        var collections = await this._pineconeMemoryStore.GetCollectionsAsync().ToListAsync();
 
         // Assert
         this._mockPineconeClient.Verify<IAsyncEnumerable<string?>>(x => x.ListIndexesAsync(It.IsAny<CancellationToken>()), Times.Once());
-        Assert.Equal(2, collections.Length);
+        Assert.Equal(2, collections.Count);
         Assert.Equal("test1", collections[0]);
         Assert.Equal("test2", collections[1]);
     }
@@ -223,7 +223,7 @@ public class PineconeMemoryStoreTests
         // Arrange
         Embedding<float> embedding = new(new float[] { 0.1f, 0.2f });
 
-        List<(PineconeDocument, double)> queryResults = new List<(PineconeDocument, double)>
+        List<(PineconeDocument, double)> queryResults = new()
         {
             new(new()
             {

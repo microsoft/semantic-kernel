@@ -109,37 +109,30 @@ public sealed class SequentialPlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder
-            .WithLogger(this._logger)
-            .Configure(config =>
-            {
-                if (useChatModel)
-                {
-                    config.AddAzureChatCompletionService(
-                        deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                        endpoint: azureOpenAIConfiguration.Endpoint,
-                        apiKey: azureOpenAIConfiguration.ApiKey);
-                }
-                else
-                {
-                    config.AddAzureTextCompletionService(
-                        deploymentName: azureOpenAIConfiguration.DeploymentName,
-                        endpoint: azureOpenAIConfiguration.Endpoint,
-                        apiKey: azureOpenAIConfiguration.ApiKey);
-                }
+        var builder = Kernel.Builder.WithLogger(this._logger);
 
-                if (useEmbeddings)
-                {
-                    config.AddAzureTextEmbeddingGenerationService(
-                        deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                        endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                        apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-                }
-            });
+        if (useChatModel)
+        {
+            builder.WithAzureChatCompletionService(
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+        else
+        {
+            builder.WithAzureTextCompletionService(
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
+        }
 
         if (useEmbeddings)
         {
-            builder = builder.WithMemoryStorage(new VolatileMemoryStore());
+            builder.WithAzureTextEmbeddingGenerationService(
+                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
+                .WithMemoryStorage(new VolatileMemoryStore());
         }
 
         var kernel = builder.Build();

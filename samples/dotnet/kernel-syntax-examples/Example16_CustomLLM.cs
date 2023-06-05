@@ -2,13 +2,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using RepoUtils;
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 /**
  * The following example shows how to plug into SK a custom text completion model.
@@ -28,12 +29,9 @@ public class MyTextCompletionService : ITextCompletion
         });
     }
 
-    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return new List<ITextCompletionStreamingResult>()
-        {
-            new MyTextCompletionStreamingResult()
-        }.ToAsyncEnumerable();
+        yield return new MyTextCompletionStreamingResult();
     }
 }
 
@@ -85,12 +83,13 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM - Text Completion - SKFunction ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        ITextCompletion Factory(IKernel k) => new MyTextCompletionService();
-
-        // Add your text completion service
-        kernel.Config.AddTextCompletionService(Factory);
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            // Add your text completion service as a singleton instance
+            .WithAIService<ITextCompletion>("myService1", new MyTextCompletionService())
+            // Add your text completion service as a factory method
+            .WithAIService<ITextCompletion>("myService2", (_) => new MyTextCompletionService())
+            .Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
 

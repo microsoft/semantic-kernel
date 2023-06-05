@@ -1,6 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -9,14 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.33.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="0.14.547.1-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" Version="0.14.547.1-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch" Version="0.14.547.1-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Memory.Qdrant" Version="0.14.547.1-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.MsGraph" Version="0.14.547.1-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.OpenAPI" Version="0.14.547.1-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.14.547.1-preview" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.34.0" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="0.15.230531.5-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" Version="0.15.230531.5-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch" Version="0.15.230531.5-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Memory.Qdrant" Version="0.15.230531.5-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.MsGraph" Version="0.15.230531.5-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.OpenAPI" Version="0.15.230531.5-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.15.230531.5-preview" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.2" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
     <PackageReference Include="Microsoft.Identity.Web" Version="2.11.0" />
@@ -24,24 +25,20 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-
   <PropertyGroup>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

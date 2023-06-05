@@ -17,11 +17,8 @@ public static class Example15_MemorySkill
     {
         var kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .Configure(c =>
-            {
-                c.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
-                c.AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
-            })
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -39,7 +36,7 @@ public static class Example15_MemorySkill
         kernel.ImportSkill(new TextMemorySkill());
 
         // Build a semantic function that saves info to memory
-        const string SaveFunctionDefinition = @"{{save $info}}";
+        const string SaveFunctionDefinition = "{{save $info}}";
         var memorySaver = kernel.CreateSemanticFunction(SaveFunctionDefinition);
 
         var context = kernel.CreateNewContext();

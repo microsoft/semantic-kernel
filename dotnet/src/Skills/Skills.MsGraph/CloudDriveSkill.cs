@@ -47,7 +47,7 @@ public class CloudDriveSkill
         this._logger.LogDebug("Getting file content for '{0}'", filePath);
         Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
 
-        using StreamReader sr = new StreamReader(fileContentStream);
+        using StreamReader sr = new(fileContentStream);
         string content = await sr.ReadToEndAsync().ConfigureAwait(false);
         this._logger.LogDebug("File content: {0}", content);
         return content;
@@ -59,7 +59,7 @@ public class CloudDriveSkill
     [SKFunction("Upload a small file to OneDrive (less than 4MB).")]
     public async Task UploadFileAsync(string filePath, SKContext context)
     {
-        if (!context.Variables.Get(Parameters.DestinationPath, out string destinationPath))
+        if (!context.Variables.TryGetValue(Parameters.DestinationPath, out string? destinationPath))
         {
             context.Fail($"Missing variable {Parameters.DestinationPath}.");
             return;

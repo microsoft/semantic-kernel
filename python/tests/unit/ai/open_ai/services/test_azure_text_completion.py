@@ -151,4 +151,5 @@ async def test_azure_text_completion_call_with_parameters() -> None:
             presence_penalty=complete_request_settings.presence_penalty,
             frequency_penalty=complete_request_settings.frequency_penalty,
             stop=None,
+            stream=False,
         )

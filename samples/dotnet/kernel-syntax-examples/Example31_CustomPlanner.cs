@@ -120,19 +120,14 @@ internal static class Example31_CustomPlanner
     {
         return new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .Configure(
-                config =>
-                {
-                    config.AddAzureTextCompletionService(
-                        Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                        Env.Var("AZURE_OPENAI_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_KEY"));
-
-                    config.AddAzureTextEmbeddingGenerationService(
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
-                })
+            .WithAzureTextCompletionService(
+                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_KEY"))
+            .WithAzureTextEmbeddingGenerationService(
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
     }
@@ -145,7 +140,7 @@ public class MarkupSkill
     [SKFunctionName("RunMarkup")]
     public async Task<SKContext> RunMarkupAsync(SKContext context)
     {
-        var docString = context.Variables.Input;
+        string docString = context.Variables.Input;
         var plan = docString.FromMarkup("Run a piece of xml markup", context);
 
         Console.WriteLine("Markup plan:");
