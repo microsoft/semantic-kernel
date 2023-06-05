@@ -13,7 +13,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Weaviate;
 
 /// <summary>
-/// Tests for <see cref="s_weaviateMemoryStore" /> collection and upsert operations.
+/// Tests for <see cref="WeaviateMemoryStore" /> collection and upsert operations.
 /// These tests can be run by launching a Weaviate instance using the docker-compose.yml file found in this directory.
 /// The Weaviate instance API key is set in the Docker Container as "my-secret-key".
 /// </summary>
@@ -76,30 +76,19 @@ public class WeaviateMemoryStoreTests
     {
         await DeleteAllClassesAsync();
 
-        Assert.Empty((await s_weaviateMemoryStore.GetCollectionsAsync().ToArrayAsync()));
+        Assert.Empty(await s_weaviateMemoryStore.GetCollectionsAsync().ToListAsync());
 
         var collectionName = "SK" + Guid.NewGuid();
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
-        Assert.Single((await s_weaviateMemoryStore.GetCollectionsAsync().ToArrayAsync()));
+        Assert.Single((await s_weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
 
         var collectionName2 = "SK" + Guid.NewGuid();
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName2);
         Assert.True(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName2));
 
-        Assert.Equal(2, (await s_weaviateMemoryStore.GetCollectionsAsync().ToArrayAsync()).Length);
-    }
-
-    private static async Task DeleteAllClassesAsync()
-    {
-        var classes = s_weaviateMemoryStore.GetCollectionsAsync();
-        await foreach (var @class in classes)
-        {
-#pragma warning disable CA2000
-            await s_httpClient.SendAsync(new(HttpMethod.Delete, $"schema/{@class}"));
-#pragma warning restore CA2000
-        }
+        Assert.Equal(2, (await s_weaviateMemoryStore.GetCollectionsAsync().ToListAsync()).Count);
     }
 
     [Fact(Skip = "Do not run on CI")]
@@ -107,17 +96,17 @@ public class WeaviateMemoryStoreTests
     {
         await DeleteAllClassesAsync();
 
-        Assert.Empty((await s_weaviateMemoryStore.GetCollectionsAsync().ToArrayAsync()));
+        Assert.Empty((await s_weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
 
         var collectionName = "SK" + Guid.NewGuid();
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
-        Assert.Single((await s_weaviateMemoryStore.GetCollectionsAsync().ToArrayAsync()));
+        Assert.Single((await s_weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
 
         await s_weaviateMemoryStore.DeleteCollectionAsync(collectionName);
         Assert.False(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
-        Assert.Empty((await s_weaviateMemoryStore.GetCollectionsAsync().ToArrayAsync()));
+        Assert.Empty((await s_weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
     }
 
     [Fact(Skip = "Do not run on CI")]
@@ -228,12 +217,12 @@ public class WeaviateMemoryStoreTests
             timestamp: timestamp3);
 
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName);
-        var response = await s_weaviateMemoryStore.UpsertBatchAsync(collectionName, new[] { memoryRecord1, memoryRecord2, memoryRecord3 }).ToArrayAsync();
+        var response = await s_weaviateMemoryStore.UpsertBatchAsync(collectionName, new[] { memoryRecord1, memoryRecord2, memoryRecord3 }).ToListAsync();
         Assert.Equal(id1, response[0]);
         Assert.Equal(id2, response[1]);
         Assert.Equal(id3, response[2]);
 
-        var results = await s_weaviateMemoryStore.GetNearestMatchesAsync(collectionName, embedding1, 100, 0.8, true).ToArrayAsync();
+        var results = await s_weaviateMemoryStore.GetNearestMatchesAsync(collectionName, embedding1, 100, 0.8, true).ToListAsync();
 
         (MemoryRecord, double) first = results[0];
         (MemoryRecord, double) second = results[1];
@@ -273,7 +262,18 @@ public class WeaviateMemoryStoreTests
         Assert.Equal(memoryRecord3.Metadata.IsReference, closest.Value.Item1.Metadata.IsReference);
 
         await s_weaviateMemoryStore.RemoveBatchAsync(collectionName, new[] { id1, id2, id3 });
-        var memoryRecordsAfterDeletion = await s_weaviateMemoryStore.GetBatchAsync(collectionName, new[] { id1, id2, id3 }).ToArrayAsync();
+        var memoryRecordsAfterDeletion = await s_weaviateMemoryStore.GetBatchAsync(collectionName, new[] { id1, id2, id3 }).ToListAsync();
         Assert.Empty(memoryRecordsAfterDeletion);
+    }
+
+    private static async Task DeleteAllClassesAsync()
+    {
+        var classes = s_weaviateMemoryStore.GetCollectionsAsync();
+        await foreach (var @class in classes)
+        {
+#pragma warning disable CA2000
+            await s_httpClient.SendAsync(new(HttpMethod.Delete, $"schema/{@class}"));
+#pragma warning restore CA2000
+        }
     }
 }

@@ -24,4 +24,7 @@
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/Linq/AsyncEnumerable.cs"/>
+  </ItemGroup>
 </Project>
