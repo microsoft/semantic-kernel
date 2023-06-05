@@ -101,11 +101,11 @@ public class PineconeMemoryStoreTests
             .Returns(new string[] { "test1", "test2" }.ToAsyncEnumerable());
 
         // Act
-        string[] collections = await this._pineconeMemoryStore.GetCollectionsAsync().ToArrayAsync();
+        var collections = await this._pineconeMemoryStore.GetCollectionsAsync().ToListAsync();
 
         // Assert
         this._mockPineconeClient.Verify<IAsyncEnumerable<string?>>(x => x.ListIndexesAsync(It.IsAny<CancellationToken>()), Times.Once());
-        Assert.Equal(2, collections.Length);
+        Assert.Equal(2, collections.Count);
         Assert.Equal("test1", collections[0]);
         Assert.Equal("test2", collections[1]);
     }
