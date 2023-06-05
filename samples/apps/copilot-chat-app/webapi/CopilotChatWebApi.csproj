@@ -23,6 +23,7 @@
     <PackageReference Include="Microsoft.Identity.Web" Version="2.11.0" />
     <PackageReference Include="PdfPig" Version="0.1.8-alpha-20230423-3898f" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 
   <PropertyGroup>
