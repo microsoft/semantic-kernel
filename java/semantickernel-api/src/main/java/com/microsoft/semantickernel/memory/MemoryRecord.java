@@ -140,6 +140,29 @@ public class MemoryRecord extends DataEntryBase {
                 metadata, embedding != null ? embedding : Embedding.empty(), key, timestamp);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MemoryRecord that = (MemoryRecord) o;
+
+        if (!embedding.equals(that.embedding)) return false;
+        return metadata.equals(that.metadata);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = embedding.hashCode();
+        result = 31 * result + metadata.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "MemoryRecord{" + "embedding=" + embedding + ", metadata=" + metadata + '}';
+    }
+
     /*
        /// <summary>
        /// Create a memory record from a serialized metadata string.
