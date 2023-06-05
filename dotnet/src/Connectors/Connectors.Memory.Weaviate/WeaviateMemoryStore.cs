@@ -36,12 +36,6 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     // https://weaviate.io/developers/weaviate/configuration/schema-configuration#class
     private static readonly Regex s_classNameRegEx = new("[^0-9a-zA-Z]+", RegexOptions.Compiled);
 
-    /// <summary>
-    /// This is used as a prefix for Weaviate class names to indicate that they are
-    /// owned, controlled and managed by Semantic Kernel.
-    /// </summary>
-    private const string ClassNamePrefix = "SK";
-
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -50,7 +44,6 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
 
     private readonly HttpClient _httpClient;
     private readonly bool _isSelfManagedHttpClient;
-
     private readonly ILogger _log;
     private bool _disposed;
 
@@ -60,7 +53,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     public WeaviateMemoryStore(string scheme, string host, int port, string? apiKey = null, HttpClient? httpClient = null, ILogger? logger = null)
     {
         Verify.ArgNotNullOrEmpty(scheme, "Scheme cannot be null or empty");
-        Verify.ArgNotNullOrEmpty(host, "Endpoint cannot be null or empty");
+        Verify.ArgNotNullOrEmpty(host, "Host cannot be null or empty");
 
         this._log = logger ?? NullLogger<WeaviateMemoryStore>.Instance;
         if (httpClient == null)
@@ -95,20 +88,19 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
         string className = ToWeaviateFriendlyClassName(collectionName);
+        string description = ToWeaviateFriendlyClassDescription(collectionName);
+
         this._log.LogTrace("Creating collection: {0}, with class name: {1}", collectionName, className);
 
-        using HttpRequestMessage request = CreateClassSchemaRequest
-            .Create(className, ToWeaviateFriendlyClassDescription(collectionName))
-            .Build();
-
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
-        CreateClassSchemaResponse? result = JsonSerializer.Deserialize<CreateClassSchemaResponse>(responseContent, s_jsonSerializerOptions);
+        using HttpRequestMessage request = CreateClassSchemaRequest.Create(className, description).Build();
 
         try
         {
+            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+            CreateClassSchemaResponse? result = JsonSerializer.Deserialize<CreateClassSchemaResponse>(responseContent, s_jsonSerializerOptions);
             response.EnsureSuccessStatusCode();
 
-            if (result == null || result.Description != ToWeaviateFriendlyClassDescription(collectionName))
+            if (result == null || result.Description != description)
             {
                 throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.CollectionNameConflict,
                     $"Name conflict for collection: {collectionName} with class name: {className}");
@@ -132,33 +124,37 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         this._log.LogTrace("Does collection exist: {0}, with class name: {1}:", collectionName, className);
 
         using HttpRequestMessage request = GetClassRequest.Create(className).Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        // Needs to return a non-404 AND collection name should match
-        bool exists = response.StatusCode != HttpStatusCode.NotFound;
+        try
+        {
+            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        if (!exists)
-        {
-            this._log.LogTrace("Collection: {0}, with class name: {1}, does not exist.", collectionName, className);
-        }
-        else
-        {
-            GetClassResponse? existing = JsonSerializer.Deserialize<GetClassResponse>(responseContent, s_jsonSerializerOptions);
-            if (existing != null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
+            // Needs to return a non-404 AND collection name should match
+            bool exists = response.StatusCode != HttpStatusCode.NotFound;
+            if (!exists)
             {
-                // ReSharper disable once CommentTypo
-                // Check that we don't have an accidental conflict.
-                // For example a collectionName of '__this_collection' and 'this_collection' are
-                // both transformed to the class name of <classNamePrefix>thiscollection - even though the external
-                // system could consider them as unique collection names.
-                if (existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
+                this._log.LogTrace("Collection: {0}, with class name: {1}, does not exist.", collectionName, className);
+            }
+            else
+            {
+                GetClassResponse? existing = JsonSerializer.Deserialize<GetClassResponse>(responseContent, s_jsonSerializerOptions);
+                if (existing != null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
                 {
+                    // ReSharper disable once CommentTypo
+                    // Check that we don't have an accidental conflict.
+                    // For example a collectionName of '__this_collection' and 'this_collection' are
+                    // both transformed to the class name of <classNamePrefix>thiscollection - even though the external
+                    // system could consider them as unique collection names.
                     throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.CollectionNameConflict, $"Unable to verify existing collection: {collectionName} with class name: {className}");
                 }
             }
-        }
 
-        return exists;
+            return exists;
+        }
+        catch (Exception e)
+        {
+            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToGetClass, "Unable to get class from Weaviate", e);
+        }
     }
 
     /// <inheritdoc />
@@ -167,12 +163,24 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         this._log.LogTrace("Listing collections");
 
         using HttpRequestMessage request = GetSchemaRequest.Create().Build();
-        (HttpResponseMessage _, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        string responseContent;
+        try
+        {
+            (HttpResponseMessage response, responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToListCollections, "Unable to list collections", e);
+        }
 
         GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
+        if (getSchemaResponse == null)
+        {
+            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToListCollections, "Unable to deserialize list collections response");
+        }
 
-        foreach (GetClassResponse? @class in getSchemaResponse!.Classes!
-                     .Where(@class => IsPossibleSemanticKernelCollection(@class.Class!)))
+        foreach (GetClassResponse? @class in getSchemaResponse.Classes!)
         {
             yield return @class.Class!;
         }
@@ -183,22 +191,20 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     {
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
+        string className = ToWeaviateFriendlyClassName(collectionName);
+        this._log.LogTrace("Deleting collection: {0}, with class name: {1}", collectionName, className);
+
         if (await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
-            string className = ToWeaviateFriendlyClassName(collectionName);
-            this._log.LogTrace("Deleting collection: {0}, with class name: {1}", collectionName, className);
-
-            using HttpRequestMessage request = DeleteSchemaRequest.Create(className).Build();
-            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
-
             try
             {
+                using HttpRequestMessage request = DeleteSchemaRequest.Create(className).Build();
+                (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
             }
-            catch (HttpRequestException e)
+            catch (Exception e)
             {
-                this._log.LogError(e, "Collection deletion failed: {0}, {1}", e.Message, responseContent);
-                throw;
+                throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToDeleteCollection, "Collection deletion failed", e);
             }
         }
     }
@@ -217,7 +223,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     {
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
-        this._log.LogTrace("Upserting vectors");
+        this._log.LogTrace("Upsert vectors");
 
         string className = ToWeaviateFriendlyClassName(collectionName);
         BatchRequest requestBuilder = BatchRequest.Create(className);
@@ -227,11 +233,26 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         }
 
         using HttpRequestMessage request = requestBuilder.Build();
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+        string responseContent;
+        try
+        {
+            (HttpResponseMessage response, responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToUpsertVectors, e);
+        }
+
         BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonSerializerOptions);
-        foreach (BatchResponse batchResponse in result!)
+
+        if (result == null)
+        {
+            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToUpsertVectors, "Unable to deserialize batch response");
+        }
+
+        foreach (BatchResponse batchResponse in result)
         {
             yield return batchResponse.Id!;
         }
@@ -249,21 +270,22 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
             Additional = withEmbedding ? new[] { "vector" } : null
         }.Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        string responseContent;
         try
         {
+            (HttpResponseMessage response, responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
         }
         catch (HttpRequestException e)
         {
-            this._log.LogTrace("Request for vector failed {0}", e.Message);
+            this._log.LogError("Request for vector failed {0}", e.Message);
             return null;
         }
 
         WeaviateObject? weaviateObject = JsonSerializer.Deserialize<WeaviateObject>(responseContent, s_jsonSerializerOptions);
         if (weaviateObject == null)
         {
-            this._log.LogWarning("Unable to deserialize response to WeaviateObject");
+            this._log.LogError("Unable to deserialize response to WeaviateObject");
             return null;
         }
 
@@ -316,12 +338,12 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
             Class = className,
             Id = key
         };
-        using HttpRequestMessage request = requestBuilder.Build();
 
-        (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpRequestMessage request = requestBuilder.Build();
 
         try
         {
+            (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             this._log.LogTrace("Vector deleted");
         }
@@ -359,12 +381,11 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
             WithVector = withEmbeddings
         }.Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
         List<(MemoryRecord, double)> result = new();
-
         try
         {
+            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             GraphResponse? data = JsonSerializer.Deserialize<GraphResponse>(responseContent, s_jsonSerializerOptions);
 
             if (data == null)
@@ -383,9 +404,9 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
                 result.Add((memoryRecord, distance));
             }
         }
-        catch (Exception exception)
+        catch (Exception e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToGetVectorData, "Unable to deserialize Weaviate object", exception);
+            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToGetVectorData, "Unable to deserialize Weaviate object", e);
         }
 
         foreach ((MemoryRecord, double) kv in result)
@@ -447,28 +468,22 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     // Get a class description, useful for checking name collisions
     private static string ToWeaviateFriendlyClassDescription(string collectionName)
     {
-        return $"Semantic Kernel memory store for collection: {collectionName}";
+        return $"{"Semantic Kernel memory store for collection:"} {collectionName}";
     }
 
     // Convert a collectionName to a valid Weaviate class name
     private static string ToWeaviateFriendlyClassName(string collectionName)
     {
         // Prefix class names with to ensure proper case for Weaviate Classes
-        return $"{ClassNamePrefix}{s_classNameRegEx.Replace(collectionName, string.Empty)}";
-    }
-
-    // Check to see if a class name is possibly a semantic kernel collection
-    private static bool IsPossibleSemanticKernelCollection(string collectionName)
-    {
-        if (!collectionName.StartsWith(ClassNamePrefix, StringComparison.Ordinal))
+        var sanitised = s_classNameRegEx.Replace(collectionName, string.Empty);
+        if (!char.IsLetter(sanitised[0]))
         {
-            return false;
+            throw new ArgumentException("collectionName must start with a letter.", nameof(collectionName));
         }
 
-        string remainder = collectionName.Substring(2);
-#pragma warning disable CA1308
-        return remainder.Equals(remainder.ToLowerInvariant(), StringComparison.Ordinal);
-#pragma warning restore CA1308
+        return !char.IsUpper(sanitised[0])
+            ? string.Concat(sanitised[0].ToString().ToUpper(CultureInfo.InvariantCulture), sanitised.Substring(1))
+            : sanitised;
     }
 
     // Execute the HTTP request

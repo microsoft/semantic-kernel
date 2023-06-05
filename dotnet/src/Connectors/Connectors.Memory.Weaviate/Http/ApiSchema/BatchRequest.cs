@@ -60,7 +60,7 @@ internal sealed class BatchRequest
     public HttpRequestMessage Build()
     {
         return HttpRequest.CreatePostRequest(
-            "batch/objects?consistency_level=QUORUM",
+            "batch/objects",
             this);
     }
 }

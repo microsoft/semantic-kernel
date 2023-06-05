@@ -26,7 +26,7 @@ public class WeaviateMemoryStoreTests
     [Fact(Skip = "Do not run on CI")]
     public async Task EnsureConflictingCollectionNamesAreHandledForCreateAsync()
     {
-        var collectionName = Guid.NewGuid().ToString();
+        var collectionName = "SK" + Guid.NewGuid();
 
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
@@ -39,7 +39,7 @@ public class WeaviateMemoryStoreTests
     [Fact(Skip = "Do not run on CI")]
     public async Task EnsureConflictingCollectionNamesAreHandledForDoesExistAsync()
     {
-        var collectionName = Guid.NewGuid().ToString();
+        var collectionName = "SK" + Guid.NewGuid();
 
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
@@ -52,7 +52,7 @@ public class WeaviateMemoryStoreTests
     [Fact(Skip = "Do not run on CI")]
     public async Task EnsureConflictingCollectionNamesAreHandledForDeleteAsync()
     {
-        var collectionName = Guid.NewGuid().ToString();
+        var collectionName = "SK" + Guid.NewGuid();
 
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
@@ -65,7 +65,7 @@ public class WeaviateMemoryStoreTests
     [Fact(Skip = "Do not run on CI")]
     public async Task ItCreatesNewCollectionAsync()
     {
-        var collectionName = Guid.NewGuid().ToString();
+        var collectionName = "SK" + Guid.NewGuid();
         Assert.False(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
@@ -78,13 +78,13 @@ public class WeaviateMemoryStoreTests
 
         Assert.Empty((await s_weaviateMemoryStore.GetCollectionsAsync().ToArrayAsync()));
 
-        var collectionName = Guid.NewGuid().ToString();
+        var collectionName = "SK" + Guid.NewGuid();
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         Assert.Single((await s_weaviateMemoryStore.GetCollectionsAsync().ToArrayAsync()));
 
-        var collectionName2 = Guid.NewGuid().ToString();
+        var collectionName2 = "SK" + Guid.NewGuid();
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName2);
         Assert.True(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName2));
 
@@ -109,7 +109,7 @@ public class WeaviateMemoryStoreTests
 
         Assert.Empty((await s_weaviateMemoryStore.GetCollectionsAsync().ToArrayAsync()));
 
-        var collectionName = Guid.NewGuid().ToString();
+        var collectionName = "SK" + Guid.NewGuid();
         await s_weaviateMemoryStore.CreateCollectionAsync(collectionName);
         Assert.True(await s_weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
@@ -124,7 +124,7 @@ public class WeaviateMemoryStoreTests
     public async Task CrudOperationsAsync()
     {
         var id = Guid.NewGuid().ToString();
-        var collectionName = Guid.NewGuid().ToString();
+        var collectionName = "SK" + Guid.NewGuid();
         var timestamp = new DateTimeOffset(2023, 1, 1, 1, 1, 1, new(0));
         var embedding = new Embedding<float>(new[] { 1f, 1f, 1f });
 
@@ -186,7 +186,7 @@ public class WeaviateMemoryStoreTests
     [Fact(Skip = "Do not run on CI")]
     public async Task BatchCrudOperationsAsync()
     {
-        var collectionName = Guid.NewGuid().ToString();
+        var collectionName = "SK" + Guid.NewGuid();
 
         var id1 = Guid.NewGuid().ToString();
         var timestamp1 = new DateTimeOffset(2023, 1, 1, 1, 1, 1, new(0));

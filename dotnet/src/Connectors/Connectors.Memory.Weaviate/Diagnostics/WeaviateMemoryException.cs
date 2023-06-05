@@ -73,6 +73,9 @@ public class WeaviateMemoryException : SKException
             ErrorCodes.FailedToRemoveVectorData => "Failed to remove vector data",
             ErrorCodes.CollectionNameConflict => "Naming conflict for the collection name",
             ErrorCodes.FailedToCreateCollection => "Failed to create the collection",
+            ErrorCodes.FailedToDeleteCollection => "Failed to delete the collection",
+            ErrorCodes.FailedToListCollections => "Failed to list collections",
+            ErrorCodes.FailedToGetClass => "Failed to get class",
             _ => $"Unknown error ({errorCode:G})",
         };
 
@@ -112,5 +115,20 @@ public class WeaviateMemoryException : SKException
         ///     semantic kernel would consider them as unique collection names.
         /// </summary>
         CollectionNameConflict,
+
+        /// <summary>
+        ///     Failed to delete a collection.
+        /// </summary>
+        FailedToDeleteCollection,
+
+        /// <summary>
+        ///     Failed to list collections.
+        /// </summary>
+        FailedToListCollections,
+
+        /// <summary>
+        ///     Failed to get a Weaviate class.
+        /// </summary>
+        FailedToGetClass
     }
 }
