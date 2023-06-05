@@ -15,13 +15,13 @@ public final class KernelConfig {
     private static final String DEFAULT_SERVICE_ID = "__SK_DEFAULT";
     private final Map<String, Function<Kernel, TextCompletion>> textCompletionServices;
 
-    private final Map<String, Function<Kernel, EmbeddingGeneration<String, Double>>>
+    private final Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
             textEmbeddingGenerationServices;
     private final ArrayList<SKFunction<?, ?>> skills;
 
     public KernelConfig(
             Map<String, Function<Kernel, TextCompletion>> textCompletionServices,
-            Map<String, Function<Kernel, EmbeddingGeneration<String, Double>>>
+            Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
                     textEmbeddingGenerationServices,
             List<SKFunction<?, ?>> skills) {
         this.textCompletionServices = new HashMap<>();
@@ -60,7 +60,7 @@ public final class KernelConfig {
 
         private List<SKFunction<?, ?>> skillBuilders = new ArrayList<>();
 
-        private Map<String, Function<Kernel, EmbeddingGeneration<String, Double>>>
+        private Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
                 textEmbeddingGenerationServices = new HashMap<>();
 
         public Builder addSkill(SKFunction<?, ?> functionDefinition) {
@@ -85,7 +85,7 @@ public final class KernelConfig {
 
         public Builder addTextEmbeddingsGenerationService(
                 String serviceId,
-                Function<Kernel, EmbeddingGeneration<String, Double>> serviceFactory) {
+                Function<Kernel, EmbeddingGeneration<String, Float>> serviceFactory) {
             if (serviceId == null || serviceId.isEmpty()) {
                 throw new IllegalArgumentException("Null or empty serviceId");
             }

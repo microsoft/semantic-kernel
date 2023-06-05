@@ -30,7 +30,9 @@ public interface PromptTemplateEngine {
      */
     Mono<String> renderAsync(String templateText, SKContext context);
 
-    interface Builder {
-        PromptTemplateEngine build();
+    abstract class Builder {
+        protected Builder() {}
+
+        public abstract PromptTemplateEngine build();
     }
 }

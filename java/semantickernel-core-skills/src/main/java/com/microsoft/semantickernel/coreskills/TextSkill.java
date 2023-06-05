@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.coreskills;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
+import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 
 import reactor.core.publisher.Mono;
@@ -28,33 +29,21 @@ public class TextSkill {
 
     @DefineSKFunction(description = "Change all string chars to uppercase.", name = "Uppercase")
     public Mono<String> uppercase(
-            @SKFunctionParameters(
-                            description = "Text to uppercase",
-                            name = "input",
-                            defaultValue = "",
-                            type = String.class)
+            @SKFunctionInputAttribute @SKFunctionParameters(description = "Text to uppercase")
                     String text) {
         return Mono.just(text.toUpperCase(Locale.ROOT));
     }
 
     @DefineSKFunction(description = "Remove spaces to the left of a string.", name = "LStrip")
     public Mono<String> lStrip(
-            @SKFunctionParameters(
-                            description = "Text to edit",
-                            name = "input",
-                            defaultValue = "",
-                            type = String.class)
+            @SKFunctionInputAttribute @SKFunctionParameters(description = "Text to edit")
                     String text) {
         return Mono.just(text.replaceAll("^ +", ""));
     }
 
     @DefineSKFunction(description = "Remove spaces to the right of a string.", name = "RStrip")
     public Mono<String> rStrip(
-            @SKFunctionParameters(
-                            description = "Text to edit",
-                            name = "input",
-                            defaultValue = "",
-                            type = String.class)
+            @SKFunctionInputAttribute @SKFunctionParameters(description = "Text to edit")
                     String text) {
         return Mono.just(text.replaceAll(" +$", ""));
     }

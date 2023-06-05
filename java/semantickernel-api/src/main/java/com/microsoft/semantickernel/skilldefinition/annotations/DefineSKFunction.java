@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface DefineSKFunction {
-    String description();
+    String description() default "";
 
-    String name();
+    String name() default "";
 }

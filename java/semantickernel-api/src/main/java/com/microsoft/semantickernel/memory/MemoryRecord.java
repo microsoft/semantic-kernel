@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
  * will invalidate existing metadata stored in persistent vector DBs.
  */
 public class MemoryRecord extends DataEntryBase {
-    @Nonnull private final Embedding<Float> embedding;
+    @Nonnull private final Embedding<? extends Number> embedding;
 
     @Nonnull private final MemoryRecordMetadata metadata;
 
@@ -27,7 +27,7 @@ public class MemoryRecord extends DataEntryBase {
      */
     public MemoryRecord(
             @Nonnull MemoryRecordMetadata metadata,
-            @Nonnull Embedding<Float> embedding,
+            @Nonnull Embedding<? extends Number> embedding,
             @Nullable String key,
             @Nullable ZonedDateTime timestamp) {
         super(key, timestamp);
@@ -40,7 +40,7 @@ public class MemoryRecord extends DataEntryBase {
      *
      * @return The source content embeddings.
      */
-    public Embedding<Float> getEmbedding() {
+    public Embedding<? extends Number> getEmbedding() {
         return embedding;
     }
 
@@ -138,6 +138,29 @@ public class MemoryRecord extends DataEntryBase {
             @Nullable ZonedDateTime timestamp) {
         return new MemoryRecord(
                 metadata, embedding != null ? embedding : Embedding.empty(), key, timestamp);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MemoryRecord that = (MemoryRecord) o;
+
+        if (!embedding.equals(that.embedding)) return false;
+        return metadata.equals(that.metadata);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = embedding.hashCode();
+        result = 31 * result + metadata.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "MemoryRecord{" + "embedding=" + embedding + ", metadata=" + metadata + '}';
     }
 
     /*

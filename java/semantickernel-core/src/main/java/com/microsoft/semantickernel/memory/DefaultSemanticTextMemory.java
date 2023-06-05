@@ -5,8 +5,13 @@ import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,12 +21,12 @@ import javax.annotation.Nullable;
 /// </summary>
 public class DefaultSemanticTextMemory implements SemanticTextMemory {
 
-    @Nonnull private final EmbeddingGeneration<String, Float> _embeddingGenerator;
+    @Nonnull private final EmbeddingGeneration<String, ? extends Number> _embeddingGenerator;
     @Nonnull private /*final*/ MemoryStore _storage;
 
     public DefaultSemanticTextMemory(
             @Nonnull MemoryStore storage,
-            @Nonnull EmbeddingGeneration<String, Float> embeddingGenerator) {
+            @Nonnull EmbeddingGeneration<String, ? extends Number> embeddingGenerator) {
         this._embeddingGenerator = embeddingGenerator;
         // TODO: this assignment raises EI_EXPOSE_REP2 in spotbugs (filtered out for now)
         this._storage = storage;
@@ -40,30 +45,28 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
             @Nonnull String id,
             @Nullable String description,
             @Nullable String additionalMetadata) {
-        return Mono.error(new NotSupportedException("Pending implementation"));
-        //        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text,
-        // cancellationToken: cancel);
-        //        MemoryRecord data = MemoryRecord.LocalRecord(
-        //                id: id, text: text, description: description, additionalMetadata:
-        // additionalMetadata, embedding: embedding);
-        //
-        //        if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
-        //        {
-        //            await this._storage.CreateCollectionAsync(collection, cancel);
-        //        }
-        //
-        //        return await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
+
+        return _embeddingGenerator
+                .generateEmbeddingsAsync(Collections.singletonList(text))
+                .flatMap(
+                        embeddings -> {
+                            if (embeddings.isEmpty()) {
+                                return Mono.empty();
+                            }
+                            MemoryRecordMetadata data =
+                                    new MemoryRecordMetadata(
+                                            true, id, text, description, "", additionalMetadata);
+                            MemoryRecord memoryRecord =
+                                    new MemoryRecord(
+                                            data, embeddings.iterator().next(), collection, null);
+                            return _storage.upsertAsync(collection, memoryRecord);
+                        });
     }
 
     @Override
     public Mono<MemoryQueryResult> getAsync(String collection, String key, boolean withEmbedding) {
-        return Mono.error(new NotSupportedException("Pending implementation"));
-        //        MemoryRecord? record = await this._storage.GetAsync(collection, key,
-        // withEmbedding, cancel);
-        //
-        //        if (record == null) { return null; }
-        //
-        //        return MemoryQueryResult.FromMemoryRecord(record, 1);
+        return _storage.getAsync(collection, key, withEmbedding)
+                .map(record -> new MemoryQueryResult(record.getMetadata(), 1d));
     }
 
     @Override
@@ -72,6 +75,28 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
         //        await this._storage.RemoveAsync(collection, key, cancel);
     }
 
+    private static final Function<
+                    Collection<Tuple2<MemoryRecord, Number>>, Mono<List<MemoryQueryResult>>>
+            transformMatchesToResults =
+                    records -> {
+                        if (records.isEmpty()) {
+                            return Mono.empty();
+                        }
+                        return Mono.just(
+                                records.stream()
+                                        .map(
+                                                record -> {
+                                                    Tuple2<MemoryRecord, ? extends Number> tuple =
+                                                            record;
+                                                    MemoryRecord memoryRecord = tuple.getT1();
+                                                    Number relevanceScore = tuple.getT2();
+                                                    return new MemoryQueryResult(
+                                                            memoryRecord.getMetadata(),
+                                                            relevanceScore.doubleValue());
+                                                })
+                                        .collect(Collectors.toList()));
+                    };
+
     @Override
     public Mono<List<MemoryQueryResult>> searchAsync(
             @Nonnull String collection,
@@ -79,24 +104,23 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
             int limit,
             double minRelevanceScore,
             boolean withEmbeddings) {
-        return Mono.error(new NotSupportedException("Pending implementation"));
-        //        Embedding<float> queryEmbedding = await
-        // this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken: cancel);
-        //
-        //        IAsyncEnumerable<(MemoryRecord, double)> results =
-        // this._storage.GetNearestMatchesAsync(
-        //                collectionName: collection,
-        //                embedding: queryEmbedding,
-        //                limit: limit,
-        //                minRelevanceScore: minRelevanceScore,
-        //                withEmbeddings: withEmbeddings,
-        //                cancel: cancel);
-        //
-        //        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancel))
-        //        {
-        //            yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
-        //        }
 
+        // TODO: break this up into smaller methods
+        return _embeddingGenerator
+                .generateEmbeddingsAsync(Collections.singletonList(query))
+                .flatMap(
+                        embeddings -> {
+                            if (embeddings.isEmpty()) {
+                                return Mono.empty();
+                            }
+                            return _storage.getNearestMatchesAsync(
+                                            collection,
+                                            embeddings.iterator().next(),
+                                            limit,
+                                            minRelevanceScore,
+                                            withEmbeddings)
+                                    .flatMap(transformMatchesToResults);
+                        });
     }
 
     @Override
@@ -131,5 +155,35 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
     @Override
     public SemanticTextMemory merge(MemoryQueryResult b) {
         throw new NotSupportedException("Pending implementation");
+    }
+
+    public static class Builder implements SemanticTextMemory.Builder {
+
+        @Nullable MemoryStore storage = null;
+        @Nullable EmbeddingGeneration<String, ? extends Number> embeddingGenerator = null;
+
+        @Override
+        public Builder setStorage(@Nonnull MemoryStore storage) {
+            this.storage = storage;
+            return this;
+        }
+
+        @Override
+        public Builder setEmbeddingGenerator(
+                @Nonnull EmbeddingGeneration<String, ? extends Number> embeddingGenerator) {
+            this.embeddingGenerator = embeddingGenerator;
+            return this;
+        }
+
+        @Override
+        public SemanticTextMemory build() {
+            if (storage == null) {
+                throw new IllegalStateException("Storage must be set");
+            }
+            if (embeddingGenerator == null) {
+                throw new IllegalStateException("Embedding generator must be set");
+            }
+            return new DefaultSemanticTextMemory(storage, embeddingGenerator);
+        }
     }
 }

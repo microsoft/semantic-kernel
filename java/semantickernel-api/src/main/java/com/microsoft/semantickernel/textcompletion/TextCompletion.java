@@ -20,7 +20,9 @@ public interface TextCompletion {
      */
     Mono<List<String>> completeAsync(String text, CompletionRequestSettings requestSettings);
 
-    interface Builder {
-        TextCompletion build(OpenAIAsyncClient client, String modelId);
+    abstract class Builder {
+        protected Builder() {}
+
+        public abstract TextCompletion build(OpenAIAsyncClient client, String modelId);
     }
 }
