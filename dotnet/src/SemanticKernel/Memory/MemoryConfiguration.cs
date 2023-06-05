@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -35,14 +34,25 @@ public static class MemoryConfiguration
     /// <param name="kernel">Kernel instance</param>
     /// <param name="embeddingGenerator">Embedding generator</param>
     /// <param name="storage">Memory storage</param>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The embeddingGenerator object is disposed by the kernel")]
     public static void UseMemory(this IKernel kernel, ITextEmbeddingGeneration embeddingGenerator, IMemoryStore storage)
     {
         Verify.NotNull(storage);
         Verify.NotNull(embeddingGenerator);
 
-        ISemanticTextMemory memory;
-        var storageType = storage.GetType();
+        var memory = CreateSemanticTextMemory(storage, embeddingGenerator);
+
+        kernel.RegisterMemory(memory);
+    }
+
+    /// <summary>
+    /// Create <see cref="SemanticTextMemory"/> or <see cref="SemanticTextMemory{TFilter}"/> based on <paramref name="memoryStore"/>.
+    /// </summary>
+    /// <param name="memoryStore">Memory storage</param>
+    /// <param name="embeddingGenerator">Embedding generator</param>
+    /// <returns></returns>
+    private static ISemanticTextMemory CreateSemanticTextMemory(IMemoryStore memoryStore, ITextEmbeddingGeneration embeddingGenerator)
+    {
+        var storageType = memoryStore.GetType();
         var filterableStorageType = storageType
             .GetInterfaces()
             .SingleOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMemoryStore<>));
@@ -55,13 +65,9 @@ public static class MemoryConfiguration
 
             var filterableSemanticTextMemoryType = typeof(SemanticTextMemory<>).MakeGenericType(filterType);
             var constructor = filterableSemanticTextMemoryType.GetConstructor(new[] { storageType, typeof(ITextEmbeddingGeneration) });
-            memory = (ISemanticTextMemory)constructor.Invoke(new object[] { storage, embeddingGenerator });
-        }
-        else
-        {
-            memory = new SemanticTextMemory(storage, embeddingGenerator);
+            return (ISemanticTextMemory)constructor.Invoke(new object[] { memoryStore, embeddingGenerator });
         }
 
-        kernel.RegisterMemory(memory);
+        return new SemanticTextMemory(memoryStore, embeddingGenerator);
     }
 }
