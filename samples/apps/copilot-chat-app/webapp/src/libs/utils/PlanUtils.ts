@@ -43,7 +43,7 @@ const extractPlanSteps = (plan: any) => {
             skill: step['skill_name'],
             function: step['name'],
             description: step['description'],
-            stepInputs: planSteps.length === 1 ? planInputs : stepParameters,
+            stepInputs: planSteps.length === 1 && planInputs.length > 0 ? planInputs : stepParameters,
         };
     });
 };
