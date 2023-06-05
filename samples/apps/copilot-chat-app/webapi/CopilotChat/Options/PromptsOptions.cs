@@ -26,22 +26,21 @@ public class PromptsOptions
 
     /// <summary>
     /// Weight of memories in the contextual part of the final prompt.
-    /// Contextual prompt excludes all the system commands.
+    /// Contextual prompt excludes all the system commands and user intent.
     /// </summary>
     internal double MemoriesResponseContextWeight { get; } = 0.3;
 
     /// <summary>
     /// Weight of documents in the contextual part of the final prompt.
-    /// Contextual prompt excludes all the system commands.
+    /// Contextual prompt excludes all the system commands and user intent.
     /// </summary>
     internal double DocumentContextWeight { get; } = 0.3;
 
     /// <summary>
     /// Weight of information returned from planner (i.e., responses from OpenAPI skills).
-    /// Percentage calculated from remaining token limit after memories response and document context have already been allocated.
-    /// Contextual prompt excludes all the system commands.
+    /// Contextual prompt excludes all the system commands and user intent.
     /// </summary>
-    internal double RelatedInformationContextWeight { get; } = 0.75;
+    internal double ExternalInformationContextWeight { get; } = 0.3;
 
     /// <summary>
     /// Minimum relevance of a semantic memory to be included in the final prompt.
@@ -128,14 +127,11 @@ public class PromptsOptions
         this.SystemDescription,
         this.SystemResponse,
         "{{$userIntent}}",
-        "{{ChatSkill.ExtractUserMemories}}",
-        "{{DocumentMemorySkill.QueryDocuments $INPUT}}",
-        "{{ChatSkill.AcquireExternalInformation}}",
-        "{{ChatSkill.ExtractChatHistory}}",
+        "{{$chatContext}}",
         this.SystemChatContinuation
     };
 
-    internal string SystemChatPrompt => string.Join("\n", this.SystemChatPromptComponents);
+    internal string SystemChatPrompt => string.Join("\n\n", this.SystemChatPromptComponents);
 
     internal double ResponseTemperature { get; } = 0.7;
     internal double ResponseTopP { get; } = 1;
