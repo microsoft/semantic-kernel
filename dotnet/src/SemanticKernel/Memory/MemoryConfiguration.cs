@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
@@ -40,6 +41,27 @@ public static class MemoryConfiguration
         Verify.NotNull(storage);
         Verify.NotNull(embeddingGenerator);
 
-        kernel.RegisterMemory(new SemanticTextMemory(storage, embeddingGenerator));
+        ISemanticTextMemory memory;
+        var storageType = storage.GetType();
+        var filterableStorageType = storageType
+            .GetInterfaces()
+            .SingleOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMemoryStore<>));
+
+        if (filterableStorageType != null)
+        {
+            var filterType = filterableStorageType
+                .GetGenericArguments()
+                .Single();
+
+            var filterableSemanticTextMemoryType = typeof(SemanticTextMemory<>).MakeGenericType(filterType);
+            var constructor = filterableSemanticTextMemoryType.GetConstructor(new[] { storageType, typeof(ITextEmbeddingGeneration) });
+            memory = (ISemanticTextMemory)constructor.Invoke(new object[] { storage, embeddingGenerator });
+        }
+        else
+        {
+            memory = new SemanticTextMemory(storage, embeddingGenerator);
+        }
+
+        kernel.RegisterMemory(memory);
     }
 }
