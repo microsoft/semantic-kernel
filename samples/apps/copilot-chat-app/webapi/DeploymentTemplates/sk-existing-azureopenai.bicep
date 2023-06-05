@@ -67,4 +67,4 @@ module semanticKernel 'main.bicep' = {
 
 
 output endpoint string = semanticKernel.outputs.deployedUrl
-output skProbe string = 'https://${semanticKernel.outputs.deployedUrl}/probe'
+output skProbe string = 'https://${semanticKernel.outputs.deployedUrl}/healthz'
