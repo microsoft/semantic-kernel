@@ -78,7 +78,7 @@ public class ExternalInformationSkill
 
         // Check if plan exists in ask's context variables.
         // If plan was returned at this point, that means it was approved and should be run
-        var planApproved = context.Variables.Get("proposedPlan", out var planJson);
+        var planApproved = context.Variables.TryGetValue("proposedPlan", out string? planJson);
 
         if (planApproved && !string.IsNullOrWhiteSpace(planJson))
         {
@@ -133,7 +133,7 @@ public class ExternalInformationSkill
                         continue;
                     }
 
-                    if (variables.Get(param.Key, out var value))
+                    if (variables.TryGetValue(param.Key, out string? value))
                     {
                         plan.State.Set(param.Key, value);
                     }

@@ -4,7 +4,7 @@ import { createSlice, PayloadAction, Slice } from '@reduxjs/toolkit';
 import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
 import { IChatUser } from '../../../libs/models/ChatUser';
 import { ChatState, FileUploadedAlert } from './ChatState';
-import { Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
+import { ConversationInputChange, Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
 
 export const conversationsSlice: Slice<ConversationsState> = createSlice({
     name: 'conversations',
@@ -21,6 +21,11 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             const newTitle = action.payload.newTitle;
             state.conversations[id].title = newTitle;
             frontLoadChat(state, id);
+        },
+        editConversationInput: (state: ConversationsState, action: PayloadAction<ConversationInputChange>) => {
+            const id = action.payload.id;
+            const newInput = action.payload.newInput;
+            state.conversations[id].input = newInput;
         },
         setSelectedConversation: (state: ConversationsState, action: PayloadAction<string>) => {
             state.selectedId = action.payload;
@@ -104,6 +109,7 @@ export const {
     setConversations,
     setLoggedInUserId,
     editConversationTitle,
+    editConversationInput,
     setSelectedConversation,
     addConversation,
     updateConversationFromUser,

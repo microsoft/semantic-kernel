@@ -13,7 +13,6 @@ import {
     setSelectedConversation,
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
-import { useConnectors } from './connectors/useConnectors';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
 import { IChatSession } from './models/ChatSession';
@@ -27,13 +26,14 @@ import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
 import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
 import { IChatUser } from './models/ChatUser';
 
+import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
+
 export const useChat = () => {
     const dispatch = useAppDispatch();
     const { instance, accounts, inProgress } = useMsal();
     const account = useAccount(accounts[0] || {});
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
-    const connectors = useConnectors();
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
 
@@ -47,6 +47,8 @@ export const useChat = () => {
         online: true,
         isTyping: false,
     };
+
+    const plugins = useAppSelector((state: RootState) => state.plugins);
 
     const getChatUserById = (id: string, chatId: string, users: IChatUser[]) => {
         if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') return Constants.bot.profile;
@@ -76,6 +78,7 @@ export const useChat = () => {
                         messages: chatMessages,
                         users: [loggedInUser],
                         botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
+                        input: '',
                         isBotTyping: false,
                     };
 
@@ -137,7 +140,7 @@ export const useChat = () => {
             await chatService.getBotResponseAsync(
                 ask,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
-                connectors.getEnabledPlugins(),
+                getEnabledPlugins(),
             );
         } catch (e: any) {
             const errorMessage = `Unable to generate bot response. Details: ${e.message ?? e}`;
@@ -174,6 +177,7 @@ export const useChat = () => {
                         users: chatUsers,
                         messages: chatMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
+                        input: '',
                         isBotTyping: false,
                     };
                 }
@@ -233,6 +237,31 @@ export const useChat = () => {
 
     const getBotProfilePicture = (index: number) => {
         return botProfilePictures[index % botProfilePictures.length];
+    };
+
+     /*
+     * Once enabled, each plugin will have a custom dedicated header in every Semantic Kernel request
+     * containing respective auth information (i.e., token, encoded client info, etc.)
+     * that the server can use to authenticate to the downstream APIs
+     */
+     const getEnabledPlugins = () => {
+        const enabledPlugins: { headerTag: AuthHeaderTags; authData: string; apiProperties?: any }[] = [];
+
+        Object.entries(plugins).map((entry) => {
+            const plugin = entry[1];
+
+            if (plugin.enabled) {
+                enabledPlugins.push({
+                    headerTag: plugin.headerTag,
+                    authData: plugin.authData!,
+                    apiProperties: plugin.apiProperties,
+                });
+            }
+
+            return entry;
+        });
+
+        return enabledPlugins;
     };
 
     return {

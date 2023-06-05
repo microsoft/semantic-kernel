@@ -34,3 +34,8 @@ export interface ConversationTitleChange {
     id: string;
     newTitle: string;
 }
+
+export interface ConversationInputChange {
+    id: string;
+    newInput: string;
+}

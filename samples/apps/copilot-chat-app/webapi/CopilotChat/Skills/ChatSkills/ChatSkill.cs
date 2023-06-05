@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -201,10 +202,28 @@ public class ChatSkill
         foreach (var chatMessage in sortedMessages)
         {
             var formattedMessage = chatMessage.ToFormattedString();
+
+            // Plan object is not meaningful content in generating bot response, so shorten to intent only to save on tokens
+            if (formattedMessage.Contains("proposedPlan\":", StringComparison.InvariantCultureIgnoreCase))
+            {
+                string pattern = @"(\[.*?\]).*User Intent:User intent: (.*)(?=""}})";
+                Match match = Regex.Match(formattedMessage, pattern);
+                if (match.Success)
+                {
+                    string timestamp = match.Groups[1].Value.Trim();
+                    string userIntent = match.Groups[2].Value.Trim();
+
+                    formattedMessage = $"{timestamp} Bot proposed plan to fulfill user intent: {userIntent}";
+                }
+                else
+                {
+                    formattedMessage = "Bot proposed plan";
+                }
+            }
+
             var tokenCount = Utilities.TokenCount(formattedMessage);
 
-            // Plan object is not meaningful content in generating chat response, exclude it
-            if (remainingToken - tokenCount > 0 && !formattedMessage.Contains("proposedPlan\\\":", StringComparison.InvariantCultureIgnoreCase))
+            if (remainingToken - tokenCount >= 0)
             {
                 historyText = $"{formattedMessage}\n{historyText}";
                 remainingToken -= tokenCount;
@@ -431,7 +450,7 @@ public class ChatSkill
     /// </summary>
     private async Task<string> GetUserIntentAsync(SKContext context)
     {
-        if (!context.Variables.Get("planUserIntent", out string? userIntent))
+        if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
             var contextVariables = new ContextVariables();
             contextVariables.Set("chatId", context["chatId"]);
@@ -550,7 +569,7 @@ public class ChatSkill
     {
         var contextVariables = context.Variables.Clone();
         contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-        if (context.Variables.Get("proposedPlan", out string? proposedPlan))
+        if (context.Variables.TryGetValue("proposedPlan", out string? proposedPlan))
         {
             contextVariables.Set("proposedPlan", proposedPlan);
         }
