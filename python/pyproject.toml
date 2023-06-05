@@ -29,6 +29,10 @@ torch = "2.0.0"
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.3.23"
 
+
+[tool.poetry.group.weaviate.dependencies]
+weaviate-client = "^3.18.0"
+
 [tool.isort]
 profile = "black"
 
