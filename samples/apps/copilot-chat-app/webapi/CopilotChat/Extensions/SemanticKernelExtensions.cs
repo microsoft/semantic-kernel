@@ -25,12 +25,8 @@ public static class CopilotChatSemanticKernelExtensions
         IOptions<PlannerOptions>? plannerOptions = services.BuildServiceProvider().GetService<IOptions<PlannerOptions>>();
         services.AddScoped<CopilotChatPlanner>(sp => new CopilotChatPlanner(Kernel.Builder
             .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
-            .WithConfiguration(
-                new KernelConfig().AddPlannerBackend(
-                    sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
-            ) // TODO verify planner has AI service configured
-            .Build(),
-            plannerOptions?.Value));
+            .WithPlannerBackend(sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)// TODO verify planner has AI service configured
+            .Build(), plannerOptions?.Value));
 
         // Register Planner skills (AI plugins) here.
         // TODO: Move planner skill registration from ChatController to here.
@@ -60,12 +56,12 @@ public static class CopilotChatSemanticKernelExtensions
     /// <summary>
     /// Add the completion backend to the kernel config for the planner.
     /// </summary>
-    private static KernelConfig AddPlannerBackend(this KernelConfig kernelConfig, AIServiceOptions options)
+    private static KernelBuilder WithPlannerBackend(this KernelBuilder kernelBuilder, AIServiceOptions options)
     {
         return options.Type switch
         {
-            AIServiceOptions.AIServiceType.AzureOpenAI => kernelConfig.AddAzureChatCompletionService(options.Models.Planner, options.Endpoint, options.Key),
-            AIServiceOptions.AIServiceType.OpenAI => kernelConfig.AddOpenAIChatCompletionService(options.Models.Planner, options.Key),
+            AIServiceOptions.AIServiceType.AzureOpenAI => kernelBuilder.WithAzureChatCompletionService(options.Models.Planner, options.Endpoint, options.Key),
+            AIServiceOptions.AIServiceType.OpenAI => kernelBuilder.WithOpenAIChatCompletionService(options.Models.Planner, options.Key),
             _ => throw new ArgumentException($"Invalid {nameof(options.Type)} value in '{AIServiceOptions.PropertyName}' settings."),
         };
     }
