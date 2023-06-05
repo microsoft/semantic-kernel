@@ -75,9 +75,12 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
     /// <inheritdoc />
     /// <returns> a list of index names </returns>
-    public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return this._pineconeClient.ListIndexesAsync(cancellationToken).Select(index => index ?? "");
+        await foreach (var index in this._pineconeClient.ListIndexesAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return index ?? "";
+        }
     }
 
     /// <inheritdoc/>
