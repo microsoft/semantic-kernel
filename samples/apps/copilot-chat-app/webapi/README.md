@@ -69,10 +69,10 @@ You can start the WebApi service using the command-line, Visual Studio Code, or 
 If you want to use SequentialPlanner instead ActionPlanner, we recommend using `gpt-4` or `gpt-3.5-turbo` as the planner model. Using `gpt-3.5-turbo` will require with a relevancy filter. 
 
 To enable sequential planner, 
-1. In [./webapi/appsettings.json](./appsettings.json), set `"Type": "Sequential"` under the `Planner` section.
+1. In [./webapi/appsettings.json](appsettings.json), set `"Type": "Sequential"` under the `Planner` section.
 1. Then, set your preferred Planner model (`gpt-4` or `gpt-3.5-turbo`) under the `AIService` configuration section.
    1. If using `gpt-4`, no other changes are required.
-   1. If using `gpt-3.5-turbo`, change [CopilotChatPlanner.cs](./CopilotChat/Skills/ChatSkills/CopilotChatPlanner.cs) to initialize SequentialPlanner with a RelevancyThreshold*. The `CreatePlanAsync` method should return the following line if `this._plannerOptions?.Type == "Sequential"` is true:
+   1. If using `gpt-3.5-turbo`, change [CopilotChatPlanner.cs](CopilotChat/Skills/ChatSkills/CopilotChatPlanner.cs) to initialize SequentialPlanner with a RelevancyThreshold*. The `CreatePlanAsync` method should return the following line if `this._plannerOptions?.Type == "Sequential"` is true:
       ```
       return new SequentialPlanner(this.Kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.75 }).CreatePlanAsync(goal);
       ```
