@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "3338430546815090156"
+      "templateHash": "16861206555260857378"
     }
   },
   "parameters": {
@@ -145,7 +145,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "11121756795286782434"
+              "templateHash": "1371310943287245701"
             }
           },
           "parameters": {
@@ -953,6 +953,10 @@
     "endpoint": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Resources/deployments', 'SemanticKernel'), '2022-09-01').outputs.deployedUrl.value]"
+    },
+    "skProbe": {
+      "type": "string",
+      "value": "[format('https://{0}/healthz', reference(resourceId('Microsoft.Resources/deployments', 'SemanticKernel'), '2022-09-01').outputs.deployedUrl.value)]"
     }
   }
 }
