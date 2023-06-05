@@ -52,7 +52,7 @@ public class WebFileDownloadSkill : IDisposable
     {
         this._logger.LogDebug($"{nameof(this.DownloadToFileAsync)} got called");
 
-        if (!context.Variables.Get(FilePathParamName, out string filePath))
+        if (!context.Variables.TryGetValue(FilePathParamName, out string? filePath))
         {
             this._logger.LogError($"Missing context variable in {nameof(this.DownloadToFileAsync)}");
             string errorMessage = $"Missing variable {FilePathParamName}";

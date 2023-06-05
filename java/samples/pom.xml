@@ -1,13 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.microsoft.semantickernel</groupId>
+
     <artifactId>samples</artifactId>
     <version>0.2.0-SNAPSHOT</version>
-    <!-- TODO: Consider inheriting from parent -->
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>sample-code</module>
+        <module>semantickernel-guice</module>
+    </modules>
 
     <properties>
         <com.uber.nullaway.version>0.10.10</com.uber.nullaway.version>

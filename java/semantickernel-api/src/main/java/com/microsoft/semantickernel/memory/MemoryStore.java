@@ -143,7 +143,7 @@ public interface MemoryStore {
      */
     Mono<Tuple2<MemoryRecord, ? extends Number>> getNearestMatchAsync(
             @Nonnull String collectionName,
-            @Nonnull Embedding<? super Number> embedding,
+            @Nonnull Embedding<? extends Number> embedding,
             double minRelevanceScore,
             boolean withEmbedding);
 }

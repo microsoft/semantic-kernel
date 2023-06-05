@@ -68,7 +68,8 @@ public class ChatHistoryController : ControllerBase
         await this._chatSessionRepository.CreateAsync(newChat);
 
         var initialBotMessage = this._promptOptions.InitialBotMessage;
-        await this.SaveResponseAsync(initialBotMessage, newChat.Id);
+        // The initial bot message doesn't need a prompt.
+        await this.SaveResponseAsync(initialBotMessage, string.Empty, newChat.Id);
 
         this._logger.LogDebug("Created chat session with id {0} for user {1}", newChat.Id, userId);
         return this.CreatedAtAction(nameof(this.GetChatSessionByIdAsync), new { chatId = newChat.Id }, newChat);
@@ -181,13 +182,14 @@ public class ChatHistoryController : ControllerBase
     /// Save a bot response to the chat session.
     /// </summary>
     /// <param name="response">The bot response.</param>
+    /// <param name="prompt">The prompt that was used to generate the response.</param>
     /// <param name="chatId">The chat id.</param>
-    private async Task SaveResponseAsync(string response, string chatId)
+    private async Task SaveResponseAsync(string response, string prompt, string chatId)
     {
         // Make sure the chat session exists
         await this._chatSessionRepository.FindByIdAsync(chatId);
 
-        var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response);
+        var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response, prompt);
         await this._chatMessageRepository.CreateAsync(chatMessage);
     }
 
