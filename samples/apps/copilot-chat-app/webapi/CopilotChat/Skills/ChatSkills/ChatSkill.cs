@@ -292,7 +292,6 @@ public class ChatSkill
             this._promptOptions);
 
         context.Variables.Update(response);
-        context.Variables.Set("userId", "Bot");
         return context;
     }
 

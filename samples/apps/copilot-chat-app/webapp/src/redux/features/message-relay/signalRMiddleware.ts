@@ -129,6 +129,10 @@ export const registerSignalREvents = async (store: any) => {
     });
 
     hubConnection.on(receiveResponseFromServerCallbackName, (askResult: IAskResult, chatId: string) => {
+        const loggedInUserId = store.getState().conversations.loggedInUserId;
+        const originalMessageUserId = askResult.variables.find((v) => v.key === 'userId')?.value;
+        const isPlanForLoggedInUser = loggedInUserId === originalMessageUserId;
+
         const message = {
             timestamp: new Date().getTime(),
             userName: 'bot',
@@ -136,7 +140,8 @@ export const registerSignalREvents = async (store: any) => {
             content: askResult.value,
             authorRole: AuthorRoles.Bot,
             prompt: askResult.variables.find((v) => v.key === 'prompt')?.value,
-            state: isPlan(askResult.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
+            state: (isPlan(askResult.value) && isPlanForLoggedInUser)
+                ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
         } as IChatMessage;
 
         store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });

@@ -15,12 +15,14 @@ export interface ConversationsState {
     conversations: Conversations;
     alerts: Alerts;
     selectedId: string;
+    loggedInUserId: string;
 }
 
 export const initialState: ConversationsState = {
     conversations: {},
     alerts: {},
     selectedId: '',
+    loggedInUserId: '',
 };
 
 export type UpdateConversationPayload = {

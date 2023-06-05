@@ -22,6 +22,7 @@ import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { removeAlert } from './redux/features/app/appSlice';
+import { setLoggedInUserId } from './redux/features/conversations/conversationsSlice';
 import { CopilotChatTokens } from './styles';
 
 export const useClasses = makeStyles({
@@ -89,6 +90,14 @@ const App: FC = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instance, inProgress, isAuthenticated, appState]);
+
+    useEffect(() => {
+        if (isAuthenticated && account) {
+            dispatch(setLoggedInUserId(account.homeAccountId))
+        } else {
+            dispatch(setLoggedInUserId(''))
+        }
+    }, [isAuthenticated]);
 
     const onDismissAlert = (key: string) => {
         dispatch(removeAlert(key));

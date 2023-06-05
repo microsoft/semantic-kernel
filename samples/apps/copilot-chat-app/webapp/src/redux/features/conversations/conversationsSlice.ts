@@ -13,6 +13,9 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
         setConversations: (state: ConversationsState, action: PayloadAction<Conversations>) => {
             state.conversations = action.payload;
         },
+        setLoggedInUserId: (state: ConversationsState, action: PayloadAction<string>) => {
+            state.loggedInUserId = action.payload;
+        },
         editConversationTitle: (state: ConversationsState, action: PayloadAction<ConversationTitleChange>) => {
             const id = action.payload.id;
             const newTitle = action.payload.newTitle;
@@ -99,6 +102,7 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
 
 export const {
     setConversations,
+    setLoggedInUserId,
     editConversationTitle,
     setSelectedConversation,
     addConversation,
