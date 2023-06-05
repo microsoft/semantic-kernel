@@ -73,7 +73,7 @@ First, let’s set up and verify the back-end API server is running.
     
     3. Run `dotnet run` to start the server.
     
-    4. Verify the back-end server is responding, open a web browser and navigate to `https://localhost:40443/probe`
+    4. Verify the back-end server is responding, open a web browser and navigate to `https://localhost:40443/healthz`
        > The first time accessing the probe you may get a warning saying that there is a problem with website's certificate.
          Select the option to accept/continue - this is expected when running a service on `localhost`
          It is important to do this, as your browser may need to accept the certificate before allowing the frontend to communicate with the backend.
@@ -145,11 +145,11 @@ the complete list of current models supporting chat completions.
 If you are stopped at an error message similar to the one above, your browser may be blocking the front-end access
 to the back end while waiting for your permission to connect. To resolve this, try the following:
 
-1. Confirm the backend service is running by opening a web browser, and navigating to `https://localhost:40443/probe`
-   - You should see a confirmation message: `Semantic Kernel service is up and running`
+1. Confirm the backend service is running by opening a web browser, and navigating to `https://localhost:40443/healthz`
+   - You should see a confirmation message: `Healthy`
 2. If your browser asks you to acknowledge the risks of visiting an insecure website, you must acknowledge the
    message before the front end will be allowed to connect to the back-end server. 
-   - Acknowledge, continue, and navigate until you see the message Semantic Kernel service is up and running
+   - Acknowledge, continue, and navigate until you see the message `Healthy`.
 3. Navigate to `http://localhost:3000` or refresh the page to use the Copilot Chat application.
 
 ## 4. Have Yarn version 2.x or 3.x

@@ -14,7 +14,6 @@ import {
     updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
-import { useConnectors } from './connectors/useConnectors';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
 import { AuthorRoles, ChatMessageState } from './models/ChatMessage';
@@ -31,13 +30,14 @@ import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
 import { ChatMemorySource } from './models/ChatMemorySource';
 import { IChatUser } from './models/ChatUser';
 
+import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
+
 export const useChat = () => {
     const dispatch = useAppDispatch();
     const { instance, accounts, inProgress } = useMsal();
     const account = useAccount(accounts[0] || {});
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
-    const connectors = useConnectors();
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
 
@@ -51,6 +51,8 @@ export const useChat = () => {
         online: true,
         lastTypingTimestamp: 0,
     };
+
+    const plugins = useAppSelector((state: RootState) => state.plugins);
 
     const getChatUserById = (id: string, chatId: string, users: IChatUser[]) => {
         if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') return Constants.bot.profile;
@@ -142,7 +144,7 @@ export const useChat = () => {
             var result = await chatService.getBotResponseAsync(
                 ask,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
-                connectors.getEnabledPlugins(),
+                getEnabledPlugins(),
             );
 
             const messageResult = {
@@ -252,6 +254,31 @@ export const useChat = () => {
             chatId,
             await AuthHelper.getSKaaSAccessToken(instance, inProgress),
         );
+    };
+
+    /*
+     * Once enabled, each plugin will have a custom dedicated header in every Semantic Kernel request
+     * containing respective auth information (i.e., token, encoded client info, etc.)
+     * that the server can use to authenticate to the downstream APIs
+     */
+    const getEnabledPlugins = () => {
+        const enabledPlugins: { headerTag: AuthHeaderTags; authData: string; apiProperties?: any }[] = [];
+
+        Object.entries(plugins).map((entry) => {
+            const plugin = entry[1];
+
+            if (plugin.enabled) {
+                enabledPlugins.push({
+                    headerTag: plugin.headerTag,
+                    authData: plugin.authData!,
+                    apiProperties: plugin.apiProperties,
+                });
+            }
+
+            return entry;
+        });
+
+        return enabledPlugins;
     };
 
     return {
