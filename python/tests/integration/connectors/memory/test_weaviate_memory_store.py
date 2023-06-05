@@ -68,7 +68,7 @@ def documents():
 @pytest.fixture
 def memory_store():
     # startup period default is 5, but integration tests are flaky without a higher value
-    config = weaviate_memory_store.WeaviateConfig(use_embed=True, startup_period=10)
+    config = weaviate_memory_store.WeaviateConfig(use_embed=True, startup_period=60)
     store = weaviate_memory_store.WeaviateMemoryStore(config)
     store.client.schema.delete_all()
     yield store
