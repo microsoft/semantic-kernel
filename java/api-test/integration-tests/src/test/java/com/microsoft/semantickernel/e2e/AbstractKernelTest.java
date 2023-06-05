@@ -2,22 +2,19 @@
 package com.microsoft.semantickernel.e2e;
 
 import com.azure.core.credential.AzureKeyCredential;
-
-import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
-import com.microsoft.semantickernel.openai.client.AzureOpenAIClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
+import com.microsoft.semantickernel.openai.client.AzureOpenAIClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
-import org.junit.jupiter.api.condition.EnabledIf;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
+import org.junit.jupiter.api.condition.EnabledIf;
 
 @EnabledIf("isAzureTestEnabled")
 public class AbstractKernelTest {

@@ -1,43 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.e2e;
 
-import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
-
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
+import java.io.IOException;
+import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Mono;
-
-import java.io.IOException;
-import java.util.ArrayList;
 
 public class KernelTest extends AbstractKernelTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelTest.class);
-
-    @Test
-    @EnabledIf("isAzureTestEnabled")
-    public void endToEndTextGenerationTestAzureOpenAI() throws IOException {
-        Kernel kernel = buildKernel(getAzureOpenAIClient(), "text-davinci-003");
-        executeCompletion(kernel);
-    }
-
-    @Test
-    @EnabledIf("isAzureTestEnabled")
-    public void endToEndTextGenerationTestOpenAI() throws IOException {
-        Kernel kernel = buildKernel(getOpenAIClient(), getOpenAIModel());
-        executeCompletion(kernel);
-    }
 
     private static void executeCompletion(Kernel kernel) {
         CompletionSKFunction summarize =
@@ -76,5 +58,19 @@ public class KernelTest extends AbstractKernelTest {
                         .build();
 
         return SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+    }
+
+    @Test
+    @EnabledIf("isAzureTestEnabled")
+    public void endToEndTextGenerationTestAzureOpenAI() throws IOException {
+        Kernel kernel = buildKernel(getAzureOpenAIClient(), "text-davinci-003");
+        executeCompletion(kernel);
+    }
+
+    @Test
+    @EnabledIf("isAzureTestEnabled")
+    public void endToEndTextGenerationTestOpenAI() throws IOException {
+        Kernel kernel = buildKernel(getOpenAIClient(), getOpenAIModel());
+        executeCompletion(kernel);
     }
 }

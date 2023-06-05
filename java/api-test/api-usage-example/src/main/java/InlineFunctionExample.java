@@ -1,20 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
-
-import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
-import com.microsoft.semantickernel.openai.client.AzureOpenAIClient;
-
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.openai.client.AzureOpenAIClient;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,6 +16,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class InlineFunctionExample {
     public static final String AZURE_CONF_PROPERTIES = "conf.properties";
@@ -30,16 +26,6 @@ public class InlineFunctionExample {
 
     private static final String API_KEY;
     private static final String ENDPOINT;
-
-    static{
-        try {
-            API_KEY = getToken();
-            ENDPOINT = getEndpoint();
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError ("Error reading config file or properties. " + e.getMessage());
-        }
-    }
-
     private static final String TEXT_TO_SUMMARIZE = """
             Demo (ancient Greek poet)
                From Wikipedia, the free encyclopedia
@@ -70,6 +56,15 @@ public class InlineFunctionExample {
                 poetry—'bearing a pleasant gift', for example, alludes to the use of that
                 phrase throughout the Iliad and Odyssey.[a][2];
                 """;
+
+    static{
+        try {
+            API_KEY = getToken();
+            ENDPOINT = getEndpoint();
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError ("Error reading config file or properties. " + e.getMessage());
+        }
+    }
 
     private static String getToken() throws IOException {
         return getConfigValue("token");

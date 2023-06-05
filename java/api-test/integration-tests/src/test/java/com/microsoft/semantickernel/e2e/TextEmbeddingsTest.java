@@ -1,29 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.e2e;
 
-import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
-
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
-
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.TextMemorySkill;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
+import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TextEmbeddingsTest extends AbstractKernelTest {
 
