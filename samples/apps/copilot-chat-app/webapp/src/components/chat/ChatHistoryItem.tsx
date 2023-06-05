@@ -6,9 +6,8 @@ import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
 import { parsePlan } from '../../libs/utils/PlanUtils';
-import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
+import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { updateMessageState } from '../../redux/features/conversations/conversationsSlice';
 import { Breakpoints } from '../../styles';
 import { convertToAnchorTags } from '../utils/TextUtils';
 import { PlanViewer } from './plan-viewer/PlanViewer';
@@ -67,9 +66,9 @@ interface ChatHistoryItemProps {
     message: IChatMessage;
     getResponse: (
         value: string,
+        userApprovedPlan?: boolean,
         approvedPlanJson?: string,
         planUserIntent?: string,
-        userCancelledPlan?: boolean,
     ) => Promise<void>;
     messageIndex: number;
 }
@@ -87,40 +86,9 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
 
     const chat = useChat();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const dispatch = useAppDispatch();
 
     const plan = parsePlan(message.content);
     const isPlan = plan !== null;
-
-    // Initializing Plan action handlers here so we don't have to drill down data the components won't use otherwise
-    const onPlanApproval = async () => {
-        dispatch(
-            updateMessageState({
-                newMessageState: ChatMessageState.PlanApproved,
-                messageIndex: messageIndex,
-                chatId: selectedId,
-            }),
-        );
-
-        // Extract plan from bot response
-        const proposedPlan = JSON.parse(message.content).proposedPlan;
-
-        // Invoke plan
-        await getResponse('Yes, proceed', JSON.stringify(proposedPlan), plan?.userIntent);
-    };
-
-    const onPlanCancel = async () => {
-        dispatch(
-            updateMessageState({
-                newMessageState: ChatMessageState.PlanRejected,
-                messageIndex: messageIndex,
-                chatId: selectedId,
-            }),
-        );
-
-        // Bail out of plan
-        await getResponse('No, cancel', undefined, undefined, true);
-    };
 
     const content = !isPlan
         ? (message.content as string)
@@ -180,8 +148,9 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                         <PlanViewer
                             plan={plan}
                             planState={message.state ?? ChatMessageState.NoOp}
-                            onSubmit={onPlanApproval}
-                            onCancel={onPlanCancel}
+                            messageIndex={messageIndex}
+                            messageContent={message.content}
+                            getResponse={getResponse}
                         />
                     )}
                 </div>

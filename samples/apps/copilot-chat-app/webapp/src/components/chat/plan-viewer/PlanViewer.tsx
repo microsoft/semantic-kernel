@@ -2,6 +2,9 @@ import { Button, Text, makeStyles, mergeClasses, shorthands } from '@fluentui/re
 import { CheckmarkCircle24Regular, DismissCircle24Regular } from '@fluentui/react-icons';
 import { ChatMessageState } from '../../../libs/models/ChatMessage';
 import { IPlan, IPlanStep } from '../../../libs/models/Plan';
+import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
+import { updateMessageState } from '../../../redux/features/conversations/conversationsSlice';
 import { PlanStepCard } from './PlanStepCard';
 
 const useClasses = makeStyles({
@@ -29,13 +32,57 @@ const useClasses = makeStyles({
 interface PlanViewerProps {
     plan: IPlan;
     planState: ChatMessageState;
-    onSubmit: () => Promise<void>;
-    onCancel: () => Promise<void>;
+    messageIndex: number;
+    messageContent: string;
+    getResponse: (
+        value: string,
+        userApprovedPlan?: boolean,
+        approvedPlanJson?: string,
+        planUserIntent?: string,
+    ) => Promise<void>;
 }
 
-export const PlanViewer: React.FC<PlanViewerProps> = ({ plan, planState, onSubmit, onCancel }) => {
+export const PlanViewer: React.FC<PlanViewerProps> = ({
+    plan,
+    planState,
+    messageIndex,
+    messageContent,
+    getResponse,
+}) => {
     const classes = useClasses();
+    const dispatch = useAppDispatch();
+    const { selectedId } = useAppSelector((state: RootState) => state.conversations);
+
     var stepCount = 1;
+
+    const onPlanApproval = async () => {
+        dispatch(
+            updateMessageState({
+                newMessageState: ChatMessageState.PlanApproved,
+                messageIndex: messageIndex,
+                chatId: selectedId,
+            }),
+        );
+
+        // Extract plan from bot response
+        const proposedPlan = JSON.parse(messageContent).proposedPlan;
+
+        // Invoke plan
+        await getResponse('Yes, proceed', true, JSON.stringify(proposedPlan), plan?.userIntent);
+    };
+
+    const onPlanCancel = async () => {
+        dispatch(
+            updateMessageState({
+                newMessageState: ChatMessageState.PlanRejected,
+                messageIndex: messageIndex,
+                chatId: selectedId,
+            }),
+        );
+
+        // Bail out of plan
+        await getResponse('No, cancel', false);
+    };
 
     return (
         <div className={classes.container}>
@@ -49,10 +96,10 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ plan, planState, onSubmi
                 <>
                     Would you like to proceed with the plan?
                     <div className={classes.buttons}>
-                        <Button appearance="secondary" onClick={onCancel}>
+                        <Button appearance="secondary" onClick={onPlanCancel}>
                             No, cancel plan
                         </Button>
-                        <Button type="submit" appearance="primary" onClick={onSubmit}>
+                        <Button type="submit" appearance="primary" onClick={onPlanApproval}>
                             Yes, proceed
                         </Button>
                     </div>

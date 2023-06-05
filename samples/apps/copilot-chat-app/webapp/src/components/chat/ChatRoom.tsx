@@ -98,9 +98,9 @@ export const ChatRoom: React.FC = () => {
 
     const handleSubmit = async (
         value: string,
+        userApprovedPlan?: boolean,
         approvedPlanJson?: string,
         planUserIntent?: string,
-        userCancelledPlan?: boolean,
     ) => {
         log('submitting user chat message');
 
@@ -116,7 +116,7 @@ export const ChatRoom: React.FC = () => {
         dispatch(updateConversation({ message: chatInput }));
 
         try {
-            await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userCancelledPlan);
+            await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userApprovedPlan);
         } finally {
             setIsBotTyping(false);
         }

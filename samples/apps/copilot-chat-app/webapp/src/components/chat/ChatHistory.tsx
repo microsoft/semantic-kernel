@@ -25,9 +25,9 @@ interface ChatHistoryProps {
     messages: IChatMessage[];
     onGetResponse: (
         value: string,
+        userApprovedPlan?: boolean,
         approvedPlanJson?: string,
         planUserIntent?: string,
-        userCancelledPlan?: boolean,
     ) => Promise<void>;
 }
 

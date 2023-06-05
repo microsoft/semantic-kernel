@@ -99,7 +99,7 @@ export const useChat = () => {
         chatId: string,
         approvedPlanJson?: string,
         planUserIntent?: string,
-        userCancelledPlan?: boolean,
+        userApprovedPlan?: boolean,
     ) => {
         const ask = {
             input: value,
@@ -119,7 +119,7 @@ export const useChat = () => {
             ],
         };
 
-        if (approvedPlanJson) {
+        if (userApprovedPlan && approvedPlanJson) {
             ask.variables.push(
                 {
                     key: 'proposedPlan',
@@ -132,7 +132,7 @@ export const useChat = () => {
             );
         }
 
-        if (userCancelledPlan) {
+        if (userApprovedPlan === false) {
             ask.variables.push({
                 key: 'userCancelledPlan',
                 value: 'true',
@@ -248,12 +248,12 @@ export const useChat = () => {
         return botProfilePictures[index % botProfilePictures.length];
     };
 
-     /*
+    /*
      * Once enabled, each plugin will have a custom dedicated header in every Semantic Kernel request
      * containing respective auth information (i.e., token, encoded client info, etc.)
      * that the server can use to authenticate to the downstream APIs
      */
-     const getEnabledPlugins = () => {
+    const getEnabledPlugins = () => {
         const enabledPlugins: { headerTag: AuthHeaderTags; authData: string; apiProperties?: any }[] = [];
 
         Object.entries(plugins).map((entry) => {
