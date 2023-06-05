@@ -10,29 +10,24 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Pgvector;
-using Pgvector.Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Postgres database with pgvector extension.
 /// </summary>
-public class PostgresMemoryStore : IMemoryStore, IDisposable
+public sealed class PostgresMemoryStore : IMemoryStore
 {
     /// <summary>
     /// Connect a Postgres database
     /// </summary>
-    /// <param name="connectionString">Database connection string. If table does not exist, it will be created.</param>
+    /// <param name="dataSource">Postgres data source. If table does not exist, it will be created.</param>
     /// <param name="vectorSize">Embedding vector size</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public static async Task<PostgresMemoryStore> ConnectAsync(string connectionString, int vectorSize,
+    public static async Task<PostgresMemoryStore> ConnectAsync(NpgsqlDataSource dataSource, int vectorSize,
         CancellationToken cancellationToken = default)
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
-        // Use pgvector
-        dataSourceBuilder.UseVector();
-
-        var memoryStore = new PostgresMemoryStore(dataSourceBuilder.Build());
+        var memoryStore = new PostgresMemoryStore(dataSource);
         using NpgsqlConnection dbConnection = await memoryStore._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
         await memoryStore._dbConnector.CreatePgVectorExtensionAsync(dbConnection, cancellationToken).ConfigureAwait(false);
         await memoryStore._dbConnector.CreateTableAsync(dbConnection, vectorSize, cancellationToken).ConfigureAwait(false);
@@ -181,35 +176,10 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    #region protected ================================================================================
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this._disposedValue)
-        {
-            if (disposing)
-            {
-                this._dataSource.Dispose();
-            }
-
-            this._disposedValue = true;
-        }
-    }
-
-    #endregion
-
     #region private ================================================================================
 
     private readonly Database _dbConnector;
     private readonly NpgsqlDataSource _dataSource;
-    private bool _disposedValue;
 
     /// <summary>
     /// Constructor
@@ -219,7 +189,6 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
     {
         this._dataSource = dataSource;
         this._dbConnector = new Database();
-        this._disposedValue = false;
     }
 
     private static long? ToTimestampLong(DateTimeOffset? timestamp)

@@ -19,11 +19,15 @@ docker run -d --name postgres-pgvector -p 5432:5432 -e POSTGRES_PASSWORD=mysecre
 2. To use Postgres as a semantic memory store:
 
 ```csharp
-using PostgresMemoryStore memoryStore = await PostgresMemoryStore.ConnectAsync("Host=localhost;Port=5432;Database=sk_memory;User Id=postgres;Password=mysecretpassword", vectorSize: 1536);
+NpgsqlDataSourceBuilder dataSourceBuilder = new NpgsqlDataSourceBuilder("Host=localhost;Port=5432;Database=sk_memory;User Id=postgres;Password=mysecretpassword");
+dataSourceBuilder.UseVector();// Use pgvector
+using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
+
+PostgresMemoryStore memoryStore = await PostgresMemoryStore.ConnectAsync(dataSource, vectorSize: 1536);
 
 IKernel kernel = Kernel.Builder
     .WithLogger(ConsoleLogger.Log)
-    .Configure(c => c.AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY")))
+    .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
     .WithMemoryStorage(memoryStore)
     .Build();
 ```

@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Microsoft.SemanticKernel.Memory;
+using Npgsql;
+using Pgvector.Npgsql;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -14,8 +16,11 @@ public static class Example39_Postgres
 
     public static async Task RunAsync()
     {
-        string connectionString = Env.Var("POSTGRES_CONNECTIONSTRING");
-        using PostgresMemoryStore memoryStore = await PostgresMemoryStore.ConnectAsync(connectionString, vectorSize: 1536);
+        NpgsqlDataSourceBuilder dataSourceBuilder = new(Env.Var("POSTGRES_CONNECTIONSTRING"));
+        dataSourceBuilder.UseVector();// Use pgvector
+        using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
+
+        PostgresMemoryStore memoryStore = await PostgresMemoryStore.ConnectAsync(dataSource, vectorSize: 1536);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
