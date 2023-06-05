@@ -3,7 +3,7 @@
 1. Please rewrite the text given between the <context> and </context> tags to remove references to the list of entities listed between the <entities> and </entities> tag
 2. When rewriting the text, ensure that:
    - You make minimal changes
-   - The text remains gramatically correct and coherent
+   - The text remains grammatically correct and coherent
 3. Return the rewritten text
 
 

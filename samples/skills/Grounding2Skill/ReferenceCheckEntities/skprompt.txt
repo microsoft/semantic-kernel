@@ -1,7 +1,7 @@
 # Task Description
 
 1. The input is between the <input> tags. This is split into two parts: the <entities> and the <context>
-2. Go over each item in the list between the <entites> tags and for each item, read through the data between the <grounding_context> tags and determine if each item is grounded in any of the data between the <grounding_context> tags. Be sure to consider all of the reference items.
+2. Go over each item in the list between the <entities> tags and for each item, read through the data between the <grounding_context> tags and determine if each item is grounded in any of the data between the <grounding_context> tags. Be sure to consider all of the reference items.
 3. When looking for references to the items in (1) look for re-phrasings, alternate names or equivalent meanings in the context in addition to exact matches
 4. As the first part of your response, return a bulleted list of the items in (1) together with an explanation of whether or not they were referred to in the context, making sure to consider step (2) where you note down references in the form of re-phrasings, alternate names or equivalent meanings in the context, as well as exact matches.
 5. Split the list into two sub-lists, those items which are referenced in the context (these are 'grounded') and those which are not (these are 'ungrounded').
