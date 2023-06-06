@@ -91,8 +91,15 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
         this._model = model;
         this._endpoint = endpoint;
-
         this._httpClient = httpClient;
+
+        if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
+        {
+            throw new AIException(
+                AIException.ErrorCodes.InvalidConfiguration,
+                "The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+        }
+
         this._disposeHttpClient = false; // We should not dispose custom HTTP clients.
     }
 
