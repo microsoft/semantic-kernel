@@ -25,6 +25,8 @@ import { useChat } from '../../libs/useChat';
 import { SharedStyles } from '../../styles';
 import { timestampToDateString } from '../utils/TextUtils';
 
+const EmptyGuid = '00000000-0000-0000-0000-000000000000';
+
 const useClasses = makeStyles({
     root: {
         ...shorthands.margin(tokens.spacingVerticalM, tokens.spacingHorizontalM),
@@ -40,6 +42,20 @@ const useClasses = makeStyles({
 
 interface ChatResourceListProps {
     chatId: string;
+}
+
+interface TableItem {
+    id: string;
+    chatId: string;
+    name: {
+        label: string;
+        icon: JSX.Element;
+        url?: string;
+    };
+    createdOn: {
+        label: string;
+        timestamp: number;
+    };
 }
 
 export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) => {
@@ -70,19 +86,6 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
         </div>
     );
 };
-
-interface TableItem {
-    id: string;
-    name: {
-        label: string;
-        icon: JSX.Element;
-        url?: string;
-    };
-    createdOn: {
-        label: string;
-        timestamp: number;
-    };
-}
 
 function useTable(resources: ChatMemorySource[]) {
     const headerSortProps = (columnId: TableColumnId): TableHeaderCellProps => ({
@@ -121,10 +124,22 @@ function useTable(resources: ChatMemorySource[]) {
                 return getSortDirection('createdOn') === 'ascending' ? comparison : comparison * -1;
             },
         }),
+        createTableColumn<TableItem>({
+            columnId: 'scope',
+            renderHeaderCell: () => <TableHeaderCell {...headerSortProps('scope')}>Scope</TableHeaderCell>,
+            renderCell: (item) => <TableCell>{getScopeString(item.chatId)}</TableCell>,
+            compare: (a, b) => {
+                const aScope = getScopeString(a.chatId);
+                const bScope = getScopeString(b.chatId);
+                const comparison = aScope.localeCompare(bScope);
+                return getSortDirection('scope') === 'ascending' ? comparison : comparison * -1;
+            },
+        }),
     ];
 
     const items = resources.map((item) => ({
         id: item.id,
+        chatId: item.chatId,
         name: {
             label: item.name,
             icon: getFileIconByFileExtension(item.name),
@@ -158,6 +173,10 @@ function useTable(resources: ChatMemorySource[]) {
     }
 
     return { columns, rows: items };
+}
+
+function getScopeString(chatId: string) {
+    return chatId === EmptyGuid ? 'All chats' : 'This chat';
 }
 
 function getFileIconByFileExtension(fileName: string) {

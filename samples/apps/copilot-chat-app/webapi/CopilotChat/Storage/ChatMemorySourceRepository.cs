@@ -25,10 +25,11 @@ public class ChatMemorySourceRepository : Repository<MemorySource>
     /// Finds chat memory sources by chat session id
     /// </summary>
     /// <param name="chatId">The chat session id.</param>
-    /// <returns>A list of memory sources of the given chat session.</returns>
-    public Task<IEnumerable<MemorySource>> FindByChatIdAsync(string chatId)
+    /// <param name="includeGlobal">Flag specifying if global documents should be included in the response.</param>
+    /// <returns>A list of memory sources.</returns>
+    public Task<IEnumerable<MemorySource>> FindByChatIdAsync(string chatId, bool includeGlobal = true)
     {
-        return base.StorageContext.QueryEntitiesAsync(e => e.ChatId == chatId);
+        return base.StorageContext.QueryEntitiesAsync(e => e.ChatId == chatId || (includeGlobal && e.ChatId == Guid.Empty.ToString()));
     }
 
     /// <summary>
