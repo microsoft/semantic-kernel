@@ -26,7 +26,7 @@ RedisMemoryStore memoryStore = new RedisMemoryStore(database, vectorSize: 1536);
 
 IKernel kernel = Kernel.Builder
     .WithLogger(ConsoleLogger.Log)
-    .Configure(c => c.AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY")))
+    .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
     .WithMemoryStorage(memoryStore)
     .Build();
 ```
