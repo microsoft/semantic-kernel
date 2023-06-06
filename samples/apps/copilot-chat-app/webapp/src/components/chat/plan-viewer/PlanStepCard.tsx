@@ -1,5 +1,5 @@
 import { Badge, Body1, Card, CardHeader, makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
-import { IPlanInput, IPlanStep } from '../../../libs/models/Plan';
+import { IPlan, IPlanInput } from '../../../libs/models/Plan';
 import { CopilotChatTokens } from '../../../styles';
 
 const useClasses = makeStyles({
@@ -46,7 +46,7 @@ const useClasses = makeStyles({
 
 interface PlanStepCardProps {
     index: number;
-    step: IPlanStep;
+    step: IPlan;
 }
 
 export const PlanStepCard: React.FC<PlanStepCardProps> = ({ index, step }) => {
@@ -80,6 +80,18 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ index, step }) => {
                                 return (
                                     <Badge color="informative" shape="rounded" appearance="tint" key={input.Key}>
                                         {`${input.Key}: ${input.Value}`}
+                                    </Badge>
+                                );
+                            })}
+                        </div>
+                    )}
+                    {step.stepOutputs.length > 0 && (
+                        <div className={classes.inputs}>
+                            <Text weight="semibold">Outputs: </Text>
+                            {step.stepOutputs.map((output: string) => {
+                                return (
+                                    <Badge color="informative" shape="rounded" appearance="tint" key={output}>
+                                        {output}
                                     </Badge>
                                 );
                             })}

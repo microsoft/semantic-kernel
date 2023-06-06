@@ -15,12 +15,16 @@ export const parsePlan = (response: string): IPlan | null => {
         try {
             const parsedResponse = JSON.parse(response);
             const plan = parsedResponse.proposedPlan;
-            const userIntentPrefix = 'User intent: ';
+            const userIntentPrefix = 'User Intent:User intent: ';
             const index = plan.description.indexOf(userIntentPrefix);
 
             return {
                 userIntent: plan.description,
                 description: index !== -1 ? plan.description.substring(index + userIntentPrefix.length).trim() : '',
+                skill: plan.skill_name.replace('Microsoft.SemanticKernel.Planning.Plan', ''),
+                function: plan.name.replace('Microsoft.SemanticKernel.Planning.Plan', ''),
+                stepInputs: extractInputs(plan.state),
+                stepOutputs: plan.outputs,
                 steps: extractPlanSteps(plan),
             };
         } catch (e: any) {
@@ -32,23 +36,23 @@ export const parsePlan = (response: string): IPlan | null => {
 
 const extractPlanSteps = (plan: any) => {
     // If plan came from Actio Planner, extract step parameters from top-level plan state
-    const planInputs = extractParameters(plan.state);
+    const planInputs = extractInputs(plan.state);
 
     const planSteps = plan.steps;
     return planSteps.map((step: any) => {
-        // If plan came from SequentialPlanner, extract step parameters from respective step object
-        const stepParameters = extractParameters(step.parameters);
-
         return {
             skill: step['skill_name'],
             function: step['name'],
             description: step['description'],
-            stepInputs: planSteps.length === 1 && planInputs.length > 0 ? planInputs : stepParameters,
+            // If plan came from SequentialPlanner, extract step parameters from respective step object
+            stepInputs: planSteps.length === 1 && planInputs.length > 0 ? planInputs : extractInputs(step.parameters),
+            stepOutputs: step.outputs,
+            steps: extractPlanSteps(step),
         };
     });
 };
 
-const extractParameters = (parametersArray: IPlanInput[]) => {
+const extractInputs = (parametersArray: IPlanInput[]) => {
     const parameters: IPlanInput[] = [];
     for (var param in parametersArray) {
         if (

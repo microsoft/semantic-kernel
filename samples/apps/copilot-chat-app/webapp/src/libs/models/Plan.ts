@@ -4,15 +4,12 @@ export type IPlanInput = {
     Value: string;
 };
 
-export type IPlanStep = {
+export type IPlan = {
+    userIntent: string;
     skill: string;
     function: string;
     description: string;
+    steps: IPlan[];
     stepInputs: IPlanInput[];
-};
-
-export type IPlan = {
-    userIntent: string;
-    description: string;
-    steps: IPlanStep[];
+    stepOutputs: string[];
 };
