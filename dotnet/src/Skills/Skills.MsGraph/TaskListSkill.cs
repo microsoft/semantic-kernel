@@ -87,7 +87,7 @@ public class TaskListSkill
             id: Guid.NewGuid().ToString(),
             title: title);
 
-        if (context.Variables.Get(Parameters.Reminder, out string reminder))
+        if (context.Variables.TryGetValue(Parameters.Reminder, out string? reminder))
         {
             task.Reminder = reminder;
         }
@@ -113,7 +113,7 @@ public class TaskListSkill
         }
 
         bool includeCompleted = false;
-        if (context.Variables.Get(Parameters.IncludeCompleted, out string includeCompletedString))
+        if (context.Variables.TryGetValue(Parameters.IncludeCompleted, out string? includeCompletedString))
         {
             if (!bool.TryParse(includeCompletedString, out includeCompleted))
             {

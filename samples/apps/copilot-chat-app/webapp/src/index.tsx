@@ -33,6 +33,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         var msalInstance: IPublicClientApplication | null = null;
         if (validEnvFile) {
             msalInstance = new PublicClientApplication(AuthHelper.msalConfig);
+
+            msalInstance.handleRedirectPromise().then((response) => {
+                if (response) {
+                    msalInstance?.setActiveAccount(response?.account);
+                }
+            });
         }
 
         root.render(
