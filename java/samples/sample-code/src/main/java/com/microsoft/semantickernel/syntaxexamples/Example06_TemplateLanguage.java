@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Example06_TemplateLanguage {
@@ -19,7 +20,7 @@ public class Example06_TemplateLanguage {
     /// from a Semantic Function written in natural language
     /// </summary>
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         System.out.println("======== TemplateLanguage ========");
 
 

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 /**
  * Define a Semantic Function inline with Java code.
  */
-public class Example03SemanticFunctionInline {
+public class Example03_SemanticFunctionInline {
 
     /**
      * Defines and runs an inline Semantic Function
@@ -115,9 +115,9 @@ public class Example03SemanticFunctionInline {
         inlineFunction(kernel, propmt, "tldr", text);
     }
 
-    public static void run(boolean useAzureOpenAI) {
+    public static void run(boolean useAzureOpenAI) throws IOException {
         OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
-        Kernel kernel = Example00GettingStarted.getKernel(client);
+        Kernel kernel = Example00_GettingStarted.getKernel(client);
 
         summarize(kernel);
         TLDR(kernel);
