@@ -39,13 +39,13 @@ jobs:
         export HNSWLIB_NO_NATIVE=1
         python -m pip install --upgrade pip setuptools wheel
         python -m pip install poetry pytest
-        cd python && poetry install --with hugging_face --with chromadb
+        cd python && poetry install --with hugging_face --with chromadb --with weaviate
     - name: Install dependencies wtih hnswlib native enabled
       if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
       run: |
         python -m pip install --upgrade pip setuptools wheel
         python -m pip install poetry pytest
-        cd python && poetry install --with hugging_face --with chromadb
+        cd python && poetry install --with hugging_face --with chromadb --with weaviate
     - name: Run Integration Tests
       shell: bash
       env: # Set Azure credentials secret as an input
