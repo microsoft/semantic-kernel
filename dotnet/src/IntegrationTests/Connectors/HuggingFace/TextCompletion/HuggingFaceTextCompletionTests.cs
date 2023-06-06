@@ -36,7 +36,7 @@ public sealed class HuggingFaceTextCompletionTests
         // Arrange
         const string Input = "This is test";
 
-        using var huggingFaceLocal = new HuggingFaceTextCompletion(new Uri(Endpoint), Model);
+        using var huggingFaceLocal = new HuggingFaceTextCompletion(Model, endpoint: Endpoint);
         using var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey());
 
         // Act

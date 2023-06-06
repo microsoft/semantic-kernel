@@ -41,10 +41,10 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task NoAuthorizationHeaderShouldBeAddedAsync()
+    public async Task NoAuthorizationHeaderShouldBeAddedIfApiKeyIsNotProvidedAsync()
     {
         //Arrange
-        using var sut = new HuggingFaceTextCompletion("fake-model", null, httpClient: this.httpClient);
+        using var sut = new HuggingFaceTextCompletion("fake-model", apiKey: null, httpClient: this.httpClient);
 
         //Act
         await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());
@@ -54,7 +54,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task AuthorizationHeaderShouldBeAddedAsync()
+    public async Task AuthorizationHeaderShouldBeAddedIfApiKeyIsProvidedAsync()
     {
         //Arrange
         using var sut = new HuggingFaceTextCompletion("fake-model", apiKey: "fake-api-key", httpClient: this.httpClient);

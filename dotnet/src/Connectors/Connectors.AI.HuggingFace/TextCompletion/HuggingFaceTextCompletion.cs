@@ -22,7 +22,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";
 
     private readonly string _model;
-    private readonly Uri? _endpoint;
+    private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly bool _disposeHttpClient = true;
     private readonly string? _apiKey;
@@ -39,7 +39,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
 
-        this._endpoint = endpoint;
+        this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
 
         this._httpClient = new(httpClientHandler);
@@ -56,11 +56,11 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
 
-        this._endpoint = endpoint;
+        this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
+        this._disposeHttpClient = false; // Disposal is unnecessary as a non-disposable handler is used.
     }
 
     /// <summary>
@@ -99,18 +99,19 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// Initializes a new instance of the <see cref="HuggingFaceTextCompletion"/> class.
     /// Using HuggingFace API for service call, see https://huggingface.co/docs/api-inference/index.
     /// </summary>
-    /// <param name="model">Model to use for service API call.</param>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    /// <param name="apiKey">HuggingFace API key, see https://huggingface.co/docs/api-inference/quicktour#running-inference-with-api-requests.</param>
-    /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
-    public HuggingFaceTextCompletion(string model, string? endpoint = null, string? apiKey = null, HttpClient? httpClient = null)
+    /// <param name="model">The name of the model to use for text completion.</param>
+    /// <param name="apiKey">The API key for accessing the Hugging Face service.</param>
+    /// <param name="httpClient">The HTTP client to use for making API requests. If not specified, a default client will be used.</param>
+    /// <param name="endpoint">The endpoint URL for the Hugging Face service.
+    /// If not specified, the base address of the HTTP client is used. If the base address is not available, a default endpoint will be used.</param>
+    public HuggingFaceTextCompletion(string model, string? apiKey = null, HttpClient? httpClient = null, string? endpoint = null)
     {
-        Verify.NotNull(model);
-        this._model = model;
-        this._endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint);
-        this._apiKey = apiKey;
+        Verify.NotNullOrWhiteSpace(model);
 
+        this._model = model;
+        this._apiKey = apiKey;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._endpoint = endpoint;
         this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
     }
 
@@ -203,9 +204,9 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     {
         var baseUrl = HuggingFaceApiEndpoint;
 
-        if (this._endpoint?.AbsoluteUri != null)
+        if (!string.IsNullOrEmpty(this._endpoint))
         {
-            baseUrl = this._endpoint!.AbsoluteUri;
+            baseUrl = this._endpoint;
         }
         else if (this._httpClient.BaseAddress?.AbsoluteUri != null)
         {

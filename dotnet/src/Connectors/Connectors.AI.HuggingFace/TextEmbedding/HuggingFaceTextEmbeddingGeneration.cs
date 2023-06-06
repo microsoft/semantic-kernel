@@ -21,7 +21,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
 
     private readonly string _model;
-    private readonly Uri? _endpoint;
+    private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly bool _disposeHttpClient = true;
 
@@ -37,7 +37,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
 
-        this._endpoint = endpoint;
+        this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
 
         this._httpClient = new(httpClientHandler);
@@ -54,7 +54,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
 
-        this._endpoint = endpoint;
+        this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
@@ -66,16 +66,34 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     /// </summary>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="endpoint">Endpoint for service API call.</param>
-    /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
-    public HuggingFaceTextEmbeddingGeneration(string model, string? endpoint = null, HttpClient? httpClient = null)
+    public HuggingFaceTextEmbeddingGeneration(string model, string endpoint)
     {
         Verify.NotNullOrWhiteSpace(model);
+        Verify.NotNullOrWhiteSpace(endpoint);
 
-        this._endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint);
         this._model = model;
+        this._endpoint = endpoint;
 
-        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
+    /// </summary>
+    /// <param name="model">Model to use for service API call.</param>
+    /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
+    /// <param name="endpoint">Endpoint for service API call. If not specified, the base address of the HTTP client is used.</param>
+    public HuggingFaceTextEmbeddingGeneration(string model, HttpClient httpClient, string? endpoint = null)
+    {
+        Verify.NotNullOrWhiteSpace(model);
+        Verify.NotNull(httpClient);
+
+        this._model = model;
+        this._endpoint = endpoint;
+
+        this._httpClient = httpClient;
+        this._disposeHttpClient = false; // We should not dispose custom HTTP clients.
     }
 
     /// <inheritdoc/>
@@ -145,9 +163,9 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     {
         string? baseUrl = null;
 
-        if (this._endpoint?.AbsoluteUri != null)
+        if (!string.IsNullOrEmpty(this._endpoint))
         {
-            baseUrl = this._endpoint!.AbsoluteUri;
+            baseUrl = this._endpoint;
         }
         else if (this._httpClient.BaseAddress?.AbsoluteUri != null)
         {
