@@ -46,8 +46,8 @@ jobs:
         REACT_APP_BACKEND_URI: https://localhost:40443/
         REACT_APP_AAD_CLIENT_ID: ${{ secrets.COPILOT_CHAT_REACT_APP_AAD_CLIENT_ID }}
         REACT_APP_AAD_AUTHORITY: https://login.microsoftonline.com/common
-        TEST_USER_ACCOUNT: ${{ secrets.COPILOT_CHAT_TEST_USER_ACCOUNT }}
-        TEST_USER_PASSWORD: ${{ secrets.COPILOT_CHAT_TEST_USER_PASSWORD }}
+        REACT_APP_TEST_USER_ACCOUNT: ${{ secrets.COPILOT_CHAT_TEST_USER_ACCOUNT }}
+        REACT_APP_TEST_USER_PASSWORD: ${{ secrets.COPILOT_CHAT_TEST_USER_PASSWORD }}
       run: yarn playwright test
     - uses: actions/upload-artifact@v3
       if: always()
