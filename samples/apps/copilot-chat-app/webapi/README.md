@@ -66,7 +66,7 @@ You can start the WebApi service using the command-line, Visual Studio Code, or 
 4. Start debugging by pressing `F5` or selecting the menu item `Debug`->`Start Debugging`.
 
 # Enabling Sequential Planner
-If you want to use SequentialPlanner instead ActionPlanner, we recommend using `gpt-4` or `gpt-3.5-turbo` as the planner model. Using `gpt-3.5-turbo` will require with a relevancy filter. 
+If you want to use SequentialPlanner (multi-step) instead ActionPlanner (single-step), we recommend using `gpt-4` or `gpt-3.5-turbo` as the planner model. Using `gpt-3.5-turbo` will require with a relevancy filter. 
 
 To enable sequential planner, 
 1. In [./webapi/appsettings.json](appsettings.json), set `"Type": "Sequential"` under the `Planner` section.
