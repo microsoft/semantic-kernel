@@ -248,6 +248,20 @@ export const useChat = () => {
         return botProfilePictures[index % botProfilePictures.length];
     };
 
+    const getChatMemorySources = async (chatId: string) => {
+        try {
+            return await chatService.getChatMemorySourcesAsync(
+                chatId,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            const errorMessage = `Unable to get chat files. Details: ${e.message ?? e}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+
+        return [];
+    };
+
     /*
      * Once enabled, each plugin will have a custom dedicated header in every Semantic Kernel request
      * containing respective auth information (i.e., token, encoded client info, etc.)
@@ -280,5 +294,6 @@ export const useChat = () => {
         getResponse,
         downloadBot,
         uploadBot,
+        getChatMemorySources,
     };
 };

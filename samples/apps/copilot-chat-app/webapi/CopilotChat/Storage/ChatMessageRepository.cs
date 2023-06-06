@@ -24,11 +24,18 @@ public class ChatMessageRepository : Repository<ChatMessage>
     /// <summary>
     /// Finds chat messages by chat id.
     /// </summary>
+    /// <param name="chatId">The chat id.</param>
+    /// <returns>A list of ChatMessages matching the given chatId.</returns>
     public Task<IEnumerable<ChatMessage>> FindByChatIdAsync(string chatId)
     {
         return base.StorageContext.QueryEntitiesAsync(e => e.ChatId == chatId);
     }
 
+    /// <summary>
+    /// Finds the most recent chat message by chat id.
+    /// </summary>
+    /// <param name="chatId">The chat id.</param>
+    /// <returns>The most recent ChatMessage matching the given chatId.</returns>
     public async Task<ChatMessage> FindLastByChatIdAsync(string chatId)
     {
         var chatMessages = await this.FindByChatIdAsync(chatId);
