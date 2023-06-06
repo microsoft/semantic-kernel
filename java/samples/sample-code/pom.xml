@@ -10,7 +10,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.microsoft.semantickernel</groupId>
     <artifactId>sample-code</artifactId>
 
     <packaging>jar</packaging>
