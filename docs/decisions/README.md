@@ -10,9 +10,10 @@ For more information [see](https://adr.github.io/madr/)
     2. There is also a short form template docs/decisions/adr-short-template.md
 2. Edit NNNN-title-with-dashes.md.
     1. Status must initially be `proposed`
-    2. List of `deciders` must include the aliases of the people who will sign off on the decision.
-    3. The relevant EM and `dluc` must be listed as deciders or informed of all decisions.
-    4. You should list the aliases of all partners who were consulted as part of the decision.
+    2. List of `deciders` must include the github ids of the people who will sign off on the decision.
+    3. The relevant EM and architect must be listed as deciders or informed of all decisions.
+    4. You should list the names or github ids of all partners who were consulted as part of the decision.
+    5. Keep the list of `deciders` short. You can also list people who were `consulted` or `informed` about the decision.
 3. For each option list the good, neutral and bad aspects of each considered alternative.
     1. Detailed investigations can be included in the `More Information` section inline or as links to external documents.
 4. Share your PR with the deciders and other interested parties.
