@@ -23,8 +23,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
-    <InternalsVisibleTo Include="SemanticKernel.IntegrationTests" />
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
   </ItemGroup>
 
   <ItemGroup>

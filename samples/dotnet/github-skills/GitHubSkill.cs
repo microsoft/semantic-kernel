@@ -108,12 +108,12 @@ BEGIN SUMMARY:
     [SKFunctionContextParameter(Name = SearchPatternParamName, Description = "The search string to match against the names of files in the repository")]
     public async Task SummarizeRepositoryAsync(string source, SKContext context)
     {
-        if (!context.Variables.Get(RepositoryBranchParamName, out string repositoryBranch) || string.IsNullOrEmpty(repositoryBranch))
+        if (!context.Variables.TryGetValue(RepositoryBranchParamName, out string? repositoryBranch) || string.IsNullOrEmpty(repositoryBranch))
         {
             repositoryBranch = "main";
         }
 
-        if (!context.Variables.Get(SearchPatternParamName, out string searchPattern) || string.IsNullOrEmpty(searchPattern))
+        if (!context.Variables.TryGetValue(SearchPatternParamName, out string? searchPattern) || string.IsNullOrEmpty(searchPattern))
         {
             searchPattern = "*.md";
         }
