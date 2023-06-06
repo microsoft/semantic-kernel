@@ -3,10 +3,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using ExampleSkills;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
-using Skills;
 
 // ReSharper disable once InconsistentNaming
 public static class Example10_DescribeAllSkillsAndFunctions

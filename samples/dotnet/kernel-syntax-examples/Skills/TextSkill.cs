@@ -3,7 +3,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Skills;
+#pragma warning disable IDE0130
+
+namespace ExampleSkills;
 
 public class TextSkill
 {

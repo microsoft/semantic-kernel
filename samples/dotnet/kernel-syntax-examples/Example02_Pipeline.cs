@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
-using Skills;
 
 // ReSharper disable once InconsistentNaming
 public static class Example02_Pipeline
@@ -20,13 +20,37 @@ public static class Example02_Pipeline
         IKernel kernel = new KernelBuilder().WithLogger(s_log).Build();
 
         // Load native skill
-        var text = kernel.ImportSkill(new TextSkill());
+        var text = kernel.ImportSkill(new Example02_MyTextSkill());
 
         SKContext result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
-            text["TrimStart"],
-            text["TrimEnd"],
+            text["LStrip"],
+            text["RStrip"],
             text["Uppercase"]);
 
         Console.WriteLine(result);
+    }
+}
+
+public class Example02_MyTextSkill
+{
+    [SKFunction("Remove spaces to the left of a string")]
+    [SKFunctionInput(Description = "Text to edit")]
+    public string LStrip(string input)
+    {
+        return input.TrimStart();
+    }
+
+    [SKFunction("Remove spaces to the right of a string")]
+    [SKFunctionInput(Description = "Text to edit")]
+    public string RStrip(string input)
+    {
+        return input.TrimEnd();
+    }
+
+    [SKFunction("Change all string chars to uppercase")]
+    [SKFunctionInput(Description = "Text to uppercase")]
+    public string Uppercase(string input)
+    {
+        return input.ToUpperInvariant();
     }
 }
