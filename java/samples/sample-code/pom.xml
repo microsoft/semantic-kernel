@@ -25,7 +25,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>openai-client</artifactId>
+            <artifactId>semantickernel-openai-client</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
