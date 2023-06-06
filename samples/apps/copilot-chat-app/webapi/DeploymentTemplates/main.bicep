@@ -140,6 +140,7 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
     cors: {
       allowedOrigins: [
         'http://localhost:3000'
+        'https://localhost:3000'
       ]
       supportCredentials: true
     }
@@ -148,6 +149,7 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
     netFrameworkVersion: 'v6.0'
     use32BitWorkerProcess: false
     vnetRouteAllEnabled: true
+    webSocketsEnabled: true
     appSettings: [
       {
         name: 'AIService:Type'
@@ -569,6 +571,37 @@ resource sessionContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
   properties: {
     resource: {
       id: 'chatsessions'
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
+      }
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
+        kind: 'Hash'
+        version: 2
+      }
+    }
+  }
+}
+
+resource participantContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = if (deployCosmosDB) {
+  parent: cosmosDatabase
+  name: 'chatparticipants'
+  properties: {
+    resource: {
+      id: 'chatparticipants'
       indexingPolicy: {
         indexingMode: 'consistent'
         automatic: true

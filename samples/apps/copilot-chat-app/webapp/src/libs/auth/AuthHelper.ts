@@ -54,14 +54,14 @@ const logoutRequest: EndSessionRequest = {
 };
 
 const ssoSilentRequest = async (msalInstance: IPublicClientApplication) => {
-    await msalInstance.ssoSilent({ account: msalInstance.getAllAccounts()[0], scopes: Constants.msal.semanticKernelScopes });
+    await msalInstance.ssoSilent({ account: msalInstance.getActiveAccount() || undefined, scopes: Constants.msal.semanticKernelScopes });
 };
 
 const loginAsync = async (instance: IPublicClientApplication) => {
     if (Constants.msal.method === 'redirect') {
-        await instance.loginRedirect({ account: instance.getAllAccounts()[0], scopes: Constants.msal.semanticKernelScopes });
+        await instance.loginRedirect({ scopes: Constants.msal.semanticKernelScopes });
     } else {
-        await instance.loginPopup({ account: instance.getAllAccounts()[0], scopes: Constants.msal.semanticKernelScopes });
+        await instance.loginPopup({ scopes: Constants.msal.semanticKernelScopes });
     }
 };
 
