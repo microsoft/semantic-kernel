@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,6 +13,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -154,10 +157,28 @@ public class ChatSkill
         foreach (var chatMessage in sortedMessages)
         {
             var formattedMessage = chatMessage.ToFormattedString();
+
+            // Plan object is not meaningful content in generating bot response, so shorten to intent only to save on tokens
+            if (formattedMessage.Contains("proposedPlan\":", StringComparison.InvariantCultureIgnoreCase))
+            {
+                string pattern = @"(\[.*?\]).*User Intent:User intent: (.*)(?=""}})";
+                Match match = Regex.Match(formattedMessage, pattern);
+                if (match.Success)
+                {
+                    string timestamp = match.Groups[1].Value.Trim();
+                    string userIntent = match.Groups[2].Value.Trim();
+
+                    formattedMessage = $"{timestamp} Bot proposed plan to fulfill user intent: {userIntent}";
+                }
+                else
+                {
+                    formattedMessage = "Bot proposed plan";
+                }
+            }
+
             var tokenCount = Utilities.TokenCount(formattedMessage);
 
-            // Plan object is not meaningful content in generating chat response, exclude it
-            if (remainingToken - tokenCount > 0 && !formattedMessage.Contains("proposedPlan\\\":", StringComparison.InvariantCultureIgnoreCase))
+            if (remainingToken - tokenCount >= 0)
             {
                 historyText = $"{formattedMessage}\n{historyText}";
                 remainingToken -= tokenCount;
@@ -219,10 +240,17 @@ public class ChatSkill
             return context;
         }
 
+        // Retrieve the prompt used to generate the response
+        // and return it to the caller via the context variables.
+        var prompt = chatContext.Variables.ContainsKey("prompt")
+            ? chatContext.Variables["prompt"]
+            : string.Empty;
+        context.Variables.Set("prompt", prompt);
+
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            await this.SaveNewResponseAsync(response, chatId);
+            await this.SaveNewResponseAsync(response, prompt, chatId);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -294,7 +322,8 @@ public class ChatSkill
         }
 
         // 6. Fill in the chat history if there is any token budget left
-        var chatContextText = string.Join("\n", new string[] { chatMemories, documentMemories, planResult });
+        var chatContextComponents = new List<string>() { chatMemories, documentMemories, planResult };
+        var chatContextText = string.Join("\n\n", chatContextComponents.Where(c => !string.IsNullOrEmpty(c)));
         var chatContextTextTokenCount = remainingToken - Utilities.TokenCount(chatContextText);
         if (chatContextTextTokenCount > 0)
         {
@@ -310,8 +339,13 @@ public class ChatSkill
         chatContext.Variables.Set("UserIntent", userIntent);
         chatContext.Variables.Set("ChatContext", chatContextText);
 
-        var completionFunction = this._kernel.CreateSemanticFunction(
+        var promptRenderer = new PromptTemplateEngine();
+        var renderedPrompt = await promptRenderer.RenderAsync(
             this._promptOptions.SystemChatPrompt,
+            chatContext);
+
+        var completionFunction = this._kernel.CreateSemanticFunction(
+            renderedPrompt,
             skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
@@ -319,6 +353,9 @@ public class ChatSkill
             context: chatContext,
             settings: this.CreateChatResponseCompletionSettings()
         );
+
+        // Allow the caller to view the prompt used to generate the response
+        chatContext.Variables.Set("prompt", renderedPrompt);
 
         if (chatContext.ErrorOccurred)
         {
@@ -334,7 +371,7 @@ public class ChatSkill
     /// </summary>
     private async Task<string> GetUserIntentAsync(SKContext context)
     {
-        if (!context.Variables.Get("planUserIntent", out string? userIntent))
+        if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
             var contextVariables = new ContextVariables();
             contextVariables.Set("chatId", context["chatId"]);
@@ -453,7 +490,7 @@ public class ChatSkill
     {
         var contextVariables = context.Variables.Clone();
         contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-        if (context.Variables.Get("proposedPlan", out string? proposedPlan))
+        if (context.Variables.TryGetValue("proposedPlan", out string? proposedPlan))
         {
             contextVariables.Set("proposedPlan", proposedPlan);
         }
@@ -497,13 +534,14 @@ public class ChatSkill
     /// Save a new response to the chat history.
     /// </summary>
     /// <param name="response">Response from the chat.</param>
+    /// <param name="prompt">Prompt used to generate the response.</param>
     /// <param name="chatId">The chat ID</param>
-    private async Task SaveNewResponseAsync(string response, string chatId)
+    private async Task SaveNewResponseAsync(string response, string prompt, string chatId)
     {
         // Make sure the chat exists.
         await this._chatSessionRepository.FindByIdAsync(chatId);
 
-        var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response);
+        var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response, prompt);
         await this._chatMessageRepository.CreateAsync(chatMessage);
     }
 

@@ -72,7 +72,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     }
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string instructions = "")
+    public ChatHistory CreateNewChat(string? instructions = null)
     {
         return InternalCreateNewChat(instructions);
     }
