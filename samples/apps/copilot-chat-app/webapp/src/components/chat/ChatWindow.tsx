@@ -58,10 +58,7 @@ const useClasses = makeStyles({
         flexDirection: 'row',
     },
     controls: {
-        ...shorthands.gap(tokens.spacingHorizontalM),
-        alignItems: 'right',
         display: 'flex',
-        flexDirection: 'row',
     },
     popoverHeader: {
         ...shorthands.margin('0'),
@@ -80,11 +77,6 @@ const useClasses = makeStyles({
     },
     input: {
         width: '100%',
-    },
-    buttons: {
-        display: 'flex',
-        alignSelf: 'end',
-        ...shorthands.gap(tokens.spacingVerticalS),
     },
 });
 
@@ -187,9 +179,9 @@ export const ChatWindow: React.FC = () => {
                             Files
                         </Tab>
                     </TabList>
-                    <div className={classes.controls}>
-                        <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
-                    </div>
+                </div>
+                <div className={classes.controls}>
+                    <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
                 </div>
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
