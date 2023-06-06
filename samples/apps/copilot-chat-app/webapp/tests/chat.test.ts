@@ -24,7 +24,7 @@ test('get response from bot', async ({ page }) => {
     await expect(page).toHaveTitle('Copilot Chat');
 
     // Send a message to the bot and wait for the response.
-    const responsePromise = page.waitForResponse('**/chat')
+    const responsePromise = page.waitForResponse('**/chat', { timeout: 120000 })
     await page.locator('#chat-input').click();
     await page.locator('#chat-input').fill('Hi!');
     await page.locator('#chat-input').press('Enter');
