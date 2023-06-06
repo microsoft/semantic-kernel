@@ -68,7 +68,9 @@ public interface SemanticTextMemory {
             @Nonnull String collection, @Nonnull String key, boolean withEmbedding);
 
     @Deprecated
-    /** @deprecated No longer appears in the C# ISemanticTextMemory interface. */
+    /**
+     * @deprecated No longer appears in the C# ISemanticTextMemory interface.
+     */
     SemanticTextMemory merge(MemoryQueryResult b);
 
     /**

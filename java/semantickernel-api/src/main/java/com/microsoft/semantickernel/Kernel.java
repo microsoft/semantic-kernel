@@ -38,6 +38,7 @@ public interface Kernel {
 
     /**
      * Get the SemanticTextMemory in use.
+     *
      * @return the SemanticTextMemory in use
      */
     SemanticTextMemory getMemory();
