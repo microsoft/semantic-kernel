@@ -78,7 +78,7 @@ public class ExternalInformationSkill
 
         // Check if plan exists in ask's context variables.
         // If plan was returned at this point, that means it was approved and should be run
-        var planApproved = context.Variables.Get("proposedPlan", out var planJson);
+        var planApproved = context.Variables.TryGetValue("proposedPlan", out string? planJson);
 
         if (planApproved && !string.IsNullOrWhiteSpace(planJson))
         {
@@ -122,24 +122,15 @@ public class ExternalInformationSkill
 
             if (plan.Steps.Count > 0)
             {
-                // Merge any variables from the context into plan's state
-                // as these will be used on plan execution.
-                // These context variables come from user input, so they are prioritized.
-                var variables = context.Variables;
-                foreach (var param in plan.State)
-                {
-                    if (param.Key.Equals("INPUT", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
+                // Parameters stored in plan's top level state
+                this.MergeContextIntoPlan(context.Variables, plan.State);
 
-                    if (variables.Get(param.Key, out var value))
-                    {
-                        plan.State.Set(param.Key, value);
-                    }
-                }
+                // TODO: Improve Kernel to give developers option to skip this override 
+                // (i.e., keep functions regardless of whether they're available in the planner's context or not)
+                Plan sanitizedPlan = this.SanitizePlan(plan, context);
+                sanitizedPlan.State.Update(plan.State);
 
-                this.ProposedPlan = plan;
+                this.ProposedPlan = sanitizedPlan;
             }
         }
 
@@ -147,6 +138,46 @@ public class ExternalInformationSkill
     }
 
     #region Private
+
+    /// <summary>
+    /// Scrubs plan of functions not available in Planner's kernel.
+    /// </summary>
+    private Plan SanitizePlan(Plan plan, SKContext context)
+    {
+        List<Plan> sanitizedSteps = new();
+        var availableFunctions = this._planner.Kernel.Skills.GetFunctionsView(true);
+
+        foreach (var step in plan.Steps)
+        {
+            if (this._planner.Kernel.Skills.TryGetFunction(step.SkillName, step.Name, out var function))
+            {
+                this.MergeContextIntoPlan(context.Variables, step.Parameters);
+                sanitizedSteps.Add(step);
+            }
+        }
+
+        return new Plan(plan.Description, sanitizedSteps.ToArray<Plan>());
+    }
+
+    /// <summary>
+    /// Merge any variables from the context into plan parameters as these will be used on plan execution.
+    /// These context variables come from user input, so they are prioritized.
+    /// </summary>
+    private void MergeContextIntoPlan(ContextVariables variables, ContextVariables planParams)
+    {
+        foreach (var param in planParams)
+        {
+            if (param.Key.Equals("INPUT", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (variables.TryGetValue(param.Key, out string? value))
+            {
+                planParams.Set(param.Key, value);
+            }
+        }
+    }
 
     /// <summary>
     /// Try to extract json from the planner response as if it were from an OpenAPI skill.
