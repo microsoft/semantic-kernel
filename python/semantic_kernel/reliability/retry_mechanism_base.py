@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from abc import ABC, abstractmethod
 import logging
+from abc import ABC, abstractmethod
 from typing import Awaitable, Callable, TypeVar
 
 T = TypeVar("T")

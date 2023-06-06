@@ -53,6 +53,7 @@ public sealed class Program
             .AddSwaggerGen()
             .AddCors()
             .AddControllers();
+        builder.Services.AddHealthChecks();
 
         // Configure middleware and endpoints
         WebApplication app = builder.Build();
@@ -60,6 +61,7 @@ public sealed class Program
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
+        app.MapHealthChecks("/healthz");
 
         // Enable Swagger for development environments.
         if (app.Environment.IsDevelopment())
@@ -75,7 +77,7 @@ public sealed class Program
         try
         {
             string? address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses.FirstOrDefault();
-            app.Services.GetRequiredService<ILogger>().LogInformation("Health probe: {0}/probe", address);
+            app.Services.GetRequiredService<ILogger>().LogInformation("Health probe: {0}/healthz", address);
         }
         catch (ObjectDisposedException)
         {

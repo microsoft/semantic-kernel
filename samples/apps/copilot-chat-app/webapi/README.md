@@ -1,7 +1,7 @@
 # Semantic Kernel Service - CopilotChat
 
 This ASP.Net web application provides a web service hosting the Semantic Kernel, enabling secure
-and modular access to its features for frontend apps without embedding kernel code and settings,
+and modular access to its features for the Copilot Chat application without embedding kernel code and settings,
 while allowing user interfaces to be developed using frontend frameworks such as React and Angular.
 
 # Configure your environment
@@ -50,7 +50,7 @@ You can start the WebApi service using the command-line, Visual Studio Code, or 
    the service is running.
    ```
    info: Microsoft.SemanticKernel.Kernel[0]
-         Health probe: https://localhost:40443/probe
+         Health probe: https://localhost:40443/healthz
    ```
 
 ## Visual Studio Code
