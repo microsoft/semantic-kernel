@@ -30,10 +30,10 @@ public interface IStorageContext<T> where T : IStorageEntity
     Task CreateAsync(T entity);
 
     /// <summary>
-    /// Update an entity in the storage context.
+    /// Upsert an entity in the storage context.
     /// </summary>
-    /// <param name="entity">The entity to be updated in the context.</param>
-    Task UpdateAsync(T entity);
+    /// <param name="entity">The entity to be upserted in the context.</param>
+    Task UpsertAsync(T entity);
 
     /// <summary>
     /// Delete an entity from the storage context.
