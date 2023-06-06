@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount, useMsal } from '@azure/msal-react';
+import { useMsal } from '@azure/msal-react';
 import { Button, Spinner, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
@@ -64,8 +64,8 @@ interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const { isTyping, onSubmit } = props;
     const classes = useClasses();
-    const { instance, accounts, inProgress } = useMsal();
-    const account = useAccount(accounts[0] || {});
+    const { instance, inProgress } = useMsal();
+    const account = instance.getActiveAccount();
     const dispatch = useAppDispatch();
     const [value, setValue] = React.useState('');
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
@@ -78,7 +78,9 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     React.useEffect(() => {
         async function initSpeechRecognizer() {
             const speechService = new SpeechService(process.env.REACT_APP_BACKEND_URI as string);
-            var response = await speechService.getSpeechTokenAsync(await AuthHelper.getSKaaSAccessToken(instance, inProgress));
+            var response = await speechService.getSpeechTokenAsync(
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
             if (response.isSuccess) {
                 const recognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
                 setRecognizer(recognizer);
