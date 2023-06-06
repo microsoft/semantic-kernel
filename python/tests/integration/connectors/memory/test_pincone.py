@@ -93,8 +93,6 @@ async def test_get_collections_async(get_pinecone_config):
     memory = PineconeMemoryStore(api_key, environment)
 
     await memory.create_collection_async("test-collection", 2)
-    # await memory.create_collection_async("test-collection-b")
-    # await memory.create_collection_async("test-collection-c")
     result = await memory.get_collections_async()
     assert len(result) == 1
 

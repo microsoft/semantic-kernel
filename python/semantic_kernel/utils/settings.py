@@ -97,5 +97,5 @@ def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 
     assert api_key is not None, "Pinecone API key not found in .env file"
     assert environment is not None, "Pinecone environment not found in .env file"
-    
+
     return api_key, environment
