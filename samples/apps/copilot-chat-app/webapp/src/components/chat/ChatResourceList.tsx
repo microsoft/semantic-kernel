@@ -98,9 +98,13 @@ function useTable(resources: ChatMemorySource[]) {
     const columns: TableColumnDefinition<TableItem>[] = [
         createTableColumn<TableItem>({
             columnId: 'name',
-            renderHeaderCell: () => <TableHeaderCell {...headerSortProps('name')}>Name</TableHeaderCell>,
+            renderHeaderCell: () => (
+                <TableHeaderCell key="name" {...headerSortProps('name')}>
+                    Name
+                </TableHeaderCell>
+            ),
             renderCell: (item) => (
-                <TableCell>
+                <TableCell key={item.id}>
                     <TableCellLayout media={item.name.icon}>
                         <a href={item.name.url}>{item.name.label}</a>
                     </TableCellLayout>
@@ -113,9 +117,13 @@ function useTable(resources: ChatMemorySource[]) {
         }),
         createTableColumn<TableItem>({
             columnId: 'createdOn',
-            renderHeaderCell: () => <TableHeaderCell {...headerSortProps('createdOn')}>Created on</TableHeaderCell>,
+            renderHeaderCell: () => (
+                <TableHeaderCell key="createdOn" {...headerSortProps('createdOn')}>
+                    Created on
+                </TableHeaderCell>
+            ),
             renderCell: (item) => (
-                <TableCell title={new Date(item.createdOn.timestamp).toLocaleString()}>
+                <TableCell key={item.createdOn.timestamp} title={new Date(item.createdOn.timestamp).toLocaleString()}>
                     {item.createdOn.label}
                 </TableCell>
             ),
@@ -126,8 +134,12 @@ function useTable(resources: ChatMemorySource[]) {
         }),
         createTableColumn<TableItem>({
             columnId: 'access',
-            renderHeaderCell: () => <TableHeaderCell {...headerSortProps('access')}>Access</TableHeaderCell>,
-            renderCell: (item) => <TableCell>{getAccessString(item.chatId)}</TableCell>,
+            renderHeaderCell: () => (
+                <TableHeaderCell key="access" {...headerSortProps('access')}>
+                    Access
+                </TableHeaderCell>
+            ),
+            renderCell: (item) => <TableCell key={item.id + item.name}>{getAccessString(item.chatId)}</TableCell>,
             compare: (a, b) => {
                 const aAccess = getAccessString(a.chatId);
                 const bAccess = getAccessString(b.chatId);
