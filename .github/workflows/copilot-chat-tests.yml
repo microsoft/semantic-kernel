@@ -19,16 +19,28 @@ jobs:
       matrix:
         os: [windows-latest]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
       with:
         node-version: 16
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
     - name: Install dependencies
       run: yarn install
     - name: Install Playwright Browsers
       run: yarn playwright install --with-deps
+    - name: Update AIService configuration
+      working-directory: samples/apps/copilot-chat-app/webapi
+      run: |
+        dotnet user-secrets set "AIService:Key" ${{ secrets.AZUREOPENAI__APIKEY }}
+        dotnet user-secrets set "AIService:Endpoint" ${{ secrets.AZUREOPENAI__ENDPOINT }}
+    - name: Start service in background
+      working-directory: samples/apps/copilot-chat-app/webapi
+      run: dotnet run &
     - name: Run Playwright tests
       env:
         REACT_APP_BACKEND_URI: https://localhost:40443/
