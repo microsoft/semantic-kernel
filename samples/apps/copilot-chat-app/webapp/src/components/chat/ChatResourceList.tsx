@@ -125,14 +125,14 @@ function useTable(resources: ChatMemorySource[]) {
             },
         }),
         createTableColumn<TableItem>({
-            columnId: 'scope',
-            renderHeaderCell: () => <TableHeaderCell {...headerSortProps('scope')}>Scope</TableHeaderCell>,
-            renderCell: (item) => <TableCell>{getScopeString(item.chatId)}</TableCell>,
+            columnId: 'access',
+            renderHeaderCell: () => <TableHeaderCell {...headerSortProps('access')}>Access</TableHeaderCell>,
+            renderCell: (item) => <TableCell>{getAccessString(item.chatId)}</TableCell>,
             compare: (a, b) => {
-                const aScope = getScopeString(a.chatId);
-                const bScope = getScopeString(b.chatId);
-                const comparison = aScope.localeCompare(bScope);
-                return getSortDirection('scope') === 'ascending' ? comparison : comparison * -1;
+                const aAccess = getAccessString(a.chatId);
+                const bAccess = getAccessString(b.chatId);
+                const comparison = aAccess.localeCompare(bAccess);
+                return getSortDirection('access') === 'ascending' ? comparison : comparison * -1;
             },
         }),
     ];
@@ -175,8 +175,8 @@ function useTable(resources: ChatMemorySource[]) {
     return { columns, rows: items };
 }
 
-function getScopeString(chatId: string) {
-    return chatId === EmptyGuid ? 'All chats' : 'This chat';
+function getAccessString(chatId: string) {
+    return chatId === EmptyGuid ? 'Global' : 'This chat';
 }
 
 function getFileIconByFileExtension(fileName: string) {
