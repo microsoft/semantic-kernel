@@ -1,14 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.Identity.Web;
 using SemanticKernel.Service.Auth;
 using SemanticKernel.Service.Options;
 
@@ -88,6 +79,16 @@ internal static class ServicesExtensions
             case AuthorizationOptions.AuthorizationType.AzureAd:
                 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddMicrosoftIdentityWebApi(configuration.GetSection($"{AuthorizationOptions.PropertyName}:AzureAd"));
+                break;
+
+            case AuthorizationOptions.AuthorizationType.AzureAdB2C:
+                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddMicrosoftIdentityWebApi(options =>
+                        {
+                            configuration.Bind($"{AuthorizationOptions.PropertyName}:AzureAdB2C", options);
+                        },
+                        options => { configuration.Bind($"{AuthorizationOptions.PropertyName}:AzureAdB2C", options); });
+
                 break;
 
             case AuthorizationOptions.AuthorizationType.ApiKey:
