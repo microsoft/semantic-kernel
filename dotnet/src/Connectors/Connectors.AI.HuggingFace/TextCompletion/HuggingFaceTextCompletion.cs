@@ -33,7 +33,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions.")]
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
     public HuggingFaceTextCompletion(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
         Verify.NotNull(endpoint);
@@ -71,7 +71,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
     /// <param name="endpoint">Endpoint for service API call.</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions.")]
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
     public HuggingFaceTextCompletion(string apiKey, string model, HttpClientHandler httpClientHandler, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model, httpClientHandler)
     {
@@ -87,7 +87,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     /// <param name="apiKey">HuggingFace API key, see https://huggingface.co/docs/api-inference/quicktour#running-inference-with-api-requests.</param>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="endpoint">Endpoint for service API call.</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions.")]
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
     public HuggingFaceTextCompletion(string apiKey, string model, string endpoint = HuggingFaceApiEndpoint)
         : this(new Uri(endpoint), model)
     {

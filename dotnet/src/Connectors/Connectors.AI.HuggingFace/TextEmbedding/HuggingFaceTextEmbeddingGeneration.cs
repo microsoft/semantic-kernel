@@ -31,7 +31,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions.")]
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
     public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model, HttpClientHandler httpClientHandler)
     {
         Verify.NotNull(endpoint);
