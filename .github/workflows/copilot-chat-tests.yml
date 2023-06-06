@@ -36,6 +36,7 @@ jobs:
     - name: Update AIService configuration
       working-directory: samples/apps/copilot-chat-app/webapi
       run: |
+        dotnet dev-certs https
         dotnet user-secrets set "AIService:Key" ${{ secrets.AZUREOPENAI__APIKEY }}
         dotnet user-secrets set "AIService:Endpoint" ${{ secrets.AZUREOPENAI__ENDPOINT }}
     - name: Start service in background
