@@ -64,14 +64,27 @@ def documents():
 
     yield records
 
-
 @pytest.fixture
 def memory_store():
-    # startup period default is 5, but integration tests are flaky without a higher value
-    config = weaviate_memory_store.WeaviateConfig(use_embed=True, startup_period=60)
-    store = weaviate_memory_store.WeaviateMemoryStore(config)
-    store.client.schema.delete_all()
+    max_attempts = 5  # the number of retry attempts
+    delay = 30  # delay in seconds between each attempt
+
+    config = weaviate_memory_store.WeaviateConfig(use_embed=True, startup_period=5)
+    for attempt in range(max_attempts):
+        try:
+            store = weaviate_memory_store.WeaviateMemoryStore(config)
+            store.client.schema.delete_all()
+        except Exception:
+            if attempt < max_attempts - 1:  # it's not the final attempt
+                time.sleep(delay)  # wait before retrying
+                continue  # go to the next attempt
+            else:  # it's the final attempt
+                raise  # re-raise the last exception
+        else:
+            break  # successful attempt, get out of the loop
+
     yield store
+
     store.client.schema.delete_all()
 
 
