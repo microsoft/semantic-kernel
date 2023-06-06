@@ -31,23 +31,34 @@ export const parsePlan = (response: string): IPlan | null => {
 };
 
 const extractPlanSteps = (plan: any) => {
-    const planInputs: IPlanInput[] = [];
-    for (var input in plan.state) {
-        if (
-            // Omit reserved context variable names
-            !Constants.sk.reservedWords.includes(plan.state[input].Key.trim())
-        ) {
-            planInputs.push(plan.state[input]);
-        }
-    }
+    // If plan came from Actio Planner, extract step parameters from top-level plan state
+    const planInputs = extractParameters(plan.state);
 
     const planSteps = plan.steps;
     return planSteps.map((step: any) => {
+        // If plan came from SequentialPlanner, extract step parameters from respective step object
+        const stepParameters = extractParameters(step.parameters);
+
         return {
             skill: step['skill_name'],
             function: step['name'],
             description: step['description'],
-            stepInputs: planInputs,
+            stepInputs: planSteps.length === 1 && planInputs.length > 0 ? planInputs : stepParameters,
         };
     });
+};
+
+const extractParameters = (parametersArray: IPlanInput[]) => {
+    const parameters: IPlanInput[] = [];
+    for (var param in parametersArray) {
+        if (
+            // Omit reserved context variable names
+            !Constants.sk.reservedWords.includes(parametersArray[param].Key.trim()) &&
+            parametersArray[param].Value.trim() !== ''
+        ) {
+            parameters.push(parametersArray[param]);
+        }
+    }
+
+    return parameters;
 };

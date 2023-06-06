@@ -62,6 +62,12 @@ public static class CopilotChatServiceExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
+        // Planner options
+        services.AddOptions<PlannerOptions>()
+            .Bind(configuration.GetSection(PlannerOptions.PropertyName))
+            .ValidateOnStart()
+            .PostConfigure(TrimStringProperties);
+
         return services;
     }
 
