@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
+using SemanticKernel.Service.CopilotChat.Options;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
@@ -18,12 +19,18 @@ public class CopilotChatPlanner
     public IKernel Kernel { get; }
 
     /// <summary>
+    /// Options for the planner.
+    /// </summary>
+    private readonly PlannerOptions? _plannerOptions;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="CopilotChatPlanner"/> class.
     /// </summary>
     /// <param name="plannerKernel">The planner's kernel.</param>
-    public CopilotChatPlanner(IKernel plannerKernel)
+    public CopilotChatPlanner(IKernel plannerKernel, PlannerOptions? plannerOptions)
     {
         this.Kernel = plannerKernel;
+        this._plannerOptions = plannerOptions;
     }
 
     /// <summary>
@@ -38,6 +45,11 @@ public class CopilotChatPlanner
         {
             // No functions are available - return an empty plan.
             return Task.FromResult(new Plan(goal));
+        }
+
+        if (this._plannerOptions?.Type == "Sequential")
+        {
+            return new SequentialPlanner(this.Kernel).CreatePlanAsync(goal);
         }
 
         return new ActionPlanner(this.Kernel).CreatePlanAsync(goal);

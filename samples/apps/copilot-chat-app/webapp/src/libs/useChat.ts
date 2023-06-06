@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount, useMsal } from '@azure/msal-react';
+import { useMsal } from '@azure/msal-react';
 import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
 import { RootState } from '../redux/app/store';
@@ -33,8 +33,8 @@ import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
-    const { instance, accounts, inProgress } = useMsal();
-    const account = useAccount(accounts[0] || {});
+    const { instance, inProgress } = useMsal();
+    const account = instance.getActiveAccount();
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
@@ -248,12 +248,26 @@ export const useChat = () => {
         return botProfilePictures[index % botProfilePictures.length];
     };
 
-     /*
+    const getChatMemorySources = async (chatId: string) => {
+        try {
+            return await chatService.getChatMemorySourcesAsync(
+                chatId,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            const errorMessage = `Unable to get chat files. Details: ${e.message ?? e}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+
+        return [];
+    };
+
+    /*
      * Once enabled, each plugin will have a custom dedicated header in every Semantic Kernel request
      * containing respective auth information (i.e., token, encoded client info, etc.)
      * that the server can use to authenticate to the downstream APIs
      */
-     const getEnabledPlugins = () => {
+    const getEnabledPlugins = () => {
         const enabledPlugins: { headerTag: AuthHeaderTags; authData: string; apiProperties?: any }[] = [];
 
         Object.entries(plugins).map((entry) => {
@@ -280,5 +294,6 @@ export const useChat = () => {
         getResponse,
         downloadBot,
         uploadBot,
+        getChatMemorySources,
     };
 };
