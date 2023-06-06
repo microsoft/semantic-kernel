@@ -73,16 +73,18 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ index, step }) => {
                             <Text weight="semibold">About: </Text> <Text>{step.description}</Text>
                         </div>
                     )}
-                    <div className={classes.inputs}>
-                        <Text weight="semibold">Inputs: </Text>
-                        {step.stepInputs.map((input: IPlanInput) => {
-                            return (
-                                <Badge color="informative" shape="rounded" appearance="tint" key={input.Key}>
-                                    {`${input.Key}: ${input.Value}`}
-                                </Badge>
-                            );
-                        })}
-                    </div>
+                    {step.stepInputs.length > 0 && (
+                        <div className={classes.inputs}>
+                            <Text weight="semibold">Inputs: </Text>
+                            {step.stepInputs.map((input: IPlanInput) => {
+                                return (
+                                    <Badge color="informative" shape="rounded" appearance="tint" key={input.Key}>
+                                        {`${input.Key}: ${input.Value}`}
+                                    </Badge>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
         </Card>
