@@ -10,6 +10,7 @@ import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateConversation } from '../../redux/features/conversations/conversationsSlice';
+import { SharedStyles } from '../../styles';
 import { ChatHistory } from './ChatHistory';
 import { ChatInput } from './ChatInput';
 
@@ -24,20 +25,8 @@ const useClasses = makeStyles({
         height: '100%',
     },
     scroll: {
-        overflowY: 'scroll',
-        '&:hover': {
-            '&::-webkit-scrollbar-thumb': {
-                backgroundColor: tokens.colorScrollbarOverlay,
-                visibility: 'visible',
-            },
-            '&::-webkit-scrollbar-track': {
-                backgroundColor: tokens.colorNeutralBackground1,
-                WebkitBoxShadow: 'inset 0 0 5px rgba(0, 0, 0, 0.1)',
-                visibility: 'visible',
-            },
-        },
-        height: '100%',
         ...shorthands.margin('4px'),
+        ...SharedStyles.scroll,
     },
     history: {
         ...shorthands.padding(tokens.spacingVerticalM),
