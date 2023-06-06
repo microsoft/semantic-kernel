@@ -67,7 +67,6 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
-        Verify.NotNull(credential);
 
         var options = new OpenAIClientOptions();
         if (httpClient != null)
