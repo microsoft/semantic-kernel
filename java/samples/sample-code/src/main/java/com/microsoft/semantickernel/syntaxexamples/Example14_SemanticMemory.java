@@ -1,24 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
-import com.microsoft.openai.OpenAIAsyncClient;
-import com.microsoft.openai.OpenAIClientBuilder;
 import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemory;
-import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.PrintStream;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.StreamSupport;
 
 
 /* The files contain two examples about SK Semantic Memory.
@@ -34,8 +26,6 @@ import java.util.stream.StreamSupport;
 public class Example14_SemanticMemory
 {
     private static final String MEMORY_COLLECTION_NAME = "SKGitHub";
-    public static final String CONF_OPENAI_PROPERTIES = "conf.openai.properties";
-    public static final String AZURE_CONF_PROPERTIES = "conf.properties";
 
     public static void main(String[] args)
     {
@@ -57,7 +47,7 @@ public class Example14_SemanticMemory
                 .withMemory(new AzureCognitiveSearchMemory(System.getenv("ACS_ENDPOINT"), System.getenv("ACS_API_KEY")))
                 .build();
 
-        runExampleAsync(kernelWithACS).subscribe(v -> System.out.println("Done!"), Throwable::printStackTrace);
+        runExampleAsync(kernelWithACS).block();//.subscribe(v -> System.out.println("Done!"), Throwable::printStackTrace);
 
         System.out.println("====================================================");
         System.out.println("======== Semantic Memory (volatile, in RAM) ========");
@@ -89,7 +79,7 @@ public class Example14_SemanticMemory
     public static Mono<Void> runExampleAsync(Kernel kernel)
     {
         return storeMemoryAsync(kernel)
-                .then(searchMemoryAsync(kernel, "How do I get started?"));
+                .then(searchMemoryAsync(kernel, "How do I get started?"))
 
         /*
         Output:
@@ -106,7 +96,7 @@ public class Example14_SemanticMemory
 
         */
 
-//                .then(searchMemoryAsync(kernel, "Can I build a chat with SK?"));
+                .then(searchMemoryAsync(kernel, "Can I build a chat with SK?"));
 
         /*
         Output:
@@ -150,23 +140,21 @@ public class Example14_SemanticMemory
          * When using the combination of VolatileStore and Embedding generation, SK takes
          * care of creating and storing the index
          */
+
         return Flux.fromIterable(sampleData().entrySet())
                 .doFirst(() -> System.out.println("\nAdding some GitHub file URLs and their descriptions to the semantic memory."))
-                .doOnNext(entry ->
-                    kernel.getMemory().saveReferenceAsync(
-                            MEMORY_COLLECTION_NAME,
-                            entry.getValue(),
-                            entry.getKey(),
-                            "GitHub",
-                            entry.getValue(),
-                            null
-                    )
+                .map(entry -> {
+                    System.out.println("Save '" + entry.getKey() + "' to memory.");
+                    return kernel.getMemory().saveReferenceAsync(
+                                    MEMORY_COLLECTION_NAME,
+                                    entry.getKey(),
+                                    entry.getKey(),
+                                    "GitHub",
+                                    entry.getValue(),
+                                    null);
+                    }
                 )
-                .doOnEach(entrySignal -> {
-                    System.out.println(entrySignal);
-                    if (entrySignal.hasValue()) System.out.println("Saved '" + entrySignal.get().getKey() + "' to memory.");
-                    else if (entrySignal.hasError()) System.out.println("Error: '" + entrySignal);
-                })
+                .mapNotNull(Mono::block)
                 .doFinally(signalType -> System.out.println("\n----------------------"))
                 .then();
     }

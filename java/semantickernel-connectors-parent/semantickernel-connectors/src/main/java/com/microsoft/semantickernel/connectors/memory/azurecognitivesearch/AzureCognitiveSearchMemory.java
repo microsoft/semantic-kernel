@@ -3,10 +3,8 @@ package com.microsoft.semantickernel.connectors.memory.azurecognitivesearch;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.http.rest.Response;
-import com.azure.core.util.Context;
-import com.azure.search.documents.SearchClient;
-import com.azure.search.documents.implementation.util.FieldBuilder;
-import com.azure.search.documents.indexes.SearchIndexClient;
+import com.azure.search.documents.SearchAsyncClient;
+import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.SearchIndexClientBuilder;
 import com.azure.search.documents.indexes.models.PrioritizedFields;
 import com.azure.search.documents.indexes.models.SearchField;
@@ -19,7 +17,7 @@ import com.azure.search.documents.models.IndexDocumentsResult;
 import com.azure.search.documents.models.QueryLanguage;
 import com.azure.search.documents.models.QueryType;
 import com.azure.search.documents.models.SearchOptions;
-import com.azure.search.documents.util.SearchPagedIterable;
+import com.azure.search.documents.util.SearchPagedResponse;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
@@ -29,15 +27,16 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -48,32 +47,32 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
 
     private static final String EMPTY_STRING = "";
 
-    private final SearchIndexClient _adminClient;
+    private final SearchIndexAsyncClient _adminClient;
 
-    private final ConcurrentMap<String, SearchClient> _clientsByIndex = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, SearchAsyncClient> _clientsByIndex = new ConcurrentHashMap<>();
 
     // Create a new instance of semantic memory using Azure Cognitive Search.
     // <param name="endpoint">Azure Cognitive Search URI, e.g. "https://contoso.search.windows.net"</param>
     // <param name="apiKey">API Key</param>
     public AzureCognitiveSearchMemory(String endpoint, String apiKey) {
         AzureKeyCredential credentials = new AzureKeyCredential(apiKey);
-        this._adminClient = new SearchIndexClientBuilder().endpoint(endpoint).credential(credentials).buildClient();
+        this._adminClient = new SearchIndexClientBuilder().endpoint(endpoint).credential(credentials).buildAsyncClient();
     }
 
     // Create a new instance of semantic memory using Azure Cognitive Search.
     // <param name="endpoint">Azure Cognitive Search URI, e.g. "https://contoso.search.windows.net"</param>
     // <param name="credentials">Azure service</param>
     public AzureCognitiveSearchMemory(String endpoint, TokenCredential credentials) {
-        this._adminClient = new SearchIndexClientBuilder().endpoint(endpoint).credential(credentials).buildClient();
+        this._adminClient = new SearchIndexClientBuilder().endpoint(endpoint).credential(credentials).buildAsyncClient();
     }
 
     @Override
     public AzureCognitiveSearchMemory copy() {
-        return new AzureCognitiveSearchMemory(this._adminClient);
+        return new AzureCognitiveSearchMemory(this);
     }
 
-    private AzureCognitiveSearchMemory(SearchIndexClient adminClient) {
-        this._adminClient = adminClient;
+    private AzureCognitiveSearchMemory(AzureCognitiveSearchMemory other) {
+        this._adminClient = other._adminClient;
     }
 
     @Override
@@ -101,7 +100,7 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                 description,
                 additionalMetadata,
                 externalSourceName,
-                false
+                true
         );
         return this.upsertRecordAsync(collection, record);
     }
@@ -109,22 +108,16 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     @Override
     public Mono<MemoryQueryResult> getAsync(@Nonnull String collection, @Nonnull String key, boolean withEmbedding) {
 
-        SearchClient client = this.getSearchClient(normalizeIndexName(collection));
+        SearchAsyncClient client = this.getSearchClient(normalizeIndexName(collection));
 
-        // what to do...
-        Callable<Response<AzureCognitiveSearchRecord>> callable =
-                () -> client.getDocumentWithResponse(encodeId(key), AzureCognitiveSearchRecord.class, null, null);
-
-        // how to handle the response...
-        Function<Response<AzureCognitiveSearchRecord>, MemoryQueryResult> transform =
-                (response) -> {
-                    if (response.getStatusCode() == 404 || response.getValue() == null) {
-                        throw new AzureCognitiveSearchMemoryException("Memory read returned null");
-                    }
-                    return new MemoryQueryResult(toMemoryRecordMetadata(response.getValue()), 1);
-                };
-
-        return Mono.fromCallable(callable).map(transform);
+        return client.getDocumentWithResponse(encodeId(key), AzureCognitiveSearchRecord.class, null)
+                .map((response) -> {
+                            if (response.getStatusCode() == 404 || response.getValue() == null) {
+                                throw new AzureCognitiveSearchMemoryException("Memory read returned null");
+                            }
+                            return new MemoryQueryResult(toMemoryRecordMetadata(response.getValue()), 1);
+                        }
+                );
     }
 
     @Override
@@ -134,21 +127,38 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
 
     @Override
     public Mono<Void> removeAsync(@Nonnull String collection, @Nonnull String key) {
-        SearchClient client = this.getSearchClient(normalizeIndexName(collection));
+
+        SearchAsyncClient client = this.getSearchClient(normalizeIndexName(collection));
 
         List<AzureCognitiveSearchRecord> records = Collections.singletonList(
                 new AzureCognitiveSearchRecord(encodeId(key), "", "", "", "", false)
         );
 
-        return Mono.fromCallable(() -> client.deleteDocumentsWithResponse(records, null, null))
-                // TODO: should we check the response?
-                .then();
+        return client.deleteDocumentsWithResponse(records, null).then();
     }
+
+    private Collector<SearchPagedResponse, ?, List<MemoryQueryResult>> toMemoryQueryResultList =
+            Collector.of(ArrayList::new,
+                    (list, response) -> {
+                        if (response.getStatusCode() == 404 || response.getValue() == null) {
+                            throw new AzureCognitiveSearchMemoryException("Memory read returned null");
+                        }
+                        response.getValue().stream()
+                                .map(searchResult ->
+                                        new MemoryQueryResult(toMemoryRecordMetadata(searchResult.getDocument(AzureCognitiveSearchRecord.class)), searchResult.getScore()))
+                                .forEach(list::add);
+                    },
+                    (left, right) -> {
+                        left.addAll(right);
+                        return left;
+                    });
+
+
 
     @Override
     public Mono<List<MemoryQueryResult>> searchAsync(@Nonnull String collection, @Nonnull String query, int limit, double minRelevanceScore, boolean withEmbeddings) {
 
-        SearchClient client = this.getSearchClient(normalizeIndexName(collection));
+        SearchAsyncClient client = this.getSearchClient(normalizeIndexName(collection));
 
         SearchOptions options = new SearchOptions()
                 .setQueryType(QueryType.SEMANTIC)
@@ -156,38 +166,14 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                 .setQueryLanguage(QueryLanguage.EN_US)
                 .setAnswersCount(limit);
 
-        // what to do...
-        Callable<SearchPagedIterable> callable =
-                () -> client.search(query, options, Context.NONE);
-
-        // how to handle the response...
-        // return a list of results that have a score greater than the minimum relevance score.
-        Function<SearchPagedIterable, List<MemoryQueryResult>> transform =
-                (searchPagedIterable) -> {
-                    // return a list of results that have a score greater than the minimum relevance score.
-                    return
-                            searchPagedIterable.getAnswers().stream()
-                                    .filter(answerResult -> answerResult.getScore() >= minRelevanceScore)
-                                    .map(answerResult -> {
-                                        MemoryRecordMetadata metadata = new MemoryRecordMetadata(
-                                                false,
-                                                answerResult.getKey(),
-                                                answerResult.getText(),
-                                                EMPTY_STRING,
-                                                EMPTY_STRING,
-                                                EMPTY_STRING
-                                        );
-                                        return new MemoryQueryResult(metadata, answerResult.getScore());
-                                    })
-                                    .collect(Collectors.toList());
-                };
-
-        return Mono.fromCallable(callable).map(transform);
+        return client.search(query,options)
+                .byPage()
+                .collect(toMemoryQueryResultList);
     }
 
     @Override
     public Mono<List<String>> getCollectionsAsync() {
-        return Mono.fromCallable(() -> this._adminClient.listIndexes().stream().map(SearchIndex::getName).collect(Collectors.toList()));
+        return this._adminClient.listIndexes().map(SearchIndex::getName).collect(Collectors.toList());
     }
 
 
@@ -206,18 +192,26 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     // Note: the index might not exist, but we avoid checking everytime and the extra latency.
     // <param name="indexName">Index name</param>
     // <returns>Search client ready to read/write</returns>
-    private SearchClient getSearchClient(String indexName) {
+    private SearchAsyncClient getSearchClient(String indexName) {
         // Search an available client from the local cache
-        SearchClient client = _clientsByIndex.computeIfAbsent(indexName, k -> _adminClient.getSearchClient(indexName));
-        return client;
+        String normalizeIndexName = normalizeIndexName(indexName);
+        return _clientsByIndex.computeIfAbsent(indexName, k -> _adminClient.getSearchAsyncClient(normalizeIndexName));
     }
 
     // Create a new search index.
     // <param name="indexName">Index name</param>
     // <param name="cancellationToken">Task cancellation token</param>
+//    private Mono<SearchIndex> createIndexAsync(String indexName) {
     private Mono<SearchIndex> createIndexAsync(String indexName) {
-        List<SearchField> fields =
-                FieldBuilder.build(AzureCognitiveSearchRecord.class, null);
+
+        indexName = normalizeIndexName(indexName);
+
+        // TODO: FieldBuilder.build(AzureCognitiveSearchRecord.class, null) gives an
+        //  NPE: Cannot invoke "c.f.j.d.i.TypeResoultionContext.resolveType(j.l.r.Type)" because "this._typeContext" is null
+        //  so we have to do it manually for now.
+//        List<SearchField> fields = FieldBuilder.build(AzureCognitiveSearchRecord.class, null);
+        List<SearchField> fields = AzureCognitiveSearchRecord.searchFields();
+
         SearchIndex newIndex = new SearchIndex(indexName, fields)
                 .setSemanticSettings(new SemanticSettings()
                         .setConfigurations(
@@ -234,35 +228,29 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                                 )
                         )
                 );
-
-        return Mono.fromCallable(() -> this._adminClient.createIndex(newIndex));
+        return this._adminClient.createIndex(newIndex);
     }
 
     @SuppressWarnings("unchecked")
     private Mono<String> upsertRecordAsync(String indexName, AzureCognitiveSearchRecord record) {
-        SearchClient client = this.getSearchClient(indexName);
+        SearchAsyncClient client = this.getSearchClient(indexName);
         IndexDocumentsOptions throwOnAnyError = new IndexDocumentsOptions().setThrowOnAnyError(true);
-
-        Callable<Response<IndexDocumentsResult>> upsertCode =
-                () -> client.mergeOrUploadDocumentsWithResponse(Collections.singleton(record), throwOnAnyError, Context.NONE);
 
         Function<Response<IndexDocumentsResult>, String> transform =
                 (response) -> {
-                    if (response.getStatusCode() == 404 || response.getValue().getResults().isEmpty()) {
+                    if (response.getStatusCode() == 404 || response.getValue() == null || response.getValue().getResults() == null || response.getValue().getResults().isEmpty()) {
                         throw new AzureCognitiveSearchMemoryException("Memory write returned null or an empty set");
                     }
                     return response.getValue().getResults().get(0).getKey();
                 };
 
-
-        return Mono.fromCallable(upsertCode)
-                .map(response -> {
-                    if (response.getStatusCode() == 404) {
-                        return createIndexAsync(indexName).thenReturn(Mono.fromCallable(upsertCode));
-                    }
-                    return response;
-                })
-                .map(response -> transform.apply((Response<IndexDocumentsResult>) response));
+        return Mono.fromCallable(() -> {
+            try {
+                return client.mergeOrUploadDocumentsWithResponse(Collections.singleton(record), throwOnAnyError).map(transform).block();
+            } catch (Exception e) {
+                return createIndexAsync(indexName).then(client.mergeOrUploadDocumentsWithResponse(Collections.singleton(record), throwOnAnyError)).map(transform).block();
+            }
+        });
     }
 
     private static MemoryRecordMetadata toMemoryRecordMetadata(AzureCognitiveSearchRecord data) {

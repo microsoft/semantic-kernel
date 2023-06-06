@@ -19,6 +19,7 @@
         <google.errorprone.core.version>2.19.1</google.errorprone.core.version>
         <log4j2.version>2.20.0</log4j2.version>
         <maven.compiler.plugin.version>2.11.0</maven.compiler.plugin.version>
+        <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
