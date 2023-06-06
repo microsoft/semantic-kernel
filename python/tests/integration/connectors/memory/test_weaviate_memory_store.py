@@ -70,7 +70,7 @@ def documents():
 @pytest.fixture
 def memory_store():
     max_attempts = 5  # the number of retry attempts
-    delay = 5 * 60  # delay in seconds between each attempt
+    delay = 30  # delay in seconds between each attempt
 
     config = weaviate_memory_store.WeaviateConfig(use_embed=True)
     for attempt in range(max_attempts):
