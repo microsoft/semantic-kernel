@@ -127,10 +127,10 @@ public class DocumentImportController : ControllerBase
             {
                 await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, memorySource.Id);
             }
-            catch (Exception exception)
+            catch (Exception ex) when (!ex.IsCriticalException())
             {
                 await this._sourceRepository.DeleteAsync(memorySource);
-                throw exception;
+                throw;
             }
         }
         catch (ArgumentOutOfRangeException ex)
