@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -25,8 +25,8 @@ internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingRe
         return Task.FromResult(this._responseData.GetResult<TextCompletionResponse>().Text ?? string.Empty);
     }
 
-    public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return this.GetCompletionAsync(cancellationToken).ToAsyncEnumerable();
+        yield return await this.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
     }
 }

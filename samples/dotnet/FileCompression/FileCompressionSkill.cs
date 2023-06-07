@@ -69,7 +69,7 @@ public class FileCompressionSkill
     {
         this._logger.LogTrace($"{nameof(this.CompressFileAsync)} got called");
 
-        if (!context.Variables.Get(Parameters.DestinationFilePath, out string destinationFilePath))
+        if (!context.Variables.TryGetValue(Parameters.DestinationFilePath, out string? destinationFilePath))
         {
             const string ErrorMessage = $"Missing context variable {Parameters.DestinationFilePath} in {nameof(this.CompressFileAsync)}";
             this._logger.LogError(ErrorMessage);
@@ -99,7 +99,7 @@ public class FileCompressionSkill
     {
         this._logger.LogTrace($"{nameof(this.CompressDirectoryAsync)} got called");
 
-        if (!context.Variables.Get(Parameters.DestinationFilePath, out string destinationFilePath))
+        if (!context.Variables.TryGetValue(Parameters.DestinationFilePath, out string? destinationFilePath))
         {
             const string ErrorMessage = $"Missing context variable {Parameters.DestinationFilePath} in {nameof(this.CompressDirectoryAsync)}";
             this._logger.LogError(ErrorMessage);
@@ -129,7 +129,7 @@ public class FileCompressionSkill
     {
         this._logger.LogTrace($"{nameof(this.DecompressFileAsync)} got called");
 
-        if (!context.Variables.Get(Parameters.DestinationDirectoryPath, out string destinationDirectoryPath))
+        if (!context.Variables.TryGetValue(Parameters.DestinationDirectoryPath, out string? destinationDirectoryPath))
         {
             const string ErrorMessage = $"Missing context variable {Parameters.DestinationDirectoryPath} in {nameof(this.DecompressFileAsync)}";
             this._logger.LogError(ErrorMessage);
