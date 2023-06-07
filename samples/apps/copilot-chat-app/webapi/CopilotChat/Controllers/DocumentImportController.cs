@@ -15,6 +15,7 @@ using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
+using static SemanticKernel.Service.CopilotChat.Models.MemorySource;
 
 namespace SemanticKernel.Service.CopilotChat.Controllers;
 
@@ -42,19 +43,25 @@ public class DocumentImportController : ControllerBase
 
     private readonly ILogger<DocumentImportController> _logger;
     private readonly DocumentMemoryOptions _options;
-    private readonly ChatParticipantRepository _chatParticipantRepository;
+    private readonly ChatSessionRepository _sessionRepository;
+    private readonly ChatMemorySourceRepository _sourceRepository;
+    private readonly ChatParticipantRepository _participantRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
     /// </summary>
     public DocumentImportController(
-        IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<DocumentImportController> logger,
-        ChatParticipantRepository chatParticipantRepository)
+        IOptions<DocumentMemoryOptions> documentMemoryOptions,
+        ChatSessionRepository sessionRepository,
+        ChatMemorySourceRepository sourceRepository,
+        ChatParticipantRepository participantRepository)
     {
-        this._options = documentMemoryOptions.Value;
         this._logger = logger;
-        this._chatParticipantRepository = chatParticipantRepository;
+        this._options = documentMemoryOptions.Value;
+        this._sessionRepository = sessionRepository;
+        this._sourceRepository = sourceRepository;
+        this._participantRepository = participantRepository;
     }
 
     /// <summary>
@@ -109,9 +116,26 @@ public class DocumentImportController : ControllerBase
                     return this.BadRequest($"Unsupported file type: {fileType}");
             }
 
-            await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm);
+            var memorySource = new MemorySource(
+                documentImportForm.ChatId.ToString(),
+                formFile.FileName,
+                documentImportForm.UserId,
+                MemorySourceType.File,
+                null);
+
+            await this._sourceRepository.UpsertAsync(memorySource);
+
+            try
+            {
+                await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, memorySource.Id);
+            }
+            catch (Exception ex) when (!ex.IsCriticalException())
+            {
+                await this._sourceRepository.DeleteAsync(memorySource);
+                throw;
+            }
         }
-        catch (Exception ex) when (ex is ArgumentOutOfRangeException)
+        catch (ArgumentOutOfRangeException ex)
         {
             return this.BadRequest(ex.Message);
         }
@@ -172,8 +196,8 @@ public class DocumentImportController : ControllerBase
     /// <param name="kernel">The kernel instance from the service</param>
     /// <param name="content">The file content read from the uploaded document</param>
     /// <param name="documentImportForm">The document upload form that contains additional necessary info</param>
-    /// <returns></returns>
-    private async Task ParseDocumentContentToMemoryAsync(IKernel kernel, string content, DocumentImportForm documentImportForm)
+    /// <param name="memorySourceId">The ID of the MemorySource that the document content is linked to</param>
+    private async Task ParseDocumentContentToMemoryAsync(IKernel kernel, string content, DocumentImportForm documentImportForm, string memorySourceId)
     {
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
         var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global
@@ -185,19 +209,20 @@ public class DocumentImportController : ControllerBase
         var lines = TextChunker.SplitPlainTextLines(content, this._options.DocumentLineSplitMaxTokens);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, this._options.DocumentParagraphSplitMaxLines);
 
-        foreach (var paragraph in paragraphs)
+        for (var i = 0; i < paragraphs.Count; i++)
         {
+            var paragraph = paragraphs[i];
             await kernel.Memory.SaveInformationAsync(
                 collection: targetCollectionName,
                 text: paragraph,
-                id: Guid.NewGuid().ToString(),
+                id: $"{memorySourceId}-{i}",
                 description: $"Document: {documentName}");
         }
 
         this._logger.LogInformation(
             "Parsed {0} paragraphs from local file {1}",
             paragraphs.Count,
-            Path.GetFileName(documentImportForm.FormFile?.FileName)
+            documentName
         );
     }
 
@@ -209,6 +234,6 @@ public class DocumentImportController : ControllerBase
     /// <returns>A boolean indicating whether the user has access to the chat session.</returns>
     private async Task<bool> UserHasAccessToChatAsync(string userId, Guid chatId)
     {
-        return await this._chatParticipantRepository.IsUserInChatAsync(userId, chatId.ToString());
+        return await this._participantRepository.IsUserInChatAsync(userId, chatId.ToString());
     }
 }

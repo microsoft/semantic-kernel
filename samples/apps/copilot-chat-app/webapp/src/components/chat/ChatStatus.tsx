@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount, useMsal } from '@azure/msal-react';
+import { useMsal } from '@azure/msal-react';
 import React from 'react';
 import { IChatUser } from '../../libs/models/ChatUser';
 import { useAppSelector } from '../../redux/app/hooks';
@@ -8,8 +8,8 @@ import { RootState } from '../../redux/app/store';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
 export const ChatStatus: React.FC = () => {
-    const { accounts } = useMsal();
-    const account = useAccount(accounts[0] || {});
+    const { instance } = useMsal();
+    const account = instance.getActiveAccount();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { users } = conversations[selectedId];
     const [typingUserList, setTypingUserList] = React.useState<IChatUser[]>([]);
