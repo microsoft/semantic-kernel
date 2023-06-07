@@ -6,7 +6,6 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.openai.AzureOpenAIClient;
-import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -14,26 +13,30 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+import com.microsoft.semantickernel.util.AzureOpenAISettings;
+import com.microsoft.semantickernel.util.AIProviderSettings;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 
-import static com.microsoft.semantickernel.Config.AZURE_CONF_PROPERTIES;
+import static com.microsoft.semantickernel.Config.CONF_PROPERTIES;
 
 public class Example08_RetryHandler {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         RetryOptions retryOptions = new RetryOptions(new ExponentialBackoffOptions()
                 .setMaxDelay(Duration.ofSeconds(180))
                 .setBaseDelay(Duration.ofSeconds(60))
                 .setMaxRetries(3)
         );
 
+        AzureOpenAISettings settings = AIProviderSettings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
         AzureOpenAIClient client = new AzureOpenAIClient(
                 new OpenAIClientBuilder()
                         .retryOptions(retryOptions)
-                        .endpoint(Config.getAzureOpenAIEndpoint(AZURE_CONF_PROPERTIES))
-                        .credential(new AzureKeyCredential(Config.getOpenAIKey(AZURE_CONF_PROPERTIES)))
+                        .endpoint(settings.getEndpoint())
+                        .credential(new AzureKeyCredential(settings.getKey()))
                         .buildAsyncClient());
 
 
