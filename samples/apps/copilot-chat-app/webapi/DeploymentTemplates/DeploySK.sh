@@ -72,6 +72,10 @@ while [[ $# -gt 0 ]]; do
         NO_SPEECH_SERVICES=true
         shift
         ;;
+        -np|--no-package-deploy)
+        NO_PACKAGE_DEPLOY=true
+        shift
+        ;;
         -dd|--debug-deployment)
         DEBUG_DEPLOYMENT=true
         shift
@@ -121,7 +125,8 @@ JSON_CONFIG=$(cat << EOF
     "semanticKernelApiKey": { "value": "$SEMKER_SERVER_API_KEY" },
     "deployQdrant": { "value": $([ "$NO_QDRANT" = true ] && echo "false" || echo "true") },
     "deployCosmosDB": { "value": $([ "$NO_COSMOS_DB" = true ] && echo "false" || echo "true") },
-    "deploySpeechServices": { "value": $([ "$NO_SPEECH_SERVICES" = true ] && echo "false" || echo "true") }
+    "deploySpeechServices": { "value": $([ "$NO_SPEECH_SERVICES" = true ] && echo "false" || echo "true") },
+    "deployPackage": { "value": $([ "$NO_PACKAGE_DEPLOY" = true ] && echo "false" || echo "true") }
 }
 EOF
 )

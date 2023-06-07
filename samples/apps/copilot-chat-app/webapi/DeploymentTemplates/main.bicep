@@ -54,6 +54,9 @@ param deployQdrant bool = true
 @description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
 param deploySpeechServices bool = true
 
+@description('Whether to deploy the default package to the web service')
+param deployPackage bool = true
+
 @description('Region for the resources')
 #disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
 var location = resourceGroup().location       // more intelligible deployment experience at the cost of some flexibility
@@ -267,7 +270,7 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
   }
 }
 
-resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2022-09-01' = {
+resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2022-09-01'  = if (deployPackage) {
   name: 'MSDeploy'
   kind: 'string'
   parent: appServiceWeb

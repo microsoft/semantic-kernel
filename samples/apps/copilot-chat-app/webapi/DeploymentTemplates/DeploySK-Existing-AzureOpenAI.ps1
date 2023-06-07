@@ -69,6 +69,10 @@ param(
     $NoSpeechServices,
 
     [switch]
+    # Don't deploy the default package to the web service
+    $NoPackageDeploy,
+
+    [switch]
     # Switches on verbose template deployment output
     $DebugDeployment
 )
@@ -86,7 +90,8 @@ $jsonConfig = "
     `\`"semanticKernelApiKey`\`": { `\`"value`\`": `\`"$SemanticKernelApiKey`\`" },
     `\`"deployQdrant`\`": { `\`"value`\`": $(If (!($NoQdrant)) {"true"} Else {"false"}) },
     `\`"deployCosmosDB`\`": { `\`"value`\`": $(If (!($NoSpeechServices)) {"true"} Else {"false"}) },
-    `\`"deploySpeechServices`\`": { `\`"value`\`": $(If (!($NoSpeechServices)) {"true"} Else {"false"}) }
+    `\`"deploySpeechServices`\`": { `\`"value`\`": $(If (!($NoSpeechServices)) {"true"} Else {"false"}) },
+    `\`"deployPackage`\`": { `\`"value`\`": $(If (!($NoPackageDeploy)) {"true"} Else {"false"}) }
 }
 "
 

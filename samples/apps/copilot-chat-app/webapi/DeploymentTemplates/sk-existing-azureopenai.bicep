@@ -44,6 +44,9 @@ param deployQdrant bool = true
 @description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
 param deploySpeechServices bool = true
 
+@description('Whether to deploy the default package to the web service')
+param deployPackage bool = true
+
 
 module semanticKernel 'main.bicep' = {
   name: 'CopilotChatWebApi'
@@ -61,6 +64,7 @@ module semanticKernel 'main.bicep' = {
     deployCosmosDB: deployCosmosDB
     deployQdrant: deployQdrant
     deploySpeechServices: deploySpeechServices
+    deployPackage: deployPackage
     deployNewAzureOpenAI: false
   }
 }
