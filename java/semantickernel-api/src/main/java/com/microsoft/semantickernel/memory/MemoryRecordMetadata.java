@@ -93,4 +93,53 @@ public class MemoryRecordMetadata {
         this.externalSourceName = externalSourceName;
         this.additionalMetadata = additionalMetadata;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MemoryRecordMetadata that = (MemoryRecordMetadata) o;
+
+        if (isReference != that.isReference) return false;
+        if (!externalSourceName.equals(that.externalSourceName)) return false;
+        if (!id.equals(that.id)) return false;
+        if (!description.equals(that.description)) return false;
+        if (!text.equals(that.text)) return false;
+        return additionalMetadata.equals(that.additionalMetadata);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (isReference ? 1 : 0);
+        result = 31 * result + externalSourceName.hashCode();
+        result = 31 * result + id.hashCode();
+        result = 31 * result + description.hashCode();
+        result = 31 * result + text.hashCode();
+        result = 31 * result + additionalMetadata.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "MemoryRecordMetadata{"
+                + "isReference="
+                + isReference
+                + ", externalSourceName='"
+                + externalSourceName
+                + '\''
+                + ", id='"
+                + id
+                + '\''
+                + ", description='"
+                + description
+                + '\''
+                + ", text='"
+                + text
+                + '\''
+                + ", additionalMetadata='"
+                + additionalMetadata
+                + '\''
+                + '}';
+    }
 }

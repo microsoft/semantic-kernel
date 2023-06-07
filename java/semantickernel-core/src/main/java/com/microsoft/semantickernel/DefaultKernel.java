@@ -4,12 +4,17 @@ package com.microsoft.semantickernel;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.*;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
+import com.microsoft.semantickernel.orchestration.RegistrableSkFunction;
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
@@ -64,6 +69,16 @@ public class DefaultKernel implements Kernel {
                 throw new KernelException(
                         KernelException.ErrorCodes.ServiceNotFound,
                         "No text completion service available");
+            }
+
+            return (T) factory.apply(this);
+        } else if (ChatCompletion.class.isAssignableFrom(clazz)) {
+            Function<Kernel, ChatCompletion> factory =
+                    kernelConfig.getChatCompletionServiceOrDefault(serviceId);
+            if (factory == null) {
+                throw new KernelException(
+                        KernelException.ErrorCodes.ServiceNotFound,
+                        "No chat completion service available");
             }
 
             return (T) factory.apply(this);

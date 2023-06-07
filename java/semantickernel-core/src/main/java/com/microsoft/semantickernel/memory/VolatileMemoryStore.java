@@ -98,8 +98,8 @@ public class VolatileMemoryStore implements MemoryStore {
     @Override
     public Mono<MemoryRecord> getAsync(
             @Nonnull String collectionName, @Nonnull String key, boolean withEmbedding) {
-        Map<String, MemoryRecord> collection = getCollection(collectionName);
-        MemoryRecord record = collection.get(key);
+        Map<String, MemoryRecord> collection = this._store.get(collectionName);
+        MemoryRecord record = collection != null ? collection.get(key) : null;
         if (record != null) {
             if (withEmbedding) {
                 return Mono.just(record);
@@ -143,16 +143,16 @@ public class VolatileMemoryStore implements MemoryStore {
 
     @Override
     public Mono<Void> removeAsync(@Nonnull String collectionName, @Nonnull String key) {
-        Map<String, MemoryRecord> collection = getCollection(collectionName);
-        collection.remove(key);
+        Map<String, MemoryRecord> collection = this._store.get(collectionName);
+        if (collection != null) collection.remove(key);
         return Mono.empty();
     }
 
     @Override
     public Mono<Void> removeBatchAsync(
             @Nonnull String collectionName, @Nonnull Collection<String> keys) {
-        Map<String, MemoryRecord> collection = getCollection(collectionName);
-        keys.forEach(key -> collection.remove(key));
+        Map<String, MemoryRecord> collection = this._store.get(collectionName);
+        keys.forEach(collection::remove);
         return Mono.empty();
     }
 
@@ -220,7 +220,7 @@ public class VolatileMemoryStore implements MemoryStore {
     @Override
     public Mono<Tuple2<MemoryRecord, ? extends Number>> getNearestMatchAsync(
             @Nonnull String collectionName,
-            @Nonnull Embedding<? super Number> embedding,
+            @Nonnull Embedding<? extends Number> embedding,
             double minRelevanceScore,
             boolean withEmbedding) {
 
