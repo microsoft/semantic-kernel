@@ -25,6 +25,8 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
     private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
     private const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
+    private const string ResponseObjectTextStreamEvent = "text_stream";
+    private const string ResponseObjectStreamEndEvent = "stream_end";
 
     private readonly Uri _endpoint;
     private readonly int _blockingPort;
@@ -97,10 +99,10 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
 
                 switch (responseObject.Event)
                 {
-                    case "text_stream":
+                    case ResponseObjectTextStreamEvent:
                         yield return new TextCompletionStreamingResult(responseObject.Text);
                         break;
-                    case "stream_end":
+                    case ResponseObjectStreamEndEvent:
                         await this._webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
                         break;
                     default:
