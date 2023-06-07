@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "4414214024449267703"
+      "templateHash": "10259269086957442877"
     }
   },
   "parameters": {
@@ -163,7 +163,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "13834272519683618494"
+              "templateHash": "1371310943287245701"
             }
           },
           "parameters": {
@@ -391,7 +391,8 @@
                 "alwaysOn": true,
                 "cors": {
                   "allowedOrigins": [
-                    "http://localhost:3000"
+                    "http://localhost:3000",
+                    "https://localhost:3000"
                   ],
                   "supportCredentials": true
                 },
@@ -400,6 +401,7 @@
                 "netFrameworkVersion": "v6.0",
                 "use32BitWorkerProcess": false,
                 "vnetRouteAllEnabled": true,
+                "webSocketsEnabled": true,
                 "appSettings": [
                   {
                     "name": "AIService:Type",
@@ -899,6 +901,41 @@
               ]
             },
             {
+              "condition": "[parameters('deployCosmosDB')]",
+              "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+              "apiVersion": "2023-04-15",
+              "name": "[format('{0}/{1}/{2}', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat', 'chatparticipants')]",
+              "properties": {
+                "resource": {
+                  "id": "chatparticipants",
+                  "indexingPolicy": {
+                    "indexingMode": "consistent",
+                    "automatic": true,
+                    "includedPaths": [
+                      {
+                        "path": "/*"
+                      }
+                    ],
+                    "excludedPaths": [
+                      {
+                        "path": "/\"_etag\"/?"
+                      }
+                    ]
+                  },
+                  "partitionKey": {
+                    "paths": [
+                      "/id"
+                    ],
+                    "kind": "Hash",
+                    "version": 2
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat')]"
+              ]
+            },
+            {
               "condition": "[parameters('deploySpeechServices')]",
               "type": "Microsoft.CognitiveServices/accounts",
               "apiVersion": "2022-12-01",
@@ -934,6 +971,10 @@
     "endpoint": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Resources/deployments', 'SemanticKernel'), '2022-09-01').outputs.deployedUrl.value]"
+    },
+    "skProbe": {
+      "type": "string",
+      "value": "[format('https://{0}/healthz', reference(resourceId('Microsoft.Resources/deployments', 'SemanticKernel'), '2022-09-01').outputs.deployedUrl.value)]"
     }
   }
 }

@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.builders;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -43,6 +44,8 @@ public enum BuildersSingleton {
             "com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine$Builder";
     private static final String FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS =
             "com.microsoft.semantickernel.memory.DefaultSemanticTextMemory$Builder";
+    private static final String FALLBACK_CHAT_COMPLETION_BUILDER_CLASS =
+            "com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatCompletion$Builder";
 
     private final FunctionBuilders functionBuilders;
     private final Kernel.InternalBuilder kernelBuilder;
@@ -53,6 +56,7 @@ public enum BuildersSingleton {
     private final ContextVariables.Builder variables;
     private final SKContext.Builder context;
     private final PromptTemplateEngine.Builder promptTemplateEngine;
+    private final ChatCompletion.Builder chatCompletion;
 
     private final SemanticTextMemory.Builder semanticTextMemoryBuilder;
 
@@ -99,6 +103,10 @@ public enum BuildersSingleton {
                     ServiceLoadUtil.findServiceLoader(
                             PromptTemplateEngine.Builder.class,
                             FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS);
+
+            chatCompletion =
+                    ServiceLoadUtil.findServiceLoader(
+                            ChatCompletion.Builder.class, FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
 
         } catch (Throwable e) {
             Logger LOGGER = LoggerFactory.getLogger(BuildersSingleton.class);
@@ -163,5 +171,9 @@ public enum BuildersSingleton {
 
     public SemanticTextMemory.Builder getSemanticTextMemoryBuilder() {
         return semanticTextMemoryBuilder;
+    }
+
+    public ChatCompletion.Builder getChatCompletion() {
+        return chatCompletion;
     }
 }
