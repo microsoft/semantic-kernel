@@ -19,7 +19,7 @@ using Microsoft.SemanticKernel.Reliability;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
-public static class KernelConfigOpenAIExtensions
+public static class OpenAIKernelConfigExtensions
 {
     #region Text Completion
 

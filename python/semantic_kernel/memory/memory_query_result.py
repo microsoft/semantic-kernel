@@ -13,6 +13,7 @@ class MemoryQueryResult:
     id: str
     description: Optional[str]
     text: Optional[str]
+    additional_metadata: Optional[str]
     relevance: float
     embedding: Optional[ndarray]
 
@@ -23,6 +24,7 @@ class MemoryQueryResult:
         id: str,
         description: Optional[str],
         text: Optional[str],
+        additional_metadata: Optional[str],
         embedding: Optional[ndarray],
         relevance: float,
     ) -> None:
@@ -45,6 +47,7 @@ class MemoryQueryResult:
         self.id = id
         self.description = description
         self.text = text
+        self.additional_metadata = additional_metadata
         self.relevance = relevance
         self.embedding = embedding
 
@@ -68,6 +71,7 @@ class MemoryQueryResult:
             id=record._id,
             description=record._description,
             text=record._text,
+            additional_metadata=record._additional_metadata,
             embedding=record._embedding,
             relevance=relevance,
         )
