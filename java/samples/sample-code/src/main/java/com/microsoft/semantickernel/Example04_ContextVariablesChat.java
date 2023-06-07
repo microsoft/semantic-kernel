@@ -1,11 +1,11 @@
 package com.microsoft.semantickernel;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
  * The context is local (i.e. in your computer's RAM) and not persisted anywhere
  * beyond the life of the JVM execution.
  */
-public class Example04ContextVariablesChat {
+public class Example04_ContextVariablesChat {
   public static void startChat(Kernel kernel)
       throws ExecutionException, InterruptedException, TimeoutException {
     String prompt = """
@@ -98,16 +98,16 @@ public class Example04ContextVariablesChat {
     };
   }
 
-  public static void run(boolean useAzureOpenAI)
-      throws ExecutionException, InterruptedException, TimeoutException {
-    OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
-    Kernel kernel = Example00GettingStarted.getKernel(client);
+  public static void run(Config.ClientType clientType)
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
 
     startChat(kernel);
   }
 
   public static void main(String[] args)
-      throws ExecutionException, InterruptedException, TimeoutException {
-    run(false);
+      throws ExecutionException, InterruptedException, TimeoutException, IOException {
+    // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
+    run(Config.ClientType.OPEN_AI);
   }
 }

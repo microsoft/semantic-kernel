@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -19,21 +19,10 @@ public class Example06_TemplateLanguage {
         /// from a Semantic Function written in natural language
         /// </summary>
 
-        public static void main(String[] args) {
+        public static void main(String[] args) throws IOException {
                 System.out.println("======== TemplateLanguage ========");
 
-                OpenAIAsyncClient client = Config.getClient(true);
-
-                KernelConfig kernelConfig = SKBuilders.kernelConfig()
-                                .addTextCompletionService(
-                                                "text-davinci-003",
-                                                kernel -> SKBuilders.textCompletionService().build(client,
-                                                                "text-davinci-003"))
-                                .addTextEmbeddingsGenerationService(
-                                                "text-embedding-ada-002",
-                                                kernel -> SKBuilders.textEmbeddingGenerationService().build(client,
-                                                                "text-embedding-ada-002"))
-                                .build();
+                OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
 
                 Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
 
