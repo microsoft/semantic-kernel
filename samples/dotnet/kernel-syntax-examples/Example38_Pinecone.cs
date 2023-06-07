@@ -32,6 +32,7 @@ public static class Example38_Pinecone
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
             .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
             .WithMemoryStorage(memoryStore)
+            //.WithPineconeMemoryStore(pineconeEnvironment, apiKey) // This method offers an alternative approach to registering Pinecone memory storage.
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");

@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
@@ -21,21 +20,22 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 /// <summary>
 /// A client for the Pinecone API
 /// </summary>
-public sealed class PineconeClient : IPineconeClient, IDisposable
+public sealed class PineconeClient : IPineconeClient
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeClient"/> class.
     /// </summary>
-    /// <param name="pineconeEnvironment"></param>
-    /// <param name="apiKey"></param>
-    /// <param name="logger"></param>
-    public PineconeClient(string pineconeEnvironment, string apiKey, ILogger? logger = null)
+    /// <param name="pineconeEnvironment">The environment for Pinecone.</param>
+    /// <param name="apiKey">The API key for accessing Pinecone services.</param>
+    /// <param name="logger">An optional logger instance for logging.</param>
+    /// <param name="httpClient">An optional HttpClient instance for making HTTP requests.</param>
+    public PineconeClient(string pineconeEnvironment, string apiKey, ILogger? logger = null, HttpClient? httpClient = null)
     {
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
         this._logger = logger ?? NullLogger<PineconeClient>.Instance;
-        this._httpClient = new HttpClient(HttpHandlers.CheckCertificateRevocation);
+        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }
 
@@ -521,12 +521,6 @@ public sealed class PineconeClient : IPineconeClient, IDisposable
         }
 
         this._logger.LogDebug("Collection created. {0}", indexName);
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        this._httpClient.Dispose();
     }
 
     #region private ================================================================================
