@@ -18,7 +18,6 @@ import com.microsoft.semantickernel.util.AIProviderSettings;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
 
 import static com.microsoft.semantickernel.Config.CONF_PROPERTIES;
 
