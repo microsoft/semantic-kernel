@@ -4,6 +4,10 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+
+/// <summary>
+/// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Pinecone connectors.
+/// </summary>
 public static class PineconeKernelBuilderExtensions
 {
     /// <summary>
