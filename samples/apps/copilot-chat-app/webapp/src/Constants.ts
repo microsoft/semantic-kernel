@@ -10,12 +10,13 @@ export const Constants = {
         auth: {
             clientId: process.env.REACT_APP_AAD_CLIENT_ID as string,
             authority: process.env.REACT_APP_AAD_AUTHORITY as string,
+            knownAuthorities: [process.env.REACT_APP_AAD_KNOWN_AUTHORITIES as string],
         },
         cache: {
             cacheLocation: 'localStorage',
             storeAuthStateInCookie: false,
         },
-        semanticKernelScopes: ['openid', 'offline_access', 'profile'],
+        semanticKernelScopes: ['openid', 'offline_access', 'profile', process.env.REACT_APP_AAD_CLIENT_ID as string],
     },
     bot: {
         profile: {

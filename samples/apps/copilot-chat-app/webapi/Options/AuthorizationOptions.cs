@@ -15,7 +15,8 @@ public class AuthorizationOptions
     {
         None,
         ApiKey,
-        AzureAd
+        AzureAd,
+        AzureAdB2C
     }
 
     /// <summary>

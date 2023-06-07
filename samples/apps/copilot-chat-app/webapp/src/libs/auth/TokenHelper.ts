@@ -4,6 +4,7 @@ import {
     InteractionStatus,
     PopupRequest,
 } from '@azure/msal-browser';
+import { Constants } from '../../Constants';
 
 enum TokenErrors {
     InteractionInProgress = 'interaction_in_progress',
@@ -21,7 +22,7 @@ export const getAccessTokenUsingMsal = async (
 ) => {
     const account = msalInstance.getActiveAccount()!;
     const accessTokenRequest: PopupRequest = {
-        authority: `https://login.microsoftonline.com/${account.tenantId}`,
+        authority: Constants.msal.auth.authority,
         scopes: scopes,
         extraScopesToConsent: extraScopesToConsent,
         account: account,
