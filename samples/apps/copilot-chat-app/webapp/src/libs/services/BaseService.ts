@@ -8,7 +8,7 @@ interface ServiceRequest {
     body?: FormData | unknown;
 }
 const noResponseBodyStatusCodes = [202];
-const noResponseBodyOperations = ['importDocument'];
+const noResponseBodyOperations: string[] = [];
 
 export class BaseService {
     // eslint-disable-next-line @typescript-eslint/space-before-function-paren
