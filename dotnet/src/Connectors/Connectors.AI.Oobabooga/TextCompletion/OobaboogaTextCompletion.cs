@@ -198,9 +198,17 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
             MaxNewTokens = requestSettings.MaxTokens,
             Temperature = requestSettings.Temperature,
             TopP = requestSettings.TopP,
-            RepetitionPenalty = 0.5f + requestSettings.PresencePenalty,
+            RepetitionPenalty = GetRepetitionPenalty(requestSettings),
             StoppingStrings = requestSettings.StopSequences.ToList()
         };
+    }
+
+    /// <summary>
+    /// Converts the semantic-kernel presence penalty, scaled -2:+2 with default 0 for no penalty to the Oobabooga repetition penalty, strictly positive with default 1 for no penalty. See https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md and subsequent links for more details.
+    /// </summary>
+    private static double GetRepetitionPenalty(CompleteRequestSettings requestSettings)
+    {
+        return 1 + requestSettings.PresencePenalty / 2;
     }
 
     #endregion
