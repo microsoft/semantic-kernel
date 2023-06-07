@@ -14,7 +14,7 @@ import java.io.IOException;
  *
  * The repository includes some examples under the <a href="https://github.com/microsoft/semantic-kernel/tree/main/samples">samples</a> folder.
  */
-public class Example02RunnningPromptsFromFile {
+public class Example02_RunnningPromptsFromFile {
 
   /**
    * Imports skill 'FunSkill' stored in the samples folder and then returns the semantic function 'Joke' within it.
@@ -30,15 +30,15 @@ public class Example02RunnningPromptsFromFile {
     return skill.getFunction("Joke", CompletionSKFunction.class);
   }
 
-  public static void run (boolean useAzureOpenAI) {
-    OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
-    Kernel kernel = Example00GettingStarted.getKernel(client);
+  public static void run (Config.ClientType clientType) throws IOException {
+    Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
     CompletionSKFunction jokeFunction = getJokeFunction(kernel);
 
     System.out.println(jokeFunction.invokeAsync("time travel to dinosaur age").block().getResult());
   }
 
   public static void main (String args[]) throws IOException {
-    run(false);
+    // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
+    run(Config.ClientType.OPEN_AI);
   }
 }
