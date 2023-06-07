@@ -39,7 +39,7 @@ param deploySpeechServices bool = true
 
 
 module semanticKernel 'main.bicep' = {
-  name: 'SemanticKernel'
+  name: 'CopilotChatWebApi'
   params: {
     name: name
     appServiceSku: appServiceSku
