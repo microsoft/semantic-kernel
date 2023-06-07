@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// with additional methods required by the kernel.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class SKFunction : ISKFunction, IDisposable
+public sealed class SKFunction : ISKFunction
 {
     /// <inheritdoc/>
     public string Name { get; }
@@ -244,11 +244,16 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null)
+    public async Task<SKContext> InvokeAsync(SKContext context, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null)
     {
-        async Task<SKContext> InvokeSemanticAsync(SKContext contextParam, CompleteRequestSettings? settingsPAram)
+        async Task<SKContext> InvokeSemanticAsync(SKContext contextParam, ITextCompletion? _aiService, CompleteRequestSettings? settingsParam)
         {
-            var resultContext = await this._function(this._aiService?.Value, settingsPAram ?? this._aiRequestSettings, contextParam).ConfigureAwait(false);
+            if (_aiService == null)
+            {
+                throw new KernelException(KernelException.ErrorCodes.InvalidServiceConfiguration, "No text completion service provided for semantic function execution.");
+            }
+
+            var resultContext = await this._function(_aiService, settingsParam ?? this._aiRequestSettings, contextParam).ConfigureAwait(false);
             contextParam.Variables.Update(resultContext.Variables);
             return contextParam;
         }
@@ -264,7 +269,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         var validateContextResult = await this.TrustServiceInstance.ValidateContextAsync(this, context).ConfigureAwait(false);
 
         var result = this.IsSemantic
-            ? await InvokeSemanticAsync(context, settings).ConfigureAwait(false)
+            ? await InvokeSemanticAsync(context, textCompletionService, settings).ConfigureAwait(false)
             : await InvokeNativeAsync(context, settings).ConfigureAwait(false);
 
         // If the context has been considered untrusted, make sure the output of the function is also untrusted
@@ -279,6 +284,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
         string? input = null,
+        ITextCompletion? textCompletionService = null,
         CompleteRequestSettings? settings = null,
         IReadOnlySkillCollection? skills = null,
         ISemanticTextMemory? memory = null,
@@ -292,16 +298,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             logger: logger,
             cancellationToken: cancellationToken);
 
-        return this.InvokeAsync(context, settings);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        Verify.NotNull(serviceFactory);
-        this.VerifyIsSemantic();
-        this._aiService = new Lazy<ITextCompletion>(serviceFactory);
-        return this;
+        return this.InvokeAsync(context, textCompletionService, settings);
     }
 
     /// <inheritdoc/>
@@ -311,17 +308,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         this.VerifyIsSemantic();
         this._aiRequestSettings = settings;
         return this;
-    }
-
-    /// <summary>
-    /// Dispose of resources.
-    /// </summary>
-    public void Dispose()
-    {
-        if (this._aiService is { IsValueCreated: true } aiService)
-        {
-            (aiService.Value as IDisposable)?.Dispose();
-        }
     }
 
     /// <summary>
@@ -342,7 +328,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> _function;
     private readonly ILogger _log;
-    private Lazy<ITextCompletion>? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
     private readonly ITrustService _trustService;
 

@@ -52,7 +52,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         contextVariables.Set("api-version", "7.0");
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, skill["GetSecret"]);
+        var result = await kernel.RunAsync(contextVariables, "fake-model", skill["GetSecret"]);
 
         Console.WriteLine("GetSecret skill response: {0}", result);
     }
@@ -78,7 +78,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         contextVariables.Set("payload", JsonSerializer.Serialize(new { value = "<secret>", attributes = new { enabled = true } }));
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, skill["SetSecret"]);
+        var result = await kernel.RunAsync(contextVariables, "fake-model", skill["SetSecret"]);
 
         Console.WriteLine("SetSecret skill response: {0}", result);
     }

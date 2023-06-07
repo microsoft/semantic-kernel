@@ -157,27 +157,27 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), pipeline);
+    public Task<SKContext> RunAsync(string? model = null, params ISKFunction[] pipeline)
+        => this.RunAsync(new ContextVariables(), model, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(string input, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), pipeline);
+    public Task<SKContext> RunAsync(string input, string? model = null, params ISKFunction[] pipeline)
+        => this.RunAsync(new ContextVariables(input), model, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
-        => this.RunAsync(variables, CancellationToken.None, pipeline);
+    public Task<SKContext> RunAsync(ContextVariables variables, string? model = null, params ISKFunction[] pipeline)
+        => this.RunAsync(variables, model, CancellationToken.None, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
+    public Task<SKContext> RunAsync(string? model = null, CancellationToken cancellationToken = default, params ISKFunction[] pipeline)
+        => this.RunAsync(new ContextVariables(), model, cancellationToken, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+    public Task<SKContext> RunAsync(string input, string? model = null, CancellationToken cancellationToken = default, params ISKFunction[] pipeline)
+        => this.RunAsync(new ContextVariables(input), model, cancellationToken, pipeline);
 
     /// <inheritdoc/>
-    public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public async Task<SKContext> RunAsync(ContextVariables variables, string? model = null, CancellationToken cancellationToken = default, params ISKFunction[] pipeline)
     {
         var context = new SKContext(
             variables,
@@ -185,6 +185,8 @@ public sealed class Kernel : IKernel, IDisposable
             this._skillCollection.ReadOnlySkillCollection,
             this.Log,
             cancellationToken);
+
+        var aiService = this._aiServiceProvider.GetService<ITextCompletion>(model);
 
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
@@ -202,7 +204,7 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 context.CancellationToken.ThrowIfCancellationRequested();
-                context = await f.InvokeAsync(context).ConfigureAwait(false);
+                context = await f.InvokeAsync(context, aiService).ConfigureAwait(false);
 
                 if (context.ErrorOccurred)
                 {
@@ -353,7 +355,7 @@ public sealed class Kernel : IKernel, IDisposable
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>());
+        //func.SetAIService(() => this.GetService<ITextCompletion>());
 
         return func;
     }

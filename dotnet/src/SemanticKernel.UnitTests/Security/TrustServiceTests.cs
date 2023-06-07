@@ -44,7 +44,7 @@ public sealed class TrustServiceTests
         );
 
         // Act
-        var result = await kernel.RunAsync(context, func);
+        var result = await kernel.RunAsync(context, "x", func);
 
         // Assert
         Assert.Empty(result.LastErrorDescription);
@@ -76,7 +76,7 @@ public sealed class TrustServiceTests
         );
 
         // Act
-        var result = await kernel.RunAsync(context, func);
+        var result = await kernel.RunAsync(context, "x", func);
 
         // Assert
         // We expect the UntrustedContentException to be thrown using the TrustService.DefaultTrusted
@@ -113,7 +113,7 @@ public sealed class TrustServiceTests
         );
 
         // Act
-        var result = await kernel.RunAsync(context, func);
+        var result = await kernel.RunAsync(context, "x", func);
 
         // Assert
         Assert.Null(result.LastException);
@@ -151,10 +151,8 @@ public sealed class TrustServiceTests
         );
         var aiService = new Mock<ITextCompletion>();
 
-        func.SetAIService(() => aiService.Object);
-
         // Act
-        var result = await func.InvokeAsync();
+        var result = await func.InvokeAsync(textCompletionService: aiService.Object);
 
         // Assert
         // Since the context was tagged an untrusted, the DefaultTrustHandler should throw
@@ -183,7 +181,7 @@ public sealed class TrustServiceTests
         var func = kernel.ImportSkill(new MySkill(), nameof(MySkill))["Function1"];
 
         // Act
-        var result = await kernel.RunAsync(context, func);
+        var result = await kernel.RunAsync(context, "x", func);
 
         // Assert
         Assert.False(result.ErrorOccurred);
@@ -207,7 +205,7 @@ public sealed class TrustServiceTests
         var func = kernel.ImportSkill(new MySkill(), nameof(MySkill))["Function1"];
 
         // Act
-        var result = await kernel.RunAsync(context, func);
+        var result = await kernel.RunAsync(context, "x", func);
 
         // Assert
         // We expect the TrustService.DefaultTrusted to throw because the context became untrusted

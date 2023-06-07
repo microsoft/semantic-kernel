@@ -43,7 +43,7 @@ public static class Example23_OpenApiSkill_GitHub
         contextVariables.Set("repo", "semantic-kernel");
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, skill["PullsList"]);
+        var result = await kernel.RunAsync(contextVariables, "fake-model", skill["PullsList"]);
 
         Console.WriteLine("Successful GitHub List Pull Requests skill response.");
         var resultJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.Result);
@@ -76,7 +76,7 @@ public static class Example23_OpenApiSkill_GitHub
         contextVariables.Set("pull_number", pullNumber);
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, skill["PullsGet"]);
+        var result = await kernel.RunAsync(contextVariables, "fake-model", skill["PullsGet"]);
 
         Console.WriteLine("Successful GitHub Get Pull Request skill response: {0}", result);
     }

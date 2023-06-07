@@ -2,6 +2,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 
@@ -20,11 +21,13 @@ public static class KernelPlanExtensions
     /// </summary>
     /// <param name="kernel">Kernel instance to use</param>
     /// <param name="plan">Plan to run</param>
+    /// <param name="textCompletionService">Text completion service</param>
+    /// <param name="settings">AI service settings</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the plan execution</returns>
-    public static Task<Plan> StepAsync(this IKernel kernel, Plan plan, CancellationToken cancellationToken = default)
+    public static Task<Plan> StepAsync(this IKernel kernel, Plan plan, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
-        return kernel.StepAsync(plan.State, plan, cancellationToken);
+        return kernel.StepAsync(plan.State, plan, textCompletionService, settings, cancellationToken);
     }
 
     /// <summary>
@@ -33,10 +36,12 @@ public static class KernelPlanExtensions
     /// <param name="kernel">Kernel instance to use</param>
     /// <param name="input">Input to use</param>
     /// <param name="plan">Plan to run</param>
+    /// <param name="textCompletionService">Text completion service</param>
+    /// <param name="settings">AI service settings</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public static Task<Plan> StepAsync(this IKernel kernel, string input, Plan plan, CancellationToken cancellationToken = default)
+    public static Task<Plan> StepAsync(this IKernel kernel, string input, Plan plan, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
-        return kernel.StepAsync(new ContextVariables(input), plan, cancellationToken);
+        return kernel.StepAsync(new ContextVariables(input), plan, textCompletionService, settings, cancellationToken);
     }
 
     /// <summary>
@@ -45,10 +50,12 @@ public static class KernelPlanExtensions
     /// <param name="kernel">Kernel instance to use</param>
     /// <param name="variables">Input to process</param>
     /// <param name="plan">Plan to run</param>
+    /// <param name="textCompletionService">Text completion service</param>
+    /// <param name="settings">AI service settings</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the plan execution</returns>
-    public static Task<Plan> StepAsync(this IKernel kernel, ContextVariables variables, Plan plan, CancellationToken cancellationToken = default)
+    public static Task<Plan> StepAsync(this IKernel kernel, ContextVariables variables, Plan plan, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
-        return plan.RunNextStepAsync(kernel, variables, cancellationToken);
+        return plan.RunNextStepAsync(kernel, variables, textCompletionService, settings, cancellationToken);
     }
 }

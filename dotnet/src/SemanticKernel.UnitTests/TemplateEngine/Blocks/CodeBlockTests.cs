@@ -49,7 +49,7 @@ public class CodeBlockTests
         var context = new SKContext(skills: this._skills.Object, logger: this._log.Object);
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>()))
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion>(), It.IsAny<CompleteRequestSettings?>()))
             .Throws(new RuntimeWrappedException("error"));
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
@@ -197,8 +197,8 @@ public class CodeBlockTests
         var canary2 = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>()))
-            .Callback<SKContext, CompleteRequestSettings?>((ctx, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion?>(), It.IsAny<CompleteRequestSettings?>()))
+            .Callback<SKContext, ITextCompletion, CompleteRequestSettings?>((ctx, tc, _) =>
             {
                 canary0 = ctx!["input"];
                 canary1 = ctx["var1"];
@@ -208,7 +208,7 @@ public class CodeBlockTests
                 ctx["var1"] = "overridden";
                 ctx["var2"] = "overridden";
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
+            .ReturnsAsync((SKContext inputCtx, ITextCompletion? ct, CompleteRequestSettings _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -245,12 +245,12 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>()))
-            .Callback<SKContext, CompleteRequestSettings?>((ctx, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion>(), It.IsAny<CompleteRequestSettings?>()))
+            .Callback<SKContext, ITextCompletion, CompleteRequestSettings?>((ctx, tc, _) =>
             {
                 canary = ctx!["input"];
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
+            .ReturnsAsync((SKContext inputCtx, ITextCompletion? ct, CompleteRequestSettings _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -279,12 +279,12 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>()))
-            .Callback<SKContext, CompleteRequestSettings?>((ctx, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion>(), It.IsAny<CompleteRequestSettings?>()))
+            .Callback<SKContext, ITextCompletion?, CompleteRequestSettings?>((ctx, tc, _) =>
             {
                 canary = ctx!["input"];
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
+            .ReturnsAsync((SKContext inputCtx, ITextCompletion? ct, CompleteRequestSettings _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -320,15 +320,15 @@ public class CodeBlockTests
         TrustAwareString canary2 = TrustAwareString.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>()))
-            .Callback<SKContext, CompleteRequestSettings?>((ctx, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion?>(), It.IsAny<CompleteRequestSettings?>()))
+            .Callback<SKContext, ITextCompletion?, CompleteRequestSettings?>((ctx, tc, _) =>
             {
                 // Capture the variables to check below
                 canary0 = GetAsTrustAwareString(ctx, "input");
                 canary1 = GetAsTrustAwareString(ctx, "var1");
                 canary2 = GetAsTrustAwareString(ctx, "var2");
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
+            .ReturnsAsync((SKContext inputCtx, ITextCompletion? ct, CompleteRequestSettings _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -365,14 +365,14 @@ public class CodeBlockTests
 
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>()))
-            .Callback<SKContext, CompleteRequestSettings?>((ctx, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<ITextCompletion>(), It.IsAny<CompleteRequestSettings?>()))
+            .Callback<SKContext, ITextCompletion?, CompleteRequestSettings?>((ctx, tc, _) =>
             {
                 // Create a untrusted variable in the cloned context
                 // We expected this to make the main context also untrusted
                 ctx!.Variables.Set("untrusted key", TrustAwareString.CreateUntrusted("unstrusted content"));
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
+            .ReturnsAsync((SKContext inputCtx, ITextCompletion? ct, CompleteRequestSettings _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);

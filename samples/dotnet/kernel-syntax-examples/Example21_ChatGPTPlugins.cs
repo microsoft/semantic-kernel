@@ -34,7 +34,7 @@ public static class Example21_ChatGptPlugins
         contextVariables.Set("<parameter-name>", "<parameter-value>");
 
         //Run
-        var result = await kernel.RunAsync(contextVariables, skill["productsUsingGET"]);
+        var result = await kernel.RunAsync(contextVariables, "fake-model", skill["productsUsingGET"]);
 
         Console.WriteLine("Skill execution result: {0}", result);
         Console.ReadLine();

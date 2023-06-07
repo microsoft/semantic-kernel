@@ -135,10 +135,8 @@ public sealed class SKFunctionTests1
         );
         var aiService = MockAIService(expectedResultString);
 
-        func.SetAIService(() => aiService.Object);
-
         // Act
-        var result = await func.InvokeAsync();
+        var result = await func.InvokeAsync(textCompletionService: aiService.Object);
 
         // Assert
         // Since CustomTrustService will return false for ValidateContext, the result should be tagged as untrusted
@@ -164,10 +162,8 @@ public sealed class SKFunctionTests1
         );
         var aiService = MockAIService(expectedResultString);
 
-        func.SetAIService(() => aiService.Object);
-
         // Act
-        var result = await func.InvokeAsync();
+        var result = await func.InvokeAsync(textCompletionService: aiService.Object);
 
         // Assert
         // Since CustomTrustService will return false for ValidatePrompt, the result should be tagged as untrusted
@@ -193,10 +189,8 @@ public sealed class SKFunctionTests1
         );
         var aiService = MockAIService(expectedResultString);
 
-        func.SetAIService(() => aiService.Object);
-
         // Act
-        var result = await func.InvokeAsync();
+        var result = await func.InvokeAsync(textCompletionService: aiService.Object);
 
         // Assert
         // Since CustomTrustService will return true for ValidateContext/ValidatePrompt,

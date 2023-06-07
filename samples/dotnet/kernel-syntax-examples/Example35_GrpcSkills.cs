@@ -29,7 +29,7 @@ public static class Example35_GrpcSkills
         contextVariables.Set("payload", "<gRPC-request-message-as-json>");
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, skill["<operation-name>"]);
+        var result = await kernel.RunAsync(contextVariables, "fake-model", skill["<operation-name>"]);
 
         Console.WriteLine("Skill response: {0}", result);
     }

@@ -150,7 +150,7 @@ public sealed class TrustServiceTests
         variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.CreateUntrusted(extraVar));
 
         // Act
-        var result = await kernel.RunAsync(variables, notSensitiveEchoFunction);
+        var result = await kernel.RunAsync(variables, "fake-model", notSensitiveEchoFunction);
 
         // Assert
         Assert.Equal(valueToEcho + extraVar, result.Result);
@@ -177,7 +177,7 @@ public sealed class TrustServiceTests
         variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.CreateUntrusted(extraVar));
 
         // Act
-        var result = await kernel.RunAsync(variables, sensitiveEchoFunction);
+        var result = await kernel.RunAsync(variables, "fake-model", sensitiveEchoFunction);
 
         // Assert
         this.AssertResultHasThrown(result);
@@ -202,7 +202,7 @@ public sealed class TrustServiceTests
         variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.CreateUntrusted(extraVar));
 
         // Act
-        var result = await kernel.RunAsync(variables, notSensitiveEchoFunction);
+        var result = await kernel.RunAsync(variables, "fake-model", notSensitiveEchoFunction);
 
         // Assert
         Assert.Equal(valueToEcho + extraVar, result.Result);
@@ -228,7 +228,7 @@ public sealed class TrustServiceTests
         variables.Set(TrustServiceTests.ExtraVarName, TrustAwareString.CreateUntrusted(extraVar));
 
         // Act
-        var result = await kernel.RunAsync(variables, sensitiveEchoFunction);
+        var result = await kernel.RunAsync(variables, "fake-model", sensitiveEchoFunction);
 
         // Assert
         this.AssertResultHasThrown(result);
@@ -255,7 +255,7 @@ public sealed class TrustServiceTests
         );
 
         // Act
-        var result = await kernel.RunAsync(valueToEcho, sensitiveEchoWithFunctionCallFunction);
+        var result = await kernel.RunAsync("fake-model", valueToEcho, sensitiveEchoWithFunctionCallFunction);
 
         // Assert
         Assert.Equal(valueToEcho, result.Result);
@@ -283,7 +283,7 @@ public sealed class TrustServiceTests
         );
 
         // Act
-        var result = await kernel.RunAsync(valueToEcho, sensitiveEchoWithFunctionCallFunction);
+        var result = await kernel.RunAsync("fake-model", valueToEcho, sensitiveEchoWithFunctionCallFunction);
 
         // Assert
         this.AssertResultHasThrown(result);

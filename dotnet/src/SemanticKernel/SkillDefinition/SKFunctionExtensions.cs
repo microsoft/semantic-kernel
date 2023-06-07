@@ -108,12 +108,14 @@ public static class SKFunctionExtensions
     /// <param name="input">Main input string</param>
     /// <param name="context">Execution context, including variables other than input</param>
     /// <param name="mutableContext">Whether the function can modify the context variables, True by default</param>
+    /// <param name="textCompletionService">Text completion service</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The result of the function execution</returns>
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
         string input,
         SKContext context,
         bool mutableContext = true,
+        ITextCompletion? textCompletionService = null,
         CompleteRequestSettings? settings = null)
     {
         // Log a warning if the given input is overriding a different input in the context
@@ -127,7 +129,7 @@ public static class SKFunctionExtensions
 
         if (mutableContext)
         {
-            return function.InvokeAsync(context, settings);
+            return function.InvokeAsync(context, textCompletionService, settings);
         }
 
         // Create a copy of the context, to avoid editing the original set of variables
@@ -136,6 +138,6 @@ public static class SKFunctionExtensions
         // Store the input in the context clone
         contextClone.Variables.Update(input);
 
-        return function.InvokeAsync(contextClone, settings);
+        return function.InvokeAsync(contextClone, textCompletionService, settings);
     }
 }

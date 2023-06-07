@@ -64,7 +64,7 @@ public sealed class PlanTests : IDisposable
         var cv = new ContextVariables();
         cv.Update(inputToEmail);
         cv.Set("email_address", expectedEmail);
-        var result = await target.RunAsync(cv, plan);
+        var result = await target.RunAsync(cv, "fake-model", plan);
 
         // Assert
         Assert.Equal(expectedBody, result.Result);
@@ -86,7 +86,7 @@ public sealed class PlanTests : IDisposable
         var cv = new ContextVariables();
         cv.Update(inputToEmail);
         cv.Set("email_address", expectedEmail);
-        var result = await target.RunAsync(cv, plan);
+        var result = await target.RunAsync(cv, "fake-model", plan);
 
         // Assert
         Assert.Equal(expectedBody, result.Result);
@@ -110,7 +110,7 @@ public sealed class PlanTests : IDisposable
         cv.Update(inputToTranslate);
         cv.Set("email_address", expectedEmail);
         cv.Set("language", language);
-        var result = await target.RunAsync(cv, plan);
+        var result = await target.RunAsync(cv, "fake-model", plan);
 
         // Assert
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
@@ -464,7 +464,7 @@ public sealed class PlanTests : IDisposable
         cv.Update(inputToSummarize);
         cv.Set("email_address", expectedEmail);
         cv.Set("language", inputLanguage);
-        var result = await target.RunAsync(cv, plan);
+        var result = await target.RunAsync(cv, "fake-model", plan);
 
         // Assert
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);

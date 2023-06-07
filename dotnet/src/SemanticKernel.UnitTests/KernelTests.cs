@@ -54,6 +54,7 @@ public class KernelTests
     public async Task ItProvidesAccessToFunctionsViaSKContextObsoleteAsync()
     {
         // Arrange
+        // Arrange
         var kernel = KernelBuilder.Create();
         var factory = new Mock<Func<IKernel, ITextCompletion>>();
         kernel.Config.AddTextCompletionService(factory.Object);
@@ -63,7 +64,7 @@ public class KernelTests
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
         // Act
-        SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
+        SKContext result = await kernel.RunAsync(null, skill["ReadSkillCollectionAsync"]);
 
         // Assert - 3 functions, var name is not case sensitive
         Assert.Equal("Nice fun", result["jk.joker"]);
@@ -107,9 +108,10 @@ public class KernelTests
     public async Task ItProvidesAccessToFunctionsViaSKContextAsync()
     {
         // Arrange
-        var factory = new Mock<Func<(ILogger, KernelConfig), ITextCompletion>>();
+        var aiService = new Mock<ITextCompletion>();
+
         var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("x", factory.Object)
+            .WithAIService<ITextCompletion>("x", aiService.Object)
             .Build();
 
         var nativeSkill = new MySkill();
@@ -117,7 +119,7 @@ public class KernelTests
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
         // Act
-        SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
+        SKContext result = await kernel.RunAsync("x", skill["ReadSkillCollectionAsync"]);
 
         // Assert - 3 functions, var name is not case sensitive
         Assert.Equal("Nice fun", result["jk.joker"]);
@@ -140,7 +142,7 @@ public class KernelTests
         cts.Cancel();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, skill["GetAnyValue"]);
+        SKContext result = await kernel.RunAsync(null, cts.Token, skill["GetAnyValue"]);
 
         // Assert
         Assert.True(string.IsNullOrEmpty(result.Result));
@@ -159,7 +161,7 @@ public class KernelTests
         using CancellationTokenSource cts = new();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, kernel.Func("mySk", "GetAnyValue"));
+        SKContext result = await kernel.RunAsync("fake-model", cts.Token, kernel.Func("mySk", "GetAnyValue"));
 
         // Assert
         Assert.False(string.IsNullOrEmpty(result.Result));

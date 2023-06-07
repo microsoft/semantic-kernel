@@ -53,7 +53,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToPlanString());
 
-        var result = await kernel.RunAsync(plan);
+        var result = await kernel.RunAsync("fake-model", plan);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.Result);

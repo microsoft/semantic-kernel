@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -66,16 +65,19 @@ public interface ISKFunction
     /// Invoke the <see cref="ISKFunction"/>.
     /// </summary>
     /// <param name="context">SK context</param>
+    /// <param name="textCompletionService">Text completion service.</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     Task<SKContext> InvokeAsync(
         SKContext context,
+        ITextCompletion? textCompletionService = null,
         CompleteRequestSettings? settings = null);
 
     /// <summary>
     /// Invoke the <see cref="ISKFunction"/>.
     /// </summary>
     /// <param name="input">String input</param>
+    /// <param name="textCompletionService">Text completion service.</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
     /// <param name="skills">Available skills.</param>
     /// <param name="memory">Semantic memory</param>
@@ -84,19 +86,12 @@ public interface ISKFunction
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     Task<SKContext> InvokeAsync(
         string? input = null,
+        ITextCompletion? textCompletionService = null,
         CompleteRequestSettings? settings = null,
         IReadOnlySkillCollection? skills = null,
         ISemanticTextMemory? memory = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Set the AI service used by the semantic function, passing a factory method.
-    /// The factory allows to lazily instantiate the client and to properly handle its disposal.
-    /// </summary>
-    /// <param name="serviceFactory">AI service factory</param>
-    /// <returns>Self instance</returns>
-    ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
 
     /// <summary>
     /// Set the AI completion settings used with LLM requests

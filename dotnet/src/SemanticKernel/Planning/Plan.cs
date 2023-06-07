@@ -226,12 +226,14 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="kernel">The kernel instance to use for executing the plan.</param>
     /// <param name="variables">The variables to use for the execution of the plan.</param>
+    /// <param name="textCompletionService">Text completion service</param>
+    /// <param name="settings">AI service settings</param>
     /// <param name="cancellationToken">The cancellation token to cancel the execution of the plan.</param>
     /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
     /// <remarks>
     /// This method executes the next step in the plan using the specified kernel instance and context variables. The context variables contain the necessary information for executing the plan, such as the memory, skills, and logger. The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
-    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
+    public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
         var context = new SKContext(
             variables,
@@ -239,16 +241,18 @@ public sealed class Plan : ISKFunction
             kernel.Skills,
             kernel.Log,
             cancellationToken);
-        return this.InvokeNextStepAsync(context);
+        return this.InvokeNextStepAsync(context, textCompletionService, settings);
     }
 
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
     /// <param name="context">Context to use</param>
+    /// <param name="textCompletionService">Text completion service</param>
+    /// <param name="settings">AI service settings</param>
     /// <returns>The updated plan</returns>
     /// <exception cref="KernelException">If an error occurs while running the plan</exception>
-    public async Task<Plan> InvokeNextStepAsync(SKContext context)
+    public async Task<Plan> InvokeNextStepAsync(SKContext context, ITextCompletion? textCompletionService = null, CompleteRequestSettings? settings = null)
     {
         if (this.HasNextStep)
         {
@@ -313,6 +317,7 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     public Task<SKContext> InvokeAsync(
         string? input = null,
+        ITextCompletion? textCompletionService = null,
         CompleteRequestSettings? settings = null,
         IReadOnlySkillCollection? skills = null,
         ISemanticTextMemory? memory = null,
@@ -328,17 +333,18 @@ public sealed class Plan : ISKFunction
             logger: logger,
             cancellationToken: cancellationToken);
 
-        return this.InvokeAsync(context, settings);
+        return this.InvokeAsync(context, textCompletionService, settings);
     }
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
+        ITextCompletion? textCompletionService = null,
         CompleteRequestSettings? settings = null)
     {
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
+            var result = await this.Function.InvokeAsync(context, textCompletionService, settings).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -359,21 +365,13 @@ public sealed class Plan : ISKFunction
 
                 AddVariablesToContext(this.State, functionContext);
 
-                await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
+                await this.InvokeNextStepAsync(functionContext, textCompletionService, settings).ConfigureAwait(false);
 
                 this.UpdateContextWithOutputs(context);
             }
         }
 
         return context;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        return this.Function is null
-            ? throw new NotImplementedException()
-            : this.Function.SetAIService(serviceFactory);
     }
 
     /// <inheritdoc/>

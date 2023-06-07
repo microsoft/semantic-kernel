@@ -56,7 +56,7 @@ public static class Example24_OpenApiSkill_Jira
             contextVariables.Set("issueKey", "SKTES-2");
 
             // Run operation via the semantic kernel
-            var result = await kernel.RunAsync(contextVariables, jiraSkills["GetIssue"]);
+            var result = await kernel.RunAsync(contextVariables, "fake-model", jiraSkills["GetIssue"]);
 
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.Result), Formatting.Indented);
@@ -70,7 +70,7 @@ public static class Example24_OpenApiSkill_Jira
             contextVariables.Set("body", "Here is a rad comment");
 
             // Run operation via the semantic kernel
-            var result = await kernel.RunAsync(contextVariables, jiraSkills["AddComment"]);
+            var result = await kernel.RunAsync(contextVariables, "fake-model", jiraSkills["AddComment"]);
 
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.Result), Formatting.Indented);
