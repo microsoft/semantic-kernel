@@ -129,7 +129,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                 // Broadcast file uploaded alert to other users
                 const docUploadAlert = {
                     id: getSelectedChatID(),
-                    fileOwner: account?.name as string,
+                    fileOwner: (account?.name ?? account?.username) as string,
                     fileName: documentFile.name as string,
                 };
                 dispatch(updateFileUploadedFromUser(docUploadAlert));

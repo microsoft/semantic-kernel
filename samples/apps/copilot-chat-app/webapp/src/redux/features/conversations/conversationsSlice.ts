@@ -44,7 +44,7 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
         * However they are for different purposes. The former action is for updating the conversation from the
         * user and will be captured by the SignalR middleware and the payload will be broadcasted to all clients
         * in the same group.
-        * The updateConversationFromUser() action is triggered by the SignalR middleware when a response is received.
+        * The updateConversationFromServer() action is triggered by the SignalR middleware when a response is received.
         */
         updateConversationFromUser: (
             state: ConversationsState,

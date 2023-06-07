@@ -187,8 +187,8 @@ export class ChatService extends BaseService {
             return {
                 id: participant.userId,
                 online: false,
-                fullName: '',
-                emailAddress: '',
+                fullName: '',       // The user's full name is not returned from the server
+                emailAddress: '',   // The user's email address is not returned from the server
                 isTyping: false,
             } as IChatUser;
         });

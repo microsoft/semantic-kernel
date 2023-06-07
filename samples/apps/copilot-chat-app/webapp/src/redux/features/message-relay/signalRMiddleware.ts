@@ -11,12 +11,14 @@ import { getSelectedChatID } from './../../app/store';
 import { FileUploadedAlert } from './../conversations/ChatState';
 
 // These have to match the callback names used in the backend
-const receiveMessageFromServerCallbackName = "ReceiveMessage" as string;
-const receiveResponseFromServerCallbackName = "ReceiveResponse" as string;
-const userJoinedFromServerCallbackName = "UserJoined" as string;
-const receiveUserTypingStateFromServerCallbackName = "ReceiveUserTypingState" as string;
-const receiveBotTypingStateFromServerCallbackName = "ReceiveBotTypingState" as string;
-const receiveFileUploadedAlertFromServerCallbackName = "ReceiveFileUploadedEvent" as string;
+const enum SignalRCallbackMethods {
+    ReceiveMessage = "ReceiveMessage",
+    ReceiveResponse = "ReceiveResponse",
+    UserJoined = "UserJoined",
+    ReceiveUserTypingState = "ReceiveUserTypingState",
+    ReceiveBotTypingState = "ReceiveBotTypingState",
+    ReceiveFileUploadedAlert = "ReceiveFileUploadedEvent",
+}
 
 // Set up a SignalR connection to the messageRelayHub on the server
 const setupSignalRConnectionToChatHub = () => {
@@ -124,11 +126,11 @@ export const signalRMiddleware = (store: any) => {
 };
 
 export const registerSignalREvents = async (store: any) => {
-    hubConnection.on(receiveMessageFromServerCallbackName, (message: IChatMessage, chatId: string) => {
+    hubConnection.on(SignalRCallbackMethods.ReceiveMessage, (message: IChatMessage, chatId: string) => {
         store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
     });
 
-    hubConnection.on(receiveResponseFromServerCallbackName, (askResult: IAskResult, chatId: string) => {
+    hubConnection.on(SignalRCallbackMethods.ReceiveResponse, (askResult: IAskResult, chatId: string) => {
         const loggedInUserId = store.getState().conversations.loggedInUserId;
         const originalMessageUserId = askResult.variables.find((v) => v.key === 'userId')?.value;
         const isPlanForLoggedInUser = loggedInUserId === originalMessageUserId;
@@ -147,7 +149,7 @@ export const registerSignalREvents = async (store: any) => {
         store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
     });
 
-    hubConnection.on(userJoinedFromServerCallbackName, (chatId: string, userId: string) => {
+    hubConnection.on(SignalRCallbackMethods.UserJoined, (chatId: string, userId: string) => {
         const user = {
             id: userId,
             online: false,
@@ -158,15 +160,15 @@ export const registerSignalREvents = async (store: any) => {
         store.dispatch({ type: "conversations/addUserToConversation", payload: { user, chatId } });
     });
 
-    hubConnection.on(receiveUserTypingStateFromServerCallbackName, (chatId: string, userId: string, isTyping: boolean) => {
+    hubConnection.on(SignalRCallbackMethods.ReceiveUserTypingState, (chatId: string, userId: string, isTyping: boolean) => {
         store.dispatch({ type: "conversations/updateUserIsTypingFromServer", payload: { chatId, userId, isTyping } });
     });
 
-    hubConnection.on(receiveBotTypingStateFromServerCallbackName, (chatId: string, isTyping: boolean) => {
+    hubConnection.on(SignalRCallbackMethods.ReceiveBotTypingState, (chatId: string, isTyping: boolean) => {
         store.dispatch({ type: "conversations/updateBotIsTypingFromServer", payload: { chatId, isTyping } });
     });
 
-    hubConnection.on(receiveFileUploadedAlertFromServerCallbackName, ( docUploadedAlert: FileUploadedAlert) => {
+    hubConnection.on(SignalRCallbackMethods.ReceiveFileUploadedAlert, ( docUploadedAlert: FileUploadedAlert) => {
         const alertMessage = `${docUploadedAlert.fileOwner} uploaded ${docUploadedAlert.fileName} to the chat`;
         store.dispatch(addAlert({ message: alertMessage, type: AlertType.Success }));
     }); 

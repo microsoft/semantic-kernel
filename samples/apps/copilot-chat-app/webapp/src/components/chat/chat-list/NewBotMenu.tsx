@@ -47,7 +47,7 @@ export const NewBotMenu: FC = () => {
         setIsJoiningBot(true);
     };
 
-    const onJoinCancel = () => {
+    const onCloseDialog = () => {
         setIsNewBotMenuOpen(false);
         setIsJoiningBot(false);
     };
@@ -86,7 +86,7 @@ export const NewBotMenu: FC = () => {
                     </MenuList>
                 </MenuPopover>
             </Menu>
-            {isJoiningBot && <InvitationJoinDialog onCancel={onJoinCancel} onJoinComplete={onJoinCancel} />}
+            {isJoiningBot && <InvitationJoinDialog onCloseDialog={onCloseDialog} />}
         </div>
     );
 };

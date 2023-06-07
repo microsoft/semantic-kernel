@@ -31,7 +31,7 @@ public class MessageRelayHub : Hub
     /// TODO: Retrieve the user ID from the claims and call this method
     /// from the OnConnectedAsync method instead of the frontend.
     /// </summary>
-    /// <param name="chatId"></param>
+    /// <param name="chatId">The ChatID used as group id for SignalR.</param>
     public async Task AddClientToGroupAsync(string chatId)
     {
         await this.Groups.AddToGroupAsync(this.Context.ConnectionId, chatId);

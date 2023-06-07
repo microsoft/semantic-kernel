@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Button, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Label, makeStyles } from "@fluentui/react-components";
+import { Button, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Label, makeStyles, tokens } from "@fluentui/react-components";
 import React from "react";
 
 const useStyles = makeStyles({
     content: {
         display: "flex",
         flexDirection: "column",
-        rowGap: "10px",
+        rowGap: tokens.spacingVerticalMNudge,
     },
 });
 
@@ -16,8 +16,7 @@ interface InvitationCreateDialogProps {
     chatId: string;
 }
 
-export const InvitationCreateDialog: React.FC<InvitationCreateDialogProps> = (props) => {
-    const { onCancel, chatId } = props;
+export const InvitationCreateDialog: React.FC<InvitationCreateDialogProps> = ({ onCancel, chatId }) => {
     const [isIdCopied, setIsIdCopied] = React.useState<boolean>(false);
 
     const classes = useStyles();

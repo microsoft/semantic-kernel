@@ -61,7 +61,8 @@ public class ChatHistoryController : ControllerBase
     /// Create a new chat session and populate the session with the initial bot message.
     /// The regex pattern that is used to match the user id will match the following format:
     ///    - 2 period separated groups of one or more hyphen-delimited alphanumeric strings.
-    /// The pattern matches two GUIDs in canonical textual representation separated by a period.
+    /// The pattern in meant to match two GUID-like strings in canonical textual representation
+    /// separated by a period (e.g., a1-2b-3c.x4-5y-6z)
     /// </summary>
     /// <param name="userId">The user ID.</param>
     /// <param name="chatParameter">Contains the title of the chat.</param>

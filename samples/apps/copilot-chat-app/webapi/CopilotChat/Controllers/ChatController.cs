@@ -66,7 +66,7 @@ public class ChatController : ControllerBase, IDisposable
     public async Task<IActionResult> ChatAsync(
         [FromServices] IKernel kernel,
         [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
-        [FromServices] CopilotChatPlanner? planner,
+        [FromServices] CopilotChatPlanner planner,
         [FromBody] Ask ask,
         [FromHeader] OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
@@ -80,7 +80,7 @@ public class ChatController : ControllerBase, IDisposable
         }
 
         // Register plugins that have been enabled
-        await this.RegisterPlannerSkillsAsync(planner!, openApiSkillsAuthHeaders, contextVariables);
+        await this.RegisterPlannerSkillsAsync(planner, openApiSkillsAuthHeaders, contextVariables);
 
         // Get the function to invoke
         ISKFunction? function = null;

@@ -15,7 +15,7 @@ using SemanticKernel.Service.CopilotChat.Storage;
 namespace SemanticKernel.Service.CopilotChat.Controllers;
 
 /// <summary>
-/// Controller for chat invitations.
+/// Controller for managing invitations and participants in a chat session.
 /// This controller is responsible for:
 /// 1. Creating invitation links.
 /// 2. Accepting/rejecting invitation links.

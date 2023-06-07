@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount, useMsal } from "@azure/msal-react";
-import { Button, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Divider, Input, Label, makeStyles } from "@fluentui/react-components";
+import { useMsal } from "@azure/msal-react";
+import { Button, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Divider, Input, Label, makeStyles, tokens } from "@fluentui/react-components";
 import React from "react";
 import { AuthHelper } from "../../../libs/auth/AuthHelper";
 import { ChatService } from "../../../libs/services/ChatService";
@@ -11,23 +11,21 @@ const useStyles = makeStyles({
     content: {
         display: "flex",
         flexDirection: "column",
-        rowGap: "10px",
+        rowGap: tokens.spacingVerticalMNudge,
     },
     divider: {
-        marginTop: "20px",
-        marginBottom: "20px",
+        marginTop: tokens.spacingVerticalXL,
+        marginBottom: tokens.spacingVerticalXL,
     },
 });
 
 interface InvitationJoinDialogProps {
-    onCancel: () => void;
-    onJoinComplete: () => void;
+    onCloseDialog: () => void;
 }
 
-export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = (props) => {
-    const { onCancel, onJoinComplete } = props;
-    const { instance, accounts, inProgress } = useMsal();
-    const account = useAccount(accounts[0] || {});
+export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = ({ onCloseDialog }) => {
+    const { instance, inProgress } = useMsal();
+    const account = instance.getActiveAccount();
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
     const chat = useChat();
     const [errorOccurred, setErrorOccurred] = React.useState<boolean>(false);
@@ -48,7 +46,7 @@ export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = (props)
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress)
             );
             await chat.loadChats();
-            onJoinComplete();
+            onCloseDialog();
         } catch (error: any) {
             const message = `Error joining chat ${chatId.value}: ${(error as Error).message}`;
             console.log(message);
@@ -70,7 +68,7 @@ export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = (props)
                             <Input required type="text" id={"chat-id-input"} />
                         </DialogContent>
                         <DialogActions>
-                            <Button appearance="secondary" onClick={onCancel}>Cancel</Button>
+                            <Button appearance="secondary" onClick={onCloseDialog}>Cancel</Button>
                             <Button type="submit" appearance="primary">Join</Button>
                         </DialogActions>
                     </DialogBody>

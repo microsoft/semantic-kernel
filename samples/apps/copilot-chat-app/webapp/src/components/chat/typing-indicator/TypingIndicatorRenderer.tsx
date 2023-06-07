@@ -17,8 +17,7 @@ interface TypingIndicatorRendererProps {
     numberOfUsersTyping: number;
 }
 
-export const TypingIndicatorRenderer: React.FC<TypingIndicatorRendererProps> = (props) => {
-    const { isBotTyping, numberOfUsersTyping } = props;
+export const TypingIndicatorRenderer: React.FC<TypingIndicatorRendererProps> = ({ isBotTyping, numberOfUsersTyping }) => {
     const classes = useClasses();
 
     let message = "";
