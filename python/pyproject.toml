@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.2.9.dev"
+version = "0.3.0.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -28,6 +28,10 @@ torch = "2.0.0"
 
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.3.23"
+
+
+[tool.poetry.group.weaviate.dependencies]
+weaviate-client = "^3.18.0"
 
 [tool.isort]
 profile = "black"

@@ -2,13 +2,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 /**
  * The following example shows how to plug into SK a custom text completion model.
@@ -28,17 +31,21 @@ public class MyTextCompletionService : ITextCompletion
         });
     }
 
-    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return new List<ITextCompletionStreamingResult>()
-        {
-            new MyTextCompletionStreamingResult()
-        }.ToAsyncEnumerable();
+        yield return new MyTextCompletionStreamingResult();
     }
 }
 
 public class MyTextCompletionStreamingResult : ITextCompletionStreamingResult
 {
+    private readonly ModelResult _modelResult = new(new
+    {
+        Content = Text,
+        Message = "This is my model raw response",
+        Tokens = Text.Split(' ').Length
+    });
+
     private const string Text = @" ..output from your custom model... Example:
 AI is awesome because it can help us solve complex problems, enhance our creativity,
 and improve our lives in many ways. AI can perform tasks that are too difficult,
@@ -46,6 +53,8 @@ tedious, or dangerous for humans, such as diagnosing diseases, detecting fraud, 
 exploring space. AI can also augment our abilities and inspire us to create new forms
 of art, music, or literature. AI can also improve our well-being and happiness by
 providing personalized recommendations, entertainment, and assistance. AI is awesome";
+
+    public ModelResult ModelResult => this._modelResult;
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
@@ -99,6 +108,12 @@ public static class Example16_CustomLLM
 
         var result = await textValidationFunction.InvokeAsync("I mised the training sesion this morning");
         Console.WriteLine(result);
+
+        // Details of the my custom model response
+        Console.WriteLine(JsonSerializer.Serialize(
+            result.ModelResults,
+            new JsonSerializerOptions() { WriteIndented = true }
+        ));
     }
 
     private static async Task CustomTextCompletionAsync()
