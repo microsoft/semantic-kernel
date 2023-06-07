@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 
@@ -21,7 +21,7 @@ public class Example05UsingThePlanner {
 
         SequentialPlanner planner = getPlanner(kernel);
         System.out.println(planner.createPlanAsync(
-                        "Write a poem about John Doe, then translate it into Italian.")
+                "Write a poem about John Doe, then translate it into Italian.")
                 .block().getResult());
 
         // TODO: execute the plan

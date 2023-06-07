@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
 
 public class Example06MemoryAndEmbeddings {
@@ -22,7 +22,7 @@ public class Example06MemoryAndEmbeddings {
     return kernel;
   }
 
-  public static void run (boolean useAzureOpenAI) {
+  public static void run(boolean useAzureOpenAI) {
     OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
     Kernel kernel = getKernel(client);
   }

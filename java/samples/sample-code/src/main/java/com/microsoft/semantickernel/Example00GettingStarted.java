@@ -1,22 +1,25 @@
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.openai.client.OpenAIAsyncClient;
-import com.microsoft.semantickernel.openai.client.OpenAIClientBuilder;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+
 import reactor.core.publisher.Mono;
 
 /**
  * Getting started
  *
- * First create a configuration file based on the examples files at the root of this module:
- *    conf.azure.properties if using Azure OpenAI
- *    conf.openai.properties if using OpenAI
+ * First create a configuration file based on the examples files at the root of
+ * this module:
+ * conf.azure.properties if using Azure OpenAI
+ * conf.openai.properties if using OpenAI
  *
- * <a href="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart">Get started with Azure OpenAI</a>
+ * <a href=
+ * "https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart">Get
+ * started with Azure OpenAI</a>
  * <a href="https://openai.com/product">Get started with OpenAI</a>
  */
 public class Example00GettingStarted {
@@ -29,7 +32,8 @@ public class Example00GettingStarted {
    */
   public static Kernel getKernel(OpenAIAsyncClient client) {
     KernelConfig config = SKBuilders.kernelConfig()
-        .addTextCompletionService("davinci", kernel -> SKBuilders.textCompletionService().build(client, "text-davinci-003"))
+        .addTextCompletionService("davinci",
+            kernel -> SKBuilders.textCompletionService().build(client, "text-davinci-003"))
         .build();
 
     Kernel kernel = SKBuilders.kernel()
@@ -40,15 +44,16 @@ public class Example00GettingStarted {
   }
 
   /**
-   * Imports 'FunSkill' from directory examples and runs the 'Joke' function within it.
+   * Imports 'FunSkill' from directory examples and runs the 'Joke' function
+   * within it.
    *
    * @param kernel Kernel with Text Completion.
    */
-  public static void joke (Kernel kernel) {
+  public static void joke(Kernel kernel) {
 
     ReadOnlyFunctionCollection skill = kernel
-            .importSkill("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
-                    "samples/skills", "FunSkill"));
+        .importSkill("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
+            "samples/skills", "FunSkill"));
 
     CompletionSKFunction function = skill.getFunction("Joke",
         CompletionSKFunction.class);
@@ -60,13 +65,13 @@ public class Example00GettingStarted {
     }
   }
 
-  public static void run (boolean useAzureOpenAI) {
+  public static void run(boolean useAzureOpenAI) {
     OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
     Kernel kernel = getKernel(client);
     joke(kernel);
   }
 
-  public static void main (String args[]) {
+  public static void main(String args[]) {
     // Send whether AzureOpenAI will be used. If false, OpenAI will be used.
     run(false);
   }
