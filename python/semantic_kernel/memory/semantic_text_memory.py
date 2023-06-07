@@ -113,7 +113,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             Optional[MemoryQueryResult] -- The MemoryQueryResult if found, None otherwise.
         """
         record = await self._storage.get_async(collection_name=collection, key=key)
-        return MemoryQueryResult.from_memory_record(record) if record else None
+        return MemoryQueryResult.from_memory_record(record, 1.0) if record else None
 
     async def search_async(
         self,
