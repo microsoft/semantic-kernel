@@ -2,8 +2,11 @@
 
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Pinecone connectors.
