@@ -15,10 +15,7 @@ jobs:
     defaults:
       run:
         working-directory: samples/apps/copilot-chat-app/webapp
-    strategy:
-      matrix:
-        os: [windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v3
@@ -38,23 +35,24 @@ jobs:
     - name: Update AIService configuration
       working-directory: samples/apps/copilot-chat-app/webapi
       run: |
-        dotnet dev-certs https --trust
+        dotnet dev-certs https
         dotnet user-secrets set "AIService:Key" ${{ secrets.AZUREOPENAI__APIKEY }}
         dotnet user-secrets set "AIService:Endpoint" ${{ secrets.AZUREOPENAI__ENDPOINT }}
     - name: Start service in background
       working-directory: samples/apps/copilot-chat-app/webapi
       run: |
-        Get-Content service-log.txt | dotnet run > service-log.txt &
-        for ($attempt = 0; $attempt -lt 30; $attempt++) {
-          Get-job
+        dotnet run > service-log.txt 2>&1 &
+        for attempt in {0..20}; do
+          jobs
           echo 'waiting for service to start';
-          $result = curl -k https://localhost:40443/healthz;
-          if ($result -eq "healthy") {
-            echo 'service is running'
+          if curl -k https://localhost:40443/healthz; then
+            echo;
+            echo 'service started';
             break;
-          }
+          fi;
+
           sleep 5;
-        }
+        done
     - name: Run Playwright tests
       env:
         REACT_APP_BACKEND_URI: https://localhost:40443/

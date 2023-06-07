@@ -36,14 +36,15 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
-    headless: false,
+    /* Ignore certificate errors. */
+    ignoreHTTPSErrors: true,
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' },
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
     },
     // Add more browsers here.
   ],
