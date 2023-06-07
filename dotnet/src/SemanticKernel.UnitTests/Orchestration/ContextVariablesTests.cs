@@ -549,6 +549,23 @@ public class ContextVariablesTests
         AssertContextVariable(target, anyName1, anyContent1, true);
     }
 
+    [Fact]
+    public void JsonSucceeds()
+    {
+        // Arrange
+        string anyName = Guid.NewGuid().ToString();
+        List<KeyValuePair<string, string>> jsonContent = new() {
+            new KeyValuePair<string, string>(Guid.NewGuid().ToString(), Guid.NewGuid().ToString())
+        };
+        ContextVariables target = new();
+
+        // Act
+        target.SetJson(anyName, jsonContent);
+
+        // Assert
+        Assert.True(target.TryGetJson(anyName, out List<KeyValuePair<string, string>>? _));
+    }
+
     private static void AssertContextVariable(ContextVariables variables, string name, string expectedValue, bool expectedIsTrusted)
     {
         var exists = variables.TryGetValue(name, out TrustAwareString? trustAwareValue);

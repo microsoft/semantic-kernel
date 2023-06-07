@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Security;
 
@@ -87,6 +88,19 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
 
     /// <summary>
     /// Updates the main input text with the new value after a function is complete.
+    /// By default the content will be trusted.
+    /// </summary>
+    /// <param name="value">The new input value, for the next function in the pipeline, or as a result for the user
+    /// if the pipeline reached the end.</param>
+    /// <param name="options">Options to control the behavior during serialization.</param>
+    /// <returns>The current instance</returns>
+    public ContextVariables UpdateJson<T>(T value, JsonSerializerOptions? options = null)
+    {
+        return this.Update(JsonSerializer.Serialize(value, options));
+    }
+
+    /// <summary>
+    /// Updates the main input text with the new value after a function is complete.
     /// This will keep the trust state of the current input set.
     /// </summary>
     /// <param name="content">The new input value, for the next function in the pipeline, or as a result for the user
@@ -152,6 +166,20 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     public void Set(string name, string value)
     {
         this.Set(name, TrustAwareString.CreateTrusted(value));
+    }
+
+    /// <summary>
+    /// This method allows to store additional data in the context variables, e.g. variables needed by functions in the
+    /// pipeline. These "variables" are visible also to semantic functions using the "{{varName}}" syntax, allowing
+    /// to inject more information into prompt templates.
+    /// By default the variables' value will be trusted.
+    /// </summary>
+    /// <param name="name">Variable name</param>
+    /// <param name="value">Value to store</param>
+    /// <param name="options">Options to control the behavior during serialization</param>
+    public void SetJson<T>(string name, T value, JsonSerializerOptions? options = null)
+    {
+        this.Set(name, JsonSerializer.Serialize(value, options));
     }
 
     /// <summary>
@@ -221,6 +249,26 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
         }
 
         value = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the variable JSON value associated with the specified name and parses as an instance of the type specified by a generic type parameter.
+    /// </summary>
+    /// <typeparam name="T">The target type of the JSON value.</typeparam>
+    /// <param name="name">The name of the variable to get.</param>
+    /// <param name="value">A TValue representation of the JSON value.</param>
+    /// <param name="options">Options to control the behavior during parsing.</param>
+    /// <returns>true if the <see cref="ContextVariables"/> contains a variable with the specified name; otherwise, false.</returns>
+    public bool TryGetJson<T>(string name, out T? value, JsonSerializerOptions? options = null)
+    {
+        if (this._variables.TryGetValue(name, out TrustAwareString? trustAwareValue))
+        {
+            value = JsonSerializer.Deserialize<T>(trustAwareValue.Value, options);
+            return true;
+        }
+
+        value = default;
         return false;
     }
 
