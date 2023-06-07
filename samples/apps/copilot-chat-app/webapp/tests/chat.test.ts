@@ -1,6 +1,10 @@
 ﻿import { expect, test } from '@playwright/test';
 
 test('get response from bot', async ({ page }) => {
+    // Make sure the server is running.
+    await page.goto('https://localhost:40443/healthz');
+    expect(page.getByText('Healthy')).toBeDefined();
+
     await page.goto('/');
     // Expect the page to contain a "Login" button.
     await page.getByRole('button').click();
@@ -24,7 +28,7 @@ test('get response from bot', async ({ page }) => {
     await expect(page).toHaveTitle('Copilot Chat');
 
     // Send a message to the bot and wait for the response.
-    const responsePromise = page.waitForResponse('**/chat', { timeout: 120000 })
+    const responsePromise = page.waitForResponse('**/chat');
     await page.locator('#chat-input').click();
     await page.locator('#chat-input').fill('Hi!');
     await page.locator('#chat-input').press('Enter');
