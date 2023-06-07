@@ -313,7 +313,7 @@ public class SKFunctionTests4
         {
             s_actual = s_expected;
             // Set this variable as untrusted
-            cx.Variables.Update(TrustAwareString.Untrusted(cx.Variables.Input));
+            cx.Variables.Update(TrustAwareString.CreateUntrusted(cx.Variables.Input));
             cx["canary"] = s_expected;
         }
 
@@ -376,7 +376,7 @@ public class SKFunctionTests4
         static string Test(SKContext cx)
         {
             // Set this variable as untrusted
-            cx.Variables.Update(TrustAwareString.Untrusted("some value"));
+            cx.Variables.Update(TrustAwareString.CreateUntrusted("some value"));
             s_actual = cx["someVar"];
             return "abc";
         }
@@ -473,7 +473,7 @@ public class SKFunctionTests4
         Task<string> Test(SKContext cx)
         {
             // Set this variable as untrusted
-            cx.Variables.Update(TrustAwareString.Untrusted(cx.Variables.Input));
+            cx.Variables.Update(TrustAwareString.CreateUntrusted(cx.Variables.Input));
             s_actual = s_expected;
             cx.Variables["canary"] = s_expected;
             return Task.FromResult(s_expected);
@@ -541,7 +541,7 @@ public class SKFunctionTests4
         {
             s_actual = s_expected;
             // Set this variable as untrusted
-            cx.Variables.Update(TrustAwareString.Untrusted("foo"));
+            cx.Variables.Update(TrustAwareString.CreateUntrusted("foo"));
             cx["canary"] = s_expected;
             return Task.FromResult(cx);
         }
@@ -799,7 +799,7 @@ public class SKFunctionTests4
             s_actual = s_expected;
             cx["canary"] = s_expected;
             // Set this variable as untrusted
-            cx.Variables.Update(TrustAwareString.Untrusted("x y z"));
+            cx.Variables.Update(TrustAwareString.CreateUntrusted("x y z"));
 
             // This value should overwrite "x y z"
             return "new data";
@@ -869,7 +869,7 @@ public class SKFunctionTests4
             s_actual = s_expected;
             cx["canary"] = s_expected;
             // Set this variable as untrusted
-            cx.Variables.Update(TrustAwareString.Untrusted("x y z"));
+            cx.Variables.Update(TrustAwareString.CreateUntrusted("x y z"));
             // This value should overwrite "x y z"
             return Task.FromResult("new data");
         }
@@ -966,7 +966,7 @@ public class SKFunctionTests4
                 skills: new Mock<IReadOnlySkillCollection>().Object);
 
             // Setting the trust of the input to be false
-            newCx.Variables.Update(TrustAwareString.Untrusted("new data"));
+            newCx.Variables.Update(TrustAwareString.CreateUntrusted("new data"));
             newCx["canary2"] = "222";
 
             return Task.FromResult(newCx);
@@ -1073,7 +1073,7 @@ public class SKFunctionTests4
             s_actual = s_expected;
             cx["canary"] = s_expected;
             // Set this variable as untrusted
-            cx.Variables.Update(TrustAwareString.Untrusted("x y z"));
+            cx.Variables.Update(TrustAwareString.CreateUntrusted("x y z"));
             return Task.CompletedTask;
         }
 
@@ -1140,7 +1140,7 @@ public class SKFunctionTests4
             s_actual = s_expected;
             cx["canary"] = s_expected;
             // Set this variable as untrusted
-            cx.Variables.Update(TrustAwareString.Untrusted(input + "x y z"));
+            cx.Variables.Update(TrustAwareString.CreateUntrusted(input + "x y z"));
             return Task.CompletedTask;
         }
 
