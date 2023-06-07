@@ -133,14 +133,20 @@ class WeaviateMemoryStore(MemoryStoreBase):
     async def create_collection_async(self, collection_name: str) -> None:
         schema = SCHEMA.copy()
         schema["class"] = collection_name
-        await asyncio.to_thread(self.client.schema.create_class, schema)
+        await asyncio.get_running_loop().run_in_executor(
+            None, self.client.schema.create_class, schema
+        )
 
     async def get_collections_async(self) -> List[str]:
-        schemas = await asyncio.to_thread(self.client.schema.get)
+        schemas = await asyncio.get_running_loop().run_in_executor(
+            None, self.client.schema.get
+        )
         return [schema["class"] for schema in schemas["classes"]]
 
     async def delete_collection_async(self, collection_name: str) -> bool:
-        await asyncio.to_thread(self.client.schema.delete_class, collection_name)
+        await asyncio.get_running_loop().run_in_executor(
+            None, self.client.schema.delete_class, collection_name
+        )
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         collections = await self.get_collections_async()
@@ -152,12 +158,13 @@ class WeaviateMemoryStore(MemoryStoreBase):
         vector = weaviate_record.pop("vector", None)
         weaviate_id = weaviate.util.generate_uuid5(weaviate_record, collection_name)
 
-        return await asyncio.to_thread(
+        return await asyncio.get_running_loop().run_in_executor(
+            None,
             self.client.data_object.create,
-            data_object=weaviate_record,
-            uuid=weaviate_id,
-            vector=vector,
-            class_name=collection_name,
+            weaviate_record,
+            collection_name,
+            weaviate_id,
+            vector,
         )
 
     async def upsert_batch_async(
@@ -182,7 +189,9 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
             return results
 
-        return await asyncio.to_thread(_upsert_batch_inner)
+        return await asyncio.get_running_loop().run_in_executor(
+            None, _upsert_batch_inner
+        )
 
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool
@@ -196,7 +205,9 @@ class WeaviateMemoryStore(MemoryStoreBase):
     ) -> List[MemoryRecord]:
         queries = self._build_multi_get_query(collection_name, keys, with_embedding)
 
-        results = await asyncio.to_thread(self.client.query.multi_get(queries).do)
+        results = await asyncio.get_running_loop().run_in_executor(
+            None, self.client.query.multi_get(queries).do
+        )
 
         get_dict = results.get("data", {}).get("Get", {})
 
@@ -254,10 +265,8 @@ class WeaviateMemoryStore(MemoryStoreBase):
                 "valueString": key,
             }
 
-            await asyncio.to_thread(
-                self.client.batch.delete_objects,
-                class_name=collection_name,
-                where=where,
+            await asyncio.get_running_loop().run_in_executor(
+                None, self.client.batch.delete_objects, collection_name, where
             )
 
     async def get_nearest_matches_async(
@@ -284,7 +293,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
             .with_limit(limit)
         )
 
-        results = await asyncio.to_thread(query.do)
+        results = await asyncio.get_running_loop().run_in_executor(None, query.do)
 
         get_dict = results.get("data", {}).get("Get", {})
 
