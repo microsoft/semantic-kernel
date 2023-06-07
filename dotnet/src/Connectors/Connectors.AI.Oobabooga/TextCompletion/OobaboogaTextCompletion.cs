@@ -31,7 +31,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
     private readonly int _streamingPort;
     private readonly HttpClient _httpClient;
     private readonly ClientWebSocket _webSocket;
-    private readonly HttpClientHandler? _httpClientHandler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaTextCompletion"/> class.
@@ -39,40 +38,15 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="blockingPort">The port for blocking requests.</param>
     /// <param name="streamingPort">The port for streaming requests.</param>
-    /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    public OobaboogaTextCompletion(Uri endpoint, int blockingPort, int streamingPort, HttpClientHandler httpClientHandler)
+    /// <param name="httpClient">The HTTP client to use for making API requests. If not specified, a default client will be used.</param>
+    public OobaboogaTextCompletion(Uri endpoint, int blockingPort, int streamingPort, HttpClient? httpClient = null)
     {
         Verify.NotNull(endpoint);
 
         this._endpoint = endpoint;
         this._blockingPort = blockingPort;
         this._streamingPort = streamingPort;
-
-        this._httpClient = new(httpClientHandler);
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
-        this._webSocket = new ClientWebSocket();
-        this._webSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OobaboogaTextCompletion"/> class.
-    /// Using default <see cref="HttpClientHandler"/> implementation.
-    /// </summary>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    /// <param name="blockingPort">The port for blocking requests.</param>
-    /// <param name="streamingPort">The port for streaming requests.</param>
-    public OobaboogaTextCompletion(Uri endpoint, int blockingPort, int streamingPort)
-    {
-        Verify.NotNull(endpoint);
-
-        this._endpoint = endpoint;
-        this._blockingPort = blockingPort;
-        this._streamingPort = streamingPort;
-
-        this._httpClientHandler = new() { CheckCertificateRevocationList = true };
-
-        this._httpClient = new(this._httpClientHandler);
-        this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
+        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._webSocket = new ClientWebSocket();
         this._webSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
     }
@@ -167,6 +141,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
                 RequestUri = blockingUri.Uri,
                 Content = stringContent
             };
+            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
 
             using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
@@ -196,9 +171,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this._httpClient.Dispose();
         this._webSocket.Dispose();
-        this._httpClientHandler?.Dispose();
     }
 
     #region private ================================================================================
