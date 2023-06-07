@@ -101,8 +101,11 @@ if (!$ResourceGroup)
     $ResourceGroup = "rg-" + $DeploymentName
 }
 
-Write-Host "Log into your Azure account"
-az login | out-null
+az account show --output none
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Log into your Azure account"
+    az login --output none
+}
 
 az account set -s $Subscription
 if ($LASTEXITCODE -ne 0) {

@@ -77,6 +77,7 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
         *)
+        echo "Unknown option $1"
         usage
         exit 1
         ;;
@@ -94,8 +95,11 @@ fi
 
 TEMPLATE_FILE="$(dirname "$0")/sk-new.bicep"
 
-echo "Log into your Azure account"
-az login --use-device-code
+az account show --output none
+if ($? -ne 0) {
+    echo "Log into your Azure account"
+    az login --use-device-code
+}
 
 az account set -s "$SUBSCRIPTION"
 
