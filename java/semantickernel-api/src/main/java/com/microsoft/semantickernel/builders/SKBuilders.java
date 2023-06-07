@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.builders;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -59,5 +60,9 @@ public class SKBuilders {
 
     public static SKContext.Builder context() {
         return BuildersSingleton.INST.context();
+    }
+
+    public static ChatCompletion.Builder chatCompletion() {
+        return BuildersSingleton.INST.getChatCompletion();
     }
 }

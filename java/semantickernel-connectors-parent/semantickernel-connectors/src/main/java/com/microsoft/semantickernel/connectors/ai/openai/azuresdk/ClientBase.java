@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.connectors.ai.openai.azuresdk;
 
 import com.microsoft.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.ai.AIException;
 
 public abstract class ClientBase {
     private final String modelId;
@@ -18,5 +19,15 @@ public abstract class ClientBase {
 
     protected OpenAIAsyncClient getClient() {
         return client;
+    }
+
+    protected static void validateMaxTokens(int maxTokens) {
+        if (maxTokens < 1) {
+            throw new AIException(
+                    AIException.ErrorCodes.InvalidRequest,
+                    "MaxTokens "
+                            + maxTokens
+                            + " is not valid, the value must be greater than zero");
+        }
     }
 }

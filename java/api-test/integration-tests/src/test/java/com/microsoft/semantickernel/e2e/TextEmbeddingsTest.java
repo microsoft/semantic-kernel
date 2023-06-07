@@ -13,7 +13,6 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
