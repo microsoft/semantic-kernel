@@ -314,6 +314,7 @@ public sealed class Plan : ISKFunction
     public Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
+        IReadOnlySkillCollection? skills = null,
         ISemanticTextMemory? memory = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
@@ -323,6 +324,7 @@ public sealed class Plan : ISKFunction
         SKContext context = new(
             this.State,
             memory: memory,
+            skills: skills,
             logger: logger,
             cancellationToken: cancellationToken);
 
@@ -364,14 +366,6 @@ public sealed class Plan : ISKFunction
         }
 
         return context;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
-    {
-        return this.Function is null
-            ? throw new NotImplementedException()
-            : this.Function.SetDefaultSkillCollection(skills);
     }
 
     /// <inheritdoc/>

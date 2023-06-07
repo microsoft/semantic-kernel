@@ -129,7 +129,7 @@ public sealed class Kernel : IKernel, IDisposable
         );
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
-            f.Value.SetDefaultSkillCollection(this.Skills);
+            //f.Value.SetDefaultSkillCollection(this.Skills);
             this._skillCollection.AddFunction(f.Value);
         }
 
@@ -144,7 +144,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         Verify.NotNull(customFunction);
 
-        customFunction.SetDefaultSkillCollection(this.Skills);
+        //customFunction.SetDefaultSkillCollection(this.Skills);
         this._skillCollection.AddFunction(customFunction);
 
         return customFunction;
@@ -234,7 +234,6 @@ public sealed class Kernel : IKernel, IDisposable
     {
         return new SKContext(
             memory: this._memory,
-            skills: this._skillCollection.ReadOnlySkillCollection,
             logger: this.Log,
             cancellationToken: cancellationToken);
     }
@@ -349,7 +348,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         // Connect the function to the current kernel skill collection, in case the function
         // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultSkillCollection(this.Skills);
+        //func.SetDefaultSkillCollection(this.Skills);
 
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 

@@ -77,6 +77,7 @@ public interface ISKFunction
     /// </summary>
     /// <param name="input">String input</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="skills">Available skills.</param>
     /// <param name="memory">Semantic memory</param>
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -84,17 +85,10 @@ public interface ISKFunction
     Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
+        IReadOnlySkillCollection? skills = null,
         ISemanticTextMemory? memory = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Set the default skill collection to use when the function is invoked
-    /// without a context or with a context that doesn't have a collection.
-    /// </summary>
-    /// <param name="skills">Kernel's skill collection</param>
-    /// <returns>Self instance</returns>
-    ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills);
 
     /// <summary>
     /// Set the AI service used by the semantic function, passing a factory method.

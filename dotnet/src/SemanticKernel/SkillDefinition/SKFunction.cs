@@ -259,7 +259,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
 
         // If the function is invoked manually, the user might have left out the skill collection
-        context.Skills ??= this._skillCollection;
+        //context.Skills ??= this._skillCollection;
 
         var validateContextResult = await this.TrustServiceInstance.ValidateContextAsync(this, context).ConfigureAwait(false);
 
@@ -280,6 +280,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
+        IReadOnlySkillCollection? skills = null,
         ISemanticTextMemory? memory = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
@@ -287,18 +288,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKContext context = new(
             new ContextVariables(input),
             memory: memory,
-            skills: this._skillCollection,
+            skills: skills,
             logger: logger,
             cancellationToken: cancellationToken);
 
         return this.InvokeAsync(context, settings);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
-    {
-        this._skillCollection = skills;
-        return this;
     }
 
     /// <inheritdoc/>
@@ -348,7 +342,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> _function;
     private readonly ILogger _log;
-    private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
     private readonly ITrustService _trustService;
