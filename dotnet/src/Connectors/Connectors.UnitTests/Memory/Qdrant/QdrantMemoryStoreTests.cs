@@ -100,11 +100,11 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
 
         // Act
-        var collections = await vectorStore.GetCollectionsAsync().ToArrayAsync();
+        var collections = await vectorStore.GetCollectionsAsync().ToListAsync();
 
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<string>>(x => x.ListCollectionsAsync(It.IsAny<CancellationToken>()), Times.Once());
-        Assert.Equal(2, collections.Length);
+        Assert.Equal(2, collections.Count);
         Assert.Equal("test1", collections[0]);
         Assert.Equal("test2", collections[1]);
     }
