@@ -25,10 +25,6 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>semantickernel-openai-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
             <artifactId>semantickernel-core</artifactId>
             <scope>runtime</scope>
         </dependency>
