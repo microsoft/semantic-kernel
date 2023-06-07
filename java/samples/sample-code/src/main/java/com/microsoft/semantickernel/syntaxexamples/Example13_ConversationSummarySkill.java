@@ -13,6 +13,8 @@ import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+
 public class Example13_ConversationSummarySkill {
     private static final String ChatTranscript =
             """
@@ -124,15 +126,17 @@ public class Example13_ConversationSummarySkill {
                     Jane: Goodbye!
                     """.stripIndent();
 
-    public static void main(String[] args) {
-        conversationSummarySkillAsync();
-        getConversationActionItemsAsync();
-        getConversationTopicsAsync();
+    public static void main(String[] args) throws IOException {
+        Config.ClientType clientType = Config.ClientType.OPEN_AI;
+
+        conversationSummarySkillAsync(clientType);
+        getConversationActionItemsAsync(clientType);
+        getConversationTopicsAsync(clientType);
     }
 
-    private static void conversationSummarySkillAsync() {
+    private static void conversationSummarySkillAsync(Config.ClientType clientType) throws IOException {
         System.out.println("======== SampleSkills - Conversation Summary Skill - Summarize ========");
-        Kernel kernel = initializeKernel();
+        Kernel kernel = initializeKernel(clientType);
 
         ReadOnlyFunctionCollection conversationSummarySkill =
                 kernel.importSkill(new ConversationSummarySkill(kernel), null);
@@ -146,9 +150,9 @@ public class Example13_ConversationSummarySkill {
     }
 
 
-    private static void getConversationActionItemsAsync() {
+    private static void getConversationActionItemsAsync(Config.ClientType clientType) throws IOException {
         System.out.println("======== SampleSkills - Conversation Summary Skill - Action Items ========");
-        Kernel kernel = initializeKernel();
+        Kernel kernel = initializeKernel(clientType);
 
         ReadOnlyFunctionCollection conversationSummarySkill =
                 kernel.importSkill(new ConversationSummarySkill(kernel), null);
@@ -161,8 +165,8 @@ public class Example13_ConversationSummarySkill {
         System.out.println(summary.block().getResult());
     }
 
-    private static void getConversationTopicsAsync() {
-        Kernel kernel = initializeKernel();
+    private static void getConversationTopicsAsync(Config.ClientType clientType) throws IOException {
+        Kernel kernel = initializeKernel(clientType);
 
         ReadOnlyFunctionCollection conversationSummarySkill =
                 kernel.importSkill(new ConversationSummarySkill(kernel), null);
@@ -175,8 +179,8 @@ public class Example13_ConversationSummarySkill {
         System.out.println(summary.block().getResult());
     }
 
-    private static Kernel initializeKernel() {
-        OpenAIAsyncClient client = Config.getClient(true);
+    private static Kernel initializeKernel(Config.ClientType clientType) throws IOException {
+        OpenAIAsyncClient client = clientType.getClient();
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
