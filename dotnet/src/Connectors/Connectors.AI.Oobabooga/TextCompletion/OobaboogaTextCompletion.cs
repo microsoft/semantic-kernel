@@ -38,8 +38,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="blockingPort">The port for blocking requests.</param>
     /// <param name="streamingPort">The port for streaming requests.</param>
-    /// <param name="httpClient">The HTTP client to use for making API requests. If not specified, a default client will be used.</param>
-    public OobaboogaTextCompletion(Uri endpoint, int blockingPort, int streamingPort, HttpClient? httpClient = null)
+    /// <param name="httpClient">The HTTP client to use for making regular blocking API requests. If not specified, a default client will be used.</param>
+    /// <param name="webSocket">The client web socket to use for making streaming API requests. If not specified, a default client will be used.</param>
+    public OobaboogaTextCompletion(Uri endpoint, int blockingPort, int streamingPort, HttpClient? httpClient = null, ClientWebSocket? webSocket = null)
     {
         Verify.NotNull(endpoint);
 
@@ -47,7 +48,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
         this._blockingPort = blockingPort;
         this._streamingPort = streamingPort;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._webSocket = new ClientWebSocket();
+        this._webSocket = webSocket ?? new ClientWebSocket();
         this._webSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
     }
 
@@ -71,16 +72,15 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
 
         var requestBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(completionRequest));
 
-        using var client = new ClientWebSocket();
-        await client.ConnectAsync(streamingUri.Uri, cancellationToken).ConfigureAwait(false);
+        await this._webSocket.ConnectAsync(streamingUri.Uri, cancellationToken).ConfigureAwait(false);
 
         var sendSegment = new ArraySegment<byte>(requestBytes);
-        await client.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
+        await this._webSocket.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
 
         var buffer = new byte[1024];
-        while (client.State == WebSocketState.Open)
+        while (this._webSocket.State == WebSocketState.Open)
         {
-            var received = await client.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken).ConfigureAwait(false);
+            var received = await this._webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken).ConfigureAwait(false);
 
             if (received.MessageType == WebSocketMessageType.Text)
             {
@@ -101,7 +101,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
                         yield return new TextCompletionStreamingResult(responseObject.Text);
                         break;
                     case "stream_end":
-                        await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
+                        await this._webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
                         break;
                     default:
                         break;
@@ -109,7 +109,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
             }
             else if (received.MessageType == WebSocketMessageType.Close)
             {
-                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
+                await this._webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
             }
         }
     }
