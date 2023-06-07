@@ -12,6 +12,7 @@ import { Constants } from '../../../Constants';
 import { useAppDispatch } from '../../../redux/app/hooks';
 import { setSelectedConversation } from '../../../redux/features/conversations/conversationsSlice';
 import { Breakpoints } from '../../../styles';
+import { timestampToDateString } from '../../utils/TextUtils';
 
 const useClasses = makeStyles({
     root: {
@@ -105,20 +106,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
         dispatch(setSelectedConversation(id));
     };
 
-    const date = new Date(timestamp);
-    let time = date.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-
-    // If not today, only show the date
-    if (date.toDateString() !== new Date().toDateString()) {
-        time = date.toLocaleDateString([], {
-            month: 'numeric',
-            day: 'numeric',
-        });
-    }
-
+    const time = timestampToDateString(timestamp);
     return (
         <Popover
             openOnHover={!isSelected}
