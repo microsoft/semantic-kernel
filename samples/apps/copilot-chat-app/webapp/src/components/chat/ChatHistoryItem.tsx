@@ -5,7 +5,7 @@ import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fl
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
-import { parsePlan } from '../../libs/utils/PlanUtils';
+import { getPlanView } from '../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { Breakpoints } from '../../styles';
@@ -87,8 +87,8 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     const chat = useChat();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
-    const plan = parsePlan(message.content);
-    const isPlan = plan !== null;
+    const planView = getPlanView(message.content);
+    const isPlan = planView !== null;
 
     const content = !isPlan
         ? (message.content as string)
@@ -129,7 +129,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                     )}
                     {isPlan && (
                         <PlanViewer
-                            plan={plan}
+                            plan={planView}
                             planState={message.state ?? ChatMessageState.NoOp}
                             messageIndex={messageIndex}
                             messageContent={message.content}

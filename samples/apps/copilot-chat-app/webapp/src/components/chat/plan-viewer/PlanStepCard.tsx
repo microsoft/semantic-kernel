@@ -1,6 +1,7 @@
 import { Badge, Body1, Card, CardHeader, makeStyles, shorthands, Text, tokens } from '@fluentui/react-components';
 import { IPlan, IPlanInput } from '../../../libs/models/Plan';
 import { CopilotChatTokens } from '../../../styles';
+import { PlanStepInput } from './PlanStepInput';
 
 const useClasses = makeStyles({
     card: {
@@ -12,8 +13,8 @@ const useClasses = makeStyles({
         color: CopilotChatTokens.titleColor,
     },
     inputs: {
+        ...shorthands.gap(tokens.spacingHorizontalS),
         display: 'flex',
-        ...shorthands.gap('8px'),
         flexWrap: 'wrap',
     },
     bar: {
@@ -28,10 +29,10 @@ const useClasses = makeStyles({
     flexColumn: {
         display: 'flex',
         flexDirection: 'column',
-        marginLeft: '8px',
-        marginTop: '4px',
-        marginBottom: '4px',
-        ...shorthands.gap('8px'),
+        marginLeft: tokens.spacingHorizontalS,
+        marginTop: tokens.spacingVerticalXS,
+        marginBottom: tokens.spacingVerticalXS,
+        ...shorthands.gap(tokens.spacingHorizontalS),
     },
     singleLine: {
         ...shorthands.overflow('hidden'),
@@ -47,9 +48,11 @@ const useClasses = makeStyles({
 interface PlanStepCardProps {
     index: number;
     step: IPlan;
+    setIsPlanDirty: React.Dispatch<React.SetStateAction<boolean>>;
+    enableEdit: boolean;
 }
 
-export const PlanStepCard: React.FC<PlanStepCardProps> = ({ index, step }) => {
+export const PlanStepCard: React.FC<PlanStepCardProps> = ({ index, step, setIsPlanDirty, enableEdit }) => {
     const classes = useClasses();
 
     const numbersAsStrings = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -77,10 +80,23 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ index, step }) => {
                         <div className={classes.inputs}>
                             <Text weight="semibold">Inputs: </Text>
                             {step.stepInputs.map((input: IPlanInput) => {
+                                const onEditInput = (newValue: string) => {
+                                    const inputIndex = step.stepInputs.findIndex(
+                                        (element) => element.Key === input.Key,
+                                    );
+                                    step.stepInputs[inputIndex] = {
+                                        Key: input.Key,
+                                        Value: newValue,
+                                    };
+                                    setIsPlanDirty(true);
+                                };
                                 return (
-                                    <Badge color="informative" shape="rounded" appearance="tint" key={input.Key}>
-                                        {`${input.Key}: ${input.Value}`}
-                                    </Badge>
+                                    <PlanStepInput
+                                        input={input}
+                                        key={input.Key}
+                                        onEdit={onEditInput}
+                                        enableEdit={enableEdit}
+                                    />
                                 );
                             })}
                         </div>

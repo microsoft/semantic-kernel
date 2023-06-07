@@ -10,22 +10,24 @@ export const isPlan = (object: string) => {
     return object.indexOf(planPrefix) !== -1;
 };
 
-export const parsePlan = (response: string): IPlan | null => {
+export const getPlanView = (response: string): IPlan | null => {
     if (isPlan(response)) {
         try {
             const parsedResponse = JSON.parse(response);
             const plan = parsedResponse.proposedPlan;
+            const planType = parsedResponse.Type;
             const userIntentPrefix = 'User Intent:User intent: ';
             const index = plan.description.indexOf(userIntentPrefix);
+            const stateParameters = extractInputs(plan.state);
 
             return {
                 userIntent: plan.description,
                 description: index !== -1 ? plan.description.substring(index + userIntentPrefix.length).trim() : '',
                 skill: plan.skill_name.replace('Microsoft.SemanticKernel.Planning.Plan', ''),
                 function: plan.name.replace('Microsoft.SemanticKernel.Planning.Plan', ''),
-                stepInputs: extractInputs(plan.state),
+                stepInputs: stateParameters,
                 stepOutputs: plan.outputs,
-                steps: extractPlanSteps(plan),
+                steps: extractPlanSteps(plan, stateParameters, planType),
             };
         } catch (e: any) {
             console.error('Error parsing plan: ' + response);
@@ -34,20 +36,18 @@ export const parsePlan = (response: string): IPlan | null => {
     return null;
 };
 
-const extractPlanSteps = (plan: any) => {
-    // If plan came from Actio Planner, extract step parameters from top-level plan state
-    const planInputs = extractInputs(plan.state);
-
+const extractPlanSteps = (plan: any, stateParameters: IPlanInput[], planType: string) => {
     const planSteps = plan.steps;
     return planSteps.map((step: any) => {
         return {
             skill: step['skill_name'],
             function: step['name'],
             description: step['description'],
+            // If plan came from ActionPlanner, use parameters from top-level plan state
             // If plan came from SequentialPlanner, extract step parameters from respective step object
-            stepInputs: planSteps.length === 1 && planInputs.length > 0 ? planInputs : extractInputs(step.parameters),
+            stepInputs: planType === 'Action' ? stateParameters : extractInputs(step.parameters),
             stepOutputs: step.outputs,
-            steps: extractPlanSteps(step),
+            steps: extractPlanSteps(step, stateParameters, planType),
         };
     });
 };

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
+using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Skills.OpenApiSkills.GitHubSkill.Model;
 using SemanticKernel.Service.CopilotChat.Skills.OpenApiSkills.JiraSkill.Model;
@@ -37,7 +38,7 @@ public class ExternalInformationSkill
     /// <summary>
     /// Proposed plan to return for approval.
     /// </summary>
-    public Plan? ProposedPlan { get; private set; }
+    public ProposedPlan? ProposedPlan { get; private set; }
 
     /// <summary>
     /// Preamble to add to the related information text.
@@ -130,7 +131,7 @@ public class ExternalInformationSkill
                 Plan sanitizedPlan = this.SanitizePlan(plan, context);
                 sanitizedPlan.State.Update(plan.State);
 
-                this.ProposedPlan = sanitizedPlan;
+                this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner._plannerOptions!.Type);
             }
         }
 

@@ -1,5 +1,6 @@
 import { Button, Text, makeStyles, mergeClasses, shorthands } from '@fluentui/react-components';
 import { CheckmarkCircle24Regular, DismissCircle24Regular } from '@fluentui/react-icons';
+import { useState } from 'react';
 import { ChatMessageState } from '../../../libs/models/ChatMessage';
 import { IPlan } from '../../../libs/models/Plan';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
@@ -53,6 +54,8 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({
     const dispatch = useAppDispatch();
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
+    const [isDirty, setIsDirty] = useState(false);
+
     var stepCount = 1;
 
     const onPlanApproval = async () => {
@@ -65,7 +68,23 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({
         );
 
         // Extract plan from bot response
-        const proposedPlan = JSON.parse(messageContent).proposedPlan;
+        const parsedContent = JSON.parse(messageContent);
+        var proposedPlan = parsedContent.proposedPlan;
+
+        // Apply any edits
+        if (isDirty) {
+            if (parsedContent.Type === 'Sequential') {
+                // TODO: handle nested steps
+                // TODO: handle different input value data structures i.e., arrays
+                // Update message in chat history to reflect new plan object
+                for (var i = 0; i < plan.steps.length; i++) {
+                    proposedPlan.steps[i].parameters = plan.steps[i].stepInputs;
+                }
+            } else {
+                // TODO: Check if parameters or state take precendence
+                proposedPlan.parameters = plan.steps[0].stepInputs;
+            }
+        }
 
         // Invoke plan
         await getResponse('Yes, proceed', true, JSON.stringify(proposedPlan), plan?.userIntent);
@@ -90,7 +109,15 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({
             <Text weight="bold">{`Goal: ${plan.description}`}</Text>
             {plan.steps.map((step: IPlan) => {
                 const stepIndex = stepCount++;
-                return <PlanStepCard key={`Plan step: ${stepIndex}`} index={stepIndex} step={step} />;
+                return (
+                    <PlanStepCard
+                        key={`Plan step: ${stepIndex}`}
+                        index={stepIndex}
+                        step={step}
+                        setIsPlanDirty={setIsDirty}
+                        enableEdit={planState === ChatMessageState.PlanApprovalRequired}
+                    />
+                );
             })}
             {planState === ChatMessageState.PlanApprovalRequired && (
                 <>

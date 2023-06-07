@@ -17,11 +17,17 @@ public class ProposedPlan
     public Plan Plan { get; set; }
 
     /// <summary>
+    /// Indicates whether plan is Action (single-step) or Sequential (multi-step)
+    /// </summary>
+    public string Type { get; set; }
+
+    /// <summary>
     /// Create a new proposed plan.
     /// </summary>
     /// <param name="plan">Proposed plan object</param>
-    public ProposedPlan(Plan plan)
+    public ProposedPlan(Plan plan, string type)
     {
         this.Plan = plan;
+        this.Type = type;
     }
 }
