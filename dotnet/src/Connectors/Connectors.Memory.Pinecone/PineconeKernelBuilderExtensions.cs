@@ -4,6 +4,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+
 public static class PineconeKernelBuilderExtensions
 {
     /// <summary>
