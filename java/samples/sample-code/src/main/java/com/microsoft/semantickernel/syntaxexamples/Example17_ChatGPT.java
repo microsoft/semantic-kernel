@@ -11,13 +11,15 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatHistory;
 
+import java.io.IOException;
+
 /**
  * The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
  */
 public class Example17_ChatGPT {
 
-    public static void main(String[] args) {
-        OpenAIAsyncClient client = Config.getClient(true);
+    public static void main(String[] args) throws IOException {
+        OpenAIAsyncClient client = Config.ClientType.OPEN_AI.getClient();
 
         KernelConfig kernelConfig = SKBuilders.kernelConfig()
                 .addChatCompletionService(

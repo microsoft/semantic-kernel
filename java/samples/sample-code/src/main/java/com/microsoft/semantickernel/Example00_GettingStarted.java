@@ -1,7 +1,6 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.openai.OpenAIAsyncClient;
-import com.microsoft.openai.OpenAIClientBuilder;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
@@ -9,17 +8,17 @@ import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+
 /**
  * Getting started
  *
- * First create a configuration file based on the examples files at the root of this module:
- *    conf.azure.properties if using Azure OpenAI
- *    conf.openai.properties if using OpenAI
+ * Create a conf.properties file based on the examples files at the root of this module.
  *
  * <a href="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart">Get started with Azure OpenAI</a>
  * <a href="https://openai.com/product">Get started with OpenAI</a>
  */
-public class Example00GettingStarted {
+public class Example00_GettingStarted {
 
   /**
    * Returns a Semantic Kernel with Text Completion.
@@ -60,14 +59,13 @@ public class Example00GettingStarted {
     }
   }
 
-  public static void run (boolean useAzureOpenAI) {
-    OpenAIAsyncClient client = Config.getClient(useAzureOpenAI);
-    Kernel kernel = getKernel(client);
+  public static void run (Config.ClientType clientType) throws IOException {
+    Kernel kernel = getKernel(clientType.getClient());
     joke(kernel);
   }
 
-  public static void main (String args[]) {
-    // Send whether AzureOpenAI will be used. If false, OpenAI will be used.
-    run(false);
+  public static void main (String args[]) throws IOException {
+    // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
+    run(Config.ClientType.OPEN_AI);
   }
 }
