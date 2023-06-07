@@ -47,11 +47,13 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletio
         }
     }
 
+    /// <inheritdoc/>
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
         return (await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false)).Content;
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
