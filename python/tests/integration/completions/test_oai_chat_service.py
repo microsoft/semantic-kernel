@@ -1,25 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
-import os
-
-import e2e_text_completion
 import pytest
+from test_utils import retry
 
-import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_skills():
-    kernel = sk.Kernel()
+async def test_oai_chat_service_with_skills(
+    setup_tldr_function_for_oai_models, get_oai_config
+):
+    kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    if "Python_Integration_Tests" in os.environ:
-        api_key = os.environ["OpenAI__ApiKey"]
-        org_id = None
-    else:
-        # Load credentials from .env file
-        api_key, org_id = sk.openai_settings_from_dot_env()
+    api_key, org_id = get_oai_config
 
     print("* Service: OpenAI Chat Completion")
     print("* Endpoint: OpenAI")
@@ -29,8 +22,17 @@ async def test_oai_chat_service_with_skills():
         "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
     )
 
-    await e2e_text_completion.summarize_function_test(kernel)
+    # Create the semantic function
+    tldr_function = kernel.create_semantic_function(
+        sk_prompt, max_tokens=200, temperature=0, top_p=0.5
+    )
 
-
-if __name__ == "__main__":
-    asyncio.run(test_oai_chat_service_with_skills())
+    summary = await retry(
+        lambda: kernel.run_async(tldr_function, input_str=text_to_summarize)
+    )
+    output = str(summary).strip()
+    print(f"TLDR using input string: '{output}'")
+    assert "First Law" not in output and (
+        "human" in output or "Human" in output or "preserve" in output
+    )
+    assert len(output) < 100

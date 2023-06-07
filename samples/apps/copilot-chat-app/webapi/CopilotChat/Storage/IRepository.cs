@@ -22,10 +22,10 @@ public interface IRepository<T> where T : IStorageEntity
     Task DeleteAsync(T entity);
 
     /// <summary>
-    /// Updates an entity in the repository.
+    /// Upserts an entity in the repository.
     /// </summary>
-    /// <param name="entity">The entity to be updated.</param>
-    Task UpdateAsync(T entity);
+    /// <param name="entity">The entity to be upserted.</param>
+    Task UpsertAsync(T entity);
 
     /// <summary>
     /// Finds an entity by its id.

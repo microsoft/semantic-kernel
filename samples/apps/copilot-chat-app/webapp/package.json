@@ -9,7 +9,7 @@
     "depcheck": "depcheck --ignores=\"@types/*,typescript\" --ignore-dirs=\".vscode,.vs,.git,node_modules\" --skip-missing",
     "lint": "eslint src",
     "prettify": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,scss,css,html,svg}\"",
-    "serve": "http-server dist -p 4000 -S -C certs/cert.pem -K certs/key.pem",
+    "serve": "serve -s build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -51,6 +51,7 @@
     "eslint-plugin-react-security": "^0.1.0",
     "http-server": "^14.1.1",
     "prettier": "^2.8.1",
+    "serve": "^14.2.0",
     "typescript": "*",
     "vsts-npm-auth": "^0.42.1",
     "workbox-window": "^6.5.4"

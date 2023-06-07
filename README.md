@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
-> ℹ️ **NOTE**: This project is in early alpha and, just like AI, will evolve quickly.
+> ℹ️ **NOTE**:This project is just like AI and will evolve quickly.
 > We invite you to join us in developing the Semantic Kernel together!
 > Please contribute by
 > using GitHub [Discussions](https://github.com/microsoft/semantic-kernel/discussions),
@@ -27,11 +27,8 @@ chaining,
 [intelligent planning](docs/PLANNERS.md)
 capabilities out of the box.
 
-![image](https://user-images.githubusercontent.com/371009/221739773-cf43522f-c1e4-42f2-b73d-5ba84e21febb.png)
-
 Semantic Kernel supports and encapsulates several design patterns from the latest
-in AI research, such that developers can infuse their applications with complex
-[skills](docs/SKILLS.md) like [prompt](docs/PROMPT_TEMPLATE_LANGUAGE.md)
+in AI research, such that developers can infuse their applications with  [plugins](https://learn.microsoft.com/semantic-kernel/howto/) like [prompt](docs/PROMPT_TEMPLATE_LANGUAGE.md)
 chaining, recursive reasoning, summarization, zero/few-shot learning, contextual
 memory, long-term memory, [embeddings](docs/EMBEDDINGS.md), semantic indexing,
 [planning](docs/PLANNERS.md), retrieval-augmented generation and accessing external
@@ -87,7 +84,7 @@ Follow the links for more information and instructions about running these apps.
 
 |                                                                         |                                                                                                                                   |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| [Simple chat summary](samples/apps/chat-summary-webapp-react/README.md) | Use ready-to-use skills and get those skills into your app easily.                                                                |
+| [Simple chat summary](samples/apps/chat-summary-webapp-react/README.md) | Use ready-to-use plugins and get plugins into your app easily.                                                                |
 | [Book creator](samples/apps/book-creator-webapp-react/README.md)        | Use planner to deconstruct a complex goal and envision using the planner in your app.                                             |
 | [Authentication and APIs](samples/apps/auth-api-webapp-react/README.md) | Use a basic connector pattern to authenticate and connect to an API and imagine integrating external data into your app's LLM AI. |
 | [GitHub repository Q&A](samples/apps/github-qna-webapp-react/README.md) | Use embeddings and memory to store recent data and allow you to query against it.                                                 |
@@ -101,10 +98,12 @@ Follow the links for more information and instructions about running these apps.
   to get started.
 - [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local)
   are required to run the kernel as a local web service, used by the sample web apps.
-- [.NET 6](https://dotnet.microsoft.com/download/dotnet/6.0). If you have .NET 7 installed, Azure Function
-  Tools will still require .NET 6, so we suggest installing both.
+- [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) or [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
 - [Yarn](https://yarnpkg.com/getting-started/install) is used for installing web apps' dependencies.
 
+## Deploy Semantic Kernel to Azure in a web app service ☁️
+
+Getting Semantic Kernel deployed to Azure as web app service is easy with one-click deployments. Click [here](https://aka.ms/sk-docs-azuredeploy) to learn more on how to deploy to Azure.
 
 ## Jupyter Notebooks ⚡
 

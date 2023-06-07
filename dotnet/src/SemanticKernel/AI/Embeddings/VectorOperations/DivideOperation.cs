@@ -32,7 +32,7 @@ public static class DivideOperation
         }
         else
         {
-            SupportedTypes.ThrowTypeNotSupported<TNumber>();
+            EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
         }
     }
 
@@ -60,7 +60,7 @@ public static class DivideOperation
             if (Vector.IsHardwareAccelerated &&
                 x.Length >= Vector<float>.Count)
             {
-                Vector<float> divisorVec = new Vector<float>(divisor);
+                Vector<float> divisorVec = new(divisor);
                 float* pxOneVectorFromEnd = pxEnd - Vector<float>.Count;
                 do
                 {
@@ -87,7 +87,7 @@ public static class DivideOperation
             if (Vector.IsHardwareAccelerated &&
                 x.Length >= Vector<double>.Count)
             {
-                Vector<double> divisorVec = new Vector<double>(divisor);
+                Vector<double> divisorVec = new(divisor);
                 double* pxOneVectorFromEnd = pxEnd - Vector<double>.Count;
                 do
                 {

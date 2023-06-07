@@ -22,10 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StrongNamePublicKey)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="skprompt.txt" />
     <EmbeddedResource Include="skprompt.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -143,7 +143,7 @@ public class QdrantMemoryStore : IMemoryStore
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
-                embedding: new Embedding<float>(vectorData.Embedding),
+                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true),
                 key: vectorData.PointId);
         }
         catch (HttpRequestException ex)
@@ -202,7 +202,7 @@ public class QdrantMemoryStore : IMemoryStore
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
-                embedding: new Embedding<float>(vectorData.Embedding));
+                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true));
         }
         catch (HttpRequestException ex)
         {
@@ -244,7 +244,7 @@ public class QdrantMemoryStore : IMemoryStore
         {
             yield return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
-                embedding: new Embedding<float>(vectorData.Embedding),
+                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true),
                 key: vectorData.PointId);
         }
     }
@@ -371,7 +371,7 @@ public class QdrantMemoryStore : IMemoryStore
                 yield return (
                     MemoryRecord.FromJsonMetadata(
                         json: result.Value.Item1.GetSerializedPayload(),
-                        embedding: new Embedding<float>(result.Value.Item1.Embedding)),
+                        embedding: new Embedding<float>(result.Value.Item1.Embedding, transferOwnership: true)),
                     result.Value.Item2);
             }
         } while (hasResult);

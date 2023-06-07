@@ -27,13 +27,8 @@ public static class CopilotChatServiceExtensions
     {
         // AI service configurations for Copilot Chat.
         // They are using the same configuration section as Semantic Kernel.
-        services.AddOptions<AIServiceOptions>(AIServiceOptions.CompletionPropertyName)
-            .Bind(configuration.GetSection(AIServiceOptions.CompletionPropertyName))
-            .ValidateOnStart()
-            .PostConfigure(TrimStringProperties);
-
-        services.AddOptions<AIServiceOptions>(AIServiceOptions.EmbeddingPropertyName)
-            .Bind(configuration.GetSection(AIServiceOptions.EmbeddingPropertyName))
+        services.AddOptions<AIServiceOptions>(AIServiceOptions.PropertyName)
+            .Bind(configuration.GetSection(AIServiceOptions.PropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
@@ -61,14 +56,15 @@ public static class CopilotChatServiceExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-        // Planner options
-        services.AddOptions<PlannerOptions>()
-            .Bind(configuration.GetSection(PlannerOptions.PropertyName))
+        // Chat prompt options
+        services.AddOptions<PromptsOptions>()
+            .Bind(configuration.GetSection(PromptsOptions.PropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-        services.AddOptions<PromptsOptions>()
-            .Bind(configuration.GetSection(PromptsOptions.PropertyName))
+        // Planner options
+        services.AddOptions<PlannerOptions>()
+            .Bind(configuration.GetSection(PlannerOptions.PropertyName))
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
@@ -82,6 +78,7 @@ public static class CopilotChatServiceExtensions
     {
         IStorageContext<ChatSession> chatSessionInMemoryContext;
         IStorageContext<ChatMessage> chatMessageInMemoryContext;
+        IStorageContext<MemorySource> chatMemorySourceInMemoryContext;
 
         ChatStoreOptions chatStoreConfig = services.BuildServiceProvider().GetRequiredService<IOptions<ChatStoreOptions>>().Value;
 
@@ -91,6 +88,7 @@ public static class CopilotChatServiceExtensions
             {
                 chatSessionInMemoryContext = new VolatileContext<ChatSession>();
                 chatMessageInMemoryContext = new VolatileContext<ChatMessage>();
+                chatMemorySourceInMemoryContext = new VolatileContext<MemorySource>();
                 break;
             }
 
@@ -107,7 +105,8 @@ public static class CopilotChatServiceExtensions
                     new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_sessions{Path.GetExtension(fullPath)}")));
                 chatMessageInMemoryContext = new FileSystemContext<ChatMessage>(
                     new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_messages{Path.GetExtension(fullPath)}")));
-
+                chatMemorySourceInMemoryContext = new FileSystemContext<MemorySource>(
+                    new FileInfo(Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(fullPath)}_memorysources{Path.GetExtension(fullPath)}")));
                 break;
             }
 
@@ -122,6 +121,8 @@ public static class CopilotChatServiceExtensions
                     chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatSessionsContainer);
                 chatMessageInMemoryContext = new CosmosDbContext<ChatMessage>(
                     chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatMessagesContainer);
+                chatMemorySourceInMemoryContext = new CosmosDbContext<MemorySource>(
+                    chatStoreConfig.Cosmos.ConnectionString, chatStoreConfig.Cosmos.Database, chatStoreConfig.Cosmos.ChatMemorySourcesContainer);
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 break;
             }
@@ -129,12 +130,13 @@ public static class CopilotChatServiceExtensions
             default:
             {
                 throw new InvalidOperationException(
-                    $"Invalid 'ChatStore' setting 'chatStoreConfig.Type'.");
+                    "Invalid 'ChatStore' setting 'chatStoreConfig.Type'.");
             }
         }
 
         services.AddSingleton<ChatSessionRepository>(new ChatSessionRepository(chatSessionInMemoryContext));
         services.AddSingleton<ChatMessageRepository>(new ChatMessageRepository(chatMessageInMemoryContext));
+        services.AddSingleton<ChatMemorySourceRepository>(new ChatMemorySourceRepository(chatMemorySourceInMemoryContext));
     }
 
     /// <summary>
