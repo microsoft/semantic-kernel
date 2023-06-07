@@ -120,10 +120,10 @@ fi
 TEMPLATE_FILE="$(dirname "$0")/sk-existing-openai.bicep"
 
 az account show --output none
-if ($? -ne 0) {
+if [ $? -ne 0 ]; then
     echo "Log into your Azure account"
     az login --use-device-code
-}
+fi
 
 az account set -s "$SUBSCRIPTION"
 
