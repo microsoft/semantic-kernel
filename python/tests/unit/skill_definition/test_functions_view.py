@@ -11,7 +11,7 @@ def test_add_semantic_function():
         description="Semantic function",
         parameters=[],
         is_semantic=True,
-        is_asynchronous=True
+        is_asynchronous=True,
     )
     functions_view = FunctionsView()
     functions_view.add_function(view)
@@ -27,7 +27,7 @@ def test_add_native_function():
         description="Native function",
         parameters=[],
         is_semantic=False,
-        is_asynchronous=True
+        is_asynchronous=True,
     )
     functions_view = FunctionsView()
     functions_view.add_function(view)
@@ -43,7 +43,7 @@ def test_add_multiple_functions():
         description="Semantic function",
         parameters=[],
         is_semantic=True,
-        is_asynchronous=True
+        is_asynchronous=True,
     )
     native_function = FunctionView(
         name="function2",
@@ -51,7 +51,7 @@ def test_add_multiple_functions():
         description="Native function",
         parameters=[],
         is_semantic=False,
-        is_asynchronous=True
+        is_asynchronous=True,
     )
     functions_view = FunctionsView()
     functions_view.add_function(semantic_function)
@@ -71,7 +71,7 @@ def test_is_semantic():
         description="Semantic function",
         parameters=[],
         is_semantic=True,
-        is_asynchronous=True
+        is_asynchronous=True,
     )
     native_function = FunctionView(
         name="function2",
@@ -79,7 +79,7 @@ def test_is_semantic():
         description="Native function",
         parameters=[],
         is_semantic=False,
-        is_asynchronous=True
+        is_asynchronous=True,
     )
     functions_view = FunctionsView()
     functions_view.add_function(semantic_function)
@@ -96,7 +96,7 @@ def test_is_native():
         description="Semantic function",
         parameters=[],
         is_semantic=True,
-        is_asynchronous=True
+        is_asynchronous=True,
     )
     native_function = FunctionView(
         name="function2",
@@ -104,7 +104,7 @@ def test_is_native():
         description="Native function",
         parameters=[],
         is_semantic=False,
-        is_asynchronous=True
+        is_asynchronous=True,
     )
     functions_view = FunctionsView()
     functions_view.add_function(semantic_function)
@@ -121,7 +121,7 @@ def test_ambiguous_implementation():
         description="Semantic function",
         parameters=[],
         is_semantic=True,
-        is_asynchronous=True
+        is_asynchronous=True,
     )
     native_function = FunctionView(
         name="function1",
@@ -129,7 +129,7 @@ def test_ambiguous_implementation():
         description="Native function",
         parameters=[],
         is_semantic=False,
-        is_asynchronous=True
+        is_asynchronous=True,
     )
     functions_view = FunctionsView()
     functions_view.add_function(semantic_function)
@@ -138,9 +138,13 @@ def test_ambiguous_implementation():
     with pytest.raises(KernelException) as exc_info:
         functions_view.is_semantic("skill1", "function1")
 
-    assert exc_info.value.error_code == KernelException.ErrorCodes.AmbiguousImplementation
+    assert (
+        exc_info.value.error_code == KernelException.ErrorCodes.AmbiguousImplementation
+    )
 
     with pytest.raises(KernelException) as exc_info:
         functions_view.is_native("skill1", "function1")
 
-    assert exc_info.value.error_code == KernelException.ErrorCodes.AmbiguousImplementation
+    assert (
+        exc_info.value.error_code == KernelException.ErrorCodes.AmbiguousImplementation
+    )
