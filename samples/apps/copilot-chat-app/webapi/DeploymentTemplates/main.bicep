@@ -648,3 +648,4 @@ resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = if (d
 
 
 output deployedUrl string = appServiceWeb.properties.defaultHostName
+output deployedName string = appServiceWeb.name

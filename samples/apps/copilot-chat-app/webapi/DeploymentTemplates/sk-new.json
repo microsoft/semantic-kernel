@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "16861206555260857378"
+      "templateHash": "14955061621262136926"
     }
   },
   "parameters": {
@@ -145,7 +145,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.17.1.54307",
-              "templateHash": "1371310943287245701"
+              "templateHash": "8233201381347352274"
             }
           },
           "parameters": {
@@ -943,6 +943,10 @@
             "deployedUrl": {
               "type": "string",
               "value": "[reference(resourceId('Microsoft.Web/sites', format('app-{0}-skweb', variables('uniqueName'))), '2022-09-01').defaultHostName]"
+            },
+            "deployedName": {
+              "type": "string",
+              "value": "[format('app-{0}-skweb', variables('uniqueName'))]"
             }
           }
         }
