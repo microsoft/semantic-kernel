@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using SemanticKernel.Service.CopilotChat.Extensions;
 using SemanticKernel.Service.CopilotChat.Options;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
@@ -129,7 +130,7 @@ internal static class SemanticChatMemoryExtractor
                 minRelevanceScore: options.SemanticMemoryMinRelevance,
                 cancellationToken: context.CancellationToken
             )
-            .ToListAsync(context.CancellationToken)
+            .ToListAsync()
             .ConfigureAwait(false);
 
         if (memories.Count == 0)
