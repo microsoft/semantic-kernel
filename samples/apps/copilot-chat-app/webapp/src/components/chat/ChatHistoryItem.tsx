@@ -5,7 +5,7 @@ import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fl
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
-import { getPlanView } from '../../libs/utils/PlanUtils';
+import { isPlan } from '../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { Breakpoints } from '../../styles';
@@ -87,10 +87,9 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     const chat = useChat();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
-    const planView = getPlanView(message.content);
-    const isPlan = planView !== null;
+    const renderPlan = isPlan(message.content);
 
-    const content = !isPlan
+    const content = !renderPlan
         ? (message.content as string)
               .trim()
               .replace(/[\u00A0-\u9999<>&]/g, function (i: string) {
@@ -112,32 +111,29 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
         : { name: fullName, color: 'colorful' as 'colorful' };
 
     return (
-        <>
-            <div className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}>
-                {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
-                <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
-                    <div className={classes.header}>
-                        {!isMe && <Text weight="semibold">{fullName}</Text>}
-                        <Text className={classes.time}>{timestampToDateString(message.timestamp, true)}</Text>
-                        {isBot && <PromptDetails message={message} />}
-                    </div>
-                    {!isPlan && (
-                        <div
-                            className={classes.content}
-                            dangerouslySetInnerHTML={{ __html: convertToAnchorTags(content) }}
-                        />
-                    )}
-                    {isPlan && (
-                        <PlanViewer
-                            plan={planView}
-                            planState={message.state ?? ChatMessageState.NoOp}
-                            messageIndex={messageIndex}
-                            messageContent={message.content}
-                            getResponse={getResponse}
-                        />
-                    )}
+        <div className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}>
+            {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
+            <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
+                <div className={classes.header}>
+                    {!isMe && <Text weight="semibold">{fullName}</Text>}
+                    <Text className={classes.time}>{timestampToDateString(message.timestamp, true)}</Text>
+                    {isBot && <PromptDetails message={message} />}
                 </div>
+                {!renderPlan && (
+                    <div
+                        className={classes.content}
+                        dangerouslySetInnerHTML={{ __html: convertToAnchorTags(content) }}
+                    />
+                )}
+                {renderPlan && (
+                    <PlanViewer
+                        message={message.content}
+                        planState={message.state ?? ChatMessageState.NoOp}
+                        messageIndex={messageIndex}
+                        getResponse={getResponse}
+                    />
+                )}
             </div>
-        </>
+        </div>
     );
 };

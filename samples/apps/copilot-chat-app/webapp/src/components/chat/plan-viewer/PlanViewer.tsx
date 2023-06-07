@@ -1,8 +1,9 @@
-import { Button, Text, makeStyles, mergeClasses, shorthands } from '@fluentui/react-components';
+import { Button, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import { CheckmarkCircle24Regular, DismissCircle24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { ChatMessageState } from '../../../libs/models/ChatMessage';
-import { IPlan } from '../../../libs/models/Plan';
+import { IPlan, IPlanInput } from '../../../libs/models/Plan';
+import { getPlanView } from '../../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { updateMessageState } from '../../../redux/features/conversations/conversationsSlice';
@@ -10,7 +11,7 @@ import { PlanStepCard } from './PlanStepCard';
 
 const useClasses = makeStyles({
     container: {
-        ...shorthands.gap('11px'),
+        ...shorthands.gap(tokens.spacingVerticalM),
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'baseline',
@@ -18,12 +19,12 @@ const useClasses = makeStyles({
     buttons: {
         display: 'flex',
         flexDirection: 'row',
-        marginTop: '12px',
-        marginBottom: '12px',
-        ...shorthands.gap('16px'),
+        marginTop: tokens.spacingVerticalM,
+        marginBottom: tokens.spacingVerticalM,
+        ...shorthands.gap(tokens.spacingHorizontalL),
     },
     status: {
-        ...shorthands.gap('10px'),
+        ...shorthands.gap(tokens.spacingHorizontalMNudge),
     },
     text: {
         alignSelf: 'center',
@@ -31,10 +32,9 @@ const useClasses = makeStyles({
 });
 
 interface PlanViewerProps {
-    plan: IPlan;
+    message: string;
     planState: ChatMessageState;
     messageIndex: number;
-    messageContent: string;
     getResponse: (
         value: string,
         userApprovedPlan?: boolean,
@@ -43,20 +43,17 @@ interface PlanViewerProps {
     ) => Promise<void>;
 }
 
-export const PlanViewer: React.FC<PlanViewerProps> = ({
-    plan,
-    planState,
-    messageIndex,
-    messageContent,
-    getResponse,
-}) => {
+export const PlanViewer: React.FC<PlanViewerProps> = ({ message, planState, messageIndex, getResponse }) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const [plan, setPlan] = useState(getPlanView(message)!);
+
+    // Track original plan from user message
+    const parsedContent = JSON.parse(message);
+    const [proposedPlan, setProposedPlan] = useState(parsedContent.proposedPlan);
 
     const [isDirty, setIsDirty] = useState(false);
-
-    var stepCount = 1;
 
     const onPlanApproval = async () => {
         dispatch(
@@ -67,10 +64,6 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({
             }),
         );
 
-        // Extract plan from bot response
-        const parsedContent = JSON.parse(messageContent);
-        var proposedPlan = parsedContent.proposedPlan;
-
         // Apply any edits
         if (isDirty) {
             if (parsedContent.Type === 'Sequential') {
@@ -78,7 +71,12 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({
                 // TODO: handle different input value data structures i.e., arrays
                 // Update message in chat history to reflect new plan object
                 for (var i = 0; i < plan.steps.length; i++) {
-                    proposedPlan.steps[i].parameters = plan.steps[i].stepInputs;
+                    for (var inputIndex in plan.steps[i].stepInputs) {
+                        const paramIndex = proposedPlan.steps[i].parameters.findIndex(
+                            (element: IPlanInput) => element.Key === plan.steps[i].stepInputs[inputIndex].Key,
+                        );
+                        proposedPlan.steps[i].parameters[paramIndex] = plan.steps[i].stepInputs[inputIndex];
+                    }
                 }
             } else {
                 // TODO: Check if parameters or state take precendence
@@ -98,24 +96,34 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({
                 chatId: selectedId,
             }),
         );
-
         // Bail out of plan
         await getResponse('No, cancel', false);
+    };
+
+    const onDeleteStep = (index: number) => {
+        setPlan({
+            ...plan,
+            steps: plan.steps.filter((_step, i) => i !== index),
+        });
+        setProposedPlan({
+            ...proposedPlan,
+            steps: proposedPlan.steps.filter((_step: any, i: number) => i !== index),
+        });
     };
 
     return (
         <div className={classes.container}>
             <Text>Based on the request, Copilot Chat will run the following steps:</Text>
             <Text weight="bold">{`Goal: ${plan.description}`}</Text>
-            {plan.steps.map((step: IPlan) => {
-                const stepIndex = stepCount++;
+            {plan.steps.map((step: IPlan, index) => {
                 return (
                     <PlanStepCard
-                        key={`Plan step: ${stepIndex}`}
-                        index={stepIndex}
-                        step={step}
-                        setIsPlanDirty={setIsDirty}
-                        enableEdit={planState === ChatMessageState.PlanApprovalRequired}
+                        key={`Plan step: ${index}`}
+                        step={{ ...step, index: index }}
+                        setIsPlanDirty={() => setIsDirty(true)}
+                        enableEdits={planState === ChatMessageState.PlanApprovalRequired}
+                        enableStepDelete={plan.steps.length > 1}
+                        onDeleteStep={onDeleteStep}
                     />
                 );
             })}
