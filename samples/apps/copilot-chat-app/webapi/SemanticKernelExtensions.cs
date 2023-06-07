@@ -42,7 +42,8 @@ internal static class SemanticKernelExtensions
             IKernel kernel = Kernel.Builder
                 .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
                 .WithMemory(sp.GetRequiredService<ISemanticTextMemory>())
-                .WithConfiguration(sp.GetRequiredService<KernelConfig>())
+                .WithCompletionBackend(sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
+                .WithEmbeddingBackend(sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
                 .Build();
 
             sp.GetRequiredService<RegisterSkillsWithKernel>()(sp, kernel);
@@ -51,11 +52,6 @@ internal static class SemanticKernelExtensions
 
         // Semantic memory
         services.AddSemanticTextMemory();
-
-        // AI backends
-        services.AddScoped<KernelConfig>(serviceProvider => new KernelConfig()
-            .AddCompletionBackend(serviceProvider.GetRequiredService<IOptions<AIServiceOptions>>().Value)
-            .AddEmbeddingBackend(serviceProvider.GetRequiredService<IOptions<AIServiceOptions>>().Value));
 
         // Register skills
         services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkillsAsync);
@@ -156,14 +152,14 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Add the completion backend to the kernel config
     /// </summary>
-    private static KernelConfig AddCompletionBackend(this KernelConfig kernelConfig, AIServiceOptions options)
+    private static KernelBuilder WithCompletionBackend(this KernelBuilder kernelBuilder, AIServiceOptions options)
     {
         return options.Type switch
         {
             AIServiceOptions.AIServiceType.AzureOpenAI
-                => kernelConfig.AddAzureChatCompletionService(options.Models.Completion, options.Endpoint, options.Key),
+                => kernelBuilder.WithAzureChatCompletionService(options.Models.Completion, options.Endpoint, options.Key),
             AIServiceOptions.AIServiceType.OpenAI
-                => kernelConfig.AddOpenAIChatCompletionService(options.Models.Completion, options.Key),
+                => kernelBuilder.WithOpenAIChatCompletionService(options.Models.Completion, options.Key),
             _
                 => throw new ArgumentException($"Invalid {nameof(options.Type)} value in '{AIServiceOptions.PropertyName}' settings."),
         };
@@ -172,14 +168,14 @@ internal static class SemanticKernelExtensions
     /// <summary>
     /// Add the embedding backend to the kernel config
     /// </summary>
-    private static KernelConfig AddEmbeddingBackend(this KernelConfig kernelConfig, AIServiceOptions options)
+    private static KernelBuilder WithEmbeddingBackend(this KernelBuilder kernelBuilder, AIServiceOptions options)
     {
         return options.Type switch
         {
             AIServiceOptions.AIServiceType.AzureOpenAI
-                => kernelConfig.AddAzureTextEmbeddingGenerationService(options.Models.Embedding, options.Endpoint, options.Key),
+                => kernelBuilder.WithAzureTextEmbeddingGenerationService(options.Models.Embedding, options.Endpoint, options.Key),
             AIServiceOptions.AIServiceType.OpenAI
-                => kernelConfig.AddOpenAITextEmbeddingGenerationService(options.Models.Embedding, options.Key),
+                => kernelBuilder.WithOpenAITextEmbeddingGenerationService(options.Models.Embedding, options.Key),
             _
                 => throw new ArgumentException($"Invalid {nameof(options.Type)} value in '{AIServiceOptions.PropertyName}' settings."),
         };
@@ -191,7 +187,7 @@ internal static class SemanticKernelExtensions
     /// <param name="options">The service configuration</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
-    private static IEmbeddingGeneration<string, float> ToTextEmbeddingsService(this AIServiceOptions options,
+    private static ITextEmbeddingGeneration ToTextEmbeddingsService(this AIServiceOptions options,
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
