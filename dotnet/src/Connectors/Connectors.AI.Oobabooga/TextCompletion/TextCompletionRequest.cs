@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 public sealed class TextCompletionRequest
 {
     [JsonPropertyName("prompt")]
-    public string Prompt { get; set; }
+    public string Prompt { get; set; } = string.Empty;
 
     [JsonPropertyName("max_new_tokens")]
     public int MaxNewTokens { get; set; }
@@ -91,5 +91,5 @@ public sealed class TextCompletionRequest
     public bool SkipSpecialTokens { get; set; }
 
     [JsonPropertyName("stopping_strings")]
-    public List<string> StoppingStrings { get; set; }
+    public List<string> StoppingStrings { get; set; } = new List<string>();
 }

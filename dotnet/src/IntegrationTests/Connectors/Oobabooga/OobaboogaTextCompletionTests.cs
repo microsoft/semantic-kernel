@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextCompletion;
+namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
 
 /// <summary>
 /// Integration tests for <see cref=" OobaboogaTextCompletion"/>.
