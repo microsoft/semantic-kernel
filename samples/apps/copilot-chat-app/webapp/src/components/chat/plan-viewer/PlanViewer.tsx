@@ -2,8 +2,7 @@ import { Button, Text, makeStyles, mergeClasses, shorthands, tokens } from '@flu
 import { CheckmarkCircle24Regular, DismissCircle24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { ChatMessageState } from '../../../libs/models/ChatMessage';
-import { IPlan, IPlanInput } from '../../../libs/models/Plan';
-import { getPlanView } from '../../../libs/utils/PlanUtils';
+import { IPlanInput } from '../../../libs/models/Plan';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { updateMessageState } from '../../../redux/features/conversations/conversationsSlice';
@@ -47,13 +46,24 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, planState, mess
     const classes = useClasses();
     const dispatch = useAppDispatch();
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const [plan, setPlan] = useState(getPlanView(message)!);
 
     // Track original plan from user message
     const parsedContent = JSON.parse(message);
-    const [proposedPlan, setProposedPlan] = useState(parsedContent.proposedPlan);
+    const originalPlan = parsedContent.proposedPlan;
 
-    const [isDirty, setIsDirty] = useState(false);
+    // If plan came from ActionPlanner, use parameters from top-level plan state
+    if (parsedContent.Type === 'Action') {
+        originalPlan.steps[0].parameters = originalPlan.state;
+    }
+
+    const userIntentPrefix = 'User Intent:User intent: ';
+    const userIntentIndex = originalPlan.description.indexOf(userIntentPrefix);
+    const description =
+        userIntentIndex !== -1
+            ? originalPlan.description.substring(userIntentIndex + userIntentPrefix.length).trim()
+            : '';
+
+    const [plan, setPlan] = useState(originalPlan);
 
     const onPlanApproval = async () => {
         dispatch(
@@ -64,28 +74,8 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, planState, mess
             }),
         );
 
-        // Apply any edits
-        if (isDirty) {
-            if (parsedContent.Type === 'Sequential') {
-                // TODO: handle nested steps
-                // TODO: handle different input value data structures i.e., arrays
-                // Update message in chat history to reflect new plan object
-                for (var i = 0; i < plan.steps.length; i++) {
-                    for (var inputIndex in plan.steps[i].stepInputs) {
-                        const paramIndex = proposedPlan.steps[i].parameters.findIndex(
-                            (element: IPlanInput) => element.Key === plan.steps[i].stepInputs[inputIndex].Key,
-                        );
-                        proposedPlan.steps[i].parameters[paramIndex] = plan.steps[i].stepInputs[inputIndex];
-                    }
-                }
-            } else {
-                // TODO: Check if parameters or state take precendence
-                proposedPlan.parameters = plan.steps[0].stepInputs;
-            }
-        }
-
         // Invoke plan
-        await getResponse('Yes, proceed', true, JSON.stringify(proposedPlan), plan?.userIntent);
+        await getResponse('Yes, proceed', true, JSON.stringify(plan), plan?.userIntent);
     };
 
     const onPlanCancel = async () => {
@@ -103,24 +93,19 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, planState, mess
     const onDeleteStep = (index: number) => {
         setPlan({
             ...plan,
-            steps: plan.steps.filter((_step, i) => i !== index),
-        });
-        setProposedPlan({
-            ...proposedPlan,
-            steps: proposedPlan.steps.filter((_step: any, i: number) => i !== index),
+            steps: plan.steps.filter((_step: IPlanInput, i: number) => i !== index),
         });
     };
 
     return (
         <div className={classes.container}>
             <Text>Based on the request, Copilot Chat will run the following steps:</Text>
-            <Text weight="bold">{`Goal: ${plan.description}`}</Text>
-            {plan.steps.map((step: IPlan, index) => {
+            <Text weight="bold">{`Goal: ${description}`}</Text>
+            {plan.steps.map((step: any, index: number) => {
                 return (
                     <PlanStepCard
                         key={`Plan step: ${index}`}
                         step={{ ...step, index: index }}
-                        setIsPlanDirty={() => setIsDirty(true)}
                         enableEdits={planState === ChatMessageState.PlanApprovalRequired}
                         enableStepDelete={plan.steps.length > 1}
                         onDeleteStep={onDeleteStep}

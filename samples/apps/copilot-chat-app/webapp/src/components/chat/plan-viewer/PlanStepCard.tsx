@@ -18,7 +18,8 @@ import {
 } from '@fluentui/react-components';
 import { Dismiss12Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
-import { IPlan, IPlanInput } from '../../../libs/models/Plan';
+import { Constants } from '../../../Constants';
+import { IPlanInput } from '../../../libs/models/Plan';
 import { CopilotChatTokens } from '../../../styles';
 import { PlanStepInput } from './PlanStepInput';
 
@@ -31,7 +32,7 @@ const useClasses = makeStyles({
     header: {
         color: CopilotChatTokens.titleColor,
     },
-    inputs: {
+    parameters: {
         ...shorthands.gap(tokens.spacingHorizontalS),
         display: 'flex',
         flexWrap: 'wrap',
@@ -73,22 +74,21 @@ const useClasses = makeStyles({
 });
 
 interface PlanStepCardProps {
-    step: IPlan & { index: number };
-    setIsPlanDirty: () => void;
+    step: any;
     enableEdits: boolean;
     enableStepDelete: boolean;
     onDeleteStep: (index: number) => void;
 }
 
-export const PlanStepCard: React.FC<PlanStepCardProps> = ({
-    step,
-    setIsPlanDirty,
-    enableEdits,
-    enableStepDelete,
-    onDeleteStep,
-}) => {
+export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, enableStepDelete, onDeleteStep }) => {
     const classes = useClasses();
     const [openDialog, setOpenDialog] = useState(false);
+
+    // Omit reserved context variable names from displayed inputs
+    const inputs = step.parameters.filter(
+        (parameter: IPlanInput) =>
+            !Constants.sk.reservedWords.includes(parameter.Key.trim()) && parameter.Value.trim() !== '',
+    );
 
     return (
         <Card className={classes.card}>
@@ -98,7 +98,7 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({
                     <CardHeader
                         header={
                             <Body1>
-                                <b className={classes.header}>Step {step.index + 1} •</b> {step.skill}.{step.function}
+                                <b className={classes.header}>Step {step.index + 1} •</b> {step.skill_name}.{step.name}
                                 <br />
                             </Body1>
                         }
@@ -155,19 +155,18 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({
                             <Text weight="semibold">About: </Text> <Text>{step.description}</Text>
                         </div>
                     )}
-                    {step.stepInputs.length > 0 && (
-                        <div className={classes.inputs}>
+                    {inputs.length > 0 && (
+                        <div className={classes.parameters}>
                             <Text weight="semibold">Inputs: </Text>
-                            {step.stepInputs.map((input: IPlanInput) => {
+                            {inputs.map((input: IPlanInput) => {
                                 const onEditInput = (newValue: string) => {
-                                    const inputIndex = step.stepInputs.findIndex(
-                                        (element) => element.Key === input.Key,
+                                    const inputIndex = step.parameters.findIndex(
+                                        (element: IPlanInput) => element.Key === input.Key,
                                     );
-                                    step.stepInputs[inputIndex] = {
+                                    step.parameters[inputIndex] = {
                                         Key: input.Key,
                                         Value: newValue,
                                     };
-                                    setIsPlanDirty();
                                 };
                                 return (
                                     <PlanStepInput
@@ -180,10 +179,10 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({
                             })}
                         </div>
                     )}
-                    {step.stepOutputs.length > 0 && (
-                        <div className={classes.inputs}>
+                    {step.outputs.length > 0 && (
+                        <div className={classes.parameters}>
                             <Text weight="semibold">Outputs: </Text>
-                            {step.stepOutputs.map((output: string) => {
+                            {step.outputs.map((output: string) => {
                                 return (
                                     <Badge color="informative" shape="rounded" appearance="tint" key={output}>
                                         {output}

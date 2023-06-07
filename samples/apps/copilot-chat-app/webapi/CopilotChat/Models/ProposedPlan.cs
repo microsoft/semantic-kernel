@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Planning;
 
@@ -23,11 +22,6 @@ public class ProposedPlan
     public string Type { get; set; }
 
     /// <summary>
-    /// Indicates whether the user editted plan inputs or steps before approving
-    /// </summary>
-    public Boolean? HasEdits { get; set; }
-
-    /// <summary>
     /// Create a new proposed plan.
     /// </summary>
     /// <param name="plan">Proposed plan object</param>
@@ -35,16 +29,5 @@ public class ProposedPlan
     {
         this.Plan = plan;
         this.Type = type;
-    }
-
-    /// <summary>
-    /// Create a new proposed plan.
-    /// </summary>
-    /// <param name="plan">Proposed plan object</param>
-    public ProposedPlan(Plan plan, string type, Boolean hasEdits)
-    {
-        this.Plan = plan;
-        this.Type = type;
-        this.HasEdits = hasEdits;
     }
 }

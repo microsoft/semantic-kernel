@@ -3,13 +3,3 @@ export type IPlanInput = {
     Key: string;
     Value: string;
 };
-
-export type IPlan = {
-    userIntent: string;
-    skill: string;
-    function: string;
-    description: string;
-    steps: IPlan[];
-    stepInputs: IPlanInput[];
-    stepOutputs: string[];
-};
