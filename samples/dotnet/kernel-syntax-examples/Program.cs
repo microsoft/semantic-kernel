@@ -132,6 +132,9 @@ public static class Program
 
         Example42_KernelBuilder.Run();
         Console.WriteLine("== DONE ==");
+      
+        await Example43_GetModelResult.RunAsync();
+        Console.WriteLine("== DONE ==");
 
         await Example43_Weaviate.RunAsync();
         Console.WriteLine("== DONE ==");
