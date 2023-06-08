@@ -74,7 +74,7 @@ public static class TextChunker
 
         if (maxTokensPerParagraph <= overlapTokens)
         {
-            throw new ArgumentException("overlapTokens can not be larger thatn maxTokensPerParagraph");
+            throw new ArgumentException("overlapTokens cannot be larger than maxTokensPerParagraph");
         }
 
         if (lines.Count == 0)
