@@ -268,9 +268,15 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             str -- The unique database key of the record.
         """
         
-        ## Initialize search client here
-        ## cogsearch_client -- Look up constructor
-
+        ## Look up Search client class to see if exists or create
+        acs_search_client = self._cogsearch_indexclient.get_search_client(collection_name)
+        
+        # If no Search client exists, create one
+        if not acs_search_client:
+            if self._cogsearch_creds:
+                acs_search_client = SearchClient(service_endpoint = self._cogsearch_indexclient._endpoint, 
+                                             index_name=collection_name, 
+                                             credential=AzureKeyCredential(self._cogsearch_creds)) 
         
         if record._id:
             id = record._id
@@ -304,7 +310,15 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             List[str] -- The unique database keys of the records.
         """
         ## Initialize search client here
-        ## cogsearch_client -- Look up constructor
+        ## Look up Search client class to see if exists or create
+        acs_search_client = self._cogsearch_indexclient.get_search_client(collection_name)
+        
+        # If no Search client exists, create one
+        if not acs_search_client:
+            if self._cogsearch_creds:
+                acs_search_client = SearchClient(service_endpoint = self._cogsearch_indexclient._endpoint, 
+                                             index_name=collection_name, 
+                                             credential=AzureKeyCredential(self._cogsearch_creds)) 
 
         acs_documents = []
         acs_ids = []
@@ -326,7 +340,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
             acs_documents.append(acs_doc)
 
-        result = self._cogsearch_client.upload_documents(documents=[acs_doc])
+        result = acs_search_client.upload_documents(documents=[acs_doc])
 
         if result[0].succeeded:
             return acs_ids
@@ -347,8 +361,6 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             MemoryRecord -- The record.
         """
 
-        ## Initialize search client here
-
         ## Look up Search client class to see if exists or create
         acs_search_client = self._cogsearch_indexclient.get_search_client(collection_name)
         
@@ -361,12 +373,11 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         search_id = key
 
-        ## TODO: Get documents API call
+        ## Get document using key (search_id)
         acs_result = acs_search_client.get_document(key=search_id)
 
         
         ## Create Memory record from document
-        ## TODO: Update this
         result = MemoryRecord(
             is_reference=False,
             external_source_name="azure-cognitive-search",
@@ -404,8 +415,8 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                 external_source_name="azure-cognitive-search",
                 key=acs_key,
                 id=acs_key,
-                embedding=results[0].vector,
-                payload=results[0].payload,
+                embedding=acs_results[0].vector,
+                payload=acs_results[0].payload,
             )
 
             acs_results.append(result)
@@ -457,13 +468,22 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
 
-        ## TODO: Create client 
-        if with_embeddings:
+        ## Look up Search client class to see if exists or create
+        acs_search_client = self._cogsearch_indexclient.get_search_client(collection_name)
+        
+        # If no Search client exists, create one
+        if not acs_search_client:
+            if self._cogsearch_creds:
+                acs_search_client = SearchClient(service_endpoint = self._cogsearch_indexclient._endpoint, 
+                                             index_name=collection_name, 
+                                             credential=AzureKeyCredential(self._cogsearch_creds)) 
+                
+        if with_embedding:
             select_fields = ["collection_id", "vector", "payload"]
         else:
             select_fields = ["collection_id", "payload"]
 
-        results = cogsearch_client.search(
+        results = acs_search_client.search(
             vector=Vector(value=search_id, k=limit, fields="vector")
             select=select_fields,
             top=limit,
@@ -496,14 +516,22 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
 
-        ## TODO: Create client w/collection name
+        ## Look up Search client class to see if exists or create
+        acs_search_client = self._cogsearch_indexclient.get_search_client(collection_name)
+        
+        # If no Search client exists, create one
+        if not acs_search_client:
+            if self._cogsearch_creds:
+                acs_search_client = SearchClient(service_endpoint = self._cogsearch_indexclient._endpoint, 
+                                             index_name=collection_name, 
+                                             credential=AzureKeyCredential(self._cogsearch_creds)) 
 
         if with_embeddings:
             select_fields = ["vector_id", "vector", "payload"]
         else:
             select_fields = ["vector_id", "payload"]
 
-        results = cogsearch_client.search(
+        results = acs_search_client.search(
             vector=Vector(value=embedding, k=limit, fields="vector"),
             select=select_fields,
             top=limit,
