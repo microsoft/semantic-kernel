@@ -12,6 +12,8 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Oobabooga.TextCompletion;
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously. System.Linq.Async Nuget package should be used globally eventually
+
 /// <summary>
 /// Unit tests for <see cref="OobaboogaTextCompletion"/> class.
 /// </summary>
@@ -136,6 +138,8 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             MaxTokens = 7,
             TopP = 0.1,
         });
+
+        //TODO: use AggregateAsync when System.Linq.Async Nuget package is installed
         var completion = localResponse.ToEnumerable().Aggregate((s, s1) => s + s1);
         //Assert
         var requestPayload = JsonSerializer.Deserialize<TextCompletionRequest>(server.RequestContent);
@@ -163,6 +167,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             TopP = 0.1,
         });
 
+        //TODO: use AggregateAsync when System.Linq.Async Nuget package is installed
         var completion = localResponse.ToEnumerable().Aggregate((s, s1) => s + s1);
 
         Assert.Equal("This is test completion response", completion);
