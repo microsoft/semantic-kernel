@@ -86,13 +86,7 @@ export const ChatRoom: React.FC = () => {
         return null;
     }
 
-    const handleSubmit = async (
-        value: string,
-        contextVariables?: IAskVariables[],
-        userApprovedPlan?: boolean,
-        approvedPlanJson?: string,
-        planUserIntent?: string,
-    ) => {
+    const handleSubmit = async (value: string, contextVariables?: IAskVariables[]) => {
         log('submitting user chat message');
 
         const chatInput = {
@@ -107,14 +101,7 @@ export const ChatRoom: React.FC = () => {
         dispatch(updateConversation({ message: chatInput }));
 
         try {
-            await chat.getResponse(
-                value,
-                selectedId,
-                contextVariables,
-                approvedPlanJson,
-                planUserIntent,
-                userApprovedPlan,
-            );
+            await chat.getResponse(value, selectedId, contextVariables);
         } finally {
             setIsBotTyping(false);
         }

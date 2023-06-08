@@ -24,13 +24,7 @@ const useClasses = makeStyles({
 
 interface ChatHistoryProps {
     messages: IChatMessage[];
-    onGetResponse: (
-        value: string,
-        contextVariables?: IAskVariables[],
-        userApprovedPlan?: boolean,
-        approvedPlanJson?: string,
-        planUserIntent?: string,
-    ) => Promise<void>;
+    onGetResponse: (value: string, contextVariables?: IAskVariables[]) => Promise<void>;
 }
 
 export const ChatHistory: React.FC<ChatHistoryProps> = ({ messages, onGetResponse }) => {

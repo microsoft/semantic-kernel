@@ -65,13 +65,7 @@ const useClasses = makeStyles({
 
 interface ChatHistoryItemProps {
     message: IChatMessage;
-    getResponse: (
-        value: string,
-        contextVariables?: IAskVariables[],
-        userApprovedPlan?: boolean,
-        approvedPlanJson?: string,
-        planUserIntent?: string,
-    ) => Promise<void>;
+    getResponse: (value: string, contextVariables?: IAskVariables[]) => Promise<void>;
     messageIndex: number;
 }
 

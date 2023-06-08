@@ -34,13 +34,7 @@ const useClasses = makeStyles({
 interface PlanViewerProps {
     message: IChatMessage;
     messageIndex: number;
-    getResponse: (
-        value: string,
-        contextVariables?: IAskVariables[],
-        userApprovedPlan?: boolean,
-        approvedPlanJson?: string,
-        planUserIntent?: string,
-    ) => Promise<void>;
+    getResponse: (value: string, contextVariables?: IAskVariables[]) => Promise<void>;
 }
 
 export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, getResponse }) => {
@@ -68,80 +62,44 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
 
     const [plan, setPlan] = useState(originalPlan);
 
-    const onPlanApproval = async () => {
+    const onPlanAction = async (planState: PlanState.PlanApproved | PlanState.PlanRejected) => {
         dispatch(
             updateMessageState({
-                newMessageState: PlanState.PlanApproved,
+                newMessageState: planState,
                 messageIndex: messageIndex,
                 chatId: selectedId,
             }),
         );
 
-        const planObject = {
-            proposedPlan: plan,
-            Type: parsedContent.Type,
-            State: PlanState.PlanApproved,
-        };
+        const contextVariables: IAskVariables[] = [
+            {
+                key: 'responseMessageId',
+                value: message.id ?? '',
+            },
+            {
+                key: 'proposedPlan',
+                value: JSON.stringify({
+                    proposedPlan: plan,
+                    Type: parsedContent.Type,
+                    State: planState,
+                }),
+            },
+        ];
+
+        contextVariables.push(
+            planState === PlanState.PlanApproved
+                ? {
+                      key: 'planUserIntent',
+                      value: description,
+                  }
+                : {
+                      key: 'userCancelledPlan',
+                      value: 'true',
+                  },
+        );
 
         // Invoke plan
-        await getResponse(
-            'Yes, proceed',
-            [
-                {
-                    key: 'responseMessageId',
-                    value: message.id ?? '',
-                },
-                {
-                    key: 'proposedPlan',
-                    value: JSON.stringify(planObject),
-                },
-                {
-                    key: 'planUserIntent',
-                    value: description,
-                },
-            ],
-            true,
-            JSON.stringify(planObject),
-            description,
-        );
-    };
-
-    const onPlanCancel = async () => {
-        dispatch(
-            updateMessageState({
-                newMessageState: PlanState.PlanRejected,
-                messageIndex: messageIndex,
-                chatId: selectedId,
-            }),
-        );
-
-        const planObject = {
-            proposedPlan: plan,
-            Type: parsedContent.Type,
-            State: PlanState.PlanRejected,
-        };
-
-        // Invoke plan
-        await getResponse(
-            'No, cancel',
-            [
-                {
-                    key: 'responseMessageId',
-                    value: message.id ?? '',
-                },
-                {
-                    key: 'userCancelledPlan',
-                    value: 'true',
-                },
-                {
-                    key: 'proposedPlan',
-                    value: JSON.stringify(planObject),
-                },
-            ],
-            false,
-            JSON.stringify(planObject),
-            description,
-        );
+        await getResponse(planState === PlanState.PlanApproved ? 'Yes, proceed' : 'No, cancel', contextVariables);
     };
 
     const onDeleteStep = (index: number) => {
@@ -170,10 +128,10 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 <>
                     Would you like to proceed with the plan?
                     <div className={classes.buttons}>
-                        <Button appearance="secondary" onClick={onPlanCancel}>
+                        <Button appearance="secondary" onClick={() => onPlanAction(PlanState.PlanRejected)}>
                             No, cancel plan
                         </Button>
-                        <Button type="submit" appearance="primary" onClick={onPlanApproval}>
+                        <Button type="submit" appearance="primary" onClick={() => onPlanAction(PlanState.PlanApproved)}>
                             Yes, proceed
                         </Button>
                     </div>

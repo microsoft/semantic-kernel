@@ -95,14 +95,7 @@ export const useChat = () => {
         }
     };
 
-    const getResponse = async (
-        value: string,
-        chatId: string,
-        contextVariables?: IAskVariables[],
-        approvedPlanJson?: string,
-        planUserIntent?: string,
-        userApprovedPlan?: boolean,
-    ) => {
+    const getResponse = async (value: string, chatId: string, contextVariables?: IAskVariables[]) => {
         const ask = {
             input: value,
             variables: [
@@ -120,19 +113,6 @@ export const useChat = () => {
                 },
             ],
         };
-
-        if (userApprovedPlan && approvedPlanJson) {
-            ask.variables.push(
-                {
-                    key: 'proposedPlan',
-                    value: approvedPlanJson,
-                },
-                {
-                    key: 'planUserIntent',
-                    value: planUserIntent!,
-                },
-            );
-        }
 
         if (contextVariables) {
             ask.variables.push(...contextVariables);
