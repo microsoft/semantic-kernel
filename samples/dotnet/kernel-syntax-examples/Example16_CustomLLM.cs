@@ -106,7 +106,7 @@ public static class Example16_CustomLLM
 
         var textValidationFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
-        var result = await textValidationFunction.InvokeAsync("I mised the training sesion this morning");
+        var result = await textValidationFunction.InvokeAsync("I mised the training session this morning");
         Console.WriteLine(result);
 
         // Details of the my custom model response
@@ -121,7 +121,7 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
         var completionService = new MyTextCompletionService();
 
-        var result = await completionService.CompleteAsync("I missed the training sesion this morning", new CompleteRequestSettings());
+        var result = await completionService.CompleteAsync("I missed the training session this morning", new CompleteRequestSettings());
 
         Console.WriteLine(result);
     }
