@@ -28,5 +28,10 @@ public static class Example20_HuggingFace
         var result = await questionAnswerFunction.InvokeAsync("What is New York?");
 
         Console.WriteLine(result);
+
+        foreach (var modelResult in result.ModelResults)
+        {
+            Console.WriteLine(modelResult.GetHuggingFaceResult().AsJson());
+        }
     }
 }
