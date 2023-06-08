@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
     <ProjectReference Include="..\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
+    <ProjectReference Include="..\Connectors.AI.Oobabooga\Connectors.AI.Oobabooga.csproj" />
     <ProjectReference Include="..\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj" />
@@ -39,6 +40,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="HuggingFace\TestData\embeddings_test_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Oobabooga\TestData\completion_test_streaming_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Oobabooga\TestData\completion_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

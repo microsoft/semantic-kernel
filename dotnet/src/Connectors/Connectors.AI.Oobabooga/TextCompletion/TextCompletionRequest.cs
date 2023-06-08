@@ -121,7 +121,7 @@ public sealed class TextCompletionRequest
     public bool EarlyStopping { get; set; }
 
     /// <summary>
-    /// Parameter used for mirostat sampling in Llama.cpp, controlling perplexity during text (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0) 
+    /// Parameter used for mirostat sampling in Llama.cpp, controlling perplexity during text (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0)
     /// </summary>
     [JsonPropertyName("mirostat_mode")]
     public int MirostatMode { get; set; }
@@ -139,7 +139,7 @@ public sealed class TextCompletionRequest
     public double MirostatEta { get; set; } = 0.1;
 
     /// <summary>
-    /// Random seed to control sampling, used when do_sample is True.
+    /// Random seed to control sampling, used when DoSample is True.
     /// </summary>
     [JsonPropertyName("seed")]
     public int Seed { get; set; } = -1;

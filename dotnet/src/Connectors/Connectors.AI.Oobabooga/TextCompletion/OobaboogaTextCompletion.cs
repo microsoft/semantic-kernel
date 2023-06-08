@@ -22,8 +22,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// </summary>
 public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
 {
-    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
-    private const string BlockingUriPath = "/api/v1/generate";
+    public const string HttpUserAgent = "Microsoft-Semantic-Kernel";
+    public const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
     private const string ResponseObjectTextStreamEvent = "text_stream";
     private const string ResponseObjectStreamEndEvent = "stream_end";

@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -31,7 +32,7 @@ public sealed class OobaboogaTextCompletionTests
             .Build();
     }
 
-    private const string Input = "My name is";
+    private const string Input = " My name is";
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionAsync()
@@ -42,13 +43,11 @@ public sealed class OobaboogaTextCompletionTests
         var localResponse = await oobaboogaLocal.CompleteAsync(Input, new CompleteRequestSettings()
         {
             Temperature = 0.01,
-            MaxTokens = 5,
+            MaxTokens = 7,
             TopP = 0.1,
         });
 
-        // Assert
-        Assert.NotNull(localResponse);
-        Assert.StartsWith(Input, localResponse.Trim(), StringComparison.Ordinal);
+        AssertAcceptableResponse(localResponse);
     }
 
     [Fact(Skip = "This test is for manual verification.")]
@@ -60,13 +59,23 @@ public sealed class OobaboogaTextCompletionTests
         var localResponse = oobaboogaLocal.CompleteStreamAsync(Input, new CompleteRequestSettings()
         {
             Temperature = 0.01,
-            MaxTokens = 5,
+            MaxTokens = 7,
             TopP = 0.1,
         });
 
+        var resultsMerged = localResponse.ToEnumerable().Aggregate((s, s1) => s + s1);
+        AssertAcceptableResponse(resultsMerged);
+    }
+
+    private static void AssertAcceptableResponse(string localResponse)
+    {
         // Assert
         Assert.NotNull(localResponse);
-        var resultsMerged = localResponse.ToEnumerable().Aggregate("", (s, s1) => s + s1).Trim();
-        Assert.StartsWith(Input, resultsMerged, StringComparison.Ordinal);
+        // Depends on the target LLM obviously, but most LLMs should propose an arbitrary surname preceded by a white space, including the start prompt or not
+        // ie "  My name is" => " John (...)" or "  My name is" => " My name is John (...)".
+        // Here are a couple LLMs that were tested successfully: gpt2, aisquared_dlite-v1-355m, bigscience_bloomz-560m,  eachadea_vicuna-7b-1.1, TheBloke_WizardLM-30B-GPTQ etc.
+        // A few will return an empty string, but well those shouldn't be used for integration tests.
+        var expectedRegex = new Regex(@"\s\w+.*");
+        Assert.Matches(expectedRegex, localResponse);
     }
 }
