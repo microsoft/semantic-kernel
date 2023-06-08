@@ -20,11 +20,11 @@ public abstract class ChatMessageBase
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageBase"/> class
     /// </summary>
-    /// <param name="Role">Role of the author of the message</param>
-    /// <param name="Content">Content of the message</param>
-    protected ChatMessageBase(AuthorRole Role, string Content)
+    /// <param name="role">Role of the author of the message</param>
+    /// <param name="content">Content of the message</param>
+    protected ChatMessageBase(AuthorRole role, string content)
     {
-        this.Role = Role;
-        this.Content = Content;
+        this.Role = role;
+        this.Content = content;
     }
 }

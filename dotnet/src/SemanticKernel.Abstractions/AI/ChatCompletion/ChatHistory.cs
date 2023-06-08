@@ -57,7 +57,7 @@ public class ChatHistory : List<ChatMessageBase>
     /// </summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    [Obsolete("This method with AuthorRoles enumeration is deprecated, use AddMessage(AuthorRole struct, string) instead")]
+    [Obsolete("This method with AuthorRoles enumeration is deprecated, use AddMessage(AuthorRole authorRole, string content) instead")]
     public void AddMessage(AuthorRoles authorRole, string content)
     {
         this.Add(new Message(authorRole, content));

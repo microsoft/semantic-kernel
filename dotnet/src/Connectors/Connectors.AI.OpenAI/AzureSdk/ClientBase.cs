@@ -144,7 +144,7 @@ public abstract class ClientBase
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
-        chatSettings ??= new ChatRequestSettings();
+        chatSettings ??= new();
 
         ValidateMaxTokens(chatSettings.MaxTokens);
         var chatOptions = CreateChatCompletionsOptions(chatSettings, chat);
@@ -335,7 +335,7 @@ public abstract class ClientBase
             validRole != ChatRole.System &&
             validRole != ChatRole.Assistant)
         {
-            throw new ArgumentException($"Invalid chat message author: {role}");
+            throw new ArgumentException($"Invalid chat message author role: {role}");
         }
     }
 
