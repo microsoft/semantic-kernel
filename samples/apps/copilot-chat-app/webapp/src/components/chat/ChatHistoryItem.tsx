@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateMessageState } from '../../redux/features/conversations/conversationsSlice';
 import { Breakpoints } from '../../styles';
-import { convertToAnchorTags } from '../utils/TextUtils';
+import { convertToAnchorTags, timestampToDateString } from '../utils/TextUtils';
 import { PlanViewer } from './plan-viewer/PlanViewer';
 import { PromptDetails } from './prompt-details/PromptDetails';
 
@@ -134,23 +134,6 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
               .replace(/ {2}/g, '&nbsp;&nbsp;')
         : '';
 
-    const date = new Date(message.timestamp);
-    let time = date.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-
-    // If not today, prepend date
-    if (date.toDateString() !== new Date().toDateString()) {
-        time =
-            date.toLocaleDateString([], {
-                month: 'short',
-                day: 'numeric',
-            }) +
-            ' ' +
-            time;
-    }
-
     const isMe = message.authorRole === AuthorRoles.User || message.userId === account?.homeAccountId!;
     const isBot = message.authorRole !== AuthorRoles.User && message.userId === 'bot';
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
@@ -167,7 +150,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                 <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
                     <div className={classes.header}>
                         {!isMe && <Text weight="semibold">{fullName}</Text>}
-                        <Text className={classes.time}>{time}</Text>
+                        <Text className={classes.time}>{timestampToDateString(message.timestamp, true)}</Text>
                         {isBot && <PromptDetails message={message} />}
                     </div>
                     {!isPlan && (
