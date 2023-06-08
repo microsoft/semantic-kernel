@@ -15,7 +15,7 @@ commonly used terms
 
 **Function** - A computational machine comprised of Semantic AI and/or native code that's available in a [SKILL](SKILLS.md).
 
-- "The Office SKILL has many FUNCTIONs"
+- "The Office SKILL has many FUNCTIONS"
 
 **Native Function** - expressed with traditional computing language (C#, Python, Typescript)
 and easily integrates with SK
