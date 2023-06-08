@@ -18,8 +18,12 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
+
 public abstract class ClientBase
 {
+    private const int MaxResultsPerPrompt = 128;
+
     // Prevent external inheritors
     private protected ClientBase() { }
 
@@ -261,9 +265,9 @@ public abstract class ClientBase
 
     private static CompletionsOptions CreateCompletionsOptions(string text, CompleteRequestSettings requestSettings)
     {
-        if (requestSettings.ResultsPerPrompt is < 1 or > 128)
+        if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
-            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, "The value must be in range between 1 and 128, inclusive.");
+            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
         }
 
         var options = new CompletionsOptions
@@ -294,9 +298,9 @@ public abstract class ClientBase
 
     private static ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
     {
-        if (requestSettings.ResultsPerPrompt is < 1 or > 128)
+        if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
-            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, "The value must be in range between 1 and 128, inclusive.");
+            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
         }
 
         var options = new ChatCompletionsOptions
@@ -319,17 +323,16 @@ public abstract class ClientBase
 
         foreach (var message in chatHistory)
         {
-            ValidateChatAuthors(message.Role, out var validRole);
-
+            var validRole = GetValidChatRole(message.Role);
             options.Messages.Add(new ChatMessage(validRole, message.Content));
         }
 
         return options;
     }
 
-    private static void ValidateChatAuthors(AuthorRole role, out ChatRole validRole)
+    private static ChatRole GetValidChatRole(AuthorRole role)
     {
-        validRole = new ChatRole(role.Label);
+        var validRole = new ChatRole(role.Label);
 
         if (validRole != ChatRole.User &&
             validRole != ChatRole.System &&
@@ -337,6 +340,8 @@ public abstract class ClientBase
         {
             throw new ArgumentException($"Invalid chat message author role: {role}");
         }
+
+        return validRole;
     }
 
     private static void ValidateMaxTokens(int maxTokens)
