@@ -6,10 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to plug use a custom chat model.
@@ -21,40 +18,82 @@ using RepoUtils;
  */
 public sealed class MyChatCompletionService : IChatCompletion
 {
-    private const string OutputAssistantResult = "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)";
-
     public ChatHistory CreateNewChat(string? instructions = null)
     {
-        var chatHistory = new ChatHistory();
+        var chatHistory = new MyChatHistory();
 
         if (!string.IsNullOrWhiteSpace(instructions))
         {
-            chatHistory.AddMessage(ChatHistory.AuthorRoles.System, instructions);
+            chatHistory.Add(new MyChatMessage(MyRoles.SuperUser, instructions));
         }
 
         return chatHistory;
     }
 
-    public async Task<string> GenerateMessageAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
-        // Forcing a 2 sec delay (Simulating custom LLM lag)
-        await Task.Delay(2000, cancellationToken);
-
-        return OutputAssistantResult;
+        return Task.FromResult<IReadOnlyList<IChatResult>>(new List<IChatResult>
+        {
+            new MyChatStreamingResult(MyRoles.Bot, "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)")
+        });
     }
 
-    public async IAsyncEnumerable<string> GenerateMessageStreamAsync(
-        ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
-        var streamedOutput = OutputAssistantResult.Split(' ');
+        return (new List<IChatStreamingResult>
+        {
+            new MyChatStreamingResult(MyRoles.Bot, "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)")
+        }).ToAsyncEnumerable();
+    }
+}
+
+public class MyChatStreamingResult : IChatStreamingResult
+{
+    private readonly ChatMessageBase _message;
+    private readonly MyRoles _role;
+
+    public MyChatStreamingResult(MyRoles role, string content)
+    {
+        this._role = role;
+        this._message = new MyChatMessage(role, content);
+    }
+
+    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(this._message);
+    }
+
+    public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var streamedOutput = this._message.Content.Split(' ');
         foreach (string word in streamedOutput)
         {
-            await Task.Delay(200, cancellationToken);
-            yield return $"{word} ";
+            await Task.Delay(100, cancellationToken);
+            yield return new MyChatMessage(this._role, $"{word} ");
         }
     }
+}
+
+public class MyChatMessage : ChatMessageBase
+{
+    public MyChatMessage(MyRoles role, string content) : base(new AuthorRole(role.ToString()), content)
+    {
+    }
+}
+
+public class MyChatHistory : ChatHistory
+{
+    public void AddMessage(MyRoles role, string message)
+    {
+        this.Add(new MyChatMessage(role, message));
+    }
+}
+
+public enum MyRoles
+{
+    SuperUser,
+    User,
+    Bot
 }
 
 // ReSharper disable once InconsistentNaming
@@ -82,14 +121,7 @@ public static class Example34_CustomChatModel
     {
         Console.WriteLine("======== Custom LLM - Chat Completion ========");
 
-        IChatCompletion Factory(ILogger l) => new MyChatCompletionService();
-
-        IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithDefaultAIService<IChatCompletion>(Factory)
-            .Build();
-
-        IChatCompletion customChat = kernel.GetService<IChatCompletion>();
+        IChatCompletion customChat = new MyChatCompletionService();
 
         await StartChatAsync(customChat);
     }
@@ -99,15 +131,15 @@ public static class Example34_CustomChatModel
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = customChat.CreateNewChat("You are a my SK Custom Assistant");
+        var chatHistory = (MyChatHistory)customChat.CreateNewChat("You are a my SK Custom Assistant");
 
         // First user message
-        chatHistory.AddMessage(ChatHistory.AuthorRoles.User, "Hi, who are you?");
+        chatHistory.AddMessage(MyRoles.User, "Hi, who are you?");
         await MessageOutputAsync(chatHistory);
 
         // First bot assistant message
         string reply = await customChat.GenerateMessageAsync(chatHistory);
-        chatHistory.AddMessage(ChatHistory.AuthorRoles.Assistant, reply);
+        chatHistory.AddMessage(MyRoles.Bot, reply);
         await MessageOutputAsync(chatHistory);
     }
 
@@ -115,14 +147,7 @@ public static class Example34_CustomChatModel
     {
         Console.WriteLine("======== Custom LLM - Chat Completion Streaming ========");
 
-        IChatCompletion Factory(ILogger l) => new MyChatCompletionService();
-
-        IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithDefaultAIService<IChatCompletion>(Factory)
-            .Build();
-
-        IChatCompletion customChat = kernel.GetService<IChatCompletion>();
+        IChatCompletion customChat = new MyChatCompletionService();
 
         await StartStreamingChatAsync(customChat);
     }
@@ -132,11 +157,11 @@ public static class Example34_CustomChatModel
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = customChat.CreateNewChat("You are a my SK Custom Assistant");
+        var chatHistory = (MyChatHistory)customChat.CreateNewChat("You are a my SK Custom Assistant");
         await MessageOutputAsync(chatHistory);
 
         // First user message
-        chatHistory.AddMessage(ChatHistory.AuthorRoles.User, "Hi, who are you?");
+        chatHistory.AddMessage(MyRoles.User, "Hi, who are you?");
         await MessageOutputAsync(chatHistory);
 
         // Bot assistant message
@@ -146,20 +171,19 @@ public static class Example34_CustomChatModel
     /// <summary>
     /// Outputs the last message of the chat history
     /// </summary>
-    private static Task MessageOutputAsync(ChatHistory chatHistory)
+    private static Task MessageOutputAsync(MyChatHistory chatHistory)
     {
         var message = chatHistory.Messages.Last();
 
-        Console.WriteLine($"{message.AuthorRole}: {message.Content}");
+        Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
 
         return Task.CompletedTask;
     }
 
-    private static async Task StreamMessageOutputAsync(IChatCompletion customChat, ChatHistory chatHistory,
-        ChatHistory.AuthorRoles authorRole = ChatHistory.AuthorRoles.Assistant)
+    private static async Task StreamMessageOutputAsync(IChatCompletion customChat, MyChatHistory chatHistory, MyRoles myModelRole = MyRoles.Bot)
     {
-        Console.Write($"{authorRole}: ");
+        Console.Write($"{myModelRole}: ");
         string fullMessage = string.Empty;
 
         await foreach (string message in customChat.GenerateMessageStreamAsync(chatHistory))
@@ -169,6 +193,6 @@ public static class Example34_CustomChatModel
         }
 
         Console.WriteLine("\n------------------------");
-        chatHistory.AddMessage(authorRole, fullMessage);
+        chatHistory.AddMessage(myModelRole, fullMessage);
     }
 }

@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
@@ -24,36 +23,29 @@ public static class Example33_StreamingChat
     {
         Console.WriteLine("======== Open AI - ChatGPT Streaming ========");
 
-        IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY")) // Add your chat completion service
-            .Build();
+        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
-        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-
-        await StartStreamingChatAsync(chatGPT);
+        await StartStreamingChatAsync(openAIChatCompletion);
     }
 
     private static async Task AzureOpenAIChatStreamSampleAsync()
     {
         Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
-        IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithAzureChatCompletionService(Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"), Env.Var("AZURE_OPENAI_ENDPOINT"), Env.Var("OPENAI_API_KEY")) // Add your chat completion service
-            .Build();
+        AzureChatCompletion azureChatCompletion = new(
+           Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+           Env.Var("AZURE_OPENAI_ENDPOINT"),
+           Env.Var("AZURE_OPENAI_KEY"));
 
-        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-
-        await StartStreamingChatAsync(chatGPT);
+        await StartStreamingChatAsync(azureChatCompletion);
     }
 
-    private static async Task StartStreamingChatAsync(IChatCompletion chatGPT)
+    private static async Task StartStreamingChatAsync(IChatCompletion chatCompletion)
     {
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = chatCompletion.CreateNewChat("You are a librarian, expert about books");
         await MessageOutputAsync(chatHistory);
 
         // First user message
@@ -61,18 +53,18 @@ public static class Example33_StreamingChat
         await MessageOutputAsync(chatHistory);
 
         // First bot assistant message
-        await StreamMessageOutputAsync(chatGPT, chatHistory);
+        await StreamMessageOutputAsync(chatCompletion, chatHistory, AuthorRole.Assistant);
 
         // Second user message
         chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
         await MessageOutputAsync(chatHistory);
 
         // Second bot assistant message
-        await StreamMessageOutputAsync(chatGPT, chatHistory);
+        await StreamMessageOutputAsync(chatCompletion, chatHistory, AuthorRole.Assistant);
     }
 
     private static async Task StreamMessageOutputAsync(IChatCompletion chatGPT, ChatHistory chatHistory,
-        ChatHistory.AuthorRoles authorRole = ChatHistory.AuthorRoles.Assistant)
+        AuthorRole authorRole)
     {
         Console.Write($"{authorRole}: ");
         string fullMessage = string.Empty;
@@ -94,7 +86,7 @@ public static class Example33_StreamingChat
     {
         var message = chatHistory.Messages.Last();
 
-        Console.WriteLine($"{message.AuthorRole}: {message.Content}");
+        Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
 
         return Task.CompletedTask;
