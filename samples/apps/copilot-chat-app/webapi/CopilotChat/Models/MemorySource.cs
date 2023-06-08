@@ -66,7 +66,7 @@ public class MemorySource : IStorageEntity
     /// <summary>
     /// The size of the source in bytes.
     /// </summary>
-    [JsonPropertyName("Size")]
+    [JsonPropertyName("size")]
     public long Size { get; set; }
 
     /// <summary>

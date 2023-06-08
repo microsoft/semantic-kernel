@@ -50,7 +50,7 @@ public class ChatMessage : IStorageEntity
         Plan,
 
         /// <summary>
-        /// An uploaded document
+        /// An uploaded document notification
         /// </summary>
         Document,
     }
