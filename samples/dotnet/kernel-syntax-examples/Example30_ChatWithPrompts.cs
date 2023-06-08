@@ -109,7 +109,7 @@ public static class Example30_ChatWithPrompts
         var chatHistory = chatGPT.CreateNewChat(systemMessage);
 
         // Add the user query to the chat history
-        chatHistory.AddMessage(ChatHistory.AuthorRoles.User, userMessage);
+        chatHistory.AddUserMessage(userMessage);
 
         // Finally, get the response from AI
         string answer = await chatGPT.GenerateMessageAsync(chatHistory);

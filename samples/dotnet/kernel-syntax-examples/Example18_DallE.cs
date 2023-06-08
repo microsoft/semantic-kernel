@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
 
 /**
@@ -45,7 +44,7 @@ public static class Example18_DallE
         Console.WriteLine("======== Chat with images ========");
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat(
+        var chatHistory = chatGPT.CreateNewChat(
             "You're chatting with a user. Instead of replying directly to the user" +
             " provide the description of an image that expresses what you want to say." +
             " The user won't see your message, they will see only the image. The system " +

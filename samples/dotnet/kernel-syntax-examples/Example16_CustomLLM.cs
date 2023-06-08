@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -37,6 +39,13 @@ public class MyTextCompletionService : ITextCompletion
 
 public class MyTextCompletionStreamingResult : ITextCompletionStreamingResult
 {
+    private readonly ModelResult _modelResult = new(new
+    {
+        Content = Text,
+        Message = "This is my model raw response",
+        Tokens = Text.Split(' ').Length
+    });
+
     private const string Text = @" ..output from your custom model... Example:
 AI is awesome because it can help us solve complex problems, enhance our creativity,
 and improve our lives in many ways. AI can perform tasks that are too difficult,
@@ -44,6 +53,8 @@ tedious, or dangerous for humans, such as diagnosing diseases, detecting fraud, 
 exploring space. AI can also augment our abilities and inspire us to create new forms
 of art, music, or literature. AI can also improve our well-being and happiness by
 providing personalized recommendations, entertainment, and assistance. AI is awesome";
+
+    public ModelResult ModelResult => this._modelResult;
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
@@ -95,8 +106,14 @@ public static class Example16_CustomLLM
 
         var textValidationFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
-        var result = await textValidationFunction.InvokeAsync("I mised the training sesion this morning");
+        var result = await textValidationFunction.InvokeAsync("I mised the training session this morning");
         Console.WriteLine(result);
+
+        // Details of the my custom model response
+        Console.WriteLine(JsonSerializer.Serialize(
+            result.ModelResults,
+            new JsonSerializerOptions() { WriteIndented = true }
+        ));
     }
 
     private static async Task CustomTextCompletionAsync()
@@ -104,7 +121,7 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
         var completionService = new MyTextCompletionService();
 
-        var result = await completionService.CompleteAsync("I missed the training sesion this morning", new CompleteRequestSettings());
+        var result = await completionService.CompleteAsync("I missed the training session this morning", new CompleteRequestSettings());
 
         Console.WriteLine(result);
     }
