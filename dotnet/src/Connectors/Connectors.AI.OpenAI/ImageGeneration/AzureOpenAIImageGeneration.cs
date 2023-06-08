@@ -61,7 +61,37 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
     public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILogger? logger = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, logger)
     {
+        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
         this._endpoint = endpoint;
+        this._apiKey = apiKey;
+        this._maxRetryCount = maxRetryCount;
+        this._apiVersion = apiVersion;
+    }
+
+    /// <summary>
+    /// Create a new instance of Azure OpenAI image generation service
+    /// </summary>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="logger">Application logger</param>
+    /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
+    /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
+    public AzureOpenAIImageGeneration(string apiKey, HttpClient httpClient, string? endpoint = null, ILogger? logger = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, logger)
+    {
+        Verify.NotNull(httpClient);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
+        {
+            throw new AIException(
+                AIException.ErrorCodes.InvalidConfiguration,
+                "The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+        }
+
+        this._endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient.BaseAddress!.AbsoluteUri;
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
@@ -123,7 +153,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <summary>
     /// Retrieve the results of an image generation operation.
     /// </summary>
-    /// <param name="operationId">The GUID that identifies the original image generation request.</param>
+    /// <param name="operationId">The operationId that identifies the original image generation request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
     private async Task<AzureImageGenerationResponse> GetImageGenerationResultAsync(string operationId, CancellationToken cancellationToken = default)
