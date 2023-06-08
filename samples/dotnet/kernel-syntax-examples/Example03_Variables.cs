@@ -3,11 +3,11 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Skills;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
+using Skills;
 
 // ReSharper disable once InconsistentNaming
 public static class Example03_Variables
