@@ -84,9 +84,9 @@ def test_is_semantic():
     functions_view = FunctionsView()
     functions_view.add_function(semantic_function)
     functions_view.add_function(native_function)
-    assert functions_view.is_semantic("skill1", "function1") == True
-    assert functions_view.is_semantic("skill2", "function2") == False
-    assert functions_view.is_semantic("skill1", "unregistered_function") == False
+    assert functions_view.is_semantic("skill1", "function1") is True
+    assert functions_view.is_semantic("skill2", "function2") is False
+    assert functions_view.is_semantic("skill1", "unregistered_function") is False
 
 
 def test_is_native():
@@ -109,9 +109,9 @@ def test_is_native():
     functions_view = FunctionsView()
     functions_view.add_function(semantic_function)
     functions_view.add_function(native_function)
-    assert functions_view.is_native("skill1", "function1") == False
-    assert functions_view.is_native("skill2", "function2") == True
-    assert functions_view.is_native("skill2", "unregistered_function") == False
+    assert functions_view.is_native("skill1", "function1") is False
+    assert functions_view.is_native("skill2", "function2") is True
+    assert functions_view.is_native("skill2", "unregistered_function") is False
 
 
 def test_ambiguous_implementation():
