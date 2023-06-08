@@ -7,6 +7,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
+/// <summary>
+/// Chat message history representation
+/// </summary>
 public class ChatHistory : List<ChatMessageBase>
 {
     [Obsolete("This enumeration is deprecated, use AuthorRole struct instead")]

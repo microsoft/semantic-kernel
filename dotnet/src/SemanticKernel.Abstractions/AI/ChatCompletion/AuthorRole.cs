@@ -14,15 +14,15 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <summary>
     /// The role that instructs or sets the behavior of the assistant.
     /// </summary>
-    public static readonly AuthorRole System = new("system");
+    public static readonly AuthorRole System = new("System");
     /// <summary>
     /// The role that provides responses to system-instructed, user-prompted input.
     /// </summary>
-    public static readonly AuthorRole Assistant = new("assistant");
+    public static readonly AuthorRole Assistant = new("Assistant");
     /// <summary>
     /// The role that provides input for chat completions.
     /// </summary>
-    public static readonly AuthorRole User = new("user");
+    public static readonly AuthorRole User = new("User");
 
     /// <summary>
     /// Gets the label associated with this AuthorRole.
