@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Weaviate</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  
+  <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Weaviate Connector</Title>
+    <Description>Weaviate connector for Semantic Kernel skills and semantic memory</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/Linq/AsyncEnumerable.cs"/>
+  </ItemGroup>
+</Project>
