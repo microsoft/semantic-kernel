@@ -135,5 +135,11 @@ public static class Program
 
         await Example43_GetModelResult.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example44_MultiChatCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example45_MultiStreamingChatCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
