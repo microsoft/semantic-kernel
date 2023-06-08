@@ -10,6 +10,9 @@ on:
     paths: 
       - 'samples/apps/copilot-chat-app/**'
 
+permissions:
+  contents: read
+
 jobs:
   test:
     defaults:
