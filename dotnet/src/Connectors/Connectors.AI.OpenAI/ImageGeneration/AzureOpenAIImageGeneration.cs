@@ -21,11 +21,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
     /// <summary>
-    /// Azure OpenAI Endpoint ApiVersion
-    /// </summary>
-    private readonly string _apiVersion;
-
-    /// <summary>
     /// Generation Image Operation path
     /// </summary>
     private const string GenerationImageOperation = "openai/images/generations:submit";
@@ -36,11 +31,6 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     private const string GetImageOperation = "openai/operations/images";
 
     /// <summary>
-    /// Maximum number of attempts to retrieve the image generation operation result.
-    /// </summary>
-    private readonly int _maxRetryCount;
-
-    /// <summary>
     /// Azure OpenAI REST API endpoint
     /// </summary>
     private readonly string _endpoint;
@@ -49,6 +39,16 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// Azure OpenAI API key
     /// </summary>
     private readonly string _apiKey;
+
+    /// <summary>
+    /// Maximum number of attempts to retrieve the image generation operation result.
+    /// </summary>
+    private readonly int _maxRetryCount;
+
+    /// <summary>
+    /// Azure OpenAI Endpoint ApiVersion
+    /// </summary>
+    private readonly string _apiVersion;
 
     /// <summary>
     /// Create a new instance of Azure OpenAI image generation service
