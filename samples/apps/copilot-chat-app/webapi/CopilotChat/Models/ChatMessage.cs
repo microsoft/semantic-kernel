@@ -172,7 +172,7 @@ public class ChatMessage : IStorageEntity
         return JsonSerializer.Deserialize<ChatMessage>(json);
     }
 
-    /// <summary>  
+    /// <summary>
     /// Check if the response is a Plan.
     /// This is a copy of the `isPlan` function on the frontend.
     /// </summary>
