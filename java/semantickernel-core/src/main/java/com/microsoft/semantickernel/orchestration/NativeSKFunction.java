@@ -124,6 +124,12 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
         return new DefaultSemanticSKContext(variables, memory, skills);
     }
 
+    @Override
+    public SemanticSKContext buildContext(SKContext toClone) {
+        return new DefaultSemanticSKContext(
+                toClone.getVariables(), toClone.getSemanticMemory(), toClone.getSkills());
+    }
+
     // Run the native function
     @Override
     protected Mono<SemanticSKContext> invokeAsyncInternal(

@@ -15,10 +15,13 @@ import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -96,12 +99,59 @@ public class DefaultCompletionSKFunction
     /// <returns>SK function instance</returns>
     */
 
+    /**
+     * Method to aggregate partitioned results of a semantic function
+     *
+     * @param partitionedInput Input to aggregate
+     * @param contextIn Semantic Kernel context
+     * @return Aggregated results
+     */
+    @Override
+    public Mono<CompletionSKContext> aggregatePartitionedResultsAsync(
+            List<String> partitionedInput, @Nullable CompletionSKContext contextIn) {
+
+        CompletionSKContext context;
+        if (contextIn == null) {
+            context = buildContext();
+        } else {
+            context = contextIn;
+        }
+
+        // Function that takes the current context, updates it with the latest input and invokes the
+        // function
+        BiFunction<Flux<CompletionSKContext>, String, Flux<CompletionSKContext>> executeNextChunk =
+                (contextInput, input) ->
+                        contextInput.flatMap(
+                                newContext -> {
+                                    CompletionSKContext updated = newContext.update(input);
+                                    return invokeAsync(updated, null);
+                                });
+
+        Mono<List<CompletionSKContext>> results =
+                Flux.fromIterable(partitionedInput)
+                        .reduceWith(() -> Flux.just(context), executeNextChunk)
+                        .flatMap(Flux::collectList);
+
+        return results.map(
+                        list ->
+                                list.stream()
+                                        .map(SKContext::getResult)
+                                        .collect(Collectors.joining("\n")))
+                .map(context::update);
+    }
+
     @Override
     public CompletionSKContext buildContext(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable ReadOnlySkillCollection skills) {
         return new DefaultCompletionSKContext(variables, memory, skills);
+    }
+
+    @Override
+    public CompletionSKContext buildContext(SKContext toClone) {
+        return new DefaultCompletionSKContext(
+                toClone.getVariables(), toClone.getSemanticMemory(), toClone.getSkills());
     }
 
     // Run the semantic function

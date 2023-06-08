@@ -9,17 +9,30 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
+import javax.annotation.Nullable;
 
 public class SKBuilders {
     // Prevent creating object
     private SKBuilders() {}
 
     public static CompletionSKFunction.Builder completionFunctions() {
-        return FunctionBuilders.getCompletionBuilder();
+        return completionFunctions(null);
+    }
+
+    /**
+     * A CompletionSKFunction builder, the created function will be registered on the kernel
+     * provided
+     *
+     * @param kernel The kernel to register the function on
+     */
+    public static CompletionSKFunction.Builder completionFunctions(@Nullable Kernel kernel) {
+        return FunctionBuilders.getCompletionBuilder(kernel);
     }
 
     public static TextCompletion.Builder textCompletionService() {
@@ -60,6 +73,10 @@ public class SKBuilders {
 
     public static SKContext.Builder context() {
         return BuildersSingleton.INST.context();
+    }
+
+    public static PromptTemplateConfig.CompletionConfigBuilder completionConfig() {
+        return new PromptTemplateConfig.CompletionConfigBuilder();
     }
 
     public static ChatCompletion.Builder chatCompletion() {
