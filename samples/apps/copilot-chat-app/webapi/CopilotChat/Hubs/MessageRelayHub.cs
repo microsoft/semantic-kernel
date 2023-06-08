@@ -58,15 +58,4 @@ public class MessageRelayHub : Hub
     {
         await this.Clients.OthersInGroup(chatId).SendAsync(ReceiveUserTypingStateClientCall, chatId, userId, isTyping);
     }
-
-    /// <summary>
-    /// Sends the information about a file that was uploade to the server. Sent to all users except the sender.
-    /// </summary>
-    /// <param name="chatId">The ChatID used as group id for SignalR.</param>
-    /// <param name="fileUploadedAlert">Information about a file that was uploaded by another user</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    public async Task SendFileUploadedEventAsync(string chatId, object fileUploadedAlert)
-    {
-        await this.Clients.OthersInGroup(chatId).SendAsync(ReceiveFileUploadedEventClientCall, fileUploadedAlert, chatId);
-    }
 }

@@ -8,7 +8,6 @@ import { addAlert } from "../app/appSlice";
 import { AuthorRoles, ChatMessageState, IChatMessage } from './../../../libs/models/ChatMessage';
 import { isPlan } from './../../../libs/utils/PlanUtils';
 import { getSelectedChatID } from './../../app/store';
-import { FileUploadedAlert } from './../conversations/ChatState';
 
 // These have to match the callback names used in the backend
 const enum SignalRCallbackMethods {
@@ -17,7 +16,7 @@ const enum SignalRCallbackMethods {
     UserJoined = "UserJoined",
     ReceiveUserTypingState = "ReceiveUserTypingState",
     ReceiveBotTypingState = "ReceiveBotTypingState",
-    ReceiveFileUploadedAlert = "ReceiveFileUploadedEvent",
+    DocumentUploaded = "DocumentUploaded",
 }
 
 // Set up a SignalR connection to the messageRelayHub on the server
@@ -105,10 +104,6 @@ export const signalRMiddleware = (store: any) => {
                 hubConnection.invoke("SendUserTypingStateAsync", getSelectedChatID(), userId, isTyping)
                     .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
-            case "conversations/updateFileUploadedFromUser":
-                hubConnection.invoke("SendFileUploadedEventAsync", getSelectedChatID(), action.payload)
-                    .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
-                break;
             case "conversations/setConversations":
                 Promise.all(Object.keys(action.payload).map(async (id) => {
                     await hubConnection.invoke("AddClientToGroupAsync", id);
@@ -168,8 +163,19 @@ export const registerSignalREvents = async (store: any) => {
         store.dispatch({ type: "conversations/updateBotIsTypingFromServer", payload: { chatId, isTyping } });
     });
 
-    hubConnection.on(SignalRCallbackMethods.ReceiveFileUploadedAlert, ( docUploadedAlert: FileUploadedAlert) => {
-        const alertMessage = `${docUploadedAlert.fileOwner} uploaded ${docUploadedAlert.fileName} to the chat`;
-        store.dispatch(addAlert({ message: alertMessage, type: AlertType.Success }));
+    hubConnection.on(SignalRCallbackMethods.DocumentUploaded, (chatId: string, userId: string, fileName: string) => {
+        if (chatId === '') {
+            // This is a document uploaded to all chats.
+            const alertMessage = `${userId} uploaded ${fileName} to all chats.`;
+            store.dispatch(addAlert({ message: alertMessage, type: AlertType.Success }));
+        } else {
+            // This is a document uploaded to a specific chat.
+            if (chatId in store.getState().conversations.conversations) {
+                const alertMessage = `${userId} uploaded ${fileName} to chat ${chatId}.`;
+                store.dispatch(addAlert({ message: alertMessage, type: AlertType.Success }));
+            } else {
+                console.log(`Document uploaded to chat ${chatId} but chat does not exist in local store.`);
+            }
+        }
     }); 
 };

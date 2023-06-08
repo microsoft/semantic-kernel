@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Text;
+using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -46,6 +48,7 @@ public class DocumentImportController : ControllerBase
     private readonly ChatSessionRepository _sessionRepository;
     private readonly ChatMemorySourceRepository _sourceRepository;
     private readonly ChatParticipantRepository _participantRepository;
+    private const string DocumentUploadedClientCall = "DocumentUploaded";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -74,6 +77,7 @@ public class DocumentImportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ImportDocumentAsync(
         [FromServices] IKernel kernel,
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
         [FromForm] DocumentImportForm documentImportForm)
     {
         var formFile = documentImportForm.FormFile;
@@ -138,6 +142,19 @@ public class DocumentImportController : ControllerBase
         catch (ArgumentOutOfRangeException ex)
         {
             return this.BadRequest(ex.Message);
+        }
+
+        // Broadcast the document uploaded event to other users.
+        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat)
+        {
+            var chatId = documentImportForm.ChatId.ToString();
+            await messageRelayHubContext.Clients.Group(chatId)
+                .SendAsync(DocumentUploadedClientCall, chatId, documentImportForm.UserId, formFile.FileName);
+        }
+        else
+        {
+            await messageRelayHubContext.Clients.All
+                .SendAsync(DocumentUploadedClientCall, String.Empty, documentImportForm.UserId, formFile.FileName);
         }
 
         return this.Ok();

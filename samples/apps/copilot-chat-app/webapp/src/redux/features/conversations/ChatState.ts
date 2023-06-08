@@ -13,9 +13,3 @@ export interface ChatState {
     input: string;
     isBotTyping: boolean;
 }
-
-export interface FileUploadedAlert {
-    id: string;
-    fileOwner: string;
-    fileName: string;
-}
