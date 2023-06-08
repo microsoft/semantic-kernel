@@ -115,7 +115,7 @@ public class TextChunker {
                 currentParagraph = new StringBuilder();
             }
 
-            currentParagraph.append(line).append("\n");
+            currentParagraph.append(line).append(System.lineSeparator());
         }
 
         if (currentParagraph.length() > 0) {
