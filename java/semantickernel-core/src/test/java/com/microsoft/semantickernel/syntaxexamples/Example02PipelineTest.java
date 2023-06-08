@@ -4,9 +4,9 @@ package com.microsoft.semantickernel.syntaxexamples;
 import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.DefaultKernelTest;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.coreskills.TextSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
-import com.microsoft.semantickernel.syntaxexamples.skills.TextSkill;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

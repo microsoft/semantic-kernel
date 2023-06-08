@@ -14,7 +14,7 @@ public class Example01NativeFunctionsTest {
         TextSkill text = new TextSkill();
 
         // Use function without kernel
-        String result = text.uppercase("ciao!").block();
+        String result = text.uppercase("ciao!");
 
         Assertions.assertEquals("CIAO!", result);
     }
