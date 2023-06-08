@@ -158,8 +158,6 @@ public class VolatileMemoryStore : IMemoryStore
             return AsyncEnumerable.Empty<(MemoryRecord, double)>();
         }
 
-        EmbeddingReadOnlySpan<float> embeddingSpan = new(embedding.AsReadOnlySpan());
-
         TopNCollection<MemoryRecord> embeddings = new(limit);
 
         foreach (var record in embeddingCollection)
