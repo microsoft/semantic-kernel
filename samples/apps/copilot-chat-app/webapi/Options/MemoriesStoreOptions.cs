@@ -25,11 +25,6 @@ public class MemoriesStoreOptions
         Qdrant,
 
         /// <summary>
-        /// Weaviate based persistent memories store.
-        /// </summary>
-        Weaviate,
-
-        /// <summary>
         /// Azure Cognitive Search persistent memories store.
         /// </summary>
         AzureCognitiveSearch
@@ -45,12 +40,6 @@ public class MemoriesStoreOptions
     /// </summary>
     [RequiredOnPropertyValue(nameof(Type), MemoriesStoreType.Qdrant)]
     public QdrantOptions? Qdrant { get; set; }
-
-    /// <summary>
-    /// Gets or sets the configuration for the Weaviate memories store.
-    /// </summary>
-    [RequiredOnPropertyValue(nameof(Type), MemoriesStoreType.Weaviate)]
-    public WeaviateOptions? Weaviate { get; set; }
 
     /// <summary>
     /// Gets or sets the configuration for the Azure Cognitive Search memories store.
