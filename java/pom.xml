@@ -26,6 +26,8 @@
         <maven.clean-plugin.version>3.2.0</maven.clean-plugin.version>
         <maven.compiler-plugin.version>3.11.0</maven.compiler-plugin.version>
         <maven.compiler.release>8</maven.compiler.release>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
         <maven.dependency-plugin.version>3.5.0</maven.dependency-plugin.version>
         <maven.deploy-plugin.version>3.1.0</maven.deploy-plugin.version>
         <maven.directory-maven-plugin.version>1.0</maven.directory-maven-plugin.version>

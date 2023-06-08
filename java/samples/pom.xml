@@ -20,7 +20,9 @@
         <log4j2.version>2.20.0</log4j2.version>
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source>17</maven.compiler.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencyManagement>

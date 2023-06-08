@@ -1,9 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.skilldefinition;
 
+import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.CheckReturnValue;
@@ -74,7 +78,11 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
         if (clazz.isInstance(func)) {
             return (T) func;
         } else {
-            throw new RuntimeException("Incorrect type requested");
+            throw new SkillsNotFoundException(
+                    "Incorrect type requested, expected type of "
+                            + clazz.getName()
+                            + " found class of type "
+                            + func.getClass().getName());
         }
     }
 
