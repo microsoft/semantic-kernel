@@ -53,12 +53,19 @@ public abstract class ClientBase
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
             () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null || response.Value.Choices.Count < 1)
+        if (response == null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions not found");
+            throw new OpenAIInvalidResponseException<Completions>(null, "Text completions null response");
         }
 
-        return response.Value.Choices.Select(choice => new TextCompletionResult(choice)).ToList();
+        var responseData = response.Value;
+
+        if (responseData.Choices.Count == 0)
+        {
+            throw new OpenAIInvalidResponseException<Completions>(responseData, "Text completions not found");
+        }
+
+        return responseData.Choices.Select(choice => new TextCompletionResult(responseData, choice)).ToList();
     }
 
     /// <summary>
@@ -84,7 +91,7 @@ public abstract class ClientBase
         using StreamingCompletions streamingChatCompletions = response.Value;
         await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
         {
-            yield return new TextCompletionStreamingResult(choice);
+            yield return new TextCompletionStreamingResult(streamingChatCompletions, choice);
         }
     }
 
@@ -106,9 +113,14 @@ public abstract class ClientBase
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
                 () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-            if (response == null || response.Value.Data.Count < 1)
+            if (response == null)
             {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text embedding not found");
+                throw new OpenAIInvalidResponseException<Embeddings>(null, "Text embedding null response");
+            }
+
+            if (response.Value.Data.Count == 0)
+            {
+                throw new OpenAIInvalidResponseException<Embeddings>(response.Value, "Text embedding not found");
             }
 
             EmbeddingItem x = response.Value.Data[0];
@@ -140,9 +152,14 @@ public abstract class ClientBase
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
             () => this.Client.GetChatCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null || response.Value.Choices.Count < 1)
+        if (response == null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
+            throw new OpenAIInvalidResponseException<ChatCompletions>(null, "Chat completions null response");
+        }
+
+        if (response.Value.Choices.Count == 0)
+        {
+            throw new OpenAIInvalidResponseException<ChatCompletions>(response.Value, "Chat completions not found");
         }
 
         return response.Value.Choices[0].Message.Content;
@@ -180,21 +197,25 @@ public abstract class ClientBase
         Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
             () => this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        using StreamingChatCompletions streamingChatCompletions = response.Value;
-
         if (response is null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
+            throw new OpenAIInvalidResponseException<StreamingChatCompletions>(null, "Chat completions null response");
         }
 
-        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
+        using StreamingChatCompletions streamingChatCompletions = response.Value;
+
+        var choices = await response.Value.GetChoicesStreaming(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        if (choices.Count == 0)
+        {
+            throw new OpenAIInvalidResponseException<StreamingChatCompletions>(streamingChatCompletions, "Streaming chat completions not found");
+        }
+
+        foreach (StreamingChatChoice choice in choices)
         {
             await foreach (ChatMessage message in choice.GetMessageStreaming(cancellationToken))
             {
                 yield return message.Content;
             }
-
-            yield return Environment.NewLine;
         }
     }
 
@@ -376,7 +397,7 @@ public abstract class ClientBase
                     throw new AIException(
                         AIException.ErrorCodes.InvalidRequest,
                         $"The request is not valid, HTTP status: {e.Status}",
-                        e.Message);
+                        e.Message, e);
 
                 case (int)HttpStatusCodeType.Unauthorized:
                 case (int)HttpStatusCodeType.Forbidden:
@@ -386,7 +407,7 @@ public abstract class ClientBase
                     throw new AIException(
                         AIException.ErrorCodes.AccessDenied,
                         $"The request is not authorized, HTTP status: {e.Status}",
-                        e.Message);
+                        e.Message, e);
 
                 case (int)HttpStatusCodeType.RequestTimeout:
                     throw new AIException(
@@ -397,7 +418,7 @@ public abstract class ClientBase
                     throw new AIException(
                         AIException.ErrorCodes.Throttling,
                         $"Too many requests, HTTP status: {e.Status}",
-                        e.Message);
+                        e.Message, e);
 
                 case (int)HttpStatusCodeType.InternalServerError:
                 case (int)HttpStatusCodeType.NotImplemented:
@@ -408,13 +429,13 @@ public abstract class ClientBase
                     throw new AIException(
                         AIException.ErrorCodes.ServiceError,
                         $"The service failed to process the request, HTTP status:{e.Status}",
-                        e.Message);
+                        e.Message, e);
 
                 default:
                     throw new AIException(
                         AIException.ErrorCodes.UnknownError,
                         $"Unexpected HTTP response, status: {e.Status}",
-                        e.Message);
+                        e.Message, e);
             }
         }
         catch (Exception e) when (e is not AIException)
