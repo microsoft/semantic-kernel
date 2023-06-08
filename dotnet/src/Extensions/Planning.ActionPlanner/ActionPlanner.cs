@@ -121,7 +121,6 @@ public sealed class ActionPlanner
         }
 
         // Create a plan using the function and the parameters suggested by the planner
-        var variables = new ContextVariables();
         foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
         {
             if (p.Value != null)
@@ -129,9 +128,6 @@ public sealed class ActionPlanner
                 plan.State[p.Key] = p.Value.ToString();
             }
         }
-
-        var context = this._kernel.CreateNewContext();
-        context.Variables.Update(variables);
 
         return plan;
     }
