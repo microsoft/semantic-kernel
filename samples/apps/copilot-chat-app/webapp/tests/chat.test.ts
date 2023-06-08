@@ -1,5 +1,10 @@
 ﻿import { expect, test } from '@playwright/test';
 
+/*
+This test is a simple end-to-end test that verifies the app can be
+loaded, and signed in. The user can send a message to the bot, and expect
+a response.
+*/
 test('get response from bot', async ({ page }) => {
     // Make sure the server is running.
     await page.goto('https://localhost:40443/healthz');
