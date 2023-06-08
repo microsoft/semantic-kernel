@@ -1,8 +1,8 @@
 import { Button, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import { CheckmarkCircle24Regular, DismissCircle24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
-import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
-import { IPlanInput } from '../../../libs/models/Plan';
+import { IChatMessage } from '../../../libs/models/ChatMessage';
+import { IPlanInput, PlanState } from '../../../libs/models/Plan';
 import { IAskVariables } from '../../../libs/semantic-kernel/model/Ask';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
@@ -51,7 +51,8 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
     // Track original plan from user message
     const parsedContent = JSON.parse(message.content);
     const originalPlan = parsedContent.proposedPlan;
-    const planState = parsedContent.state;
+
+    var planState = message.state ?? parsedContent.State;
 
     // If plan came from ActionPlanner, use parameters from top-level plan state
     if (parsedContent.Type === 'Action') {
@@ -66,12 +67,11 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
             : '';
 
     const [plan, setPlan] = useState(originalPlan);
-    const [isDirty, setIsDirty] = useState(false);
 
     const onPlanApproval = async () => {
         dispatch(
             updateMessageState({
-                newMessageState: ChatMessageState.PlanApproved,
+                newMessageState: PlanState.PlanApproved,
                 messageIndex: messageIndex,
                 chatId: selectedId,
             }),
@@ -79,10 +79,8 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
 
         const planObject = {
             proposedPlan: plan,
-            modified: isDirty,
-            type: parsedContent.Type,
-            state: ChatMessageState.PlanApproved,
-            messageId: message.id,
+            Type: parsedContent.Type,
+            State: PlanState.PlanApproved,
         };
 
         // Invoke plan
@@ -92,6 +90,14 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 {
                     key: 'responseMessageId',
                     value: message.id ?? '',
+                },
+                {
+                    key: 'proposedPlan',
+                    value: JSON.stringify(planObject),
+                },
+                {
+                    key: 'planUserIntent',
+                    value: description,
                 },
             ],
             true,
@@ -103,13 +109,39 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
     const onPlanCancel = async () => {
         dispatch(
             updateMessageState({
-                newMessageState: ChatMessageState.PlanRejected,
+                newMessageState: PlanState.PlanRejected,
                 messageIndex: messageIndex,
                 chatId: selectedId,
             }),
         );
-        // Bail out of plan
-        await getResponse('No, cancel', undefined, false);
+
+        const planObject = {
+            proposedPlan: plan,
+            Type: parsedContent.Type,
+            State: PlanState.PlanRejected,
+        };
+
+        // Invoke plan
+        await getResponse(
+            'No, cancel',
+            [
+                {
+                    key: 'responseMessageId',
+                    value: message.id ?? '',
+                },
+                {
+                    key: 'userCancelledPlan',
+                    value: 'true',
+                },
+                {
+                    key: 'proposedPlan',
+                    value: JSON.stringify(planObject),
+                },
+            ],
+            false,
+            JSON.stringify(planObject),
+            description,
+        );
     };
 
     const onDeleteStep = (index: number) => {
@@ -117,7 +149,6 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
             ...plan,
             steps: plan.steps.filter((_step: IPlanInput, i: number) => i !== index),
         });
-        setIsDirty(true);
     };
 
     return (
@@ -129,14 +160,13 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                     <PlanStepCard
                         key={`Plan step: ${index}`}
                         step={{ ...step, index: index }}
-                        enableEdits={planState === ChatMessageState.PlanApprovalRequired}
+                        enableEdits={planState === PlanState.PlanApprovalRequired}
                         enableStepDelete={plan.steps.length > 1}
                         onDeleteStep={onDeleteStep}
-                        setIsPlanDirty={() => setIsDirty(true)}
                     />
                 );
             })}
-            {planState === ChatMessageState.PlanApprovalRequired && (
+            {planState === PlanState.PlanApprovalRequired && (
                 <>
                     Would you like to proceed with the plan?
                     <div className={classes.buttons}>
@@ -149,13 +179,13 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                     </div>
                 </>
             )}
-            {planState === ChatMessageState.PlanApproved && (
+            {planState === PlanState.PlanApproved && (
                 <div className={mergeClasses(classes.buttons, classes.status)}>
                     <CheckmarkCircle24Regular />
                     <Text className={classes.text}> Plan Executed</Text>
                 </div>
             )}
-            {planState === ChatMessageState.PlanRejected && (
+            {planState === PlanState.PlanRejected && (
                 <div className={mergeClasses(classes.buttons, classes.status)}>
                     <DismissCircle24Regular />
                     <Text className={classes.text}> Plan Cancelled</Text>

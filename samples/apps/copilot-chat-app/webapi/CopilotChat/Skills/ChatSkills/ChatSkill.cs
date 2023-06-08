@@ -230,6 +230,16 @@ public class ChatSkill
         chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
         chatContext.Variables.Set("audience", chatContext["userName"]);
 
+        // Check if plan exists in ask's context variables.
+        // If plan was returned at this point, that means it was approved or cancelled.
+        // Update the response previously saved in chat history with state
+        if (context.Variables.TryGetValue("proposedPlan", out string? planJson)
+            && !string.IsNullOrWhiteSpace(planJson)
+            && context.Variables.TryGetValue("responseMessageId", out string? messageId))
+        {
+            await this.UpdateResponseAsync(planJson, messageId);
+        }
+
         var response = chatContext.Variables.ContainsKey("userCancelledPlan")
             ? "I am sorry the plan did not meet your goals."
             : await this.GetChatResponseAsync(chatContext);
@@ -488,16 +498,6 @@ public class ChatSkill
     /// </summary>
     private async Task<string> AcquireExternalInformationAsync(SKContext context, string userIntent, int tokenLimit)
     {
-        // Check if plan exists in ask's context variables.
-        // If plan was returned at this point, that means it was approved.
-        // Update the response previously saved in chat history with state
-        if (context.Variables.TryGetValue("proposedPlan", out string? planJson)
-            && !string.IsNullOrWhiteSpace(planJson)
-            && context.Variables.TryGetValue("responseMessageId", out string? messageId))
-        {
-            await this.UpdateResponseAsync(planJson, messageId);
-        }
-
         var contextVariables = context.Variables.Clone();
         contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
 

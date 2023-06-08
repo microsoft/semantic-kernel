@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+import { PlanState } from './Plan';
+
 /**
  * Role of the author of a chat message. It's a copy of AuthorRoles in the API C# code.
  */
@@ -23,12 +25,5 @@ export interface IChatMessage {
     prompt?: string;
     authorRole: AuthorRoles;
     debug?: string;
-    state?: ChatMessageState; // if plan needs approval
-}
-
-export enum ChatMessageState {
-    NoOp = 'NoOp',
-    PlanApprovalRequired = 'ApprovalRequired',
-    PlanApproved = 'Approved',
-    PlanRejected = 'Rejected',
+    state?: PlanState;
 }

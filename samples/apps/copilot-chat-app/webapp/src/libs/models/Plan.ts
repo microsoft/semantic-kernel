@@ -3,3 +3,10 @@ export type IPlanInput = {
     Key: string;
     Value: string;
 };
+
+export enum PlanState {
+    NoOp = 'NoOp',
+    PlanApprovalRequired = 'ApprovalRequired',
+    PlanApproved = 'Approved',
+    PlanRejected = 'Rejected',
+}
