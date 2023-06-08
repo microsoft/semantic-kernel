@@ -141,5 +141,8 @@ public static class Program
 
         await Example45_MultiStreamingChatCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example46_Weaviate.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
