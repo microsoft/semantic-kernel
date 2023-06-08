@@ -63,6 +63,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     {
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
+        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
         this._endpoint = endpoint;
         this._apiKey = apiKey;
@@ -91,7 +92,10 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
                 "The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
 
-        this._endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient.BaseAddress!.AbsoluteUri;
+        endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient.BaseAddress!.AbsoluteUri;
+        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
+
+        this._endpoint = endpoint;
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
         this._apiVersion = apiVersion;
