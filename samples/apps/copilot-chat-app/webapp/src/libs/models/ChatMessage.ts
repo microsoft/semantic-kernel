@@ -27,8 +27,8 @@ export interface IChatMessage {
 }
 
 export enum ChatMessageState {
-    NoOp,
-    PlanApprovalRequired,
-    PlanApproved,
-    PlanRejected,
+    NoOp = 'NoOp',
+    PlanApprovalRequired = 'ApprovalRequired',
+    PlanApproved = 'Approved',
+    PlanRejected = 'Rejected',
 }

@@ -75,12 +75,19 @@ const useClasses = makeStyles({
 
 interface PlanStepCardProps {
     step: any;
+    setIsPlanDirty: () => void;
     enableEdits: boolean;
     enableStepDelete: boolean;
     onDeleteStep: (index: number) => void;
 }
 
-export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, enableStepDelete, onDeleteStep }) => {
+export const PlanStepCard: React.FC<PlanStepCardProps> = ({
+    step,
+    setIsPlanDirty,
+    enableEdits,
+    enableStepDelete,
+    onDeleteStep,
+}) => {
     const classes = useClasses();
     const [openDialog, setOpenDialog] = useState(false);
 
@@ -167,6 +174,7 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
                                         Key: input.Key,
                                         Value: newValue,
                                     };
+                                    setIsPlanDirty();
                                 };
                                 return (
                                     <PlanStepInput

@@ -79,10 +79,11 @@ public class ExternalInformationSkill
 
         // Check if plan exists in ask's context variables.
         // If plan was returned at this point, that means it was approved and should be run
-        var planApproved = context.Variables.TryGetValue("proposedPlan", out string? planJson);
+        var planApproved = context.Variables.TryGetValue("proposedPlan", out string? proposedPlanJson);
 
-        if (planApproved && !string.IsNullOrWhiteSpace(planJson))
+        if (planApproved && !string.IsNullOrWhiteSpace(proposedPlanJson))
         {
+            string planJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<ProposedPlan>(proposedPlanJson)?.Plan);
             // Reload the plan with the planner's kernel so
             // it has full context to be executed
             var newPlanContext = new SKContext(
@@ -131,7 +132,7 @@ public class ExternalInformationSkill
                 Plan sanitizedPlan = this.SanitizePlan(plan, context);
                 sanitizedPlan.State.Update(plan.State);
 
-                this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner._plannerOptions!.Type);
+                this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner._plannerOptions!.Type, "ApprovalRequired");
             }
         }
 

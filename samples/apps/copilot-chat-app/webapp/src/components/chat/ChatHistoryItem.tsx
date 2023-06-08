@@ -3,7 +3,8 @@
 import { useMsal } from '@azure/msal-react';
 import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
+import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
+import { IAskVariables } from '../../libs/semantic-kernel/model/Ask';
 import { useChat } from '../../libs/useChat';
 import { isPlan } from '../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../redux/app/hooks';
@@ -66,6 +67,7 @@ interface ChatHistoryItemProps {
     message: IChatMessage;
     getResponse: (
         value: string,
+        contextVariables?: IAskVariables[],
         userApprovedPlan?: boolean,
         approvedPlanJson?: string,
         planUserIntent?: string,
@@ -125,14 +127,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                         dangerouslySetInnerHTML={{ __html: convertToAnchorTags(content) }}
                     />
                 )}
-                {renderPlan && (
-                    <PlanViewer
-                        message={message.content}
-                        planState={message.state ?? ChatMessageState.NoOp}
-                        messageIndex={messageIndex}
-                        getResponse={getResponse}
-                    />
-                )}
+                {renderPlan && <PlanViewer message={message} messageIndex={messageIndex} getResponse={getResponse} />}
             </div>
         </div>
     );

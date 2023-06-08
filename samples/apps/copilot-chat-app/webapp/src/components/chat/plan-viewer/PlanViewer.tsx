@@ -1,8 +1,9 @@
 import { Button, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import { CheckmarkCircle24Regular, DismissCircle24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
-import { ChatMessageState } from '../../../libs/models/ChatMessage';
+import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
 import { IPlanInput } from '../../../libs/models/Plan';
+import { IAskVariables } from '../../../libs/semantic-kernel/model/Ask';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { updateMessageState } from '../../../redux/features/conversations/conversationsSlice';
@@ -31,25 +32,26 @@ const useClasses = makeStyles({
 });
 
 interface PlanViewerProps {
-    message: string;
-    planState: ChatMessageState;
+    message: IChatMessage;
     messageIndex: number;
     getResponse: (
         value: string,
+        contextVariables?: IAskVariables[],
         userApprovedPlan?: boolean,
         approvedPlanJson?: string,
         planUserIntent?: string,
     ) => Promise<void>;
 }
 
-export const PlanViewer: React.FC<PlanViewerProps> = ({ message, planState, messageIndex, getResponse }) => {
+export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, getResponse }) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     // Track original plan from user message
-    const parsedContent = JSON.parse(message);
+    const parsedContent = JSON.parse(message.content);
     const originalPlan = parsedContent.proposedPlan;
+    const planState = parsedContent.state;
 
     // If plan came from ActionPlanner, use parameters from top-level plan state
     if (parsedContent.Type === 'Action') {
@@ -64,6 +66,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, planState, mess
             : '';
 
     const [plan, setPlan] = useState(originalPlan);
+    const [isDirty, setIsDirty] = useState(false);
 
     const onPlanApproval = async () => {
         dispatch(
@@ -74,8 +77,27 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, planState, mess
             }),
         );
 
+        const planObject = {
+            proposedPlan: plan,
+            modified: isDirty,
+            type: parsedContent.Type,
+            state: ChatMessageState.PlanApproved,
+            messageId: message.id,
+        };
+
         // Invoke plan
-        await getResponse('Yes, proceed', true, JSON.stringify(plan), plan?.userIntent);
+        await getResponse(
+            'Yes, proceed',
+            [
+                {
+                    key: 'responseMessageId',
+                    value: message.id ?? '',
+                },
+            ],
+            true,
+            JSON.stringify(planObject),
+            description,
+        );
     };
 
     const onPlanCancel = async () => {
@@ -87,7 +109,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, planState, mess
             }),
         );
         // Bail out of plan
-        await getResponse('No, cancel', false);
+        await getResponse('No, cancel', undefined, false);
     };
 
     const onDeleteStep = (index: number) => {
@@ -95,6 +117,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, planState, mess
             ...plan,
             steps: plan.steps.filter((_step: IPlanInput, i: number) => i !== index),
         });
+        setIsDirty(true);
     };
 
     return (
@@ -109,6 +132,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, planState, mess
                         enableEdits={planState === ChatMessageState.PlanApprovalRequired}
                         enableStepDelete={plan.steps.length > 1}
                         onDeleteStep={onDeleteStep}
+                        setIsPlanDirty={() => setIsDirty(true)}
                     />
                 );
             })}

@@ -250,7 +250,8 @@ public class ChatSkill
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            await this.SaveNewResponseAsync(response, prompt, chatId);
+            string newMessageId = await this.SaveNewResponseAsync(response, prompt, chatId);
+            context.Variables.Set("messageId", newMessageId);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -485,14 +486,20 @@ public class ChatSkill
     /// <summary>
     /// Helper function create the correct context variables to acquire external information.
     /// </summary>
-    private Task<string> AcquireExternalInformationAsync(SKContext context, string userIntent, int tokenLimit)
+    private async Task<string> AcquireExternalInformationAsync(SKContext context, string userIntent, int tokenLimit)
     {
+        // Check if plan exists in ask's context variables.
+        // If plan was returned at this point, that means it was approved.
+        // Update the response previously saved in chat history with state
+        if (context.Variables.TryGetValue("proposedPlan", out string? planJson)
+            && !string.IsNullOrWhiteSpace(planJson)
+            && context.Variables.TryGetValue("responseMessageId", out string? messageId))
+        {
+            await this.UpdateResponseAsync(planJson, messageId);
+        }
+
         var contextVariables = context.Variables.Clone();
         contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-        if (context.Variables.TryGetValue("proposedPlan", out string? proposedPlan))
-        {
-            contextVariables.Set("proposedPlan", proposedPlan);
-        }
 
         var planContext = new SKContext(
             contextVariables,
@@ -502,7 +509,7 @@ public class ChatSkill
             context.CancellationToken
         );
 
-        var plan = this._externalInformationSkill.AcquireExternalInformationAsync(userIntent, planContext);
+        var plan = await this._externalInformationSkill.AcquireExternalInformationAsync(userIntent, planContext);
 
         // Propagate the error
         if (planContext.ErrorOccurred)
@@ -535,13 +542,29 @@ public class ChatSkill
     /// <param name="response">Response from the chat.</param>
     /// <param name="prompt">Prompt used to generate the response.</param>
     /// <param name="chatId">The chat ID</param>
-    private async Task SaveNewResponseAsync(string response, string prompt, string chatId)
+    private async Task<string> SaveNewResponseAsync(string response, string prompt, string chatId)
     {
         // Make sure the chat exists.
         await this._chatSessionRepository.FindByIdAsync(chatId);
 
         var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response, prompt);
         await this._chatMessageRepository.CreateAsync(chatMessage);
+
+        return chatMessage.Id;
+    }
+
+    /// <summary>
+    /// Updates previously saved response in the chat history.
+    /// </summary>
+    /// <param name="updatedResponse">Updated response from the chat.</param>
+    /// <param name="messageId">The chat message ID</param>
+    private async Task UpdateResponseAsync(string updatedResponse, string messageId)
+    {
+        // Make sure the chat exists.
+        var chatMessage = await this._chatMessageRepository.FindByIdAsync(messageId);
+        chatMessage.Content = updatedResponse;
+
+        await this._chatMessageRepository.UpsertAsync(chatMessage);
     }
 
     /// <summary>

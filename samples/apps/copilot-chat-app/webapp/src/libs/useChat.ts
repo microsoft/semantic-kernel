@@ -13,11 +13,13 @@ import {
     setSelectedConversation,
     updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
+import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
 import { AuthHelper } from './auth/AuthHelper';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
 import { AuthorRoles, ChatMessageState } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
+import { IAskVariables } from './semantic-kernel/model/Ask';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
 import { isPlan } from './utils/PlanUtils';
@@ -28,8 +30,6 @@ import botIcon3 from '../assets/bot-icons/bot-icon-3.png';
 import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
 import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
 import { IChatUser } from './models/ChatUser';
-
-import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
@@ -97,6 +97,7 @@ export const useChat = () => {
     const getResponse = async (
         value: string,
         chatId: string,
+        contextVariables?: IAskVariables[],
         approvedPlanJson?: string,
         planUserIntent?: string,
         userApprovedPlan?: boolean,
@@ -139,6 +140,10 @@ export const useChat = () => {
             });
         }
 
+        if (contextVariables) {
+            ask.variables.push(...contextVariables);
+        }
+
         try {
             var result = await chatService.getBotResponseAsync(
                 ask,
@@ -154,6 +159,7 @@ export const useChat = () => {
                 prompt: result.variables.find((v) => v.key === 'prompt')?.value,
                 authorRole: AuthorRoles.Bot,
                 state: isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
+                id: result.variables.find((v) => v.key === 'messageId')?.value,
             };
 
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));

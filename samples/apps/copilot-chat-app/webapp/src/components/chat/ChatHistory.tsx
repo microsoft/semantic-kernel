@@ -3,6 +3,7 @@
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { IChatMessage } from '../../libs/models/ChatMessage';
+import { IAskVariables } from '../../libs/semantic-kernel/model/Ask';
 import { ChatHistoryItem } from './ChatHistoryItem';
 import { ChatStatus } from './ChatStatus';
 
@@ -25,6 +26,7 @@ interface ChatHistoryProps {
     messages: IChatMessage[];
     onGetResponse: (
         value: string,
+        contextVariables?: IAskVariables[],
         userApprovedPlan?: boolean,
         approvedPlanJson?: string,
         planUserIntent?: string,

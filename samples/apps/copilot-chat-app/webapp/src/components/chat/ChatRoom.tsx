@@ -6,6 +6,7 @@ import debug from 'debug';
 import React from 'react';
 import { Constants } from '../../Constants';
 import { AuthorRoles } from '../../libs/models/ChatMessage';
+import { IAskVariables } from '../../libs/semantic-kernel/model/Ask';
 import { useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -25,7 +26,7 @@ const useClasses = makeStyles({
         height: '100%',
     },
     scroll: {
-        ...shorthands.margin('4px'),
+        ...shorthands.margin(tokens.spacingVerticalXS),
         ...SharedStyles.scroll,
     },
     history: {
@@ -87,6 +88,7 @@ export const ChatRoom: React.FC = () => {
 
     const handleSubmit = async (
         value: string,
+        contextVariables?: IAskVariables[],
         userApprovedPlan?: boolean,
         approvedPlanJson?: string,
         planUserIntent?: string,
@@ -105,7 +107,14 @@ export const ChatRoom: React.FC = () => {
         dispatch(updateConversation({ message: chatInput }));
 
         try {
-            await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userApprovedPlan);
+            await chat.getResponse(
+                value,
+                selectedId,
+                contextVariables,
+                approvedPlanJson,
+                planUserIntent,
+                userApprovedPlan,
+            );
         } finally {
             setIsBotTyping(false);
         }
