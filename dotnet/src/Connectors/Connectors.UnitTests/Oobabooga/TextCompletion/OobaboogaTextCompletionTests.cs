@@ -145,7 +145,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     }
 
     [Fact]
-    public void ShouldHandleStreamingServiceResponseAsync()
+    public async Task ShouldHandleStreamingServiceResponseAsync()
     {
         var expectedResponse = Encoding.UTF8.GetBytes(this._streamCompletionResponseStub);
 

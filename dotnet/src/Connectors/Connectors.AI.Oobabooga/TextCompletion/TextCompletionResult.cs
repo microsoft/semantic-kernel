@@ -1,44 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
 internal sealed class TextCompletionResult : ITextCompletionResult
 {
-    private readonly string _result;
+    private readonly ModelResult _responseData;
 
-    public TextCompletionResult(string result)
+    public TextCompletionResult(TextCompletionResponseText responseData)
     {
-        this._result = result ?? string.Empty;
+        this._responseData = new ModelResult(responseData);
     }
+
+    public ModelResult ModelResult => this._responseData;
 
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this._result);
-    }
-}
-
-internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingResult
-{
-    private readonly string _result;
-
-    public TextCompletionStreamingResult(string? result)
-    {
-        this._result = result ?? string.Empty;
-    }
-
-    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(this._result);
-    }
-
-    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        yield return await this.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
+        return Task.FromResult(this._responseData.GetResult<TextCompletionResponseText>().Text ?? string.Empty);
     }
 }

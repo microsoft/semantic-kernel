@@ -100,7 +100,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
                 switch (responseObject.Event)
                 {
                     case ResponseObjectTextStreamEvent:
-                        yield return new TextCompletionStreamingResult(responseObject.Text);
+                        yield return new TextCompletionStreamingResult(responseObject);
                         break;
                     case ResponseObjectStreamEndEvent:
                         await this._webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
@@ -160,7 +160,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
                 };
             }
 
-            return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText.Text ?? string.Empty)).ToList();
+            return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {
