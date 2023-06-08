@@ -79,7 +79,11 @@ public class ChatHistoryController : ControllerBase
 
         var initialBotMessage = this._promptOptions.InitialBotMessage;
         // The initial bot message doesn't need a prompt.
-        await this.SaveResponseAsync(initialBotMessage, string.Empty, newChat.Id);
+        var chatMessage = ChatMessage.CreateBotResponseMessage(
+            newChat.Id,
+            initialBotMessage,
+            string.Empty);
+        await this._messageRepository.CreateAsync(chatMessage);
 
         // Add the user to the chat session
         await this._participantRepository.CreateAsync(new ChatParticipant(chatParameter.UserId, newChat.Id));
@@ -100,17 +104,12 @@ public class ChatHistoryController : ControllerBase
     public async Task<IActionResult> GetChatSessionByIdAsync(Guid chatId)
     {
         ChatSession? chat = null;
-        try
+        if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString(), out chat))
         {
-            // Make sure the chat session exists
-            chat = await this._sessionRepository.FindByIdAsync(chatId.ToString());
-        }
-        catch (KeyNotFoundException)
-        {
-            return this.NotFound($"No chat session found for chat id '{chatId}'.");
+            return this.Ok(chat);
         }
 
-        return this.Ok(chat);
+        return this.NotFound($"No chat session found for chat id '{chatId}'.");
     }
 
     /// <summary>
@@ -134,15 +133,15 @@ public class ChatHistoryController : ControllerBase
         var chats = new List<ChatSession>();
         foreach (var chatParticipant in chatParticipants)
         {
-            try
+            ChatSession? chat = null;
+            if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, out chat))
             {
-                var chat = await this._sessionRepository.FindByIdAsync(chatParticipant.ChatId);
-                chats.Add(chat);
+                chats.Add(chat!);
             }
-            catch (Exception e) when (e is ArgumentOutOfRangeException || e is KeyNotFoundException)
+            else
             {
                 this._logger.LogDebug(
-                    e, "Failed to find chat session with id {0} for participant {1}", chatParticipant.ChatId, chatParticipant.Id);
+                    "Failed to find chat session with id {0} for participant {1}", chatParticipant.ChatId, chatParticipant.Id);
             }
         }
 
@@ -168,7 +167,7 @@ public class ChatHistoryController : ControllerBase
     {
         // TODO: the code mixes strings and Guid without being explicit about the serialization format
         var chatMessages = await this._messageRepository.FindByChatIdAsync(chatId.ToString());
-        if (chatMessages == null)
+        if (chatMessages.Count() == 0)
         {
             return this.NotFound($"No messages found for chat id '{chatId}'.");
         }
@@ -192,20 +191,16 @@ public class ChatHistoryController : ControllerBase
         string chatId = chatParameters.Id;
 
         ChatSession? chat = null;
-        try
+        if (await this._sessionRepository.TryFindByIdAsync(chatId, out chat))
         {
-            // Make sure the chat session exists
-            chat = await this._sessionRepository.FindByIdAsync(chatId);
+            chat!.Title = chatParameters.Title;
+            await this._sessionRepository.UpsertAsync(chat);
+            return this.Ok(chat);
         }
-        catch (KeyNotFoundException)
+        else
         {
             return this.NotFound($"No chat session found for chat id '{chatId}'.");
         }
-
-        chat.Title = chatParameters.Title;
-        await this._sessionRepository.UpsertAsync(chat);
-
-        return this.Ok(chat);
     }
 
     /// <summary>
@@ -223,35 +218,14 @@ public class ChatHistoryController : ControllerBase
     {
         this._logger.LogInformation("Get imported sources of chat session {0}", chatId);
 
-        try
+        if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString(), out _))
         {
-            // Make sure the chat session exists
-            await this._sessionRepository.FindByIdAsync(chatId.ToString());
+            var sources = await this._sourceRepository.FindByChatIdAsync(chatId.ToString());
+            return this.Ok(sources);
         }
-        catch (KeyNotFoundException)
+        else
         {
             return this.NotFound($"No chat session found for chat id '{chatId}'.");
         }
-
-        return this.Ok(await this._sourceRepository.FindByChatIdAsync(chatId.ToString()));
     }
-
-    # region Private
-
-    /// <summary>
-    /// Save a bot response to the chat session.
-    /// </summary>
-    /// <param name="response">The bot response.</param>
-    /// <param name="prompt">The prompt that was used to generate the response.</param>
-    /// <param name="chatId">The chat id.</param>
-    private async Task SaveResponseAsync(string response, string prompt, string chatId)
-    {
-        // Make sure the chat session exists
-        await this._sessionRepository.FindByIdAsync(chatId);
-
-        var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response, prompt);
-        await this._messageRepository.CreateAsync(chatMessage);
-    }
-
-    # endregion
 }

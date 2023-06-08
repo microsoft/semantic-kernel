@@ -47,6 +47,21 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
     }
 
     /// <inheritdoc/>
+    public Task<bool> TryFindByIdAsync(string id, out T? entity)
+    {
+        try
+        {
+            entity = FindByIdAsync(id).Result;
+            return Task.FromResult(true);
+        }
+        catch (Exception)
+        {
+            entity = default;
+            return Task.FromResult(false);
+        }
+    }
+
+    /// <inheritdoc/>
     public Task UpsertAsync(T entity)
     {
         return this.StorageContext.UpsertAsync(entity);

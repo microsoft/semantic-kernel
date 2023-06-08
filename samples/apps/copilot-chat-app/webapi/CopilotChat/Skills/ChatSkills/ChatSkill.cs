@@ -603,7 +603,10 @@ public class ChatSkill
     private async Task SaveNewMessageAsync(string message, string userId, string userName, string chatId)
     {
         // Make sure the chat exists.
-        await this._chatSessionRepository.FindByIdAsync(chatId);
+        if (!await this._chatSessionRepository.TryFindByIdAsync(chatId, out _))
+        {
+            throw new ArgumentException("Chat session does not exist.");
+        }
 
         var chatMessage = new ChatMessage(userId, userName, chatId, message);
         await this._chatMessageRepository.CreateAsync(chatMessage);
@@ -618,7 +621,10 @@ public class ChatSkill
     private async Task SaveNewResponseAsync(string response, string prompt, string chatId)
     {
         // Make sure the chat exists.
-        await this._chatSessionRepository.FindByIdAsync(chatId);
+        if (!await this._chatSessionRepository.TryFindByIdAsync(chatId, out _))
+        {
+            throw new ArgumentException("Chat session does not exist.");
+        }
 
         var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response, prompt);
         await this._chatMessageRepository.CreateAsync(chatMessage);

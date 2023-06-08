@@ -33,4 +33,12 @@ public interface IRepository<T> where T : IStorageEntity
     /// <param name="id">Id of the entity.</param>
     /// <returns>An entity</returns>
     Task<T> FindByIdAsync(string id);
+
+    /// <summary>
+    /// Tries to find an entity by its id.
+    /// </summary>
+    /// <param name="id">Id of the entity.</param>
+    /// <param name="entity">The entity.</param>
+    /// <returns>True if the entity was found, false otherwise.</returns>
+    Task<bool> TryFindByIdAsync(string id, out T? entity);
 }

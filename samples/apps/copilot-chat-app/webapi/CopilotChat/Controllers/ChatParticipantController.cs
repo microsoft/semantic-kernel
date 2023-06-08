@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -63,11 +62,7 @@ public class ChatParticipantController : ControllerBase
         string chatId = chatParticipantParam.ChatId;
 
         // Make sure the chat session exists.
-        try
-        {
-            await this._chatSessionRepository.FindByIdAsync(chatId);
-        }
-        catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentOutOfRangeException)
+        if (!await this._chatSessionRepository.TryFindByIdAsync(chatId, out _))
         {
             return this.BadRequest("Chat session does not exist.");
         }
@@ -99,11 +94,7 @@ public class ChatParticipantController : ControllerBase
     public async Task<IActionResult> GetAllParticipantsAsync(Guid chatId)
     {
         // Make sure the chat session exists.
-        try
-        {
-            await this._chatSessionRepository.FindByIdAsync(chatId.ToString());
-        }
-        catch (Exception ex) when (ex is KeyNotFoundException || ex is ArgumentOutOfRangeException)
+        if (!await this._chatSessionRepository.TryFindByIdAsync(chatId.ToString(), out _))
         {
             return this.BadRequest("Chat session does not exist.");
         }
