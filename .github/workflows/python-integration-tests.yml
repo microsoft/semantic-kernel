@@ -38,7 +38,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install poetry pytest
         poetry add azure-search-documents==11.4.0a20230509004 --source azure-sdk-dev
-        cd python && poetry install --with hugging_face --with chromadb --with azure_cognitive_search
+        cd python && poetry install --with hugging_face --with chromadb --with weaviate --with azure_cognitive_search
     - name: Run Integration Tests
       shell: bash
       env: # Set Azure credentials secret as an input

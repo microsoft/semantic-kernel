@@ -36,6 +36,9 @@ priority = "supplemental"
 [tool.poetry.group.azure_cognitive_search.dependencies]
 azure-search-documents = {version = "11.4.0a20230509004", source = "azure-sdk-dev"}
 
+[tool.poetry.group.weaviate.dependencies]
+weaviate-client = "^3.18.0"
+
 [tool.isort]
 profile = "black"
 
