@@ -59,20 +59,20 @@ public class ChatHistoryController : ControllerBase
 
     /// <summary>
     /// Create a new chat session and populate the session with the initial bot message.
-    /// The regex pattern that is used to match the user id will match the following format:
-    ///    - 2 period separated groups of one or more hyphen-delimited alphanumeric strings.
-    /// The pattern in meant to match two GUID-like strings in canonical textual representation
-    /// separated by a period (e.g., a1-2b-3c.x4-5y-6z)
     /// </summary>
-    /// <param name="userId">The user ID.</param>
     /// <param name="chatParameter">Contains the title of the chat.</param>
     /// <returns>The HTTP action result.</returns>
     [HttpPost]
-    [Route("chatSession/create/{userId:regex(([[a-z0-9]]+-)+[[a-z0-9]]+\\.([[a-z0-9]]+-)+[[a-z0-9]]+)}")]
+    [Route("chatSession/create")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateChatSessionAsync([FromRoute] string userId, [FromBody] ChatSession chatParameter)
+    public async Task<IActionResult> CreateChatSessionAsync([FromBody] CreateChatParameters chatParameter)
     {
+        if (chatParameter.UserId == null || chatParameter.Title == null)
+        {
+            return this.BadRequest("Chat session parameters cannot be null.");
+        }
+
         // Create a new chat session
         var newChat = new ChatSession(chatParameter.Title);
         await this._sessionRepository.CreateAsync(newChat);
@@ -82,9 +82,9 @@ public class ChatHistoryController : ControllerBase
         await this.SaveResponseAsync(initialBotMessage, string.Empty, newChat.Id);
 
         // Add the user to the chat session
-        await this._participantRepository.CreateAsync(new ChatParticipant(userId, newChat.Id));
+        await this._participantRepository.CreateAsync(new ChatParticipant(chatParameter.UserId, newChat.Id));
 
-        this._logger.LogDebug("Created chat session with id {0} for user {1}", newChat.Id, userId);
+        this._logger.LogDebug("Created chat session with id {0} for user {1}", newChat.Id, chatParameter.UserId);
         return this.CreatedAtAction(nameof(this.GetChatSessionByIdAsync), new { chatId = newChat.Id }, newChat);
     }
 

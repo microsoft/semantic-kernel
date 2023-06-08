@@ -17,12 +17,13 @@ export class ChatService extends BaseService {
         accessToken: string,
     ): Promise<IChatSession> => {
         const body = {
+            userId: userId,
             title: title,
         };
 
         const result = await this.getResponseAsync<IChatSession>(
             {
-                commandPath: `chatSession/create/${userId}`,
+                commandPath: `chatSession/create`,
                 method: 'POST',
                 body: body,
             },
