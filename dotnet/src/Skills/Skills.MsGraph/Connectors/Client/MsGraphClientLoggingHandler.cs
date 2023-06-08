@@ -28,7 +28,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     {
         ClientRequestIdHeaderName,
         "request-id",
-        "x-ms-ags-diagnostic",
+        "x-ms-args-diagnostic",
         "Date"
     };
 

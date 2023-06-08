@@ -1,4 +1,4 @@
-# Local Hugging Face Model Inteference Server
+# Local Hugging Face Model Interference Server
 
 > [!IMPORTANT]
 > This learning sample is for educational purposes only and should not be used in any production
