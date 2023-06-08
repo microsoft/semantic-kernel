@@ -14,6 +14,7 @@ class SemanticTextMemoryBase(ABC):
         text: str,
         id: str,
         description: Optional[str] = None,
+        additional_metadata: Optional[str] = None,
         # TODO: ctoken?
     ) -> None:
         pass
@@ -26,6 +27,7 @@ class SemanticTextMemoryBase(ABC):
         external_id: str,
         external_source_name: str,
         description: Optional[str] = None,
+        additional_metadata: Optional[str] = None,
     ) -> None:
         pass
 
