@@ -17,3 +17,24 @@ export function convertToAnchorTags(htmlString: string) {
 
     return result;
 }
+
+/*
+ * Function to render the date and/or time of a message.
+ */
+export function timestampToDateString(timestamp: number, alwaysShowTime = false) {
+    const date = new Date(timestamp);
+    const dateString = date.toLocaleDateString([], {
+        month: 'numeric',
+        day: 'numeric',
+    });
+    const timeString = date.toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit',
+    });
+
+    return date.toDateString() !== new Date().toDateString()
+        ? alwaysShowTime
+            ? dateString + ' ' + timeString // if the date is not today and we are always showing the time, show the date and time
+            : dateString // if the date is not today and we are not always showing the time, only show the date
+        : timeString; // if the date is today, only show the time
+}
