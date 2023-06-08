@@ -46,7 +46,7 @@ public static class TextChunker
     /// </summary>
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
-    /// <param name="overlapTokens">Number  of overlaped tokens between paragraphs</param>
+    /// <param name="overlapTokens">Number of tokens to overlap between paragraphs.</param>
     /// <returns>List of paragraphs.</returns>
     public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0)
     {
