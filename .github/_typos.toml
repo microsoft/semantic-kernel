@@ -19,3 +19,6 @@ extend-exclude = [
 
 [default.extend-words]
 ACI = "ACI" # Azure Container Instance
+
+[default.extend-identifiers]
+ags = "ags" # Azure Graph Service
