@@ -19,11 +19,13 @@ public class ProposedPlan
     /// <summary>
     /// Indicates whether plan is Action (single-step) or Sequential (multi-step)
     /// </summary>
+    [JsonPropertyName("type")]
     public string Type { get; set; }
 
     /// <summary>
     /// State of plan: Approved, Rejected, or ApprovalRequired
     /// </summary>
+    [JsonPropertyName("state")]
     public string State { get; set; }
 
     /// <summary>

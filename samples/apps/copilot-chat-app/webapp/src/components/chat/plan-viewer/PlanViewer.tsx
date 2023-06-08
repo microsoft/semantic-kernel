@@ -46,10 +46,10 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
     const parsedContent = JSON.parse(message.content);
     const originalPlan = parsedContent.proposedPlan;
 
-    var planState = message.state ?? parsedContent.State;
+    var planState = message.state ?? parsedContent.state;
 
     // If plan came from ActionPlanner, use parameters from top-level plan state
-    if (parsedContent.Type === 'Action') {
+    if (parsedContent.type === 'Action') {
         originalPlan.steps[0].parameters = originalPlan.state;
     }
 
@@ -80,8 +80,8 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 key: 'proposedPlan',
                 value: JSON.stringify({
                     proposedPlan: plan,
-                    Type: parsedContent.Type,
-                    State: planState,
+                    type: parsedContent.type,
+                    state: planState,
                 }),
             },
         ];
