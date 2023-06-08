@@ -4,8 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-#pragma warning disable IDE0130
-
 namespace Skills;
 
 [SuppressMessage("Design", "CA1052:Type is a static holder type but is neither static nor NotInheritable",

@@ -5,8 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-#pragma warning disable IDE0130
-
 namespace Skills;
 
 internal sealed class EmailSkill

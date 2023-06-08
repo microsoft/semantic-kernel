@@ -3,12 +3,12 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Skills;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
 using RepoUtils;
+using Skills;
 
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
@@ -162,8 +162,8 @@ internal static class Example12_SequentialPlanner
             "MiscSkill",
             "QASkill");
 
-        kernel.ImportSkill(new Skills.EmailSkill(), "email");
-        kernel.ImportSkill(new Skills.StaticTextSkill(), "statictext");
+        kernel.ImportSkill(new EmailSkill(), "email");
+        kernel.ImportSkill(new StaticTextSkill(), "statictext");
         kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
