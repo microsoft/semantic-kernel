@@ -14,12 +14,12 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 internal static class Example43_TravelApp
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(string ask)
     {
-        await GoToNeighborHouse();
+        await GoToNeighborHouse(ask);
     }
 
-    private static async Task GoToNeighborHouse()
+    private static async Task GoToNeighborHouse(string ask)
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Poetry Plan ========");
 
@@ -35,12 +35,17 @@ internal static class Example43_TravelApp
         kernel.ImportSemanticSkillFromDirectory(folder,
             "TravelPreparation");
 
+        folder = RepoFiles.SampleSkillsPath();
+        kernel.ImportSemanticSkillFromDirectory(folder,
+            "SummarizeSkill",
+            "WriterSkill");
+
         using var weatherConnector = new WeatherApiConnector(Env.Var("WeatherApiKey"));
         kernel.ImportSkill(new WeatherLookupSkill(weatherConnector), "weatherapi");
 
         var planner = new SequentialPlanner(kernel);
 
-        var plan = await planner.CreatePlanAsync("Help me decide if I need an umbrella to walk to my neighbor's house. I live in Redmond Washington USA. Do I need an umbrella?");
+        var plan = await planner.CreatePlanAsync(ask);
 
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToPlanString());

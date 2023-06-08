@@ -12,4 +12,5 @@ If the weather is sunny, I should wear a t-shirt and sunglasses.
 If the weather is rainy, I should wear a raincoat and bring an umbrella.
 [END EXAMPLES]
 
-The weather is currently  {{$WEATHER_RESULT}} in my city. What should I wear and bring based on that?
+The weather in my citiy is currently {{$WEATHER_RESULT}}
+What should I wear and bring
