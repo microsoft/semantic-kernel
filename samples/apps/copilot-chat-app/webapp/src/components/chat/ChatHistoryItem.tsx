@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { useMsal } from '@azure/msal-react';
-import { Text, makeStyles, mergeClasses, Persona, shorthands, tokens } from '@fluentui/react-components';
+import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
 import { useChat } from '../../libs/useChat';
@@ -9,8 +9,10 @@ import { parsePlan } from '../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateMessageState } from '../../redux/features/conversations/conversationsSlice';
-import { convertToAnchorTags } from '../utils/TextUtils';
+import { Breakpoints } from '../../styles';
+import { convertToAnchorTags, timestampToDateString } from '../utils/TextUtils';
 import { PlanViewer } from './plan-viewer/PlanViewer';
+import { PromptDetails } from './prompt-details/PromptDetails';
 
 const useClasses = makeStyles({
     root: {
@@ -18,6 +20,9 @@ const useClasses = makeStyles({
         flexDirection: 'row',
         maxWidth: '75%',
         ...shorthands.borderRadius(tokens.borderRadiusMedium),
+        ...Breakpoints.small({
+            maxWidth: '100%',
+        }),
     },
     debug: {
         position: 'absolute',
@@ -41,7 +46,7 @@ const useClasses = makeStyles({
     time: {
         color: tokens.colorNeutralForeground3,
         fontSize: '12px',
-        fontWeight: 400
+        fontWeight: 400,
     },
     header: {
         position: 'relative',
@@ -129,23 +134,6 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
               .replace(/ {2}/g, '&nbsp;&nbsp;')
         : '';
 
-    const date = new Date(message.timestamp);
-    let time = date.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-
-    // If not today, prepend date
-    if (date.toDateString() !== new Date().toDateString()) {
-        time =
-            date.toLocaleDateString([], {
-                month: 'short',
-                day: 'numeric',
-            }) +
-            ' ' +
-            time;
-    }
-
     const isMe = message.authorRole === AuthorRoles.User || message.userId === account?.homeAccountId!;
     const isBot = message.authorRole !== AuthorRoles.User && message.userId === 'bot';
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
@@ -158,11 +146,12 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     return (
         <>
             <div className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}>
-                {!isMe && <Persona className={classes.persona} avatar={avatar} />}
+                {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
                 <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
                     <div className={classes.header}>
                         {!isMe && <Text weight="semibold">{fullName}</Text>}
-                        <Text className={mergeClasses(classes.time, classes.alignEnd)}>{time}</Text>
+                        <Text className={classes.time}>{timestampToDateString(message.timestamp, true)}</Text>
+                        {isBot && <PromptDetails message={message} />}
                     </div>
                     {!isPlan && (
                         <div

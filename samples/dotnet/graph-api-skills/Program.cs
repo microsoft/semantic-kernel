@@ -116,11 +116,11 @@ public sealed class Program
             if (azureOpenAIConfiguration != null)
             {
                 builder.WithAzureTextCompletionService(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey,
-                    serviceId: azureOpenAIConfiguration.ServiceId,
-                    setAsDefault: azureOpenAIConfiguration.ServiceId == defaultCompletionServiceId);
+                        deploymentName: azureOpenAIConfiguration.DeploymentName,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey,
+                        serviceId: azureOpenAIConfiguration.ServiceId,
+                        setAsDefault: azureOpenAIConfiguration.ServiceId == defaultCompletionServiceId);
             }
         }
 
@@ -143,7 +143,7 @@ public sealed class Program
         var todo = sk.ImportSkill(todoSkill, "todo");
         var outlook = sk.ImportSkill(outlookSkill, "outlook");
 
-        string skillParentDirectory = RepoUtils.RepoFiles.SampleSkillsPath();
+        string skillParentDirectory = RepoFiles.SampleSkillsPath();
 
         IDictionary<string, ISKFunction> summarizeSkills =
             sk.ImportSemanticSkillFromDirectory(skillParentDirectory, "SummarizeSkill");
