@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130
 
-namespace ExampleSkills;
+namespace Skills;
 
 internal sealed class EmailSkill
 {

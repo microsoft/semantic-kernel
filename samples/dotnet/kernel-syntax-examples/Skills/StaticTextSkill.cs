@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130
 
-namespace ExampleSkills;
+namespace Skills;
 
 [SuppressMessage("Design", "CA1052:Type is a static holder type but is neither static nor NotInheritable",
     Justification = "Static classes are not currently supported by the semantic kernel.")]

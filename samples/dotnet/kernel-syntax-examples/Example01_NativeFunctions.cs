@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.CoreSkills;
 
 // ReSharper disable once InconsistentNaming
 public static class Example01_NativeFunctions
@@ -11,21 +11,11 @@ public static class Example01_NativeFunctions
         Console.WriteLine("======== Functions ========");
 
         // Load native skill
-        var text = new Example01_MyTextSkill();
+        var text = new TextSkill();
 
         // Use function without kernel
         var result = text.Uppercase("ciao!");
 
         Console.WriteLine(result);
-    }
-}
-
-public class Example01_MyTextSkill
-{
-    [SKFunction("Change all string chars to uppercase")]
-    [SKFunctionInput(Description = "Text to uppercase")]
-    public string Uppercase(string input)
-    {
-        return input.ToUpperInvariant();
     }
 }
