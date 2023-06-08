@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,22 +14,31 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 
+/// <summary>
+/// Azure OpenAI Image generation
+/// <see herf="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#image-generation" />
+/// </summary>
 public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
     /// <summary>
-    /// Constants of success status
+    /// Azure OpenAI Endpoint ApiVersion
     /// </summary>
-    private const string SucceededStatus = "SUCCEEDED";
+    private readonly string _apiVersion;
 
     /// <summary>
-    /// Maximum retry times for the Azure Dall-E API
+    /// Generation Image Operation path
+    /// </summary>
+    private const string GenerationImageOperation = "openai/images/generations:submit";
+
+    /// <summary>
+    /// Get Image Operation path
+    /// </summary>
+    private const string GetImageOperation = "openai/operations/images";
+
+    /// <summary>
+    /// Maximum number of attempts to retrieve the image generation operation result.
     /// </summary>
     private readonly int _maxRetryCount;
-
-    /// <summary>
-    /// Default retry wait time in seconds
-    /// </summary>
-    private readonly int _defaultRetryAfter;
 
     /// <summary>
     /// Azure OpenAI REST API endpoint
@@ -49,18 +57,44 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">Application logger</param>
-    /// <param name="maxRetryCount">Maximum number of retries for HTTP requests.</param>
-    /// <param name="defaultRetryAfter">Default retry wait time in seconds for HTTP requests.</param>
-    public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILogger? logger = null, int maxRetryCount = 5, int defaultRetryAfter = 6) : base(httpClient, logger)
+    /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
+    /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
+    public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILogger? logger = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, logger)
     {
-        this._endpoint = $"{endpoint}openai/images/generations:submit?api-version=2023-06-01-preview";
+        this._endpoint = endpoint;
         this._apiKey = apiKey;
         this._maxRetryCount = maxRetryCount;
-        this._defaultRetryAfter = defaultRetryAfter;
+        this._apiVersion = apiVersion;
     }
 
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(string description, int width, int height, CancellationToken cancellationToken = default)
+    {
+        var operationId = await this.StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
+        var result = await this.GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);
+
+        if (result.Result == null)
+        {
+            throw new AzureSdk.OpenAIInvalidResponseException<AzureImageGenerationResponse>(null, "Azure Image Generation null response");
+        }
+
+        if (result.Result.Images.Count == 0)
+        {
+            throw new AzureSdk.OpenAIInvalidResponseException<AzureImageGenerationResponse>(result, "Azure Image Generation result not found");
+        }
+
+        return result.Result.Images.First().Url;
+    }
+
+    /// <summary>
+    /// Start an image generation task
+    /// </summary>
+    /// <param name="description">Image description</param>
+    /// <param name="width">Image width in pixels</param>
+    /// <param name="height">Image height in pixels</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns> The operationId that identifies the original image generation request. </returns>
+    private async Task<string> StartImageGenerationAsync(string description, int width, int height, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
         if (width != height || (width != 256 && width != 512 && width != 1024))
@@ -75,59 +109,54 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             Count = 1
         });
 
-        var result = await this.GetImageGenerationAsync(this._endpoint, requestBody, cancellationToken).ConfigureAwait(false);
-        if (result.Result == null)
+        var uri = this.GetUri(GenerationImageOperation);
+        var result = await this.ExecutePostRequestAsync<AzureImageGenerationResponse>(uri, requestBody, cancellationToken).ConfigureAwait(false);
+
+        if (result == null || string.IsNullOrWhiteSpace(result.Id))
         {
             throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response not contains result");
         }
 
-        return result.Result.Images[0].Url;
+        return result.Id;
     }
 
-    private async Task<AzureImageGenerationResponse> GetImageGenerationAsync(string url, string? requestBody, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Retrieve the results of an image generation operation.
+    /// </summary>
+    /// <param name="operationId">The GUID that identifies the original image generation request.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    private async Task<AzureImageGenerationResponse> GetImageGenerationResultAsync(string operationId, CancellationToken cancellationToken = default)
     {
-        HttpResponseMessage? response = null;
+        var operationLocation = this.GetUri(GetImageOperation, operationId);
+
         var retryCount = 0;
         try
         {
-            using (var content = new StringContent(requestBody, Encoding.UTF8, "application/json"))
-            {
-                response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
-            }
-
-            var responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var result = this.JsonDeserialize<AzureImageGenerationResponse>(responseJson);
-
-            if (!response.Headers.TryGetValues("operation-location", out var locationValues) || string.IsNullOrWhiteSpace(locationValues.FirstOrDefault()))
-            {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Not found operation-location");
-            }
-
-            var operationLocation = locationValues.First();
             while (true)
             {
-                if (result.Status.Equals(SucceededStatus, StringComparison.OrdinalIgnoreCase))
-                {
-                    return result;
-                }
-
                 if (this._maxRetryCount == retryCount)
                 {
                     throw new AIException(AIException.ErrorCodes.RequestTimeout, "Reached maximum retry attempts");
+                }
+
+                using var response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
+                var responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var result = this.JsonDeserialize<AzureImageGenerationResponse>(responseJson);
+
+                if (result.Status.Equals(AzureImageOperationStatus.Succeeded, StringComparison.OrdinalIgnoreCase))
+                {
+                    return result;
+                }
+                else if (this.IsFailedOrCancelled(result.Status))
+                {
+                    throw new AzureSdk.OpenAIInvalidResponseException<AzureImageGenerationResponse>(result, $"Azure OpenAI image generation {result.Status}");
                 }
 
                 if (response.Headers.TryGetValues("retry-after", out var afterValues) && long.TryParse(afterValues.FirstOrDefault(), out var after))
                 {
                     await Task.Delay(TimeSpan.FromSeconds(after), cancellationToken).ConfigureAwait(false);
                 }
-                else
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(this._defaultRetryAfter), cancellationToken).ConfigureAwait(false);
-                }
-
-                response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
-                responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                result = this.JsonDeserialize<AzureImageGenerationResponse>(responseJson);
 
                 // increase retry count
                 retryCount++;
@@ -139,10 +168,26 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
                 AIException.ErrorCodes.UnknownError,
                 $"Something went wrong: {e.Message}", e);
         }
-        finally
+    }
+
+    private string GetUri(string operation, params string[] parameters)
+    {
+        var uri = new Azure.Core.RequestUriBuilder();
+        uri.Reset(new Uri(this._endpoint));
+        uri.AppendPath(operation, false);
+        foreach (var parameter in parameters)
         {
-            response?.Dispose();
+            uri.AppendPath("/" + parameter, false);
         }
+        uri.AppendQuery("api-version", this._apiVersion);
+        return uri.ToString();
+    }
+
+    private bool IsFailedOrCancelled(string status)
+    {
+        return status.Equals(AzureImageOperationStatus.Failed, StringComparison.OrdinalIgnoreCase)
+            || status.Equals(AzureImageOperationStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
+            || status.Equals(AzureImageOperationStatus.Deleted, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Adds headers to use for Azure OpenAI HTTP requests.</summary>

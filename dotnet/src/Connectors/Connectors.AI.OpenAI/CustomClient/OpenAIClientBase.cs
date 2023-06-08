@@ -116,12 +116,10 @@ public abstract class OpenAIClientBase
 
     private protected async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
     {
-        HttpResponseMessage? response = null;
-        HttpContent? content = null;
         try
         {
-            content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-            response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
+            using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+            using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
             string responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             T result = this.JsonDeserialize<T>(responseJson);
             return result;
@@ -131,11 +129,6 @@ public abstract class OpenAIClientBase
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
                 $"Something went wrong: {e.Message}", e);
-        }
-        finally
-        {
-            response?.Dispose();
-            content?.Dispose();
         }
     }
 
