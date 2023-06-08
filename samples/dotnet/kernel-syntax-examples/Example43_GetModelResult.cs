@@ -8,6 +8,7 @@ using Azure;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -40,22 +41,22 @@ Event: {{$input}}
         // Using InvokeAsync
         var textResult = await excuseFunction.InvokeAsync("I missed the F1 final race");
         Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAIResult()).AsJson());
+        Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAITextResult()).AsJson());
         Console.WriteLine();
 
         // Using the Kernel RunAsync
         textResult = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
         Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAIResult()?.Usage.AsJson());
+        Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAITextResult()?.Usage.AsJson());
         Console.WriteLine();
 
-        // Using the Text Completion directly
-        var textCompletion = kernel.GetService<ITextCompletion>();
+        // Using Chat Completion directly
+        var chatCompletion = new OpenAIChatCompletion("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
-        IReadOnlyList<ITextCompletionResult> completionResults = await textCompletion.GetCompletionsAsync(prompt, new CompleteRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+        IReadOnlyList<ITextCompletionResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new CompleteRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
         Console.WriteLine(await completionResults[0].GetCompletionAsync());
-        Console.WriteLine(completionResults[0].ModelResult.GetOpenAIResult().Usage.AsJson());
+        Console.WriteLine(completionResults[0].ModelResult.GetOpenAIChatResult().Usage.AsJson());
         Console.WriteLine();
 
         // Getting the error details

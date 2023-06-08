@@ -4,9 +4,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
-using Skills;
 
 // ReSharper disable once InconsistentNaming
 public static class Example02_Pipeline
@@ -23,8 +23,8 @@ public static class Example02_Pipeline
         var text = kernel.ImportSkill(new TextSkill());
 
         SKContext result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
-            text["LStrip"],
-            text["RStrip"],
+            text["TrimStart"],
+            text["TrimEnd"],
             text["Uppercase"]);
 
         Console.WriteLine(result);
