@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "description": "Decide what to take on a trip when walking between locations",
+  "type": "completion",
+  "completion": {
+    "max_tokens": 1000,
+    "temperature": 0.9,
+    "top_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0
+  },
+  "input": {
+    "parameters": [
+      {
+        "name": "WEATHER_RESULT",
+        "description": "Weather currently in my city",
+        "defaultValue": ""
+      }
+    ]
+  }
+}
