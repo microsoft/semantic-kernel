@@ -5,6 +5,7 @@ import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenA
 
 import java.util.ArrayList;
 
+import com.azure.ai.openai.models.ChatCompletionsOptions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -80,7 +81,7 @@ public class OpenAIChatCompletionTest {
                 Mockito.when(
                                 client.getChatCompletions(
                                                 Mockito.any(),
-                                                Mockito.argThat(
+                                                Mockito.<ChatCompletionsOptions>argThat(
                                                                 msg -> {
                                                                         return msg != null
                                                                                         && msg.getMessages()

@@ -13,8 +13,6 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.azure.ai.openai.OpenAIClient;
-import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.Choice;
 import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
@@ -188,7 +186,7 @@ public class DefaultKernelTest {
                                         .thenReturn(Mono.just(completions));
 
                 }
-                return Mockito.spy(openAIAsyncClient);
+                return openAIAsyncClient;
         }
 
         @Test
