@@ -24,6 +24,11 @@ public class CopilotChatPlanner
     private readonly PlannerOptions? _plannerOptions;
 
     /// <summary>
+    /// Gets the pptions for the planner.
+    /// </summary>
+    public PlannerOptions? PlannerOptions => this._plannerOptions;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="CopilotChatPlanner"/> class.
     /// </summary>
     /// <param name="plannerKernel">The planner's kernel.</param>
