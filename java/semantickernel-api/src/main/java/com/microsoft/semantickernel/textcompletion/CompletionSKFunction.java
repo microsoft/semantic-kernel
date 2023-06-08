@@ -16,7 +16,7 @@ public interface CompletionSKFunction
         extends SKFunction<CompletionRequestSettings, CompletionSKContext> {
 
     /**
-     * Extension method to aggregate partitioned results of a semantic function.
+     * Method to aggregate partitioned results of a semantic function.
      *
      * @param partitionedInput Input to aggregate
      * @param context Semantic Kernel context

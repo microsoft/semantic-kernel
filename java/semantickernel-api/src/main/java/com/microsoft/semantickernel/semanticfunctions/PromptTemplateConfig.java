@@ -50,7 +50,7 @@ public class PromptTemplateConfig {
         public CompletionConfigBuilder topP(double topP) {
             return new CompletionConfigBuilder(
                     new CompletionConfig(
-                            completionConfig.getTemperature(),
+                            completionConfig.temperature,
                             topP,
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
@@ -61,7 +61,7 @@ public class PromptTemplateConfig {
         public CompletionConfigBuilder presencePenalty(double presencePenalty) {
             return new CompletionConfigBuilder(
                     new CompletionConfig(
-                            completionConfig.getTemperature(),
+                            completionConfig.temperature,
                             completionConfig.topP,
                             presencePenalty,
                             completionConfig.frequencyPenalty,
@@ -72,7 +72,7 @@ public class PromptTemplateConfig {
         public CompletionConfigBuilder frequencyPenalty(double frequencyPenalty) {
             return new CompletionConfigBuilder(
                     new CompletionConfig(
-                            completionConfig.getTemperature(),
+                            completionConfig.temperature,
                             completionConfig.topP,
                             completionConfig.presencePenalty,
                             frequencyPenalty,
@@ -83,7 +83,7 @@ public class PromptTemplateConfig {
         public CompletionConfigBuilder maxTokens(int maxTokens) {
             return new CompletionConfigBuilder(
                     new CompletionConfig(
-                            completionConfig.getTemperature(),
+                            completionConfig.temperature,
                             completionConfig.topP,
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
@@ -94,7 +94,7 @@ public class PromptTemplateConfig {
         public CompletionConfigBuilder stopSequences(List<String> stopSequences) {
             return new CompletionConfigBuilder(
                     new CompletionConfig(
-                            completionConfig.getTemperature(),
+                            completionConfig.temperature,
                             completionConfig.topP,
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
