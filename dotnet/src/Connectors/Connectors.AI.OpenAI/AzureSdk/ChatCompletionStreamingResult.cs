@@ -10,18 +10,23 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletionStreamingResult
 {
+    private readonly ModelResult _modelResult;
     private readonly StreamingChatChoice _choice;
 
-    public ChatStreamingResult(StreamingChatChoice choice)
+    public ChatStreamingResult(StreamingChatCompletions resultData, StreamingChatChoice choice)
     {
         Verify.NotNull(choice);
+        this._modelResult = new ModelResult(resultData);
         this._choice = choice;
     }
+
+    public ModelResult ModelResult => this._modelResult;
 
     /// <inheritdoc/>
     public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)

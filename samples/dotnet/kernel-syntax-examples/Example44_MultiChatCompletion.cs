@@ -11,7 +11,7 @@ using RepoUtils;
  * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
  */
 // ReSharper disable once InconsistentNaming
-public static class Example43_MultiChatCompletion
+public static class Example44_MultiChatCompletion
 {
     public static async Task RunAsync()
     {

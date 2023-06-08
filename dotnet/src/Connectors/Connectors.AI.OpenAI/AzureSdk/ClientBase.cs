@@ -162,8 +162,7 @@ public abstract class ClientBase
             throw new OpenAIInvalidResponseException<ChatCompletions>(response.Value, "Chat completions not found");
         }
 
-        return response.Value.Choices[0].Message.Content;
-        return response.Value.Choices.Select(completion => new ChatResult(completion)).ToList();
+        return response.Value.Choices.Select(chatChoice => new ChatResult(response.Value, chatChoice)).ToList();
     }
 
     /// <summary>
@@ -203,7 +202,7 @@ public abstract class ClientBase
 
         foreach (StreamingChatChoice choice in choices)
         {
-            yield return new ChatStreamingResult(choice);
+            yield return new ChatStreamingResult(response.Value, choice);
         }
     }
 

@@ -13,7 +13,7 @@ using RepoUtils;
  * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
  */
 // ReSharper disable once InconsistentNaming
-public static class Example44_MultiStreamingChatCompletion
+public static class Example45_MultiStreamingChatCompletion
 {
     private static readonly object s_lockObject = new();
 
