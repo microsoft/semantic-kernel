@@ -149,7 +149,7 @@ public static class TextChunker
         {
             paragraphs.Add(paragraphBuilder.ToString().Trim());
 
-            // next paragraph 
+            // next paragraph
             return BuildParagraph(truncatedLines, new StringBuilder(), paragraphs, maxTokensPerParagraph, longLinesSplitter);
         }
 
