@@ -17,7 +17,7 @@ class WaitSkill:
     @sk_function(description="Wait for a certain number of seconds.")
     async def wait(self, seconds_text: str):
         try:
-            seconds = float(seconds_text)
+            seconds = max(float(seconds_text), 0)
         except ValueError:
             raise ValueError("seconds text must be a number")
         await asyncio.sleep(seconds)
