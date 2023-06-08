@@ -44,7 +44,6 @@ internal static class Example43_TravelApp
         kernel.ImportSkill(new WeatherLookupSkill(weatherConnector), "weatherapi");
 
         var planner = new SequentialPlanner(kernel);
-
         var plan = await planner.CreatePlanAsync(ask);
 
         Console.WriteLine("Original plan:");
