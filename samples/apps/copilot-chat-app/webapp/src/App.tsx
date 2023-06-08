@@ -95,7 +95,7 @@ const App: FC = () => {
         } else {
             dispatch(setLoggedInUserId(''))
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, account, dispatch]);
 
     const onDismissAlert = (key: string) => {
         dispatch(removeAlert(key));

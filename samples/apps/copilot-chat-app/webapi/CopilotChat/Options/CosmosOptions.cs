@@ -34,6 +34,7 @@ public class CosmosOptions
     [Required, NotEmptyOrWhitespace]
     public string ChatMessagesContainer { get; set; } = string.Empty;
 
+    /// <summary>
     /// Gets or sets the Cosmos container for chat memory sources.
     /// </summary>
     [Required, NotEmptyOrWhitespace]
