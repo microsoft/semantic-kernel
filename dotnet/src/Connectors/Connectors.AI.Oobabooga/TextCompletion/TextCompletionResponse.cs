@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
 /// <summary>
-/// HTTP Schema for completion response.
+/// HTTP Schema for Oobabooga completion response. Contains a list of results.
 /// </summary>
 public sealed class TextCompletionResponse
 {
@@ -14,6 +14,9 @@ public sealed class TextCompletionResponse
     public List<TextCompletionResponseText> Results { get; set; } = new();
 }
 
+/// <summary>
+/// HTTP Schema for an single Oobabooga result as part of a completion response.
+/// </summary>
 public sealed class TextCompletionResponseText
 {
     /// <summary>
