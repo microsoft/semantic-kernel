@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
@@ -12,6 +9,8 @@ import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class Example06_TemplateLanguage {
         /// <summary>
@@ -24,7 +23,7 @@ public class Example06_TemplateLanguage {
 
                 OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
 
-                Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+                Kernel kernel = SKBuilders.kernel().build();
 
                 // Load native skill into the kernel skill collection, sharing its functions
                 // with prompt templates

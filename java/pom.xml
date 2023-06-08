@@ -69,6 +69,8 @@
         <module>semantickernel-extensions-parent</module>
         <module>semantickernel-connectors-parent</module>
         <module>semantickernel-core-skills</module>
+        <module>samples</module>
+        <module>api-test</module>
     </modules>
 
     <dependencyManagement>

@@ -14,11 +14,14 @@
     <artifactId>semantickernel-guice</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <semantickernel.java.version>0.2.0-SNAPSHOT</semantickernel.java.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
             <artifactId>semantickernel-core</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantickernel.connectors</groupId>
