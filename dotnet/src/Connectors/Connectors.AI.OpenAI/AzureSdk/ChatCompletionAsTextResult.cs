@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class ChatCompletionAsTextResult : ITextCompletionStreamingResult
+internal sealed class ChatCompletionAsTextResult : ITextStreamingResult
 {
     private readonly Func<CancellationToken, IAsyncEnumerable<string>> _getCompletionStreamingAsyncImpl;
     private readonly Func<CancellationToken, Task<string>> _getCompletionAsyncImpl;

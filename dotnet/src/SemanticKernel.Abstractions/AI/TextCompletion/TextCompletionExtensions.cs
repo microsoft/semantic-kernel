@@ -30,7 +30,7 @@ public static class TextCompletionExtensions
 
         StringBuilder completionResult = new();
 
-        foreach (ITextCompletionResult result in completions)
+        foreach (ITextResult result in completions)
         {
             completionResult.Append(await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false));
         }

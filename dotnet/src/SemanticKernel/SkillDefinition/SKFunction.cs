@@ -367,11 +367,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         public bool IsSensitive { get; set; }
     }
 
-    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextCompletionResult> completions, CancellationToken cancellationToken = default)
+    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
         StringBuilder completionResult = new();
 
-        foreach (ITextCompletionResult result in completions)
+        foreach (ITextResult result in completions)
         {
             completionResult.Append(await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false));
         }

@@ -23,21 +23,21 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextCompletion
 {
-    public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<IReadOnlyList<ITextCompletionResult>>(new List<ITextCompletionResult>
+        return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
         {
             new MyTextCompletionStreamingResult()
         });
     }
 
-    public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return new MyTextCompletionStreamingResult();
     }
 }
 
-public class MyTextCompletionStreamingResult : ITextCompletionStreamingResult
+public class MyTextCompletionStreamingResult : ITextStreamingResult
 {
     private readonly ModelResult _modelResult = new(new
     {
