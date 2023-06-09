@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -26,43 +25,40 @@ public class DocumentMemorySkill
     /// <summary>
     /// Configuration settings for importing documents to memory.
     /// </summary>
-    private readonly DocumentMemoryOptions _documentImportConfig;
+    private readonly DocumentMemoryOptions _documentImportOptions;
 
     /// <summary>
     /// Create a new instance of DocumentMemorySkill.
     /// </summary>
-    public DocumentMemorySkill(IOptions<PromptsOptions> promptOptions, DocumentMemoryOptions documentImportConfig)
+    public DocumentMemorySkill(
+        IOptions<PromptsOptions> promptOptions,
+        IOptions<DocumentMemoryOptions> documentImportOptions)
     {
         this._promptOptions = promptOptions.Value;
-        this._documentImportConfig = documentImportConfig;
+        this._documentImportOptions = documentImportOptions.Value;
     }
 
     /// <summary>
     /// Query the document memory collection for documents that match the query.
     /// </summary>
     /// <param name="query">Query to match.</param>
-    /// <param name="context">Contains the memory.</param>
+    /// <param name="context">The SkContext.</param>
     [SKFunction("Query documents in the memory given a user message")]
     [SKFunctionName("QueryDocuments")]
     [SKFunctionInput(Description = "Query to match.")]
     [SKFunctionContextParameter(Name = "chatId", Description = "ID of the chat that owns the documents")]
     [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    [SKFunctionContextParameter(Name = "contextTokenLimit", Description = "Maximum number of context tokens")]
     public async Task<string> QueryDocumentsAsync(string query, SKContext context)
     {
         string chatId = context.Variables["chatId"];
         int tokenLimit = int.Parse(context.Variables["tokenLimit"], new NumberFormatInfo());
-        int contextTokenLimit = int.Parse(context.Variables["contextTokenLimit"], new NumberFormatInfo());
-        var remainingToken = Math.Min(
-            tokenLimit,
-            Math.Floor(contextTokenLimit * this._promptOptions.DocumentContextWeight)
-        );
+        var remainingToken = tokenLimit;
 
         // Search for relevant document snippets.
         string[] documentCollections = new string[]
         {
-            this._documentImportConfig.ChatDocumentCollectionNamePrefix + chatId,
-            this._documentImportConfig.GlobalDocumentCollectionName
+            this._documentImportOptions.ChatDocumentCollectionNamePrefix + chatId,
+            this._documentImportOptions.GlobalDocumentCollectionName
         };
 
         List<MemoryQueryResult> relevantMemories = new();
@@ -103,11 +99,6 @@ public class DocumentMemorySkill
             return string.Empty;
         }
 
-        // Update the token limit.
-        documentsText = $"User has also shared some document snippets:\n{documentsText}";
-        tokenLimit -= Utilities.TokenCount(documentsText);
-        context.Variables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-
-        return documentsText;
+        return $"User has also shared some document snippets:\n{documentsText}";
     }
 }

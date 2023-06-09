@@ -1,7 +1,18 @@
-import { Avatar, makeStyles, shorthands, Text } from '@fluentui/react-components';
+import {
+    makeStyles,
+    Persona,
+    Popover,
+    PopoverSurface,
+    PopoverTrigger,
+    shorthands,
+    Text,
+} from '@fluentui/react-components';
 import { FC } from 'react';
+import { Constants } from '../../../Constants';
 import { useAppDispatch } from '../../../redux/app/hooks';
 import { setSelectedConversation } from '../../../redux/features/conversations/conversationsSlice';
+import { Breakpoints } from '../../../styles';
+import { timestampToDateString } from '../../utils/TextUtils';
 
 const useClasses = makeStyles({
     root: {
@@ -10,7 +21,10 @@ const useClasses = makeStyles({
         paddingTop: '0.8rem',
         paddingBottom: '0.8rem',
         paddingRight: '1rem',
-        width: '-webkit-fill-available',
+        width: '93%',
+        ...Breakpoints.small({
+            justifyContent: 'center',
+        }),
     },
     avatar: {
         flexShrink: '0',
@@ -23,6 +37,9 @@ const useClasses = makeStyles({
         flexGrow: '1',
         lineHeight: '1.6rem',
         paddingLeft: '0.8rem',
+        ...Breakpoints.small({
+            display: 'none',
+        }),
     },
     header: {
         display: 'flex',
@@ -56,6 +73,13 @@ const useClasses = makeStyles({
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
     },
+    popoverSurface: {
+        display: 'none',
+        ...Breakpoints.small({
+            display: 'flex',
+            flexDirection: 'column',
+        }),
+    },
 });
 
 interface IChatListItemProps {
@@ -64,9 +88,17 @@ interface IChatListItemProps {
     timestamp: number;
     preview: string;
     botProfilePicture: string;
+    isSelected: boolean;
 }
 
-export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, preview, botProfilePicture }) => {
+export const ChatListItem: FC<IChatListItemProps> = ({
+    id,
+    header,
+    timestamp,
+    preview,
+    botProfilePicture,
+    isSelected,
+}) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
 
@@ -74,42 +106,44 @@ export const ChatListItem: FC<IChatListItemProps> = ({ id, header, timestamp, pr
         dispatch(setSelectedConversation(id));
     };
 
-    const date = new Date(timestamp);
-    let time = date.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-
-    // If not today, only show the date
-    if (date.toDateString() !== new Date().toDateString()) {
-        time = date.toLocaleDateString([], {
-            month: 'numeric',
-            day: 'numeric',
-        });
-    }
-
+    const time = timestampToDateString(timestamp);
     return (
-        <div className={classes.root} onClick={onClick}>
-            <Avatar image={{ src: botProfilePicture }} />
-            <div className={classes.body}>
-                <div className={classes.header}>
-                    <Text className={classes.title} style={{ color: 'var(--colorNeutralForeground1)' }}>
-                        {header}
-                    </Text>
-                    <Text className={classes.timestamp} size={300}>
-                        {time}
-                    </Text>
-                </div>
-                {preview && (
-                    <div className={classes.preview}>
-                        {
-                            <Text id={`message-preview-${id}`} size={200} className={classes.previewText}>
-                                {preview}
+        <Popover
+            openOnHover={!isSelected}
+            mouseLeaveDelay={0}
+            positioning={{
+                position: 'after',
+                autoSize: 'width',
+            }}
+        >
+            <PopoverTrigger disableButtonEnhancement>
+                <div className={classes.root} onClick={onClick}>
+                    <Persona avatar={{ image: { src: botProfilePicture } }} presence={{ status: 'available' }} />
+                    <div className={classes.body}>
+                        <div className={classes.header}>
+                            <Text className={classes.title} style={{ color: 'var(--colorNeutralForeground1)' }}>
+                                {header}
                             </Text>
-                        }
+                            <Text className={classes.timestamp} size={300}>
+                                {time}
+                            </Text>
+                        </div>
+                        {preview && (
+                            <div className={classes.preview}>
+                                {
+                                    <Text id={`message-preview-${id}`} size={200} className={classes.previewText}>
+                                        {preview}
+                                    </Text>
+                                }
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
-        </div>
+                </div>
+            </PopoverTrigger>
+            <PopoverSurface className={classes.popoverSurface}>
+                <Text weight="bold">{Constants.bot.profile.fullName}</Text>
+                <Text>{time}</Text>
+            </PopoverSurface>
+        </Popover>
     );
 };

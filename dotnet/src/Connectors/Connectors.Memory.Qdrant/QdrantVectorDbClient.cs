@@ -163,15 +163,9 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
         Verify.NotNull(pointIds, "Qdrant point IDs are NULL");
 
-        DeleteVectorsRequest requestBuilder = DeleteVectorsRequest.DeleteFrom(collectionName);
-
-        foreach (var pointId in pointIds)
-        {
-            requestBuilder.DeleteVector(pointId);
-        }
-
-        using var request = requestBuilder.Build();
-
+        using var request = DeleteVectorsRequest.DeleteFrom(collectionName)
+            .DeleteRange(pointIds)
+            .Build();
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         try
@@ -239,21 +233,9 @@ public class QdrantVectorDbClient : IQdrantVectorDbClient
         Verify.NotNull(vectorData, "The vector data entries are NULL");
         Verify.NotNullOrEmpty(collectionName, "Collection name is empty");
 
-        var requestBuilder = UpsertVectorRequest.Create(collectionName);
-
-        foreach (var record in vectorData)
-        {
-            QdrantVectorRecord? existingRecord = await this.GetVectorsByIdAsync(collectionName, new[] { record.PointId }, false, cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
-
-            if (existingRecord != null)
-            {
-                continue;
-            }
-
-            requestBuilder.UpsertVector(record);
-        }
-
-        using var request = requestBuilder.Build();
+        using var request = UpsertVectorRequest.Create(collectionName)
+            .UpsertRange(vectorData)
+            .Build();
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         try

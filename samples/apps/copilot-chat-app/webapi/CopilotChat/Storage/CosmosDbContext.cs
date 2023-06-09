@@ -93,7 +93,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
     }
 
     /// <inheritdoc/>
-    public async Task UpdateAsync(T entity)
+    public async Task UpsertAsync(T entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {

@@ -21,7 +21,7 @@ public interface IPineconeClient
     /// <param name="includeValues"> Whether to include the vector values</param>
     /// <param name="cancellationToken"> The cancellation token</param>
     /// <returns> A list of vector records</returns>
-    public IAsyncEnumerable<PineconeDocument?> FetchVectorsAsync(
+    IAsyncEnumerable<PineconeDocument?> FetchVectorsAsync(
         string indexName,
         IEnumerable<string> ids,
         string indexNamespace = "",
@@ -38,7 +38,7 @@ public interface IPineconeClient
     /// <param name="includeMetadata"> whether to include the metadata</param>
     /// <param name="cancellationToken"></param>
     /// <returns> a list of query matches</returns>
-    public IAsyncEnumerable<PineconeDocument?> QueryAsync(
+    IAsyncEnumerable<PineconeDocument?> QueryAsync(
         string indexName,
         Query query,
         bool includeValues = false,
@@ -57,7 +57,7 @@ public interface IPineconeClient
     /// <param name="indexNamespace">The name assigned to a collection of vectors.</param>
     /// <param name="filter"> A filter to apply to the results</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
+    IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
         string indexName,
         IEnumerable<float> vector,
         double threshold,
@@ -160,7 +160,7 @@ public interface IPineconeClient
     /// </summary>
     /// <param name="indexName">The name assigned to a collection of vectors.</param>
     /// <param name="cancellationToken">Cancellation Token.</param>
-    public Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancellationToken = default);
+    Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Describe index

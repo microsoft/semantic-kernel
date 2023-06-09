@@ -75,9 +75,12 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
     /// <inheritdoc />
     /// <returns> a list of index names </returns>
-    public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return this._pineconeClient.ListIndexesAsync(cancellationToken).Select(index => index ?? "");
+        await foreach (var index in this._pineconeClient.ListIndexesAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return index ?? "";
+        }
     }
 
     /// <inheritdoc/>
@@ -253,7 +256,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                                withEmbedding,
                                cancellationToken))
             {
-                return record?.ToMemoryRecord();
+                return record?.ToMemoryRecord(transferVectorOwnership: true);
             }
         }
         catch (HttpRequestException ex)
@@ -393,7 +396,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         foreach (PineconeDocument? record in vectorDataList)
         {
-            yield return record?.ToMemoryRecord();
+            yield return record?.ToMemoryRecord(transferVectorOwnership: true);
         }
     }
 
@@ -574,7 +577,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken))
         {
-            yield return (result.Item1.ToMemoryRecord(), result.Item2);
+            yield return (result.Item1.ToMemoryRecord(transferVectorOwnership: true), result.Item2);
         }
     }
 
@@ -647,7 +650,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken))
         {
-            yield return (result.Item1.ToMemoryRecord(), result.Item2);
+            yield return (result.Item1.ToMemoryRecord(transferVectorOwnership: true), result.Item2);
         }
     }
 

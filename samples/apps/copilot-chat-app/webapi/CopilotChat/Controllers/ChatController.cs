@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
@@ -23,7 +22,6 @@ using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.CopilotChat.Models;
-using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 using SemanticKernel.Service.Models;
 
@@ -51,7 +49,6 @@ public class ChatController : ControllerBase, IDisposable
     /// </summary>
     /// <param name="kernel">Semantic kernel obtained through dependency injection.</param>
     /// <param name="planner">Planner to use to create function sequences.</param>
-    /// <param name="plannerOptions">Options for the planner.</param>
     /// <param name="ask">Prompt along with its parameters.</param>
     /// <param name="openApiSkillsAuthHeaders">Authentication headers to connect to OpenAPI Skills.</param>
     /// <returns>Results containing the response from the model.</returns>
@@ -63,8 +60,7 @@ public class ChatController : ControllerBase, IDisposable
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ChatAsync(
         [FromServices] IKernel kernel,
-        [FromServices] CopilotChatPlanner? planner,
-        [FromServices] IOptions<PlannerOptions> plannerOptions,
+        [FromServices] CopilotChatPlanner planner,
         [FromBody] Ask ask,
         [FromHeader] OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
     {
@@ -78,10 +74,7 @@ public class ChatController : ControllerBase, IDisposable
         }
 
         // Register plugins that have been enabled
-        if (planner != null && plannerOptions.Value.Enabled)
-        {
-            await this.RegisterPlannerSkillsAsync(planner, plannerOptions.Value, openApiSkillsAuthHeaders, contextVariables);
-        }
+        await this.RegisterPlannerSkillsAsync(planner, openApiSkillsAuthHeaders, contextVariables);
 
         // Get the function to invoke
         ISKFunction? function = null;
@@ -114,7 +107,7 @@ public class ChatController : ControllerBase, IDisposable
     /// <summary>
     /// Register skills with the planner's kernel.
     /// </summary>
-    private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, PlannerOptions options, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders, ContextVariables variables)
+    private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders, ContextVariables variables)
     {
         // Register authenticated skills with the planner's kernel only if the request includes an auth header for the skill.
 
@@ -139,7 +132,7 @@ public class ChatController : ControllerBase, IDisposable
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(openApiSkillsAuthHeaders.GithubAuthentication));
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "GitHubSkill",
-                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Skills/OpenApiSkills/GitHubSkill/openapi.json"),
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "CopilotChat", "Skills", "OpenApiSkills/GitHubSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync);
         }
 
@@ -148,13 +141,13 @@ public class ChatController : ControllerBase, IDisposable
         {
             this._logger.LogInformation("Registering Jira Skill");
             var authenticationProvider = new BasicAuthenticationProvider(() => { return Task.FromResult(openApiSkillsAuthHeaders.JiraAuthentication); });
-            var hasServerUrlOverride = variables.Get("jira-server-url", out string serverUrlOverride);
+            var hasServerUrlOverride = variables.TryGetValue("jira-server-url", out string? serverUrlOverride);
 
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "JiraSkill",
-                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "Skills/OpenApiSkills/JiraSkill/openapi.json"),
+                filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "CopilotChat", "Skills", "OpenApiSkills/JiraSkill/openapi.json"),
                 authCallback: authenticationProvider.AuthenticateRequestAsync,
-                serverUrlOverride: hasServerUrlOverride ? new Uri(serverUrlOverride) : null);
+                serverUrlOverride: hasServerUrlOverride ? new Uri(serverUrlOverride!) : null);
         }
 
         // Microsoft Graph

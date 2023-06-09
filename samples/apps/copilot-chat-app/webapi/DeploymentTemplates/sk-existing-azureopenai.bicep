@@ -9,7 +9,7 @@ Bicep template for deploying Semantic Kernel to Azure as a web app service with 
 param name string = 'semkernel'
 
 @description('SKU for the Azure App Service plan')
-@allowed([ 'F1', 'D1', 'B1', 'S1', 'S2', 'S3', 'P1V3', 'P2V3', 'I1V2', 'I2V2' ])
+@allowed(['B1', 'S1', 'S2', 'S3', 'P1V3', 'P2V3', 'I1V2', 'I2V2' ])
 param appServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
@@ -32,22 +32,21 @@ param endpoint string
 @description('Azure OpenAI API key')
 param apiKey string
 
-@description('Semantic Kernel server API key - Generated GUID by default\nProvide empty string to disable API key auth')
+@description('Semantic Kernel server API key - Generated GUID by default (Provide empty string to disable API key auth)')
 param semanticKernelApiKey string = newGuid()
 
 @description('Whether to deploy Cosmos DB for chat storage')
 param deployCosmosDB bool = true
 
-// TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
-// @description('Whether to deploy Qdrant (in a container) for memory storage')
-// param deployQdrant bool = true
+@description('Whether to deploy Qdrant (in a container) for memory storage')
+param deployQdrant bool = true
 
 @description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
 param deploySpeechServices bool = true
 
 
-module openAI 'main.bicep' = {
-  name: 'openAIDeployment'
+module semanticKernel 'main.bicep' = {
+  name: 'SemanticKernel'
   params: {
     name: name
     appServiceSku: appServiceSku
@@ -60,11 +59,12 @@ module openAI 'main.bicep' = {
     apiKey: apiKey
     semanticKernelApiKey: semanticKernelApiKey
     deployCosmosDB: deployCosmosDB
-    deployQdrant: false // TODO: Temporarily disabling qdrant deployment while we secure its endpoint.
+    deployQdrant: deployQdrant
     deploySpeechServices: deploySpeechServices
     deployNewAzureOpenAI: false
   }
 }
 
 
-output endpoint string = openAI.outputs.deployedUrl
+output endpoint string = semanticKernel.outputs.deployedUrl
+output skProbe string = 'https://${semanticKernel.outputs.deployedUrl}/healthz'

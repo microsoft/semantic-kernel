@@ -29,12 +29,10 @@ public static class Example38_Pinecone
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .Configure(c =>
-            {
-                c.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
-                c.AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"));
-            })
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
             .WithMemoryStorage(memoryStore)
+            //.WithPineconeMemoryStore(pineconeEnvironment, apiKey) // This method offers an alternative approach to registering Pinecone memory storage.
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");
@@ -48,7 +46,7 @@ public static class Example38_Pinecone
 
         Console.WriteLine("== Adding Memories ==");
 
-        Dictionary<string, object> metadata = new Dictionary<string, object>()
+        Dictionary<string, object> metadata = new()
         {
             { "type", "text" },
             { "tags", new List<string>() { "memory", "cats" } }

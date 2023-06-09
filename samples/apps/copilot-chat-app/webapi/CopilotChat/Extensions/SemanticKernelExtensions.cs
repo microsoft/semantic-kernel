@@ -23,19 +23,18 @@ public static class CopilotChatSemanticKernelExtensions
     public static IServiceCollection AddCopilotChatPlannerServices(this IServiceCollection services)
     {
         IOptions<PlannerOptions>? plannerOptions = services.BuildServiceProvider().GetService<IOptions<PlannerOptions>>();
-        if (plannerOptions != null && plannerOptions.Value.Enabled)
+        services.AddScoped<CopilotChatPlanner>(sp =>
         {
-            services.AddScoped<CopilotChatPlanner>(sp => new CopilotChatPlanner(Kernel.Builder
+            IKernel plannerKernel = Kernel.Builder
                 .WithLogger(sp.GetRequiredService<ILogger<IKernel>>())
-                .WithConfiguration(
-                    new KernelConfig().AddPlannerBackend(
-                        sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
-                ) // TODO verify planner has AI service configured
-                .Build()));
+                // TODO verify planner has AI service configured
+                .WithPlannerBackend(sp.GetRequiredService<IOptions<AIServiceOptions>>().Value)
+                .Build();
+            return new CopilotChatPlanner(plannerKernel, plannerOptions?.Value);
+        });
 
-            // Register Planner skills (AI plugins) here.
-            // TODO: Move planner skill registration from ChatController to here.
-        }
+        // Register Planner skills (AI plugins) here.
+        // TODO: Move planner skill registration from ChatController to here.
 
         return services;
     }
@@ -51,16 +50,10 @@ public static class CopilotChatSemanticKernelExtensions
                 chatMessageRepository: sp.GetRequiredService<ChatMessageRepository>(),
                 chatSessionRepository: sp.GetRequiredService<ChatSessionRepository>(),
                 promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
+                documentImportOptions: sp.GetRequiredService<IOptions<DocumentMemoryOptions>>(),
                 planner: sp.GetRequiredService<CopilotChatPlanner>(),
-                plannerOptions: sp.GetRequiredService<IOptions<PlannerOptions>>().Value,
                 logger: sp.GetRequiredService<ILogger<ChatSkill>>()),
             nameof(ChatSkill));
-
-        // Document memory skill
-        kernel.ImportSkill(new DocumentMemorySkill(
-                sp.GetRequiredService<IOptions<PromptsOptions>>(),
-                sp.GetRequiredService<IOptions<DocumentMemoryOptions>>().Value),
-            nameof(DocumentMemorySkill));
 
         return kernel;
     }
@@ -68,12 +61,12 @@ public static class CopilotChatSemanticKernelExtensions
     /// <summary>
     /// Add the completion backend to the kernel config for the planner.
     /// </summary>
-    private static KernelConfig AddPlannerBackend(this KernelConfig kernelConfig, AIServiceOptions options)
+    private static KernelBuilder WithPlannerBackend(this KernelBuilder kernelBuilder, AIServiceOptions options)
     {
         return options.Type switch
         {
-            AIServiceOptions.AIServiceType.AzureOpenAI => kernelConfig.AddAzureChatCompletionService(options.Models.Planner, options.Endpoint, options.Key),
-            AIServiceOptions.AIServiceType.OpenAI => kernelConfig.AddOpenAIChatCompletionService(options.Models.Planner, options.Key),
+            AIServiceOptions.AIServiceType.AzureOpenAI => kernelBuilder.WithAzureChatCompletionService(options.Models.Planner, options.Endpoint, options.Key),
+            AIServiceOptions.AIServiceType.OpenAI => kernelBuilder.WithOpenAIChatCompletionService(options.Models.Planner, options.Key),
             _ => throw new ArgumentException($"Invalid {nameof(options.Type)} value in '{AIServiceOptions.PropertyName}' settings."),
         };
     }
