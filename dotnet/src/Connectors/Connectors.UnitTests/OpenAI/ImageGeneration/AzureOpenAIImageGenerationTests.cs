@@ -60,17 +60,17 @@ public sealed class AzureOpenAIImageGenerationTests
     }
 
     [Fact]
-    public async Task ItShouldGenerateImageSuccussed()
+    public async Task ItShouldGenerateImageSuccussedAsync()
     {
         //Arrange
         using var generateResult = CreateResponseMessage(HttpStatusCode.Accepted, "image_generation_test_response.json");
         using var imageResult = CreateResponseMessage(HttpStatusCode.OK, "image_result_test_response.json");
         using var mockHttpClient = GetHttpClientMock(generateResult, imageResult);
 
-        var sub = new AzureOpenAIImageGeneration("https://fake-endpoint/", "fake-api-key", mockHttpClient);
+        var generation = new AzureOpenAIImageGeneration("https://fake-endpoint/", "fake-api-key", mockHttpClient);
 
         //Act
-        var result = await sub.GenerateImageAsync("description", 256, 256);
+        var result = await generation.GenerateImageAsync("description", 256, 256);
 
         //Assert
         Assert.NotNull(result);
