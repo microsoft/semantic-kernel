@@ -12,7 +12,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>openai-sdk</artifactId>
+    <artifactId>semantickernel-openai-client</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>

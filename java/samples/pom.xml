@@ -4,7 +4,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.microsoft.semantickernel</groupId>
-
     <artifactId>samples</artifactId>
     <version>0.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -45,10 +44,6 @@
         <dependency>
             <groupId>com.microsoft.semantickernel.connectors</groupId>
             <artifactId>semantickernel-connectors</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>openai-sdk</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>

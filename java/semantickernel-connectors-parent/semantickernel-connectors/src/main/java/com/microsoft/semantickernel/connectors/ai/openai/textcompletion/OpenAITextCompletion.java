@@ -4,9 +4,9 @@ package com.microsoft.semantickernel.connectors.ai.openai.textcompletion;
 import com.azure.ai.openai.models.Choice;
 import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
-import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
@@ -29,7 +29,8 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
     /// <param name="modelId">Model name</param>
     /// <param name="apiKey">OpenAI API Key</param>
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
-    /// <param name="handlerFactory">Retry handler factory for HTTP requests.</param>
+    /// <param name="handlerFactory">Retry handler factory for HTTP
+    /// requests.</param>
     /// <param name="log">Application logger</param>
     @Inject
     public OpenAITextCompletion(OpenAIAsyncClient client, String modelId) {
@@ -50,15 +51,14 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
             throw new AIException(AIException.ErrorCodes.InvalidRequest, "Max tokens must be >0");
         }
 
-        CompletionsOptions completionsOptions =
-                new CompletionsOptions(Collections.singletonList(text))
-                        .setMaxTokens(requestSettings.getMaxTokens())
-                        .setTemperature(requestSettings.getTemperature())
-                        .setTopP(requestSettings.getTopP())
-                        .setFrequencyPenalty(requestSettings.getFrequencyPenalty())
-                        .setPresencePenalty(requestSettings.getPresencePenalty())
-                        .setModel(getModelId())
-                        .setUser(null);
+        CompletionsOptions completionsOptions = new CompletionsOptions(Collections.singletonList(text))
+                .setMaxTokens(requestSettings.getMaxTokens())
+                .setTemperature(requestSettings.getTemperature())
+                .setTopP(requestSettings.getTopP())
+                .setFrequencyPenalty(requestSettings.getFrequencyPenalty())
+                .setPresencePenalty(requestSettings.getPresencePenalty())
+                .setModel(getModelId())
+                .setUser(null);
 
         return getClient()
                 .getCompletions(getModelId(), completionsOptions)

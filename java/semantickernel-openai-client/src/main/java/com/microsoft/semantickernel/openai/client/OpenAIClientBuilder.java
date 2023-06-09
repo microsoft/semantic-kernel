@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.openai;
+package com.microsoft.semantickernel.openai.client;
 
 /** Builds an OpenAIClient for use with <a href="https://api.openai.com/v1">api.openai.com/v1</a> */
 public final class OpenAIClientBuilder {

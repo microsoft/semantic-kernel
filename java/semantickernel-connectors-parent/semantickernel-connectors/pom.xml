@@ -21,10 +21,6 @@
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>openai-sdk</artifactId>
-        </dependency>
-        <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
             <version>2.0.1.MR</version>
