@@ -31,6 +31,7 @@
     <ProjectReference Include="..\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
+    <ProjectReference Include="..\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
   </ItemGroup>
 
@@ -39,6 +40,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="HuggingFace\TestData\embeddings_test_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="OpenAI\TestData\image_result_test_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="OpenAI\TestData\image_generation_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

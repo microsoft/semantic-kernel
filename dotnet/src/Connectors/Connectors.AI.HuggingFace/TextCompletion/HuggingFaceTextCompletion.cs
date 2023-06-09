@@ -180,11 +180,11 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
             {
                 throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
                 {
-                    Data = { { "ModelResponse", body } },
+                    Data = { { "ResponseData", body } },
                 };
             }
 
-            return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c.Text));
+            return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {

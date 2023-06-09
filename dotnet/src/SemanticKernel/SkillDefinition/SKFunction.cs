@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,8 @@ using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
+
+#pragma warning disable format
 
 /// <summary>
 /// Standard Semantic Kernel callable function.
@@ -194,8 +197,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 // The prompt template might have function calls that could result in the context becoming untrusted,
                 // this way this hook should check again if the context became untrusted
                 TrustAwareString prompt = await func.TrustServiceInstance.ValidatePromptAsync(func, context, renderedPrompt).ConfigureAwait(false);
-
-                string completion = await client.CompleteAsync(prompt.Value, requestSettings, context.CancellationToken).ConfigureAwait(false);
+                var completionResults = await client.GetCompletionsAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
+                string completion = await GetCompletionsResultContentAsync(completionResults, context.CancellationToken).ConfigureAwait(false);
 
                 // Update the result with the completion
                 context.Variables.UpdateKeepingTrustState(completion);
@@ -205,6 +208,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 {
                     context.UntrustResult();
                 }
+                context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
             }
             catch (AIException ex)
             {
@@ -361,6 +365,18 @@ public sealed class SKFunction : ISKFunction, IDisposable
         public string Name { get; set; }
         public string Description { get; set; }
         public bool IsSensitive { get; set; }
+    }
+
+    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextCompletionResult> completions, CancellationToken cancellationToken = default)
+    {
+        StringBuilder completionResult = new();
+
+        foreach (ITextCompletionResult result in completions)
+        {
+            completionResult.Append(await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false));
+        }
+
+        return completionResult.ToString();
     }
 
     internal SKFunction(
