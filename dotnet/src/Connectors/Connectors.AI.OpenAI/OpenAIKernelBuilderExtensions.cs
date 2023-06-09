@@ -399,6 +399,7 @@ public static class OpenAIKernelBuilderExtensions
 
         return builder;
     }
+
     /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
