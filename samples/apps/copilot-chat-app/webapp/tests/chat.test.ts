@@ -45,4 +45,7 @@ test('get response from bot', async ({ page }) => {
     // The third message is the bot's response.
     const chatHistoryItems = page.getByTestId(new RegExp('chat-history-item-*'));
     expect((await chatHistoryItems.all()).length).toBe(3);
+
+    // Expect the third message to be the bot's response.
+    await expect(chatHistoryItems.nth(2)).toHaveAttribute('data-username', 'Copilot');
 });
