@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,7 +27,9 @@ public static class TextCompletionExtensions
         CancellationToken cancellationToken = default)
     {
         var completions = await textCompletion.GetCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        var firstResult = completions[0];
 
+<<<<<<< HEAD
         StringBuilder completionResult = new();
 
         foreach (ITextResult result in completions)
@@ -36,6 +38,9 @@ public static class TextCompletionExtensions
         }
 
         return completionResult.ToString();
+=======
+        return await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
+>>>>>>> f4e92eb1de8c8e222c51e0fd8e46e0e6be5650b7
     }
 
     /// <summary>
@@ -52,10 +57,10 @@ public static class TextCompletionExtensions
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var completionResults = textCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
-
-        await foreach (var completionResult in completionResults.ConfigureAwait(false))
+        var firstResult = await completionResults.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        if (firstResult is not null)
         {
-            await foreach (var word in completionResult.GetCompletionStreamingAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var word in firstResult.GetCompletionStreamingAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return word;
             }
