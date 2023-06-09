@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "type": "completion",
-  "description": "Remove a list of entities from a given text in a coherent manner. Returns the text without the entities in the list",
+  "description": "Remove a list of entities from a given text in a coherent manner. Both of these are supplied in the input. Returns the text without the entities in the list",
   "completion": {
     "max_tokens": 1024,
     "temperature": 0.0,
