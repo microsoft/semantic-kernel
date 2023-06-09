@@ -59,6 +59,7 @@ public static class ChatCompletionExtensions
         {
             var chatMessage = await chatResult.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
             messageContent.Append(chatMessage.Content);
+            break;
         }
 
         return messageContent.ToString();
