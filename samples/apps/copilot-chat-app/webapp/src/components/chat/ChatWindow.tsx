@@ -11,7 +11,12 @@ import {
     Popover,
     PopoverSurface,
     PopoverTrigger,
+    SelectTabData,
+    SelectTabEvent,
     shorthands,
+    Tab,
+    TabList,
+    TabValue,
     tokens,
     Tooltip,
 } from '@fluentui/react-components';
@@ -24,6 +29,7 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
+import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
 import { ShareBotMenu } from './ShareBotMenu';
 
@@ -52,10 +58,7 @@ const useClasses = makeStyles({
         flexDirection: 'row',
     },
     controls: {
-        ...shorthands.gap(tokens.spacingHorizontalM),
-        alignItems: 'right',
         display: 'flex',
-        flexDirection: 'row',
     },
     popoverHeader: {
         ...shorthands.margin('0'),
@@ -74,11 +77,6 @@ const useClasses = makeStyles({
     },
     input: {
         width: '100%',
-    },
-    buttons: {
-        display: 'flex',
-        alignSelf: 'end',
-        ...shorthands.gap(tokens.spacingVerticalS),
     },
 });
 
@@ -109,6 +107,11 @@ export const ChatWindow: React.FC = () => {
             }
         }
         setIsEditing(!isEditing);
+    };
+
+    const [selectedTab, setSelectedTab] = React.useState<TabValue>('chat');
+    const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
+        setSelectedTab(data.value);
     };
 
     const onClose = async () => {
@@ -142,11 +145,9 @@ export const ChatWindow: React.FC = () => {
                         avatar={{ image: { src: conversations[selectedId].botProfilePicture } }}
                         presence={{ status: 'available' }}
                     />
-                    {
-                        <Label size="large" weight="semibold">
-                            {chatName}
-                        </Label>
-                    }
+                    <Label size="large" weight="semibold">
+                        {chatName}
+                    </Label>
                     <Popover open={isEditing}>
                         <PopoverTrigger disableButtonEnhancement>
                             <Tooltip content={'Edit conversation name'} relationship="label">
@@ -168,22 +169,23 @@ export const ChatWindow: React.FC = () => {
                                 className={classes.input}
                                 onKeyDown={handleKeyDown}
                             />
-                            <div className={classes.buttons}>
-                                <Button appearance="secondary" onClick={onClose}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" appearance="primary" onClick={onSave}>
-                                    Save
-                                </Button>
-                            </div>
                         </PopoverSurface>
                     </Popover>
+                    <TabList selectedValue={selectedTab} onTabSelect={onTabSelect}>
+                        <Tab id="chat" value="chat">
+                            Chat
+                        </Tab>
+                        <Tab id="files" value="files">
+                            Files
+                        </Tab>
+                    </TabList>
                 </div>
                 <div className={classes.controls}>
                     <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
                 </div>
             </div>
-            <ChatRoom />
+            {selectedTab === 'chat' && <ChatRoom />}
+            {selectedTab === 'files' && <ChatResourceList chatId={selectedId} />}
         </div>
     );
 };

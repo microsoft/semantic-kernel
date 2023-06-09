@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
@@ -52,32 +51,21 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== Open AI - ChatGPT ========");
 
-        // Add your chat completion service
-        IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"))
-            .Build();
+        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
 
-        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-
-        await StartChatAsync(chatGPT);
+        await StartChatAsync(openAIChatCompletion);
     }
 
     private static async Task AzureOpenAIChatSampleAsync()
     {
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
-        IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithAzureChatCompletionService(
-                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY")) // Add your chat completion service
-            .Build();
+        AzureChatCompletion azureChatCompletion = new(
+            Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+            Env.Var("AZURE_OPENAI_ENDPOINT"),
+            Env.Var("AZURE_OPENAI_KEY"));
 
-        IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-
-        await StartChatAsync(chatGPT);
+        await StartChatAsync(azureChatCompletion);
     }
 
     private static async Task StartChatAsync(IChatCompletion chatGPT)
@@ -85,7 +73,7 @@ public static class Example17_ChatGPT
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
 
-        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat("You are a librarian, expert about books");
+        var chatHistory = chatGPT.CreateNewChat("You are a librarian, expert about books");
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book suggestions");
@@ -113,7 +101,7 @@ public static class Example17_ChatGPT
     {
         var message = chatHistory.Messages.Last();
 
-        Console.WriteLine($"{message.AuthorRole}: {message.Content}");
+        Console.WriteLine($"{message.Role}: {message.Content}");
         Console.WriteLine("------------------------");
 
         return Task.CompletedTask;
