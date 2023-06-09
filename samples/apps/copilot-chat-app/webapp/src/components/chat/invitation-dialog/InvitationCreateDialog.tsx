@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { Button, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Label, makeStyles, tokens } from "@fluentui/react-components";
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 
 const useStyles = makeStyles({
     content: {
@@ -21,10 +21,15 @@ export const InvitationCreateDialog: React.FC<InvitationCreateDialogProps> = ({ 
 
     const classes = useStyles();
 
-    const copyId = () => {
+    const copyId = useCallback(async () => {
         navigator.clipboard.writeText(chatId);
         setIsIdCopied(true);
-    };
+    }, [chatId]);
+
+    // Copy the chatId to clipboard by default when component mounts.
+    useEffect(() => {
+        copyId();
+    }, [copyId]);
 
     return (
         <div>

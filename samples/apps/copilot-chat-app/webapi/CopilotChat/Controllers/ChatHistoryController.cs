@@ -140,6 +140,8 @@ public class ChatHistoryController : ControllerBase
             {
                 this._logger.LogDebug(
                     "Failed to find chat session with id {0} for participant {1}", chatParticipant.ChatId, chatParticipant.Id);
+                return this.NotFound(
+                    $"Failed to find chat session with id {chatParticipant.ChatId} for participant {chatParticipant.Id}");
             }
         }
 

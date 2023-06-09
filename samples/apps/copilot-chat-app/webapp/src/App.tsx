@@ -75,27 +75,22 @@ const App: FC = () => {
     const chat = useChat();
 
     useEffect(() => {
-        if (isAuthenticated && account && appState === AppState.LoadingChats) {
+        if (isAuthenticated && account) {
+            dispatch(setLoggedInUserId(account.homeAccountId));
 
-            // Load all chats from memory
-            async function loadChats() {
-                if (await chat.loadChats()) {
-                    setAppState(AppState.Chat);
+            if (appState === AppState.LoadingChats) {
+                // Load all chats from the backend.
+                async function loadChats() {
+                    if (await chat.loadChats()) {
+                        setAppState(AppState.Chat);
+                    }
                 }
-            }
 
-            loadChats();
+                loadChats();
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instance, inProgress, isAuthenticated, appState]);
-
-    useEffect(() => {
-        if (isAuthenticated && account) {
-            dispatch(setLoggedInUserId(account.homeAccountId))
-        } else {
-            dispatch(setLoggedInUserId(''))
-        }
-    }, [isAuthenticated, account, dispatch]);
 
     const onDismissAlert = (key: string) => {
         dispatch(removeAlert(key));
