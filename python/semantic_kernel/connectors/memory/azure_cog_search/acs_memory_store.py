@@ -10,13 +10,10 @@ from dotenv import load_dotenv
 from logging import Logger, NullLogger
 from numpy import ndarray
 
-from tenacity import retry, wait_random_exponential, stop_after_attempt
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
-from azure.search.documents.models import Vector, QueryType
-from azure.identity import DefaultAzureCredential as DefaultAzureCredentialSync
-from azure.identity.aio import DefaultAzureCredential
+from azure.search.documents.models import Vector
 from azure.search.documents.indexes.models import (
     SearchIndex,
     SearchField,
@@ -196,7 +193,6 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                 semantic_settings=semantic_settings,
             )
        
-       
             await self._cogsearch_indexclient.create_index(index)
 
     async def get_collections_async(
@@ -275,8 +271,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         if not acs_search_client:
             if self._cogsearch_creds:
                 acs_search_client = SearchClient(service_endpoint = self._cogsearch_indexclient._endpoint, 
-                                             index_name=collection_name, 
-                                             credential=AzureKeyCredential(self._cogsearch_creds)) 
+                                                index_name=collection_name, 
+                                                credential=self._cogsearch_creds
+                                             )
         
         if record._id:
             id = record._id
@@ -290,12 +287,16 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             "vector": record._embedding.tolist(),
         }
 
-        result = cogsearch_client.upload_documents(documents=[acs_doc])
+        result = acs_search_client.upload_documents(documents=[acs_doc])
 
         ## Throw exception if problem
         ## Clean this up not needed if throwing
         if result[0].succeeded:
             return id
+        else:
+            raise ValueError(
+                "Error: Unable to upsert record."
+            )
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -453,6 +454,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         embedding: ndarray,
+        limit: int = 1,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
     ) -> Tuple[MemoryRecord, float]:
@@ -483,17 +485,23 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         else:
             select_fields = ["collection_id", "payload"]
 
-        results = acs_search_client.search(
-            vector=Vector(value=search_id, k=limit, fields="vector")
+        acs_result = acs_search_client.search(
+            vector=Vector(value=embedding, k=limit, fields="vector"),
             select=select_fields,
             top=limit,
         )
 
-        ## TODO: Score is in results
+        # Convert to MemoryRecord
+        vector_result = MemoryRecord(
+                is_reference=False,
+                external_source_name="azure-cognitive-search",
+                key=None,
+                id=acs_result.collection_id,
+                embedding=acs_result.vector,
+                payload=acs_result.payload,
+            )
 
-        ## TODO: Convert to MemoryRecord
-
-        return 
+        return tuple(vector_result, acs_result.score)
 
     async def get_nearest_matches_async(
         self,
