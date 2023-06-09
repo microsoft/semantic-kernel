@@ -13,5 +13,10 @@ public interface ITextCompletionResult
     /// </summary>
     ModelResult ModelResult { get; }
 
+    /// <summary>
+    /// Get the text completion from the result.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Text completion content</returns>
     Task<string> GetCompletionAsync(CancellationToken cancellationToken = default);
 }

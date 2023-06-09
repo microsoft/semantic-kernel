@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 using Skills;
@@ -112,28 +113,28 @@ Skill: StaticTextskill
       - day: Value of the day to append
         default: ''
 
-Skill: AnotherTextskill
-   Uppercase: Change all string chars to uppercase
+Skill: Textskill
+   Uppercase: Convert a string to uppercase.
       Params:
       - input: Text to uppercase
         default: ''
 
-   Strip: Remove spaces to the left and right of a string
+   Trim: Trim whitespace from the start and end of a string.
       Params:
       - input: Text to edit
         default: ''
 
-   LStrip: Remove spaces to the left of a string
+   TrimStart: Trim whitespace from the start of a string.
       Params:
       - input: Text to edit
         default: ''
 
-   RStrip: Remove spaces to the right of a string
+   TrimEnd: Trim whitespace from the end of a string.
       Params:
       - input: Text to edit
         default: ''
 
-   Lowercase: Change all string chars to lowercase
+   Lowercase: Convert a string to lowercase.
       Params:
       - input: Text to lowercase
         default: ''

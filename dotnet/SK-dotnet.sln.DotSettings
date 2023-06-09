@@ -183,6 +183,7 @@ public void It$SOMENAME$()
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=DEC4D140B393B04F8A18C0913BDE0592/Shortcut/@EntryValue">copy</s:String>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=DEC4D140B393B04F8A18C0913BDE0592/Text/@EntryValue">// Copyright (c) Microsoft. All rights reserved.
 </s:String>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=daa/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=appsettings/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=arrivederci/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=ask_0027s/@EntryIndexedValue">True</s:Boolean>
