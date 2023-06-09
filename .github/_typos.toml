@@ -26,6 +26,5 @@ ags = "ags" # Azure Graph Service
 [default]
 extend-ignore-identifiers-re = [
     
-    "[0-9]+[a-zA-Z]{3}[0-9]+", # treat any three letters surrounded by numbers as an identifier
     "[Vv]ersion=\"(.+)\"" # treat any text within Version attribute
 ]
