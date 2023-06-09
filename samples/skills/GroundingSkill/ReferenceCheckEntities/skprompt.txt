@@ -11,6 +11,8 @@
 
 # Examples
 
+The following examples are to help you with this task.
+
 ## Example 1
 
 <input>
@@ -52,12 +54,14 @@ And a realio, trulio, little pet dragon
 
 Below are the reference items, and the context that you need to parse for references to the items.
 
+<input>
 {{$input}}
+</input>
 
 <grounding_context>
 {{$reference_context}}
 </grounding_context>
 
-Please put your response after the "Response:". Produce a bulleted list of the <ungrounded_entities> which are not grounded in the context, and then repeat the input
+Please put your response after the "Response:". Produce a bulleted list of the <ungrounded_entities> which are not grounded in the context, and then repeat the <context>
 
 Response:
