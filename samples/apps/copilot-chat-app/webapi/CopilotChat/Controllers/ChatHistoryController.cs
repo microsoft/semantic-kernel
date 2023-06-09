@@ -103,8 +103,7 @@ public class ChatHistoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetChatSessionByIdAsync(Guid chatId)
     {
-        ChatSession? chat = null;
-        if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString(), out chat))
+        if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString(), out ChatSession? chat))
         {
             return this.Ok(chat);
         }
@@ -133,8 +132,7 @@ public class ChatHistoryController : ControllerBase
         var chats = new List<ChatSession>();
         foreach (var chatParticipant in chatParticipants)
         {
-            ChatSession? chat = null;
-            if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, out chat))
+            if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, out ChatSession? chat))
             {
                 chats.Add(chat!);
             }
@@ -190,17 +188,14 @@ public class ChatHistoryController : ControllerBase
     {
         string chatId = chatParameters.Id;
 
-        ChatSession? chat = null;
-        if (await this._sessionRepository.TryFindByIdAsync(chatId, out chat))
+        if (await this._sessionRepository.TryFindByIdAsync(chatId, out ChatSession? chat))
         {
             chat!.Title = chatParameters.Title;
             await this._sessionRepository.UpsertAsync(chat);
             return this.Ok(chat);
         }
-        else
-        {
-            return this.NotFound($"No chat session found for chat id '{chatId}'.");
-        }
+
+        return this.NotFound($"No chat session found for chat id '{chatId}'.");
     }
 
     /// <summary>
@@ -223,9 +218,7 @@ public class ChatHistoryController : ControllerBase
             var sources = await this._sourceRepository.FindByChatIdAsync(chatId.ToString());
             return this.Ok(sources);
         }
-        else
-        {
-            return this.NotFound($"No chat session found for chat id '{chatId}'.");
-        }
+
+        return this.NotFound($"No chat session found for chat id '{chatId}'.");
     }
 }

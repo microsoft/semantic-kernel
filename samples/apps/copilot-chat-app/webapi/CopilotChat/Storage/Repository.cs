@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SemanticKernel.Service.CopilotChat.Storage;
@@ -51,10 +52,10 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
     {
         try
         {
-            entity = FindByIdAsync(id).Result;
+            entity = this.FindByIdAsync(id).Result;
             return Task.FromResult(true);
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is ArgumentOutOfRangeException || ex is KeyNotFoundException)
         {
             entity = default;
             return Task.FromResult(false);

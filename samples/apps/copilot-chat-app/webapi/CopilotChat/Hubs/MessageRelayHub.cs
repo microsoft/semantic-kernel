@@ -13,7 +13,6 @@ public class MessageRelayHub : Hub
 {
     private const string ReceiveMessageClientCall = "ReceiveMessage";
     private const string ReceiveUserTypingStateClientCall = "ReceiveUserTypingState";
-    private const string ReceiveFileUploadedEventClientCall = "ReceiveFileUploadedEvent";
     private readonly ILogger<MessageRelayHub> _logger;
 
     /// <summary>
