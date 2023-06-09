@@ -481,9 +481,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                                              credential=AzureKeyCredential(self._cogsearch_creds)) 
                 
         if with_embedding:
-            select_fields = ["collection_id", "vector", "payload"]
+            select_fields = ["vector_id", "vector", "payload"]
         else:
-            select_fields = ["collection_id", "payload"]
+            select_fields = ["vector_id", "payload"]
 
         acs_result = acs_search_client.search(
             vector=Vector(value=embedding, k=limit, fields="vector"),
