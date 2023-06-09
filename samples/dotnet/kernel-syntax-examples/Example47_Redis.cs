@@ -3,24 +3,27 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
+using Microsoft.SemanticKernel.Connectors.Memory.Redis;
 using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
+using StackExchange.Redis;
 
 // ReSharper disable once InconsistentNaming
-public static class Example19_Qdrant
+public static class Example47_Redis
 {
-    private const string MemoryCollectionName = "qdrant-test";
+    private const string MemoryCollectionName = "redis-test";
 
     public static async Task RunAsync()
     {
-        QdrantMemoryStore memoryStore = new(Env.Var("QDRANT_ENDPOINT"), 1536, ConsoleLogger.Log);
+        string configuration = Env.Var("REDIS_CONFIGURATION");
+        using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configuration);
+        IDatabase database = connectionMultiplexer.GetDatabase();
+        RedisMemoryStore memoryStore = new(database, vectorSize: 1536);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
             .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
             .WithMemoryStorage(memoryStore)
-            //.WithQdrantMemoryStore(Env.Var("QDRANT_ENDPOINT"), 1536) // This method offers an alternative approach to registering Qdrant memory store.
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");
@@ -48,9 +51,9 @@ public static class Example19_Qdrant
         Console.WriteLine(lookup != null ? lookup.Metadata.Text : "ERROR: memory not found");
 
         Console.WriteLine("== Retrieving Memories Directly From the Store ==");
-        var memory1 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key1);
-        var memory2 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key2);
-        var memory3 = await memoryStore.GetWithPointIdAsync(MemoryCollectionName, key3);
+        var memory1 = await memoryStore.GetAsync(MemoryCollectionName, key1);
+        var memory2 = await memoryStore.GetAsync(MemoryCollectionName, key2);
+        var memory3 = await memoryStore.GetAsync(MemoryCollectionName, key3);
         Console.WriteLine(memory1 != null ? memory1.Metadata.Text : "ERROR: memory not found");
         Console.WriteLine(memory2 != null ? memory2.Metadata.Text : "ERROR: memory not found");
         Console.WriteLine(memory3 != null ? memory3.Metadata.Text : "ERROR: memory not found");
