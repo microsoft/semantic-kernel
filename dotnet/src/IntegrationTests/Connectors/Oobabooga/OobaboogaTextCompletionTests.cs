@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
+using System.Net.WebSockets;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -37,7 +38,7 @@ public sealed class OobaboogaTextCompletionTests
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionAsync()
     {
-        using var oobaboogaLocal = new OobaboogaTextCompletion(new Uri(Endpoint), BlockingPort, StreamingPort);
+        var oobaboogaLocal = new OobaboogaTextCompletion(new Uri(Endpoint), BlockingPort, StreamingPort);
 
         // Act
         var localResponse = await oobaboogaLocal.CompleteAsync(Input, new CompleteRequestSettings()
@@ -51,9 +52,10 @@ public sealed class OobaboogaTextCompletionTests
     }
 
     [Fact(Skip = "This test is for manual verification.")]
-    public void OobaboogaLocalTextCompletionStreamingAsync()
+    public async Task OobaboogaLocalTextCompletionStreamingAsync()
     {
-        using var oobaboogaLocal = new OobaboogaTextCompletion(new Uri(Endpoint), BlockingPort, StreamingPort);
+        using var webSocketClient = new ClientWebSocket();
+        var oobaboogaLocal = new OobaboogaTextCompletion(new Uri(Endpoint), BlockingPort, StreamingPort, webSocket: webSocketClient);
 
         // Act
         var localResponse = oobaboogaLocal.CompleteStreamAsync(Input, new CompleteRequestSettings()
@@ -63,7 +65,13 @@ public sealed class OobaboogaTextCompletionTests
             TopP = 0.1,
         });
 
-        var resultsMerged = localResponse.ToEnumerable().Aggregate((s, s1) => s + s1);
+        StringBuilder stringBuilder = new();
+        await foreach (var result in localResponse)
+        {
+            stringBuilder.Append(result);
+        }
+
+        var resultsMerged = stringBuilder.ToString();
         AssertAcceptableResponse(resultsMerged);
     }
 

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -20,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// Oobabooga text completion service API.
 /// Adapted from https://github.com/oobabooga/text-generation-webui/tree/main/api-examples
 /// </summary>
-public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
+public sealed class OobaboogaTextCompletion : ITextCompletion
 {
     public const string HttpUserAgent = "Microsoft-Semantic-Kernel";
     public const string BlockingUriPath = "/api/v1/generate";
@@ -32,7 +33,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
     private readonly int _blockingPort;
     private readonly int _streamingPort;
     private readonly HttpClient _httpClient;
-    private readonly ClientWebSocket _webSocket;
+    private readonly ClientWebSocket? _webSocket;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaTextCompletion"/> class.
@@ -41,7 +42,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
     /// <param name="blockingPort">The port for blocking requests.</param>
     /// <param name="streamingPort">The port for streaming requests.</param>
     /// <param name="httpClient">The HTTP client to use for making regular blocking API requests. If not specified, a default client will be used.</param>
-    /// <param name="webSocket">The client web socket to use for making streaming API requests. If not specified, a default client will be used.</param>
+    /// <param name="webSocket">The client web socket to use for making streaming API requests. If not specified, a transient client will be used on each call.</param>
     public OobaboogaTextCompletion(Uri endpoint, int blockingPort, int streamingPort, HttpClient? httpClient = null, ClientWebSocket? webSocket = null)
     {
         Verify.NotNull(endpoint);
@@ -50,8 +51,11 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
         this._blockingPort = blockingPort;
         this._streamingPort = streamingPort;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._webSocket = webSocket ?? new ClientWebSocket();
-        this._webSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
+        if (webSocket != null)
+        {
+            this.SetWebSocketOptions(webSocket);
+            this._webSocket = webSocket;
+        }
     }
 
     /// <inheritdoc/>
@@ -73,46 +77,82 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
         var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
 
         var requestBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(completionRequest));
-
-        await this._webSocket.ConnectAsync(streamingUri.Uri, cancellationToken).ConfigureAwait(false);
-
-        var sendSegment = new ArraySegment<byte>(requestBytes);
-        await this._webSocket.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
-
-        var buffer = new byte[1024];
-        while (this._webSocket.State == WebSocketState.Open)
+        ClientWebSocket? transientClientWebSocket = null;
+        try
         {
-            var received = await this._webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken).ConfigureAwait(false);
-
-            if (received.MessageType == WebSocketMessageType.Text)
+            ClientWebSocket? clientWebSocket;
+            if (this._webSocket is null)
             {
-                var body = Encoding.UTF8.GetString(buffer, 0, received.Count);
-                var responseObject = JsonSerializer.Deserialize<TextCompletionStreamingResponse>(body);
+                transientClientWebSocket = new();
+                this.SetWebSocketOptions(transientClientWebSocket);
+                clientWebSocket = transientClientWebSocket;
+            }
+            else
+            {
+                clientWebSocket = this._webSocket;
+            }
 
-                if (responseObject is null)
+            await clientWebSocket.ConnectAsync(streamingUri.Uri, cancellationToken).ConfigureAwait(false);
+
+            var sendSegment = new ArraySegment<byte>(requestBytes);
+            await clientWebSocket.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
+
+            var buffer = new byte[8192]; // Increased buffer size
+            MemoryStream messageStream = new();
+            while (true)
+            {
+                WebSocketReceiveResult result;
+                do
                 {
-                    throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
+                    var segment = new ArraySegment<byte>(buffer);
+                    result = await clientWebSocket.ReceiveAsync(segment, cancellationToken).ConfigureAwait(false);
+                    await messageStream.WriteAsync(buffer, 0, result.Count, cancellationToken).ConfigureAwait(false);
+                } while (!result.EndOfMessage);
+
+                messageStream.Seek(0, SeekOrigin.Begin);
+
+                if (result.MessageType == WebSocketMessageType.Text)
+                {
+                    using var reader = new StreamReader(messageStream, Encoding.UTF8);
+                    var messageText = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    var responseObject = JsonSerializer.Deserialize<TextCompletionStreamingResponse>(messageText);
+
+                    if (responseObject is null)
                     {
-                        Data = { { "ModelResponse", body } },
-                    };
+                        throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
+                        {
+                            Data = { { "ModelResponse", messageText } },
+                        };
+                    }
+
+                    switch (responseObject.Event)
+                    {
+                        case ResponseObjectTextStreamEvent:
+                            yield return new TextCompletionStreamingResult(responseObject);
+                            break;
+                        case ResponseObjectStreamEndEvent:
+                            await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
                 }
 
-                switch (responseObject.Event)
+                messageStream.SetLength(0);
+
+                if (clientWebSocket.State != WebSocketState.Open)
                 {
-                    case ResponseObjectTextStreamEvent:
-                        yield return new TextCompletionStreamingResult(responseObject);
-                        break;
-                    case ResponseObjectStreamEndEvent:
-                        await this._webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
-                        break;
-                    default:
-                        break;
+                    break;
                 }
             }
-            else if (received.MessageType == WebSocketMessageType.Close)
-            {
-                await this._webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
-            }
+        }
+        finally
+        {
+            transientClientWebSocket?.Dispose();
         }
     }
 
@@ -170,12 +210,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
         }
     }
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this._webSocket.Dispose();
-    }
-
     #region private ================================================================================
 
     /// <summary>
@@ -201,6 +235,14 @@ public sealed class OobaboogaTextCompletion : ITextCompletion, IDisposable
             RepetitionPenalty = GetRepetitionPenalty(requestSettings),
             StoppingStrings = requestSettings.StopSequences.ToList()
         };
+    }
+
+    /// <summary>
+    /// Sets the options for the <paramref name="clientWebSocket"/>, either persistent and provided by the ctor, or transient if none provided.
+    /// </summary>
+    private void SetWebSocketOptions(ClientWebSocket clientWebSocket)
+    {
+        clientWebSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
     }
 
     /// <summary>

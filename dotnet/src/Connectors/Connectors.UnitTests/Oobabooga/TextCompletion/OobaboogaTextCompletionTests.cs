@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
     private HttpMessageHandlerStub _messageHandlerStub;
     private HttpClient _httpClient;
+    private ClientWebSocket _webSocket;
     private Uri _endPointUri;
     private string _streamCompletionResponseStub;
 
@@ -36,6 +38,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         this._streamCompletionResponseStub = OobaboogaTestHelper.GetTestResponse("completion_test_streaming_response.json");
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
+        this._webSocket = new ClientWebSocket();
         this._endPointUri = new Uri(EndPoint);
     }
 
@@ -43,7 +46,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
         //Arrange
-        using var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
+        var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -61,7 +64,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        using var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
+        var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -74,7 +77,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task BlockingUrlShouldBeBuiltSuccessfullyAsync()
     {
         //Arrange
-        using var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
+        var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -90,7 +93,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
-        using var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
+        var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -106,7 +109,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ShouldHandleServiceResponseAsync()
     {
         //Arrange
-        using var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
+        var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
 
         //Act
         var result = await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -122,15 +125,77 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldSendPromptToStreamingServiceAsync()
+    public async Task ShouldSendPromptToStreamingServicePersistentWebSocketAsync()
     {
-        var expectedResponse = Encoding.UTF8.GetBytes(this._streamCompletionResponseStub);
-        using var server = new WebSocketTestServer($"http://localhost:{StreamingPort}/", request => new ArraySegment<byte>(expectedResponse));
-        using var sut = new OobaboogaTextCompletion(
+        var sut = new OobaboogaTextCompletion(
+            new Uri("http://localhost/"),
+            BlockingPort,
+            StreamingPort,
+            httpClient: this._httpClient,
+            webSocket: this._webSocket);
+
+        this.ShouldSendPromptToStreamingServiceAsync(sut);
+    }
+
+    [Fact]
+    public async Task ShouldSendPromptToStreamingServiceTransientWebSocketAsync()
+    {
+        var sut = new OobaboogaTextCompletion(
             new Uri("http://localhost/"),
             BlockingPort,
             StreamingPort,
             httpClient: this._httpClient);
+
+        this.ShouldSendPromptToStreamingServiceAsync(sut);
+    }
+
+    [Fact]
+    public async Task ShouldHandleStreamingServicePersistentWebSocketResponseAsync()
+    {
+        var sut = new OobaboogaTextCompletion(
+            new Uri("http://localhost/"),
+            BlockingPort,
+            StreamingPort,
+            httpClient: this._httpClient,
+            webSocket: this._webSocket);
+
+        this.ShouldHandleStreamingServiceResponseAsync(sut);
+    }
+
+    [Fact]
+    public async Task ShouldHandleStreamingServiceTransientWebSocketResponseAsync()
+    {
+        var sut = new OobaboogaTextCompletion(
+            new Uri("http://localhost/"),
+            BlockingPort,
+            StreamingPort,
+            httpClient: this._httpClient);
+
+        this.ShouldHandleStreamingServiceResponseAsync(sut);
+    }
+
+    private void ShouldHandleStreamingServiceResponseAsync(OobaboogaTextCompletion sut)
+    {
+        var expectedResponse = Encoding.UTF8.GetBytes(this._streamCompletionResponseStub);
+        using var server = new WebSocketTestServer($"http://localhost:{StreamingPort}/", request => new ArraySegment<byte>(expectedResponse));
+
+        var localResponse = sut.CompleteStreamAsync(CompletionText, new CompleteRequestSettings()
+        {
+            Temperature = 0.01,
+            MaxTokens = 7,
+            TopP = 0.1,
+        });
+
+        //TODO: use AggregateAsync when System.Linq.Async Nuget package is installed
+        var completion = localResponse.ToEnumerable().Aggregate((s, s1) => s + s1);
+
+        Assert.Equal("This is test completion response", completion);
+    }
+
+    private void ShouldSendPromptToStreamingServiceAsync(OobaboogaTextCompletion sut)
+    {
+        var expectedResponse = Encoding.UTF8.GetBytes(this._streamCompletionResponseStub);
+        using var server = new WebSocketTestServer($"http://localhost:{StreamingPort}/", request => new ArraySegment<byte>(expectedResponse));
 
         var localResponse = sut.CompleteStreamAsync(CompletionText, new CompleteRequestSettings()
         {
@@ -148,34 +213,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         Assert.Equal(CompletionText, requestPayload.Prompt);
     }
 
-    [Fact]
-    public async Task ShouldHandleStreamingServiceResponseAsync()
-    {
-        var expectedResponse = Encoding.UTF8.GetBytes(this._streamCompletionResponseStub);
-
-        using var server = new WebSocketTestServer($"http://localhost:{StreamingPort}/", request => new ArraySegment<byte>(expectedResponse));
-        using var sut = new OobaboogaTextCompletion(
-            new Uri("http://localhost/"),
-            BlockingPort,
-            StreamingPort,
-            httpClient: this._httpClient);
-
-        var localResponse = sut.CompleteStreamAsync(CompletionText, new CompleteRequestSettings()
-        {
-            Temperature = 0.01,
-            MaxTokens = 7,
-            TopP = 0.1,
-        });
-
-        //TODO: use AggregateAsync when System.Linq.Async Nuget package is installed
-        var completion = localResponse.ToEnumerable().Aggregate((s, s1) => s + s1);
-
-        Assert.Equal("This is test completion response", completion);
-    }
-
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
+        this._webSocket.Dispose();
     }
 }
