@@ -85,6 +85,9 @@ internal sealed class Database
 
     /// <summary>
     /// Migrate column types from older versions.
+    /// <para>
+    /// Note: This is a TRANSITION method, which will be removed after two releases version!
+    /// </para>
     /// </summary>
     /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
