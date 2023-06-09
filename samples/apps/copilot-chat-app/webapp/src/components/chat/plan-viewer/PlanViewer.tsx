@@ -1,5 +1,5 @@
 import { Button, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
-import { CheckmarkCircle24Regular, DismissCircle24Regular } from '@fluentui/react-icons';
+import { CheckmarkCircle24Regular, DismissCircle24Regular, Info24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { IChatMessage } from '../../../libs/models/ChatMessage';
 import { IPlanInput, PlanState } from '../../../libs/models/Plan';
@@ -147,6 +147,15 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 <div className={mergeClasses(classes.buttons, classes.status)}>
                     <DismissCircle24Regular />
                     <Text className={classes.text}> Plan Cancelled</Text>
+                </div>
+            )}
+            {planState === PlanState.NoOp && (
+                <div className={mergeClasses(classes.buttons, classes.status)}>
+                    <Info24Regular />
+                    <Text className={classes.text}>
+                        Your app state has changed since this plan was generated, making it unreliable for the planner.
+                        Please request a fresh plan to avoid potential conflicts.
+                    </Text>
                 </div>
             )}
         </div>

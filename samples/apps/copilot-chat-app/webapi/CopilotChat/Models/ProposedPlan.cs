@@ -23,7 +23,7 @@ public class ProposedPlan
     public string Type { get; set; }
 
     /// <summary>
-    /// State of plan: Approved, Rejected, or ApprovalRequired
+    /// State of plan: Approved, Rejected, or NoOp (plan has not received any user input)
     /// </summary>
     [JsonPropertyName("state")]
     public string State { get; set; }

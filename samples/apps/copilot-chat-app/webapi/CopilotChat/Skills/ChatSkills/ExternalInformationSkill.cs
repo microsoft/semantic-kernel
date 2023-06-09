@@ -133,7 +133,7 @@ public class ExternalInformationSkill
                 Plan sanitizedPlan = this.SanitizePlan(plan, context);
                 sanitizedPlan.State.Update(plan.State);
 
-                this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner.PlannerOptions!.Type, "ApprovalRequired");
+                this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner.PlannerOptions!.Type, "NoOp");
             }
         }
 
