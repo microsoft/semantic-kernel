@@ -12,14 +12,14 @@ public class MathSkillTest {
     @Test
     public void testAddition() {
         MathSkill mathSkill = new MathSkill();
-        BigDecimal result = mathSkill.add("1", new BigDecimal("2")).block();
+        BigDecimal result = mathSkill.add("1", "2").block();
         assertEquals(new BigDecimal("3"), result);
     }
 
     @Test
     public void testSubtraction() {
         MathSkill mathSkill = new MathSkill();
-        BigDecimal result = mathSkill.subtract("1", new BigDecimal("2")).block();
+        BigDecimal result = mathSkill.subtract("1", "2").block();
         assertEquals(new BigDecimal("-1"), result);
     }
 }
