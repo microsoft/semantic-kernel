@@ -91,10 +91,6 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-<<<<<<< HEAD
-        return Task.FromResult(this.InternalGetTextCompletionAsChat(text, requestSettings, cancellationToken) as IReadOnlyList<ITextResult>);
-=======
         return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
->>>>>>> f4e92eb1de8c8e222c51e0fd8e46e0e6be5650b7
     }
 }

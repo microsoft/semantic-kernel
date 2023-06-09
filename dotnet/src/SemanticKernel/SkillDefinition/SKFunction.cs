@@ -374,6 +374,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
         foreach (ITextResult result in completions)
         {
             completionResult.Append(await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false));
+
+            // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
+            break;
         }
 
         return completionResult.ToString();

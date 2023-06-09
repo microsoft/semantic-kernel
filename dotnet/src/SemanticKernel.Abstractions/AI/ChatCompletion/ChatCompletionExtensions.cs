@@ -17,6 +17,7 @@ public static class ChatCompletionExtensions
     /// <param name="chat">Chat history</param>
     /// <param name="requestSettings">AI request settings</param>
     /// <param name="cancellationToken">Async cancellation token</param>
+    /// <remarks>This extension does not support multiple prompt results (Only the first will be returned)</remarks>
     /// <returns>Stream the generated chat message in string format</returns>
     public static async IAsyncEnumerable<string> GenerateMessageStreamAsync(
         this IChatCompletion chatCompletion,
@@ -32,6 +33,7 @@ public static class ChatCompletionExtensions
             {
                 yield return chatMessageStream.Content;
             }
+            yield break;
         }
     }
 
@@ -42,6 +44,7 @@ public static class ChatCompletionExtensions
     /// <param name="chat">Chat history</param>
     /// <param name="requestSettings">AI request settings</param>
     /// <param name="cancellationToken">Async cancellation token</param>
+    /// <remarks>This extension does not support multiple prompt results (Only the first will be returned)</remarks>
     /// <returns>Generated chat message in string format</returns>
     public static async Task<string> GenerateMessageAsync(
         this IChatCompletion chatCompletion,
