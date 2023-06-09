@@ -17,11 +17,11 @@ public class MathSkill {
                     @SKFunctionParameters(name = "input", description = "The value to add to.")
                     String input,
             @SKFunctionParameters(name = "amount", description = "The amount to be added to value.")
-                    BigDecimal amount) {
+                    String amount) {
 
         BigDecimal bValue = new BigDecimal(input);
 
-        return Mono.just(bValue.add(amount));
+        return Mono.just(bValue.add(new BigDecimal(amount)));
     }
 
     @DefineSKFunction(description = "Subtracts amount from value.", name = "Subtract")
@@ -34,10 +34,10 @@ public class MathSkill {
             @SKFunctionParameters(
                             name = "amount",
                             description = "The amount to be subtracted from value.")
-                    BigDecimal amount) {
+                    String amount) {
 
         BigDecimal bValue = new BigDecimal(input);
 
-        return Mono.just(bValue.subtract(amount));
+        return Mono.just(bValue.subtract(new BigDecimal(amount)));
     }
 }
