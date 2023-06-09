@@ -7,7 +7,7 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 /// <summary>
 /// Helper for OpenAI test purposes.
 /// </summary>
-internal sealed class OpenAITestHelper
+internal static class OpenAITestHelper
 {
     /// <summary>
     /// Reads test response from file for mocking purposes.
