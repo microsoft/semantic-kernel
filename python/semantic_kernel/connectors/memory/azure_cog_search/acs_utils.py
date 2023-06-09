@@ -7,18 +7,7 @@ from numpy import linalg
 from azure.core.credentials import AzureKeyCredential
 from azure.identity import DefaultAzureCredential as DefaultAzureCredentialSync
 from azure.identity.aio import DefaultAzureCredential
-from azure.search.documents.indexes.models import (
-    SearchIndex,
-    SearchField,
-    SearchFieldDataType,
-    SimpleField,
-    SemanticConfiguration,
-    PrioritizedFields,
-    SemanticField,
-    SemanticSettings,
-    VectorSearch,
-    VectorSearchAlgorithmConfiguration,
-)
+
 from numpy import array, ndarray
 
 
