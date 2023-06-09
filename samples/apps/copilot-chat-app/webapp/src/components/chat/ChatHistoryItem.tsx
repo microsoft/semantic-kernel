@@ -3,8 +3,8 @@
 import { useMsal } from '@azure/msal-react';
 import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { AuthorRoles, ChatMessageState, IChatMessage } from '../../libs/models/ChatMessage';
-import { useChat } from '../../libs/useChat';
+import { AuthorRoles, ChatMessageState, ChatMessageType, IChatMessage } from '../../libs/models/ChatMessage';
+import { GetResponseOptions, useChat } from '../../libs/useChat';
 import { parsePlan } from '../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -65,12 +65,7 @@ const useClasses = makeStyles({
 
 interface ChatHistoryItemProps {
     message: IChatMessage;
-    getResponse: (
-        value: string,
-        approvedPlanJson?: string,
-        planUserIntent?: string,
-        userCancelledPlan?: boolean,
-    ) => Promise<void>;
+    getResponse: (options: GetResponseOptions) => Promise<void>;
     messageIndex: number;
 }
 
@@ -106,7 +101,13 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
         const proposedPlan = JSON.parse(message.content).proposedPlan;
 
         // Invoke plan
-        await getResponse('Yes, proceed', JSON.stringify(proposedPlan), plan?.userIntent);
+        await getResponse({
+            messageType: ChatMessageType.Plan,
+            value: 'Yes, proceed',
+            chatId: selectedId,
+            approvedPlanJson: JSON.stringify(proposedPlan),
+            planUserIntent: plan?.userIntent,
+        });
     };
 
     const onPlanCancel = async () => {
@@ -119,7 +120,12 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
         );
 
         // Bail out of plan
-        await getResponse('No, cancel', undefined, undefined, true);
+        await getResponse({
+            messageType: ChatMessageType.Plan,
+            value: 'No, cancel',
+            chatId: selectedId,
+            userCancelledPlan: true,
+        });
     };
 
     const content = !isPlan
