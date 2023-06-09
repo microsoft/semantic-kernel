@@ -50,6 +50,7 @@ def memory_record1():
         is_reference=False,
         embedding=np.array([0.5, 0.5]),
         description="description",
+        additional_metadata="additional metadata",
         external_source_name="external source",
         timestamp=str(datetime.now()),
     )
@@ -63,6 +64,7 @@ def memory_record2():
         is_reference=False,
         embedding=np.array([0.25, 0.75]),
         description="description",
+        additional_metadata="additional metadata",
         external_source_name="external source",
         timestamp=str(datetime.now()),
     )
@@ -76,6 +78,7 @@ def memory_record3():
         is_reference=False,
         embedding=np.array([0.25, 0.80]),
         description="description",
+        additional_metadata="additional metadata",
         external_source_name="external source",
         timestamp=str(datetime.now()),
     )
@@ -159,7 +162,7 @@ async def test_upsert_batch_async_and_get_batch_async(
     results = await memory.get_batch_async(
         "test_collection",
         [memory_record1._id, memory_record2._id],
-        with_embedding=True,
+        with_embeddings=True,
     )
 
     assert len(results) >= 2

@@ -1,4 +1,5 @@
 import atexit
+import json
 import os
 from typing import List, Tuple
 
@@ -83,7 +84,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (
                         record._id,
                         record.embedding.tolist(),
-                        record._text,
+                        self.__serialize_metadata(record),
                         record._timestamp,
                     ),
                 )
@@ -113,7 +114,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                         (
                             record._id,
                             record.embedding.tolist(),
-                            record._text,
+                            self.__serialize_metadata(record),
                             record._timestamp,
                         )
                         for record in records
@@ -146,17 +147,21 @@ class PostgresMemoryStore(MemoryStoreBase):
                 result = cur.fetchone()
                 if result is None:
                     raise KeyError("Key not found")
-                return MemoryRecord(
-                    id=result[0],
-                    embedding=result[1] if with_embedding else numpy.array([]),
-                    text=result[2],
-                    description="",
-                    is_reference=False,
-                    external_source_name=PostgresMemoryStore.__name__,
+                return self.__deserialize_metadata(
+                    MemoryRecord(
+                        id=result[0],
+                        embedding=result[1] if with_embedding else numpy.array([]),
+                        text=None,
+                        description=None,
+                        additional_metadata=None,
+                        is_reference=False,
+                        external_source_name=PostgresMemoryStore.__name__,
+                    ),
+                    result[2],
                 )
 
     async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embedding: bool
+        self, collection_name: str, keys: List[str], with_embeddings: bool
     ) -> List[MemoryRecord]:
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
@@ -175,13 +180,17 @@ class PostgresMemoryStore(MemoryStoreBase):
                 if len(results) != len(keys):
                     raise KeyError("Some keys not found")
                 return [
-                    MemoryRecord(
-                        id=result[0],
-                        embedding=result[1] if with_embedding else numpy.array([]),
-                        text=result[2],
-                        description="",
-                        is_reference=False,
-                        external_source_name=PostgresMemoryStore.__name__,
+                    self.__deserialize_metadata(
+                        MemoryRecord(
+                            id=result[0],
+                            embedding=result[1] if with_embeddings else numpy.array([]),
+                            text=None,
+                            description=None,
+                            additional_metadata=None,
+                            is_reference=False,
+                            external_source_name=PostgresMemoryStore.__name__,
+                        ),
+                        result[2],
                     )
                     for result in results
                 ]
@@ -234,15 +243,22 @@ class PostgresMemoryStore(MemoryStoreBase):
                     LIMIT {limit}""",
                 )
                 results = cur.fetchall()
+
                 return [
                     (
-                        MemoryRecord(
-                            id=result[0],
-                            embedding=result[1] if with_embeddings else numpy.array([]),
-                            text=result[2],
-                            description="",
-                            is_reference=False,
-                            external_source_name=PostgresMemoryStore.__name__,
+                        self.__deserialize_metadata(
+                            MemoryRecord(
+                                id=result[0],
+                                embedding=result[1]
+                                if with_embeddings
+                                else numpy.array([]),
+                                text=None,
+                                description=None,
+                                additional_metadata=None,
+                                is_reference=False,
+                                external_source_name=PostgresMemoryStore.__name__,
+                            ),
+                            result[2],
                         ),
                         result[3],
                     )
@@ -275,13 +291,17 @@ class PostgresMemoryStore(MemoryStoreBase):
                 if result is None:
                     raise Exception("No match found")
                 return (
-                    MemoryRecord(
-                        id=result[0],
-                        embedding=result[1] if with_embedding else numpy.array([]),
-                        text=result[2],
-                        description="",
-                        is_reference=False,
-                        external_source_name=PostgresMemoryStore.__name__,
+                    self.__deserialize_metadata(
+                        MemoryRecord(
+                            id=result[0],
+                            embedding=result[1] if with_embedding else numpy.array([]),
+                            text=None,
+                            description=None,
+                            additional_metadata=None,
+                            is_reference=False,
+                            external_source_name=PostgresMemoryStore.__name__,
+                        ),
+                        result[2],
                     ),
                     result[3],
                 )
@@ -295,3 +315,21 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def __get_collections_async(self, cur: Cursor) -> List[str]:
         cur.execute("SELECT schema_name FROM information_schema.schemata")
         return [row[0] for row in cur.fetchall()]
+
+    def __serialize_metadata(self, record: MemoryRecord) -> str:
+        return json.dumps(
+            {
+                "text": record._text,
+                "description": record._description,
+                "additional_metadata": record._additional_metadata,
+            }
+        )
+
+    def __deserialize_metadata(
+        self, record: MemoryRecord, metadata: str
+    ) -> MemoryRecord:
+        metadata_dict: dict[str, str] = json.loads(metadata)
+        record._text = metadata_dict["text"]
+        record._description = metadata_dict["description"]
+        record._additional_metadata = metadata_dict["additional_metadata"]
+        return record
