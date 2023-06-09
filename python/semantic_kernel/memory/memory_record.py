@@ -13,6 +13,7 @@ class MemoryRecord:
     _id: str
     _description: Optional[str]
     _text: Optional[str]
+    _additional_metadata: Optional[str]
     _embedding: ndarray
 
     def __init__(
@@ -22,7 +23,8 @@ class MemoryRecord:
         id: str,
         description: Optional[str],
         text: Optional[str],
-        embedding: ndarray,
+        additional_metadata: Optional[str],
+        embedding: Optional[ndarray],
         key: Optional[str] = None,
         timestamp: Optional[str] = None,
     ) -> None:
@@ -34,6 +36,7 @@ class MemoryRecord:
             id {str} -- A unique for the record.
             description {Optional[str]} -- The description of the record.
             text {Optional[str]} -- The text of the record.
+            additional_metadata {Optional[str]} -- Custom metadata for the record.
             embedding {ndarray} -- The embedding of the record.
 
         Returns:
@@ -46,6 +49,7 @@ class MemoryRecord:
         self._id = id
         self._description = description
         self._text = text
+        self._additional_metadata = additional_metadata
         self._embedding = embedding
 
     @property
@@ -57,6 +61,7 @@ class MemoryRecord:
         external_id: str,
         source_name: str,
         description: Optional[str],
+        additional_metadata: Optional[str],
         embedding: ndarray,
     ) -> "MemoryRecord":
         """Create a reference record.
@@ -65,6 +70,7 @@ class MemoryRecord:
             external_id {str} -- The external id of the record.
             source_name {str} -- The name of the external source.
             description {Optional[str]} -- The description of the record.
+            additional_metadata {Optional[str]} -- Custom metadata for the record.
             embedding {ndarray} -- The embedding of the record.
 
         Returns:
@@ -76,12 +82,17 @@ class MemoryRecord:
             id=external_id,
             description=description,
             text=None,
+            additional_metadata=additional_metadata,
             embedding=embedding,
         )
 
     @staticmethod
     def local_record(
-        id: str, text: str, description: Optional[str], embedding: ndarray
+        id: str,
+        text: str,
+        description: Optional[str],
+        additional_metadata: Optional[str],
+        embedding: ndarray,
     ) -> "MemoryRecord":
         """Create a local record.
 
@@ -89,6 +100,7 @@ class MemoryRecord:
             id {str} -- A unique for the record.
             text {str} -- The text of the record.
             description {Optional[str]} -- The description of the record.
+            additional_metadata {Optional[str]} -- Custom metadata for the record.
             embedding {ndarray} -- The embedding of the record.
 
         Returns:
@@ -100,5 +112,6 @@ class MemoryRecord:
             id=id,
             description=description,
             text=text,
+            additional_metadata=additional_metadata,
             embedding=embedding,
         )
