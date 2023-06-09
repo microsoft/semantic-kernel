@@ -49,20 +49,15 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        if (await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
-        {
-            return;
-        }
-
-        FTCreateParams ftCreateParams = FTCreateParams.CreateParams().On(IndexDataType.HASH).Prefix($"{_skRedisKeyPrefix}:{collectionName}:");
+        FTCreateParams ftCreateParams = FTCreateParams.CreateParams().On(IndexDataType.HASH).Prefix($"{collectionName}:");
         Schema schema = new Schema()
             .AddTextField("key")
             .AddTextField("metadata")
             .AddNumericField("timestamp")
-            .AddVectorField("embedding", Schema.VectorField.VectorAlgo.HNSW, new Dictionary<string, object> {
-                    {"TYPE", "FLOAT32"},
+            .AddVectorField("embedding", VECTOR_INDEX_ALGORITHM, new Dictionary<string, object> {
+                    {"TYPE", VECTOR_TYPE},
                     {"DIM", this._vectorSize},
-                    {"DISTANCE_METRIC", "COSINE"},
+                    {"DISTANCE_METRIC", VECTOR_DISTANCE_METRIC},
                 });
 
         await this._ft.CreateAsync(collectionName, ftCreateParams, schema).ConfigureAwait(false);
@@ -76,7 +71,7 @@ public sealed class RedisMemoryStore : IMemoryStore
             await this._ft.InfoAsync(collectionName).ConfigureAwait(false);
             return true;
         }
-        catch (RedisServerException ex) when (ex.Message == "Unknown Index name")
+        catch (RedisServerException ex) when (ex.Message == MESSAGE_WHEN_INDEX_DOES_NOT_EXIST)
         {
             return false;
         }
@@ -85,11 +80,6 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        if (!await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
-        {
-            return;
-        }
-
         // dd: If `true`, all documents will be deleted.
         await this._ft.DropIndexAsync(collectionName, dd: true).ConfigureAwait(false);
     }
@@ -110,10 +100,6 @@ public sealed class RedisMemoryStore : IMemoryStore
             if (result != null)
             {
                 yield return result;
-            }
-            else
-            {
-                yield break;
             }
         }
     }
@@ -173,14 +159,14 @@ public sealed class RedisMemoryStore : IMemoryStore
                     .SetSortBy("vector_score")
                     .ReturnFields("key", "metadata", "embedding", "timestamp", "vector_score")
                     .Limit(0, limit)
-                    .Dialect(2);
+                    .Dialect(QUERY_DIALECT);
 
         var results = await this._ft.SearchAsync(collectionName, query).ConfigureAwait(false);
 
         foreach (var document in results.Documents)
         {
-            double score = 1 - (double)document["vector_score"];
-            if (score < minRelevanceScore)
+            double similarity = this.GetSimilarity(document);
+            if (similarity < minRelevanceScore)
             {
                 yield break;
             }
@@ -195,7 +181,7 @@ public sealed class RedisMemoryStore : IMemoryStore
                     json: document["metadata"]!,
                     embedding: convertedEmbedding,
                     key: document["key"],
-                    timestamp: ParseTimestamp((long?)document["timestamp"])), score);
+                    timestamp: ParseTimestamp((long?)document["timestamp"])), similarity);
         }
     }
 
@@ -212,8 +198,40 @@ public sealed class RedisMemoryStore : IMemoryStore
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    #region constants  ================================================================================
+
+    /// <summary>
+    /// Vector similarity index algorithm. The default value is "HNSW".
+    /// <see href="https://redis.io/docs/stack/search/reference/vectors/#create-a-vector-field"/>
+    /// </summary>
+    internal const Schema.VectorField.VectorAlgo VECTOR_INDEX_ALGORITHM = Schema.VectorField.VectorAlgo.HNSW;
+
+    /// <summary>
+    /// Vector type. Supported types are FLOAT32 and FLOAT64. The default value is "FLOAT32".
+    /// </summary>
+    internal const string VECTOR_TYPE = "FLOAT32";
+
+    /// <summary>
+    /// Supported distance metric, one of {L2, IP, COSINE}. The default value is "COSINE".
+    /// </summary>
+    internal const string VECTOR_DISTANCE_METRIC = "COSINE";
+
+    /// <summary>
+    /// Query dialect. To use a vector similarity query, specify DIALECT 2 or higher. The default value is "2".
+    /// <see href="https://redis.io/docs/stack/search/reference/vectors/#querying-vector-fields"/>
+    /// </summary>
+    internal const int QUERY_DIALECT = 2;
+
+    /// <summary>
+    /// Message when index does not exist.
+    /// <see href="https://github.com/RediSearch/RediSearch/blob/master/src/info_command.c#L96"/>
+    /// </summary>
+    internal const string MESSAGE_WHEN_INDEX_DOES_NOT_EXIST = "Unknown Index name";
+
+    #endregion
+
     #region private ================================================================================
-    private const string _skRedisKeyPrefix = "sk-memory";
+
     private readonly IDatabase _database;
     private readonly int _vectorSize;
     private readonly SearchCommands _ft;
@@ -239,7 +257,7 @@ public sealed class RedisMemoryStore : IMemoryStore
 
     private static RedisKey GetRedisKey(string collectionName, string key)
     {
-        return new RedisKey($"{_skRedisKeyPrefix}:{collectionName}:{key}");
+        return new RedisKey($"{collectionName}:{key}");
     }
 
     private async Task<MemoryRecord?> InternalGetAsync(string collectionName, string key, bool withEmbedding, CancellationToken cancellationToken)
@@ -263,6 +281,18 @@ public sealed class RedisMemoryStore : IMemoryStore
             embedding: Embedding<float>.Empty,
             key: hashEntries.FirstOrDefault(x => x.Name == "key").Value,
             timestamp: ParseTimestamp((long?)hashEntries.FirstOrDefault(x => x.Name == "timestamp").Value));
+    }
+
+    private double GetSimilarity(Document document)
+    {
+        RedisValue vectorScoreValue = document["vector_score"];
+
+        if (vectorScoreValue.IsNullOrEmpty || !vectorScoreValue.TryParse(out double vectorScore))
+        {
+            throw new RedisMemoryStoreException("Invalid or missing vector score value.");
+        }
+
+        return 1 - vectorScore;
     }
 
     #endregion
