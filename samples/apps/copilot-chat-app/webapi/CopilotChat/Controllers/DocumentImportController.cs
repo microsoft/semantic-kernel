@@ -154,7 +154,7 @@ public class DocumentImportController : ControllerBase
         else
         {
             await messageRelayHubContext.Clients.All
-                .SendAsync(DocumentUploadedClientCall, String.Empty, documentImportForm.UserId, formFile.FileName);
+                .SendAsync(DocumentUploadedClientCall, string.Empty, documentImportForm.UserId, formFile.FileName);
         }
 
         return this.Ok();

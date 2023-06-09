@@ -603,7 +603,7 @@ public class ChatSkill
     private async Task SaveNewMessageAsync(string message, string userId, string userName, string chatId)
     {
         // Make sure the chat exists.
-        if (!await this._chatSessionRepository.TryFindByIdAsync(chatId, out _))
+        if (!await this._chatSessionRepository.TryFindByIdAsync(chatId, v => _ = v))
         {
             throw new ArgumentException("Chat session does not exist.");
         }
@@ -621,7 +621,7 @@ public class ChatSkill
     private async Task SaveNewResponseAsync(string response, string prompt, string chatId)
     {
         // Make sure the chat exists.
-        if (!await this._chatSessionRepository.TryFindByIdAsync(chatId, out _))
+        if (!await this._chatSessionRepository.TryFindByIdAsync(chatId, v => _ = v))
         {
             throw new ArgumentException("Chat session does not exist.");
         }

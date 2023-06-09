@@ -48,17 +48,17 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
     }
 
     /// <inheritdoc/>
-    public Task<bool> TryFindByIdAsync(string id, out T? entity)
+    public async Task<bool> TryFindByIdAsync(string id, Action<T?> entity)
     {
         try
         {
-            entity = this.FindByIdAsync(id).Result;
-            return Task.FromResult(true);
+            entity(await this.FindByIdAsync(id));
+            return true;
         }
         catch (Exception ex) when (ex is ArgumentOutOfRangeException || ex is KeyNotFoundException)
         {
-            entity = default;
-            return Task.FromResult(false);
+            entity(default);
+            return false;
         }
     }
 

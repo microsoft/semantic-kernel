@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 
 namespace SemanticKernel.Service.CopilotChat.Storage;
@@ -38,7 +39,7 @@ public interface IRepository<T> where T : IStorageEntity
     /// Tries to find an entity by its id.
     /// </summary>
     /// <param name="id">Id of the entity.</param>
-    /// <param name="entity">The entity.</param>
+    /// <param name="entity">The entity delegate. Note async methods don't support ref or out parameters.</param>
     /// <returns>True if the entity was found, false otherwise.</returns>
-    Task<bool> TryFindByIdAsync(string id, out T? entity);
+    Task<bool> TryFindByIdAsync(string id, Action<T?> entity);
 }
