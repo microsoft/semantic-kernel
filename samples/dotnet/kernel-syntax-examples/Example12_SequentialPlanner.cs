@@ -213,7 +213,7 @@ internal static class Example12_SequentialPlanner
                 else
                 {
                     plan = await kernel.StepAsync(input, plan);
-                    input = "";
+                    input = string.Empty;
                 }
 
                 if (!plan.HasNextStep)
