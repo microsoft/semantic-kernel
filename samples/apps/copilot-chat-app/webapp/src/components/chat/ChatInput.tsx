@@ -9,7 +9,9 @@ import React, { useRef } from 'react';
 import { Constants } from '../../Constants';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
+import { ChatMessageType } from '../../libs/models/ChatMessage';
 import { DocumentImportService } from '../../libs/services/DocumentImportService';
+import { GetResponseOptions } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
@@ -58,7 +60,7 @@ const useClasses = makeStyles({
 interface ChatInputProps {
     // Hardcode to single user typing. For multi-users, it should be a list of ChatUser who are typing.
     isTyping?: boolean;
-    onSubmit: (value: string) => void;
+    onSubmit: (options: GetResponseOptions) => void;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = (props) => {
@@ -118,13 +120,14 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         if (documentFile) {
             try {
                 SetDocumentImporting(true);
-                await documentImportService.importDocumentAsync(
+                const document = await documentImportService.importDocumentAsync(
                     account!.homeAccountId!,
                     selectedId,
                     documentFile,
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 );
-                dispatch(addAlert({ message: 'Document uploaded successfully', type: AlertType.Success }));
+
+                handleSubmit(JSON.stringify(document), ChatMessageType.Document);
             } catch (e: any) {
                 const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -137,12 +140,12 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         documentFileRef.current!.value = '';
     };
 
-    const handleSubmit = (data: string) => {
+    const handleSubmit = (value: string, messageType: ChatMessageType = ChatMessageType.Message) => {
         try {
-            if (data.trim() === '') {
-                return; // only submit if data is not empty
+            if (value.trim() === '') {
+                return; // only submit if value is not empty
             }
-            onSubmit(data);
+            onSubmit({ value, messageType, chatId: selectedId });
             setValue('');
             dispatch(editConversationInput({ id: selectedId, newInput: '' }));
         } catch (error) {
