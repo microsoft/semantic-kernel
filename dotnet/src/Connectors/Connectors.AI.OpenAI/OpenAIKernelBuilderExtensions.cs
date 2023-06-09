@@ -368,5 +368,37 @@ public static class OpenAIKernelBuilderExtensions
 
         return builder;
     }
+
+    /// <summary>
+    /// Add the  Azure OpenAI DallE image generation service to the list
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="maxRetryCount">Maximum number of attempts to retrieve the image generation operation result.</param>
+    /// <returns>Self instance</returns>
+    public static KernelBuilder WithAzureOpenAIImageGenerationService(this KernelBuilder builder,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        bool setAsDefault = false,
+        HttpClient? httpClient = null,
+        int maxRetryCount = 5)
+    {
+        builder.WithAIService<IImageGeneration>(serviceId, ((ILogger Logger, KernelConfig Config) parameters) =>
+            new AzureOpenAIImageGeneration(
+                endpoint,
+                apiKey,
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                parameters.Logger,
+                maxRetryCount),
+            setAsDefault);
+
+        return builder;
+    }
+
     #endregion
 }
