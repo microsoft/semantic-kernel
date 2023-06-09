@@ -36,6 +36,7 @@ def create_credentials(
         credential = AzureKeyCredential(acs_key)
     return credential
 
+
 def compute_similarity_scores(
     self, embedding: ndarray, embedding_array: ndarray
 ) -> ndarray:

@@ -72,16 +72,16 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             self._cogsearch_creds = acs_credential
         elif acs_token_credential:
             self._cogsearch_token_creds = acs_token_credential
-        else: 
+        else:
             self._cogsearch_creds = create_credentials(
-            use_async=True, azsearch_api_key=acs_search_key
-        )
+                use_async=True, azsearch_api_key=acs_search_key
+            )
 
         if not self._cogsearch_creds or not self._cogsearch_token_creds:
             raise ValueError(
                 "Error: Unable to create azure cognitive search client credentials."
             )
-        
+
         # Get service endpoint from environment variable
         service_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
 
@@ -93,8 +93,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             raise ValueError(
                 "Error: A valid azure cognitive search client endpoint is required."
             )
-        
-        
+
         self._cogsearch_indexclient = SearchIndexClient(
             endpoint=service_endpoint, credential=self._cogsearch_creds
         )
@@ -102,10 +101,11 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         self._logger = logger or NullLogger()
 
     async def create_collection_async(
-        self, collection_name: str, 
+        self,
+        collection_name: str,
         vector_size: int,
         vector_config: Optional[VectorSearchAlgorithmConfiguration],
-        semantic_config: Optional[SemanticConfiguration]
+        semantic_config: Optional[SemanticConfiguration],
     ) -> None:
         """Creates a new collection if it does not exist.
 
@@ -123,7 +123,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                 searchable=True,
                 filterable=True,
                 retrievable=True,
-                key=True
+                key=True,
             ),
             SearchableField(
                 name="timestamp",
@@ -148,11 +148,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         ]
         ## Covert complex type to json string - Utils.py
 
-        if vector_config: 
-            vector_search = VectorSearch(
-                algorithm_configurations=[vector_config]
-            )
-        else: 
+        if vector_config:
+            vector_search = VectorSearch(algorithm_configurations=[vector_config])
+        else:
             vector_search = VectorSearch(
                 algorithm_configurations=[
                     VectorSearchAlgorithmConfiguration(
@@ -169,16 +167,15 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             )
 
         # Check to see if collection exists
-        collection_index = await self._cogsearch_indexclient.get_index(collection_name)    
+        collection_index = await self._cogsearch_indexclient.get_index(collection_name)
 
         if not collection_index:
-
             ## Look to see if semantic config is there or use default below
             if not semantic_config:
                 semantic_config = SemanticConfiguration(
                     name="az-semantic-config",
                     prioritized_fields=PrioritizedFields(
-                    title_field=SemanticField(field_name="vector_id"),
+                        title_field=SemanticField(field_name="vector_id"),
                     ),
                 )
 
@@ -192,7 +189,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                 vector_search=vector_search,
                 semantic_settings=semantic_settings,
             )
-       
+
             await self._cogsearch_indexclient.create_index(index)
 
     async def get_collections_async(
@@ -263,22 +260,25 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             str -- The unique database key of the record.
         """
-        
+
         ## Look up Search client class to see if exists or create
-        acs_search_client = self._cogsearch_indexclient.get_search_client(collection_name)
-        
+        acs_search_client = self._cogsearch_indexclient.get_search_client(
+            collection_name
+        )
+
         # If no Search client exists, create one
         if not acs_search_client:
             if self._cogsearch_creds:
-                acs_search_client = SearchClient(service_endpoint = self._cogsearch_indexclient._endpoint, 
-                                                index_name=collection_name, 
-                                                credential=self._cogsearch_creds
-                                             )
-        
+                acs_search_client = SearchClient(
+                    service_endpoint=self._cogsearch_indexclient._endpoint,
+                    index_name=collection_name,
+                    credential=self._cogsearch_creds,
+                )
+
         if record._id:
             id = record._id
         else:
-            id = uuid.uuid4() ## Check to make sure string
+            id = uuid.uuid4()  ## Check to make sure string
 
         acs_doc = {
             "timestamp": datetime.utcnow(),
@@ -294,9 +294,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         if result[0].succeeded:
             return id
         else:
-            raise ValueError(
-                "Error: Unable to upsert record."
-            )
+            raise ValueError("Error: Unable to upsert record.")
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -312,14 +310,18 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         """
         ## Initialize search client here
         ## Look up Search client class to see if exists or create
-        acs_search_client = self._cogsearch_indexclient.get_search_client(collection_name)
-        
+        acs_search_client = self._cogsearch_indexclient.get_search_client(
+            collection_name
+        )
+
         # If no Search client exists, create one
         if not acs_search_client:
             if self._cogsearch_creds:
-                acs_search_client = SearchClient(service_endpoint = self._cogsearch_indexclient._endpoint, 
-                                             index_name=collection_name, 
-                                             credential=AzureKeyCredential(self._cogsearch_creds)) 
+                acs_search_client = SearchClient(
+                    service_endpoint=self._cogsearch_indexclient._endpoint,
+                    index_name=collection_name,
+                    credential=AzureKeyCredential(self._cogsearch_creds),
+                )
 
         acs_documents = []
         acs_ids = []
@@ -363,21 +365,24 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         """
 
         ## Look up Search client class to see if exists or create
-        acs_search_client = self._cogsearch_indexclient.get_search_client(collection_name)
-        
+        acs_search_client = self._cogsearch_indexclient.get_search_client(
+            collection_name
+        )
+
         # If no Search client exists, create one
         if not acs_search_client:
             if self._cogsearch_creds:
-                acs_search_client = SearchClient(service_endpoint = self._cogsearch_indexclient._endpoint, 
-                                             index_name=collection_name, 
-                                             credential=AzureKeyCredential(self._cogsearch_creds)) 
+                acs_search_client = SearchClient(
+                    service_endpoint=self._cogsearch_indexclient._endpoint,
+                    index_name=collection_name,
+                    credential=AzureKeyCredential(self._cogsearch_creds),
+                )
 
         search_id = key
 
         ## Get document using key (search_id)
         acs_result = acs_search_client.get_document(key=search_id)
 
-        
         ## Create Memory record from document
         result = MemoryRecord(
             is_reference=False,
@@ -406,7 +411,6 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         acs_results = List[MemoryRecord]
 
-
         for acs_key in keys:
             ## TODO: Call get_document in loop
 
@@ -434,7 +438,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        
+
         ## TODO make key list
         await self.remove_batch_async(self, collection_name, key)
 
@@ -448,7 +452,8 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-       ## TODO: call delete_documents API pass list of dicts
+
+    ## TODO: call delete_documents API pass list of dicts
 
     async def get_nearest_match_async(
         self,
@@ -471,15 +476,19 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         """
 
         ## Look up Search client class to see if exists or create
-        acs_search_client = self._cogsearch_indexclient.get_search_client(collection_name)
-        
+        acs_search_client = self._cogsearch_indexclient.get_search_client(
+            collection_name
+        )
+
         # If no Search client exists, create one
         if not acs_search_client:
             if self._cogsearch_creds:
-                acs_search_client = SearchClient(service_endpoint = self._cogsearch_indexclient._endpoint, 
-                                             index_name=collection_name, 
-                                             credential=AzureKeyCredential(self._cogsearch_creds)) 
-                
+                acs_search_client = SearchClient(
+                    service_endpoint=self._cogsearch_indexclient._endpoint,
+                    index_name=collection_name,
+                    credential=AzureKeyCredential(self._cogsearch_creds),
+                )
+
         if with_embedding:
             select_fields = ["vector_id", "vector", "payload"]
         else:
@@ -493,13 +502,13 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         # Convert to MemoryRecord
         vector_result = MemoryRecord(
-                is_reference=False,
-                external_source_name="azure-cognitive-search",
-                key=None,
-                id=acs_result.collection_id,
-                embedding=acs_result.vector,
-                payload=acs_result.payload,
-            )
+            is_reference=False,
+            external_source_name="azure-cognitive-search",
+            key=None,
+            id=acs_result.collection_id,
+            embedding=acs_result.vector,
+            payload=acs_result.payload,
+        )
 
         return tuple(vector_result, acs_result.score)
 
@@ -525,14 +534,18 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         """
 
         ## Look up Search client class to see if exists or create
-        acs_search_client = self._cogsearch_indexclient.get_search_client(collection_name)
-        
+        acs_search_client = self._cogsearch_indexclient.get_search_client(
+            collection_name
+        )
+
         # If no Search client exists, create one
         if not acs_search_client:
             if self._cogsearch_creds:
-                acs_search_client = SearchClient(service_endpoint = self._cogsearch_indexclient._endpoint, 
-                                             index_name=collection_name, 
-                                             credential=AzureKeyCredential(self._cogsearch_creds)) 
+                acs_search_client = SearchClient(
+                    service_endpoint=self._cogsearch_indexclient._endpoint,
+                    index_name=collection_name,
+                    credential=AzureKeyCredential(self._cogsearch_creds),
+                )
 
         if with_embeddings:
             select_fields = ["vector_id", "vector", "payload"]

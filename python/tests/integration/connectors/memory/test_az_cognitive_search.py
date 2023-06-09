@@ -3,12 +3,14 @@
 import numpy as np
 import pytest
 
-from semantic_kernel.connectors.memory.azure_cog_search.acs_memory_store import CognitiveSearchMemoryStore
+from semantic_kernel.connectors.memory.azure_cog_search.acs_memory_store import (
+    CognitiveSearchMemoryStore,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    from azure.search.documents import SearchClient  
-    from azure.search.documents.indexes import SearchIndexClient 
+    from azure.search.documents import SearchClient
+    from azure.search.documents.indexes import SearchIndexClient
 
     az_cog_search_installed = True
 except ImportError:
@@ -32,9 +34,7 @@ def memory_record1():
     )
 
 
-
 def test_constructor():
     test_endpoint = "https://test-endpoint.search.windows.net"
     memory = CognitiveSearchMemoryStore(test_endpoint)
     assert memory._client is not None
-
