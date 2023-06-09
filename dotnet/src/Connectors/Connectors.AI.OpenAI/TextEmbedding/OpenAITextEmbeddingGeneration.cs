@@ -43,6 +43,6 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGenerateTextEmbeddingsAsync(data, cancellationToken);
+        return this.InternalGetEmbeddingsAsync(data, cancellationToken);
     }
 }

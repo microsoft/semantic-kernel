@@ -60,6 +60,6 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGenerateTextEmbeddingsAsync(data, cancellationToken);
+        return this.InternalGetEmbeddingsAsync(data, cancellationToken);
     }
 }

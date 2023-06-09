@@ -8,7 +8,12 @@ from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryB
 
 class NullMemory(SemanticTextMemoryBase):
     async def save_information_async(
-        self, collection: str, text: str, id: str, description: Optional[str] = None
+        self,
+        collection: str,
+        text: str,
+        id: str,
+        description: Optional[str] = None,
+        additional_metadata: Optional[str] = None,
     ) -> None:
         return None
 
@@ -19,6 +24,7 @@ class NullMemory(SemanticTextMemoryBase):
         external_id: str,
         external_source_name: str,
         description: Optional[str] = None,
+        additional_metadata: Optional[str] = None,
     ) -> None:
         return None
 

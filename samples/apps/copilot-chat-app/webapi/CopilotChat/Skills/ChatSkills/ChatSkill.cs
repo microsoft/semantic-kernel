@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -156,10 +157,28 @@ public class ChatSkill
         foreach (var chatMessage in sortedMessages)
         {
             var formattedMessage = chatMessage.ToFormattedString();
+
+            // Plan object is not meaningful content in generating bot response, so shorten to intent only to save on tokens
+            if (formattedMessage.Contains("proposedPlan\":", StringComparison.InvariantCultureIgnoreCase))
+            {
+                string pattern = @"(\[.*?\]).*User Intent:User intent: (.*)(?=""}})";
+                Match match = Regex.Match(formattedMessage, pattern);
+                if (match.Success)
+                {
+                    string timestamp = match.Groups[1].Value.Trim();
+                    string userIntent = match.Groups[2].Value.Trim();
+
+                    formattedMessage = $"{timestamp} Bot proposed plan to fulfill user intent: {userIntent}";
+                }
+                else
+                {
+                    formattedMessage = "Bot proposed plan";
+                }
+            }
+
             var tokenCount = Utilities.TokenCount(formattedMessage);
 
-            // Plan object is not meaningful content in generating chat response, exclude it
-            if (remainingToken - tokenCount > 0 && !formattedMessage.Contains("proposedPlan\\\":", StringComparison.InvariantCultureIgnoreCase))
+            if (remainingToken - tokenCount >= 0)
             {
                 historyText = $"{formattedMessage}\n{historyText}";
                 remainingToken -= tokenCount;
@@ -187,17 +206,25 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "userName", Description = "Name of the user")]
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     [SKFunctionContextParameter(Name = "proposedPlan", Description = "Previously proposed plan that is approved")]
+    [SKFunctionContextParameter(Name = "type", Description = "Type of the chat")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
         // TODO: check if user has access to the chat
         var userId = context["userId"];
         var userName = context["userName"];
         var chatId = context["chatId"];
+        var messageType = context["messageType"];
 
         // Save this new message to memory such that subsequent chat responses can use it
         try
         {
-            await this.SaveNewMessageAsync(message, userId, userName, chatId);
+            var userMessage = await this.SaveNewMessageAsync(message, userId, userName, chatId, messageType);
+
+            // If the message represents a file upload then we don't generate a bot response.
+            if (userMessage.Type == ChatMessage.ChatMessageType.Document)
+            {
+                return context;
+            }
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -231,7 +258,8 @@ public class ChatSkill
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            await this.SaveNewResponseAsync(response, prompt, chatId);
+            var botMessage = await this.SaveNewResponseAsync(response, prompt, chatId);
+            context.Variables.Set("messageType", botMessage.Type.ToString());
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -352,7 +380,7 @@ public class ChatSkill
     /// </summary>
     private async Task<string> GetUserIntentAsync(SKContext context)
     {
-        if (!context.Variables.Get("planUserIntent", out string? userIntent))
+        if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
             var contextVariables = new ContextVariables();
             contextVariables.Set("chatId", context["chatId"]);
@@ -471,7 +499,7 @@ public class ChatSkill
     {
         var contextVariables = context.Variables.Clone();
         contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-        if (context.Variables.Get("proposedPlan", out string? proposedPlan))
+        if (context.Variables.TryGetValue("proposedPlan", out string? proposedPlan))
         {
             contextVariables.Set("proposedPlan", proposedPlan);
         }
@@ -502,13 +530,26 @@ public class ChatSkill
     /// <param name="userId">The user ID</param>
     /// <param name="userName"></param>
     /// <param name="chatId">The chat ID</param>
-    private async Task SaveNewMessageAsync(string message, string userId, string userName, string chatId)
+    /// <param name="type">Type of the message</param>
+    private async Task<ChatMessage> SaveNewMessageAsync(string message, string userId, string userName, string chatId, string type)
     {
         // Make sure the chat exists.
         await this._chatSessionRepository.FindByIdAsync(chatId);
 
-        var chatMessage = new ChatMessage(userId, userName, chatId, message);
+        var chatMessage = new ChatMessage(
+            userId,
+            userName,
+            chatId,
+            message,
+            "",
+            ChatMessage.AuthorRoles.User,
+            // Default to a standard message if the `type` is not recognized
+            Enum.TryParse(type, out ChatMessage.ChatMessageType typeAsEnum) && Enum.IsDefined(typeof(ChatMessage.ChatMessageType), typeAsEnum)
+                ? typeAsEnum
+                : ChatMessage.ChatMessageType.Message);
+
         await this._chatMessageRepository.CreateAsync(chatMessage);
+        return chatMessage;
     }
 
     /// <summary>
@@ -517,13 +558,16 @@ public class ChatSkill
     /// <param name="response">Response from the chat.</param>
     /// <param name="prompt">Prompt used to generate the response.</param>
     /// <param name="chatId">The chat ID</param>
-    private async Task SaveNewResponseAsync(string response, string prompt, string chatId)
+    /// <returns>The created chat message.</returns>
+    private async Task<ChatMessage> SaveNewResponseAsync(string response, string prompt, string chatId)
     {
         // Make sure the chat exists.
         await this._chatSessionRepository.FindByIdAsync(chatId);
 
         var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response, prompt);
         await this._chatMessageRepository.CreateAsync(chatMessage);
+
+        return chatMessage;
     }
 
     /// <summary>
