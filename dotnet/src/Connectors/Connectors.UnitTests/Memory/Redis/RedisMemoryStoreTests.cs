@@ -31,237 +31,6 @@ public class RedisMemoryStoreTests
         this._collections = new();
     }
 
-    #region private
-
-    private void MockCreateIndex(string collection, Action? callback = null)
-    {
-        this._mockDatabase
-            .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
-                It.Is<string>(x => x == "FT.CREATE"),
-                It.Is<object[]>(x => x[0].ToString() == collection))
-            )
-            .ReturnsAsync(RedisResult.Create("OK", ResultType.SimpleString))
-            .Callback(() =>
-            {
-                this._collections.TryAdd(collection, new());
-
-                this._mockDatabase
-                    .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
-                        It.Is<string>(x => x == "FT.INFO"),
-                        It.Is<object[]>(x => x[0].ToString() == collection))
-                    )
-                    .ReturnsAsync(RedisResult.Create(new[] {
-                        RedisResult.Create("index_name", ResultType.BulkString),
-                        RedisResult.Create(collection, ResultType.BulkString)
-                    }));
-
-                this._mockDatabase
-                    .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
-                        It.Is<string>(x => x == "FT._LIST"),
-                        It.IsAny<object[]>())
-                    )
-                    .ReturnsAsync(RedisResult.Create(this._collections.Select(x => RedisResult.Create(x.Key, ResultType.BulkString)).ToArray()));
-
-                callback?.Invoke();
-            });
-
-        this._mockDatabase
-            .Setup<Task<RedisResult>>(x => x.ExecuteAsync(It.Is<string>(x => x == "FT.INFO"), It.IsAny<object[]>()))
-            .Throws(new RedisServerException("Unknown Index name"));
-    }
-
-    private void MockDropIndex(string collection, Action? callback = null)
-    {
-        this._mockDatabase
-                .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
-                    It.Is<string>(x => x == "FT.DROPINDEX"),
-                    It.Is<object[]>(x => x[0].ToString() == collection && x[1].ToString() == "DD"))
-                )
-                .ReturnsAsync(RedisResult.Create("OK", ResultType.SimpleString))
-                .Callback(() =>
-                {
-                    this._collections.Remove(collection);
-
-                    this._mockDatabase
-                        .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
-                            It.Is<string>(x => x == "FT.INFO"),
-                            It.Is<object[]>(x => x[0].ToString() == collection))
-                        )
-                        .Throws(new RedisServerException("Unknown Index name"));
-
-                    this._mockDatabase
-                        .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
-                            It.Is<string>(x => x == "FT._LIST"),
-                            It.IsAny<object[]>())
-                        )
-                        .ReturnsAsync(RedisResult.Create(this._collections.Select(x => RedisResult.Create(x.Key, ResultType.BulkString)).ToArray()));
-                });
-    }
-
-    private void MockHashSet(string collection, MemoryRecord record, Action? callback = null)
-    {
-        string redisKey = $"{collection}:{record.Metadata.Id}";
-        byte[] embedding = MemoryMarshal.Cast<float, byte>(record.Embedding.AsReadOnlySpan()).ToArray();
-        long timestamp = record.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
-
-        this._mockDatabase
-            .Setup<Task>(x => x.HashSetAsync(
-                It.Is<RedisKey>(x => x == redisKey),
-                It.Is<HashEntry[]>(x => x.Length == 4 &&
-                    x[0].Name == "key" && x[1].Name == "metadata" && x[2].Name == "embedding" && x[3].Name == "timestamp" &&
-                    x[0].Value == record.Key && x[1].Value == record.GetSerializedMetadata() && embedding.SequenceEqual((byte[])x[2].Value!) && x[3].Value == timestamp
-                    ),
-                It.IsAny<CommandFlags>())
-            )
-            .Callback(() =>
-            {
-                (this._collections[collection] ??= new()).Add(record);
-
-                this._mockDatabase
-                    .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
-                    .ReturnsAsync(new[] {
-                        new HashEntry("key", record.Key),
-                        new HashEntry("metadata", record.GetSerializedMetadata()),
-                        new HashEntry("embedding", embedding),
-                        new HashEntry("timestamp", timestamp)
-                    });
-
-                callback?.Invoke();
-            });
-    }
-
-    private void MockKeyDelete(string collection, string key, Action? callback = null)
-    {
-        string redisKey = $"{collection}:{key}";
-
-        this._mockDatabase
-            .Setup<Task<bool>>(x => x.KeyDeleteAsync(
-                It.Is<RedisKey>(x => x == redisKey),
-                It.IsAny<CommandFlags>())
-            )
-            .ReturnsAsync(true)
-            .Callback(() =>
-            {
-                (this._collections[collection] ??= new()).RemoveAll(x => x.Key == key);
-
-                this._mockDatabase
-                    .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
-                    .ReturnsAsync(Array.Empty<HashEntry>());
-
-                callback?.Invoke();
-            });
-    }
-
-    private void MockKeyDelete(string collection, IEnumerable<string> keys, Action? callback = null)
-    {
-        RedisKey[] redisKeys = keys.Distinct().Select(key => new RedisKey($"{collection}:{key}")).ToArray();
-
-        this._mockDatabase
-            .Setup<Task<long>>(x => x.KeyDeleteAsync(
-                It.Is<RedisKey[]>(x => redisKeys.SequenceEqual(x)),
-                It.IsAny<CommandFlags>())
-            )
-            .ReturnsAsync(redisKeys.Length)
-            .Callback(() =>
-            {
-                (this._collections[collection] ??= new()).RemoveAll(x => keys.Contains(x.Key));
-
-                foreach (var redisKey in redisKeys)
-                {
-                    this._mockDatabase
-                    .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
-                    .ReturnsAsync(Array.Empty<HashEntry>());
-                }
-
-                callback?.Invoke();
-            });
-    }
-
-    private void MockSearch(string collection, Embedding<float> compareEmbedding, int topN, double threshold, bool returnStringVectorScore = false)
-    {
-        TopNCollection<MemoryRecord> embeddings = new(topN);
-
-        List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value) ? value : new();
-
-        foreach (var record in records)
-        {
-            double similarity = compareEmbedding
-                .AsReadOnlySpan()
-                .CosineSimilarity(record.Embedding.AsReadOnlySpan());
-            if (similarity >= threshold)
-            {
-                embeddings.Add(new(record, similarity));
-            }
-        }
-
-        embeddings.SortByScore();
-
-        string redisKey = $"{collection}";
-
-        var redisResults = new List<RedisResult>();
-        redisResults.Add(RedisResult.Create(embeddings.Count));
-
-        foreach (var item in embeddings)
-        {
-            long timestamp = item.Value.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
-            byte[] embedding = MemoryMarshal.Cast<float, byte>(item.Value.Embedding.AsReadOnlySpan()).ToArray();
-            redisResults.Add(RedisResult.Create($"{collection}:{item.Value.Metadata.Id}", ResultType.BulkString));
-            redisResults.Add(RedisResult.Create(
-                new RedisResult[]
-                {
-                    RedisResult.Create("key", ResultType.BulkString),
-                    RedisResult.Create(item.Value.Metadata.Id, ResultType.BulkString),
-                    RedisResult.Create("metadata", ResultType.BulkString),
-                    RedisResult.Create(item.Value.GetSerializedMetadata(), ResultType.BulkString),
-                    RedisResult.Create("embedding", ResultType.BulkString),
-                    RedisResult.Create(embedding, ResultType.BulkString),
-                    RedisResult.Create("timestamp", ResultType.BulkString),
-                    RedisResult.Create(timestamp, ResultType.BulkString),
-                    RedisResult.Create("vector_score", ResultType.BulkString),
-                    RedisResult.Create(returnStringVectorScore ? $"score:{1-item.Score.Value}" : 1-item.Score.Value, ResultType.BulkString),
-                })
-            );
-        }
-
-        this._mockDatabase
-            .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
-                It.Is<string>(x => x == "FT.SEARCH"),
-                It.Is<object[]>(x => x[0].ToString() == collection && x[1].ToString() == $"*=>[KNN {topN} @embedding $embedding AS vector_score]"))
-            )
-            .ReturnsAsync(RedisResult.Create(redisResults.ToArray()));
-    }
-
-    private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
-    {
-        Assert.True(numRecords % 2 == 0, "Number of records must be even");
-        Assert.True(numRecords > 0, "Number of records must be greater than 0");
-
-        IEnumerable<MemoryRecord> records = new List<MemoryRecord>(numRecords);
-        for (int i = 0; i < numRecords / 2; i++)
-        {
-            var testRecord = MemoryRecord.LocalRecord(
-                id: "test" + i,
-                text: "text" + i,
-                description: "description" + i,
-                embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
-            records = records.Append(testRecord);
-        }
-
-        for (int i = numRecords / 2; i < numRecords; i++)
-        {
-            var testRecord = MemoryRecord.ReferenceRecord(
-                externalId: "test" + i,
-                sourceName: "sourceName" + i,
-                description: "description" + i,
-                embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
-            records = records.Append(testRecord);
-        }
-
-        return records;
-    }
-
-    #endregion
-
     [Fact]
     public void ConnectionCanBeInitialized()
     {
@@ -983,4 +752,235 @@ public class RedisMemoryStoreTests
         });
         Assert.Equal(ex.Message, "Invalid or missing vector score value.");
     }
+
+    #region private
+
+    private void MockCreateIndex(string collection, Action? callback = null)
+    {
+        this._mockDatabase
+            .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
+                It.Is<string>(x => x == "FT.CREATE"),
+                It.Is<object[]>(x => x[0].ToString() == collection))
+            )
+            .ReturnsAsync(RedisResult.Create("OK", ResultType.SimpleString))
+            .Callback(() =>
+            {
+                this._collections.TryAdd(collection, new());
+
+                this._mockDatabase
+                    .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
+                        It.Is<string>(x => x == "FT.INFO"),
+                        It.Is<object[]>(x => x[0].ToString() == collection))
+                    )
+                    .ReturnsAsync(RedisResult.Create(new[] {
+                        RedisResult.Create("index_name", ResultType.BulkString),
+                        RedisResult.Create(collection, ResultType.BulkString)
+                    }));
+
+                this._mockDatabase
+                    .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
+                        It.Is<string>(x => x == "FT._LIST"),
+                        It.IsAny<object[]>())
+                    )
+                    .ReturnsAsync(RedisResult.Create(this._collections.Select(x => RedisResult.Create(x.Key, ResultType.BulkString)).ToArray()));
+
+                callback?.Invoke();
+            });
+
+        this._mockDatabase
+            .Setup<Task<RedisResult>>(x => x.ExecuteAsync(It.Is<string>(x => x == "FT.INFO"), It.IsAny<object[]>()))
+            .Throws(new RedisServerException("Unknown Index name"));
+    }
+
+    private void MockDropIndex(string collection, Action? callback = null)
+    {
+        this._mockDatabase
+                .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
+                    It.Is<string>(x => x == "FT.DROPINDEX"),
+                    It.Is<object[]>(x => x[0].ToString() == collection && x[1].ToString() == "DD"))
+                )
+                .ReturnsAsync(RedisResult.Create("OK", ResultType.SimpleString))
+                .Callback(() =>
+                {
+                    this._collections.Remove(collection);
+
+                    this._mockDatabase
+                        .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
+                            It.Is<string>(x => x == "FT.INFO"),
+                            It.Is<object[]>(x => x[0].ToString() == collection))
+                        )
+                        .Throws(new RedisServerException("Unknown Index name"));
+
+                    this._mockDatabase
+                        .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
+                            It.Is<string>(x => x == "FT._LIST"),
+                            It.IsAny<object[]>())
+                        )
+                        .ReturnsAsync(RedisResult.Create(this._collections.Select(x => RedisResult.Create(x.Key, ResultType.BulkString)).ToArray()));
+                });
+    }
+
+    private void MockHashSet(string collection, MemoryRecord record, Action? callback = null)
+    {
+        string redisKey = $"{collection}:{record.Metadata.Id}";
+        byte[] embedding = MemoryMarshal.Cast<float, byte>(record.Embedding.AsReadOnlySpan()).ToArray();
+        long timestamp = record.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
+
+        this._mockDatabase
+            .Setup<Task>(x => x.HashSetAsync(
+                It.Is<RedisKey>(x => x == redisKey),
+                It.Is<HashEntry[]>(x => x.Length == 4 &&
+                    x[0].Name == "key" && x[1].Name == "metadata" && x[2].Name == "embedding" && x[3].Name == "timestamp" &&
+                    x[0].Value == record.Key && x[1].Value == record.GetSerializedMetadata() && embedding.SequenceEqual((byte[])x[2].Value!) && x[3].Value == timestamp
+                    ),
+                It.IsAny<CommandFlags>())
+            )
+            .Callback(() =>
+            {
+                (this._collections[collection] ??= new()).Add(record);
+
+                this._mockDatabase
+                    .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
+                    .ReturnsAsync(new[] {
+                        new HashEntry("key", record.Key),
+                        new HashEntry("metadata", record.GetSerializedMetadata()),
+                        new HashEntry("embedding", embedding),
+                        new HashEntry("timestamp", timestamp)
+                    });
+
+                callback?.Invoke();
+            });
+    }
+
+    private void MockKeyDelete(string collection, string key, Action? callback = null)
+    {
+        string redisKey = $"{collection}:{key}";
+
+        this._mockDatabase
+            .Setup<Task<bool>>(x => x.KeyDeleteAsync(
+                It.Is<RedisKey>(x => x == redisKey),
+                It.IsAny<CommandFlags>())
+            )
+            .ReturnsAsync(true)
+            .Callback(() =>
+            {
+                (this._collections[collection] ??= new()).RemoveAll(x => x.Key == key);
+
+                this._mockDatabase
+                    .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
+                    .ReturnsAsync(Array.Empty<HashEntry>());
+
+                callback?.Invoke();
+            });
+    }
+
+    private void MockKeyDelete(string collection, IEnumerable<string> keys, Action? callback = null)
+    {
+        RedisKey[] redisKeys = keys.Distinct().Select(key => new RedisKey($"{collection}:{key}")).ToArray();
+
+        this._mockDatabase
+            .Setup<Task<long>>(x => x.KeyDeleteAsync(
+                It.Is<RedisKey[]>(x => redisKeys.SequenceEqual(x)),
+                It.IsAny<CommandFlags>())
+            )
+            .ReturnsAsync(redisKeys.Length)
+            .Callback(() =>
+            {
+                (this._collections[collection] ??= new()).RemoveAll(x => keys.Contains(x.Key));
+
+                foreach (var redisKey in redisKeys)
+                {
+                    this._mockDatabase
+                    .Setup<Task<HashEntry[]>>(x => x.HashGetAllAsync(It.Is<RedisKey>(x => x == redisKey), It.IsAny<CommandFlags>()))
+                    .ReturnsAsync(Array.Empty<HashEntry>());
+                }
+
+                callback?.Invoke();
+            });
+    }
+
+    private void MockSearch(string collection, Embedding<float> compareEmbedding, int topN, double threshold, bool returnStringVectorScore = false)
+    {
+        TopNCollection<MemoryRecord> embeddings = new(topN);
+
+        List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value) ? value : new();
+
+        foreach (var record in records)
+        {
+            double similarity = compareEmbedding
+                .AsReadOnlySpan()
+                .CosineSimilarity(record.Embedding.AsReadOnlySpan());
+            if (similarity >= threshold)
+            {
+                embeddings.Add(new(record, similarity));
+            }
+        }
+
+        embeddings.SortByScore();
+
+        string redisKey = $"{collection}";
+
+        var redisResults = new List<RedisResult>();
+        redisResults.Add(RedisResult.Create(embeddings.Count));
+
+        foreach (var item in embeddings)
+        {
+            long timestamp = item.Value.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
+            byte[] embedding = MemoryMarshal.Cast<float, byte>(item.Value.Embedding.AsReadOnlySpan()).ToArray();
+            redisResults.Add(RedisResult.Create($"{collection}:{item.Value.Metadata.Id}", ResultType.BulkString));
+            redisResults.Add(RedisResult.Create(
+                new RedisResult[]
+                {
+                    RedisResult.Create("key", ResultType.BulkString),
+                    RedisResult.Create(item.Value.Metadata.Id, ResultType.BulkString),
+                    RedisResult.Create("metadata", ResultType.BulkString),
+                    RedisResult.Create(item.Value.GetSerializedMetadata(), ResultType.BulkString),
+                    RedisResult.Create("embedding", ResultType.BulkString),
+                    RedisResult.Create(embedding, ResultType.BulkString),
+                    RedisResult.Create("timestamp", ResultType.BulkString),
+                    RedisResult.Create(timestamp, ResultType.BulkString),
+                    RedisResult.Create("vector_score", ResultType.BulkString),
+                    RedisResult.Create(returnStringVectorScore ? $"score:{1-item.Score.Value}" : 1-item.Score.Value, ResultType.BulkString),
+                })
+            );
+        }
+
+        this._mockDatabase
+            .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
+                It.Is<string>(x => x == "FT.SEARCH"),
+                It.Is<object[]>(x => x[0].ToString() == collection && x[1].ToString() == $"*=>[KNN {topN} @embedding $embedding AS vector_score]"))
+            )
+            .ReturnsAsync(RedisResult.Create(redisResults.ToArray()));
+    }
+
+    private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
+    {
+        Assert.True(numRecords % 2 == 0, "Number of records must be even");
+        Assert.True(numRecords > 0, "Number of records must be greater than 0");
+
+        IEnumerable<MemoryRecord> records = new List<MemoryRecord>(numRecords);
+        for (int i = 0; i < numRecords / 2; i++)
+        {
+            var testRecord = MemoryRecord.LocalRecord(
+                id: "test" + i,
+                text: "text" + i,
+                description: "description" + i,
+                embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+            records = records.Append(testRecord);
+        }
+
+        for (int i = numRecords / 2; i < numRecords; i++)
+        {
+            var testRecord = MemoryRecord.ReferenceRecord(
+                externalId: "test" + i,
+                sourceName: "sourceName" + i,
+                description: "description" + i,
+                embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            records = records.Append(testRecord);
+        }
+
+        return records;
+    }
+
+    #endregion
 }
