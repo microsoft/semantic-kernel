@@ -1,24 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Memory.Redis;
+using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
-using StackExchange.Redis;
 
 // ReSharper disable once InconsistentNaming
-public static class Example44_Redis
+public static class Example46_Weaviate
 {
-    private const string MemoryCollectionName = "redis-test";
+    private const string MemoryCollectionName = "weaviate-test";
 
     public static async Task RunAsync()
     {
-        string configuration = Env.Var("REDIS_CONFIGURATION");
-        using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configuration);
-        IDatabase database = connectionMultiplexer.GetDatabase();
-        RedisMemoryStore memoryStore = new(database, vectorSize: 1536);
+        string scheme = Env.Var("WEAVIATE_SCHEME");
+        string endpoint = Env.Var("WEAVIATE_ENDPOINT");
+        int weaviatePort = int.Parse(Env.Var("WEAVIATE_PORT"), CultureInfo.InvariantCulture);
+        string apiKey = Env.Var("WEAVIATE_APIKEY");
+        using WeaviateMemoryStore memoryStore = new(scheme, endpoint, weaviatePort, apiKey, logger: ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
@@ -35,9 +36,9 @@ public static class Example44_Redis
 
         Console.WriteLine("== Adding Memories ==");
 
-        var key1 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "cat1", text: "british short hair");
-        var key2 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "cat2", text: "orange tabby");
-        var key3 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "cat3", text: "norwegian forest cat");
+        var key1 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: Guid.NewGuid().ToString(), text: "british short hair");
+        var key2 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: Guid.NewGuid().ToString(), text: "orange tabby");
+        var key3 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: Guid.NewGuid().ToString(), text: "norwegian forest cat");
 
         Console.WriteLine("== Printing Collections in DB ==");
         collections = memoryStore.GetCollectionsAsync();
@@ -47,16 +48,8 @@ public static class Example44_Redis
         }
 
         Console.WriteLine("== Retrieving Memories Through the Kernel ==");
-        MemoryQueryResult? lookup = await kernel.Memory.GetAsync(MemoryCollectionName, "cat1");
+        MemoryQueryResult? lookup = await kernel.Memory.GetAsync(MemoryCollectionName, key1);
         Console.WriteLine(lookup != null ? lookup.Metadata.Text : "ERROR: memory not found");
-
-        Console.WriteLine("== Retrieving Memories Directly From the Store ==");
-        var memory1 = await memoryStore.GetAsync(MemoryCollectionName, key1);
-        var memory2 = await memoryStore.GetAsync(MemoryCollectionName, key2);
-        var memory3 = await memoryStore.GetAsync(MemoryCollectionName, key3);
-        Console.WriteLine(memory1 != null ? memory1.Metadata.Text : "ERROR: memory not found");
-        Console.WriteLine(memory2 != null ? memory2.Metadata.Text : "ERROR: memory not found");
-        Console.WriteLine(memory3 != null ? memory3.Metadata.Text : "ERROR: memory not found");
 
         Console.WriteLine("== Similarity Searching Memories: My favorite color is orange ==");
         var searchResults = kernel.Memory.SearchAsync(MemoryCollectionName, "My favorite color is orange", limit: 3, minRelevanceScore: 0.8);

@@ -62,7 +62,7 @@
 | Azure Search  | ✅  | 🔄     | ❌   | Azure Cognitive Search under development, currently in private preview          |
 | Qdrant        | ✅  | ❌     | ❌   |                                                                                 |
 | Pinecone      | ✅  | ❌     | ❌   |                                                                                 |
-| Weaviate      | ❌  | ✅     | ❌   | Currently supported on Python 3.9-3.11, 3.8 coming soon                         |
+| Weaviate      | ✅  | ✅     | ❌   | Currently supported on Python 3.9-3.11, 3.8 coming soon                         |
 | ChromaDb      | ❌  | ✅     | ❌   |                                                                                 |
 | Milvus        | ❌  | ❌     | ❌   | Coming soon                                                                     |
 | Sqlite        | ✅  | ❌     | ❌   | Vector optimization requires [sqlite-vss](https://github.com/asg017/sqlite-vss) |
