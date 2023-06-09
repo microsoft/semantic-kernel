@@ -140,12 +140,12 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         documentFileRef.current!.value = '';
     };
 
-    const handleSubmit = (value: string, type: ChatMessageType = ChatMessageType.Message) => {
+    const handleSubmit = (value: string, messageType: ChatMessageType = ChatMessageType.Message) => {
         try {
             if (value.trim() === '') {
                 return; // only submit if value is not empty
             }
-            onSubmit({ value, type, chatId: selectedId });
+            onSubmit({ value, messageType, chatId: selectedId });
             setValue('');
             dispatch(editConversationInput({ id: selectedId, newInput: '' }));
         } catch (error) {

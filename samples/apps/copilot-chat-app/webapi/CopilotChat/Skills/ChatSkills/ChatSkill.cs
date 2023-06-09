@@ -213,15 +213,15 @@ public class ChatSkill
         var userId = context["userId"];
         var userName = context["userName"];
         var chatId = context["chatId"];
-        var type = context["type"];
+        var messageType = context["messageType"];
 
         // Save this new message to memory such that subsequent chat responses can use it
         try
         {
-            var chatMessage = await this.SaveNewMessageAsync(message, userId, userName, chatId, type);
+            var userMessage = await this.SaveNewMessageAsync(message, userId, userName, chatId, messageType);
 
             // If the message represents a file upload then we don't generate a bot response.
-            if (chatMessage.Type == ChatMessage.ChatMessageType.Document)
+            if (userMessage.Type == ChatMessage.ChatMessageType.Document)
             {
                 return context;
             }
@@ -258,7 +258,8 @@ public class ChatSkill
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            await this.SaveNewResponseAsync(response, prompt, chatId);
+            var botMessage = await this.SaveNewResponseAsync(response, prompt, chatId);
+            context.Variables.Set("messageType", botMessage.Type.ToString());
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -557,13 +558,16 @@ public class ChatSkill
     /// <param name="response">Response from the chat.</param>
     /// <param name="prompt">Prompt used to generate the response.</param>
     /// <param name="chatId">The chat ID</param>
-    private async Task SaveNewResponseAsync(string response, string prompt, string chatId)
+    /// <returns>The created chat message.</returns>
+    private async Task<ChatMessage> SaveNewResponseAsync(string response, string prompt, string chatId)
     {
         // Make sure the chat exists.
         await this._chatSessionRepository.FindByIdAsync(chatId);
 
         var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response, prompt);
         await this._chatMessageRepository.CreateAsync(chatMessage);
+
+        return chatMessage;
     }
 
     /// <summary>

@@ -16,7 +16,7 @@ import {
 import { AuthHelper } from './auth/AuthHelper';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
-import { AuthorRoles, ChatMessageState, ChatMessageType } from './models/ChatMessage';
+import { AuthorRoles, ChatMessageState, ChatMessageType, IChatMessage } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
@@ -32,7 +32,7 @@ import { IChatUser } from './models/ChatUser';
 import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
 
 export interface GetResponseOptions {
-    type: ChatMessageType;
+    messageType: ChatMessageType;
     value: string;
     chatId: string;
     approvedPlanJson?: string;
@@ -104,7 +104,7 @@ export const useChat = () => {
     };
 
     const getResponse = async ({
-        type,
+        messageType,
         value,
         chatId,
         approvedPlanJson,
@@ -127,8 +127,8 @@ export const useChat = () => {
                     value: chatId,
                 },
                 {
-                    key: 'type',
-                    value: type.toString(),
+                    key: 'messageType',
+                    value: messageType.toString(),
                 },
             ],
         };
@@ -162,20 +162,20 @@ export const useChat = () => {
 
             // When a document is uploaded we only save the user's message to storage, and
             // do not generate a bot response. Therefore, we do not need to update the conversation.
-            if (type === ChatMessageType.Document) {
+            if (messageType === ChatMessageType.Document) {
                 return;
             }
 
-            const isPlan = PlanUtils.isPlan(result.value);
-            const messageResult = {
-                type: isPlan ? ChatMessageType.Plan : ChatMessageType.Message,
+            const messageResult: IChatMessage = {
+                type: (result.variables.find((v) => v.key === 'messageType')?.value ??
+                    ChatMessageType.Message) as ChatMessageType,
                 timestamp: new Date().getTime(),
                 userName: 'bot',
                 userId: 'bot',
                 content: result.value,
                 prompt: result.variables.find((v) => v.key === 'prompt')?.value,
                 authorRole: AuthorRoles.Bot,
-                state: isPlan ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
+                state: PlanUtils.isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
             };
 
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));

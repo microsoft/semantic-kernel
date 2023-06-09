@@ -102,7 +102,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
 
         // Invoke plan
         await getResponse({
-            type: ChatMessageType.Plan,
+            messageType: ChatMessageType.Plan,
             value: 'Yes, proceed',
             chatId: selectedId,
             approvedPlanJson: JSON.stringify(proposedPlan),
@@ -121,7 +121,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
 
         // Bail out of plan
         await getResponse({
-            type: ChatMessageType.Plan,
+            messageType: ChatMessageType.Plan,
             value: 'No, cancel',
             chatId: selectedId,
             userCancelledPlan: true,

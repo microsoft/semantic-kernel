@@ -93,7 +93,7 @@ export const ChatRoom: React.FC = () => {
             userId: account?.homeAccountId,
             userName: (account?.name ?? account?.username) as string,
             content: options.value,
-            type: options.type,
+            type: options.messageType,
             authorRole: AuthorRoles.User,
         };
 
