@@ -9,10 +9,10 @@
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="[7.0.0, )" />
     <PackageVersion Include="Pgvector" Version="0.1.3" />
+    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="[7.0.2, )" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="[1.0.0-beta.5, )" />
     <!-- Microsoft.Extensions.Logging -->
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="[7.0.0, )" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="[7.0.0, )" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="[7.0.0, )" />
     <!-- Microsoft.Extensions.Configuration -->
@@ -44,7 +44,6 @@
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-
     <!-- Analyzers -->
     <!-- TODO: Not working with .NET Standard 2.0
     <PackageVersion Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" Version="4.1.0" />
@@ -59,49 +58,41 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     -->
-
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.6.40" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
     <PackageVersion Include="xunit.analyzers" Version="1.1.0" />
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
     <PackageVersion Include="Moq.Analyzers" Version="0.0.9" />
     <PackageReference Include="Moq.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
     <PackageVersion Include="Roslynator.Analyzers" Version="4.3.0" />
     <PackageReference Include="Roslynator.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
     <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.3.0" />
     <PackageReference Include="Roslynator.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
     <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.3.0" />
     <PackageReference Include="Roslynator.Formatting.Analyzers">
       <PrivateAssets>all</PrivateAssets>
