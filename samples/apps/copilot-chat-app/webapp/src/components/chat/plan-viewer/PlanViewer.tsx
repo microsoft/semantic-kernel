@@ -1,9 +1,10 @@
 import { Button, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import { CheckmarkCircle24Regular, DismissCircle24Regular, Info24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
-import { IChatMessage } from '../../../libs/models/ChatMessage';
+import { ChatMessageType, IChatMessage } from '../../../libs/models/ChatMessage';
 import { IPlanInput, PlanState } from '../../../libs/models/Plan';
 import { IAskVariables } from '../../../libs/semantic-kernel/model/Ask';
+import { GetResponseOptions } from '../../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { updateMessageState } from '../../../redux/features/conversations/conversationsSlice';
@@ -34,7 +35,7 @@ const useClasses = makeStyles({
 interface PlanViewerProps {
     message: IChatMessage;
     messageIndex: number;
-    getResponse: (value: string, contextVariables?: IAskVariables[]) => Promise<void>;
+    getResponse: (options: GetResponseOptions) => Promise<void>;
 }
 
 export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, getResponse }) => {
@@ -99,7 +100,12 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
         );
 
         // Invoke plan
-        await getResponse(planState === PlanState.PlanApproved ? 'Yes, proceed' : 'No, cancel', contextVariables);
+        await getResponse({
+            value: planState === PlanState.PlanApproved ? 'Yes, proceed' : 'No, cancel',
+            contextVariables: contextVariables,
+            messageType: ChatMessageType.Plan,
+            chatId: selectedId,
+        });
     };
 
     const onDeleteStep = (index: number) => {

@@ -4,8 +4,7 @@ import { useMsal } from '@azure/msal-react';
 import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
-import { IAskVariables } from '../../libs/semantic-kernel/model/Ask';
-import { useChat } from '../../libs/useChat';
+import { GetResponseOptions, useChat } from '../../libs/useChat';
 import { isPlan } from '../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -65,7 +64,7 @@ const useClasses = makeStyles({
 
 interface ChatHistoryItemProps {
     message: IChatMessage;
-    getResponse: (value: string, contextVariables?: IAskVariables[]) => Promise<void>;
+    getResponse: (options: GetResponseOptions) => Promise<void>;
     messageIndex: number;
 }
 

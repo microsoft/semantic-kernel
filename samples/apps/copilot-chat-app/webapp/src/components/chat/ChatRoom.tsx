@@ -5,9 +5,8 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import debug from 'debug';
 import React from 'react';
 import { Constants } from '../../Constants';
-import { AuthorRoles } from '../../libs/models/ChatMessage';
-import { IAskVariables } from '../../libs/semantic-kernel/model/Ask';
-import { useChat } from '../../libs/useChat';
+import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
+import { GetResponseOptions, useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateConversation } from '../../redux/features/conversations/conversationsSlice';
@@ -86,14 +85,15 @@ export const ChatRoom: React.FC = () => {
         return null;
     }
 
-    const handleSubmit = async (value: string, contextVariables?: IAskVariables[]) => {
+    const handleSubmit = async (options: GetResponseOptions) => {
         log('submitting user chat message');
 
-        const chatInput = {
+        const chatInput: IChatMessage = {
             timestamp: new Date().getTime(),
             userId: account?.homeAccountId,
             userName: (account?.name ?? account?.username) as string,
-            content: value,
+            content: options.value,
+            type: options.messageType,
             authorRole: AuthorRoles.User,
         };
 
@@ -101,7 +101,7 @@ export const ChatRoom: React.FC = () => {
         dispatch(updateConversation({ message: chatInput }));
 
         try {
-            await chat.getResponse(value, selectedId, contextVariables);
+            await chat.getResponse(options);
         } finally {
             setIsBotTyping(false);
         }

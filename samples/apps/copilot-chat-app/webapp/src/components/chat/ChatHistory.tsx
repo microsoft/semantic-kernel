@@ -2,8 +2,9 @@
 
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { IChatMessage } from '../../libs/models/ChatMessage';
-import { IAskVariables } from '../../libs/semantic-kernel/model/Ask';
+import { ChatMessageType, IChatMessage } from '../../libs/models/ChatMessage';
+import { GetResponseOptions } from '../../libs/useChat';
+import { ChatHistoryFileItem } from './ChatHistoryFileItem';
 import { ChatHistoryItem } from './ChatHistoryItem';
 import { ChatStatus } from './ChatStatus';
 
@@ -24,7 +25,7 @@ const useClasses = makeStyles({
 
 interface ChatHistoryProps {
     messages: IChatMessage[];
-    onGetResponse: (value: string, contextVariables?: IAskVariables[]) => Promise<void>;
+    onGetResponse: (options: GetResponseOptions) => Promise<void>;
 }
 
 export const ChatHistory: React.FC<ChatHistoryProps> = ({ messages, onGetResponse }) => {
@@ -35,14 +36,18 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ messages, onGetRespons
             {messages
                 .slice()
                 .sort((a, b) => a.timestamp - b.timestamp)
-                .map((message, index) => (
-                    <ChatHistoryItem
-                        key={message.timestamp}
-                        message={message}
-                        getResponse={onGetResponse}
-                        messageIndex={index}
-                    />
-                ))}
+                .map((message, index) =>
+                    message.type === ChatMessageType.Document ? (
+                        <ChatHistoryFileItem key={message.timestamp} message={message} />
+                    ) : (
+                        <ChatHistoryItem
+                            key={message.timestamp}
+                            message={message}
+                            getResponse={onGetResponse}
+                            messageIndex={index}
+                        />
+                    ),
+                )}
             <ChatStatus />
         </div>
     );

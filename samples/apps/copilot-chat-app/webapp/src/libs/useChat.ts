@@ -17,20 +17,27 @@ import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
 import { AuthHelper } from './auth/AuthHelper';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
-import { AuthorRoles } from './models/ChatMessage';
+import { AuthorRoles, ChatMessageType, IChatMessage } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
 import { IChatUser } from './models/ChatUser';
 import { PlanState } from './models/Plan';
 import { IAskVariables } from './semantic-kernel/model/Ask';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
-import { isPlan } from './utils/PlanUtils';
+import * as PlanUtils from './utils/PlanUtils';
 
 import botIcon1 from '../assets/bot-icons/bot-icon-1.png';
 import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
 import botIcon3 from '../assets/bot-icons/bot-icon-3.png';
 import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
 import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
+
+export interface GetResponseOptions {
+    messageType: ChatMessageType;
+    value: string;
+    chatId: string;
+    contextVariables?: IAskVariables[];
+}
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
@@ -95,7 +102,7 @@ export const useChat = () => {
         }
     };
 
-    const getResponse = async (value: string, chatId: string, contextVariables?: IAskVariables[]) => {
+    const getResponse = async ({ messageType, value, chatId, contextVariables }: GetResponseOptions) => {
         const ask = {
             input: value,
             variables: [
@@ -111,6 +118,10 @@ export const useChat = () => {
                     key: 'chatId',
                     value: chatId,
                 },
+                {
+                    key: 'messageType',
+                    value: messageType.toString(),
+                },
             ],
         };
 
@@ -125,15 +136,23 @@ export const useChat = () => {
                 getEnabledPlugins(),
             );
 
-            const messageResult = {
+            // When a document is uploaded we only save the user's message to storage, and
+            // do not generate a bot response. Therefore, we do not need to update the conversation.
+            if (messageType === ChatMessageType.Document) {
+                return;
+            }
+
+            const messageResult: IChatMessage = {
+                type: (result.variables.find((v) => v.key === 'messageType')?.value ??
+                    ChatMessageType.Message) as ChatMessageType,
                 timestamp: new Date().getTime(),
                 userName: 'bot',
                 userId: 'bot',
                 content: result.value,
                 prompt: result.variables.find((v) => v.key === 'prompt')?.value,
                 authorRole: AuthorRoles.Bot,
-                state: isPlan(result.value) ? PlanState.PlanApprovalRequired : PlanState.NoOp,
                 id: result.variables.find((v) => v.key === 'messageId')?.value,
+                state: PlanUtils.isPlan(result.value) ? PlanState.PlanApprovalRequired : PlanState.NoOp,
             };
 
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));

@@ -65,6 +65,12 @@ export const PlanStepInput: React.FC<PlanStepInputProps> = ({ input, onEdit, ena
                             onChange={(event: any) => {
                                 setInputValue(event.target.value);
                             }}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter' && !event.shiftKey) {
+                                    event.preventDefault();
+                                    onSubmitEdit();
+                                }
+                            }}
                         />
                     ) : (
                         inputValue
