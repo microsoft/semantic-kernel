@@ -35,6 +35,27 @@ public class ChatMessage : IStorageEntity
     }
 
     /// <summary>
+    /// Type of the chat message.
+    /// </summary>
+    public enum ChatMessageType
+    {
+        /// <summary>
+        /// A standard message
+        /// </summary>
+        Message,
+
+        /// <summary>
+        /// A message for a Plan
+        /// </summary>
+        Plan,
+
+        /// <summary>
+        /// An uploaded document notification
+        /// </summary>
+        Document,
+    }
+
+    /// <summary>
     /// Timestamp of the message.
     /// </summary>
     [JsonPropertyName("timestamp")]
@@ -84,6 +105,12 @@ public class ChatMessage : IStorageEntity
     public string Prompt { get; set; } = string.Empty;
 
     /// <summary>
+    /// Type of the message.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public ChatMessageType Type { get; set; }
+
+    /// <summary>
     /// Create a new chat message. Timestamp is automatically generated.
     /// </summary>
     /// <param name="userId">Id of the user who sent this message</param>
@@ -91,14 +118,9 @@ public class ChatMessage : IStorageEntity
     /// <param name="chatId">The chat ID that this message belongs to</param>
     /// <param name="content">The message</param>
     /// <param name="prompt">The prompt used to generate the message</param>
-    /// <param name="authorRole"></param>
-    public ChatMessage(
-        string userId,
-        string userName,
-        string chatId,
-        string content,
-        string prompt = "",
-        AuthorRoles authorRole = AuthorRoles.User)
+    /// <param name="authorRole">Role of the author</param>
+    /// <param name="type">Type of the message</param>
+    public ChatMessage(string userId, string userName, string chatId, string content, string prompt = "", AuthorRoles authorRole = AuthorRoles.User, ChatMessageType type = ChatMessageType.Message)
     {
         this.Timestamp = DateTimeOffset.Now;
         this.UserId = userId;
@@ -108,6 +130,7 @@ public class ChatMessage : IStorageEntity
         this.Id = Guid.NewGuid().ToString();
         this.Prompt = prompt;
         this.AuthorRole = authorRole;
+        this.Type = type;
     }
 
     /// <summary>
@@ -118,7 +141,7 @@ public class ChatMessage : IStorageEntity
     /// <param name="prompt">The prompt used to generate the message</param>
     public static ChatMessage CreateBotResponseMessage(string chatId, string content, string prompt)
     {
-        return new ChatMessage("bot", "bot", chatId, content, prompt, AuthorRoles.Bot);
+        return new ChatMessage("bot", "bot", chatId, content, prompt, AuthorRoles.Bot, IsPlan(content) ? ChatMessageType.Plan : ChatMessageType.Message);
     }
 
     /// <summary>
@@ -147,5 +170,17 @@ public class ChatMessage : IStorageEntity
     public static ChatMessage? FromString(string json)
     {
         return JsonSerializer.Deserialize<ChatMessage>(json);
+    }
+
+    /// <summary>
+    /// Check if the response is a Plan.
+    /// This is a copy of the `isPlan` function on the frontend.
+    /// </summary>
+    /// <param name="response">The response from the bot.</param>
+    /// <returns>True if the response represents  Plan, false otherwise.</returns>
+    private static bool IsPlan(string response)
+    {
+        var planPrefix = "proposedPlan\":";
+        return response.IndexOf(planPrefix, StringComparison.Ordinal) != -1;
     }
 }
