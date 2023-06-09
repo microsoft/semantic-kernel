@@ -114,99 +114,14 @@ public abstract class OpenAIClientBase
     /// </summary>
     private readonly HttpClient _httpClient;
 
-    private async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
+    private protected async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
     {
-        HttpResponseMessage? response = null;
         try
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
-            {
-                this.AddRequestHeaders(request);
-                request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-                response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            }
-
-            this._log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
-
+            using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+            using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
             string responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            string? errorDetail = this.GetErrorMessageFromResponse(responseJson);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                switch ((HttpStatusCodeType)response.StatusCode)
-                {
-                    case HttpStatusCodeType.BadRequest:
-                    case HttpStatusCodeType.MethodNotAllowed:
-                    case HttpStatusCodeType.NotFound:
-                    case HttpStatusCodeType.NotAcceptable:
-                    case HttpStatusCodeType.Conflict:
-                    case HttpStatusCodeType.Gone:
-                    case HttpStatusCodeType.LengthRequired:
-                    case HttpStatusCodeType.PreconditionFailed:
-                    case HttpStatusCodeType.RequestEntityTooLarge:
-                    case HttpStatusCodeType.RequestUriTooLong:
-                    case HttpStatusCodeType.UnsupportedMediaType:
-                    case HttpStatusCodeType.RequestedRangeNotSatisfiable:
-                    case HttpStatusCodeType.ExpectationFailed:
-                    case HttpStatusCodeType.HttpVersionNotSupported:
-                    case HttpStatusCodeType.UpgradeRequired:
-                    case HttpStatusCodeType.MisdirectedRequest:
-                    case HttpStatusCodeType.UnprocessableEntity:
-                    case HttpStatusCodeType.Locked:
-                    case HttpStatusCodeType.FailedDependency:
-                    case HttpStatusCodeType.PreconditionRequired:
-                    case HttpStatusCodeType.RequestHeaderFieldsTooLarge:
-                        throw new AIException(
-                            AIException.ErrorCodes.InvalidRequest,
-                            $"The request is not valid, HTTP status: {response.StatusCode:G}",
-                            errorDetail);
-
-                    case HttpStatusCodeType.Unauthorized:
-                    case HttpStatusCodeType.Forbidden:
-                    case HttpStatusCodeType.ProxyAuthenticationRequired:
-                    case HttpStatusCodeType.UnavailableForLegalReasons:
-                    case HttpStatusCodeType.NetworkAuthenticationRequired:
-                        throw new AIException(
-                            AIException.ErrorCodes.AccessDenied,
-                            $"The request is not authorized, HTTP status: {response.StatusCode:G}",
-                            errorDetail);
-
-                    case HttpStatusCodeType.RequestTimeout:
-                        throw new AIException(
-                            AIException.ErrorCodes.RequestTimeout,
-                            $"The request timed out, HTTP status: {response.StatusCode:G}");
-
-                    case HttpStatusCodeType.TooManyRequests:
-                        throw new AIException(
-                            AIException.ErrorCodes.Throttling,
-                            $"Too many requests, HTTP status: {response.StatusCode:G}",
-                            errorDetail);
-
-                    case HttpStatusCodeType.InternalServerError:
-                    case HttpStatusCodeType.NotImplemented:
-                    case HttpStatusCodeType.BadGateway:
-                    case HttpStatusCodeType.ServiceUnavailable:
-                    case HttpStatusCodeType.GatewayTimeout:
-                    case HttpStatusCodeType.InsufficientStorage:
-                        throw new AIException(
-                            AIException.ErrorCodes.ServiceError,
-                            $"The service failed to process the request, HTTP status: {response.StatusCode:G}",
-                            errorDetail);
-
-                    default:
-                        throw new AIException(
-                            AIException.ErrorCodes.UnknownError,
-                            $"Unexpected HTTP response, status: {response.StatusCode:G}",
-                            errorDetail);
-                }
-            }
-
-            var result = Json.Deserialize<T>(responseJson);
-            if (result is null)
-            {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");
-            }
-
+            T result = this.JsonDeserialize<T>(responseJson);
             return result;
         }
         catch (Exception e) when (e is not AIException)
@@ -215,9 +130,116 @@ public abstract class OpenAIClientBase
                 AIException.ErrorCodes.UnknownError,
                 $"Something went wrong: {e.Message}", e);
         }
-        finally
+    }
+
+    private protected T JsonDeserialize<T>(string responseJson)
+    {
+        var result = Json.Deserialize<T>(responseJson);
+        if (result is null)
         {
-            response?.Dispose();
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");
+        }
+
+        return result;
+    }
+
+    private protected async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod method, HttpContent? content, CancellationToken cancellationToken = default)
+    {
+        HttpResponseMessage? response = null;
+        try
+        {
+            using (var request = new HttpRequestMessage(method, url))
+            {
+                this.AddRequestHeaders(request);
+                if (content != null)
+                {
+                    request.Content = content;
+                }
+
+                response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            }
+
+            this._log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                return response;
+            }
+
+            string responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string? errorDetail = this.GetErrorMessageFromResponse(responseJson);
+            switch ((HttpStatusCodeType)response.StatusCode)
+            {
+                case HttpStatusCodeType.BadRequest:
+                case HttpStatusCodeType.MethodNotAllowed:
+                case HttpStatusCodeType.NotFound:
+                case HttpStatusCodeType.NotAcceptable:
+                case HttpStatusCodeType.Conflict:
+                case HttpStatusCodeType.Gone:
+                case HttpStatusCodeType.LengthRequired:
+                case HttpStatusCodeType.PreconditionFailed:
+                case HttpStatusCodeType.RequestEntityTooLarge:
+                case HttpStatusCodeType.RequestUriTooLong:
+                case HttpStatusCodeType.UnsupportedMediaType:
+                case HttpStatusCodeType.RequestedRangeNotSatisfiable:
+                case HttpStatusCodeType.ExpectationFailed:
+                case HttpStatusCodeType.HttpVersionNotSupported:
+                case HttpStatusCodeType.UpgradeRequired:
+                case HttpStatusCodeType.MisdirectedRequest:
+                case HttpStatusCodeType.UnprocessableEntity:
+                case HttpStatusCodeType.Locked:
+                case HttpStatusCodeType.FailedDependency:
+                case HttpStatusCodeType.PreconditionRequired:
+                case HttpStatusCodeType.RequestHeaderFieldsTooLarge:
+                    throw new AIException(
+                        AIException.ErrorCodes.InvalidRequest,
+                        $"The request is not valid, HTTP status: {response.StatusCode:G}",
+                        errorDetail);
+
+                case HttpStatusCodeType.Unauthorized:
+                case HttpStatusCodeType.Forbidden:
+                case HttpStatusCodeType.ProxyAuthenticationRequired:
+                case HttpStatusCodeType.UnavailableForLegalReasons:
+                case HttpStatusCodeType.NetworkAuthenticationRequired:
+                    throw new AIException(
+                        AIException.ErrorCodes.AccessDenied,
+                        $"The request is not authorized, HTTP status: {response.StatusCode:G}",
+                        errorDetail);
+
+                case HttpStatusCodeType.RequestTimeout:
+                    throw new AIException(
+                        AIException.ErrorCodes.RequestTimeout,
+                        $"The request timed out, HTTP status: {response.StatusCode:G}");
+
+                case HttpStatusCodeType.TooManyRequests:
+                    throw new AIException(
+                        AIException.ErrorCodes.Throttling,
+                        $"Too many requests, HTTP status: {response.StatusCode:G}",
+                        errorDetail);
+
+                case HttpStatusCodeType.InternalServerError:
+                case HttpStatusCodeType.NotImplemented:
+                case HttpStatusCodeType.BadGateway:
+                case HttpStatusCodeType.ServiceUnavailable:
+                case HttpStatusCodeType.GatewayTimeout:
+                case HttpStatusCodeType.InsufficientStorage:
+                    throw new AIException(
+                        AIException.ErrorCodes.ServiceError,
+                        $"The service failed to process the request, HTTP status: {response.StatusCode:G}",
+                        errorDetail);
+
+                default:
+                    throw new AIException(
+                        AIException.ErrorCodes.UnknownError,
+                        $"Unexpected HTTP response, status: {response.StatusCode:G}",
+                        errorDetail);
+            }
+        }
+        catch (Exception e) when (e is not AIException)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.UnknownError,
+                $"Something went wrong: {e.Message}", e);
         }
     }
 
