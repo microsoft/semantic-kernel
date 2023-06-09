@@ -46,7 +46,7 @@ public static class OpenAIKernelBuilderExtensions
                 deploymentName,
                 endpoint,
                 apiKey,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
 
@@ -78,7 +78,7 @@ public static class OpenAIKernelBuilderExtensions
                 deploymentName,
                 endpoint,
                 credentials,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
 
@@ -110,7 +110,7 @@ public static class OpenAIKernelBuilderExtensions
                 modelId,
                 apiKey,
                 orgId,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
         return builder;
@@ -145,7 +145,7 @@ public static class OpenAIKernelBuilderExtensions
                 deploymentName,
                 endpoint,
                 apiKey,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
         return builder;
@@ -176,7 +176,7 @@ public static class OpenAIKernelBuilderExtensions
                 deploymentName,
                 endpoint,
                 credential,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
         return builder;
@@ -207,7 +207,7 @@ public static class OpenAIKernelBuilderExtensions
                 modelId,
                 apiKey,
                 orgId,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
         return builder;
@@ -243,7 +243,7 @@ public static class OpenAIKernelBuilderExtensions
             deploymentName,
             endpoint,
             apiKey,
-            GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+            HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
             parameters.Logger);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
@@ -283,7 +283,7 @@ public static class OpenAIKernelBuilderExtensions
             deploymentName,
             endpoint,
             credentials,
-            GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+            HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
             parameters.Logger);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
@@ -323,7 +323,7 @@ public static class OpenAIKernelBuilderExtensions
             modelId,
             apiKey,
             orgId,
-            GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+            HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
             parameters.Logger);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
@@ -362,7 +362,7 @@ public static class OpenAIKernelBuilderExtensions
             new OpenAIImageGeneration(
                 apiKey,
                 orgId,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger),
             setAsDefault);
 
@@ -392,7 +392,7 @@ public static class OpenAIKernelBuilderExtensions
             new AzureOpenAIImageGeneration(
                 endpoint,
                 apiKey,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 parameters.Logger,
                 maxRetryCount),
             setAsDefault);
@@ -400,23 +400,5 @@ public static class OpenAIKernelBuilderExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Retrieves an instance of HttpClient.
-    /// </summary>
-    /// <param name="config">The kernel configuration.</param>
-    /// <param name="httpClient">An optional pre-existing instance of HttpClient.</param>
-    /// <param name="logger">An optional logger.</param>
-    /// <returns>An instance of HttpClient.</returns>
-    private static HttpClient GetHttpClient(KernelConfig config, HttpClient? httpClient, ILogger? logger)
-    {
-        if (httpClient == null)
-        {
-            var retryHandler = config.HttpHandlerFactory.Create(logger);
-            retryHandler.InnerHandler = NonDisposableHttpClientHandler.Instance;
-            return new HttpClient(retryHandler, false); // We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
-        }
-
-        return httpClient;
-    }
     #endregion
 }
