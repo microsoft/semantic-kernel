@@ -72,21 +72,19 @@ public class VolatileContext<T> : IStorageContext<T> where T : IStorageEntity
         {
             return Task.FromResult(entity);
         }
-        else
-        {
-            throw new KeyNotFoundException($"Entity with id {entityId} not found.");
-        }
+
+        throw new KeyNotFoundException($"Entity with id {entityId} not found.");
     }
 
     /// <inheritdoc/>
-    public Task UpdateAsync(T entity)
+    public Task UpsertAsync(T entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
             throw new ArgumentOutOfRangeException(nameof(entity.Id), "Entity Id cannot be null or empty.");
         }
 
-        this._entities.TryUpdate(entity.Id, entity, this._entities[entity.Id]);
+        this._entities.AddOrUpdate(entity.Id, entity, (key, oldValue) => entity);
 
         return Task.CompletedTask;
     }

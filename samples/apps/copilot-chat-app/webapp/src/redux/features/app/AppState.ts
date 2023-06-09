@@ -3,8 +3,6 @@ import { AlertType } from '../../../libs/models/AlertType';
 // Copyright (c) Microsoft. All rights reserved.
 export interface AppState {
     alerts?: Alerts;
-    unclaimed?: boolean;
-    documentId?: string;
 }
 
 export type Alert = {

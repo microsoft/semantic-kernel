@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount, useMsal } from '@azure/msal-react';
+import { useMsal } from '@azure/msal-react';
 import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
 import { RootState } from '../redux/app/store';
@@ -14,7 +14,6 @@ import {
     updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
 import { AuthHelper } from './auth/AuthHelper';
-import { useConnectors } from './connectors/useConnectors';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
 import { AuthorRoles, ChatMessageState } from './models/ChatMessage';
@@ -30,13 +29,14 @@ import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
 import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
 import { IChatUser } from './models/ChatUser';
 
+import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
+
 export const useChat = () => {
     const dispatch = useAppDispatch();
-    const { instance, accounts } = useMsal();
-    const account = useAccount(accounts[0] || {});
+    const { instance, inProgress } = useMsal();
+    const account = instance.getActiveAccount();
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
-    const connectors = useConnectors();
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
 
@@ -44,12 +44,14 @@ export const useChat = () => {
 
     const loggedInUser: IChatUser = {
         id: account?.homeAccountId || '',
-        fullName: account?.name || '',
+        fullName: (account?.name ?? account?.username) || '',
         emailAddress: account?.username || '',
         photo: undefined, // TODO: Make call to Graph /me endpoint to load photo
         online: true,
         lastTypingTimestamp: 0,
     };
+
+    const plugins = useAppSelector((state: RootState) => state.plugins);
 
     const getChatUserById = (id: string, chatId: string, users: IChatUser[]) => {
         if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') return Constants.bot.profile;
@@ -62,16 +64,16 @@ export const useChat = () => {
             await chatService
                 .createChatAsync(
                     account?.homeAccountId!,
-                    account?.name!,
+                    account?.name ?? account?.username!,
                     chatTitle,
-                    await AuthHelper.getSKaaSAccessToken(instance),
+                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 )
                 .then(async (result: IChatSession) => {
                     const chatMessages = await chatService.getChatMessagesAsync(
                         result.id,
                         0,
                         1,
-                        await AuthHelper.getSKaaSAccessToken(instance),
+                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                     );
 
                     const newChat: ChatState = {
@@ -80,6 +82,7 @@ export const useChat = () => {
                         messages: chatMessages,
                         users: [loggedInUser],
                         botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
+                        input: '',
                     };
 
                     dispatch(addConversation(newChat));
@@ -107,7 +110,7 @@ export const useChat = () => {
                 },
                 {
                     key: 'userName',
-                    value: account?.name!,
+                    value: account?.name ?? account?.username!,
                 },
                 {
                     key: 'chatId',
@@ -139,8 +142,8 @@ export const useChat = () => {
         try {
             var result = await chatService.getBotResponseAsync(
                 ask,
-                await AuthHelper.getSKaaSAccessToken(instance),
-                connectors.getEnabledPlugins(),
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                getEnabledPlugins(),
             );
 
             const messageResult = {
@@ -148,6 +151,7 @@ export const useChat = () => {
                 userName: 'bot',
                 userId: 'bot',
                 content: result.value,
+                prompt: result.variables.find((v) => v.key === 'prompt')?.value,
                 authorRole: AuthorRoles.Bot,
                 state: isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
             };
@@ -163,7 +167,7 @@ export const useChat = () => {
         try {
             const chatSessions = await chatService.getAllChatsAsync(
                 account?.homeAccountId!,
-                await AuthHelper.getSKaaSAccessToken(instance),
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
 
             if (chatSessions.length > 0) {
@@ -174,7 +178,7 @@ export const useChat = () => {
                         chatSession.id,
                         0,
                         100,
-                        await AuthHelper.getSKaaSAccessToken(instance),
+                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                     );
 
                     loadedConversations[chatSession.id] = {
@@ -183,6 +187,7 @@ export const useChat = () => {
                         users: [loggedInUser],
                         messages: chatMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
+                        input: '',
                     };
                 }
 
@@ -204,7 +209,7 @@ export const useChat = () => {
 
     const downloadBot = async (chatId: string) => {
         try {
-            return botService.downloadAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance));
+            return botService.downloadAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance, inProgress));
         } catch (e: any) {
             const errorMessage = `Unable to download the bot. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -213,13 +218,13 @@ export const useChat = () => {
 
     const uploadBot = async (bot: Bot) => {
         botService
-            .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance))
+            .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance, inProgress))
             .then(async (chatSession: IChatSession) => {
                 const chatMessages = await chatService.getChatMessagesAsync(
                     chatSession.id,
                     0,
                     100,
-                    await AuthHelper.getSKaaSAccessToken(instance),
+                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 );
 
                 const newChat = {
@@ -228,6 +233,7 @@ export const useChat = () => {
                     users: [loggedInUser],
                     messages: chatMessages,
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
+                    lastUpdatedTimestamp: new Date().getTime(),
                 };
 
                 dispatch(addConversation(newChat));
@@ -242,6 +248,45 @@ export const useChat = () => {
         return botProfilePictures[index % botProfilePictures.length];
     };
 
+    const getChatMemorySources = async (chatId: string) => {
+        try {
+            return await chatService.getChatMemorySourcesAsync(
+                chatId,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            const errorMessage = `Unable to get chat files. Details: ${e.message ?? e}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+
+        return [];
+    };
+
+    /*
+     * Once enabled, each plugin will have a custom dedicated header in every Semantic Kernel request
+     * containing respective auth information (i.e., token, encoded client info, etc.)
+     * that the server can use to authenticate to the downstream APIs
+     */
+    const getEnabledPlugins = () => {
+        const enabledPlugins: { headerTag: AuthHeaderTags; authData: string; apiProperties?: any }[] = [];
+
+        Object.entries(plugins).map((entry) => {
+            const plugin = entry[1];
+
+            if (plugin.enabled) {
+                enabledPlugins.push({
+                    headerTag: plugin.headerTag,
+                    authData: plugin.authData!,
+                    apiProperties: plugin.apiProperties,
+                });
+            }
+
+            return entry;
+        });
+
+        return enabledPlugins;
+    };
+
     return {
         getChatUserById,
         createChat,
@@ -249,5 +294,6 @@ export const useChat = () => {
         getResponse,
         downloadBot,
         uploadBot,
+        getChatMemorySources,
     };
 };

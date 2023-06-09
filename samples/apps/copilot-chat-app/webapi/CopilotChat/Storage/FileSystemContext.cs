@@ -76,21 +76,19 @@ public class FileSystemContext<T> : IStorageContext<T> where T : IStorageEntity
         {
             return Task.FromResult(entity);
         }
-        else
-        {
-            return Task.FromException<T>(new KeyNotFoundException($"Entity with id {entityId} not found."));
-        }
+
+        return Task.FromException<T>(new KeyNotFoundException($"Entity with id {entityId} not found."));
     }
 
     /// <inheritdoc/>
-    public Task UpdateAsync(T entity)
+    public Task UpsertAsync(T entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Id))
         {
             throw new ArgumentOutOfRangeException(nameof(entity.Id), "Entity Id cannot be null or empty.");
         }
 
-        if (this._entities.TryUpdate(entity.Id, entity, this._entities[entity.Id]))
+        if (this._entities.AddOrUpdate(entity.Id, entity, (key, oldValue) => entity) != null)
         {
             this.Save(this._entities, this._fileStorage);
         }

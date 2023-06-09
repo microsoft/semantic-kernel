@@ -3,12 +3,12 @@
 import logging
 from typing import Awaitable, Callable, TypeVar
 
-from semantic_kernel.reliability.retry_mechanism import RetryMechanism
+from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
 
 T = TypeVar("T")
 
 
-class PassThroughWithoutRetry(RetryMechanism):
+class PassThroughWithoutRetry(RetryMechanismBase):
     """A retry mechanism that does not retry."""
 
     async def execute_with_retry_async(

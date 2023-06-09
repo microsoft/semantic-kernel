@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount, useMsal } from '@azure/msal-react';
+import { useMsal } from '@azure/msal-react';
 import { Button, Spinner, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
@@ -13,6 +13,7 @@ import { DocumentImportService } from '../../libs/services/DocumentImportService
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
+import { editConversationInput } from '../../redux/features/conversations/conversationsSlice';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
@@ -63,23 +64,23 @@ interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const { isTyping, onSubmit } = props;
     const classes = useClasses();
-    const { instance, accounts } = useMsal();
-    const account = useAccount(accounts[0] || {});
+    const { instance, inProgress } = useMsal();
+    const account = instance.getActiveAccount();
     const dispatch = useAppDispatch();
     const [value, setValue] = React.useState('');
-    const [previousValue, setPreviousValue] = React.useState('');
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
     const [documentImporting, SetDocumentImporting] = React.useState(false);
     const documentImportService = new DocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
-    const { selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     React.useEffect(() => {
         async function initSpeechRecognizer() {
             const speechService = new SpeechService(process.env.REACT_APP_BACKEND_URI as string);
-
-            var response = await speechService.validSpeechKeyAsync();
+            var response = await speechService.getSpeechTokenAsync(
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
             if (response.isSuccess) {
                 const recognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
                 setRecognizer(recognizer);
@@ -87,7 +88,12 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         }
 
         initSpeechRecognizer();
-    }, []);
+    }, [instance, inProgress]);
+
+    React.useEffect(() => {
+        const chatState = conversations[selectedId];
+        setValue(chatState.input);
+    }, [conversations, selectedId]);
 
     const handleSpeech = () => {
         setIsListening(true);
@@ -116,7 +122,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                     account!.homeAccountId!,
                     selectedId,
                     documentFile,
-                    await AuthHelper.getSKaaSAccessToken(instance),
+                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 );
                 dispatch(addAlert({ message: 'Document uploaded successfully', type: AlertType.Success }));
             } catch (e: any) {
@@ -137,8 +143,8 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                 return; // only submit if data is not empty
             }
             onSubmit(data);
-            setPreviousValue(data);
             setValue('');
+            dispatch(editConversationInput({ id: selectedId, newInput: '' }));
         } catch (error) {
             const message = `Error submitting chat input: ${(error as Error).message}`;
             log(message);
@@ -149,7 +155,6 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                 }),
             );
         }
-        // void chat.sendTypingStopSignalAsync();
     };
 
     return (
@@ -169,19 +174,15 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                             setValue(chatInput.value);
                         }
                     }}
-                    onChange={(_event, data) => setValue(data.value)}
+                    onChange={(_event, data) => {
+                        setValue(data.value);
+                        dispatch(editConversationInput({ id: selectedId, newInput: data.value }));
+                    }}
                     onKeyDown={(event) => {
                         if (event.key === 'Enter' && !event.shiftKey) {
                             event.preventDefault();
                             handleSubmit(value);
-                            return;
-                        } else if (value === '' && previousValue !== '' && event.key === 'ArrowUp') {
-                            event.preventDefault();
-                            setValue(previousValue);
-                            return;
                         }
-
-                        // void chat.sendTypingStartSignalAsync();
                     }}
                 />
             </div>

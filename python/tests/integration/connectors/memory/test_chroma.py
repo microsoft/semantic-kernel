@@ -27,6 +27,7 @@ def memory_record1():
         embedding=np.array([0.5, 0.5]),
         description="description",
         external_source_name="external source",
+        additional_metadata="additional metadata",
         timestamp="timestamp",
     )
 
@@ -40,6 +41,7 @@ def memory_record2():
         embedding=np.array([0.25, 0.75]),
         description="description",
         external_source_name="external source",
+        additional_metadata="additional metadata",
         timestamp="timestamp",
     )
 
@@ -111,6 +113,26 @@ async def test_upsert_and_get_async(memory_record1):
     assert np.array_equal(result.embedding, np.array([0.5, 0.5]))
     assert result._description == "description"
     assert result._external_source_name == "external source"
+    assert result._additional_metadata == "additional metadata"
+    assert result._timestamp == "timestamp"
+
+
+@pytest.mark.asyncio
+async def test_upsert_and_get_async_with_no_embedding(memory_record1):
+    memory = ChromaMemoryStore()
+    await memory.create_collection_async("test_collection")
+    collection = await memory.get_collection_async("test_collection")
+
+    await memory.upsert_async(collection.name, memory_record1)
+
+    result = await memory.get_async(collection.name, "test_id1", False)
+    assert result._id == "test_id1"
+    assert result._text == "sample text1"
+    assert result._is_reference is False
+    assert result.embedding is None
+    assert result._description == "description"
+    assert result._external_source_name == "external source"
+    assert result._additional_metadata == "additional metadata"
     assert result._timestamp == "timestamp"
 
 
@@ -132,6 +154,7 @@ async def test_upsert_and_get_batch_async(memory_record1, memory_record2):
     assert np.array_equal(result[0].embedding, np.array([0.5, 0.5]))
     assert result[0]._description == "description"
     assert result[0]._external_source_name == "external source"
+    assert result[0]._additional_metadata == "additional metadata"
     assert result[0]._timestamp == "timestamp"
 
 

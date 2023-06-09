@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,6 +14,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Semantic Kernel context.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKContext
 {
     /// <summary>
@@ -19,6 +22,11 @@ public sealed class SKContext
     /// </summary>
     /// <returns>Processed input, aka result</returns>
     public string Result => this.Variables.ToString();
+
+    /// <summary>
+    /// Whether all the context variables are trusted or not.
+    /// </summary>
+    public bool IsTrusted => this.Variables.IsAllTrusted();
 
     /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
@@ -34,6 +42,12 @@ public sealed class SKContext
     /// When an error occurs, this is the most recent exception.
     /// </summary>
     public Exception? LastException { get; private set; }
+
+    /// <summary>
+    /// When a prompt is processed, aka the current data after any model results processing occurred.
+    /// (One prompt can have multiple results).
+    /// </summary>
+    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
 
     /// <summary>
     /// The token to monitor for cancellation requests.
@@ -127,6 +141,22 @@ public sealed class SKContext
     }
 
     /// <summary>
+    /// Make all the variables stored in the context untrusted.
+    /// </summary>
+    public void UntrustAll()
+    {
+        this.Variables.UntrustAll();
+    }
+
+    /// <summary>
+    /// Make the result untrusted.
+    /// </summary>
+    public void UntrustResult()
+    {
+        this.Variables.UntrustInput();
+    }
+
+    /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// If an error occurred, prints the last exception message instead.
     /// </summary>
@@ -134,5 +164,52 @@ public sealed class SKContext
     public override string ToString()
     {
         return this.ErrorOccurred ? $"Error: {this.LastErrorDescription}" : this.Result;
+    }
+
+    /// <summary>
+    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
+    /// and a new set variables, so that variables can be modified without affecting the original context.
+    /// </summary>
+    /// <returns>A new context copied from the current one</returns>
+    public SKContext Clone()
+    {
+        return new SKContext(
+            variables: this.Variables.Clone(),
+            memory: this.Memory,
+            skills: this.Skills,
+            logger: this.Log,
+            cancellationToken: this.CancellationToken)
+        {
+            ErrorOccurred = this.ErrorOccurred,
+            LastErrorDescription = this.LastErrorDescription,
+            LastException = this.LastException
+        };
+    }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay
+    {
+        get
+        {
+            if (this.ErrorOccurred)
+            {
+                return $"Error: {this.LastErrorDescription}";
+            }
+
+            string display = this.Variables.DebuggerDisplay;
+
+            if (this.Skills is IReadOnlySkillCollection skills)
+            {
+                var view = skills.GetFunctionsView();
+                display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";
+            }
+
+            if (this.Memory is ISemanticTextMemory memory && memory is not NullMemory)
+            {
+                display += $", Memory = {memory.GetType().Name}";
+            }
+
+            return display;
+        }
     }
 }

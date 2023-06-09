@@ -32,13 +32,12 @@ public class SequentialPlanParserTests
         Assert.NotNull(azureOpenAIConfiguration);
 
         IKernel kernel = Kernel.Builder
-            .Configure(config =>
-            {
-                config.AddAzureTextCompletionService(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
-            })
+            .WithAzureTextCompletionService(
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey,
+                serviceId: azureOpenAIConfiguration.ServiceId,
+                setAsDefault: true)
             .Build();
         kernel.ImportSkill(new EmailSkillFake(), "email");
         TestHelpers.GetSkills(kernel, "SummarizeSkill", "WriterSkill");
