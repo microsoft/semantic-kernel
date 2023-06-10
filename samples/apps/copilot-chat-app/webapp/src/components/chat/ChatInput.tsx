@@ -15,7 +15,7 @@ import { GetResponseOptions } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
-import { editConversationInput } from '../../redux/features/conversations/conversationsSlice';
+import { editConversationInput, updateConversation } from '../../redux/features/conversations/conversationsSlice';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
@@ -120,14 +120,15 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         if (documentFile) {
             try {
                 SetDocumentImporting(true);
-                const document = await documentImportService.importDocumentAsync(
+                const message = await documentImportService.importDocumentAsync(
                     account!.homeAccountId!,
+                    (account!.name ?? account!.username) as string,
                     selectedId,
                     documentFile,
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 );
 
-                handleSubmit(JSON.stringify(document), ChatMessageType.Document);
+                dispatch(updateConversation({ message, chatId: selectedId }));
             } catch (e: any) {
                 const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));

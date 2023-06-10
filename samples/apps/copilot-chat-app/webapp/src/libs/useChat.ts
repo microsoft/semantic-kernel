@@ -160,12 +160,6 @@ export const useChat = () => {
                 getEnabledPlugins(),
             );
 
-            // When a document is uploaded we only save the user's message to storage, and
-            // do not generate a bot response. Therefore, we do not need to update the conversation.
-            if (messageType === ChatMessageType.Document) {
-                return;
-            }
-
             const messageResult: IChatMessage = {
                 type: (result.variables.find((v) => v.key === 'messageType')?.value ??
                     ChatMessageType.Message) as ChatMessageType,

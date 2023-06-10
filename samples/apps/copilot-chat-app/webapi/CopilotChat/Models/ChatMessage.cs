@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SemanticKernel.Service.CopilotChat.Storage;
+using static SemanticKernel.Service.CopilotChat.Controllers.DocumentImportController;
 
 namespace SemanticKernel.Service.CopilotChat.Models;
 
@@ -150,7 +151,14 @@ public class ChatMessage : IStorageEntity
     /// <returns>A formatted string</returns>
     public string ToFormattedString()
     {
-        return $"[{this.Timestamp.ToString("G", CultureInfo.CurrentCulture)}] {this.UserName}: {this.Content}";
+        var content = this.Content;
+        if (this.Type == ChatMessageType.Document)
+        {
+            var documentDetails = JsonSerializer.Deserialize<DocumentMessageContent>(content);
+            content = $"Sent a file named \"{documentDetails.Name}\" with a size of {documentDetails.Size}.";
+        }
+
+        return $"[{this.Timestamp.ToString("G", CultureInfo.CurrentCulture)}] {this.UserName}: {content}";
     }
 
     /// <summary>

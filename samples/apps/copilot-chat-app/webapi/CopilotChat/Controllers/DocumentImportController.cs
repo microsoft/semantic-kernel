@@ -3,6 +3,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -42,10 +44,29 @@ public class DocumentImportController : ControllerBase
         Pdf,
     };
 
+    /// <summary>
+    /// Value of `Content` for a `ChatMessage` of type `ChatMessageType.Document`.
+    /// </summary>
+    public struct DocumentMessageContent
+    {
+        /// <summary>
+        /// Name of the uploaded document.
+        /// </summary>
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Size of the uploaded document in bytes.
+        /// </summary>
+        [JsonPropertyName("size")]
+        public string Size { get; set; }
+    }
+
     private readonly ILogger<DocumentImportController> _logger;
     private readonly DocumentMemoryOptions _options;
     private readonly ChatSessionRepository _sessionRepository;
     private readonly ChatMemorySourceRepository _sourceRepository;
+    private readonly ChatMessageRepository _messageRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -54,12 +75,14 @@ public class DocumentImportController : ControllerBase
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<DocumentImportController> logger,
         ChatSessionRepository sessionRepository,
-        ChatMemorySourceRepository sourceRepository)
+        ChatMemorySourceRepository sourceRepository,
+        ChatMessageRepository messageRepository)
     {
         this._options = documentMemoryOptions.Value;
         this._logger = logger;
         this._sessionRepository = sessionRepository;
         this._sourceRepository = sourceRepository;
+        this._messageRepository = messageRepository;
     }
 
     /// <summary>
@@ -98,7 +121,7 @@ public class DocumentImportController : ControllerBase
 
         this._logger.LogInformation("Importing document {0}", formFile.FileName);
 
-        MemorySource memorySource;
+        ChatMessage chatMessage;
         try
         {
             var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
@@ -115,7 +138,8 @@ public class DocumentImportController : ControllerBase
                     return this.BadRequest($"Unsupported file type: {fileType}");
             }
 
-            memorySource = new MemorySource(
+            // Create memory source
+            var memorySource = new MemorySource(
                 documentImportForm.ChatId.ToString(),
                 formFile.FileName,
                 documentImportForm.UserId,
@@ -124,6 +148,18 @@ public class DocumentImportController : ControllerBase
                 null);
 
             await this._sourceRepository.UpsertAsync(memorySource);
+
+            // Create chat message that represents document upload
+            chatMessage = new ChatMessage(
+            memorySource.SharedBy,
+            documentImportForm.UserName,
+            memorySource.ChatId,
+            JsonSerializer.Serialize<DocumentMessageContent>(new DocumentMessageContent() { Name = memorySource.Name, Size = this.GetReadableByteString(memorySource.Size) }),
+            "",
+            ChatMessage.AuthorRoles.User,
+            ChatMessage.ChatMessageType.Document);
+
+            await this._messageRepository.CreateAsync(chatMessage);
 
             try
             {
@@ -140,7 +176,25 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest(ex.Message);
         }
 
-        return this.Ok(new { Name = memorySource.Name, Size = memorySource.Size });
+        return this.Ok(chatMessage);
+    }
+
+    /// <summary>
+    /// Converts a `long` byte count to a human-readable string.
+    /// </summary>
+    /// <param name="bytes">Byte count</param>
+    /// <returns>Human-readable string of bytes</returns>
+    private string GetReadableByteString(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        int i;
+        double dblsBytes = bytes;
+        for (i = 0; i < sizes.Length && bytes >= 1024; i++, bytes /= 1024)
+        {
+            dblsBytes = bytes / 1024.0;
+        }
+
+        return string.Format("{0:0.#}{1}", dblsBytes, sizes[i]);
     }
 
     /// <summary>
