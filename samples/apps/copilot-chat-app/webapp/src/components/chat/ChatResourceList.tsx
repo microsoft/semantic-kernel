@@ -18,7 +18,7 @@ import {
     useTableFeatures,
     useTableSort,
 } from '@fluentui/react-components';
-import { DocumentPdfRegular, DocumentTextRegular } from '@fluentui/react-icons';
+import { DocumentPdfRegular, DocumentTextRegular, FluentIconsProps } from '@fluentui/react-icons';
 import * as React from 'react';
 import { ChatMemorySource } from '../../libs/models/ChatMemorySource';
 import { useChat } from '../../libs/useChat';
@@ -191,10 +191,10 @@ function getAccessString(chatId: string) {
     return chatId === EmptyGuid ? 'Global' : 'This chat';
 }
 
-function getFileIconByFileExtension(fileName: string) {
+export function getFileIconByFileExtension(fileName: string, props: FluentIconsProps = {}) {
     const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.') + 1);
     if (extension === 'pdf') {
-        return <DocumentPdfRegular />;
+        return <DocumentPdfRegular {...props} />;
     }
-    return <DocumentTextRegular />;
+    return <DocumentTextRegular {...props} />;
 }
