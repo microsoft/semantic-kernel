@@ -105,14 +105,11 @@ public final class CodeBlock extends Block implements CodeRendering {
             variables = context.getVariables().writableClone().update(input);
         }
 
-        Mono<SKContext> result =
+        Mono<SKContext<?>> result =
                 function.invokeWithCustomInputAsync(
                         variables, context.getSemanticMemory(), context.getSkills());
 
-        return result.map(
-                it -> {
-                    return it.getResult();
-                });
+        return result.map(it -> it.getResult().get());
     }
 
     private SKFunction getFunctionFromSkillCollection(

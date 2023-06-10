@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.annotation.Nonnull;
+
 import com.microsoft.semantickernel.skilldefinition.CaseInsensitiveMap;
 
 import reactor.util.annotation.NonNull;
-
-import java.util.Collections;
-import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /// <summary>
 /// Context Variables is a data structure that holds temporary data while a task is being performed.
@@ -105,9 +106,9 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     }
 
     @Override
-    @Nullable
-    public String get(String key) {
-        return variables.get(key);
+    @Nonnull
+    public Optional<String> get(String key) {
+        return Optional.ofNullable(variables.get(key));
     }
 
     public static class WritableBuilder implements WritableContextVariables.Builder {

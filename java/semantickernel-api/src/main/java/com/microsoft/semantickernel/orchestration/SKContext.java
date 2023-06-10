@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import java.util.Optional;
+
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
+
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
 import reactor.util.annotation.NonNull;
 import reactor.util.annotation.Nullable;
-
-import javax.annotation.CheckReturnValue;
 
 /** Semantic Kernel context. */
 public interface SKContext<Type extends SKContext<Type>> {
@@ -23,8 +26,8 @@ public interface SKContext<Type extends SKContext<Type>> {
      *
      * @return the "input" entry in the variables
      */
-    @Nullable
-    String getResult();
+    @Nonnull
+    Optional<String> getResult();
 
     /**
      * Return a copy of all variables within the context

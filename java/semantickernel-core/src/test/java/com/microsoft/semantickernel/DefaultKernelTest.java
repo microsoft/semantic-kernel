@@ -64,16 +64,16 @@ public class DefaultKernelTest {
                         Assertions.fail();
                 }
 
-                Assertions.assertEquals("a", result.getResult());
+                Assertions.assertEquals("a", result.getResult().get());
 
-                result = result.appendToVariable("history", "user: A" + result.getResult())
+                result = result.appendToVariable("history", "user: A" + result.getResult().get())
                                 .setVariable("user_input", "B");
 
                 result = chat.invokeAsync(result, null).block();
                 if (result == null) {
                         Assertions.fail();
                 }
-                Assertions.assertEquals("b", result.getResult());
+                Assertions.assertEquals("b", result.getResult().get());
         }
 
         @Test
@@ -223,7 +223,7 @@ public class DefaultKernelTest {
         }
 
         private void assertTheResultEquals(SKContext result, String expected) {
-                Assertions.assertEquals(expected, result.getResult());
+                Assertions.assertEquals(expected, result.getResult().get());
         }
 
         private static void assertCompletionsWasCalledWithModelAndText(

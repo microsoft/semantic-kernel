@@ -4,9 +4,10 @@ package com.microsoft.semantickernel.orchestration;
 // Copyright (c) Microsoft. All rights reserved.
 
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 /**
  * Context Variables is a data structure that holds temporary data while a task is being performed.
@@ -47,6 +48,6 @@ public interface ContextVariables {
      * @param key variable name
      * @return content of the variable
      */
-    @Nullable
-    String get(String key);
+    @Nonnull
+    Optional<String> get(String key);
 }

@@ -146,6 +146,6 @@ public class NativeSKFunctionTest {
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
         SKContext<?> result = skills.getFunction("doSomething").invokeAsync("foo").block();
-        Assertions.assertEquals("A-RESULT", result.getResult());
+        Assertions.assertEquals("A-RESULT", result.getResult().get());
     }
 }

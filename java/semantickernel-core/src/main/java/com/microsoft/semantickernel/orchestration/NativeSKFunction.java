@@ -237,26 +237,26 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
             Set<Parameter> inputArgs) {
         String variableName = getGetVariableName(parameter);
 
-        String arg = context.getVariables().get(variableName);
-        if (arg == null) {
+        Optional<String> arg = context.getVariables().get(variableName);
+        if (arg.isPresent() == false) {
             // If this is bound to input get the input value
             if (inputArgs.contains(parameter)) {
-                String input = context.getVariables().get(ContextVariables.MAIN_KEY);
-                if (input != null && !input.isEmpty()) {
+                Optional<String> input = context.getVariables().get(ContextVariables.MAIN_KEY);
+                if (input.isPresent()) {
                     arg = input;
                 }
             }
 
-            if (arg == null || arg.isEmpty()) {
+            if (arg.isPresent() == false) {
                 SKFunctionParameters annotation =
                         parameter.getAnnotation(SKFunctionParameters.class);
                 if (annotation != null) {
-                    arg = annotation.defaultValue();
+                    arg = Optional.of(annotation.defaultValue());
                 }
             }
         }
 
-        if ((arg == null || arg.isEmpty()) && variableName.matches("arg\\d")) {
+        if (arg.isPresent() == false && variableName.matches("arg\\d")) {
             LOGGER.warn(
                     "For the function "
                             + method.getDeclaringClass().getName()
@@ -270,10 +270,10 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
                             + " or @SKFunctionInputAttribute.");
         }
 
-        if (NO_DEFAULT_VALUE.equals(arg)) {
+        if (NO_DEFAULT_VALUE.equals(arg.get())) {
             return null;
         }
-        return arg;
+        return arg.get();
     }
 
     private static String getGetVariableName(Parameter parameter) {

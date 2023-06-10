@@ -1,16 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import java.util.Collections;
+import java.util.Optional;
+
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
+
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
 import reactor.util.annotation.NonNull;
 import reactor.util.annotation.Nullable;
-
-import java.util.Collections;
-
-import javax.annotation.CheckReturnValue;
 
 /// <summary>
 /// Semantic Kernel context.
@@ -20,10 +22,10 @@ public abstract class AbstractSKContext<T extends SKContext<T>> implements SKCon
     private final WritableContextVariables variables;
     @Nullable private final SemanticTextMemory memory;
 
-    @Nullable
+    @Nonnull
     @Override
-    public String getResult() {
-        return getVariables().asMap().get(ContextVariables.MAIN_KEY);
+    public Optional<String> getResult() {
+        return Optional.ofNullable(getVariables().asMap().get(ContextVariables.MAIN_KEY));
     }
 
     /// <summary>

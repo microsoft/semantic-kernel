@@ -135,7 +135,7 @@ public class DefaultCompletionSKFunction
         return results.map(
                         list ->
                                 list.stream()
-                                        .map(SKContext::getResult)
+                                        .map((_context) -> _context.getResult().get())
                                         .collect(Collectors.joining("\n")))
                 .map(context::update);
     }

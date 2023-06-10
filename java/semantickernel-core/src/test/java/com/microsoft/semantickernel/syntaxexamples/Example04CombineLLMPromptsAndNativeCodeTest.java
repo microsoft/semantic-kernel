@@ -51,13 +51,13 @@ public class Example04CombineLLMPromptsAndNativeCodeTest {
 
                 Assertions.assertEquals(
                                 "Gran Torre Santiago is the tallest building in South America",
-                                result.block().getResult());
+                                result.block().getResult().get());
 
                 result = kernel.runAsync(
                                 ask,
                                 kernel.getSkills().getFunction("Search", null),
                                 kernel.getSkill("SummarizeSkill").getFunction("Summarize", null));
 
-                Assertions.assertEquals("A-SUMMARY", result.block().getResult());
+                Assertions.assertEquals("A-SUMMARY", result.block().getResult().get());
         }
 }

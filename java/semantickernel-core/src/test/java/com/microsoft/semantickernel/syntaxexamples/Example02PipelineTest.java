@@ -28,6 +28,6 @@ public class Example02PipelineTest {
                 text.getFunction("RStrip"),
                 text.getFunction("Uppercase"));
 
-        Assertions.assertEquals("I N F I N I T E     S P A C E", result.block().getResult());
+        Assertions.assertEquals("I N F I N I T E     S P A C E", result.block().getResult().get());
     }
 }

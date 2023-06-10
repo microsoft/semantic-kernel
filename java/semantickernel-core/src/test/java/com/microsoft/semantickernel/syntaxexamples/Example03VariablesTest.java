@@ -34,6 +34,6 @@ public class Example03VariablesTest {
                                 functionCollection.getFunction("AppendDay"),
                                 functionCollection.getFunction("Uppercase"));
 
-                Assertions.assertEquals("TODAY IS: MONDAY", result.block().getResult());
+                Assertions.assertEquals("TODAY IS: MONDAY", result.block().getResult().get());
         }
 }

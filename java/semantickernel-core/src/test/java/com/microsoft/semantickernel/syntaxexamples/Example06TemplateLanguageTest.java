@@ -79,6 +79,6 @@ public class Example06TemplateLanguageTest {
                                                 new PromptTemplateConfig.CompletionConfig(
                                                                 0, 0, 0, 0, 256, new ArrayList<>()));
 
-                Assertions.assertEquals("A-RESULT", kindOfDay.invokeAsync("").block().getResult());
+                Assertions.assertEquals("A-RESULT", kindOfDay.invokeAsync("").block().getResult().get());
         }
 }
