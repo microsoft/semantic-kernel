@@ -1,13 +1,18 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.SKContext;
+
+import reactor.test.StepVerifier;
 
 public class FileIOSkillTest {
 
@@ -21,9 +26,15 @@ public class FileIOSkillTest {
         // Create an instance of FileIOSkill
         FileIOSkill fileIOSkill = new FileIOSkill();
 
+        // Mock the SKContext
+        SKContext context = Mockito.mock(SKContext.class);
+        ContextVariables variables = Mockito.mock(ContextVariables.class);
+        Mockito.when(context.getVariables()).thenReturn(variables);
+        Mockito.when(context.getVariables().get("charset")).thenReturn("UTF-8");
+
         // Call the readFileAsync method with the temporary file path
         String filePath = tempFile.toAbsolutePath().toString();
-        StepVerifier.create(fileIOSkill.readFileAsync(filePath))
+        StepVerifier.create(fileIOSkill.readFileAsync(filePath, context))
                 .expectNext(content)
                 .expectComplete()
                 .verify();
@@ -43,9 +54,15 @@ public class FileIOSkillTest {
         // Define the content to write
         String content = "Hello, World!";
 
+        // Mock the SKContext
+        SKContext context = Mockito.mock(SKContext.class);
+        ContextVariables variables = Mockito.mock(ContextVariables.class);
+        Mockito.when(context.getVariables()).thenReturn(variables);
+        Mockito.when(context.getVariables().get("charset")).thenReturn("UTF-8");
+
         // Call the writeFileAsync method with the temporary file path and content
         StepVerifier.create(
-                        fileIOSkill.writeFileAsync(tempFile.toAbsolutePath().toString(), content))
+                        fileIOSkill.writeFileAsync(tempFile.toAbsolutePath().toString(), content, context))
                 .expectComplete()
                 .verify();
 
