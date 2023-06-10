@@ -36,12 +36,12 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
 
         String prompt =
                 """
-                        ChatBot can have a conversation with you about any topic.
-                        It can give explicit instructions or say 'I don't know' if it does not have an answer.
+                                ChatBot can have a conversation with you about any topic.
+                                It can give explicit instructions or say 'I don't know' if it does not have an answer.
 
-                        {{$history}}
-                        User: {{$user_input}}
-                        ChatBot:\s""";
+                                {{$history}}
+                                User: {{$user_input}}
+                                ChatBot:\s""";
 
         CompletionSKFunction chat =
                 kernel.getSemanticFunctionBuilder()
@@ -96,10 +96,8 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
                         result -> {
                             LOGGER.info("Bot:\n\t\t" + result.getResult());
 
-                            String existingHistoy = finalContext.getVariables().get("history");
-                            if (existingHistoy == null) {
-                                existingHistoy = "";
-                            }
+                            String existingHistoy =
+                                    finalContext.getVariables().get("history").orElse("");
                             existingHistoy +=
                                     "\nUser: " + input + "\nChatBot: " + result.getResult() + "\n";
                             return finalContext.setVariable("history", existingHistoy);

@@ -30,7 +30,7 @@ public class FunSkillTest extends AbstractKernelTest {
                         .invokeAsync("time travel to dinosaur age");
 
         if (result != null) {
-            LOGGER.info(result.block().getResult());
+            LOGGER.info(result.block().getResult().get());
         }
     }
 }
