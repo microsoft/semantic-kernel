@@ -238,6 +238,16 @@ public class ChatSkill
         chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
         chatContext.Variables.Set("audience", chatContext["userName"]);
 
+        // Check if plan exists in ask's context variables.
+        // If plan was returned at this point, that means it was approved or cancelled.
+        // Update the response previously saved in chat history with state
+        if (context.Variables.TryGetValue("proposedPlan", out string? planJson)
+            && !string.IsNullOrWhiteSpace(planJson)
+            && context.Variables.TryGetValue("responseMessageId", out string? messageId))
+        {
+            await this.UpdateResponseAsync(planJson, messageId);
+        }
+
         var response = chatContext.Variables.ContainsKey("userCancelledPlan")
             ? "I am sorry the plan did not meet your goals."
             : await this.GetChatResponseAsync(chatContext);
@@ -258,7 +268,8 @@ public class ChatSkill
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            var botMessage = await this.SaveNewResponseAsync(response, prompt, chatId);
+            ChatMessage botMessage = await this.SaveNewResponseAsync(response, prompt, chatId);
+            context.Variables.Set("messageId", botMessage.Id);
             context.Variables.Set("messageType", botMessage.Type.ToString());
         }
         catch (Exception ex) when (!ex.IsCriticalException())
@@ -310,8 +321,7 @@ public class ChatSkill
         // If plan is suggested, send back to user for approval before running
         if (this._externalInformationSkill.ProposedPlan != null)
         {
-            return JsonSerializer.Serialize<ProposedPlan>(
-                new ProposedPlan(this._externalInformationSkill.ProposedPlan));
+            return JsonSerializer.Serialize<ProposedPlan>(this._externalInformationSkill.ProposedPlan);
         }
 
         // 4. Query relevant semantic memories
@@ -380,6 +390,7 @@ public class ChatSkill
     /// </summary>
     private async Task<string> GetUserIntentAsync(SKContext context)
     {
+        // TODO: Regenerate user intent if plan was modified
         if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
             var contextVariables = new ContextVariables();
@@ -495,14 +506,10 @@ public class ChatSkill
     /// <summary>
     /// Helper function create the correct context variables to acquire external information.
     /// </summary>
-    private Task<string> AcquireExternalInformationAsync(SKContext context, string userIntent, int tokenLimit)
+    private async Task<string> AcquireExternalInformationAsync(SKContext context, string userIntent, int tokenLimit)
     {
         var contextVariables = context.Variables.Clone();
         contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-        if (context.Variables.TryGetValue("proposedPlan", out string? proposedPlan))
-        {
-            contextVariables.Set("proposedPlan", proposedPlan);
-        }
 
         var planContext = new SKContext(
             contextVariables,
@@ -512,7 +519,7 @@ public class ChatSkill
             context.CancellationToken
         );
 
-        var plan = this._externalInformationSkill.AcquireExternalInformationAsync(userIntent, planContext);
+        var plan = await this._externalInformationSkill.AcquireExternalInformationAsync(userIntent, planContext);
 
         // Propagate the error
         if (planContext.ErrorOccurred)
@@ -568,6 +575,20 @@ public class ChatSkill
         await this._chatMessageRepository.CreateAsync(chatMessage);
 
         return chatMessage;
+    }
+
+    /// <summary>
+    /// Updates previously saved response in the chat history.
+    /// </summary>
+    /// <param name="updatedResponse">Updated response from the chat.</param>
+    /// <param name="messageId">The chat message ID</param>
+    private async Task UpdateResponseAsync(string updatedResponse, string messageId)
+    {
+        // Make sure the chat exists.
+        var chatMessage = await this._chatMessageRepository.FindByIdAsync(messageId);
+        chatMessage.Content = updatedResponse;
+
+        await this._chatMessageRepository.UpsertAsync(chatMessage);
     }
 
     /// <summary>
