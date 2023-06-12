@@ -88,7 +88,7 @@ export const PlanStepInput: React.FC<PlanStepInputProps> = ({ input, onEdit, ena
                             className={mergeClasses(classes.buttons, classes.interactable)}
                             onClick={onCancel}
                         />
-                    )}{' '}
+                    )}
                 </>
             )}
         </Badge>

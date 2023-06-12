@@ -114,13 +114,14 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                     <Text className={classes.time}>{timestampToDateString(message.timestamp, true)}</Text>
                     {isBot && <PromptDetails message={message} />}
                 </div>
-                {!renderPlan && (
+                {renderPlan ? (
+                    <PlanViewer message={message} messageIndex={messageIndex} getResponse={getResponse} />
+                ) : (
                     <div
                         className={classes.content}
                         dangerouslySetInnerHTML={{ __html: convertToAnchorTags(content) }}
                     />
                 )}
-                {renderPlan && <PlanViewer message={message} messageIndex={messageIndex} getResponse={getResponse} />}
             </div>
         </div>
     );
