@@ -25,7 +25,7 @@ const useClasses = makeStyles({
         height: '100%',
     },
     scroll: {
-        ...shorthands.margin('4px'),
+        ...shorthands.margin(tokens.spacingVerticalXS),
         ...SharedStyles.scroll,
     },
     history: {
