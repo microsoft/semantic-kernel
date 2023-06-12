@@ -17,6 +17,9 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
+/// <summary>
+/// Provides extension methods for the <see cref="KernelBuilder"/> class to configure OpenAI and AzureOpenAI connectors.
+/// </summary>
 public static class OpenAIKernelBuilderExtensions
 {
     #region Text Completion
