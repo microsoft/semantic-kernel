@@ -16,13 +16,18 @@ def create_credentials(
 ) -> Union[AzureKeyCredential, DefaultAzureCredential, DefaultAzureCredentialSync]:
     load_dotenv()
     acs_key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
-
+    
     if azsearch_api_key:
         credential = (
             DefaultAzureCredential() if use_async else DefaultAzureCredentialSync()
         )
     else:
-        credential = AzureKeyCredential(acs_key)
+        if acs_key is None:
+            raise ValueError(
+                "No Azure Cognitive Search Admin Key found. Please provide API key or AZURE_SEARCH_ADMIN_KEY environment variable."
+            )
+        else: 
+            credential = AzureKeyCredential(acs_key)
     return credential
 
 def acs_schema() -> list:
@@ -60,8 +65,9 @@ def acs_schema() -> list:
     
     return fields
 
-def convert_to_memory_record() -> None:
-    return
+def convert_to_memory_record(self, search_result: dict
+                             ) -> MemoryRecord:
+        return
 
 def compute_similarity_scores(
     self, embedding: ndarray, embedding_array: ndarray
