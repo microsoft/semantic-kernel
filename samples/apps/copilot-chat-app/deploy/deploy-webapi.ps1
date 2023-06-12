@@ -44,7 +44,7 @@ if ($null -eq $webAppName) {
     exit 1
 }
 
-Write-Host "WebAPI name: $webappName"
+Write-Host "Azure WebApp name: $webappName"
 
 Write-Host "Configuring Azure WebApp to run from package..."
 az webapp config appsettings set --resource-group $ResourceGroupName --name $webappName --settings WEBSITE_RUN_FROM_PACKAGE="1" | out-null
@@ -52,7 +52,7 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-Write-Host "Deploying '$publishedZipFilePath' to Azure WebApp '$webappName'..."
+Write-Host "Deploying '$PackageFilePath' to Azure WebApp '$webappName'..."
 az webapp deployment source config-zip --resource-group $ResourceGroupName --name $webappName --src $PackageFilePath
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
