@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -47,19 +48,38 @@ public class DocumentImportController : ControllerBase
     /// <summary>
     /// Value of `Content` for a `ChatMessage` of type `ChatMessageType.Document`.
     /// </summary>
-    public struct DocumentMessageContent
+    public class DocumentMessageContent
     {
         /// <summary>
         /// Name of the uploaded document.
         /// </summary>
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Size of the uploaded document in bytes.
         /// </summary>
         [JsonPropertyName("size")]
-        public string Size { get; set; }
+        public string Size { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Serialize the object to a JSON string.
+        /// </summary>
+        /// <returns>A serialized JSON string</returns>
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
+
+        /// <summary>
+        /// Deserialize a JSON string to a DocumentMessageContent object.
+        /// </summary>
+        /// <param name="json">A JSON string</param>
+        /// <returns>A DocumentMessageContent object</returns>
+        public static DocumentMessageContent? FromString(string json)
+        {
+            return JsonSerializer.Deserialize<DocumentMessageContent>(json);
+        }
     }
 
     private readonly ILogger<DocumentImportController> _logger;
@@ -151,13 +171,14 @@ public class DocumentImportController : ControllerBase
 
             // Create chat message that represents document upload
             chatMessage = new ChatMessage(
-            memorySource.SharedBy,
-            documentImportForm.UserName,
-            memorySource.ChatId,
-            JsonSerializer.Serialize<DocumentMessageContent>(new DocumentMessageContent() { Name = memorySource.Name, Size = this.GetReadableByteString(memorySource.Size) }),
-            "",
-            ChatMessage.AuthorRoles.User,
-            ChatMessage.ChatMessageType.Document);
+                memorySource.SharedBy,
+                documentImportForm.UserName,
+                memorySource.ChatId,
+                (new DocumentMessageContent() { Name = memorySource.Name, Size = this.GetReadableByteString(memorySource.Size) }).ToString(),
+                "",
+                ChatMessage.AuthorRoles.User,
+                ChatMessage.ChatMessageType.Document
+            );
 
             await this._messageRepository.CreateAsync(chatMessage);
 
@@ -194,7 +215,7 @@ public class DocumentImportController : ControllerBase
             dblsBytes = bytes / 1024.0;
         }
 
-        return string.Format("{0:0.#}{1}", dblsBytes, sizes[i]);
+        return string.Format(CultureInfo.InvariantCulture, "{0:0.#}{1}", dblsBytes, sizes[i]);
     }
 
     /// <summary>

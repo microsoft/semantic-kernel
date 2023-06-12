@@ -154,8 +154,8 @@ public class ChatMessage : IStorageEntity
         var content = this.Content;
         if (this.Type == ChatMessageType.Document)
         {
-            var documentDetails = JsonSerializer.Deserialize<DocumentMessageContent>(content);
-            content = $"Sent a file named \"{documentDetails.Name}\" with a size of {documentDetails.Size}.";
+            var documentDetails = DocumentMessageContent.FromString(content);
+            content = $"Sent a file named \"{documentDetails?.Name}\" with a size of {documentDetails?.Size}.";
         }
 
         return $"[{this.Timestamp.ToString("G", CultureInfo.CurrentCulture)}] {this.UserName}: {content}";
