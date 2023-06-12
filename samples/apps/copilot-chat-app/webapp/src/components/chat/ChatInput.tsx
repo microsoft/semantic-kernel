@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { useMsal } from '@azure/msal-react';
-import { Button, Spinner, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Button, Spinner, Textarea, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
@@ -16,6 +16,7 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationInput } from '../../redux/features/conversations/conversationsSlice';
+import { CopilotChatTokens } from '../../styles';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
@@ -54,6 +55,15 @@ const useClasses = makeStyles({
     functional: {
         display: 'flex',
         flexDirection: 'row',
+    },
+    dragAndDrop: {
+        ...shorthands.border('2px', ' solid', CopilotChatTokens.backgroundColor),
+        ...shorthands.padding('8px'),
+        textAlign: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        fontSize: '14px',
+        color: CopilotChatTokens.backgroundColor,
+        caretColor: 'transparent',
     },
 });
 
@@ -115,8 +125,8 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         documentFileRef.current?.click();
     };
 
-    const importDocument = async () => {
-        const documentFile = documentFileRef.current?.files?.[0];
+    const importDocument = async (dragAndDropFile?: File) => {
+        const documentFile = dragAndDropFile ?? documentFileRef.current?.files?.[0];
         if (documentFile) {
             try {
                 SetDocumentImporting(true);
@@ -160,6 +170,23 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         }
     };
 
+    const [isDraggingOver, setIsDraggingOver] = React.useState(false);
+
+    const handleDragEnter = (e: React.DragEvent<HTMLTextAreaElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLTextAreaElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(false);
+    };
+
+    const handleDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
+        handleDragLeave(e);
+        await importDocument(e.dataTransfer?.files[0]);
+    };
+
     return (
         <div className={classes.root}>
             <div className={classes.typingIndicator}>{isTyping ? <TypingIndicatorRenderer /> : null}</div>
@@ -167,9 +194,17 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                 <Textarea
                     id="chat-input"
                     resize="vertical"
-                    textarea={{ className: classes.textarea }}
+                    textarea={{
+                        className: isDraggingOver
+                            ? mergeClasses(classes.dragAndDrop, classes.textarea)
+                            : classes.textarea,
+                    }}
                     className={classes.input}
-                    value={value}
+                    value={isDraggingOver ? 'Drop your files here' : value}
+                    onDragEnter={handleDragEnter}
+                    onDragOver={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
                     onFocus={() => {
                         // update the locally stored value to the current value
                         const chatInput = document.getElementById('chat-input') as HTMLTextAreaElement;
@@ -178,6 +213,10 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         }
                     }}
                     onChange={(_event, data) => {
+                        if (isDraggingOver) {
+                            return;
+                        }
+
                         setValue(data.value);
                         dispatch(editConversationInput({ id: selectedId, newInput: data.value }));
                     }}
