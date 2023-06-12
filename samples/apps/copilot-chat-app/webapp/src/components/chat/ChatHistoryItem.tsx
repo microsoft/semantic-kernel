@@ -3,12 +3,11 @@
 import { useMsal } from '@azure/msal-react';
 import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { AuthorRoles, ChatMessageState, ChatMessageType, IChatMessage } from '../../libs/models/ChatMessage';
+import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
 import { GetResponseOptions, useChat } from '../../libs/useChat';
-import { parsePlan } from '../../libs/utils/PlanUtils';
-import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
+import { isPlan } from '../../libs/utils/PlanUtils';
+import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { updateMessageState } from '../../redux/features/conversations/conversationsSlice';
 import { Breakpoints } from '../../styles';
 import { convertToAnchorTags, timestampToDateString } from '../utils/TextUtils';
 import { PlanViewer } from './plan-viewer/PlanViewer';
@@ -82,53 +81,10 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
 
     const chat = useChat();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const dispatch = useAppDispatch();
 
-    const plan = parsePlan(message.content);
-    const isPlan = plan !== null;
+    const renderPlan = isPlan(message.content);
 
-    // Initializing Plan action handlers here so we don't have to drill down data the components won't use otherwise
-    const onPlanApproval = async () => {
-        dispatch(
-            updateMessageState({
-                newMessageState: ChatMessageState.PlanApproved,
-                messageIndex: messageIndex,
-                chatId: selectedId,
-            }),
-        );
-
-        // Extract plan from bot response
-        const proposedPlan = JSON.parse(message.content).proposedPlan;
-
-        // Invoke plan
-        await getResponse({
-            messageType: ChatMessageType.Plan,
-            value: 'Yes, proceed',
-            chatId: selectedId,
-            approvedPlanJson: JSON.stringify(proposedPlan),
-            planUserIntent: plan?.userIntent,
-        });
-    };
-
-    const onPlanCancel = async () => {
-        dispatch(
-            updateMessageState({
-                newMessageState: ChatMessageState.PlanRejected,
-                messageIndex: messageIndex,
-                chatId: selectedId,
-            }),
-        );
-
-        // Bail out of plan
-        await getResponse({
-            messageType: ChatMessageType.Plan,
-            value: 'No, cancel',
-            chatId: selectedId,
-            userCancelledPlan: true,
-        });
-    };
-
-    const content = !isPlan
+    const content = !renderPlan
         ? (message.content as string)
               .trim()
               .replace(/[\u00A0-\u9999<>&]/g, function (i: string) {
@@ -150,35 +106,23 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
         : { name: fullName, color: 'colorful' as 'colorful' };
 
     return (
-        <>
-            <div
-                className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}
-                data-testid={`chat-history-item-${messageIndex}`}
-                data-username={fullName}
-            >
-                {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
-                <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
-                    <div className={classes.header}>
-                        {!isMe && <Text weight="semibold">{fullName}</Text>}
-                        <Text className={classes.time}>{timestampToDateString(message.timestamp, true)}</Text>
-                        {isBot && <PromptDetails message={message} />}
-                    </div>
-                    {!isPlan && (
-                        <div
-                            className={classes.content}
-                            dangerouslySetInnerHTML={{ __html: convertToAnchorTags(content) }}
-                        />
-                    )}
-                    {isPlan && (
-                        <PlanViewer
-                            plan={plan}
-                            planState={message.state ?? ChatMessageState.NoOp}
-                            onSubmit={onPlanApproval}
-                            onCancel={onPlanCancel}
-                        />
-                    )}
+        <div className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}>
+            {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
+            <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
+                <div className={classes.header}>
+                    {!isMe && <Text weight="semibold">{fullName}</Text>}
+                    <Text className={classes.time}>{timestampToDateString(message.timestamp, true)}</Text>
+                    {isBot && <PromptDetails message={message} />}
                 </div>
+                {renderPlan ? (
+                    <PlanViewer message={message} messageIndex={messageIndex} getResponse={getResponse} />
+                ) : (
+                    <div
+                        className={classes.content}
+                        dangerouslySetInnerHTML={{ __html: convertToAnchorTags(content) }}
+                    />
+                )}
             </div>
-        </>
+        </div>
     );
 };
