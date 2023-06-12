@@ -20,7 +20,7 @@ public static class TextCompletionServiceExtensions
     /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
     public static ITextCompletion GetTextCompletionServiceOrDefault(
         this IAIServiceProvider services,
-        string? serviceId = null) => services.GetService<ITextCompletion>()
+        string? serviceId = null) => services.GetService<ITextCompletion>(serviceId)
             ?? throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text completion service not found");
 
     /// <summary>
