@@ -7,8 +7,16 @@ from numpy import linalg
 from azure.core.credentials import AzureKeyCredential
 from azure.identity import DefaultAzureCredential as DefaultAzureCredentialSync
 from azure.identity.aio import DefaultAzureCredential
+from python.semantic_kernel.memory.memory_record import MemoryRecord
 
 from numpy import array, ndarray
+
+from azure.search.documents.indexes.models import (
+    SearchField,
+    SearchFieldDataType,
+    SimpleField,
+    SearchableField,
+)
 
 
 def create_credentials(
@@ -30,9 +38,18 @@ def create_credentials(
             credential = AzureKeyCredential(acs_key)
     return credential
 
-def acs_schema() -> list:
+def acs_schema( vector_size: int
+) -> list:
+    """Creates an ACS schema for collection/index creation.
+
+    Arguments:
+        vector_size {int} -- The size of the vectors being stored in collection/index.
+       
+    Returns:
+        list -- The ACS schema as list type.
+    """
     
-    fields = [
+    acs_fields = [
             SimpleField(
                 name="vector_id",
                 type=SearchFieldDataType.String,
@@ -54,6 +71,13 @@ def acs_schema() -> list:
                 searchable=True,
                 retrievable=True,
             ),
+            SearchableField(
+                name="additional_metadata",
+                type=SearchFieldDataType.String,
+                filterable=True,
+                searchable=True,
+                retrievable=True,
+            ),
             SearchField(
                 name="vector",
                 type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
@@ -63,11 +87,20 @@ def acs_schema() -> list:
             ),
         ]
     
-    return fields
+    return acs_fields
 
-def convert_to_memory_record(self, search_result: dict
+def convert_to_memory_record(self, acs_data: dict
                              ) -> MemoryRecord:
-        return
+    """Converts a search result to a MemoryRecord.
+    
+    Arguments:
+        acs_data {dict} -- ACS result data.
+
+    Returns:
+        MemoryRecord -- The MemoryRecord from ACS Data Result.
+    """
+
+    return None
 
 def compute_similarity_scores(
     self, embedding: ndarray, embedding_array: ndarray

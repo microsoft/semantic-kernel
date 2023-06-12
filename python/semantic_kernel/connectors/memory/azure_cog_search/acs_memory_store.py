@@ -16,10 +16,6 @@ from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.models import Vector
 from azure.search.documents.indexes.models import (
     SearchIndex,
-    SearchField,
-    SearchFieldDataType,
-    SimpleField,
-    SearchableField,
     SemanticConfiguration,
     PrioritizedFields,
     SemanticField,
@@ -154,7 +150,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             # Create the search index with the semantic settings
             index = SearchIndex(
                 name=collection_name,
-                fields=acs_schema(),
+                fields=acs_schema(vector_size),
                 vector_search=vector_search,
                 semantic_settings=semantic_settings,
             )
