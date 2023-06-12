@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Optional
+from typing import Any, List, Optional, Union
 
 import openai
 
@@ -56,10 +56,14 @@ class OpenAITextCompletion(TextCompletionClientBase):
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
-    ) -> str:
+    ) -> Union[str, List[str]]:
         # TODO: tracking on token counts/etc.
         response = await self._send_completion_request(prompt, request_settings, False)
-        return response.choices[0].text
+
+        if len(response.choices) == 1:
+            return response.choices[0].text
+        else:
+            return [choice.text for choice in response.choices]
 
     # TODO: complete w/ multiple...
 
@@ -67,8 +71,15 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self, prompt: str, request_settings: CompleteRequestSettings
     ):
         response = await self._send_completion_request(prompt, request_settings, True)
+
         async for chunk in response:
-            yield chunk.choices[0].text
+            if request_settings.number_of_responses > 1:
+                for choice in chunk.choices:
+                    completions = [""] * request_settings.number_of_responses
+                    completions[choice.index] = choice.text
+                    yield completions
+            else:
+                yield chunk.choices[0].text
 
     async def _send_completion_request(
         self, prompt: str, request_settings: CompleteRequestSettings, stream: bool
@@ -94,13 +105,6 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 AIException.ErrorCodes.InvalidRequest,
                 "The max tokens must be greater than 0, "
                 f"but was {request_settings.max_tokens}",
-            )
-
-        if request_settings.number_of_responses != 1:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "complete_async only supports a single completion, "
-                f"but {request_settings.number_of_responses} were requested",
             )
 
         if request_settings.logprobs != 0:
@@ -131,6 +135,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 frequency_penalty=request_settings.frequency_penalty,
                 max_tokens=request_settings.max_tokens,
                 stream=stream,
+                n=request_settings.number_of_responses,
                 stop=(
                     request_settings.stop_sequences
                     if request_settings.stop_sequences is not None

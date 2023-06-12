@@ -23,7 +23,7 @@ public sealed class KernelBuilder
     private KernelConfig _config = new();
     private ISemanticTextMemory _memory = NullMemory.Instance;
     private ILogger _logger = NullLogger.Instance;
-    private IMemoryStore? _memoryStorage = null;
+    private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
@@ -61,9 +61,9 @@ public sealed class KernelBuilder
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
-        if (this._memoryStorage != null)
+        if (this._memoryStorageFactory != null)
         {
-            instance.UseMemory(this._memoryStorage);
+            instance.UseMemory(this._memoryStorageFactory.Invoke());
         }
 
         return instance;
@@ -101,7 +101,19 @@ public sealed class KernelBuilder
     public KernelBuilder WithMemoryStorage(IMemoryStore storage)
     {
         Verify.NotNull(storage);
-        this._memoryStorage = storage;
+        this._memoryStorageFactory = () => storage;
+        return this;
+    }
+
+    /// <summary>
+    /// Add memory storage factory to the kernel.
+    /// </summary>
+    /// <param name="factory">The storage factory.</param>
+    /// <returns>Updated kernel builder including the memory storage.</returns>
+    public KernelBuilder WithMemoryStorage<TStore>(Func<(ILogger Logger, KernelConfig Config), TStore> factory) where TStore : IMemoryStore
+    {
+        Verify.NotNull(factory);
+        this._memoryStorageFactory = () => factory((this._logger, this._config));
         return this;
     }
 

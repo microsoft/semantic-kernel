@@ -6,15 +6,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingResult
 {
+    private readonly ModelResult _modelResult;
     private readonly StreamingChoice _choice;
 
-    public TextCompletionStreamingResult(StreamingChoice choice)
+    public ModelResult ModelResult => this._modelResult;
+
+    public TextCompletionStreamingResult(StreamingCompletions resultData, StreamingChoice choice)
     {
+        this._modelResult = new ModelResult(resultData);
         this._choice = choice;
     }
 

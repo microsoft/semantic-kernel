@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Skills;
+using Microsoft.SemanticKernel.CoreSkills;
 
 // ReSharper disable once InconsistentNaming
 public static class Example01_NativeFunctions
