@@ -70,11 +70,13 @@ const useClasses = makeStyles({
 interface ChatInputProps {
     // Hardcode to single user typing. For multi-users, it should be a list of ChatUser who are typing.
     isTyping?: boolean;
+    isDraggingOver?: boolean;
+    onDragLeave: React.DragEventHandler<HTMLDivElement | HTMLTextAreaElement>;
     onSubmit: (options: GetResponseOptions) => void;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = (props) => {
-    const { isTyping, onSubmit } = props;
+    const { isTyping, isDraggingOver, onDragLeave, onSubmit } = props;
     const classes = useClasses();
     const { instance, inProgress } = useMsal();
     const account = instance.getActiveAccount();
@@ -150,6 +152,11 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         documentFileRef.current!.value = '';
     };
 
+    const handleDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
+        onDragLeave(e);
+        await importDocument(e.dataTransfer?.files[0]);
+    };
+
     const handleSubmit = (value: string, messageType: ChatMessageType = ChatMessageType.Message) => {
         try {
             if (value.trim() === '') {
@@ -170,23 +177,6 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         }
     };
 
-    const [isDraggingOver, setIsDraggingOver] = React.useState(false);
-
-    const handleDragEnter = (e: React.DragEvent<HTMLTextAreaElement>) => {
-        e.preventDefault();
-        setIsDraggingOver(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent<HTMLTextAreaElement>) => {
-        e.preventDefault();
-        setIsDraggingOver(false);
-    };
-
-    const handleDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
-        handleDragLeave(e);
-        await importDocument(e.dataTransfer?.files[0]);
-    };
-
     return (
         <div className={classes.root}>
             <div className={classes.typingIndicator}>{isTyping ? <TypingIndicatorRenderer /> : null}</div>
@@ -201,9 +191,6 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                     }}
                     className={classes.input}
                     value={isDraggingOver ? 'Drop your files here' : value}
-                    onDragEnter={handleDragEnter}
-                    onDragOver={handleDragEnter}
-                    onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     onFocus={() => {
                         // update the locally stored value to the current value
