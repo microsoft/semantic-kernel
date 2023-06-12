@@ -10,12 +10,11 @@ import { Constants } from '../../Constants';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
 import { ChatMessageType } from '../../libs/models/ChatMessage';
-import { DocumentImportService } from '../../libs/services/DocumentImportService';
-import { GetResponseOptions } from '../../libs/useChat';
+import { GetResponseOptions, useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
-import { editConversationInput, updateConversation } from '../../redux/features/conversations/conversationsSlice';
+import { editConversationInput } from '../../redux/features/conversations/conversationsSlice';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
@@ -67,13 +66,12 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     const { isTyping, onSubmit } = props;
     const classes = useClasses();
     const { instance, inProgress } = useMsal();
-    const account = instance.getActiveAccount();
+    const chat = useChat();
     const dispatch = useAppDispatch();
     const [value, setValue] = React.useState('');
     const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
     const [isListening, setIsListening] = React.useState(false);
-    const [documentImporting, SetDocumentImporting] = React.useState(false);
-    const documentImportService = new DocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
+    const [documentImporting, setDocumentImporting] = React.useState(false);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
@@ -115,26 +113,14 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         documentFileRef.current?.click();
     };
 
-    const importDocument = async () => {
-        const documentFile = documentFileRef.current?.files?.[0];
-        if (documentFile) {
-            try {
-                SetDocumentImporting(true);
-                const message = await documentImportService.importDocumentAsync(
-                    account!.homeAccountId!,
-                    (account!.name ?? account!.username) as string,
-                    selectedId,
-                    documentFile,
-                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
-                );
+    const handleImport = async () => {
+        setDocumentImporting(true);
 
-                dispatch(updateConversation({ message, chatId: selectedId }));
-            } catch (e: any) {
-                const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
-                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
-            }
-            SetDocumentImporting(false);
+        const file = documentFileRef.current?.files?.[0];
+        if (file) {
+            await chat.importDocument(selectedId, file);
         }
+        setDocumentImporting(false);
 
         // Reset the file input so that the onChange event will
         // be triggered even if the same file is selected again.
@@ -199,13 +185,13 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         style={{ display: 'none' }}
                         accept=".txt,.pdf"
                         multiple={false}
-                        onChange={() => importDocument()}
+                        onChange={handleImport}
                     />
                     <Button
                         disabled={documentImporting}
                         appearance="transparent"
                         icon={<AttachRegular />}
-                        onClick={() => selectDocument()}
+                        onClick={selectDocument}
                     />
                     {documentImporting && <Spinner size="tiny" />}
                 </div>
@@ -215,7 +201,7 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                             appearance="transparent"
                             disabled={isListening}
                             icon={<MicRegular />}
-                            onClick={() => handleSpeech()}
+                            onClick={handleSpeech}
                         />
                     )}
                     <Button appearance="transparent" icon={<SendRegular />} onClick={() => handleSubmit(value)} />
