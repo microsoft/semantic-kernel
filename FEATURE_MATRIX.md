@@ -41,7 +41,7 @@
 | ConversationSummary Skill         | ✅  | ✅     | ❌   |       |
 | FileIO Skill                      | ✅  | ✅     | ❌   |       |
 | Http Skill                        | ✅  | ✅     | ❌   |       |
-| Math Skill                        | ✅  | ✅     | 🔄   | Supports add/sub      |
+| Math Skill                        | ✅  | ✅     | ❌   |       |
 | Text Skill                        | ✅  | ✅     | 🔄   |       |
 | Time Skill                        | ✅  | ✅     | 🔄   |       |
 | Wait Skill                        | ✅  | ❌     | ❌   |       |
