@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -14,9 +15,9 @@ using Microsoft.SemanticKernel.Text;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
+using Tesseract;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
-using static SemanticKernel.Service.CopilotChat.Models.MemorySource;
 
 namespace SemanticKernel.Service.CopilotChat.Controllers;
 
@@ -40,12 +41,24 @@ public class DocumentImportController : ControllerBase
         /// .pdf
         /// </summary>
         Pdf,
+        /// <summary>
+        /// .jpg
+        /// </summary>
+        Jpg,
+        /// <summary>
+        /// .png
+        /// </summary>
+        Png,
+        /// <summary>
+        /// .tif or .tiff
+        /// </summary>
+        Tiff
     };
 
     private readonly ILogger<DocumentImportController> _logger;
     private readonly DocumentMemoryOptions _options;
-    private readonly ChatSessionRepository _sessionRepository;
-    private readonly ChatMemorySourceRepository _sourceRepository;
+    private readonly ChatSessionRepository _chatSessionRepository;
+    private readonly string _tesseractDataPath;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -53,13 +66,12 @@ public class DocumentImportController : ControllerBase
     public DocumentImportController(
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<DocumentImportController> logger,
-        ChatSessionRepository sessionRepository,
-        ChatMemorySourceRepository sourceRepository)
+        ChatSessionRepository chatSessionRepository)
     {
         this._options = documentMemoryOptions.Value;
         this._logger = logger;
-        this._sessionRepository = sessionRepository;
-        this._sourceRepository = sourceRepository;
+        this._chatSessionRepository = chatSessionRepository;
+        this._tesseractDataPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "tessdata");
     }
 
     /// <summary>
@@ -98,7 +110,6 @@ public class DocumentImportController : ControllerBase
 
         this._logger.LogInformation("Importing document {0}", formFile.FileName);
 
-        MemorySource memorySource;
         try
         {
             var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
@@ -111,36 +122,25 @@ public class DocumentImportController : ControllerBase
                 case SupportedFileType.Pdf:
                     fileContent = this.ReadPdfFile(formFile);
                     break;
+                case SupportedFileType.Jpg:
+                case SupportedFileType.Png:
+                case SupportedFileType.Tiff:
+                {
+                    fileContent = await this.ReadImageFileAsync(formFile);
+                    break;
+                }
                 default:
                     return this.BadRequest($"Unsupported file type: {fileType}");
             }
 
-            memorySource = new MemorySource(
-                documentImportForm.ChatId.ToString(),
-                formFile.FileName,
-                documentImportForm.UserId,
-                MemorySourceType.File,
-                formFile.Length,
-                null);
-
-            await this._sourceRepository.UpsertAsync(memorySource);
-
-            try
-            {
-                await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, memorySource.Id);
-            }
-            catch (Exception ex) when (!ex.IsCriticalException())
-            {
-                await this._sourceRepository.DeleteAsync(memorySource);
-                throw;
-            }
+            await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm);
         }
-        catch (ArgumentOutOfRangeException ex)
+        catch (Exception ex) when (ex is ArgumentOutOfRangeException)
         {
             return this.BadRequest(ex.Message);
         }
 
-        return this.Ok(new { Name = memorySource.Name, Size = memorySource.Size });
+        return this.Ok();
     }
 
     /// <summary>
@@ -156,6 +156,11 @@ public class DocumentImportController : ControllerBase
         {
             ".txt" => SupportedFileType.Txt,
             ".pdf" => SupportedFileType.Pdf,
+            ".jpg" => SupportedFileType.Jpg,
+            ".jpeg" => SupportedFileType.Jpg,
+            ".png" => SupportedFileType.Png,
+            ".tif" => SupportedFileType.Tiff,
+            ".tiff" => SupportedFileType.Tiff,
             _ => throw new ArgumentOutOfRangeException($"Unsupported file type: {extension}"),
         };
     }
@@ -169,6 +174,27 @@ public class DocumentImportController : ControllerBase
     {
         using var streamReader = new StreamReader(file.OpenReadStream());
         return await streamReader.ReadToEndAsync();
+    }
+
+    /// <summary>
+    /// Read the content of a text file.
+    /// </summary>
+    /// <param name="file">An IFormFile object.</param>
+    /// <returns>A string of the content of the file.</returns>
+    private async Task<string> ReadImageFileAsync(IFormFile file)
+    {
+        await using (var ms = new MemoryStream())
+        {
+            await file.CopyToAsync(ms);
+            var fileBytes = ms.ToArray();
+            await using var imgStream = new MemoryStream(fileBytes);
+
+            using var engine = new TesseractEngine(_tesseractDataPath, "eng", EngineMode.Default); // use the appropriate language model
+            using var img = Pix.LoadFromMemory(imgStream.ToArray());
+
+            using var page = engine.Process(img);
+            return page.GetText();
+        }
     }
 
     /// <summary>
@@ -196,8 +222,8 @@ public class DocumentImportController : ControllerBase
     /// <param name="kernel">The kernel instance from the service</param>
     /// <param name="content">The file content read from the uploaded document</param>
     /// <param name="documentImportForm">The document upload form that contains additional necessary info</param>
-    /// <param name="memorySourceId">The ID of the MemorySource that the document content is linked to</param>
-    private async Task ParseDocumentContentToMemoryAsync(IKernel kernel, string content, DocumentImportForm documentImportForm, string memorySourceId)
+    /// <returns></returns>
+    private async Task ParseDocumentContentToMemoryAsync(IKernel kernel, string content, DocumentImportForm documentImportForm)
     {
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
         var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global
@@ -209,20 +235,19 @@ public class DocumentImportController : ControllerBase
         var lines = TextChunker.SplitPlainTextLines(content, this._options.DocumentLineSplitMaxTokens);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, this._options.DocumentParagraphSplitMaxLines);
 
-        for (var i = 0; i < paragraphs.Count; i++)
+        foreach (var paragraph in paragraphs)
         {
-            var paragraph = paragraphs[i];
             await kernel.Memory.SaveInformationAsync(
                 collection: targetCollectionName,
                 text: paragraph,
-                id: $"{memorySourceId}-{i}",
+                id: Guid.NewGuid().ToString(),
                 description: $"Document: {documentName}");
         }
 
         this._logger.LogInformation(
             "Parsed {0} paragraphs from local file {1}",
             paragraphs.Count,
-            documentName
+            Path.GetFileName(documentImportForm.FormFile?.FileName)
         );
     }
 
@@ -234,7 +259,7 @@ public class DocumentImportController : ControllerBase
     /// <returns>A boolean indicating whether the user has access to the chat session.</returns>
     private async Task<bool> UserHasAccessToChatAsync(string userId, Guid chatId)
     {
-        var chatSessions = await this._sessionRepository.FindByUserIdAsync(userId);
+        var chatSessions = await this._chatSessionRepository.FindByUserIdAsync(userId);
         return chatSessions.Any(c => c.Id == chatId.ToString());
     }
 }
