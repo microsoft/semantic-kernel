@@ -74,6 +74,9 @@ const useClasses = makeStyles({
 });
 
 interface PlanStepCardProps {
+    // See Semantic Kernel's Plan object for field definitions (step === Plan).
+    // Plan.cs: https://github.com/microsoft/semantic-kernel/blob/df07fc6f28853a481dd6f47e60d39a52fc6c9967/dotnet/src/SemanticKernel/Planning/Plan.cs#
+    // Not explicitly defining the type here to avoid additional overhead of property maintainence.
     step: any;
     enableEdits: boolean;
     enableStepDelete: boolean;
