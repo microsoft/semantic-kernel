@@ -5,8 +5,13 @@ export type IPlanInput = {
 };
 
 export enum PlanState {
-    NoOp = 'NoOp',
-    PlanApprovalRequired = 'ApprovalRequired',
-    PlanApproved = 'Approved',
-    PlanRejected = 'Rejected',
+    NoOp,
+    PlanApproved,
+    PlanRejected,
+    PlanApprovalRequired,
+}
+
+export enum PlanType {
+    Action, // single-step
+    Sequential, // multi-step
 }

@@ -82,7 +82,7 @@ public class ExternalInformationSkill
         var deserializedPlan = planExists && !string.IsNullOrWhiteSpace(proposedPlanJson) ? JsonSerializer.Deserialize<ProposedPlan>(proposedPlanJson) : null;
 
         // Run plan if it was approved
-        if (deserializedPlan != null && deserializedPlan.State.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+        if (deserializedPlan != null && deserializedPlan.State == PlanState.Approved)
         {
             string planJson = JsonSerializer.Serialize(deserializedPlan.Plan);
             // Reload the plan with the planner's kernel so
@@ -133,7 +133,7 @@ public class ExternalInformationSkill
                 Plan sanitizedPlan = this.SanitizePlan(plan, context);
                 sanitizedPlan.State.Update(plan.State);
 
-                this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner.PlannerOptions!.Type, "NoOp");
+                this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner.PlannerOptions!.Type, PlanState.NoOp);
             }
         }
 

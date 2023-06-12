@@ -2,7 +2,7 @@ import { Button, Text, makeStyles, mergeClasses, shorthands, tokens } from '@flu
 import { CheckmarkCircle24Regular, DismissCircle24Regular, Info24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { ChatMessageType, IChatMessage } from '../../../libs/models/ChatMessage';
-import { IPlanInput, PlanState } from '../../../libs/models/Plan';
+import { IPlanInput, PlanState, PlanType } from '../../../libs/models/Plan';
 import { IAskVariables } from '../../../libs/semantic-kernel/model/Ask';
 import { GetResponseOptions } from '../../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
@@ -50,7 +50,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
     var planState = message.state ?? parsedContent.state;
 
     // If plan came from ActionPlanner, use parameters from top-level plan state
-    if (parsedContent.type === 'Action') {
+    if (parsedContent.type === PlanType.Action) {
         originalPlan.steps[0].parameters = originalPlan.state;
     }
 

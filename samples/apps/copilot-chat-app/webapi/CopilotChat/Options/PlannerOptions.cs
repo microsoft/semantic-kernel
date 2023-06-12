@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel.DataAnnotations;
+using SemanticKernel.Service.CopilotChat.Models;
 
 namespace SemanticKernel.Service.CopilotChat.Options;
 
@@ -14,5 +15,5 @@ public class PlannerOptions
     /// Define if the planner must be Sequential or not.
     /// </summary>
     [Required]
-    public string Type { get; set; } = string.Empty;
+    public PlanType Type { get; set; } = PlanType.Action;
 }
