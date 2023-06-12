@@ -52,19 +52,26 @@ public static class MemoryConfiguration
     /// <returns></returns>
     private static ISemanticTextMemory CreateSemanticTextMemory(IMemoryStore memoryStore, ITextEmbeddingGeneration embeddingGenerator)
     {
-        var storageType = memoryStore.GetType();
-        var filterableStorageType = storageType
+        var memoryStoreType = memoryStore.GetType();
+        var filterableMemoryStoreInterfaceType = memoryStoreType
             .GetInterfaces()
             .SingleOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMemoryStore<>));
 
-        if (filterableStorageType != null)
+        if (filterableMemoryStoreInterfaceType != null)
         {
-            var filterType = filterableStorageType
+            var filterType = filterableMemoryStoreInterfaceType
                 .GetGenericArguments()
                 .Single();
 
+            var textEmbeddingGenerationType = typeof(ITextEmbeddingGeneration);
             var filterableSemanticTextMemoryType = typeof(SemanticTextMemory<>).MakeGenericType(filterType);
-            var constructor = filterableSemanticTextMemoryType.GetConstructor(new[] { storageType, typeof(ITextEmbeddingGeneration) });
+            var constructor = filterableSemanticTextMemoryType.GetConstructor(new[] { memoryStoreType, textEmbeddingGenerationType });
+            if (constructor == null)
+            {
+                throw new System.InvalidOperationException(
+                    $"No {filterableSemanticTextMemoryType.FullName} constructor with parameter types: {memoryStoreType.FullName}, {textEmbeddingGenerationType.FullName} found.");
+            }
+
             return (ISemanticTextMemory)constructor.Invoke(new object[] { memoryStore, embeddingGenerator });
         }
 

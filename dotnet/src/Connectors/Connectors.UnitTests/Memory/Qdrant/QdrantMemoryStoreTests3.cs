@@ -420,7 +420,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<(QdrantVectorRecord, double)>());
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, logger: null);
 
         // Act
         await vectorStore.GetNearestMatchesAsync(

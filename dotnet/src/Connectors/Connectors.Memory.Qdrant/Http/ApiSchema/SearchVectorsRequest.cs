@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
-using Microsoft.SemanticKernel.Memory;
-using static Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema.QdrantFilter;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 

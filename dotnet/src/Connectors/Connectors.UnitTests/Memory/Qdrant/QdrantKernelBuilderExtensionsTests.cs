@@ -6,6 +6,8 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.Qdrant;
@@ -39,6 +41,21 @@ public sealed class QdrantKernelBuilderExtensionsTests : IDisposable
 
         //Assert
         Assert.Equal("https://fake-random-qdrant-host/collections", this.messageHandlerStub?.RequestUri?.AbsoluteUri);
+    }
+
+    [Fact]
+    public void ItUsesFilterableSemanticTextMemoryWhenUsingQdrantMemoryStore()
+    {
+        //Arrange
+        var builder = new KernelBuilder();
+        builder.WithQdrantMemoryStore("https://fake-random-qdrant-host", 123);
+        builder.WithAzureTextEmbeddingGenerationService("fake-deployment-name", "https://fake-random-text-embedding-generation-host/fake-path", "fake-api-key");
+
+        //Act
+        var kernel = builder.Build();
+
+        //Assert
+        Assert.IsType<SemanticTextMemory<QdrantFilter>>(kernel.Memory);
     }
 
     public void Dispose()

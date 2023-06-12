@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// Implementation of <see cref="ISemanticTextMemory"/>./>.
+/// Implementation of <see cref="ISemanticTextMemory"/>.
 /// </summary>
 public class SemanticTextMemory : ISemanticTextMemory, IDisposable
 {
@@ -142,6 +142,10 @@ public class SemanticTextMemory : ISemanticTextMemory, IDisposable
     }
 }
 
+/// <summary>
+/// Implementation of <see cref="ISemanticTextMemory{TFilter}"/>.
+/// </summary>
+/// <typeparam name="TFilter">Type of filter used for metada filtering.</typeparam>
 public sealed class SemanticTextMemory<TFilter> : SemanticTextMemory, ISemanticTextMemory<TFilter>
 {
     private readonly IMemoryStore<TFilter> _storage;
@@ -155,6 +159,7 @@ public sealed class SemanticTextMemory<TFilter> : SemanticTextMemory, ISemanticT
         this._storage = storage;
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<MemoryQueryResult> SearchAsync(
         string collection,
         string query,

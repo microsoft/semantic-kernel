@@ -129,10 +129,8 @@ public sealed class QdrantFilter : IValidatable
 
         public void Validate()
         {
-            Verify.True(this.GreaterThan.HasValue
-                || this.GreaterThanOrEqual.HasValue
-                || this.LowerThan.HasValue
-                || this.LowerThanOrEqual.HasValue,
+            Verify.True(
+                this.GreaterThan.HasValue || this.GreaterThanOrEqual.HasValue || this.LowerThan.HasValue || this.LowerThanOrEqual.HasValue,
                 "No range conditions are specified");
         }
     }
@@ -158,10 +156,7 @@ public sealed class QdrantFilter : IValidatable
         public void Validate()
         {
             Verify.True(
-                this.Value != null
-                || this.Text != null
-                || this.Any != null
-                || this.Except != null,
+                this.Value != null || this.Text != null || this.Any != null || this.Except != null,
                 "No match conditions are specified");
         }
     }

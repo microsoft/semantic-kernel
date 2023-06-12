@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
-using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
