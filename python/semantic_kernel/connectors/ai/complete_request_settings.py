@@ -29,6 +29,7 @@ class CompleteRequestSettings:
         self.frequency_penalty = completion_config.frequency_penalty
         self.max_tokens = completion_config.max_tokens
         self.stop_sequences = completion_config.stop_sequences
+        self.number_of_responses = completion_config.number_of_responses
 
     @staticmethod
     def from_completion_config(
