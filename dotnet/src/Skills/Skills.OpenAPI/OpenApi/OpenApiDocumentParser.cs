@@ -311,12 +311,17 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
             var propertySchema = propertyPair.Value;
 
+            object? propertyExample = GetParameterValue("example", propertySchema.Example)
+                ?? GetParameterValue("default", propertySchema.Default)
+                ?? (object?)(propertySchema.Maximum.HasValue ? propertySchema.Maximum.Value : propertySchema.Minimum);
+
             var property = new RestApiOperationPayloadProperty(
                 propertyName,
                 propertySchema.Type,
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
-                propertySchema.Description
+                propertySchema.Description,
+                propertyExample
             );
 
             result.Add(property);

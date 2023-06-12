@@ -18,6 +18,7 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
+using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
@@ -318,6 +319,31 @@ public static class KernelOpenApiExtensions
             })
             .ToList();
 
+        if (operation.Payload?.Properties != null)
+        {
+            List<string> propertiesDescription = new List<string>();
+            var payloadDescription = KernelOpenApiExtensions.ExtractProperty(operation.Payload.Properties, ref propertiesDescription);
+            if (payloadDescription != null && payloadDescription.Count > 0)
+            {
+                var payloadJsonSample = payloadDescription.ToJson();
+                var payloadParameter = parameters.FirstOrDefault(x => x.Name == "example" || x.Name == "Example");
+
+                // Aggregate JSON properties descriptions
+                var payloadJsonDescription = string.Join("\n", propertiesDescription);
+
+                if (payloadParameter != null)
+                {
+                    parameters.Remove(payloadParameter);
+                    parameters.Add(new ParameterView
+                    {
+                        Name = payloadParameter.Name,
+                        Description = payloadParameter.Description + "\n        " + payloadJsonDescription,
+                        DefaultValue = payloadJsonSample
+                    });
+                }
+            }
+        }
+
         var function = SKFunction.FromNativeFunction(
             nativeFunction: ExecuteAsync,
             parameters: parameters,
@@ -328,6 +354,38 @@ public static class KernelOpenApiExtensions
             log: kernel.Log);
 
         return kernel.RegisterCustomFunction(function);
+    }
+
+    private static Dictionary<string, object>? ExtractProperty(IList<RestApiOperationPayloadProperty> properties, ref List<string> propertiesDescription, string parentPath = "")
+    {
+        if (properties == null)
+        {
+            return null;
+        }
+
+        Dictionary<string, object> jsonProperties = new Dictionary<string, object>();
+
+        foreach (var item in properties)
+        {
+            string propertyPath = parentPath + (string.IsNullOrEmpty(parentPath) ? "" : ".") + item.Name;
+
+            if (item.Type == "object")
+            {
+#pragma warning disable CS8604 // Possible null reference argument.
+                jsonProperties.Add(item.Name, KernelOpenApiExtensions.ExtractProperty(item.Properties, ref propertiesDescription, propertyPath));
+#pragma warning restore CS8604 // Possible null reference argument.
+            }
+            else
+            {
+#pragma warning disable CS8604 // Possible null reference argument.
+                jsonProperties.Add(item.Name, item.Example);
+#pragma warning restore CS8604 // Possible null reference argument.
+
+                propertiesDescription.Add($"- Property {propertyPath}:{item.Type} {(item.IsRequired ? "is required " : string.Empty)} {(string.IsNullOrWhiteSpace(item.Description) ? string.Empty : $"({item.Description})")}");
+            }
+        }
+
+        return jsonProperties;
     }
 
     #endregion

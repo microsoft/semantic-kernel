@@ -25,6 +25,11 @@ public sealed class RestApiOperationPayloadProperty
     public string? Description { get; }
 
     /// <summary>
+    /// The property example.
+    /// </summary>
+    public object? Example { get; }
+
+    /// <summary>
     /// Flag specifying if the property is required or not.
     /// </summary>
     public bool IsRequired { get; }
@@ -42,17 +47,20 @@ public sealed class RestApiOperationPayloadProperty
     /// <param name="isRequired">Flag specifying if the property is required or not.</param>
     /// <param name="properties">Properties.</param>
     /// <param name="description">Property description.</param>
+    /// <param name="example">Property example.</param>
     public RestApiOperationPayloadProperty(
         string name,
         string type,
         bool isRequired,
         IList<RestApiOperationPayloadProperty> properties,
-        string? description = null)
+        string? description = null,
+        object? example = null)
     {
         this.Name = name;
         this.Type = type;
         this.IsRequired = isRequired;
         this.Description = description;
+        this.Example = example;
         this.Properties = properties;
     }
 }
