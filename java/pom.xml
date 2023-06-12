@@ -63,7 +63,6 @@
     </properties>
 
     <modules>
-        <module>openai-sdk</module>
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
         <module>semantickernel-core</module>
@@ -508,7 +507,7 @@
     </repositories>
 
     <profiles>
-         <profile>
+        <profile>
             <id>compile-jdk8</id>
             <properties>
                 <maven.compiler.source>1.8</maven.compiler.source>

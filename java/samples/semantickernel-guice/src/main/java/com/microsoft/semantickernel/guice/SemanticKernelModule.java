@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.guice;
 
+import javax.annotation.Nullable;
+
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.util.Providers;
-import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
@@ -18,8 +20,6 @@ import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-
-import javax.annotation.Nullable;
 
 public class SemanticKernelModule extends AbstractModule {
 
@@ -96,11 +96,12 @@ public class SemanticKernelModule extends AbstractModule {
         }
 
         if (embeddingsGenerationServiceId != null) {
-            OpenAITextEmbeddingGeneration embeddings =
-                    new OpenAITextEmbeddingGeneration(client, embeddingsGenerationServiceId);
+            OpenAITextEmbeddingGeneration embeddings = new OpenAITextEmbeddingGeneration(client,
+                    embeddingsGenerationServiceId);
             kernelConfig.addTextEmbeddingsGenerationService(
                     embeddingsGenerationServiceId, kernel -> embeddings);
-            bind(new TypeLiteral<EmbeddingGeneration<String, Float>>() {}).toInstance(embeddings);
+            bind(new TypeLiteral<EmbeddingGeneration<String, Float>>() {
+            }).toInstance(embeddings);
         }
 
         bind(KernelConfig.class).toInstance(kernelConfig.build());

@@ -1,67 +1,68 @@
 package com.microsoft.semantickernel;
 
-import com.microsoft.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import reactor.core.publisher.Mono;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+
+import reactor.core.publisher.Mono;
+
 /**
  * Chatbot using context variables
  *
- * Context Variables object which in this demo functions similarly as a key-value store that you can use when running the kernel.
- * The context is local (i.e. in your computer's RAM) and not persisted anywhere beyond the life of the JVM execution.
+ * Context Variables object which in this demo functions similarly as a
+ * key-value store that you can use when running the kernel.
+ * The context is local (i.e. in your computer's RAM) and not persisted anywhere
+ * beyond the life of the JVM execution.
  */
 public class Example04_ContextVariablesChat {
-  public static void startChat (Kernel kernel)
+  public static void startChat(Kernel kernel)
       throws ExecutionException, InterruptedException, TimeoutException {
-    String prompt ="""
+    String prompt = """
         ChatBot can have a conversation with you about any topic.
         It can give explicit instructions or say 'I don't know' if it does not have an answer.
-        
+
         {{$history}}
         User: {{$user_input}}
         ChatBot: """;
 
     CompletionSKFunction chat = kernel
-            .getSemanticFunctionBuilder()
-            .createFunction(
-                    prompt,
-                    "ChatBot",
-                    null,
-                    null,
-                    new PromptTemplateConfig.CompletionConfig(
-                            0.7,
-                            0.5,
-                            0,
-                            0,
-                            2000,
-                            new ArrayList<>()
-                    ));
+        .getSemanticFunctionBuilder()
+        .createFunction(
+            prompt,
+            "ChatBot",
+            null,
+            null,
+            new PromptTemplateConfig.CompletionConfig(
+                0.7,
+                0.5,
+                0,
+                0,
+                2000,
+                new ArrayList<>()));
 
     CompletionSKContext readOnlySkContext = chat.buildContext();
 
     chat("Hi, I'm looking for book suggestions?", chat, readOnlySkContext)
-      .flatMap(
-          chat(
-              "I love history and philosophy, I'd like to learn something new"
-                  + " about Greece, any suggestion?",
-              chat))
-      .flatMap(chat("that sounds interesting, what is it about?", chat))
-      .flatMap(
-          chat(
-              "if I read that book, what exactly will I learn about Greece"
-                  + " history?",
-              chat))
-      .flatMap(
-          chat("could you list some more books I could read about this topic?", chat))
-      .block();
+        .flatMap(
+            chat(
+                "I love history and philosophy, I'd like to learn something new"
+                    + " about Greece, any suggestion?",
+                chat))
+        .flatMap(chat("that sounds interesting, what is it about?", chat))
+        .flatMap(
+            chat(
+                "if I read that book, what exactly will I learn about Greece"
+                    + " history?",
+                chat))
+        .flatMap(
+            chat("could you list some more books I could read about this topic?", chat))
+        .block();
   }
 
   private static Mono<CompletionSKContext> chat(
@@ -77,13 +78,11 @@ public class Example04_ContextVariablesChat {
             result -> {
               System.out.println("Bot: " + result.getResult() + "\n");
 
-              String existingHistoy =
-                  finalContext.getVariables().asMap().get("history");
+              String existingHistoy = finalContext.getVariables().asMap().get("history");
               if (existingHistoy == null) {
                 existingHistoy = "";
               }
-              existingHistoy +=
-                  "\nUser: " + input + "\nChatBot: " + result.getResult() + "\n";
+              existingHistoy += "\nUser: " + input + "\nChatBot: " + result.getResult() + "\n";
               return finalContext.setVariable("history", existingHistoy);
             });
   }
@@ -99,15 +98,16 @@ public class Example04_ContextVariablesChat {
     };
   }
 
-    public static void run (Config.ClientType clientType) throws IOException, ExecutionException, InterruptedException, TimeoutException {
-        Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
+  public static void run(Config.ClientType clientType)
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
 
     startChat(kernel);
   }
 
-  public static void main (String[] args)
-          throws ExecutionException, InterruptedException, TimeoutException, IOException {
-      // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
-      run(Config.ClientType.OPEN_AI);
+  public static void main(String[] args)
+      throws ExecutionException, InterruptedException, TimeoutException, IOException {
+    // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
+    run(Config.ClientType.OPEN_AI);
   }
 }

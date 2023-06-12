@@ -1,29 +1,24 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.guice;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
-import com.microsoft.openai.AzureOpenAIClient;
-import com.microsoft.openai.OpenAIAsyncClient;
-import com.microsoft.openai.OpenAIClientBuilder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO Remove when the upstream configuration updates arrive
 public class Config {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Config.class);
 
-    public static final String OPEN_AI_CONF_PROPERTIES =
-            "samples/java/semantickernel-samples/conf.openai.properties";
-    public static final String AZURE_CONF_PROPERTIES =
-            "samples/java/semantickernel-samples/conf.azure.properties";
+    public static final String OPEN_AI_CONF_PROPERTIES = "samples/java/semantickernel-samples/conf.openai.properties";
+    public static final String AZURE_CONF_PROPERTIES = "samples/java/semantickernel-samples/conf.azure.properties";
 
     public static String getOpenAIKey(String conf) {
         return getConfigValue(conf, "token");
@@ -54,17 +49,14 @@ public class Config {
      */
     public static OpenAIAsyncClient getClient(boolean useAzureOpenAI) {
         if (useAzureOpenAI) {
-            return new AzureOpenAIClient(
-                    new com.azure.ai.openai.OpenAIClientBuilder()
-                            .endpoint(Config.getAzureOpenAIEndpoint(AZURE_CONF_PROPERTIES))
-                            .credential(
-                                    new AzureKeyCredential(
-                                            Config.getOpenAIKey(AZURE_CONF_PROPERTIES)))
-                            .buildAsyncClient());
+            return new OpenAIClientBuilder()
+                    .endpoint(Config.getAzureOpenAIEndpoint(AZURE_CONF_PROPERTIES))
+                    .credential(new AzureKeyCredential(Config.getOpenAIKey(AZURE_CONF_PROPERTIES)))
+                    .buildAsyncClient();
         }
 
         return new OpenAIClientBuilder()
-                .setApiKey(Config.getOpenAIKey(OPEN_AI_CONF_PROPERTIES))
-                .build();
+                .credential(new NonAzureOpenAIKeyCredential(Config.getOpenAIKey(OPEN_AI_CONF_PROPERTIES)))
+                .buildAsyncClient();
     }
 }

@@ -10,7 +10,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.microsoft.semantickernel</groupId>
     <artifactId>sample-code</artifactId>
 
     <packaging>jar</packaging>
@@ -26,19 +25,13 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
-            <artifactId>openai-sdk</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
             <artifactId>semantickernel-core</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
             <artifactId>semantickernel-core-skills</artifactId>
-            <version>${project.version}</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

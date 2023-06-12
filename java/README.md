@@ -21,7 +21,7 @@ or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-servi
 To build the Semantic Kernel, you will need:
 
 - **Required**:
-    - [OpenJDK 17](https://microsoft.com/openjdk/) or newer
+  - [OpenJDK 17](https://microsoft.com/openjdk/) or newer
 
 ### Build the Semantic Kernel
 

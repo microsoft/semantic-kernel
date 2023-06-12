@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import sys
+import time
 
 import numpy as np
 import numpy.testing as npt
 import pytest
 
-from semantic_kernel.connectors.memory import weaviate_memory_store
+from semantic_kernel.connectors.memory.weaviate import weaviate_memory_store
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 if not sys.platform.startswith("linux"):
@@ -67,10 +68,25 @@ def documents():
 
 @pytest.fixture
 def memory_store():
+    max_attempts = 5  # the number of retry attempts
+    delay = 30  # delay in seconds between each attempt
+
     config = weaviate_memory_store.WeaviateConfig(use_embed=True)
-    store = weaviate_memory_store.WeaviateMemoryStore(config)
-    store.client.schema.delete_all()
+    for attempt in range(max_attempts):
+        try:
+            store = weaviate_memory_store.WeaviateMemoryStore(config)
+            store.client.schema.delete_all()
+        except Exception:
+            if attempt < max_attempts - 1:  # it's not the final attempt
+                time.sleep(delay)  # wait before retrying
+                continue  # go to the next attempt
+            else:  # it's the final attempt
+                raise  # re-raise the last exception
+        else:
+            break  # successful attempt, get out of the loop
+
     yield store
+
     store.client.schema.delete_all()
 
 
