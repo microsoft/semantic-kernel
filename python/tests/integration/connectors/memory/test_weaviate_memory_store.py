@@ -26,7 +26,7 @@ def documents():
             "1",
             "The quick brown fox jumps over the lazy dog.",
             "A classic pangram.",
-            "addtitional info",
+            "additional info",
             np.array([0.1, 0.1]),
         )
     )
