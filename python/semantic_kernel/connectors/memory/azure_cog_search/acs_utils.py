@@ -25,6 +25,43 @@ def create_credentials(
         credential = AzureKeyCredential(acs_key)
     return credential
 
+def acs_schema() -> list:
+    
+    fields = [
+            SimpleField(
+                name="vector_id",
+                type=SearchFieldDataType.String,
+                searchable=True,
+                filterable=True,
+                retrievable=True,
+                key=True,
+            ),
+            SearchableField(
+                name="timestamp",
+                type=SearchFieldDataType.DateTimeOffset,
+                searchable=True,
+                retrievable=True,
+            ),
+            SearchableField(
+                name="payload",
+                type=SearchFieldDataType.String,
+                filterable=True,
+                searchable=True,
+                retrievable=True,
+            ),
+            SearchField(
+                name="vector",
+                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+                searchable=True,
+                dimensions=vector_size,
+                vector_search_configuration="az-vector-config",
+            ),
+        ]
+    
+    return fields
+
+def convert_to_memory_record() -> None:
+    return
 
 def compute_similarity_scores(
     self, embedding: ndarray, embedding_array: ndarray

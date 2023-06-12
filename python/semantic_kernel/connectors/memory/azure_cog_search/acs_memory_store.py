@@ -31,9 +31,8 @@ from azure.search.documents.indexes.models import (
 from python.semantic_kernel.memory.memory_record import MemoryRecord
 from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from python.semantic_kernel.connectors.memory.azure_cog_search.acs_utils import (
-    create_credentials,
+    create_credentials, acs_schema
 )
-
 
 class CognitiveSearchMemoryStore(MemoryStoreBase):
     _cogsearch_indexclient: SearchIndexClient
@@ -116,36 +115,6 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
 
-        fields = [
-            SimpleField(
-                name="vector_id",
-                type=SearchFieldDataType.String,
-                searchable=True,
-                filterable=True,
-                retrievable=True,
-                key=True,
-            ),
-            SearchableField(
-                name="timestamp",
-                type=SearchFieldDataType.DateTimeOffset,
-                searchable=True,
-                retrievable=True,
-            ),
-            SearchableField(
-                name="payload",
-                type=SearchFieldDataType.String,
-                filterable=True,
-                searchable=True,
-                retrievable=True,
-            ),
-            SearchField(
-                name="vector",
-                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
-                searchable=True,
-                dimensions=vector_size,
-                vector_search_configuration="az-vector-config",
-            ),
-        ]
         ## Covert complex type to json string - Utils.py
 
         if vector_config:
@@ -185,7 +154,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             # Create the search index with the semantic settings
             index = SearchIndex(
                 name=collection_name,
-                fields=fields,
+                fields=acs_schema(),
                 vector_search=vector_search,
                 semantic_settings=semantic_settings,
             )
@@ -421,7 +390,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                 key=acs_key,
                 id=acs_key,
                 embedding=acs_results[0].vector,
-                payload=acs_results[0].payload,
+                additional_metadata=acs_results[[]],
             )
 
             acs_results.append(result)
@@ -505,8 +474,8 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             is_reference=False,
             external_source_name="azure-cognitive-search",
             key=None,
-            id=acs_result.collection_id,
-            embedding=acs_result.vector,
+            id=acs_result["vector_id"],
+            embedding=acs_result["vectpr"],
             payload=acs_result.payload,
         )
 
