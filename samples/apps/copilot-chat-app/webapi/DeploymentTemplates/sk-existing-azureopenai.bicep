@@ -47,6 +47,9 @@ param deploySpeechServices bool = true
 @description('Whether to deploy the default package to the web service')
 param deployPackage bool = true
 
+@description('Whether to deploy a new instance of Azure OpenAI')
+param deployNewAzureOpenAI bool = false
+
 
 module semanticKernel 'main.bicep' = {
   name: 'CopilotChatWebApi'
@@ -65,7 +68,7 @@ module semanticKernel 'main.bicep' = {
     deployQdrant: deployQdrant
     deploySpeechServices: deploySpeechServices
     deployPackage: deployPackage
-    deployNewAzureOpenAI: false
+    deployNewAzureOpenAI: deployNewAzureOpenAI
   }
 }
 
