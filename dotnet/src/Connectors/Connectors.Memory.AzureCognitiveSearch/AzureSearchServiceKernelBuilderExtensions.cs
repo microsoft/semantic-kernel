@@ -2,7 +2,6 @@
 
 using System.Net.Http;
 using Azure.Core;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
 #pragma warning disable IDE0130
@@ -32,7 +31,7 @@ public static class AzureSearchServiceKernelBuilderExtensions
             return new AzureCognitiveSearchMemory(
                 endpoint,
                 apiKey,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger));
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger));
         });
 
         return builder;
@@ -56,28 +55,9 @@ public static class AzureSearchServiceKernelBuilderExtensions
             return new AzureCognitiveSearchMemory(
                 endpoint,
                 credentials,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger));
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger));
         });
 
         return builder;
-    }
-
-    /// <summary>
-    /// !!! To be replaced by HttpClientProvider.GetHttpClient method. !!!
-    /// </summary>
-    /// <param name="config">The kernel configuration.</param>
-    /// <param name="httpClient">An optional pre-existing instance of HttpClient.</param>
-    /// <param name="logger">An optional logger.</param>
-    /// <returns>An instance of HttpClient.</returns>
-    private static HttpClient GetHttpClient(KernelConfig config, HttpClient? httpClient, ILogger? logger)
-    {
-        if (httpClient == null)
-        {
-            var retryHandler = config.HttpHandlerFactory.Create(logger);
-            retryHandler.InnerHandler = NonDisposableHttpClientHandler.Instance;
-            return new HttpClient(retryHandler, false); // We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
-        }
-
-        return httpClient;
     }
 }
