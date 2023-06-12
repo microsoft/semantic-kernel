@@ -20,7 +20,9 @@ docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:la
 2. To use Redis as a semantic memory store:
 
 ```csharp
-using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync("localhost:6379");
+// ConnectionMultiplexer should be a singleton instance in your application, please consider to dispose of it when your application shuts down.
+// See https://stackexchange.github.io/StackExchange.Redis/Basics#basic-usage
+ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync("localhost:6379");
 IDatabase database = connectionMultiplexer.GetDatabase();
 RedisMemoryStore memoryStore = new RedisMemoryStore(database, vectorSize: 1536);
 
