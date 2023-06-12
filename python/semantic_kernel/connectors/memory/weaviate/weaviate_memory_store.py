@@ -52,6 +52,11 @@ SCHEMA = {
             "description": "The text of the record.",
             "dataType": ["text"],
         },
+        {
+            "name": "additionalMetadata",
+            "description": "Optional custom metadata of the record.",
+            "dataType": ["string"],
+        },
     ],
 }
 
@@ -81,6 +86,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
             "_id": "skId",
             "_description": "description",
             "_text": "text",
+            "_additional_metadata": "additionalMetadata",
             "_embedding": "vector",
         }
 
