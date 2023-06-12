@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
 #pragma warning disable IDE0130
@@ -32,30 +31,11 @@ public static class PineconeKernelBuilderExtensions
                 environment,
                 apiKey,
                 parameters.Logger,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger));
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger));
 
             return new PineconeMemoryStore(client, parameters.Logger);
         });
 
         return builder;
-    }
-
-    /// <summary>
-    /// Retrieves an instance of HttpClient.
-    /// </summary>
-    /// <param name="config">The kernel configuration.</param>
-    /// <param name="httpClient">An optional pre-existing instance of HttpClient.</param>
-    /// <param name="logger">An optional logger.</param>
-    /// <returns>An instance of HttpClient.</returns>
-    private static HttpClient GetHttpClient(KernelConfig config, HttpClient? httpClient, ILogger? logger)
-    {
-        if (httpClient == null)
-        {
-            var retryHandler = config.HttpHandlerFactory.Create(logger);
-            retryHandler.InnerHandler = NonDisposableHttpClientHandler.Instance;
-            return new HttpClient(retryHandler, false); // We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
-        }
-
-        return httpClient;
     }
 }

@@ -15,25 +15,26 @@ using Microsoft.SemanticKernel.Memory;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
 /// <summary>
-/// An implementation of <see cref="IMemoryStore"/> for Qdrant Vector database.
+/// An implementation of <see cref="IMemoryStore"/> for Qdrant Vector Database.
 /// </summary>
-/// <remarks>The Embedding data is saved to a Qdrant Vector database instance specified in the constructor by url and port.
+/// <remarks>The Embedding data is saved to a Qdrant Vector Database instance specified in the constructor by url and port.
 /// The embedding data persists between subsequent instances and has similarity search capability.
 /// </remarks>
 public class QdrantMemoryStore : IMemoryStore
 {
     /// <summary>
-    /// The Qdrant Vector database memory store logger.
+    /// The Qdrant Vector Database memory store logger.
     /// </summary>
     private readonly ILogger? _logger;
 
     /// <summary>
-    /// Constructor for a memory store backed by a Qdrant Vector database instance.
+    /// Constructor for a memory store backed by a Qdrant Vector Database instance.
     /// </summary>
     /// <param name="host"></param>
     /// <param name="port"></param>
     /// <param name="vectorSize"></param>
     /// <param name="logger"></param>
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
     public QdrantMemoryStore(string host, int port, int vectorSize, ILogger? logger = null)
     {
         this._logger = logger;
@@ -41,8 +42,45 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="QdrantMemoryStore"/> class.
+    /// </summary>
+    /// <param name="endpoint">The Qdrant Vector Database endpoint.</param>
+    /// <param name="vectorSize">The size of the vectors used.</param>
+    /// <param name="logger">Optional logger instance.</param>
+    public QdrantMemoryStore(string endpoint, int vectorSize, ILogger? logger = null)
+    {
+        this._qdrantClient = new QdrantVectorDbClient(endpoint, vectorSize, logger);
+        this._logger = logger;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QdrantMemoryStore"/> class.
+    /// </summary>
+    /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
+    /// <param name="vectorSize">The size of the vectors used in the Qdrant Vector Database.</param>
+    /// <param name="endpoint">The optional endpoint URL for the Qdrant Vector Database. If not specified, the base address of the HTTP client is used.</param>
+    /// <param name="logger">Optional logger instance.</param>
+    public QdrantMemoryStore(HttpClient httpClient, int vectorSize, string? endpoint = null, ILogger? logger = null)
+    {
+        this._qdrantClient = new QdrantVectorDbClient(httpClient, vectorSize, endpoint, logger);
+        this._logger = logger;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QdrantMemoryStore"/> class.
+    /// </summary>
+    /// <param name="client">The Qdrant Db client for interacting with Qdrant Vector Database.</param>
+    /// <param name="logger">Optional logger instance.</param>
+    public QdrantMemoryStore(IQdrantVectorDbClient client, ILogger? logger = null)
+    {
+        this._qdrantClient = client;
+        this._logger = logger;
+    }
+
+    /// <summary>
     /// Constructor for a memory store backed by a <see cref="IQdrantVectorDbClient"/>
     /// </summary>
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
     public QdrantMemoryStore(IQdrantVectorDbClient client)
     {
         this._qdrantClient = client;
