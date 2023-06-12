@@ -326,7 +326,7 @@ public static class KernelOpenApiExtensions
 
         if (operation.Payload?.Properties != null)
         {
-            List<string> propertiesDescription = new List<string>();
+            List<string> propertiesDescription = new();
             var payloadDescription = KernelOpenApiExtensions.ExtractProperty(operation.Payload.Properties, ref propertiesDescription);
             if (payloadDescription != null && payloadDescription.Count > 0)
             {
@@ -407,7 +407,7 @@ public static class KernelOpenApiExtensions
             return null;
         }
 
-        Dictionary<string, object> jsonProperties = new Dictionary<string, object>();
+        Dictionary<string, object> jsonProperties = new();
 
         foreach (var item in properties)
         {
