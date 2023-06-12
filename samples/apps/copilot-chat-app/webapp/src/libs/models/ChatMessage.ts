@@ -14,12 +14,28 @@ export enum AuthorRoles {
     Participant,
 }
 
+/**
+ * Type of the chat message. A copy of ChatMessageType in the API C# code.
+ */
+export enum ChatMessageType {
+    // A message containing text
+    Message,
+
+    // A message for a Plan
+    Plan,
+
+    // A message showing an uploaded document
+    Document,
+}
+
 export interface IChatMessage {
+    type: ChatMessageType;
     timestamp: number;
     userName: 'bot' | string;
     userId: string;
     content: string;
     id?: string;
+    prompt?: string;
     authorRole: AuthorRoles;
     debug?: string;
     state?: ChatMessageState; // if plan needs approval

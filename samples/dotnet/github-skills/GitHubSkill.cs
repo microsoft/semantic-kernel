@@ -59,6 +59,7 @@ public class GitHubSkill
     private readonly IKernel _kernel;
     private readonly WebFileDownloadSkill _downloadSkill;
     private readonly ILogger<GitHubSkill> _logger;
+    private static readonly char[] s_trimChars = new char[] { ' ', '/' };
 
     internal const string SummarizeCodeSnippetDefinition =
         @"BEGIN CONTENT TO SUMMARIZE:
@@ -107,12 +108,12 @@ BEGIN SUMMARY:
     [SKFunctionContextParameter(Name = SearchPatternParamName, Description = "The search string to match against the names of files in the repository")]
     public async Task SummarizeRepositoryAsync(string source, SKContext context)
     {
-        if (!context.Variables.Get(RepositoryBranchParamName, out string repositoryBranch) || string.IsNullOrEmpty(repositoryBranch))
+        if (!context.Variables.TryGetValue(RepositoryBranchParamName, out string? repositoryBranch) || string.IsNullOrEmpty(repositoryBranch))
         {
             repositoryBranch = "main";
         }
 
-        if (!context.Variables.Get(SearchPatternParamName, out string searchPattern) || string.IsNullOrEmpty(searchPattern))
+        if (!context.Variables.TryGetValue(SearchPatternParamName, out string? searchPattern) || string.IsNullOrEmpty(searchPattern))
         {
             searchPattern = "*.md";
         }
@@ -123,7 +124,7 @@ BEGIN SUMMARY:
 
         try
         {
-            var repositoryUri = source.Trim(new char[] { ' ', '/' });
+            var repositoryUri = source.Trim(s_trimChars);
             var context1 = new SKContext(logger: context.Log);
             context1.Variables.Set(FilePathParamName, filePath);
             await this._downloadSkill.DownloadToFileAsync($"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip", context1);

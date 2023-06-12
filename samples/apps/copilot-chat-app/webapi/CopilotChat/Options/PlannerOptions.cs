@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.ComponentModel.DataAnnotations;
 
 namespace SemanticKernel.Service.CopilotChat.Options;
 
@@ -10,7 +11,8 @@ public class PlannerOptions
     public const string PropertyName = "Planner";
 
     /// <summary>
-    /// Whether to enable the planner.
+    /// Define if the planner must be Sequential or not.
     /// </summary>
-    public bool Enabled { get; set; } = false;
+    [Required]
+    public string Type { get; set; } = string.Empty;
 }

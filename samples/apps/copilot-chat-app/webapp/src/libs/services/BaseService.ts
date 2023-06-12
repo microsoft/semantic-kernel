@@ -5,7 +5,7 @@ import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/pl
 interface ServiceRequest {
     commandPath: string;
     method?: string;
-    body?: unknown;
+    body?: FormData | unknown;
 }
 const noResponseBodyStatusCodes = [202];
 
@@ -23,10 +23,15 @@ export class BaseService {
         }[],
     ): Promise<T> => {
         const { commandPath, method, body } = request;
+        const isFormData = body instanceof FormData;
+
         const headers = new Headers({
             Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
         });
+
+        if (!isFormData) {
+            headers.append(`Content-Type`, 'application/json');
+        }
 
         // API key auth for private hosted instances
         if (process.env.REACT_APP_SK_API_KEY) {
@@ -46,7 +51,7 @@ export class BaseService {
             const requestUrl = new URL(commandPath, this.serviceUrl);
             const response = await fetch(requestUrl, {
                 method: method ?? 'GET',
-                body: JSON.stringify(body),
+                body: isFormData ? body : JSON.stringify(body),
                 headers: headers,
             });
 

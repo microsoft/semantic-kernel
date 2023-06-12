@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using RepoUtils;
 
 /**
@@ -28,8 +27,6 @@ public static class Example26_AADAuth
     {
         Console.WriteLine("======== SK with AAD Auth ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
         // Optional: choose which authentication to support
         var authOptions = new DefaultAzureCredentialOptions
         {
@@ -42,14 +39,17 @@ public static class Example26_AADAuth
             ExcludeInteractiveBrowserCredential = true,
         };
 
-        // Add Azure chat completion service using DefaultAzureCredential AAD auth
-        kernel.Config.AddAzureChatCompletionService(
-            "gpt-35-turbo",
-            "https://....openai.azure.com/",
-            new DefaultAzureCredential(authOptions));
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            // Add Azure chat completion service using DefaultAzureCredential AAD auth
+            .WithAzureChatCompletionService(
+                "gpt-35-turbo",
+                "https://....openai.azure.com/",
+                new DefaultAzureCredential(authOptions))
+            .Build();
 
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
-        var chatHistory = (OpenAIChatHistory)chatGPT.CreateNewChat();
+        var chatHistory = chatGPT.CreateNewChat();
 
         // User message
         chatHistory.AddUserMessage("Tell me a joke about hourglasses");
