@@ -49,13 +49,19 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             state.conversations[id].lastUpdatedTimestamp = new Date().getTime();
             frontLoadChat(state, id);
         },
-        updateMessageState: (
+        updateMessage: (
             state: ConversationsState,
-            action: PayloadAction<{ newMessageState: PlanState; messageIndex: number; chatId?: string }>,
+            action: PayloadAction<{
+                content: string;
+                messageIndex: number;
+                chatId?: string;
+                planState?: PlanState;
+            }>,
         ) => {
-            const { newMessageState, messageIndex, chatId } = action.payload;
+            const { content, messageIndex, chatId, planState } = action.payload;
             const id = chatId ?? state.selectedId;
-            state.conversations[id].messages[messageIndex].state = newMessageState;
+            state.conversations[id].messages[messageIndex].state = planState;
+            state.conversations[id].messages[messageIndex].content = content;
             frontLoadChat(state, id);
         },
     },
@@ -68,7 +74,7 @@ export const {
     setSelectedConversation,
     addConversation,
     updateConversation,
-    updateMessageState,
+    updateMessage,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

@@ -125,15 +125,22 @@ public class ExternalInformationSkill
 
             if (plan.Steps.Count > 0)
             {
-                // Parameters stored in plan's top level state
-                this.MergeContextIntoPlan(context.Variables, plan.State);
+                // Merge any variables from the context into plan parameters as these will be used on plan execution.
+                // These context variables come from user input, so they are prioritized.
+                if (this._planner.PlannerOptions!.Type == PlanType.Action)
+                {
+                    // Parameters stored in plan's top level state
+                    this.MergeContextIntoPlan(context.Variables, plan.State);
+                }
+                else
+                {
+                    foreach (var step in plan.Steps)
+                    {
+                        this.MergeContextIntoPlan(context.Variables, step.Parameters);
+                    }
+                }
 
-                // TODO: Improve Kernel to give developers option to skip this override 
-                // (i.e., keep functions regardless of whether they're available in the planner's context or not)
-                Plan sanitizedPlan = this.SanitizePlan(plan, context);
-                sanitizedPlan.State.Update(plan.State);
-
-                this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner.PlannerOptions!.Type, PlanState.NoOp);
+                this.ProposedPlan = new ProposedPlan(plan, this._planner.PlannerOptions!.Type, PlanState.NoOp);
             }
         }
 
@@ -143,28 +150,7 @@ public class ExternalInformationSkill
     #region Private
 
     /// <summary>
-    /// Scrubs plan of functions not available in Planner's kernel.
-    /// </summary>
-    private Plan SanitizePlan(Plan plan, SKContext context)
-    {
-        List<Plan> sanitizedSteps = new();
-        var availableFunctions = this._planner.Kernel.Skills.GetFunctionsView(true);
-
-        foreach (var step in plan.Steps)
-        {
-            if (this._planner.Kernel.Skills.TryGetFunction(step.SkillName, step.Name, out var function))
-            {
-                this.MergeContextIntoPlan(context.Variables, step.Parameters);
-                sanitizedSteps.Add(step);
-            }
-        }
-
-        return new Plan(plan.Description, sanitizedSteps.ToArray<Plan>());
-    }
-
-    /// <summary>
-    /// Merge any variables from the context into plan parameters as these will be used on plan execution.
-    /// These context variables come from user input, so they are prioritized.
+    /// Merge any variables from the context into plan parameters.
     /// </summary>
     private void MergeContextIntoPlan(ContextVariables variables, ContextVariables planParams)
     {

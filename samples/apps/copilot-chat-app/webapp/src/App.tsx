@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import {
-    AuthenticatedTemplate,
-    UnauthenticatedTemplate,
-    useIsAuthenticated,
-    useMsal,
-} from '@azure/msal-react';
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
@@ -75,7 +70,6 @@ const App: FC = () => {
 
     useEffect(() => {
         if (isAuthenticated && account && appState === AppState.LoadingChats) {
-
             // Load all chats from memory
             async function loadChats() {
                 if (await chat.loadChats()) {
@@ -92,7 +86,6 @@ const App: FC = () => {
         dispatch(removeAlert(key));
     };
 
-    // TODO: handle error case of missing account information
     return (
         <div>
             <UnauthenticatedTemplate>

@@ -7,7 +7,7 @@ import { IAskVariables } from '../../../libs/semantic-kernel/model/Ask';
 import { GetResponseOptions } from '../../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
-import { updateMessageState } from '../../../redux/features/conversations/conversationsSlice';
+import { updateMessage } from '../../../redux/features/conversations/conversationsSlice';
 import { PlanStepCard } from './PlanStepCard';
 
 const useClasses = makeStyles({
@@ -64,11 +64,18 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
     const [plan, setPlan] = useState(originalPlan);
 
     const onPlanAction = async (planState: PlanState.PlanApproved | PlanState.PlanRejected) => {
+        const updatedPlan = JSON.stringify({
+            proposedPlan: plan,
+            type: parsedContent.type,
+            state: planState,
+        });
+
         dispatch(
-            updateMessageState({
-                newMessageState: planState,
+            updateMessage({
+                content: updatedPlan,
                 messageIndex: messageIndex,
                 chatId: selectedId,
+                planState: planState,
             }),
         );
 
@@ -79,11 +86,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
             },
             {
                 key: 'proposedPlan',
-                value: JSON.stringify({
-                    proposedPlan: plan,
-                    type: parsedContent.type,
-                    state: planState,
-                }),
+                value: updatedPlan,
             },
         ];
 

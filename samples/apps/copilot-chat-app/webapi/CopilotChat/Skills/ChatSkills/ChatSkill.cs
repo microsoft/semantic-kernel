@@ -390,7 +390,7 @@ public class ChatSkill
     /// </summary>
     private async Task<string> GetUserIntentAsync(SKContext context)
     {
-        // TODO: Regenerate user intent if plan was modified
+        // TODO Planner: Regenerate user intent if plan was modified
         if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
             var contextVariables = new ContextVariables();
