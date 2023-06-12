@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch</RootNamespace>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.AzureSearch</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Connectors.Memory.AzureSearch</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
 
     <!--NU5104: A stable release of a package should not have a prerelease dependency.-->
@@ -15,8 +15,9 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
+    <PackageId>Microsoft.SemanticKernel.Connectors.Memory.AzureSearch</PackageId>
     <Title>Semantic Kernel - Azure Cognitive Search Semantic Memory</Title>
-    <Description>Azure Cognitive Search Semantic Memory connector for Semantic Kernel</Description>
+    <Description>Azure Search Semantic Memory connector for Semantic Kernel</Description>
   </PropertyGroup>
 
   <ItemGroup>
