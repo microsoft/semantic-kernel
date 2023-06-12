@@ -72,11 +72,16 @@ To enable sequential planner,
 1. In [./webapi/appsettings.json](appsettings.json), set `"Type": "Sequential"` under the `Planner` section.
 1. Then, set your preferred Planner model (`gpt-4` or `gpt-3.5-turbo`) under the `AIService` configuration section.
    1. If using `gpt-4`, no other changes are required.
-   1. If using `gpt-3.5-turbo`, change [CopilotChatPlanner.cs](CopilotChat/Skills/ChatSkills/CopilotChatPlanner.cs) to initialize SequentialPlanner with a RelevancyThreshold*. The `CreatePlanAsync` method should return the following line if `this._plannerOptions?.Type == "Sequential"` is true:
-      ```
-      return new SequentialPlanner(this.Kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.75 }).CreatePlanAsync(goal);
-      ```
-      \* The `RelevancyThreshold` is a number from 0 to 1 that represents how similar a goal is to a function's name/description/inputs. You want to tune that value when using SequentialPlanner to help keep things scoped while not missing on on things that are relevant or including too many things that really aren't. `0.75` is an arbitrary threshold and we recommend developers play around with this number to see what best fits their scenarios.
+   1. If using `gpt-3.5-turbo`: change [CopilotChatPlanner.cs](CopilotChat/Skills/ChatSkills/CopilotChatPlanner.cs) to initialize SequentialPlanner with a RelevancyThreshold*.  
+      - Add `using` statement to top of file: 
+         ```
+         using Microsoft.SemanticKernel.Planning.Sequential;
+         ```
+      - The `CreatePlanAsync` method should return the following line if `this._plannerOptions?.Type == "Sequential"` is true:
+         ```
+         return new SequentialPlanner(this.Kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.75 }).CreatePlanAsync(goal);
+         ```
+         \* The `RelevancyThreshold` is a number from 0 to 1 that represents how similar a goal is to a function's name/description/inputs. You want to tune that value when using SequentialPlanner to help keep things scoped while not missing on on things that are relevant or including too many things that really aren't. `0.75` is an arbitrary threshold and we recommend developers play around with this number to see what best fits their scenarios.
 1. Restart the `webapi` - Copilot Chat should be now running locally with SequentialPlanner.
 
 # (Optional) Enabling the Qdrant Memory Store
