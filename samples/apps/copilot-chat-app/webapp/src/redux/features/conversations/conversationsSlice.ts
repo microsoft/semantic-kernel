@@ -1,9 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { createSlice, PayloadAction, Slice } from '@reduxjs/toolkit';
-import { ChatMessageState, IChatMessage } from '../../../libs/models/ChatMessage';
+import { IChatMessage } from '../../../libs/models/ChatMessage';
+import { PlanState } from '../../../libs/models/Plan';
 import { ChatState } from './ChatState';
-import { ConversationInputChange, Conversations, ConversationsState, ConversationTitleChange, initialState } from './ConversationsState';
+import {
+    ConversationInputChange,
+    Conversations,
+    ConversationsState,
+    ConversationTitleChange,
+    initialState,
+} from './ConversationsState';
 
 export const conversationsSlice: Slice<ConversationsState> = createSlice({
     name: 'conversations',
@@ -44,7 +51,7 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
         },
         updateMessageState: (
             state: ConversationsState,
-            action: PayloadAction<{ newMessageState: ChatMessageState; messageIndex: number; chatId?: string }>,
+            action: PayloadAction<{ newMessageState: PlanState; messageIndex: number; chatId?: string }>,
         ) => {
             const { newMessageState, messageIndex, chatId } = action.payload;
             const id = chatId ?? state.selectedId;

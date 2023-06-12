@@ -4,15 +4,14 @@ export type IPlanInput = {
     Value: string;
 };
 
-export type IPlanStep = {
-    skill: string;
-    function: string;
-    description: string;
-    stepInputs: IPlanInput[];
-};
+export enum PlanState {
+    NoOp,
+    PlanApproved,
+    PlanRejected,
+    PlanApprovalRequired,
+}
 
-export type IPlan = {
-    userIntent: string;
-    description: string;
-    steps: IPlanStep[];
-};
+export enum PlanType {
+    Action, // single-step
+    Sequential, // multi-step
+}

@@ -13,11 +13,15 @@ import {
     setSelectedConversation,
     updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
+import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
 import { AuthHelper } from './auth/AuthHelper';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
-import { AuthorRoles, ChatMessageState, ChatMessageType, IChatMessage } from './models/ChatMessage';
+import { AuthorRoles, ChatMessageType, IChatMessage } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
+import { IChatUser } from './models/ChatUser';
+import { PlanState } from './models/Plan';
+import { IAskVariables } from './semantic-kernel/model/Ask';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
 import * as PlanUtils from './utils/PlanUtils';
@@ -27,17 +31,12 @@ import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
 import botIcon3 from '../assets/bot-icons/bot-icon-3.png';
 import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
 import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
-import { IChatUser } from './models/ChatUser';
-
-import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
 
 export interface GetResponseOptions {
     messageType: ChatMessageType;
     value: string;
     chatId: string;
-    approvedPlanJson?: string;
-    planUserIntent?: string;
-    userCancelledPlan?: boolean;
+    contextVariables?: IAskVariables[];
 }
 
 export const useChat = () => {
@@ -103,14 +102,7 @@ export const useChat = () => {
         }
     };
 
-    const getResponse = async ({
-        messageType,
-        value,
-        chatId,
-        approvedPlanJson,
-        planUserIntent,
-        userCancelledPlan,
-    }: GetResponseOptions) => {
+    const getResponse = async ({ messageType, value, chatId, contextVariables }: GetResponseOptions) => {
         const ask = {
             input: value,
             variables: [
@@ -133,24 +125,8 @@ export const useChat = () => {
             ],
         };
 
-        if (approvedPlanJson) {
-            ask.variables.push(
-                {
-                    key: 'proposedPlan',
-                    value: approvedPlanJson,
-                },
-                {
-                    key: 'planUserIntent',
-                    value: planUserIntent!,
-                },
-            );
-        }
-
-        if (userCancelledPlan) {
-            ask.variables.push({
-                key: 'userCancelledPlan',
-                value: 'true',
-            });
+        if (contextVariables) {
+            ask.variables.push(...contextVariables);
         }
 
         try {
@@ -175,7 +151,8 @@ export const useChat = () => {
                 content: result.value,
                 prompt: result.variables.find((v) => v.key === 'prompt')?.value,
                 authorRole: AuthorRoles.Bot,
-                state: PlanUtils.isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
+                id: result.variables.find((v) => v.key === 'messageId')?.value,
+                state: PlanUtils.isPlan(result.value) ? PlanState.PlanApprovalRequired : PlanState.NoOp,
             };
 
             dispatch(updateConversation({ message: messageResult, chatId: chatId }));
