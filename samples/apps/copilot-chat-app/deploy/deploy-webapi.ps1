@@ -16,21 +16,15 @@ param(
     $DeploymentName,
 
     [string]
-    # Build configuration to publish.
-    $BuildConfiguration = "Release",
-    
-    [string]
-    # .NET framework to publish.
-    $DotNetFramework = "net6.0",
-    
-    [string]
-    # Target runtime to publish.
-    $TargetRuntime = "win-x64",
-    
-    [string]
-    # Output directory for published assets.
-    $OutputDirectory = "$PSSCriptRoot"
+    # CopilotChat WebApi package to deploy
+    $PackageFilePath = "$PSSCriptRoot/out/webapi.zip"
 )
+
+# Ensure $PackageFilePath exists
+if (!(Test-Path $PackageFilePath)) {
+    Write-Error "Package file '$PackageFilePath' does not exist. Have you run 'package-webapi.ps1' yet?"
+    exit 1
+}
 
 az account show --output none
 if ($LASTEXITCODE -ne 0) {
@@ -42,25 +36,6 @@ az account set -s $Subscription
 if ($LASTEXITCODE -ne 0) {
   exit $LASTEXITCODE
 }
-
-$publishOutputDirectory = "$OutputDirectory/publish"
-$publishedZipDirectory = "$OutputDirectory/out"
-$publishedZipFilePath = "$publishedZipDirectory/webapi.zip"
-if (!(Test-Path $publishedZipDirectory)) {
-    New-Item -ItemType Directory -Force -Path $publishedZipDirectory | Out-Null
-}
-if (!(Test-Path $publishOutputDirectory)) {
-    New-Item -ItemType Directory -Force -Path $publishOutputDirectory | Out-Null
-}
-
-Write-Host "Build configuration: $BuildConfiguration"
-dotnet publish ../webapi/CopilotChatWebApi.csproj --configuration $BuildConfiguration --framework $DotNetFramework --runtime $TargetRuntime --self-contained --output $OutputDirectory
-if ($LASTEXITCODE -ne 0) {
-    exit $LASTEXITCODE
-}
-
-Write-Host "Compressing to $publishedZipFilePath"
-Compress-Archive -Path $publishOutputDirectory\* -DestinationPath $publishedZipFilePath -Force
 
 Write-Host "Getting Azure WebApp resource name..."
 $webappName=$(az deployment group show --name $DeploymentName --resource-group $ResourceGroupName --output json | ConvertFrom-Json).properties.outputs.webapiName.value
@@ -78,7 +53,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Deploying '$publishedZipFilePath' to Azure WebApp '$webappName'..."
-az webapp deployment source config-zip --resource-group $ResourceGroupName --name $webappName --src $publishedZipFilePath
+az webapp deployment source config-zip --resource-group $ResourceGroupName --name $webappName --src $PackageFilePath
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
