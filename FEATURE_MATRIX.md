@@ -39,7 +39,7 @@
 |-----------------------------------|:---:|:------:|:----:|-------|
 | TextMemory Skill                  | ✅  | ✅     | 🔄   |       |
 | ConversationSummary Skill         | ✅  | ✅     | ❌   |       |
-| FileIO Skill                      | ✅  | ✅     | 🔄   |       |
+| FileIO Skill                      | ✅  | ✅     | ❌   |       |
 | Http Skill                        | ✅  | ✅     | ❌   |       |
 | Math Skill                        | ✅  | ✅     | ❌   |       |
 | Text Skill                        | ✅  | ✅     | 🔄   |       |
