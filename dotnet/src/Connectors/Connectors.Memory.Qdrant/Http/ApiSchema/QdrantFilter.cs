@@ -13,7 +13,7 @@ public sealed class QdrantFilter : IValidatable
 
     public void Validate()
     {
-        Verify.NotNullOrEmpty(this.Conditions, "No conditions in the filter");
+        Verify.NotNull(this.Conditions, "Conditions is NULL");
         foreach (var condition in this.Conditions)
         {
             if (condition is IValidatable validatable)
