@@ -3,6 +3,7 @@
 import asyncio
 import threading
 import platform
+import sys
 from enum import Enum
 from logging import Logger
 from typing import Any, Callable, List, Optional, cast
@@ -37,7 +38,7 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
 )
 from semantic_kernel.utils.null_logger import NullLogger
 
-if platform.system() == 'Windows':
+if platform.system() == 'Windows' and sys.version_info >= (3, 10, 1):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 class SKFunction(SKFunctionBase):
