@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using RepoUtils;
 
 /**
@@ -19,8 +18,7 @@ public static class Example20_HuggingFace
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            // Add HuggingFace text completion service as a factory methods
-            .WithDefaultAIService((_) => new HuggingFaceTextCompletion(Env.Var("HF_API_KEY"), "gpt2"))
+            .WithHuggingFaceTextCompletionService("gpt2", apiKey: Env.Var("HF_API_KEY"))
             .Build();
 
         const string FunctionDefinition = "Question: {{$input}}; Answer:";
@@ -30,5 +28,10 @@ public static class Example20_HuggingFace
         var result = await questionAnswerFunction.InvokeAsync("What is New York?");
 
         Console.WriteLine(result);
+
+        foreach (var modelResult in result.ModelResults)
+        {
+            Console.WriteLine(modelResult.GetHuggingFaceResult().AsJson());
+        }
     }
 }

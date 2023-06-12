@@ -24,6 +24,8 @@ class TimeSkill:
         {{time.dayOfWeek}}       => Sunday
         {{time.hour}}            => 9 PM
         {{time.hourNumber}}      => 21
+        {{time.days_ago $days}} => Sunday, 7 May, 2023
+        {{time.last_matching_day $dayName}} => Sunday, 7 May, 2023
         {{time.minute}}          => 15
         {{time.minutes}}         => 15
         {{time.second}}          => 7
@@ -173,6 +175,50 @@ class TimeSkill:
         """
         now = datetime.datetime.now()
         return now.strftime("%M")
+
+    @sk_function(
+        description="Get the date of offset from today by a provided number of days"
+    )
+    def days_ago(self, days: str) -> str:
+        """
+        Get the date a provided number of days in the past
+
+        params:
+            days: The number of days to offset from today
+        returns:
+            The date of the offset day.
+
+        Example:
+             SKContext["input"] = "3"
+             {{time.days_ago $input}} => Sunday, 7 May, 2023
+        """
+        d = datetime.date.today() - datetime.timedelta(days=int(days))
+        return d.strftime("%A, %d %B, %Y")
+
+    @sk_function(
+        description="""Get the date of the last day matching the supplied week day name in English.
+        Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday,
+        16 May, 2023"""
+    )
+    def date_matching_last_day_name(self, day_name: str) -> str:
+        """
+        Get the date of the last day matching the supplied day name
+
+        params:
+            day_name: The day name to match with.
+        returns:
+            The date of the matching day.
+
+        Example:
+             SKContext["input"] = "Sunday"
+             {{time.date_matching_last_day_name $input}} => Sunday, 7 May, 2023
+        """
+        d = datetime.date.today()
+        for i in range(1, 8):
+            d = d - datetime.timedelta(days=1)
+            if d.strftime("%A") == day_name:
+                return d.strftime("%A, %d %B, %Y")
+        raise ValueError("day_name is not recognized")
 
     @sk_function(description="Get the seconds on the current minute")
     def second(self) -> str:

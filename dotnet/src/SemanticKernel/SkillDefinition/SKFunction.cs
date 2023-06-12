@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,9 +16,12 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
+
+#pragma warning disable format
 
 /// <summary>
 /// Standard Semantic Kernel callable function.
@@ -41,10 +44,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public bool IsSemantic { get; }
 
     /// <inheritdoc/>
-    public CompleteRequestSettings RequestSettings
-    {
-        get { return this._aiRequestSettings; }
-    }
+    public bool IsSensitive { get; }
+
+    /// <inheritdoc/>
+    public ITrustService TrustServiceInstance => this._trustService;
+
+    /// <inheritdoc/>
+    public CompleteRequestSettings RequestSettings => this._aiRequestSettings;
 
     /// <summary>
     /// List of function parameters
@@ -57,15 +63,25 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="methodSignature">Signature of the method to invoke</param>
     /// <param name="methodContainerInstance">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
+    /// <param name="trustService">Service used for trust checks, if null the TrustService.DefaultTrusted implementation will be used</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction? FromNativeMethod(
         MethodInfo methodSignature,
         object? methodContainerInstance = null,
-        string skillName = "",
+        string? skillName = null,
+        ITrustService? trustService = null,
         ILogger? log = null)
     {
-        if (string.IsNullOrWhiteSpace(skillName)) { skillName = SkillCollection.GlobalSkill; }
+        if (!methodSignature.IsStatic && methodContainerInstance is null)
+        {
+            throw new ArgumentNullException(nameof(methodContainerInstance), "Argument cannot be null for non-static methods");
+        }
+
+        if (string.IsNullOrWhiteSpace(skillName))
+        {
+            skillName = SkillCollection.GlobalSkill;
+        }
 
         MethodDetails methodDetails = GetMethodDetails(methodSignature, methodContainerInstance, true, log);
 
@@ -76,13 +92,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
 
         return new SKFunction(
-            delegateType: methodDetails.Type,
             delegateFunction: methodDetails.Function,
             parameters: methodDetails.Parameters,
-            skillName: skillName,
+            skillName: skillName!,
             functionName: methodDetails.Name,
-            description: methodDetails.Description,
             isSemantic: false,
+            description: methodDetails.Description,
+            isSensitive: methodDetails.IsSensitive,
+            trustService: trustService,
             log: log);
     }
 
@@ -94,6 +111,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
+    /// <param name="isSensitive">Whether the function is set to be sensitive (default false)</param>
+    /// <param name="trustService">Service used for trust checks, if null the TrustService.DefaultTrusted implementation will be used</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
@@ -102,18 +121,22 @@ public sealed class SKFunction : ISKFunction, IDisposable
         string functionName,
         string description,
         IEnumerable<ParameterView>? parameters = null,
+        bool isSensitive = false,
+        ITrustService? trustService = null,
         ILogger? log = null)
     {
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, false, log);
 
         return new SKFunction(
-            delegateType: methodDetails.Type,
             delegateFunction: methodDetails.Function,
-            parameters: (parameters ?? Enumerable.Empty<ParameterView>()).ToList(),
+            parameters: parameters is not null ? parameters.ToList() : (IList<ParameterView>)Array.Empty<ParameterView>(),
             description: description,
             skillName: skillName,
             functionName: functionName,
             isSemantic: false,
+            // For native functions, do not read this from the methodDetails
+            isSensitive: isSensitive,
+            trustService: trustService,
             log: log);
     }
 
@@ -123,29 +146,69 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="functionConfig">Semantic function configuration.</param>
+    /// <param name="trustService">Service used for trust checks, if null the TrustService.DefaultTrusted implementation will be used</param>
     /// <param name="log">Optional logger for the function.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
         string skillName,
         string functionName,
         SemanticFunctionConfig functionConfig,
+        ITrustService? trustService = null,
         ILogger? log = null)
     {
         Verify.NotNull(functionConfig);
 
+        Task<SKContext> LocalFuncTmp(
+            ITextCompletion? client,
+            CompleteRequestSettings? requestSettings,
+            SKContext context)
+        {
+            return Task.FromResult(context);
+        }
+
+        var func = new SKFunction(
+            // Start with an empty delegate, so we can have a reference to func
+            // to be used in the LocalFunc below
+            // Before returning the delegateFunction will be updated to be LocalFunc
+            delegateFunction: LocalFuncTmp,
+            parameters: functionConfig.PromptTemplate.GetParameters(),
+            description: functionConfig.PromptTemplateConfig.Description,
+            skillName: skillName,
+            functionName: functionName,
+            isSemantic: true,
+            isSensitive: functionConfig.PromptTemplateConfig.IsSensitive,
+            trustService: trustService,
+            log: log
+        );
+
         async Task<SKContext> LocalFunc(
-            ITextCompletion client,
-            CompleteRequestSettings requestSettings,
+            ITextCompletion? client,
+            CompleteRequestSettings? requestSettings,
             SKContext context)
         {
             Verify.NotNull(client);
+            Verify.NotNull(requestSettings);
 
             try
             {
-                string prompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
+                string renderedPrompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
 
-                string completion = await client.CompleteAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
-                context.Variables.Update(completion);
+                // Validates the rendered prompt before executing the completion
+                // The prompt template might have function calls that could result in the context becoming untrusted,
+                // this way this hook should check again if the context became untrusted
+                TrustAwareString prompt = await func.TrustServiceInstance.ValidatePromptAsync(func, context, renderedPrompt).ConfigureAwait(false);
+                var completionResults = await client.GetCompletionsAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
+                string completion = await GetCompletionsResultContentAsync(completionResults, context.CancellationToken).ConfigureAwait(false);
+
+                // Update the result with the completion
+                context.Variables.UpdateKeepingTrustState(completion);
+
+                // Flag the result as untrusted if the prompt has been considered untrusted
+                if (!prompt.IsTrusted)
+                {
+                    context.UntrustResult();
+                }
+                context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
             }
             catch (AIException ex)
             {
@@ -165,15 +228,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
             return context;
         }
 
-        return new SKFunction(
-            delegateType: DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
-            delegateFunction: LocalFunc,
-            parameters: functionConfig.PromptTemplate.GetParameters(),
-            description: functionConfig.PromptTemplateConfig.Description,
-            skillName: skillName,
-            functionName: functionName,
-            isSemantic: true,
-            log: log);
+        // Update delegate function with a reference to the LocalFunc created
+        func._function = LocalFunc;
+
+        return func;
     }
 
     /// <inheritdoc/>
@@ -190,13 +248,36 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(
-        SKContext context,
-        CompleteRequestSettings? settings = null)
+    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null)
     {
-        return this.IsSemantic
-            ? this.InvokeSemanticAsync(context, settings)
-            : this.InvokeNativeAsync(context);
+        async Task<SKContext> InvokeSemanticAsync(SKContext contextParam, CompleteRequestSettings? settingsPAram)
+        {
+            var resultContext = await this._function(this._aiService?.Value, settingsPAram ?? this._aiRequestSettings, contextParam).ConfigureAwait(false);
+            contextParam.Variables.Update(resultContext.Variables);
+            return contextParam;
+        }
+
+        Task<SKContext> InvokeNativeAsync(SKContext contextParam, CompleteRequestSettings? settingsParam)
+        {
+            return this._function(null, settingsParam, contextParam);
+        }
+
+        // If the function is invoked manually, the user might have left out the skill collection
+        context.Skills ??= this._skillCollection;
+
+        var validateContextResult = await this.TrustServiceInstance.ValidateContextAsync(this, context).ConfigureAwait(false);
+
+        var result = this.IsSemantic
+            ? await InvokeSemanticAsync(context, settings).ConfigureAwait(false)
+            : await InvokeNativeAsync(context, settings).ConfigureAwait(false);
+
+        // If the context has been considered untrusted, make sure the output of the function is also untrusted
+        if (!validateContextResult)
+        {
+            result.UntrustResult();
+        }
+
+        return result;
     }
 
     /// <inheritdoc/>
@@ -247,8 +328,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// </summary>
     public void Dispose()
     {
-        this.ReleaseUnmanagedResources();
-        GC.SuppressFinalize(this);
+        if (this._aiService is { IsValueCreated: true } aiService)
+        {
+            (aiService.Value as IDisposable)?.Dispose();
+        }
     }
 
     /// <summary>
@@ -263,66 +346,48 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public string ToString(bool writeIndented)
         => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
 
-    /// <summary>
-    /// Finalizer.
-    /// </summary>
-    ~SKFunction()
-    {
-        this.ReleaseUnmanagedResources();
-    }
-
     #region private
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private readonly DelegateTypes _delegateType;
-    private readonly Delegate _function;
+    private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> _function;
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
+    private readonly ITrustService _trustService;
 
     private struct MethodDetails
     {
         public bool HasSkFunctionAttribute { get; set; }
-        public DelegateTypes Type { get; set; }
-        public Delegate Function { get; set; }
+        public Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> Function { get; set; }
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public bool IsSensitive { get; set; }
     }
 
-    internal enum DelegateTypes
+    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextCompletionResult> completions, CancellationToken cancellationToken = default)
     {
-        Unknown = 0,
-        Void = 1,
-        OutString = 2,
-        OutTaskString = 3,
-        InSKContext = 4,
-        InSKContextOutString = 5,
-        InSKContextOutTaskString = 6,
-        ContextSwitchInSKContextOutTaskSKContext = 7,
-        InString = 8,
-        InStringOutString = 9,
-        InStringOutTaskString = 10,
-        InStringAndContext = 11,
-        InStringAndContextOutString = 12,
-        InStringAndContextOutTaskString = 13,
-        ContextSwitchInStringAndContextOutTaskContext = 14,
-        InStringOutTask = 15,
-        InContextOutTask = 16,
-        InStringAndContextOutTask = 17,
-        OutTask = 18
+        StringBuilder completionResult = new();
+
+        foreach (ITextCompletionResult result in completions)
+        {
+            completionResult.Append(await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false));
+        }
+
+        return completionResult.ToString();
     }
 
     internal SKFunction(
-        DelegateTypes delegateType,
-        Delegate delegateFunction,
+        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> delegateFunction,
         IList<ParameterView> parameters,
         string skillName,
         string functionName,
         string description,
         bool isSemantic = false,
+        bool isSensitive = false,
+        ITrustService? trustService = null,
         ILogger? log = null
     )
     {
@@ -333,27 +398,17 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         this._log = log ?? NullLogger.Instance;
 
-        this._delegateType = delegateType;
+        // If no trust service is specified, use the default implementation
+        this._trustService = trustService ?? TrustService.DefaultTrusted;
+
         this._function = delegateFunction;
         this.Parameters = parameters;
 
         this.IsSemantic = isSemantic;
+        this.IsSensitive = isSensitive;
         this.Name = functionName;
         this.SkillName = skillName;
         this.Description = description;
-    }
-
-    private void ReleaseUnmanagedResources()
-    {
-        if (this._aiService == null || !this._aiService.IsValueCreated)
-        {
-            return;
-        }
-
-        if (this._aiService.Value is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
     }
 
     /// <summary>
@@ -368,171 +423,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         throw new KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a semantic function");
-    }
-
-    // Run the semantic function
-    private async Task<SKContext> InvokeSemanticAsync(SKContext context, CompleteRequestSettings? settings)
-    {
-        this.VerifyIsSemantic();
-
-        this.EnsureContextHasSkills(context);
-
-        settings ??= this._aiRequestSettings;
-
-        var callable = (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>>)this._function;
-        context.Variables.Update((await callable(this._aiService?.Value, settings, context).ConfigureAwait(false)).Variables);
-        return context;
-    }
-
-    // Run the native function
-    private async Task<SKContext> InvokeNativeAsync(SKContext context)
-    {
-        TraceFunctionTypeCall(this._delegateType, this._log);
-
-        this.EnsureContextHasSkills(context);
-
-        switch (this._delegateType)
-        {
-            case DelegateTypes.Void: // 1
-            {
-                var callable = (Action)this._function;
-                callable();
-                return context;
-            }
-
-            case DelegateTypes.OutString: // 2
-            {
-                var callable = (Func<string>)this._function;
-                context.Variables.Update(callable());
-                return context;
-            }
-
-            case DelegateTypes.OutTaskString: // 3
-            {
-                var callable = (Func<Task<string>>)this._function;
-                context.Variables.Update(await callable().ConfigureAwait(false));
-                return context;
-            }
-
-            case DelegateTypes.InSKContext: // 4
-            {
-                var callable = (Action<SKContext>)this._function;
-                callable(context);
-                return context;
-            }
-
-            case DelegateTypes.InSKContextOutString: // 5
-            {
-                var callable = (Func<SKContext, string>)this._function;
-                context.Variables.Update(callable(context));
-                return context;
-            }
-
-            case DelegateTypes.InSKContextOutTaskString: // 6
-            {
-                var callable = (Func<SKContext, Task<string>>)this._function;
-                context.Variables.Update(await callable(context).ConfigureAwait(false));
-                return context;
-            }
-
-            case DelegateTypes.ContextSwitchInSKContextOutTaskSKContext: // 7
-            {
-                var callable = (Func<SKContext, Task<SKContext>>)this._function;
-                // Note: Context Switching: allows the function to replace with a new context, e.g. to branch execution path
-                context = await callable(context).ConfigureAwait(false);
-                return context;
-            }
-
-            case DelegateTypes.InString:
-            {
-                var callable = (Action<string>)this._function; // 8
-                callable(context.Variables.Input);
-                return context;
-            }
-
-            case DelegateTypes.InStringOutString: // 9
-            {
-                var callable = (Func<string, string>)this._function;
-                context.Variables.Update(callable(context.Variables.Input));
-                return context;
-            }
-
-            case DelegateTypes.InStringOutTaskString: // 10
-            {
-                var callable = (Func<string, Task<string>>)this._function;
-                context.Variables.Update(await callable(context.Variables.Input).ConfigureAwait(false));
-                return context;
-            }
-
-            case DelegateTypes.InStringAndContext: // 11
-            {
-                var callable = (Action<string, SKContext>)this._function;
-                callable(context.Variables.Input, context);
-                return context;
-            }
-
-            case DelegateTypes.InStringAndContextOutString: // 12
-            {
-                var callable = (Func<string, SKContext, string>)this._function;
-                context.Variables.Update(callable(context.Variables.Input, context));
-                return context;
-            }
-
-            case DelegateTypes.InStringAndContextOutTaskString: // 13
-            {
-                var callable = (Func<string, SKContext, Task<string>>)this._function;
-                context.Variables.Update(await callable(context.Variables.Input, context).ConfigureAwait(false));
-                return context;
-            }
-
-            case DelegateTypes.ContextSwitchInStringAndContextOutTaskContext: // 14
-            {
-                var callable = (Func<string, SKContext, Task<SKContext>>)this._function;
-                // Note: Context Switching: allows the function to replace with a new context, e.g. to branch execution path
-                context = await callable(context.Variables.Input, context).ConfigureAwait(false);
-                return context;
-            }
-
-            case DelegateTypes.InStringOutTask: // 15
-            {
-                var callable = (Func<string, Task>)this._function;
-                await callable(context.Variables.Input).ConfigureAwait(false);
-                return context;
-            }
-
-            case DelegateTypes.InContextOutTask: // 16
-            {
-                var callable = (Func<SKContext, Task>)this._function;
-                await callable(context).ConfigureAwait(false);
-                return context;
-            }
-
-            case DelegateTypes.InStringAndContextOutTask: // 17
-            {
-                var callable = (Func<string, SKContext, Task>)this._function;
-                await callable(context.Variables.Input, context).ConfigureAwait(false);
-                return context;
-            }
-
-            case DelegateTypes.OutTask: // 18
-            {
-                var callable = (Func<Task>)this._function;
-                await callable().ConfigureAwait(false);
-                return context;
-            }
-
-            case DelegateTypes.Unknown:
-            default:
-                throw new KernelException(
-                    KernelException.ErrorCodes.FunctionTypeNotSupported,
-                    "Invalid function type detected, unable to execute.");
-        }
-    }
-
-    private void EnsureContextHasSkills(SKContext context)
-    {
-        // If the function is invoked manually, the user might have left out the skill collection
-        context.Skills ??= this._skillCollection;
     }
 
     private static MethodDetails GetMethodDetails(
@@ -567,7 +457,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             result.HasSkFunctionAttribute = true;
         }
 
-        (result.Type, result.Function, bool hasStringParam) = GetDelegateInfo(methodContainerInstance, methodSignature);
+        (result.Function, bool hasStringParam) = GetDelegateInfo(methodContainerInstance, methodSignature);
 
         // SKFunctionName attribute
         SKFunctionNameAttribute? skFunctionNameAttribute = methodSignature
@@ -616,159 +506,117 @@ public sealed class SKFunction : ISKFunction, IDisposable
         Verify.ParametersUniqueness(result.Parameters);
 
         result.Description = skFunctionAttribute?.Description ?? "";
+        result.IsSensitive = skFunctionAttribute?.IsSensitive ?? false;
 
-        log?.LogTrace("Method '{0}' found, type `{1}`", result.Name, result.Type.ToString("G"));
+        log?.LogTrace("Method '{0}' found", result.Name);
 
         return result;
     }
 
     // Inspect a method and returns the corresponding delegate and related info
-    private static (DelegateTypes type, Delegate function, bool hasStringParam) GetDelegateInfo(object? instance, MethodInfo method)
+    private static (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> function, bool hasStringParam) GetDelegateInfo(object? instance, MethodInfo method)
     {
-        if (EqualMethods(instance, method, typeof(Action), out Delegate? funcDelegate))
+        // Get marshaling funcs for parameters
+        var parameters = method.GetParameters();
+        if (parameters.Length > 2)
         {
-            return (DelegateTypes.Void, funcDelegate, false);
+            ThrowForInvalidSignature();
         }
 
-        if (EqualMethods(instance, method, typeof(Func<string>), out funcDelegate))
+        var parameterFuncs = new Func<SKContext, object>[parameters.Length];
+        bool hasStringParam = false;
+        bool hasContextParam = false;
+        for (int i = 0; i < parameters.Length; i++)
         {
-            return (DelegateTypes.OutString, funcDelegate, false);
+            if (!hasStringParam && parameters[i].ParameterType == typeof(string))
+            {
+                hasStringParam = true;
+                parameterFuncs[i] = static (SKContext ctx) => ctx.Variables.Input.Value;
+            }
+            else if (!hasContextParam && parameters[i].ParameterType == typeof(SKContext))
+            {
+                hasContextParam = true;
+                parameterFuncs[i] = static (SKContext ctx) => ctx;
+            }
+            else
+            {
+                ThrowForInvalidSignature();
+            }
         }
 
-        if (EqualMethods(instance, method, typeof(Func<Task<string>>), out funcDelegate!))
+        // Get marshaling func for the return value
+        Func<object?, SKContext, Task<SKContext>> returnFunc;
+        if (method.ReturnType == typeof(void))
         {
-            return (DelegateTypes.OutTaskString, funcDelegate, false);
+            returnFunc = static (result, context) => Task.FromResult(context);
+        }
+        else if (method.ReturnType == typeof(string))
+        {
+            returnFunc = static (result, context) =>
+            {
+                context.Variables.UpdateKeepingTrustState((string?)result);
+                return Task.FromResult(context);
+            };
+        }
+        else if (method.ReturnType == typeof(SKContext))
+        {
+            returnFunc = static (result, _) => Task.FromResult((SKContext)ThrowIfNullResult(result));
+        }
+        else if (method.ReturnType == typeof(Task))
+        {
+            returnFunc = async static (result, context) =>
+            {
+                await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
+                return context;
+            };
+        }
+        else if (method.ReturnType == typeof(Task<string>))
+        {
+            returnFunc = async static (result, context) =>
+            {
+                context.Variables.UpdateKeepingTrustState(await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
+                return context;
+            };
+        }
+        else if (method.ReturnType == typeof(Task<SKContext>))
+        {
+            returnFunc = static (result, _) => (Task<SKContext>)ThrowIfNullResult(result);
+        }
+        else
+        {
+            ThrowForInvalidSignature();
         }
 
-        if (EqualMethods(instance, method, typeof(Action<SKContext>), out funcDelegate!))
+        // Create the func
+        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> function = (_, _, context) =>
         {
-            return (DelegateTypes.InSKContext, funcDelegate, false);
-        }
+            // Create the arguments.
+            object[] args = parameterFuncs.Length != 0 ? new object[parameterFuncs.Length] : Array.Empty<object>();
+            for (int i = 0; i < args.Length; i++)
+            {
+                args[i] = parameterFuncs[i](context);
+            }
 
-        if (EqualMethods(instance, method, typeof(Func<SKContext, string>), out funcDelegate!))
-        {
-            return (DelegateTypes.InSKContextOutString, funcDelegate, false);
-        }
+            // Invoke the method.
+            object? result = method.Invoke(instance, args);
 
-        if (EqualMethods(instance, method, typeof(Func<SKContext, Task<string>>), out funcDelegate!))
-        {
-            return (DelegateTypes.InSKContextOutTaskString, funcDelegate, false);
-        }
+            // Extract and return the result.
+            return returnFunc(result, context);
+        };
 
-        if (EqualMethods(instance, method, typeof(Func<SKContext, Task<SKContext>>), out funcDelegate!))
-        {
-            return (DelegateTypes.ContextSwitchInSKContextOutTaskSKContext, funcDelegate, false);
-        }
+        // Return the func and whether it has a string param
+        return (function, hasStringParam);
 
-        // === string input ==
-
-        if (EqualMethods(instance, method, typeof(Action<string>), out funcDelegate!))
-        {
-            return (DelegateTypes.InString, funcDelegate, true);
-        }
-
-        if (EqualMethods(instance, method, typeof(Func<string, string>), out funcDelegate!))
-        {
-            return (DelegateTypes.InStringOutString, funcDelegate, true);
-        }
-
-        if (EqualMethods(instance, method, typeof(Func<string, Task<string>>), out funcDelegate!))
-        {
-            return (DelegateTypes.InStringOutTaskString, funcDelegate, true);
-        }
-
-        if (EqualMethods(instance, method, typeof(Action<string, SKContext>), out funcDelegate!))
-        {
-            return (DelegateTypes.InStringAndContext, funcDelegate, true);
-        }
-
-        if (EqualMethods(instance, method, typeof(Func<string, SKContext, string>), out funcDelegate!))
-        {
-            return (DelegateTypes.InStringAndContextOutString, funcDelegate, true);
-        }
-
-        if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task<string>>), out funcDelegate!))
-        {
-            return (DelegateTypes.InStringAndContextOutTaskString, funcDelegate, true);
-        }
-
-        if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task<SKContext>>), out funcDelegate!))
-        {
-            return (DelegateTypes.ContextSwitchInStringAndContextOutTaskContext, funcDelegate, true);
-        }
-
-        // == Tasks without output ==
-
-        if (EqualMethods(instance, method, typeof(Func<string, Task>), out funcDelegate!))
-        {
-            return (DelegateTypes.InStringOutTask, funcDelegate, true);
-        }
-
-        if (EqualMethods(instance, method, typeof(Func<SKContext, Task>), out funcDelegate!))
-        {
-            return (DelegateTypes.InContextOutTask, funcDelegate, false);
-        }
-
-        if (EqualMethods(instance, method, typeof(Func<string, SKContext, Task>), out funcDelegate!))
-        {
-            return (DelegateTypes.InStringAndContextOutTask, funcDelegate, true);
-        }
-
-        if (EqualMethods(instance, method, typeof(Func<Task>), out funcDelegate!))
-        {
-            return (DelegateTypes.OutTask, funcDelegate, false);
-        }
-
-        // [SKContext DoSomething(SKContext context)] is not supported, use the async form instead.
-        // If you encounter scenarios that require to interact with the context synchronously, please let us know.
-        if (EqualMethods(instance, method, typeof(Func<SKContext, SKContext>), out _))
-        {
+        void ThrowForInvalidSignature() =>
             throw new KernelException(
                 KernelException.ErrorCodes.FunctionTypeNotSupported,
-                $"Function '{method.Name}' has an invalid signature 'Func<SKContext, SKContext>'. " +
-                "Please use 'Func<SKContext, Task<SKContext>>' instead.");
-        }
+                $"Function '{method.Name}' has an invalid signature not supported by the kernel.");
 
-        throw new KernelException(
-            KernelException.ErrorCodes.FunctionTypeNotSupported,
-            $"Function '{method.Name}' has an invalid signature not supported by the kernel.");
-    }
-
-    /// <summary>
-    /// Compare a method against the given signature type using Delegate.CreateDelegate.
-    /// </summary>
-    /// <param name="instance">Optional object containing the given method</param>
-    /// <param name="userMethod">Method to inspect</param>
-    /// <param name="delegateDefinition">Definition of the delegate, i.e. method signature</param>
-    /// <param name="result">The delegate to use, if the function returns TRUE, otherwise NULL</param>
-    /// <returns>True if the method to inspect matches the delegate type</returns>
-    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Delegate.CreateDelegate can return NULL")]
-    private static bool EqualMethods(
-        object? instance,
-        MethodInfo userMethod,
-        Type delegateDefinition,
-        [NotNullWhen(true)] out Delegate? result)
-    {
-        // Instance methods
-        if (instance != null)
-        {
-            result = Delegate.CreateDelegate(delegateDefinition, instance, userMethod, false);
-            if (result != null) { return true; }
-        }
-
-        // Static methods
-        result = Delegate.CreateDelegate(delegateDefinition, userMethod, false);
-
-        return result != null;
-    }
-
-    // Internal event to count (and test) that the correct delegates are invoked
-    private static void TraceFunctionTypeCall(DelegateTypes type, ILogger log)
-    {
-        log.Log(
-            LogLevel.Trace,
-            new EventId((int)type, $"FuncType{type}"),
-            "Executing function type {0}: {1}", (int)type, type.ToString("G"));
+        static object ThrowIfNullResult(object? result) =>
+            result ??
+            throw new KernelException(
+                KernelException.ErrorCodes.FunctionInvokeError,
+                "Function returned null unexpectedly.");
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
