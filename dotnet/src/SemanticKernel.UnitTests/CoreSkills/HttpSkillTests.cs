@@ -51,6 +51,7 @@ public class HttpSkillTests : IDisposable
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         using var skill = new HttpSkill(client);
+        this._context["serializedHeaders"] = "{\"key\":\"value\"}";
 
         // Act
         var result = await skill.GetAsync(this._uriString, this._context);
@@ -67,6 +68,7 @@ public class HttpSkillTests : IDisposable
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         using var skill = new HttpSkill(client);
+        this._context["serializedHeaders"] = "{\"key\":\"value\"}";
         this._context["body"] = this._content;
 
         // Act
@@ -84,6 +86,7 @@ public class HttpSkillTests : IDisposable
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         using var skill = new HttpSkill(client);
+        this._context["serializedHeaders"] = "{\"key\":\"value\"}";
         this._context["body"] = this._content;
 
         // Act
@@ -101,6 +104,7 @@ public class HttpSkillTests : IDisposable
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         using var skill = new HttpSkill(client);
+        this._context["serializedHeaders"] = "{\"key\":\"value\"}";
 
         // Act
         var result = await skill.DeleteAsync(this._uriString, this._context);
@@ -127,6 +131,7 @@ public class HttpSkillTests : IDisposable
             ItExpr.Is<HttpRequestMessage>(req =>
                     req.Method == method // we expected a POST request
                     && req.RequestUri == new Uri(this._uriString) // to this uri
+                    && req.Headers.Contains("key")
             ),
             ItExpr.IsAny<CancellationToken>()
         );

@@ -4,8 +4,11 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
 
@@ -52,8 +55,9 @@ public class HttpSkill : IDisposable
     /// <param name="context">The context for the operation.</param>
     /// <returns>The response body as a string.</returns>
     [SKFunction("Makes a GET request to a uri")]
+    [SKFunctionContextParameter(Name = "serializedHeaders", Description = "The HTTP request headers dictionary serialized using System.Text.JSON")]
     public Task<string> GetAsync(string uri, SKContext context) =>
-        this.SendRequestAsync(uri, HttpMethod.Get, cancellationToken: context.CancellationToken);
+        this.SendRequestAsync(uri, HttpMethod.Get, this.GetSerializedHeaders(context), cancellationToken: context.CancellationToken, logger: context.Log);
 
     /// <summary>
     /// Sends an HTTP POST request to the specified URI and returns the response body as a string.
@@ -62,9 +66,10 @@ public class HttpSkill : IDisposable
     /// <param name="context">Contains the body of the request</param>
     /// <returns>The response body as a string.</returns>
     [SKFunction("Makes a POST request to a uri")]
+    [SKFunctionContextParameter(Name = "serializedHeaders", Description = "The HTTP request headers dictionary serialized using System.Text.JSON")]
     [SKFunctionContextParameter(Name = "body", Description = "The body of the request")]
     public Task<string> PostAsync(string uri, SKContext context) =>
-        this.SendRequestAsync(uri, HttpMethod.Post, new StringContent(context["body"]), context.CancellationToken);
+        this.SendRequestAsync(uri, HttpMethod.Post, this.GetSerializedHeaders(context), new StringContent(context["body"]), context.CancellationToken, context.Log);
 
     /// <summary>
     /// Sends an HTTP PUT request to the specified URI and returns the response body as a string.
@@ -73,9 +78,10 @@ public class HttpSkill : IDisposable
     /// <param name="context">Contains the body of the request</param>
     /// <returns>The response body as a string.</returns>
     [SKFunction("Makes a PUT request to a uri")]
+    [SKFunctionContextParameter(Name = "serializedHeaders", Description = "The HTTP request headers dictionary serialized using System.Text.JSON")]
     [SKFunctionContextParameter(Name = "body", Description = "The body of the request")]
     public Task<string> PutAsync(string uri, SKContext context) =>
-        this.SendRequestAsync(uri, HttpMethod.Put, new StringContent(context["body"]), context.CancellationToken);
+        this.SendRequestAsync(uri, HttpMethod.Put, this.GetSerializedHeaders(context), new StringContent(context["body"]), context.CancellationToken, context.Log);
 
     /// <summary>
     /// Sends an HTTP DELETE request to the specified URI and returns the response body as a string.
@@ -84,19 +90,45 @@ public class HttpSkill : IDisposable
     /// <param name="context">The context for the operation.</param>
     /// <returns>The response body as a string.</returns>
     [SKFunction("Makes a DELETE request to a uri")]
+    [SKFunctionContextParameter(Name = "serializedHeaders", Description = "The HTTP request headers dictionary serialized using System.Text.JSON")]
     public Task<string> DeleteAsync(string uri, SKContext context) =>
-        this.SendRequestAsync(uri, HttpMethod.Delete, cancellationToken: context.CancellationToken);
+        this.SendRequestAsync(uri, HttpMethod.Delete, this.GetSerializedHeaders(context), cancellationToken: context.CancellationToken, logger: context.Log);
 
     /// <summary>Sends an HTTP request and returns the response content as a string.</summary>
     /// <param name="uri">The URI of the request.</param>
     /// <param name="method">The HTTP method for the request.</param>
+    /// <param name="serializedHeaders">The HTTP request headers dictionary serialized by System.Text.JSON.</param>
     /// <param name="requestContent">Optional request content.</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
-    private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent = null, CancellationToken cancellationToken = default)
+    /// <param name="logger">The logger instance from the kernel context.</param>
+    private async Task<string> SendRequestAsync(string uri, HttpMethod method, string? serializedHeaders = null, HttpContent? requestContent = null, CancellationToken cancellationToken = default, ILogger? logger = null)
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
+        if (!string.IsNullOrEmpty(serializedHeaders))
+        {
+            try
+            {
+                Dictionary<string, string> headers = JsonSerializer.Deserialize<Dictionary<string, string>>(serializedHeaders);
+                foreach (KeyValuePair<string, string> header in headers)
+                {
+                    request.Headers.Add(header.Key, header.Value);
+                }
+            }
+            catch (Exception ex) when (ex is NotSupportedException or JsonException)
+            {
+                logger?.LogError(ex, "Failed to add serializedHeaders: {0}", ex.Message);
+            }
+        }
         using var response = await this._client.SendAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>Gets the value of serialized Headers from context</summary>
+    /// <param name="context">The context for the operation.</param>
+    private string? GetSerializedHeaders(SKContext context)
+    {
+        context.Variables.TryGetValue("serializedHeaders", out string? serializedHeaders);
+        return serializedHeaders;
     }
 
     /// <summary>
