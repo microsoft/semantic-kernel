@@ -43,4 +43,17 @@ class FunctionsView:
         return as_sf
 
     def is_native(self, skill_name: str, function_name: str) -> bool:
-        return not self.is_semantic(skill_name, function_name)
+        as_sf = self._semantic_functions.get(skill_name, [])
+        as_sf = any(f.name == function_name for f in as_sf)
+
+        as_nf = self._native_functions.get(skill_name, [])
+        as_nf = any(f.name == function_name for f in as_nf)
+
+        if as_sf and as_nf:
+            raise KernelException(
+                KernelException.ErrorCodes.AmbiguousImplementation,
+                f"There are 2 functions with the same name: {function_name}."
+                f"One is native and the other semantic.",
+            )
+
+        return as_nf
