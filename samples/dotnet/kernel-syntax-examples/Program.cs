@@ -123,6 +123,7 @@ public static class Program
         Console.WriteLine("== DONE ==");
 
         await Example39_Postgres.RunAsync();
+        Console.WriteLine("== DONE ==");
 
         await Example40_DIContainer.RunAsync();
         Console.WriteLine("== DONE ==");
@@ -140,6 +141,12 @@ public static class Program
         Console.WriteLine("== DONE ==");
 
         await Example45_MultiStreamingChatCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example46_Weaviate.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example47_Redis.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }

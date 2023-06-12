@@ -693,6 +693,7 @@ class Kernel:
         top_p: float = 1.0,
         presence_penalty: float = 0.0,
         frequency_penalty: float = 0.0,
+        number_of_responses: int = 1,
         stop_sequences: Optional[List[str]] = None,
     ) -> "SKFunctionBase":
         function_name = (
@@ -714,6 +715,7 @@ class Kernel:
                 presence_penalty,
                 frequency_penalty,
                 max_tokens,
+                number_of_responses,
                 stop_sequences if stop_sequences is not None else [],
             ),
         )
