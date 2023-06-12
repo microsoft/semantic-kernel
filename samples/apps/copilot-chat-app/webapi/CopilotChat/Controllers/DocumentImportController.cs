@@ -98,6 +98,7 @@ public class DocumentImportController : ControllerBase
 
         this._logger.LogInformation("Importing document {0}", formFile.FileName);
 
+        MemorySource memorySource;
         try
         {
             var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
@@ -114,11 +115,12 @@ public class DocumentImportController : ControllerBase
                     return this.BadRequest($"Unsupported file type: {fileType}");
             }
 
-            var memorySource = new MemorySource(
+            memorySource = new MemorySource(
                 documentImportForm.ChatId.ToString(),
                 formFile.FileName,
                 documentImportForm.UserId,
                 MemorySourceType.File,
+                formFile.Length,
                 null);
 
             await this._sourceRepository.UpsertAsync(memorySource);
@@ -138,7 +140,7 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest(ex.Message);
         }
 
-        return this.Ok();
+        return this.Ok(new { Name = memorySource.Name, Size = memorySource.Size });
     }
 
     /// <summary>

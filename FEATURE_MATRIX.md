@@ -68,6 +68,7 @@
 | Sqlite        | ✅  | ❌     | ❌   | Vector optimization requires [sqlite-vss](https://github.com/asg017/sqlite-vss) |
 | Postgres      | ✅  | ❌     | ❌   | Vector optimization requires [pgvector](https://github.com/pgvector/pgvector)   |
 | CosmosDB      | ✅  | ❌     | ❌   | CosmosDB is not optimized for vector storage                                    |
+| Redis         | ✅  | ❌     | ❌   | Vector optimization requires [RediSearch](https://redis.io/docs/stack/search)   |
 
 ## Connectors and Skill Libraries
 
