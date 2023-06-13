@@ -1,11 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+
+#pragma warning disable CA1710
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
-public class ChatHistory
+/// <summary>
+/// Chat message history representation
+/// </summary>
+public class ChatHistory : List<ChatMessageBase>
 {
+    [Obsolete("This enumeration is deprecated, use AuthorRole struct instead")]
     public enum AuthorRoles
     {
         Unknown = -1,
@@ -14,10 +21,18 @@ public class ChatHistory
         Assistant = 2,
     }
 
+    private sealed class ChatMessage : ChatMessageBase
+    {
+        public ChatMessage(AuthorRole authorRole, string content) : base(authorRole, content)
+        {
+        }
+    }
+
     /// <summary>
     /// Chat message representation
     /// </summary>
-    public class Message
+    [Obsolete("This class is deprecated, using instances of this class will not be supported")]
+    public class Message : ChatMessageBase
     {
         /// <summary>
         /// Role of the message author, e.g. user/assistant/system
@@ -25,33 +40,30 @@ public class ChatHistory
         public AuthorRoles AuthorRole { get; set; }
 
         /// <summary>
-        /// Message content
-        /// </summary>
-        public string Content { get; set; }
-
-        /// <summary>
         /// Create a new instance
         /// </summary>
         /// <param name="authorRole">Role of message author</param>
         /// <param name="content">Message content</param>
-        public Message(AuthorRoles authorRole, string content)
+        public Message(AuthorRoles authorRole, string content) : base(new AuthorRole(authorRole.ToString()), content)
         {
             this.AuthorRole = authorRole;
-            this.Content = content;
         }
     }
 
     /// <summary>
     /// List of messages in the chat
     /// </summary>
-    public List<Message> Messages { get; }
+    public List<ChatMessageBase> Messages => this;
 
     /// <summary>
-    /// Create a new instance of the chat content class
+    /// Add a message to the chat history
     /// </summary>
-    public ChatHistory()
+    /// <param name="authorRole">Role of the message author</param>
+    /// <param name="content">Message content</param>
+    [Obsolete("This method with AuthorRoles enumeration is deprecated, use AddMessage(AuthorRole authorRole, string content) instead")]
+    public void AddMessage(AuthorRoles authorRole, string content)
     {
-        this.Messages = new List<Message>();
+        this.Add(new Message(authorRole, content));
     }
 
     /// <summary>
@@ -59,8 +71,35 @@ public class ChatHistory
     /// </summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
-    public void AddMessage(AuthorRoles authorRole, string content)
+    public void AddMessage(AuthorRole authorRole, string content)
     {
-        this.Messages.Add(new Message(authorRole, content));
+        this.Add(new ChatMessage(authorRole, content));
+    }
+
+    /// <summary>
+    /// Add a user message to the chat history
+    /// </summary>
+    /// <param name="content">Message content</param>
+    public void AddUserMessage(string content)
+    {
+        this.AddMessage(AuthorRole.User, content);
+    }
+
+    /// <summary>
+    /// Add an assistant message to the chat history
+    /// </summary>
+    /// <param name="content">Message content</param>
+    public void AddAssistantMessage(string content)
+    {
+        this.AddMessage(AuthorRole.Assistant, content);
+    }
+
+    /// <summary>
+    /// Add a system message to the chat history
+    /// </summary>
+    /// <param name="content">Message content</param>
+    public void AddSystemMessage(string content)
+    {
+        this.AddMessage(AuthorRole.System, content);
     }
 }
