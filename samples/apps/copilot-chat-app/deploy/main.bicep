@@ -35,6 +35,7 @@ param aiEndpoint string = ''
 @description('Azure OpenAI or OpenAI API key')
 param aiApiKey string = ''
 
+@secure()
 @description('WebAPI key to use for authorization')
 param webApiKey string = newGuid()
 
@@ -112,6 +113,7 @@ resource openAI_embeddingModel 'Microsoft.CognitiveServices/accounts/deployments
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: 'asp-${uniqueName}-webapi'
   location: location
+  kind: 'linux'
   sku: {
     name: webAppServiceSku
   }
@@ -120,6 +122,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 resource appServiceWeb 'Microsoft.Web/sites@2022-09-01' = {
   name: 'app-${uniqueName}-webapi'
   location: location
+  kind: 'app'
   tags: {
     skweb: '1'
   }
