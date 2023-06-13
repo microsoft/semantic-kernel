@@ -65,8 +65,12 @@ public static class CopilotChatSemanticKernelExtensions
     {
         return options.Type switch
         {
-            AIServiceOptions.AIServiceType.AzureOpenAI => kernelBuilder.WithAzureChatCompletionService(options.Models.Planner, options.Endpoint, options.Key),
-            AIServiceOptions.AIServiceType.OpenAI => kernelBuilder.WithOpenAIChatCompletionService(options.Models.Planner, options.Key),
+            AIServiceOptions.AIServiceType.AzureOpenAI => kernelBuilder.WithAzureChatCompletionService(options.Models.Planner,
+                (string.IsNullOrWhiteSpace(options.Models.PlannerEndpoint)) ? options.Endpoint : options.Models.PlannerEndpoint,
+                (string.IsNullOrWhiteSpace(options.Models.PlannerKey)) ? options.Key : options.Models.PlannerKey
+            ),
+            AIServiceOptions.AIServiceType.OpenAI => kernelBuilder.WithOpenAIChatCompletionService(options.Models.Planner,
+                (string.IsNullOrWhiteSpace(options.Models.PlannerKey)) ? options.Key : options.Models.PlannerKey),
             _ => throw new ArgumentException($"Invalid {nameof(options.Type)} value in '{AIServiceOptions.PropertyName}' settings."),
         };
     }

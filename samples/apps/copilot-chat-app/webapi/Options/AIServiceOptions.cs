@@ -49,6 +49,16 @@ public sealed class AIServiceOptions
         /// </summary>
         [Required, NotEmptyOrWhitespace]
         public string Planner { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Specific endpoint for planner if needed
+        /// </summary>
+        public string PlannerEndpoint { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Specific key for planner if needed
+        /// </summary>
+        public string PlannerKey { get; set; } = string.Empty;
     }
 
     /// <summary>
