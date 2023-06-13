@@ -46,6 +46,20 @@ internal static class AsyncEnumerable
         return default;
     }
 
+    public static async ValueTask<T?> LastOrDefaultAsync<T>(this IAsyncEnumerable<T> source, CancellationToken cancellationToken = default)
+    {
+        var last = default(T)!; // NB: Only matters when hasLast is set to true.
+        var hasLast = false;
+
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            hasLast = true;
+            last = item;
+        }
+
+        return hasLast ? last! : default;
+    }
+
     public static async ValueTask<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source, CancellationToken cancellationToken = default)
     {
         var result = new List<T>();
