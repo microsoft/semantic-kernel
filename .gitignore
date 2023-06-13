@@ -473,3 +473,6 @@ conf.properties
 
 # Playwright
 playwright-report/
+
+# Semantic Kernel Tools
+/.semantic-kernel
