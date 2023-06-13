@@ -105,7 +105,7 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                                 },
                             });
                         }}
-                        placeholder="Enter the model id here, ie: text-davinci-003"
+                        placeholder="Enter the model id here, i.e.: gpt-3.5-turbo"
                     />
                 </>
             ) : (
@@ -139,7 +139,7 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                                 },
                             });
                         }}
-                        placeholder="Enter your deployment name here, ie: my-deployment"
+                        placeholder="Enter your deployment name here, i.e.: gpt-35-turbo"
                     />
                     <Label htmlFor="oaiendpoint">Endpoint</Label>
                     <Input
