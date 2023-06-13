@@ -5,6 +5,7 @@
 set -e
 
 SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OUTPUT_DIRECTORY="$SCRIPT_ROOT"
 
 usage() {
     echo "Usage: $0 -d DEPLOYMENT_NAME -s SUBSCRIPTION --ai AI_SERVICE_TYPE -aikey AI_SERVICE_KEY [OPTIONS]"
@@ -48,20 +49,15 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# if $OUTPUT_DIRECTORY is not set, set it to $SCRIPT_ROOT/out/webapi.zip
-if [[ -z "$PACKAGE_FILE_PATH" ]]; then
-    OUTPUT_DIRECTORY="$SCRIPT_ROOT"
-    echo "Defaulting output path to '$OUTPUT_DIRECTORY'"
-fi
-
-PUBLISH_OUTPUT_DIRECTORY="$OUTPUT_DIRECTORY/publish"
-PUBLISH_ZIP_DIRECTORY="$OUTPUT_DIRECTORY/out"
-
 # Set defaults
 : "${CONFIGURATION:="Release"}"
 : "${DOTNET:="net6.0"}"
 : "${RUNTIME:="linux-x64"}"
-: "${PACKAGE_FILE_PATH:="$PUBLISH_ZIP_DIRECTORY/webapi.zip"}"
+: "${OUTPUT_DIRECTORY:="$SCRIPT_ROOT"}"
+
+PUBLISH_OUTPUT_DIRECTORY="$OUTPUT_DIRECTORY/publish"
+PUBLISH_ZIP_DIRECTORY="$OUTPUT_DIRECTORY/out"
+PACKAGE_FILE_PATH="$PUBLISH_ZIP_DIRECTORY/webapi.zip
 
 if [[ ! -d "$PUBLISH_OUTPUT_DIRECTORY" ]]; then
     mkdir -p "$PUBLISH_OUTPUT_DIRECTORY"
