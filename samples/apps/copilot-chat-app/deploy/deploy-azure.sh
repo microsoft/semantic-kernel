@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Creates a Semantic Kernel service deployment.
+# Deploy CopilotChat Azure resources.
 
 set -e
 

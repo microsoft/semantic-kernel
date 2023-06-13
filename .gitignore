@@ -473,3 +473,6 @@ conf.properties
 
 # Playwright
 playwright-report/
+
+# Static Web App deployment config
+swa-cli.config.json

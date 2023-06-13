@@ -10,12 +10,17 @@ param(
     
     [string]
     # Target runtime to publish.
-    $TargetRuntime = "win-x64",
+    $TargetRuntime = "linux-x64",
     
     [string]
     # Output directory for published assets.
     $OutputDirectory = "$PSSCriptRoot"
 )
+
+Write-Host "BuildConfiguration: $BuildConfiguration"
+Write-Host "DotNetFramework: $DotNetFramework"
+Write-Host "TargetRuntime: $TargetRuntime"
+Write-Host "OutputDirectory: $OutputDirectory"
 
 $publishOutputDirectory = "$OutputDirectory/publish"
 $publishedZipDirectory = "$OutputDirectory/out"
@@ -35,3 +40,5 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "Compressing to $publishedZipFilePath"
 Compress-Archive -Path $publishOutputDirectory\* -DestinationPath $publishedZipFilePath -Force
+
+Write-Host "Published webapi package to '$publishedZipFilePath'"
