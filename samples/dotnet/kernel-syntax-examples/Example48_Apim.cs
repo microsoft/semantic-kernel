@@ -19,7 +19,7 @@ public static class Example48_Apim
     {
         // Azute API Management details
         // For more information see 'Protect your Azure OpenAI API keys with Azure API Management' here: https://learn.microsoft.com/en-us/semantic-kernel/deploy/
-        var apimUri = new Uri("https://apim-adribona-test-wus3-001.azure-api.net/");
+        var apimUri = new Uri("https://apim...azure-api.net/");
         var subscriptionKey = "<Add your subscription key here>";
 
         // Use interactive browser login
