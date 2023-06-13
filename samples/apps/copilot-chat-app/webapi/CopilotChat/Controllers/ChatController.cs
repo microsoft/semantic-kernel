@@ -109,6 +109,9 @@ public class ChatController : ControllerBase, IDisposable
     /// </summary>
     private async Task RegisterPlannerSkillsAsync(CopilotChatPlanner planner, OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders, ContextVariables variables)
     {
+        // Register Transform output skill
+        planner.Kernel.ImportSemanticSkillFromDirectory(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "CopilotChat", "Skills"), "DataTransformationSkills");
+
         // Register authenticated skills with the planner's kernel only if the request includes an auth header for the skill.
 
         // Klarna Shopping

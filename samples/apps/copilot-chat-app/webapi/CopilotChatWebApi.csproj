@@ -8,6 +8,9 @@
     <RootNamespace>SemanticKernel.Service</RootNamespace>
     <UserSecretsId>aspnet-SKWebApi-1581687a-bee4-40ea-a886-ce22524aea88</UserSecretsId>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="CopilotChat\Skills\DataTransformationSkills\TransformOutputSkill\skprompt.txt" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.34.0" />
@@ -68,5 +71,17 @@
     <AssemblyAttribute Include="System.CLSCompliantAttribute">
       <_Parameter1>false</_Parameter1>
     </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="CopilotChat\Skills\DataTransformationSkills\TransformOutputSkill\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="CopilotChat\Skills\DataTransformationSkills\TransformOutputSkill\config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

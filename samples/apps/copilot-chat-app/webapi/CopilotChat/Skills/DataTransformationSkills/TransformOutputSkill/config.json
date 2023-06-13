@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "description": "Apply a specific format or transformation to context variables inside a plan. This method must be used each time a specific format (such as specific format of list, specific JSON formatting from source data...) or transformation (such as filtering, capitalization...) is required for a parameter of a function in the plan and if another formatting or transformation function is not called instead. If a doubt exists about does the output format a function corresponds to the required input of another one, this methods must be called",
+  "type": "completion",
+  "completion": {
+    "max_tokens": 1000,
+    "temperature": 0.0,
+    "top_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "stop_sequences": [
+      "[END FORMATTEDOUTPUT]"
+    ]
+  },
+  "input": {
+    "parameters": [
+      {
+        "name": "input",
+        "description": "User intent",
+        "defaultValue": ""
+      },
+      {
+        "name": "rationale",
+        "description": "Description of the specific format or transformation that must be applied to inputVariable to respect the requested format or transformation. Must be as precized as possible and can contain examples of the expected result if available",
+        "defaultValue": ""
+      },
+      {
+        "name": "outputFormat",
+        "description": "Description of the format of the output. Must be as precized as possible and can contain examples of the expected result if available (it can for example include the specific request format such a the JSON description or an example given in the parameter description of the called function)",
+        "defaultValue": ""
+      },
+      {
+        "name": "inputVariable",
+        "description": "Input data, coming from a previous function, that must be formatted or transformed",
+        "defaultValue": ""
+      }
+    ]
+  }
+}

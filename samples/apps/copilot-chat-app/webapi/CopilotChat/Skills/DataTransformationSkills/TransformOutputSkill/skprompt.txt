@@ -1,0 +1,24 @@
+﻿A function is composed of parameters, the goal is to apply a transformation or specific formatting to respect the requirement of a parameter function. Considering the description of the transformation or formatting to apply ([RATIONALE] section), format of the expected output ([outputFormat] section) and goal of the global plan ([GOAL] section), format the content of the input ([inputVariable] section) to respect all requirements. 
+
+[START EXAMPLE]
+[START inputVariable]
+Here is the list of Stores: [Paris Saint Sulpice,Paris Auteuil, Cannes]
+[END inputVariable]
+[START outputFormat]Comma separated list of store names (example: Paris Saint Sulpice,Cannes)[END outputFormat]
+[START GOAL]User intent: Please search for black t-shirts made of wool fabric and provide me with their availability at stores located in Paris.[END GOAL]
+[START RATIONALE]Filter the list of stores to only include stores located in Paris[END RATIONALE]
+[START FORMATTEDOUTPUT]
+Paris Saint Sulpice,Paris Auteuil
+[END FORMATTEDOUTPUT]
+[END EXAMPLE]
+
+Real data start here :
+[START inputVariable]
+{{$inputVariable}}
+[END inputVariable]
+[START outputFormat]
+{{$outputFormat}}
+[END outputFormat]
+[START GOAL]{{$planUserIntent}}[END GOAL]
+[START RATIONALE]{{$rationale}}[END RATIONALE]
+[START FORMATTEDOUTPUT]
