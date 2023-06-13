@@ -15,7 +15,7 @@ This document details how to deploy CopilotChat's required resources to your Azu
   Deploying an alternate deployment within a resource group that already contains one may lead to resource conflicts.
 
 
-# Deploy
+# Deploy Azure Infrastructure
 To use an existing Azure OpenAI resource, run `./deploy-azure.ps1` with `-AIService` set to `AzureOpenAI` and include `-AIApiKey` and `-AIEndpoint`.
 
 To use deploy a new Azure OpenAI resource, run `./deploy-azure.ps1` with `-AIService` set to `AzureOpenAI`, include `-Region`, and omit `-AIApiKey` and `-AIEndpoint`.
@@ -40,12 +40,28 @@ chmod +x ./deploy.sh
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fadrianwyatt%2Fsemantic-kernel%2Fsk-pipelines%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
 
 
-# Verifying the deployment
+# Deploy Backend (WebAPI)
+
+```bash
+./package-webapi.sh --configuration Release --dotnet net6.0 --runtime linux-x64
+./deploy-webapi.sh --resource-group rg-YOUR_DEPLOYMENT_NAME --deployment-name YOUR_DEPLOYMENT_NAME --subscription YOUR_SUBSCRIPTION_ID --package $(Pipeline.Workspace)/copilotchat-webapi/webapi.zip
+```
+
+## Verifying the deployment
 To make sure your web app service is running, go to <!-- markdown-link-check-disable -->`https://YOUR_INSTANCE_NAME.azurewebsites.net/healthz`<!-- markdown-link-check-enable-->
 
 To get your instance's URL, click on the "Go to resource group" button you see at the end of your deployment. Then click on the resource whose name starts with "app-" and ends with "-webapi".
 
 This will bring you to the Overview page on your web service. Your instance's URL is the value that appears next to the "Default domain" field.
+
+
+# Deploy Frontend (WebApp)
+npm install -g @azure/static-web-apps-cli
+
+```bash
+./deploy-webapp.sh --subscription $SUBSCRIPTION_ID --resource-group $(resourceGroup) --deployment-name $(deploymentName) --application-id $(applicationClientId)
+```
+
 
 
 # Changing your configuration, monitoring your deployment and troubleshooting
