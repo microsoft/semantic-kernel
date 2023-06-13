@@ -64,13 +64,19 @@ public class MemorySource : IStorageEntity
     public DateTimeOffset CreatedOn { get; set; }
 
     /// <summary>
+    /// The size of the source in bytes.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public long Size { get; set; }
+
+    /// <summary>
     /// Empty constructor for serialization.
     /// </summary>
     public MemorySource()
     {
     }
 
-    public MemorySource(string chatId, string name, string sharedBy, MemorySourceType type, Uri? hyperlink)
+    public MemorySource(string chatId, string name, string sharedBy, MemorySourceType type, long size, Uri? hyperlink)
     {
         this.Id = Guid.NewGuid().ToString();
         this.ChatId = chatId;
@@ -79,5 +85,6 @@ public class MemorySource : IStorageEntity
         this.HyperLink = hyperlink;
         this.SharedBy = sharedBy;
         this.CreatedOn = DateTimeOffset.Now;
+        this.Size = size;
     }
 }

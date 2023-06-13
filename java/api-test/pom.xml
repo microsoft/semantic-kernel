@@ -17,6 +17,7 @@
     <packaging>pom</packaging>
 
     <properties>
+        <maven.compiler-plugin.version>3.11.0</maven.compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
     </properties>
 
@@ -36,5 +37,20 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler-plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.release}</source>
+                    <target>${maven.compiler.release}</target>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

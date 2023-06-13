@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 /** Class representing the metadata associated with a Semantic Kernel memory. */
 public class MemoryRecordMetadata {
 
-    @Nonnull private final boolean isReference;
+    private final boolean isReference;
     @Nonnull private final String externalSourceName;
     @Nonnull private final String id;
     @Nonnull private final String description;
