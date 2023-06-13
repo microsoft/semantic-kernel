@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
-from typing import Optional, Union
+import datetime
+from typing import List, Optional, Union
 from dotenv import load_dotenv
 from numpy import linalg
 from azure.core.credentials import AzureKeyCredential
@@ -24,7 +25,7 @@ def create_credentials(
 ) -> Union[AzureKeyCredential, DefaultAzureCredential, DefaultAzureCredentialSync]:
     load_dotenv()
     acs_key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
-    
+
     if azsearch_api_key:
         credential = (
             DefaultAzureCredential() if use_async else DefaultAzureCredentialSync()
@@ -32,75 +33,109 @@ def create_credentials(
     else:
         if acs_key is None:
             raise ValueError(
-                "No Azure Cognitive Search Admin Key found. Please provide API key or AZURE_SEARCH_ADMIN_KEY environment variable."
+                "No Azure Cognitive Search Key found; Please provide API key AZURE_SEARCH_ADMIN_KEY env variable."
             )
-        else: 
+        else:
             credential = AzureKeyCredential(acs_key)
     return credential
 
-def acs_schema( vector_size: int
-) -> list:
+
+def acs_schema(vector_size: int) -> list:
     """Creates an ACS schema for collection/index creation.
 
     Arguments:
         vector_size {int} -- The size of the vectors being stored in collection/index.
-       
+
     Returns:
         list -- The ACS schema as list type.
     """
-    
+
     acs_fields = [
-            SimpleField(
-                name="vector_id",
-                type=SearchFieldDataType.String,
-                searchable=True,
-                filterable=True,
-                retrievable=True,
-                key=True,
-            ),
-            SearchableField(
-                name="timestamp",
-                type=SearchFieldDataType.DateTimeOffset,
-                searchable=True,
-                retrievable=True,
-            ),
-            SearchableField(
-                name="payload",
-                type=SearchFieldDataType.String,
-                filterable=True,
-                searchable=True,
-                retrievable=True,
-            ),
-            SearchableField(
-                name="additional_metadata",
-                type=SearchFieldDataType.String,
-                filterable=True,
-                searchable=True,
-                retrievable=True,
-            ),
-            SearchField(
-                name="vector",
-                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
-                searchable=True,
-                dimensions=vector_size,
-                vector_search_configuration="az-vector-config",
-            ),
-        ]
-    
+        SimpleField(
+            name="vector_id",
+            type=SearchFieldDataType.String,
+            searchable=True,
+            filterable=True,
+            retrievable=True,
+            key=True,
+        ),
+        SearchableField(
+            name="timestamp",
+            type=SearchFieldDataType.DateTimeOffset,
+            searchable=True,
+            retrievable=True,
+        ),
+        SearchableField(
+            name="payload",
+            type=SearchFieldDataType.String,
+            filterable=True,
+            searchable=True,
+            retrievable=True,
+        ),
+        SearchableField(
+            name="additional_metadata",
+            type=SearchFieldDataType.String,
+            filterable=True,
+            searchable=True,
+            retrievable=True,
+        ),
+        SearchField(
+            name="vector",
+            type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+            searchable=True,
+            dimensions=vector_size,
+            vector_search_configuration="az-vector-config",
+        ),
+    ]
+
     return acs_fields
 
-def convert_to_memory_record(self, acs_data: dict
-                             ) -> MemoryRecord:
+
+def acs_field_selection(include_embedding: bool) -> List[str]:
+    """Creates a field selection string for ACS search.
+
+    Arguments:
+        with_embedding {bool} -- Whether to include the embedding field in the selection.
+
+    Returns:
+        str -- The field selection string.
+    """
+    if include_embedding:
+        select_fields = [
+            "vector_id",
+            "timestamp",
+            "vector",
+            "payload",
+            "additional_metadata",
+        ]
+    else:
+        select_fields = ["vector_id", "timestamp", "payload", "additional_metadata"]
+
+    return select_fields
+
+
+def convert_to_memory_record(acs_data: dict, include_embedding: bool) -> MemoryRecord:
     """Converts a search result to a MemoryRecord.
-    
+
     Arguments:
         acs_data {dict} -- ACS result data.
 
     Returns:
         MemoryRecord -- The MemoryRecord from ACS Data Result.
     """
+    sk_result = MemoryRecord(
+        is_reference=False,
+        external_source_name="azure-cognitive-search",
+        key=None,
+        timestamp=acs_data["timestamp"] if not acs_data["timestamp"] 
+            else datetime.datetime.now().timestamp(),
+        id=acs_data["vector_id"],
+        embedding=acs_data["vector"] if include_embedding else None,
+        text=acs_data["payload"],
+        additional_metadata=acs_data["additional_metadata"],
+    )
+    return sk_result
 
-    return None
 
 def compute_similarity_scores(
     self, embedding: ndarray, embedding_array: ndarray

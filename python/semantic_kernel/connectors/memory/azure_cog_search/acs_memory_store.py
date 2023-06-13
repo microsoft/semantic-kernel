@@ -27,8 +27,12 @@ from azure.search.documents.indexes.models import (
 from python.semantic_kernel.memory.memory_record import MemoryRecord
 from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from python.semantic_kernel.connectors.memory.azure_cog_search.acs_utils import (
-    create_credentials, acs_schema
+    acs_field_selection,
+    convert_to_memory_record,
+    create_credentials,
+    acs_schema,
 )
+
 
 class CognitiveSearchMemoryStore(MemoryStoreBase):
     _cogsearch_indexclient: SearchIndexClient
@@ -250,6 +254,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             "vector_id": str(id),
             "payload": str(json.load(record._payload)),
             "vector": record._embedding.tolist(),
+            "additional_metadata": record._additional_metadata,
         }
 
         result = acs_search_client.upload_documents(documents=[acs_doc])
@@ -300,10 +305,11 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             acs_ids.append(id)
 
             acs_doc = {
-                "timestamp": datetime.utcnow(),
+                "timestamp": datetime.utcnow().timestamp(),
                 "vector_id": str(id),
-                "payload": str(json.load(record._payload)),
+                "payload": str(json.load(record._text)),
                 "vector": record._embedding.tolist(),
+                "additional_metadata": record._additional_metadata,
             }
 
             acs_documents.append(acs_doc)
@@ -334,7 +340,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             collection_name
         )
 
-        # If no Search client exists, create one
+        ## If no Search client exists, create one
         if not acs_search_client:
             if self._cogsearch_creds:
                 acs_search_client = SearchClient(
@@ -346,19 +352,12 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         search_id = key
 
         ## Get document using key (search_id)
-        acs_result = acs_search_client.get_document(key=search_id)
+        acs_result = await acs_search_client.get_document(key=search_id)
 
         ## Create Memory record from document
-        result = MemoryRecord(
-            is_reference=False,
-            external_source_name="azure-cognitive-search",
-            key=search_id,
-            id=search_id,
-            embedding=acs_result[0],
-            payload=acs_result[1],
-        )
+        acs_mem_record = convert_to_memory_record(acs_result)
 
-        return result
+        return acs_mem_record
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
@@ -378,17 +377,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         for acs_key in keys:
             ## TODO: Call get_document in loop
-
-            ## UPdate memory record
-            result = MemoryRecord(
-                is_reference=False,
-                external_source_name="azure-cognitive-search",
-                key=acs_key,
-                id=acs_key,
-                embedding=acs_results[0].vector,
-                additional_metadata=acs_results[[]],
-            )
-
+            result = await self.get_async(collection_name=collection_name, key=acs_key)
             acs_results.append(result)
 
         return acs_results
@@ -404,6 +393,21 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
 
+        ## If no Search client exists, create one
+        if not acs_search_client:
+            if self._cogsearch_creds:
+                acs_search_client = SearchClient(
+                    service_endpoint=self._cogsearch_indexclient._endpoint,
+                    index_name=collection_name,
+                    credential=AzureKeyCredential(self._cogsearch_creds),
+                )
+
+        acs_data = {
+            "vector_id": key,
+        }
+
+        acs_search_client.delete_documents(documents=[acs_data])
+        
         ## TODO make key list
         await self.remove_batch_async(self, collection_name, key)
 
@@ -419,6 +423,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         """
 
     ## TODO: call delete_documents API pass list of dicts
+        for acs_key in keys:
+            self.remove_async(collection_name=collection_name, key=acs_key)
+
 
     async def get_nearest_match_async(
         self,
@@ -454,28 +461,18 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                     credential=AzureKeyCredential(self._cogsearch_creds),
                 )
 
-        if with_embedding:
-            select_fields = ["vector_id", "vector", "payload"]
-        else:
-            select_fields = ["vector_id", "payload"]
+        selection_fields = acs_field_selection(include_embedding=with_embedding)
 
-        acs_result = acs_search_client.search(
+        acs_result = await acs_search_client.search(
             vector=Vector(value=embedding, k=limit, fields="vector"),
-            select=select_fields,
+            select=selection_fields,
             top=limit,
         )
 
         # Convert to MemoryRecord
-        vector_result = MemoryRecord(
-            is_reference=False,
-            external_source_name="azure-cognitive-search",
-            key=None,
-            id=acs_result["vector_id"],
-            embedding=acs_result["vectpr"],
-            payload=acs_result.payload,
-        )
+        vector_result = convert_to_memory_record(acs_result)
 
-        return tuple(vector_result, acs_result.score)
+        return tuple(vector_result, acs_result["score"]) ## How do I get score? Do I need to manually calculate?
 
     async def get_nearest_matches_async(
         self,
@@ -513,11 +510,11 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                 )
 
         if with_embeddings:
-            select_fields = ["vector_id", "vector", "payload"]
+            select_fields = ["vector_id", "vector", "payload", "additional_metadata"]
         else:
-            select_fields = ["vector_id", "payload"]
+            select_fields = ["vector_id", "payload", "additional_metadata"]
 
-        results = acs_search_client.search(
+        results = await acs_search_client.search(
             vector=Vector(value=embedding, k=limit, fields="vector"),
             select=select_fields,
             top=limit,
@@ -528,15 +525,8 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         # Convert the results to MemoryRecords
         ## TODO: Update call if withembeddings is false
         for acs_result in results:
-            vector_result = MemoryRecord(
-                is_reference=False,
-                external_source_name="azure-cognitive-search",
-                key=None,
-                id=acs_result.collection_id,
-                embedding=acs_result.vector,
-                payload=acs_result.payload,
-            )
-
-            nearest_results.append(tuple(vector_result, acs_result.score))
+           vector_result = convert_to_memory_record(acs_result)
+           
+           nearest_results.append(tuple(vector_result, acs_result["score"])) ## How do I get score? Do I need to manually calculate?
 
         return nearest_results
