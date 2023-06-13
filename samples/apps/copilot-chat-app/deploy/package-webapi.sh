@@ -4,14 +4,16 @@
 
 set -e
 
+SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 usage() {
     echo "Usage: $0 -d DEPLOYMENT_NAME -s SUBSCRIPTION --ai AI_SERVICE_TYPE -aikey AI_SERVICE_KEY [OPTIONS]"
     echo ""
     echo "Arguments:"
     echo "  -c, --configuration CONFIGURATION      Build configuration (default: Release)"
     echo "  -d, --dotnet DOTNET_FRAMEWORK_VERSION  Target dotnet framework (default: net6.0)"
-    echo "  -r, --runtime TARGET_RUNTIME           Type of AI service to use (default: win-x64)"
-    echo "  -p, --output OUTPUT_DIRECTORY          Output directory (default: script directory)"
+    echo "  -r, --runtime TARGET_RUNTIME           Runtime identifier (default: linux-x64)"
+    echo "  -p, --output OUTPUT_DIRECTORY          Output directory (default: $SCRIPT_ROOT)"
 }
 
 # Parse arguments
@@ -46,21 +48,19 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 # if $OUTPUT_DIRECTORY is not set, set it to $SCRIPT_ROOT/out/webapi.zip
 if [[ -z "$PACKAGE_FILE_PATH" ]]; then
     OUTPUT_DIRECTORY="$SCRIPT_ROOT"
     echo "Defaulting output path to '$OUTPUT_DIRECTORY'"
 fi
 
-$PUBLISH_OUTPUT_DIRECTORY = "$OUTPUT_DIRECTORY/publish"
-$PUBLISH_ZIP_DIRECTORY = "$OUTPUT_DIRECTORY/out"
+PUBLISH_OUTPUT_DIRECTORY="$OUTPUT_DIRECTORY/publish"
+PUBLISH_ZIP_DIRECTORY="$OUTPUT_DIRECTORY/out"
 
 # Set defaults
 : "${CONFIGURATION:="Release"}"
 : "${DOTNET:="net6.0"}"
-: "${RUNTIME:="win-x64"}"
+: "${RUNTIME:="linux-x64"}"
 : "${PACKAGE_FILE_PATH:="$PUBLISH_ZIP_DIRECTORY/webapi.zip"}"
 
 if [[ ! -d "$PUBLISH_OUTPUT_DIRECTORY" ]]; then
@@ -77,4 +77,4 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Compressing to $PACKAGE_FILE_PATH"
-zip -r -j $PACKAGE_FILE_PATH $PUBLISH_OUTPUT_DIRECTORY/*
+zip -r  $PACKAGE_FILE_PATH $PUBLISH_OUTPUT_DIRECTORY/*
