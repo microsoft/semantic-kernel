@@ -16,7 +16,9 @@ functions that work together to construct each response.
 
 # Automated Setup and Local Deployment
 
-Refer to [./scripts/README.md](./scripts/README.md) for automated configuration and local deployment of CopilotChat.
+Refer to [./scripts/README.md](./scripts/README.md) for local configuration and deployment.
+
+Refer to [./deploy/README.md](./scripts/README.md) for Azure configuration and deployment.
 
 # Manual Setup and Local Deployment
 

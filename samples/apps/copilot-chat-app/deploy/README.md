@@ -3,34 +3,41 @@ This document details how to deploy CopilotChat's required resources to your Azu
 
 ## Things to know
 - Access to Azure OpenAI is currently limited as we navigate high demand, upcoming product improvements, and Microsoft’s commitment to responsible AI. 
-  For more details and information on applying for access, go [here](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/overview?ocid=AID3051475#how-do-i-get-access-to-azure-openai).
-  For regional availability of Azure OpenAI, see the [availability map](https://azure.microsoft.com/en-us/explore/global-infrastructure/products-by-region/?products=cognitive-services).
+  For more details and information on applying for access, go [here](https://learn.microsoft.com/azure/cognitive-services/openai/overview?ocid=AID3051475#how-do-i-get-access-to-azure-openai).
+  For regional availability of Azure OpenAI, see the [availability map](https://azure.microsoft.com/explore/global-infrastructure/products-by-region/?products=cognitive-services).
   
-- Due to the limited availability of Azure OpenAI, consider sharing an Azure OpenAI instance across multiple resources.
+- With the limited availability of Azure OpenAI, consider sharing an Azure OpenAI instance across multiple resources.
 
-- `F1` and `D1` SKUs for the App Service Plans are not currently supported for this deployment.
+- `F1` and `D1` SKUs for the App Service Plans are not currently supported for this deployment in order to support private networking.
 
-- Using the templates and scripts below, we recommend deploying one instance of CopilotChat to a given resource group. We also recommend not changing the name of your deployment or its resources once deployed. Virtual networks, subnets, and applications are bound and need to be updated in a proper order when being deleted or modified. Deploying an alternate deployment within a resource group that already contains one may lead to resource conflicts.
+- Using the resources below, we recommend deploying a single instance of CopilotChat per resource group and not changing the name of the deployment or resources once deployed.
+  Virtual networks, subnets, and applications are bound and need to be updated in a proper order when being deleted or modified.
+  Deploying an alternate deployment within a resource group that already contains one may lead to resource conflicts.
 
 
 # Deploy
-## Existing Azure OpenAI resource or OpenAI account
+To use an existing Azure OpenAI resource, run `./deploy-azure.ps1` with `-AIService` set to `AzureOpenAI` and include `-AIApiKey` and `-AIEndpoint`.
+
+To use deploy a new Azure OpenAI resource, run `./deploy-azure.ps1` with `-AIService` set to `AzureOpenAI`, include `-Region`, and omit `-AIApiKey` and `-AIEndpoint`.
+
+To use an an OpenAI account, run `./deploy-azure.ps1` with `-AIService` set to `OpenAI` and include `-AIApiKey`.
+
+## Using an existing Azure OpenAI resource or OpenAI account
 ## PowerShell
 ```powershell
-./deploy.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -AIService AzureOpenAI/OpenAI -AIApiKey YOUR_AI_KEY -AIEndpoint YOUR_AI_ENDPOINT
+./deploy-azure.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -AIService {AzureOpenAI or OpenAI} -AIApiKey YOUR_AI_KEY -AIEndpoint YOUR_AZURE_OPENAI_ENDPOINT
 ```
 > `-AIEndpoint` is only required when using Azure OpenAI.
 
 ## Bash
 ```bash
 chmod +x ./deploy.sh
-./deploy.sh --deployment-name YOUR_DEPLOYMENT_NAME --subscription YOUR_SUBSCRIPTION_ID --ai-service AzureOpenAI/OpenAI --ai-service-key YOUR_AZURE_OPENAI_KEY --ai-endpoint YOUR_AZURE_OPENAI_ENDPOINT
+./deploy.sh --deployment-name YOUR_DEPLOYMENT_NAME --subscription YOUR_SUBSCRIPTION_ID --ai-service {AzureOpenAI or OpenAI} --ai-service-key YOUR_AZURE_OPENAI_KEY --ai-endpoint YOUR_AZURE_OPENAI_ENDPOINT
 ```
 > `--ai-endpoint` is only required when using Azure OpenAI.
 
 ## Azure Portal
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fadrianwyatt%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
-
 
 
 TODO VERIFY EVERYTHING BELOW THIS LINE
