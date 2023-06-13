@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -47,8 +48,10 @@ public class DocumentImportController : ControllerBase
     private readonly DocumentMemoryOptions _options;
     private readonly ChatSessionRepository _sessionRepository;
     private readonly ChatMemorySourceRepository _sourceRepository;
+    private readonly ChatMessageRepository _messageRepository;
     private readonly ChatParticipantRepository _participantRepository;
-    private const string DocumentUploadedClientCall = "DocumentUploaded";
+    private const string GlobalDocumentUploadedClientCall = "GlobalDocumentUploaded";
+    private const string ChatDocumentUploadedClientCall = "ChatDocumentUploaded";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -58,12 +61,14 @@ public class DocumentImportController : ControllerBase
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ChatSessionRepository sessionRepository,
         ChatMemorySourceRepository sourceRepository,
+        ChatMessageRepository messageRepository,
         ChatParticipantRepository participantRepository)
     {
         this._logger = logger;
         this._options = documentMemoryOptions.Value;
         this._sessionRepository = sessionRepository;
         this._sourceRepository = sourceRepository;
+        this._messageRepository = messageRepository;
         this._participantRepository = participantRepository;
     }
 
@@ -102,62 +107,146 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest("User does not have access to the chat session.");
         }
 
+        var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
+        var fileContent = string.Empty;
+        switch (fileType)
+        {
+            case SupportedFileType.Txt:
+                fileContent = await this.ReadTxtFileAsync(formFile);
+                break;
+            case SupportedFileType.Pdf:
+                fileContent = this.ReadPdfFile(formFile);
+                break;
+            default:
+                return this.BadRequest($"Unsupported file type: {fileType}");
+        }
+
         this._logger.LogInformation("Importing document {0}", formFile.FileName);
 
+        // Create memory source
+        var memorySource = await this.TryCreateAndUpsertMemorySourceAsync(documentImportForm, formFile);
+        if (memorySource == null)
+        {
+            return this.BadRequest("Fail to create memory source.");
+        }
+
+        // Parse document content to memory
         try
         {
-            var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
-            var fileContent = string.Empty;
-            switch (fileType)
-            {
-                case SupportedFileType.Txt:
-                    fileContent = await this.ReadTxtFileAsync(formFile);
-                    break;
-                case SupportedFileType.Pdf:
-                    fileContent = this.ReadPdfFile(formFile);
-                    break;
-                default:
-                    return this.BadRequest($"Unsupported file type: {fileType}");
-            }
-
-            var memorySource = new MemorySource(
-                documentImportForm.ChatId.ToString(),
-                formFile.FileName,
-                documentImportForm.UserId,
-                MemorySourceType.File,
-                null);
-
-            await this._sourceRepository.UpsertAsync(memorySource);
-
-            try
-            {
-                await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, memorySource.Id);
-            }
-            catch (Exception ex) when (!ex.IsCriticalException())
-            {
-                await this._sourceRepository.DeleteAsync(memorySource);
-                throw;
-            }
+            await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, memorySource.Id);
         }
-        catch (ArgumentOutOfRangeException ex)
+        catch (Exception ex) when (!ex.IsCriticalException())
         {
+            await this._sourceRepository.DeleteAsync(memorySource);
             return this.BadRequest(ex.Message);
         }
 
         // Broadcast the document uploaded event to other users.
         if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat)
         {
+            var chatMessage = await this.TryCreateDocumentUploadMessage(memorySource, documentImportForm);
+            if (chatMessage == null)
+            {
+                // It's Ok to have the message not created.
+                return this.Ok();
+            }
+
             var chatId = documentImportForm.ChatId.ToString();
             await messageRelayHubContext.Clients.Group(chatId)
-                .SendAsync(DocumentUploadedClientCall, chatId, documentImportForm.UserId, formFile.FileName);
-        }
-        else
-        {
-            await messageRelayHubContext.Clients.All
-                .SendAsync(DocumentUploadedClientCall, string.Empty, documentImportForm.UserId, formFile.FileName);
+                .SendAsync(ChatDocumentUploadedClientCall, chatMessage, chatId);
+
+            return this.Ok(chatMessage);
         }
 
+        await messageRelayHubContext.Clients.All
+            .SendAsync(GlobalDocumentUploadedClientCall, formFile.FileName, documentImportForm.UserName);
+
         return this.Ok();
+    }
+
+    /// <summary>
+    /// Try to create and upsert a memory source.
+    /// </summary>
+    /// <param name="documentImportForm">The document upload form that contains additional necessary info</param>
+    /// <param name="formFile">The file to be uploaded</param>
+    /// <returns>A MemorySource object if successful, null otherwise</returns>
+    private async Task<MemorySource?> TryCreateAndUpsertMemorySourceAsync(
+        DocumentImportForm documentImportForm,
+        IFormFile formFile)
+    {
+        var memorySource = new MemorySource(
+            documentImportForm.ChatId.ToString(),
+            formFile.FileName,
+            documentImportForm.UserId,
+            MemorySourceType.File,
+            formFile.Length,
+            null);
+
+        try
+        {
+            await this._sourceRepository.UpsertAsync(memorySource);
+            return memorySource;
+        }
+        catch (Exception ex) when (ex is ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Try to create a chat message that represents document upload.
+    /// </summary>
+    /// <param name="memorySource">The MemorySource object that the document content is linked to</param>
+    /// <param name="documentImportForm">The document upload form that contains additional necessary info</param>
+    /// <returns>A ChatMessage object if successful, null otherwise</returns>
+    private async Task<ChatMessage?> TryCreateDocumentUploadMessage(
+        MemorySource memorySource,
+        DocumentImportForm documentImportForm)
+    {
+        // Create chat message that represents document upload
+        var content = new DocumentMessageContent()
+        {
+            Name = memorySource.Name,
+            Size = this.GetReadableByteString(memorySource.Size)
+        };
+
+        var chatMessage = new ChatMessage(
+            memorySource.SharedBy,
+            documentImportForm.UserName,
+            memorySource.ChatId,
+            content.ToString(),
+            "",
+            ChatMessage.AuthorRoles.User,
+            ChatMessage.ChatMessageType.Document
+        );
+
+        try
+        {
+            await this._messageRepository.CreateAsync(chatMessage);
+            return chatMessage;
+        }
+        catch (Exception ex) when (ex is ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Converts a `long` byte count to a human-readable string.
+    /// </summary>
+    /// <param name="bytes">Byte count</param>
+    /// <returns>Human-readable string of bytes</returns>
+    private string GetReadableByteString(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        int i;
+        double dblsBytes = bytes;
+        for (i = 0; i < sizes.Length && bytes >= 1024; i++, bytes /= 1024)
+        {
+            dblsBytes = bytes / 1024.0;
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, "{0:0.#}{1}", dblsBytes, sizes[i]);
     }
 
     /// <summary>

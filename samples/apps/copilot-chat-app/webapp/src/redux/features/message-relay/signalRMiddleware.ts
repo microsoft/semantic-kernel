@@ -3,9 +3,10 @@
 import * as signalR from "@microsoft/signalr";
 import { AlertType } from "../../../libs/models/AlertType";
 import { IChatUser } from "../../../libs/models/ChatUser";
+import { PlanState } from "../../../libs/models/Plan";
 import { IAskResult } from "../../../libs/semantic-kernel/model/AskResult";
 import { addAlert } from "../app/appSlice";
-import { AuthorRoles, ChatMessageState, IChatMessage } from './../../../libs/models/ChatMessage';
+import { AuthorRoles, IChatMessage } from './../../../libs/models/ChatMessage';
 import { isPlan } from './../../../libs/utils/PlanUtils';
 import { getSelectedChatID } from './../../app/store';
 
@@ -16,7 +17,8 @@ const enum SignalRCallbackMethods {
     UserJoined = "UserJoined",
     ReceiveUserTypingState = "ReceiveUserTypingState",
     ReceiveBotTypingState = "ReceiveBotTypingState",
-    DocumentUploaded = "DocumentUploaded",
+    GlobalDocumentUploaded = "GlobalDocumentUploaded",
+    ChatDocumentUploaded = "ChatDocumentUploaded",
 }
 
 // Set up a SignalR connection to the messageRelayHub on the server
@@ -138,7 +140,7 @@ export const registerSignalREvents = async (store: any) => {
             authorRole: AuthorRoles.Bot,
             prompt: askResult.variables.find((v) => v.key === 'prompt')?.value,
             state: (isPlan(askResult.value) && isPlanForLoggedInUser)
-                ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
+                ? PlanState.PlanApprovalRequired : PlanState.NoOp,
         } as IChatMessage;
 
         store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
@@ -163,19 +165,11 @@ export const registerSignalREvents = async (store: any) => {
         store.dispatch({ type: "conversations/updateBotIsTypingFromServer", payload: { chatId, isTyping } });
     });
 
-    hubConnection.on(SignalRCallbackMethods.DocumentUploaded, (chatId: string, userId: string, fileName: string) => {
-        if (chatId === '') {
-            // This is a document uploaded to all chats.
-            const alertMessage = `${userId} uploaded ${fileName} to all chats.`;
-            store.dispatch(addAlert({ message: alertMessage, type: AlertType.Success }));
-        } else {
-            // This is a document uploaded to a specific chat.
-            if (chatId in store.getState().conversations.conversations) {
-                const alertMessage = `${userId} uploaded ${fileName} to chat ${chatId}.`;
-                store.dispatch(addAlert({ message: alertMessage, type: AlertType.Success }));
-            } else {
-                console.log(`Document uploaded to chat ${chatId} but chat does not exist in local store.`);
-            }
-        }
+    hubConnection.on(SignalRCallbackMethods.GlobalDocumentUploaded, (fileName: string, userName: string) => {
+        store.dispatch(addAlert({ message: `${userName} uploaded ${fileName} to all chats`, type: AlertType.Info }));
+    });
+
+    hubConnection.on(SignalRCallbackMethods.ChatDocumentUploaded, (message: IChatMessage, chatId: string) => {
+        store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
     }); 
 };

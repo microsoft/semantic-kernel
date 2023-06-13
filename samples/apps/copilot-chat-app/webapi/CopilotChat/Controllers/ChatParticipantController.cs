@@ -66,9 +66,6 @@ public class ChatParticipantController : ControllerBase
         {
             return this.BadRequest("Chat session does not exist.");
         }
-        {
-            return this.BadRequest("Chat session does not exist.");
-        }
 
         // Make sure the user is not already in the chat session.
         if (await this._chatParticipantRepository.IsUserInChatAsync(userId, chatId))

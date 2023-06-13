@@ -251,17 +251,19 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "userName", Description = "Name of the user")]
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     [SKFunctionContextParameter(Name = "proposedPlan", Description = "Previously proposed plan that is approved")]
+    [SKFunctionContextParameter(Name = "messageType", Description = "Type of the message")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
         // TODO: check if user has access to the chat
         var userId = context["userId"];
         var userName = context["userName"];
         var chatId = context["chatId"];
+        var messageType = context["messageType"];
 
         // Save this new message to memory such that subsequent chat responses can use it
         try
         {
-            await this.SaveNewMessageAsync(message, userId, userName, chatId);
+            await this.SaveNewMessageAsync(message, userId, userName, chatId, messageType);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -273,6 +275,16 @@ public class ChatSkill
         // Clone the context to avoid modifying the original context variables.
         var chatContext = Utilities.CopyContextWithVariablesClone(context);
         chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
+
+        // Check if plan exists in ask's context variables.
+        // If plan was returned at this point, that means it was approved or cancelled.
+        // Update the response previously saved in chat history with state
+        if (context.Variables.TryGetValue("proposedPlan", out string? planJson)
+            && !string.IsNullOrWhiteSpace(planJson)
+            && context.Variables.TryGetValue("responseMessageId", out string? messageId))
+        {
+            await this.UpdateResponseAsync(planJson, messageId);
+        }
 
         var response = chatContext.Variables.ContainsKey("userCancelledPlan")
             ? "I am sorry the plan did not meet your goals."
@@ -294,7 +306,9 @@ public class ChatSkill
         // Save this response to memory such that subsequent chat responses can use it
         try
         {
-            await this.SaveNewResponseAsync(response, prompt, chatId);
+            ChatMessage botMessage = await this.SaveNewResponseAsync(response, prompt, chatId);
+            context.Variables.Set("messageId", botMessage.Id);
+            context.Variables.Set("messageType", botMessage.Type.ToString());
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -351,8 +365,7 @@ public class ChatSkill
         // If plan is suggested, send back to user for approval before running
         if (this._externalInformationSkill.ProposedPlan != null)
         {
-            return JsonSerializer.Serialize<ProposedPlan>(
-                new ProposedPlan(this._externalInformationSkill.ProposedPlan));
+            return JsonSerializer.Serialize<ProposedPlan>(this._externalInformationSkill.ProposedPlan);
         }
 
         // 4. Query relevant semantic memories
@@ -450,6 +463,7 @@ public class ChatSkill
     /// </summary>
     private async Task<string> GetUserIntentAsync(SKContext context)
     {
+        // TODO: Regenerate user intent if plan was modified
         if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
             var contextVariables = new ContextVariables();
@@ -565,14 +579,10 @@ public class ChatSkill
     /// <summary>
     /// Helper function create the correct context variables to acquire external information.
     /// </summary>
-    private Task<string> AcquireExternalInformationAsync(SKContext context, string userIntent, int tokenLimit)
+    private async Task<string> AcquireExternalInformationAsync(SKContext context, string userIntent, int tokenLimit)
     {
         var contextVariables = context.Variables.Clone();
         contextVariables.Set("tokenLimit", tokenLimit.ToString(new NumberFormatInfo()));
-        if (context.Variables.TryGetValue("proposedPlan", out string? proposedPlan))
-        {
-            contextVariables.Set("proposedPlan", proposedPlan);
-        }
 
         var planContext = new SKContext(
             contextVariables,
@@ -582,7 +592,7 @@ public class ChatSkill
             context.CancellationToken
         );
 
-        var plan = this._externalInformationSkill.AcquireExternalInformationAsync(userIntent, planContext);
+        var plan = await this._externalInformationSkill.AcquireExternalInformationAsync(userIntent, planContext);
 
         // Propagate the error
         if (planContext.ErrorOccurred)
@@ -600,7 +610,8 @@ public class ChatSkill
     /// <param name="userId">The user ID</param>
     /// <param name="userName"></param>
     /// <param name="chatId">The chat ID</param>
-    private async Task SaveNewMessageAsync(string message, string userId, string userName, string chatId)
+    /// <param name="type">Type of the message</param>
+    private async Task<ChatMessage> SaveNewMessageAsync(string message, string userId, string userName, string chatId, string type)
     {
         // Make sure the chat exists.
         if (!await this._chatSessionRepository.TryFindByIdAsync(chatId, v => _ = v))
@@ -608,8 +619,20 @@ public class ChatSkill
             throw new ArgumentException("Chat session does not exist.");
         }
 
-        var chatMessage = new ChatMessage(userId, userName, chatId, message);
+        var chatMessage = new ChatMessage(
+            userId,
+            userName,
+            chatId,
+            message,
+            "",
+            ChatMessage.AuthorRoles.User,
+            // Default to a standard message if the `type` is not recognized
+            Enum.TryParse(type, out ChatMessage.ChatMessageType typeAsEnum) && Enum.IsDefined(typeof(ChatMessage.ChatMessageType), typeAsEnum)
+                ? typeAsEnum
+                : ChatMessage.ChatMessageType.Message);
+
         await this._chatMessageRepository.CreateAsync(chatMessage);
+        return chatMessage;
     }
 
     /// <summary>
@@ -618,7 +641,8 @@ public class ChatSkill
     /// <param name="response">Response from the chat.</param>
     /// <param name="prompt">Prompt used to generate the response.</param>
     /// <param name="chatId">The chat ID</param>
-    private async Task SaveNewResponseAsync(string response, string prompt, string chatId)
+    /// <returns>The created chat message.</returns>
+    private async Task<ChatMessage> SaveNewResponseAsync(string response, string prompt, string chatId)
     {
         // Make sure the chat exists.
         if (!await this._chatSessionRepository.TryFindByIdAsync(chatId, v => _ = v))
@@ -628,6 +652,22 @@ public class ChatSkill
 
         var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response, prompt);
         await this._chatMessageRepository.CreateAsync(chatMessage);
+
+        return chatMessage;
+    }
+
+    /// <summary>
+    /// Updates previously saved response in the chat history.
+    /// </summary>
+    /// <param name="updatedResponse">Updated response from the chat.</param>
+    /// <param name="messageId">The chat message ID</param>
+    private async Task UpdateResponseAsync(string updatedResponse, string messageId)
+    {
+        // Make sure the chat exists.
+        var chatMessage = await this._chatMessageRepository.FindByIdAsync(messageId);
+        chatMessage.Content = updatedResponse;
+
+        await this._chatMessageRepository.UpsertAsync(chatMessage);
     }
 
     /// <summary>

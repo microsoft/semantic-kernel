@@ -5,8 +5,8 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import debug from 'debug';
 import React from 'react';
 import { Constants } from '../../Constants';
-import { AuthorRoles } from '../../libs/models/ChatMessage';
-import { useChat } from '../../libs/useChat';
+import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
+import { GetResponseOptions, useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateConversationFromUser } from '../../redux/features/conversations/conversationsSlice';
@@ -25,7 +25,7 @@ const useClasses = makeStyles({
         height: '100%',
     },
     scroll: {
-        ...shorthands.margin('4px'),
+        ...shorthands.margin(tokens.spacingVerticalXS),
         ...SharedStyles.scroll,
     },
     history: {
@@ -52,6 +52,16 @@ export const ChatRoom: React.FC = () => {
     const scrollViewTargetRef = React.useRef<HTMLDivElement>(null);
     const scrollTargetRef = React.useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = React.useState(true);
+
+    const [isDraggingOver, setIsDraggingOver] = React.useState(false);
+    const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+    };
+    const onDragLeave = (e: React.DragEvent<HTMLDivElement | HTMLTextAreaElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(false);
+    };
 
     const chat = useChat();
 
@@ -82,31 +92,27 @@ export const ChatRoom: React.FC = () => {
         return null;
     }
 
-    const handleSubmit = async (
-        value: string,
-        approvedPlanJson?: string,
-        planUserIntent?: string,
-        userCancelledPlan?: boolean,
-    ) => {
+    const handleSubmit = async (options: GetResponseOptions) => {
         log('submitting user chat message');
 
-        const chatInput = {
+        const chatInput: IChatMessage = {
             timestamp: new Date().getTime(),
             userId: account?.homeAccountId,
             userName: (account?.name ?? account?.username) as string,
-            content: value,
+            content: options.value,
+            type: options.messageType,
             authorRole: AuthorRoles.User,
         };
 
         dispatch(updateConversationFromUser({ message: chatInput }));
 
-        await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userCancelledPlan);
+        await chat.getResponse(options);
 
         setShouldAutoScroll(true);
     };
 
     return (
-        <div className={classes.root}>
+        <div className={classes.root} onDragEnter={onDragEnter} onDragOver={onDragEnter} onDragLeave={onDragLeave}>
             <div ref={scrollViewTargetRef} className={classes.scroll}>
                 <div ref={scrollViewTargetRef} className={classes.history}>
                     <ChatHistory messages={messages} onGetResponse={handleSubmit} />
@@ -116,7 +122,11 @@ export const ChatRoom: React.FC = () => {
                 </div>
             </div>
             <div className={classes.input}>
-                <ChatInput onSubmit={handleSubmit} />
+                <ChatInput
+                    isDraggingOver={isDraggingOver}
+                    onDragLeave={onDragLeave}
+                    onSubmit={handleSubmit}
+                />
             </div>
         </div>
     );
