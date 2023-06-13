@@ -169,7 +169,7 @@ public class ChatHistoryController : ControllerBase
     {
         // TODO: the code mixes strings and Guid without being explicit about the serialization format
         var chatMessages = await this._messageRepository.FindByChatIdAsync(chatId.ToString());
-        if (chatMessages.Count() == 0)
+        if (!chatMessages.Any())
         {
             return this.NotFound($"No messages found for chat id '{chatId}'.");
         }
