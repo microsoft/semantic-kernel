@@ -84,8 +84,8 @@ public class CalendarSkill
     [SKFunctionInput(Description = "Event subject")]
     [SKFunctionContextParameter(Name = Parameters.Start, Description = "Event start date/time as DateTimeOffset")]
     [SKFunctionContextParameter(Name = Parameters.End, Description = "Event end date/time as DateTimeOffset")]
-    [SKFunctionContextParameter(Name = Parameters.Location, Description = "Event location (optional)")]
-    [SKFunctionContextParameter(Name = Parameters.Content, Description = "Event content/body (optional)")]
+    [SKFunctionContextParameter(Name = Parameters.Location, Description = "Event location", IsRequired = false)]
+    [SKFunctionContextParameter(Name = Parameters.Content, Description = "Event content/body", IsRequired = false)]
     [SKFunctionContextParameter(Name = Parameters.Attendees, Description = "Event attendees, separated by ',' or ';'.")]
     public async Task AddEventAsync(string subject, SKContext context)
     {

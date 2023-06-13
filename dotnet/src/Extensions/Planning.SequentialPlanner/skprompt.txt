@@ -17,24 +17,24 @@ To create a plan, follow these steps:
   EmailConnector.LookupContactEmail:
     description: looks up the a contact and retrieves their email address
     inputs:
-    - input: the name to look up
+    - input: the name to look up (required)
 
   EmailConnector.EmailTo:
     description: email the input text to a recipient
     inputs:
-    - input: the text to email
-    - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
+    - input: the text to email. (required)
+    - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'. (required)
 
   LanguageHelpers.TranslateTo:
     description: translate the input to another language
     inputs:
-    - input: the text to translate
-    - translate_to_language: the language to translate to
+    - input: the text to translate. (required)
+    - translate_to_language: the language to translate to. (required)
 
   WriterSkill.Summarize:
     description: summarize input text
     inputs:
-    - input: the text to summarize
+    - input: the text to summarize. (required)
 
 [END AVAILABLE FUNCTIONS]
 

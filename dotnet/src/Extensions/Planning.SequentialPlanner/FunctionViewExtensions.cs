@@ -16,8 +16,11 @@ internal static class FunctionViewExtensions
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
-            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $" (default value: {parameter.DefaultValue})";
-            return $"  - {parameter.Name}: {parameter.Description}{defaultValueString}";
+            var requiredString = parameter.IsRequired ? "required" : string.Empty;
+            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $"default value: {parameter.DefaultValue}";
+            var comma = !string.IsNullOrEmpty(requiredString) && !string.IsNullOrEmpty(defaultValueString) ? ", " : string.Empty;
+            var detailsString = $" ({requiredString}{comma}{defaultValueString})";
+            return $"  - {parameter.Name}: {parameter.Description}{detailsString}";
         }));
 
         return $@"{function.ToFullyQualifiedName()}:

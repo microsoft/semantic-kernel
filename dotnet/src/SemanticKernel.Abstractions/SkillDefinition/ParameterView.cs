@@ -40,6 +40,11 @@ public sealed class ParameterView
     public string DefaultValue { get; set; } = string.Empty;
 
     /// <summary>
+    /// Whether the parameter is required
+    /// </summary>
+    public bool IsRequired { get; set; } = true;
+
+    /// <summary>
     /// Constructor
     /// </summary>
     public ParameterView()
@@ -52,16 +57,19 @@ public sealed class ParameterView
     /// <param name="name">Parameter name. The name must be alphanumeric (underscore is the only special char allowed).</param>
     /// <param name="description">Parameter description</param>
     /// <param name="defaultValue">Default parameter value, if not provided</param>
+    /// <param name="isRequired">Whether the parameter is required.</param>
     public ParameterView(
         string name,
         string description,
-        string defaultValue)
+        string defaultValue,
+        bool isRequired = true)
     {
         Verify.ValidFunctionParamName(name);
 
         this.Name = name;
         this.Description = description;
         this.DefaultValue = defaultValue;
+        this.IsRequired = isRequired;
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

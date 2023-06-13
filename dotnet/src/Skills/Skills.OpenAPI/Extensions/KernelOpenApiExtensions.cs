@@ -318,8 +318,9 @@ public static class KernelOpenApiExtensions
             .Select(p => new ParameterView
             {
                 Name = p.AlternativeName ?? p.Name,
-                Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
-                DefaultValue = p.DefaultValue ?? string.Empty
+                Description = $"{p.Description ?? p.Name}",
+                DefaultValue = p.DefaultValue ?? string.Empty,
+                IsRequired = p.IsRequired
             })
             .ToList();
 

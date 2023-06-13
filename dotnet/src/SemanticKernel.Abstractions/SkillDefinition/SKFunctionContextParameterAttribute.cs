@@ -42,6 +42,11 @@ public sealed class SKFunctionContextParameterAttribute : Attribute
     public string DefaultValue { get; set; } = string.Empty;
 
     /// <summary>
+    /// Whether the parameter is required.
+    /// </summary>
+    public bool IsRequired { get; set; } = true;
+
+    /// <summary>
     /// Creates a parameter view, using information from an instance of this class.
     /// </summary>
     /// <returns>Parameter view.</returns>
@@ -56,7 +61,8 @@ public sealed class SKFunctionContextParameterAttribute : Attribute
         {
             Name = this.Name,
             Description = this.Description,
-            DefaultValue = this.DefaultValue
+            DefaultValue = this.DefaultValue,
+            IsRequired = this.IsRequired
         };
     }
 }

@@ -206,14 +206,14 @@ TimeSkill.Time
 No parameters.
 // Write a file.
 FileIOSkill.WriteAsync
-Parameter ""path"": Destination file. (default value: sample.txt)
-Parameter ""content"": File content.
+Parameter ""path"": Destination file. (required, default value: sample.txt)
+Parameter ""content"": File content. (required)
 // Makes a POST request to a uri.
 HttpSkill.PostAsync
-Parameter ""body"": The body of the request.
+Parameter ""body"": The body of the request. (required)
 // Read a file.
 FileIOSkill.ReadAsync
-Parameter ""path"": Source file.
+Parameter ""path"": Source file. (required)
 - End list of functions.
 Goal: tell me a joke.
 {""plan"":{
@@ -252,8 +252,11 @@ Goal: tell me a joke.
                 foreach (var p in func.Parameters)
                 {
                     var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description;
-                    var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
-                    list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
+                    var requiredString = p.IsRequired ? "required" : string.Empty;
+                    var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $"default value: {p.DefaultValue}";
+                    var comma = !string.IsNullOrEmpty(requiredString) && !string.IsNullOrEmpty(defaultValueString) ? ", " : string.Empty;
+                    var detailsString = $" ({requiredString}{comma}{defaultValueString})";
+                    list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)}{detailsString}");
                 }
             }
         }

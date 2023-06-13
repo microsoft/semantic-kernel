@@ -73,7 +73,7 @@ public class TaskListSkill
     /// </summary>
     [SKFunction("Add a task to a task list with an optional reminder.")]
     [SKFunctionInput(Description = "Title of the task.")]
-    [SKFunctionContextParameter(Name = Parameters.Reminder, Description = "Reminder for the task in DateTimeOffset (optional)")]
+    [SKFunctionContextParameter(Name = Parameters.Reminder, Description = "Reminder for the task in DateTimeOffset", IsRequired = false)]
     public async Task AddTaskAsync(string title, SKContext context)
     {
         TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(context.CancellationToken).ConfigureAwait(false);
@@ -100,7 +100,7 @@ public class TaskListSkill
     /// Get tasks from the default task list.
     /// </summary>
     [SKFunction("Get tasks from the default task list.")]
-    [SKFunctionContextParameter(Name = Parameters.IncludeCompleted, Description = "Whether to include completed tasks (optional)", DefaultValue = "false")]
+    [SKFunctionContextParameter(Name = Parameters.IncludeCompleted, Description = "Whether to include completed tasks", IsRequired = false, DefaultValue = "false")]
     public async Task<string> GetDefaultTasksAsync(SKContext context)
     {
         TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(context.CancellationToken)
