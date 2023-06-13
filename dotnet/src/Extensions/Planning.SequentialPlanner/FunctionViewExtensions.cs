@@ -18,8 +18,7 @@ internal static class FunctionViewExtensions
         {
             var requiredString = parameter.IsRequired ? "required" : string.Empty;
             var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $"default value: {parameter.DefaultValue}";
-            var comma = !string.IsNullOrEmpty(requiredString) && !string.IsNullOrEmpty(defaultValueString) ? ", " : string.Empty;
-            var detailsString = $" ({requiredString}{comma}{defaultValueString})";
+            var detailsString = $" ({AddComma(requiredString, defaultValueString)})";
             return $"  - {parameter.Name}: {parameter.Description}{detailsString}";
         }));
 
@@ -48,5 +47,16 @@ internal static class FunctionViewExtensions
     {
         var inputs = string.Join("\n", function.Parameters.Select(p => $"    - {p.Name}: {p.Description}"));
         return $"{function.Name}:\n  description: {function.Description}\n  inputs:\n{inputs}";
+    }
+
+    /// <summary>
+    /// Adds comma between two strings if both are not empty/null.
+    /// </summary>
+    /// <param name="x">First string.</param>
+    /// /// <param name="y">sSecond string.</param>
+    /// <returns>A string containing both inputs separated by a comma and space.</returns>
+    internal static string AddComma(string x, string y)
+    {
+        return !string.IsNullOrEmpty(x) && !string.IsNullOrEmpty(y) ? $"{x}, {y}" : $"{x}{y}";
     }
 }

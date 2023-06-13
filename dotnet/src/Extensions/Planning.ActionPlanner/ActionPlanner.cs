@@ -254,8 +254,7 @@ Goal: tell me a joke.
                     var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description;
                     var requiredString = p.IsRequired ? "required" : string.Empty;
                     var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $"default value: {p.DefaultValue}";
-                    var comma = !string.IsNullOrEmpty(requiredString) && !string.IsNullOrEmpty(defaultValueString) ? ", " : string.Empty;
-                    var detailsString = $" ({requiredString}{comma}{defaultValueString})";
+                    var detailsString = $" ({AddComma(requiredString, defaultValueString)})";
                     list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)}{detailsString}");
                 }
             }
@@ -265,5 +264,16 @@ Goal: tell me a joke.
     private static string AddPeriod(string x)
     {
         return x.EndsWith(".", StringComparison.Ordinal) ? x : $"{x}.";
+    }
+
+    /// <summary>
+    /// Adds comma between two strings if both are not empty/null.
+    /// </summary>
+    /// <param name="x">First string.</param>
+    /// /// <param name="y">sSecond string.</param>
+    /// <returns>A string containing both inputs separated by a comma and space.</returns>
+    private static string AddComma(string x, string y)
+    {
+        return !string.IsNullOrEmpty(x) && !string.IsNullOrEmpty(y) ? $"{x}, {y}" : $"{x}{y}";
     }
 }
