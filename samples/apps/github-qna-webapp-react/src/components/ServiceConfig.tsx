@@ -155,7 +155,7 @@ const ServiceConfig: FC<IData> = ({
                                 key: d.value,
                             });
                         }}
-                        placeholder="Enter your OpenAI key here, i.e.: gpt-35-turbo"
+                        placeholder="Enter your OpenAI key here"
                     />
                     <ModelConfig
                         isOpenAI={true}
