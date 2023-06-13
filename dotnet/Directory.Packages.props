@@ -5,7 +5,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.2" />
+    <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-alpha.20230522.2" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="[7.0.0, )" />
     <PackageVersion Include="NRedisStack" Version="0.6.1" />
