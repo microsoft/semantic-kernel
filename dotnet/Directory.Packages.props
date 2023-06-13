@@ -20,7 +20,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0-preview.5.23280.8" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
