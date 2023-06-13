@@ -332,10 +332,10 @@ public static class KernelOpenApiExtensions
             if (payloadDescription != null && payloadDescription.Count > 0)
             {
                 var payloadJsonSample = JsonConvert.SerializeObject(payloadDescription, Formatting.None);
-                var payloadParameter = parameters.FirstOrDefault(x => x.Name == "example" || x.Name == "Example");
+                var payloadParameter = parameters.FirstOrDefault(x => x.Name == "payload" || x.Name == "payload");
 
                 // Aggregate JSON properties descriptions
-                var payloadJsonDescription = string.Join("\n", propertiesDescription);
+                var payloadJsonDescription = string.Join("\n        ", propertiesDescription);
 
                 if (payloadParameter != null)
                 {
