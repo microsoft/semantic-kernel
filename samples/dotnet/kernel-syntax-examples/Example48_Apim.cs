@@ -35,7 +35,7 @@ public static class Example48_Apim
         // Configure OpenAIClient to use
         // - Custom HttpClient with subscription key header
         // - Diagnostics to log error response headers from APIM to aid problem determination
-        // - Authentication using BearerTokenCredential retreived via interactive browser login
+        // - Authentication using BearerTokenCredential retrieved via interactive browser login
         var clientOptions = new OpenAIClientOptions()
         {
             Transport = new HttpClientTransport(httpClient),
