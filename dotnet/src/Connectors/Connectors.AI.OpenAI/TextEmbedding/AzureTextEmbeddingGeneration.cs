@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -12,12 +13,12 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
 /// <summary>
-/// Azure OpenAI text embedding service.
+/// Azure OpenAI text embedding client.
 /// </summary>
 public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextEmbeddingGeneration
 {
     /// <summary>
-    /// Creates a new AzureTextCompletion client instance using API Key auth
+    /// Creates a new AzureTextEmbeddingGeneration client instance using API Key auth
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -34,7 +35,7 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
     }
 
     /// <summary>
-    /// Creates a new AzureTextCompletion client instance supporting AAD auth
+    /// Creates a new AzureTextEmbeddingGeneration client instance supporting AAD auth
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -47,6 +48,19 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
         TokenCredential credential,
         HttpClient? httpClient = null,
         ILogger? logger = null) : base(modelId, endpoint, credential, httpClient, logger)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new AzureTextEmbeddingGeneration client instance using the specified OpenAIClient
+    /// </summary>
+    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="logger">Application logger</param>
+    public AzureTextEmbeddingGeneration(
+        string modelId,
+        OpenAIClient openAIClient,
+        ILogger? logger = null) : base(modelId, openAIClient, logger)
     {
     }
 
