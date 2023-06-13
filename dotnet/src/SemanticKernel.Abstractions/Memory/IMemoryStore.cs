@@ -137,7 +137,7 @@ public interface IMemoryStore
 /// <summary>
 /// An interface for storing and retrieving indexed <see cref="MemoryRecord"/> objects in a data store with support for metadata filtering.
 /// </summary>
-/// <typeparam name="TFilter">Type of filter used for metada filtering.</typeparam>
+/// <typeparam name="TFilter">Type of filter used for metadata filtering.</typeparam>
 public interface IMemoryStore<TFilter> : IMemoryStore
 {
     /// <summary>
