@@ -22,6 +22,7 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using Microsoft.SemanticKernel.Text;
+using Newtonsoft.Json;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace
@@ -330,7 +331,7 @@ public static class KernelOpenApiExtensions
             var payloadDescription = KernelOpenApiExtensions.ExtractProperty(operation.Payload.Properties, ref propertiesDescription);
             if (payloadDescription != null && payloadDescription.Count > 0)
             {
-                var payloadJsonSample = payloadDescription.ToJson();
+                var payloadJsonSample = JsonConvert.SerializeObject(payloadDescription, Formatting.None);
                 var payloadParameter = parameters.FirstOrDefault(x => x.Name == "example" || x.Name == "Example");
 
                 // Aggregate JSON properties descriptions
