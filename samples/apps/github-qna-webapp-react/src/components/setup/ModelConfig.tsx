@@ -83,8 +83,7 @@ const ModelConfig: FC<IData> = ({
 
                 if (modelType === ModelType.Embeddings) {
                     setSuggestedModels(embeddingsModels.sort((a, b) => a.id.localeCompare(b.id)));
-                    otherModels = otherModels.concat(chatCompletionModels).sort((a, b) => a.id.localeCompare(b.id));
-                    setModelIds(otherModels);
+                    setModelIds(otherModels.concat(chatCompletionModels).sort((a, b) => a.id.localeCompare(b.id)));
                 } else {
                     setSuggestedModels(chatCompletionModels.sort((a, b) => a.id.localeCompare(b.id)));
                     setModelIds(otherModels.concat(embeddingsModels).sort((a, b) => a.id.localeCompare(b.id)));
