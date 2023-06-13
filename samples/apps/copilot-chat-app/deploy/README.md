@@ -22,7 +22,7 @@ To use deploy a new Azure OpenAI resource, run `./deploy-azure.ps1` with `-AISer
 
 To use an an OpenAI account, run `./deploy-azure.ps1` with `-AIService` set to `OpenAI` and include `-AIApiKey`.
 
-## Using an existing Azure OpenAI resource or OpenAI account
+## Existing Azure OpenAI resource
 ## PowerShell
 ```powershell
 ./deploy-azure.ps1 -DeploymentName YOUR_DEPLOYMENT_NAME -Subscription YOUR_SUBSCRIPTION_ID -AIService {AzureOpenAI or OpenAI} -AIApiKey YOUR_AI_KEY -AIEndpoint YOUR_AZURE_OPENAI_ENDPOINT
@@ -37,7 +37,7 @@ chmod +x ./deploy.sh
 > `--ai-endpoint` is only required when using Azure OpenAI.
 
 ## Azure Portal
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fadrianwyatt%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fadrianwyatt%2Fsemantic-kernel%2Fsk-pipelines%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
 
 
 TODO VERIFY EVERYTHING BELOW THIS LINE

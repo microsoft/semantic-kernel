@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "13177392351804756243"
+      "templateHash": "4009752638936540324"
     }
   },
   "parameters": {
@@ -88,7 +88,7 @@
     },
     "deployNewAzureOpenAI": {
       "type": "bool",
-      "defaultValue": true,
+      "defaultValue": false,
       "metadata": {
         "description": "Whether to deploy a new Azure OpenAI instance"
       }

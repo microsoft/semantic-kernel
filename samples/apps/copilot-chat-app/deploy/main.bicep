@@ -40,7 +40,7 @@ param aiApiKey string = ''
 param webApiKey string = newGuid()
 
 @description('Whether to deploy a new Azure OpenAI instance')
-param deployNewAzureOpenAI bool = true
+param deployNewAzureOpenAI bool = false
 
 @description('Whether to deploy Cosmos DB for persistent chat storage')
 param deployCosmosDB bool = true
