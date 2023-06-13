@@ -2,13 +2,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Resources;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
@@ -264,6 +267,8 @@ public static class KernelOpenApiExtensions
     {
         var restOperationParameters = operation.GetParameters(serverUrlOverride);
 
+        var logger = kernel.Log ?? NullLogger.Instance;
+
         async Task<SKContext> ExecuteAsync(SKContext context)
         {
             try
@@ -301,7 +306,7 @@ public static class KernelOpenApiExtensions
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
+                logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
                     ex.Message);
                 context.Fail(ex.Message, ex);
             }
@@ -323,12 +328,51 @@ public static class KernelOpenApiExtensions
             parameters: parameters,
             description: operation.Description,
             skillName: skillName,
-            functionName: operation.Id,
+            functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             isSensitive: false,
-            log: kernel.Log);
+            log: logger);
 
         return kernel.RegisterCustomFunction(function);
     }
+
+    /// <summary>
+    /// Converts operation id to valid SK Function name.
+    /// A function name can contain only ASCII letters, digits, and underscores.
+    /// </summary>
+    /// <param name="operationId">The operation id.</param>
+    /// <param name="logger">The logger.</param>
+    /// <returns>Valid SK Function name.</returns>
+    private static string ConvertOperationIdToValidFunctionName(string operationId, ILogger logger)
+    {
+        try
+        {
+            Verify.ValidFunctionName(operationId);
+            return operationId;
+        }
+        catch (KernelException)
+        {
+        }
+
+        // Tokenize operation id on forward and back slashes
+        string[] tokens = operationId.Split('/', '\\');
+        string result = string.Empty;
+
+        foreach (string token in tokens)
+        {
+            // Removes all characters that are not ASCII letters, digits, and underscores.
+            string formattedToken = s_removeInvalidCharsRegex.Replace(token, "");
+            result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
+        }
+
+        logger.LogInformation("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{1}\" when invoking function.", operationId, result);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Used to convert operationId to SK function names.
+    /// </summary>
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
 
     #endregion
 }

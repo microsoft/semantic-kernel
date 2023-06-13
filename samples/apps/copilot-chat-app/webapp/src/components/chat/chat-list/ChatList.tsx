@@ -13,6 +13,7 @@ import {
 import { Tree, TreeItem } from '@fluentui/react-components/unstable';
 import { Dismiss20Regular, Filter20Regular } from '@fluentui/react-icons';
 import { FC, useEffect, useState } from 'react';
+import { ChatMessageType } from '../../../libs/models/ChatMessage';
 import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
@@ -146,7 +147,7 @@ export const ChatList: FC = () => {
                 {Object.keys(conversationsView).map((id) => {
                     const convo = conversations[id];
                     const messages = convo.messages;
-                    const lastMessage = convo.messages.length - 1;
+                    const lastMessage = messages[convo.messages.length - 1];
                     const isSelected = id === selectedId;
 
                     return (
@@ -159,12 +160,14 @@ export const ChatList: FC = () => {
                                 id={id}
                                 isSelected={isSelected}
                                 header={convo.title}
-                                timestamp={convo.lastUpdatedTimestamp ?? messages[lastMessage].timestamp}
+                                timestamp={convo.lastUpdatedTimestamp ?? lastMessage.timestamp}
                                 preview={
                                     messages.length > 0
-                                        ? isPlan(messages[lastMessage].content)
+                                        ? lastMessage.type === ChatMessageType.Document
+                                            ? 'Sent a file'
+                                            : isPlan(lastMessage.content)
                                             ? 'Click to view proposed plan'
-                                            : (messages[lastMessage].content as string)
+                                            : (lastMessage.content as string)
                                         : 'Click to start the chat'
                                 }
                                 botProfilePicture={convo.botProfilePicture}
