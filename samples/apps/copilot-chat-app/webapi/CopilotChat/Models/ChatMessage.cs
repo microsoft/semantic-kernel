@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SemanticKernel.Service.CopilotChat.Storage;
-using static SemanticKernel.Service.CopilotChat.Controllers.DocumentImportController;
 
 namespace SemanticKernel.Service.CopilotChat.Models;
 
