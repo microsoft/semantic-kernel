@@ -47,8 +47,8 @@ public class Repository<T> : IRepository<T> where T : IStorageEntity
     }
 
     /// <inheritdoc/>
-    public Task UpdateAsync(T entity)
+    public Task UpsertAsync(T entity)
     {
-        return this.StorageContext.UpdateAsync(entity);
+        return this.StorageContext.UpsertAsync(entity);
     }
 }
