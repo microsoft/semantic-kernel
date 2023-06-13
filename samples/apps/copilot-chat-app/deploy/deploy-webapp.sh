@@ -1,8 +1,10 @@
 #!/bin/bash
 
-# Deploy CopilotChat's WebAPI to Azure.
+# Deploy CopilotChat's WebApp to Azure
 
 set -e
+
+SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
     echo "Usage: $0 -d DEPLOYMENT_NAME -s SUBSCRIPTION --ai AI_SERVICE_TYPE -aikey AI_SERVICE_KEY [OPTIONS]"
@@ -60,55 +62,52 @@ fi
 
 az account set -s "$SUBSCRIPTION"
 
-
 echo "Getting deployment outputs..."
 DEPLOYMENT_JSON=$(az deployment group show --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GROUP --output json)
 # get the webapiUrl from the deployment outputs
-WEB_APP_URL=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webappUrl.value')
-WEB_API_URL=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webapiUrl.value')
-WEB_API_NAME=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webapiName.value')
-WEB_API_KEY=$(az webapp config appsettings list --name $WEB_API_NAME --resource-group $RESOURCE_GROUP)
+eval WEB_APP_URL=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webappUrl.value')
+echo "WEB_APP_URL: $WEB_APP_URL"
+eval WEB_APP_NAME=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webappName.value')
+echo "WEB_APP_NAME: $WEB_APP_NAME"
+eval WEB_API_URL=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webapiUrl.value')
+echo "WEB_API_URL: $WEB_API_URL"
+eval WEB_API_NAME=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webapiName.value')
+echo "WEB_API_NAME: $WEB_API_NAME"
+echo "Getting webapi key..."
+eval WEB_API_KEY=$(az webapp config appsettings list --name $WEB_API_NAME --resource-group $RESOURCE_GROUP | jq '.[] | select(.name=="Authorization:ApiKey").value')
 
-WEB_APP_URL=$(.properties.outputs.webappUrl.value
-# $webapiUrl=$deployment.properties.outputs.webapiUrl.value
-# $webapiName=$deployment.properties.outputs.webapiName.value
-# $webapiApiKey=($(az webapp config appsettings list --name $webapiName --resource-group $ResourceGroupName | ConvertFrom-JSON) | Where-Object -Property name -EQ -Value Authorization:ApiKey).value
-# Write-Host "webappUrl: $webappUrl"
-# Write-Host "webapiName: $webapiName"
-# Write-Host "webapiUrl: $webapiUrl"
+ENV_FILE_PATH="$SCRIPT_ROOT/../webapp/.env"
+echo "Writing environment variables to '$ENV_FILE_PATH'..."
+echo "REACT_APP_BACKEND_URI=https://$WEB_API_URL/" > $ENV_FILE_PATH
+echo "REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/common" >> $ENV_FILE_PATH
+echo "REACT_APP_AAD_CLIENT_ID=$APPLICATION_ID" >> $ENV_FILE_PATH
+echo "REACT_APP_SK_API_KEY=$WEB_API_KEY" >> $ENV_FILE_PATH
 
-# # Set UTF8 as default encoding for Out-File
-# $PSDefaultParameterValues['Out-File:Encoding'] = 'ascii'
+echo "Writing swa-cli.config.json..."
+SWA_CONFIG_FILE_PATH="$SCRIPT_ROOT/../webapp/swa-cli.config.json"
+sed "s/{{appDevserverUrl}}/https:\/\/${WEB_APP_URL}/g" $SCRIPT_ROOT/../webapp/template.swa-cli.config.json > $SWA_CONFIG_FILE_PATH
+cat $SWA_CONFIG_FILE_PATH
 
-# $envFilePath="$PSSCriptRoot/../webapp/.env"
-# Write-Host "Writing environment variables to '$envFilePath'..."
-# "REACT_APP_BACKEND_URI=https://$webapiUrl/" | Out-File -FilePath $envFilePath
-# "REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/common" | Out-File -FilePath $envFilePath -Append
-# "REACT_APP_AAD_CLIENT_ID=$ApplicationClientId" | Out-File -FilePath $envFilePath -Append
-# "REACT_APP_SK_API_KEY=$webapiApiKey" | Out-File -FilePath $envFilePath -Append
+pushd "$SCRIPT_ROOT/../webapp"
+echo "Installing yarn dependencies..."
+yarn install
+if [ $? -ne 0 ]; then
+    echo "Failed to install yarn dependencies"
+    exit 1
+fi
 
-# $swaConfig = $(Get-Content "$PSSCriptRoot/../webapp/template.swa-cli.config.json" -Raw) 
-# $swaConfig = $swaConfig.Replace("{{appDevserverUrl}}", "https://$webappUrl") 
-# $swaConfig | Out-File -FilePath "$PSSCriptRoot/../webapp/swa-cli.config.json"
-# Write-Host $(Get-Content "$PSSCriptRoot/../webapp/swa-cli.config.json" -Raw)
+echo "Building webapp..."
+swa build
+if [ $? -ne 0 ]; then
+    echo "Failed to build webapp"
+    exit 1
+fi
 
-# Push-Location -Path "$PSSCriptRoot/../webapp"
-# Write-Host "Installing yarn dependencies..."
-# yarn install
-# if ($LASTEXITCODE -ne 0) {
-#   exit $LASTEXITCODE
-# }
+echo "Deploying webapp..."
+swa deploy --subscription-id $SUBSCRIPTION --app-name $WEB_APP_NAME --env production
+if [ $? -ne 0 ]; then
+    echo "Failed to deploy webapp"
+    exit 1
+fi
 
-# Write-Host "Building webapp..."
-# swa build
-# if ($LASTEXITCODE -ne 0) {
-#     exit $LASTEXITCODE
-# }
-
-# Write-Host "Deploying webapp..."
-# swa deploy --subscription-id 5b742c40-bc2b-4a4f-902f-ee9f644d8844 --app-name swa-cc-int-cus-001-iudsttm4r2eg4 --env production
-# if ($LASTEXITCODE -ne 0) {
-#     exit $LASTEXITCODE
-# }
-
-# Pop-Location
+popd

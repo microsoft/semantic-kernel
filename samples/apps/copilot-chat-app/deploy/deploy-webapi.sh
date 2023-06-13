@@ -67,7 +67,7 @@ fi
 az account set -s "$SUBSCRIPTION"
 
 echo "Getting Azure WebApp resource name..."
-WEB_APP_NAME=$(az deployment group show --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GROUP --output json | jq '.properties.outputs.webapiName.value'
+eval WEB_APP_NAME=$(az deployment group show --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GROUP --output json | jq '.properties.outputs.webapiName.value')
 # Ensure $WEB_APP_NAME is set
 if [[ -z "$WEB_APP_NAME" ]]; then
     echo "Could not get Azure WebApp resource name from deployment output."

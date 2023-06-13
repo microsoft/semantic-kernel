@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deploy CopilotChat's WebAPI to Azure.
+# Package CiopilotChat's WebAPI for deployment to Azure
 
 set -e
 

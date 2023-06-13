@@ -2,7 +2,7 @@
 Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-Bicep template for deploying Semantic Kernel to Azure as a web app service.
+Bicep template for deploying CopilotChat Azure resources.
 */
 
 @description('Name for the deployment consisting of alphanumeric characters or dashes (\'-\')')

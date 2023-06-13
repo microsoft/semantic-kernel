@@ -3,7 +3,7 @@
   "configurations": {
     "webapp": {
       "appLocation": ".",
-      "outputLocation": "./out",
+      "outputLocation": "./build",
       "appBuildCommand": "yarn build",
       "run": "yarn start",
       "appDevserverUrl": "{{appDevserverUrl}}"

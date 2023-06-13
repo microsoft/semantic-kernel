@@ -1,3 +1,7 @@
+<#
+.SYNOPSIS
+Deploy CopilotChat's WebApp to Azure
+#>
 
 param(
     [Parameter(Mandatory)]
@@ -37,10 +41,12 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Getting deployment outputs..."
 $deployment=$(az deployment group show --name $DeploymentName --resource-group $ResourceGroupName --output json | ConvertFrom-Json)
 $webappUrl=$deployment.properties.outputs.webappUrl.value
+$webappName=$deployment.properties.outputs.webappName.value
 $webapiUrl=$deployment.properties.outputs.webapiUrl.value
 $webapiName=$deployment.properties.outputs.webapiName.value
 $webapiApiKey=($(az webapp config appsettings list --name $webapiName --resource-group $ResourceGroupName | ConvertFrom-JSON) | Where-Object -Property name -EQ -Value Authorization:ApiKey).value
 Write-Host "webappUrl: $webappUrl"
+Write-Host "webappName: $webappName"
 Write-Host "webapiName: $webapiName"
 Write-Host "webapiUrl: $webapiUrl"
 
@@ -73,7 +79,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Deploying webapp..."
-swa deploy --subscription-id 5b742c40-bc2b-4a4f-902f-ee9f644d8844 --app-name swa-cc-int-cus-001-iudsttm4r2eg4 --env production
+swa deploy --subscription-id $Subscription --app-name $webappName --env production
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }

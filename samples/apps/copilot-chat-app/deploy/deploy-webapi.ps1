@@ -1,3 +1,7 @@
+<#
+.SYNOPSIS
+Deploy CopilotChat's WebAPI to Azure
+#>
 
 param(
     [Parameter(Mandatory)]
