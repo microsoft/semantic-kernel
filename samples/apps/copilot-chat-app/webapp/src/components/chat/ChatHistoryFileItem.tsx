@@ -10,10 +10,8 @@ import {
     shorthands,
     tokens,
 } from '@fluentui/react-components';
-import prettyBytes from 'pretty-bytes';
 import React from 'react';
 import { IChatMessage } from '../../libs/models/ChatMessage';
-import { DocumentImportResponse } from '../../libs/services/DocumentImportService';
 import { getFileIconByFileExtension } from './ChatResourceList';
 
 const useClasses = makeStyles({
@@ -60,12 +58,18 @@ interface ChatHistoryFileItemProps {
     message: IChatMessage;
 }
 
+interface DocumentMessageContent {
+    name: string;
+    size: string;
+}
+
 export const ChatHistoryFileItem: React.FC<ChatHistoryFileItemProps> = ({ message }) => {
     const classes = useClasses();
 
-    let name, size;
+    let name = '',
+        size = '';
     try {
-        ({ name, size } = JSON.parse(message.content)) as DocumentImportResponse;
+        ({ name, size } = JSON.parse(message.content) as DocumentMessageContent);
     } catch (e) {
         console.error('Error parsing chat history file item: ' + message.content);
     }
@@ -75,13 +79,9 @@ export const ChatHistoryFileItem: React.FC<ChatHistoryFileItemProps> = ({ messag
             <Card appearance="filled-alternative" className={classes.card}>
                 <CardHeader
                     className={classes.cardHeader}
-                    image={getFileIconByFileExtension(name ?? '', { className: classes.icon })}
+                    image={getFileIconByFileExtension(name, { className: classes.icon })}
                     header={<Text className={classes.cardHeaderText}>{name}</Text>}
-                    description={
-                        <Caption1 className={classes.cardCaption}>
-                            {prettyBytes(size ?? 0, { maximumFractionDigits: 0 })}
-                        </Caption1>
-                    }
+                    description={<Caption1 className={classes.cardCaption}>{size}</Caption1>}
                 />
                 <ProgressBar thickness="large" color="success" value={1} />
             </Card>
