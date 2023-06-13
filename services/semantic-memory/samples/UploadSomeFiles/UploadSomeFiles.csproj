@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>FilesUploadApp</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Remove="file1.txt" />
+        <Content Include="file1.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file2.txt" />
+        <Content Include="file2.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file3.docx" />
+        <Content Include="file3.docx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file4.pdf" />
+        <Content Include="file4.pdf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Memory.Data" Version="1.0.2" />
+    </ItemGroup>
+
+</Project>
