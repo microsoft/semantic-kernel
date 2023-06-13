@@ -111,3 +111,5 @@ if [ $? -ne 0 ]; then
 fi
 
 popd
+
+echo "To verify your deployment, go to 'https://$WEB_APP_URL' in your browser."

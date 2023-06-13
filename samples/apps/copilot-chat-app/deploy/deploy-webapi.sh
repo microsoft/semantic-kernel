@@ -89,3 +89,6 @@ if [ $? -ne 0 ]; then
     echo "Could not deploy '$PackageFilePath' to Azure WebApp '$webappName'."
     exit 1
 fi
+
+eval WEB_APP_URL=$(az deployment group show --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GROUP --output json | jq '.properties.outputs.webapiUrl.value')
+echo "To verify your deployment, go to 'https://$WEB_APP_URL/healthz' in your browser."

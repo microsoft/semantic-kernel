@@ -85,3 +85,5 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Pop-Location
+
+Write-Host "To verify your deployment, go to 'https://$webappUrl' in your browser."
