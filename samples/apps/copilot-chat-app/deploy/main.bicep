@@ -62,6 +62,9 @@ var uniqueName = '${name}-${rgIdHash}'
 @description('Name of the Azure Storage file share to create')
 var storageFileShareName = 'aciqdrantshare'
 
+// var qdrantSku = 'P1v3'
+var qdrantSku = 'B2'
+
 
 resource openAI 'Microsoft.CognitiveServices/accounts@2022-12-01' = if(deployNewAzureOpenAI) {
   name: 'ai-${uniqueName}'
@@ -326,7 +329,7 @@ resource appServicePlanQdrant 'Microsoft.Web/serverfarms@2022-03-01' = if (deplo
   location: location
   kind: 'linux'
   sku: {
-    name: 'P1v3'
+    name: qdrantSku
   }
   properties: {
     reserved: true
