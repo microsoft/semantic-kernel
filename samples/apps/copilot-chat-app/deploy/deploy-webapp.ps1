@@ -17,7 +17,7 @@ param(
 
     [Parameter(Mandatory)]
     [string]
-    # Name of the previously deployed Azure deployment 
+    # Client application id 
     $ApplicationClientId
 )
 
@@ -54,20 +54,10 @@ Write-Host "Writing environment variables to '$envFilePath'..."
 "REACT_APP_AAD_CLIENT_ID=$ApplicationClientId" | Out-File -FilePath $envFilePath -Append
 "REACT_APP_SK_API_KEY=$webapiApiKey" | Out-File -FilePath $envFilePath -Append
 
-$swaConfigFilePath="$PSSCriptRoot/../webapp/swa-cli.config.json"
-"{" | Out-File -FilePath $swaConfigFilePath
-"  `"`$schema`": `"https://aka.ms/azure/static-web-apps-cli/schema`"," | Out-File -FilePath $swaConfigFilePath -Append
-"    `"configurations`": {" | Out-File -FilePath $swaConfigFilePath -Append
-"      `"webapp`": {" | Out-File -FilePath $swaConfigFilePath -Append
-"      `"appLocation`": `".`"," | Out-File -FilePath $swaConfigFilePath -Append
-"      `"outputLocation`": `"./out`"," | Out-File -FilePath $swaConfigFilePath -Append
-"      `"appBuildCommand`": `"yarn build`"," | Out-File -FilePath $swaConfigFilePath -Append
-"      `"run`": `"yarn start`"," | Out-File -FilePath $swaConfigFilePath -Append
-"      `"appDevserverUrl`": `"https://$webappUrl`"" | Out-File -FilePath $swaConfigFilePath -Append
-"    }" | Out-File -FilePath $swaConfigFilePath -Append
-"  }" | Out-File -FilePath $swaConfigFilePath -Append
-"}" | Out-File -FilePath $swaConfigFilePath -Append
-
+$swaConfig = $(Get-Content "$PSSCriptRoot/../webapp/template.swa-cli.config.json" -Raw) 
+$swaConfig = $swaConfig.Replace("{{appDevserverUrl}}", "https://$webappUrl") 
+$swaConfig | Out-File -FilePath "$PSSCriptRoot/../webapp/swa-cli.config.json"
+Write-Host $(Get-Content "$PSSCriptRoot/../webapp/swa-cli.config.json" -Raw)
 
 Push-Location -Path "$PSSCriptRoot/../webapp"
 Write-Host "Installing yarn dependencies..."
