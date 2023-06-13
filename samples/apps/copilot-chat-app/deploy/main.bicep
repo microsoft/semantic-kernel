@@ -122,7 +122,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 resource appServiceWeb 'Microsoft.Web/sites@2022-09-01' = {
   name: 'app-${uniqueName}-webapi'
   location: location
-  kind: 'app'
+  kind: 'app,linux'
   tags: {
     skweb: '1'
   }
