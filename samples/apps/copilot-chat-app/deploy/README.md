@@ -40,45 +40,34 @@ chmod +x ./deploy.sh
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fadrianwyatt%2Fsemantic-kernel%2Fsk-pipelines%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
 
 
-TODO VERIFY EVERYTHING BELOW THIS LINE
-
-
 # Verifying the deployment
 To make sure your web app service is running, go to <!-- markdown-link-check-disable -->`https://YOUR_INSTANCE_NAME.azurewebsites.net/healthz`<!-- markdown-link-check-enable-->
 
-To get your instance's URL, click on the "Go to resource group" button you see at the end of your deployment. Then click on the resource whose name starts with "app-".
+To get your instance's URL, click on the "Go to resource group" button you see at the end of your deployment. Then click on the resource whose name starts with "app-" and ends with "-webapi".
 
 This will bring you to the Overview page on your web service. Your instance's URL is the value that appears next to the "Default domain" field.
 
 
 # Changing your configuration, monitoring your deployment and troubleshooting
-From the page just mentioned in the section above, you can change your configuration by clicking on the "Configuration" item in the "Settings" section of the left pane.
-
-Scrolling down in that same pane to the "Monitoring" section gives you access to a multitude of ways to monitor your deployment.
+From the page mentioned above, you can update your configuration by clicking on "Configuration" under the "Settings" section of the left pane.
 
 In addition to this, the "Diagnose and "solve problems" item near the top of the pane can yield crucial insight into some problems your deployment may be experiencing.
 
 If the service itself if functioning properly but you keep getting errors (perhaps reported as 400 HTTP errors) when making calls to the Semantic Kernel,
 check that you have correctly entered the values for the following settings:
-- AIService:AzureOpenAI
+- AIService:Type
 - AIService:Endpoint
+- AIService:Key
 - AIService:Models:Completion
 - AIService:Models:Embedding
 - AIService:Models:Planner
 
-AIService:Endpoint is ignored for OpenAI instances from [openai.com](https://openai.com) but MUST be properly populated when using Azure OpenAI instances.
+AIService:Endpoint is ignored when using OpenAI.
 
 # Authorization
-All of the server's endpoints other than the /healthz one require authorization to access.
-By default, the deployment templates set up the server so that an API key is required to access its endpoints.
-
-AAD authentication and authorization can also be set up manually after the automated deployment is done.
-
-To view the API key required by your instance, access the page for your Semantic Kernel app service in the Azure portal.
-From that page, click on the "Configuration" item in the "Settings" section of the left pane. Then click on the text that reads "Hidden value.
-Click to show value" next to the "Authorization:ApiKey" setting.
-
-To authorize requests with the API key, it must be added as the value of an "x-sk-api-key" header added to the requests.
+All of endpoints (except `/healthz`) require authorization to access.
+By default, an API key is required for access which can be found in the `Authorization:ApiKey` configuration setting.
+To authorize requests with the API key, add the API key value to a `x-sk-api-key` header in your requests.
 
 # Using web frontends to access your deployment
 Make sure to include your frontend's URL as an allowed origin in your deployment's CORS settings. Otherwise, web browsers will refuse to let JavaScript make calls to your deployment.
