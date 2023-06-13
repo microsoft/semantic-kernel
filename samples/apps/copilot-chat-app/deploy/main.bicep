@@ -53,6 +53,9 @@ param deploySpeechServices bool = true
 @description('Region for the resources')
 param location string = resourceGroup().location
 
+@description('Region for the webapp frontend')
+param webappLocation string = 'westus2'
+
 @description('Hash of the resource group ID')
 var rgIdHash = uniqueString(resourceGroup().id)
 
@@ -61,9 +64,6 @@ var uniqueName = '${name}-${rgIdHash}'
 
 @description('Name of the Azure Storage file share to create')
 var storageFileShareName = 'aciqdrantshare'
-
-// var qdrantSku = 'P1v3'
-var qdrantSku = 'B2'
 
 
 resource openAI 'Microsoft.CognitiveServices/accounts@2022-12-01' = if(deployNewAzureOpenAI) {
@@ -329,7 +329,7 @@ resource appServicePlanQdrant 'Microsoft.Web/serverfarms@2022-03-01' = if (deplo
   location: location
   kind: 'linux'
   sku: {
-    name: qdrantSku
+    name: 'P1v3'
   }
   properties: {
     reserved: true
@@ -634,7 +634,7 @@ resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = if (d
 
 resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
   name: 'swa-${uniqueName}'
-  location: location
+  location: webappLocation
   properties: {
     provider: 'None'
   }
