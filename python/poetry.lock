@@ -3427,18 +3427,18 @@ files = [
 
 [[package]]
 name = "weaviate-client"
-version = "3.19.2"
-description = "A python native weaviate client"
+version = "3.20.0"
+description = "A python native Weaviate client"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "weaviate-client-3.19.2.tar.gz", hash = "sha256:662cb2a5f6dacc2c9cdf6db2df70e9a3ac9d18b404d0c2ff971d9cb85d84ebed"},
-    {file = "weaviate_client-3.19.2-py3-none-any.whl", hash = "sha256:f4bbfb868907089f57fdfb836c4d00cf8a6fc5e296fa08879681ba1d2273cd40"},
+    {file = "weaviate-client-3.20.0.tar.gz", hash = "sha256:27c724596e9d3a4609dc7b7e9e362fc97dcfd9ba25f931c95a177bc60789be8e"},
+    {file = "weaviate_client-3.20.0-py3-none-any.whl", hash = "sha256:7559cb1500a5a22019a32cb55b162e204620179792cdfdd98b81e258c6ca7d96"},
 ]
 
 [package.dependencies]
 authlib = ">=1.1.0"
-requests = ">=2.28.0,<2.29.0"
+requests = ">=2.28.0,<=2.31.0"
 tqdm = ">=4.59.0,<5.0.0"
 validators = ">=0.18.2,<=0.21.0"
 
