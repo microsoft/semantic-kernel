@@ -252,7 +252,7 @@ Goal: tell me a joke.
                 foreach (var p in func.Parameters)
                 {
                     var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description;
-                    var requiredString = p.IsRequired ? "required" : string.Empty;
+                    var requiredString = p.IsRequired ? "required" : "optional";
                     var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $"default value: {p.DefaultValue}";
                     var detailsString = $" ({AddComma(requiredString, defaultValueString)})";
                     list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)}{detailsString}");

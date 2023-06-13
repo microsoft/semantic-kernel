@@ -16,7 +16,7 @@ internal static class FunctionViewExtensions
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
-            var requiredString = parameter.IsRequired ? "required" : string.Empty;
+            var requiredString = parameter.IsRequired ? "required" : "optional";
             var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $"default value: {parameter.DefaultValue}";
             var detailsString = $" ({AddComma(requiredString, defaultValueString)})";
             return $"  - {parameter.Name}: {parameter.Description}{detailsString}";
