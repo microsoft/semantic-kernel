@@ -77,7 +77,7 @@ fi
 echo "Azure WebApp name: $webappName"
 
 echo "Configuring Azure WebApp to run from package..."
-az webapp config appsettings set --resource-group $RESOURCE_GROUP --name $WEB_APP_NAME --settings WEBSITE_RUN_FROM_PACKAGE="1" | out-null
+az webapp config appsettings set --resource-group $RESOURCE_GROUP --name $WEB_APP_NAME --settings WEBSITE_RUN_FROM_PACKAGE="1"
 if [ $? -ne 0 ]; then
     echo "Could not configure Azure WebApp to run from package."
     exit 1
