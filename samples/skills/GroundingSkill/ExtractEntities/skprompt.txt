@@ -11,8 +11,6 @@
     - Reuse as adjectives
     - Plurals and related changes
 8. Return the bulleted list of entities between <entities> and </entities>.
-9. After the entities, repeat the input text between <context> and </context>.
-
 
 # Examples
 
@@ -34,15 +32,6 @@ Response:
 - Lemon
 </entities>
 
-<context>
-Oranges and lemons,
-Say the bells of St. Clement's.
-
-You owe me five farthings,
-Say the bells of St. Martin's.
-</context>
-
-
 ## Example 2
 
 In the following example, the task was to extract entities related to animals, with 'fish' and 'goat' as examples:
@@ -62,16 +51,9 @@ Response:
 - dragon
 </entities>
 
-<context>
-Belinda lived in a little white house,
-With a little black kitten and a little gray mouse,
-And a little yellow dog and a little red wagon,
-And a realio, trulio, little pet dragon
-</context>
-
 # Task
 
-Extract entities related to {{$topic}} from the following context. Produce a bulleted list of entities between <entities> and </entities>. After that, repeat the original text between <context> and </context>, ensuring that you have the correct closing tags.
+Extract entities related to {{$topic}} from the following context. Produce a bulleted list of entities between <entities> and </entities>.
 
 <input_context>
 {{$input}}

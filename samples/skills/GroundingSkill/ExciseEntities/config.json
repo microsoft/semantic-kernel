@@ -13,7 +13,12 @@
     "parameters": [
       {
         "name": "input",
-        "description": "The text from which the entities are to be removed, and the entities themselves",
+        "description": "The text from which the entities are to be removed",
+        "defaultValue": ""
+      },
+      {
+        "name": "entities",
+        "description": "The entities to remove. This is a list of strings.",
         "defaultValue": ""
       }
     ]

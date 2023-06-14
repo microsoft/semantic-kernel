@@ -36,7 +36,12 @@ Read the list of entities between the <entities> and </entities> tags, and caref
 remove references to them.
 
 <input>
+<context>
 {{$input}}
+</context>
+<ungrounded_entities>
+{{$entities}}
+</ungrounded_entities>
 </input>
 
 Response:
