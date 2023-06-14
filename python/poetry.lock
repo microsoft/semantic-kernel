@@ -2283,7 +2283,7 @@ files = [
 name = "pydantic"
 version = "1.10.9"
 description = "Data validation and settings management using python type hints"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -3360,7 +3360,7 @@ vision = ["Pillow"]
 name = "typing-extensions"
 version = "4.6.3"
 description = "Backported and Experimental Type Hints for Python 3.7+"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -3821,4 +3821,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "5ec4d8d691b1cdcce712adcce9cdbd0b916d8ffef04d0d86faeda110e853883d"
+content-hash = "cde54aad4677f96084cc04558c05fa3b17bef141f9e52ae8831042c0de1a176c"
