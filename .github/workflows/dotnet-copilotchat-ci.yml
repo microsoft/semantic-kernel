@@ -6,7 +6,7 @@ name: dotnet-pr
 
 on:
   pull_request:
-    branches: [ "main", "feature*" ]
+    branches: [ "main", "feature*", "sk-piplines" ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
