@@ -28,6 +28,7 @@ from python.semantic_kernel.memory.memory_record import MemoryRecord
 from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 
+
 class CognitiveSearchMemoryStore(MemoryStoreBase):
     _cogsearch_indexclient: SearchIndexClient
     _cogsearch_records: list
@@ -107,7 +108,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-
+        
         if vector_config:
             vector_search = VectorSearch(algorithm_configurations=[vector_config])
         else:
@@ -128,7 +129,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         # Check to see if collection exists
         collection_index = await self._cogsearch_indexclient.get_index(collection_name)
-
+        
         if collection_index:
             return
 
@@ -235,7 +236,6 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         result = acs_search_client.upload_documents(documents=[acs_doc])
 
-        ## Throw exception if problem
         if result[0].succeeded:
             return id
         else:
@@ -253,6 +253,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The unique database keys of the records.
         """
+        
         ## Look up Search client class to see if exists or create
         try:
             acs_search_client = self._cogsearch_indexclient.get_search_client(
@@ -286,8 +287,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         result = acs_search_client.upload_documents(documents=[acs_doc])
 
-        ## Look at result and throw exception if problem
-        ## Note: Ones that succeeded are good one that failed how to handle?
+        ## Look at result
         if result[0].succeeded:
             return acs_ids
         else:
@@ -315,7 +315,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         except HttpResponseError:
             raise ValueError(
                 "Error: Unable to get/create ACS search client for collection."
-            )
+            ) 
 
         search_id = key
 
@@ -359,7 +359,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-
+        
         ## Look up or create Search client class
         try:
             acs_search_client = self._cogsearch_indexclient.get_search_client(
@@ -386,11 +386,10 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-
-        ## TODO: call delete_documents API pass list of dicts -- Look at upsert_batch_async, make changes
+      
         for acs_key in keys:
             self.remove_async(collection_name=collection_name, key=acs_key)
-
+    
     async def get_nearest_match_async(
         self,
         collection_name: str,
@@ -433,6 +432,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         vector_result = convert_to_memory_record(acs_result)
 
         return tuple(vector_result, acs_result["@search.score"])
+
 
     async def get_nearest_matches_async(
         self,
@@ -482,5 +482,5 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             vector_result = convert_to_memory_record(acs_result)
 
             nearest_results.append(tuple(vector_result, acs_result["@search.score"]))
-
+        
         return nearest_results
