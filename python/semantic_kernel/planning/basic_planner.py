@@ -182,7 +182,7 @@ class BasicPlanner:
         generated_plan = await planner.invoke_async(variables=context)
         return Plan(prompt=prompt, goal=goal, plan=generated_plan)
 
-    async def execute_plan_async(self, plan: Plan, kernel: Kernel, debug_print: bool = False) -> str:
+    async def execute_plan_async(self, plan: Plan, kernel: Kernel) -> str:
         """
         Given a plan, execute each of the functions within the plan
         from start to finish and output the result.
@@ -194,9 +194,6 @@ class BasicPlanner:
         subtasks = generated_plan["subtasks"]
 
         for subtask in subtasks:
-            if debug_print:
-                print(f"{subtask['function']}: BEGIN")
-                
             skill_name, function_name = subtask["function"].split(".")
             sk_function = kernel.skills.get_function(skill_name, function_name)
 
@@ -205,15 +202,10 @@ class BasicPlanner:
             if args:
                 for key, value in args.items():
                     context[key] = value
+                output = await sk_function.invoke_async(variables=context)
 
-            if debug_print:
-                for k, v in context._variables.items():
-                    print(f"Context {k}: {v}")
-
-            output = await sk_function.invoke_async(variables=context)
-
-            if debug_print:
-                print(f"{subtask['function']} output: {output.result}")
+            else:
+                output = await sk_function.invoke_async(variables=context)
 
             # Override the input context variable with the output of the function
             context["input"] = output.result
