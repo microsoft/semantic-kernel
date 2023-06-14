@@ -2,14 +2,14 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
+using Azure.Core;
 using Azure.Core.Pipeline;
+using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Azure.Core;
-using Azure.Identity;
-using System.Threading;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
