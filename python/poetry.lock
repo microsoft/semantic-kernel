@@ -3749,7 +3749,7 @@ files = [
 [package.dependencies]
 cffi = {version = ">=1.11", markers = "platform_python_implementation == \"PyPy\""}
 
-[package.extras]
+[[package.extras]
 cffi = ["cffi (>=1.11)"]
 
 [metadata]
