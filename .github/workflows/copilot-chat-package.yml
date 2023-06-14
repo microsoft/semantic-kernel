@@ -6,7 +6,13 @@ name: copilot-chat-package
 
 on:
   pull_request:
-    branches: [ "main", "feature*", "sk-piplines" ]
+    branches: [ "sk-piplines" ]
+    paths:
+      - 'samples/apps/copilot-chat-app/**'
+  push:
+    branches: [ "main", "feature*" ]
+    paths:
+      - 'samples/apps/copilot-chat-app/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -28,11 +34,11 @@ jobs:
           copilot-chat-app:
             - 'samples/apps/copilot-chat-app/**'
     - uses: actions/checkout@v3
-    # run only if 'copilot-chat-app' files were changed
+
     - name: copilot-chat-app changes found
       if: steps.filter.outputs.copilot-chat-app == 'true'
       run: echo "copilot-chat-app file"
-    # run only if not 'copilot-chat-app' files were changed
+
     - name: no copilot-chat-app changes found
       if: steps.filter.outputs.copilot-chat-app != 'true'
       run: echo "NOT copilot-chat-app file"
