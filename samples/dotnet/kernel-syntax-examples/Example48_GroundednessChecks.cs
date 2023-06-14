@@ -63,7 +63,7 @@ after this event Caroline became his wife.""";
             .WithAzureTextCompletionService(
                 Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+                Env.Var("AZURE_OPENAI_API_KEY"))
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -94,9 +94,8 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
 
-        context.Variables.Update(summaryText);
+        context.Variables.Update(extractionResult);
         context.Variables.Set("reference_context", s_groundingText);
-        context.Variables.Set("entities", extractionResult);
 
         var groundingResult = (await reference_check.InvokeAsync(context)).Result;
 
@@ -104,7 +103,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine(groundingResult);
 
         context.Variables.Update(summaryText);
-        context.Variables.Set("entities", groundingResult);
+        context.Variables.Set("ungrounded_entities", groundingResult);
         var excisionResult = await entity_excision.InvokeAsync(context);
 
         Console.WriteLine("======== Excise Entities ========");
@@ -118,7 +117,7 @@ her a beggar. My father came to her aid and two years later they married.
         var ask = @$"Make a summary of input text. Then make a list of entities
 related to {targetTopic} (such as {samples}) which are present in the summary.
 Take this list of entities, and from it make another list of those which are not
-grounded in the input. Finally, rewrite your summary to remove the entities
+grounded in the original input text. Finally, rewrite your summary to remove the entities
 which are not grounded in the original.
 ";
 
