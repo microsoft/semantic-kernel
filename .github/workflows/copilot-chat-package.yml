@@ -16,26 +16,26 @@ permissions:
   contents: read
 
 jobs:
-  # check-for-copilot-chat-app-changes:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     output1: ${{ steps.filter.outputs.copilot-chat-app}}
-  #   steps:
-  #   - uses: dorny/paths-filter@v2
-  #     id: filter
-  #     with:
-  #       filters: |
-  #         copilot-chat-app:
-  #           - 'samples/apps/copilot-chat-app/**'
-  #   - uses: actions/checkout@v3
-  #   # run only if 'copilot-chat-app' files were changed
-  #   - name: copilot-chat-app changes found
-  #     if: steps.filter.outputs.copilot-chat-app == 'true'
-  #     run: echo "copilot-chat-app file"
-  #   # run only if not 'copilot-chat-app' files were changed
-  #   - name: no copilot-chat-app changes found
-  #     if: steps.filter.outputs.copilot-chat-app != 'true'
-  #     run: echo "NOT copilot-chat-app file"
+  check-for-copilot-chat-app-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.filter.outputs.copilot-chat-app}}
+    steps:
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          copilot-chat-app:
+            - 'samples/apps/copilot-chat-app/**'
+    - uses: actions/checkout@v3
+    # run only if 'copilot-chat-app' files were changed
+    - name: copilot-chat-app changes found
+      if: steps.filter.outputs.copilot-chat-app == 'true'
+      run: echo "copilot-chat-app file"
+    # run only if not 'copilot-chat-app' files were changed
+    - name: no copilot-chat-app changes found
+      if: steps.filter.outputs.copilot-chat-app != 'true'
+      run: echo "NOT copilot-chat-app file"
 
   build:
     strategy:
@@ -57,18 +57,18 @@ jobs:
       #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
 
-    - name: Package Copilot Chat Web API
+    - name: Package Copilot Chat WebAPI
       #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: |
         chmod +x $(pwd)/samples/apps/copilot-chat-app/deploy/package-webapi.sh;
         docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "/app/samples/apps/copilot-chat-app/deploy/package-webapi.sh --no-zip";
   
-    - name: Set Version Tag
+    - name: Set version tag
       id: versiontag
       run: |
-        TAG="$(date +'%Y%m%d').${{ github.run_number }}.${{ github.run_attempt }}"
-        echo $TAG
-        echo "versiontag=$TAG" >> $GITHUB_OUTPUT
+        VERSION_TAG="$(date +'%Y%m%d').${{ github.run_number }}.${{ github.run_attempt }}"
+        echo $VERSION_TAG
+        echo "versiontag=$VERSION_TAG" >> $GITHUB_OUTPUT
 
     - name: Upload package to artifacts
       #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
