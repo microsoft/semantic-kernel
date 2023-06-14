@@ -171,8 +171,8 @@ public static class Example48_StepwisePlanner
 // Goal :Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?
 // *****************************************************
 // 01:54:27 Observation : Sarah Stier // Getty Images March 2021: They enjoy a beachside getaway. DiCaprio and Morrone headed to Malibu with friends for brief holiday. The actress shared photos from their trip to...
-// 01:54:32 Observation : Michele Morrone ( Italian pronunciation: [mi'k??le mor'ro?ne]; born 3 October 1990) is an Italian actor, model, singer, and fashion designer appearing in both Italian and Polish films. He gained international recognition after portraying the role of Massimo Torricelli in the 2020 erotic romantic drama 365 Days . Early life
-// 01:54:37 Observation : Camila Rebeca Morrone Polak [3] (born June 16, 1997) [4] is an American model and actress. She made her acting debut in the James Franco film Bukowski and subsequently appeared in the films Death Wish and Never Goin' Back, both premiering at the Sundance Film Festival in January 2018. Early life and education
+// 01:54:32 Observation : Michele Morrone (born 3 October 1990) is an Italian actor, model, singer, and fashion designer appearing in both Italian and Polish films. He gained international recognition after portraying the role of Massimo Torricelli in the 2020 erotic romantic drama 365 Days . Early life
+// 01:54:37 Observation : Camila Rebeca Morrone Polak [3] (born June 16, 1997) [4] is an American model and actress. She made her acting debut in the James Franco film Bukowski and subsequently appeared in the films Death Wish and Never Going Back, both premiering at the Sundance Film Festival in January 2018. Early life and education
 // 01:54:44 Observation : Answer:3.9218486893172186
 // *****************************************************
 // Result :Leo DiCaprio's girlfriend is Camila Morrone and her current age raised to the 0.43 power is 3.92.
