@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.17.1.54307",
-      "templateHash": "4009752638936540324"
+      "templateHash": "17377615831264036404"
     }
   },
   "parameters": {
@@ -31,6 +31,13 @@
       ],
       "metadata": {
         "description": "SKU for the Azure App Service plan"
+      }
+    },
+    "packageUri": {
+      "type": "string",
+      "defaultValue": "https://aka.ms/copilotchat/webapi/latest",
+      "metadata": {
+        "description": "Location of package to deploy as the web service"
       }
     },
     "aiService": {
@@ -377,6 +384,19 @@
       ]
     },
     {
+      "type": "Microsoft.Web/sites/extensions",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}', format('app-{0}-webapi', variables('uniqueName')), 'MSDeploy')]",
+      "kind": "string",
+      "properties": {
+        "packageUri": "[parameters('packageUri')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', format('app-{0}-webapi', variables('uniqueName')))]",
+        "[resourceId('Microsoft.Web/sites/config', format('app-{0}-webapi', variables('uniqueName')), 'web')]"
+      ]
+    },
+    {
       "type": "Microsoft.Insights/components",
       "apiVersion": "2020-02-02",
       "name": "[format('appins-{0}', variables('uniqueName'))]",
@@ -399,7 +419,7 @@
       "name": "[format('{0}/{1}', format('app-{0}-webapi', variables('uniqueName')), 'Microsoft.ApplicationInsights.AzureWebSites')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', format('app-{0}-webapi', variables('uniqueName')))]",
-        "[resourceId('Microsoft.Web/sites/config', format('app-{0}-webapi', variables('uniqueName')), 'web')]"
+        "[resourceId('Microsoft.Web/sites/extensions', format('app-{0}-webapi', variables('uniqueName')), 'MSDeploy')]"
       ]
     },
     {

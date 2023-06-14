@@ -12,6 +12,10 @@ param name string = 'copichat'
 @allowed(['B1', 'S1', 'S2', 'S3', 'P1V3', 'P2V3', 'I1V2', 'I2V2' ])
 param webAppServiceSku string = 'B1'
 
+@description('Location of package to deploy as the web service')
+#disable-next-line no-hardcoded-env-urls
+param packageUri string = 'https://aka.ms/copilotchat/webapi/latest'
+
 @description('Underlying AI service')
 @allowed([
   'AzureOpenAI'
@@ -268,6 +272,18 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
   }
 }
 
+resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2022-09-01' = {
+  name: 'MSDeploy'
+  kind: 'string'
+  parent: appServiceWeb
+  properties: {
+    packageUri: packageUri
+  }
+  dependsOn: [
+    appServiceWebConfig
+  ]
+}
+
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: 'appins-${uniqueName}'
   location: location
@@ -285,7 +301,7 @@ resource appInsightExtension 'Microsoft.Web/sites/siteextensions@2022-09-01' = {
   parent: appServiceWeb
   name: 'Microsoft.ApplicationInsights.AzureWebSites'
   dependsOn: [
-    appServiceWebConfig
+    appServiceWebDeploy
   ]
 }
 
