@@ -56,7 +56,8 @@ public class DocumentImportController : ControllerBase
     };
 
     private readonly ILogger<DocumentImportController> _logger;
-    private readonly DocumentMemoryOptions _options;
+    private readonly DocumentMemoryOptions _documentMemoryOptions;
+    private readonly TesseractOptions _tesseractOptions;
     private readonly ChatSessionRepository _chatSessionRepository;
     private readonly string _tesseractDataPath;
 
@@ -65,10 +66,12 @@ public class DocumentImportController : ControllerBase
     /// </summary>
     public DocumentImportController(
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
+        IOptions<TesseractOptions> tesseractOptions,
         ILogger<DocumentImportController> logger,
         ChatSessionRepository chatSessionRepository)
     {
-        this._options = documentMemoryOptions.Value;
+        this._documentMemoryOptions = documentMemoryOptions.Value;
+        this._tesseractOptions = tesseractOptions.Value;
         this._logger = logger;
         this._chatSessionRepository = chatSessionRepository;
         this._tesseractDataPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "tessdata");
@@ -97,7 +100,7 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest("File is empty.");
         }
 
-        if (formFile.Length > this._options.FileSizeLimit)
+        if (formFile.Length > this._documentMemoryOptions.FileSizeLimit)
         {
             return this.BadRequest("File size exceeds the limit.");
         }
@@ -189,7 +192,7 @@ public class DocumentImportController : ControllerBase
             var fileBytes = ms.ToArray();
             await using var imgStream = new MemoryStream(fileBytes);
 
-            using var engine = new TesseractEngine(_tesseractDataPath, "eng", EngineMode.Default); // use the appropriate language model
+            using var engine = new TesseractEngine(_tesseractDataPath, _tesseractOptions.Language, EngineMode.Default); // use the appropriate language model
             using var img = Pix.LoadFromMemory(imgStream.ToArray());
 
             using var page = engine.Process(img);
@@ -227,13 +230,13 @@ public class DocumentImportController : ControllerBase
     {
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
         var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global
-            ? this._options.GlobalDocumentCollectionName
-            : this._options.ChatDocumentCollectionNamePrefix + documentImportForm.ChatId;
+            ? this._documentMemoryOptions.GlobalDocumentCollectionName
+            : this._documentMemoryOptions.ChatDocumentCollectionNamePrefix + documentImportForm.ChatId;
 
         // Split the document into lines of text and then combine them into paragraphs.
         // Note that this is only one of many strategies to chunk documents. Feel free to experiment with other strategies.
-        var lines = TextChunker.SplitPlainTextLines(content, this._options.DocumentLineSplitMaxTokens);
-        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, this._options.DocumentParagraphSplitMaxLines);
+        var lines = TextChunker.SplitPlainTextLines(content, this._documentMemoryOptions.DocumentLineSplitMaxTokens);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, this._documentMemoryOptions.DocumentParagraphSplitMaxLines);
 
         foreach (var paragraph in paragraphs)
         {

@@ -25,7 +25,11 @@ Before you get started, make sure you have the following requirements in place:
 
    > To clean your system of the developer certificate, run `dotnet run dev-certs https --clean`
 
-4. **(Optional)** [Visual Studio Code](http://aka.ms/vscode) or [Visual Studio](http://aka.ms/vsdownload).
+4. **(Optional)** To enable support for uploading image file formats such as png, jpg and tiff, we have included the [Tesseract](https://www.nuget.org/packages/Tesseract) nuget package.  
+   - You will need to obtain one or more [tessdata language data files](https://github.com/tesseract-ocr/tessdata) such as `eng.traineddata` and add them to your `./tessdata` directory.  
+   - Set the `Copy to Output Directory` value to `Copy if newer`.
+
+5. **(Optional)** [Visual Studio Code](http://aka.ms/vscode) or [Visual Studio](http://aka.ms/vsdownload).
 
 # Start the WebApi Service
 
