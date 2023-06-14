@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
+using static SemanticKernel.Service.CopilotChat.Models.MemorySource;
 
 namespace SemanticKernel.Service.CopilotChat.Controllers;
 
@@ -43,7 +45,9 @@ public class DocumentImportController : ControllerBase
 
     private readonly ILogger<DocumentImportController> _logger;
     private readonly DocumentMemoryOptions _options;
-    private readonly ChatSessionRepository _chatSessionRepository;
+    private readonly ChatSessionRepository _sessionRepository;
+    private readonly ChatMemorySourceRepository _sourceRepository;
+    private readonly ChatMessageRepository _messageRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -51,11 +55,15 @@ public class DocumentImportController : ControllerBase
     public DocumentImportController(
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
         ILogger<DocumentImportController> logger,
-        ChatSessionRepository chatSessionRepository)
+        ChatSessionRepository sessionRepository,
+        ChatMemorySourceRepository sourceRepository,
+        ChatMessageRepository messageRepository)
     {
         this._options = documentMemoryOptions.Value;
         this._logger = logger;
-        this._chatSessionRepository = chatSessionRepository;
+        this._sessionRepository = sessionRepository;
+        this._sourceRepository = sourceRepository;
+        this._messageRepository = messageRepository;
     }
 
     /// <summary>
@@ -94,6 +102,7 @@ public class DocumentImportController : ControllerBase
 
         this._logger.LogInformation("Importing document {0}", formFile.FileName);
 
+        ChatMessage chatMessage;
         try
         {
             var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
@@ -110,14 +119,64 @@ public class DocumentImportController : ControllerBase
                     return this.BadRequest($"Unsupported file type: {fileType}");
             }
 
-            await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm);
+            // Create memory source
+            var memorySource = new MemorySource(
+                documentImportForm.ChatId.ToString(),
+                formFile.FileName,
+                documentImportForm.UserId,
+                MemorySourceType.File,
+                formFile.Length,
+                null);
+
+            await this._sourceRepository.UpsertAsync(memorySource);
+
+            // Create chat message that represents document upload
+            chatMessage = new ChatMessage(
+                memorySource.SharedBy,
+                documentImportForm.UserName,
+                memorySource.ChatId,
+                (new DocumentMessageContent() { Name = memorySource.Name, Size = this.GetReadableByteString(memorySource.Size) }).ToString(),
+                "",
+                ChatMessage.AuthorRoles.User,
+                ChatMessage.ChatMessageType.Document
+            );
+
+            await this._messageRepository.CreateAsync(chatMessage);
+
+            try
+            {
+                await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, memorySource.Id);
+            }
+            catch (Exception ex) when (!ex.IsCriticalException())
+            {
+                await this._sourceRepository.DeleteAsync(memorySource);
+                throw;
+            }
         }
-        catch (Exception ex) when (ex is ArgumentOutOfRangeException)
+        catch (ArgumentOutOfRangeException ex)
         {
             return this.BadRequest(ex.Message);
         }
 
-        return this.Ok();
+        return this.Ok(chatMessage);
+    }
+
+    /// <summary>
+    /// Converts a `long` byte count to a human-readable string.
+    /// </summary>
+    /// <param name="bytes">Byte count</param>
+    /// <returns>Human-readable string of bytes</returns>
+    private string GetReadableByteString(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        int i;
+        double dblsBytes = bytes;
+        for (i = 0; i < sizes.Length && bytes >= 1024; i++, bytes /= 1024)
+        {
+            dblsBytes = bytes / 1024.0;
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, "{0:0.#}{1}", dblsBytes, sizes[i]);
     }
 
     /// <summary>
@@ -173,8 +232,8 @@ public class DocumentImportController : ControllerBase
     /// <param name="kernel">The kernel instance from the service</param>
     /// <param name="content">The file content read from the uploaded document</param>
     /// <param name="documentImportForm">The document upload form that contains additional necessary info</param>
-    /// <returns></returns>
-    private async Task ParseDocumentContentToMemoryAsync(IKernel kernel, string content, DocumentImportForm documentImportForm)
+    /// <param name="memorySourceId">The ID of the MemorySource that the document content is linked to</param>
+    private async Task ParseDocumentContentToMemoryAsync(IKernel kernel, string content, DocumentImportForm documentImportForm, string memorySourceId)
     {
         var documentName = Path.GetFileName(documentImportForm.FormFile?.FileName);
         var targetCollectionName = documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Global
@@ -186,19 +245,20 @@ public class DocumentImportController : ControllerBase
         var lines = TextChunker.SplitPlainTextLines(content, this._options.DocumentLineSplitMaxTokens);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, this._options.DocumentParagraphSplitMaxLines);
 
-        foreach (var paragraph in paragraphs)
+        for (var i = 0; i < paragraphs.Count; i++)
         {
+            var paragraph = paragraphs[i];
             await kernel.Memory.SaveInformationAsync(
                 collection: targetCollectionName,
                 text: paragraph,
-                id: Guid.NewGuid().ToString(),
+                id: $"{memorySourceId}-{i}",
                 description: $"Document: {documentName}");
         }
 
         this._logger.LogInformation(
             "Parsed {0} paragraphs from local file {1}",
             paragraphs.Count,
-            Path.GetFileName(documentImportForm.FormFile?.FileName)
+            documentName
         );
     }
 
@@ -210,7 +270,7 @@ public class DocumentImportController : ControllerBase
     /// <returns>A boolean indicating whether the user has access to the chat session.</returns>
     private async Task<bool> UserHasAccessToChatAsync(string userId, Guid chatId)
     {
-        var chatSessions = await this._chatSessionRepository.FindByUserIdAsync(userId);
+        var chatSessions = await this._sessionRepository.FindByUserIdAsync(userId);
         return chatSessions.Any(c => c.Id == chatId.ToString());
     }
 }

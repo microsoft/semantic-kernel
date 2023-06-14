@@ -42,4 +42,10 @@ public class DocumentImportForm
     /// Will be use to validate if the user has access to the chat session.
     /// </summary>
     public string UserId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Name of the user who sent this message.
+    /// Will be used to create the chat message representing the document upload.
+    /// </summary>
+    public string UserName { get; set; } = string.Empty;
 }

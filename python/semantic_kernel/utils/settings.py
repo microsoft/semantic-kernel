@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import Tuple
+from dotenv import dotenv_values
 
 
 def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, str, str]:
@@ -13,24 +14,10 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
     """
 
     deployment, api_key, endpoint = None, None, None
-    with open(".env", "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
-            if include_deployment and line.startswith("AZURE_OPENAI_DEPLOYMENT_NAME"):
-                parts = line.split("=")[1:]
-                deployment = "=".join(parts).strip().strip('"')
-                continue
-
-            if line.startswith("AZURE_OPENAI_API_KEY"):
-                parts = line.split("=")[1:]
-                api_key = "=".join(parts).strip().strip('"')
-                continue
-
-            if line.startswith("AZURE_OPENAI_ENDPOINT"):
-                parts = line.split("=")[1:]
-                endpoint = "=".join(parts).strip().strip('"')
-                continue
+    config = dotenv_values(".env")
+    deployment = config.get("AZURE_OPENAI_DEPLOYMENT_NAME", None)
+    api_key = config.get("AZURE_OPENAI_API_KEY", None)
+    endpoint = config.get("AZURE_OPENAI_ENDPOINT", None)
 
     # Azure requires the deployment name, the API key and the endpoint URL.
     if include_deployment:
