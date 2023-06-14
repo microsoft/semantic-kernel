@@ -20,12 +20,9 @@ public abstract class MemoryStorageTestBase
     }
 
     /// <summary>
-    /// Create <see cref="IMemoryStore"/> instance for unit tests
+    /// Creates <see cref="IMemoryStore"/> instance for unit tests
     /// </summary>
-    /// <remarks>
-    /// you can override <see cref="CloseStoreAsync"/> in case you need extra clean up control
-    /// </remarks>
-    /// <returns><see cref="IMemoryStore"/> The instance for tests</returns>
+    /// <returns>The instance of <see cref="IMemoryStore"/> for tests</returns>
     protected abstract Task<IMemoryStore> CreateStoreAsync();
 
     /// <summary>
