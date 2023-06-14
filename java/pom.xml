@@ -370,6 +370,41 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${maven.spotless-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                    <execution>
+                        <id>apply</id>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <java>
+                        <googleJavaFormat>
+                            <version>${google.java.format.version}</version>
+                            <style>AOSP</style>
+                            <reflowLongStrings>true</reflowLongStrings>
+                        </googleJavaFormat>
+                        <licenseHeader>
+                            <content>// Copyright (c) Microsoft. All rights reserved.</content>
+                        </licenseHeader>
+                        <toggleOffOn />
+                    </java>
+                </configuration>
+            </plugin>
         </plugins>
 
     </build>
@@ -565,40 +600,6 @@
                                     <version>${com.uber.nullaway.version}</version>
                                 </path>
                             </annotationProcessorPaths>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.diffplug.spotless</groupId>
-                        <artifactId>spotless-maven-plugin</artifactId>
-                        <version>${maven.spotless-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>check</id>
-                                <goals>
-                                    <goal>check</goal>
-                                </goals>
-                                <phase>compile</phase>
-                            </execution>
-                            <execution>
-                                <id>apply</id>
-                                <goals>
-                                    <goal>apply</goal>
-                                </goals>
-                                <phase>process-sources</phase>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <java>
-                                <googleJavaFormat>
-                                    <version>${google.java.format.version}</version>
-                                    <style>AOSP</style>
-                                    <reflowLongStrings>true</reflowLongStrings>
-                                </googleJavaFormat>
-                                <licenseHeader>
-                                    <content>// Copyright (c) Microsoft. All rights reserved.</content>
-                                </licenseHeader>
-                                <toggleOffOn />
-                            </java>
                         </configuration>
                     </plugin>
                     <plugin>
