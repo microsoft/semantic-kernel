@@ -150,52 +150,45 @@ which are not grounded in the original.
 
 /* Example Output:
 ======== Groundedness Checks ========
+======== Groundedness Checks ========
 ======== Extract Entities ========
 <entities>
-- My father (a person)
-- Milan (a place)
-- Beaufort (a person)
-- Zurich (a place)
-- Mary (a person)
+- Milan
+- Beaufort
+- Zurich
+- Mary
+- Father
 </entities>
+
 ======== Reference Check ========
 
-
-Possible response:
-
 <ungrounded_entities>
-- Milan (a place)
-- Mary (a person)
+- Milan
+- Zurich
+- Mary
+- Father
 </ungrounded_entities>
+
 ======== Excise Entities ========
-<context>
 
-My father, a respected resident of a city in Italy, was a close friend of a merchant named Beaufort who, after a series of
-misfortunes, moved to a town in Switzerland in poverty. My father was upset by his friend's troubles and sought him out,
-finding him in a mean street. Beaufort had saved a small sum of money, but it was not enough to support him and
-his daughter, a young woman. The young woman procured work to eek out a living, but after ten months her father died, leaving
-her a beggar. My father came to her aid and two years later they married.
-
-</context>
-
-
+My father, a respected resident, was a close friend of a merchant named Beaufort who, after a series of misfortunes, moved to poverty. My father was upset by
+his friend's troubles and sought him out, finding him in a mean street. Beaufort had saved a small sum of money, but it was not enough to support him. Procuring
+work to eek out a living, after ten months he died, leaving a beggar. My father came to the aid and two years later they married.
 ======== Planning - Groundedness Checks ========
+
  Goal: Make a summary of input text. Then make a list of entities
 related to people and places (such as John, Jane, mother, brother, Paris, Rome) which are present in the summary.
 Take this list of entities, and from it make another list of those which are not
-grounded in the input. Finally, rewrite your summary to remove the entities
+grounded in the original input text. Finally, rewrite your summary to remove the entities
 which are not grounded in the original.
 
 
  Steps:
-  - _GLOBAL_FUNCTIONS_.Echo INPUT='' => ORIGINAL_INPUT
-  - SummarizeSkill.Summarize INPUT='' => SUMMARY
-  - GroundingSkill.ExtractEntities topic='people and places' INPUT='$SUMMARY' example_entities='John, Jane, mother, brother, Paris, Rome' => ENTITIES
-  - GroundingSkill.ReferenceCheckEntities entities='$ENTITIES' reference_context='$ORIGINAL_INPUT' INPUT='$SUMMARY' => UNGROUND_ENTITIES
-  - GroundingSkill.ExciseEntities entities='$UNGROUND_ENTITIES' INPUT='$SUMMARY' => RESULT__FINAL_SUMMARY
+  - SummarizeSkill.Summarize INPUT='' => RESULT__SUMMARY
+  - GroundingSkill.ExtractEntities topic='People and Places' INPUT='$RESULT__SUMMARY' example_entities='John, Jane, mother, brother, Paris, Rome' => ENTITIES
+  - GroundingSkill.ReferenceCheckEntities INPUT='$ENTITIES' reference_context='$RESULT__SUMMARY' => UNGROUNDED_ENTITIES
+  - GroundingSkill.ExciseEntities ungrounded_entities='$UNGROUNDED_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
 
-A possible summary is:
-
-A respected politician from a Swiss city helped a poor merchant who hid in another Swiss city. He found him dying and his daughter struggling to live. He felt sorry for the daughter, buried the merchant, and married her two years later.
-== DONE ==
+My father, a respected Genevese, had a close friend, Beaufort, who fell into poverty and moved to Lucerne. My father sought him out and found him in a state of misery and despair. Beaufort had saved a small sum of money, but it was not enough to support him and his daughter, Caroline. Caroline worked hard to earn a pittance, but her father eventually died in her arms. My father then took Caroline to Geneva and two years later they married.
+A respected individual had a close friend, Beaufort, who fell into poverty and moved to a nearby city. This individual sought him out and found him in a state of misery and despair. Beaufort had saved a small sum of money, but it was not enough to support him and his daughter. The daughter worked hard to earn a pittance, but her father eventually died in her arms. This individual then took the daughter to a nearby city and two years later they married.== DONE ==
 */
