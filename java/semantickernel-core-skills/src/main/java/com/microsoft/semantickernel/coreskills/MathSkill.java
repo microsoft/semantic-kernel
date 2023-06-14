@@ -64,7 +64,7 @@ public class MathSkill {
      * @return The resulting difference as a String.
      */
     @DefineSKFunction(description = "Subtracts amount from value.", name = "Subtract")
-    public BigDecimal subtract(
+    public String subtract(
             @SKFunctionInputAttribute
                     @SKFunctionParameters(
                             name = "input",
@@ -77,6 +77,6 @@ public class MathSkill {
 
         BigDecimal bValue = new BigDecimal(input);
 
-        return bValue.subtract(new BigDecimal(amount));
+        return bValue.subtract(new BigDecimal(amount)).toString();
     }
 }
