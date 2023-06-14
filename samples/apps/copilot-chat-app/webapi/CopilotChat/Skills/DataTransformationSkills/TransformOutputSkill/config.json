@@ -21,7 +21,7 @@
       },
       {
         "name": "rationale",
-        "description": "Description of the specific format or transformation that must be applied to inputVariable to respect the requested format or transformation. Must be as precized as possible and can contain examples of the expected result if available",
+        "description": "Description of the specific format or transformation that must be applied to inputVariable to respect the requested format or transformation. Must be as precise as possible and can contain examples of the expected result if available",
         "defaultValue": ""
       },
       {
