@@ -63,15 +63,10 @@ jobs:
         chmod +x $(pwd)/samples/apps/copilot-chat-app/deploy/package-webapi.sh;
         docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "apt-get update && apt-get -y install sudo && sudo apt-get -y install zip";
         docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "/app/samples/apps/copilot-chat-app/deploy/package-webapi.sh";
-
-    - name: Extract package
-      #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
-      run: |
-        docker create --name tempcc mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}; docker cp tempcc:/app/samples/apps/copilot-chat-app/deploy/out/webapi.zip ./webapi.zip; docker rm tempcc;
   
     - name: Upload package to artifacts
       #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       uses: actions/upload-artifact@v3
       with:
         name: copilotchat-webapi
-        path: ./webapi.zip
+        path: ./samples/apps/copilot-chat-app/deploy/out/webapi.zip
