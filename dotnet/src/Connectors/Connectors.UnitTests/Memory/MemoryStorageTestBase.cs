@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory;
+
 public abstract class MemoryStorageTestBase
 {
     protected virtual string CreateRandomCollectionName()
