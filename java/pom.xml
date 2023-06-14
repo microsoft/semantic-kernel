@@ -187,6 +187,7 @@
                     <configuration>
                         <source>${maven.compiler.release}</source>
                         <target>${maven.compiler.release}</target>
+                        <release>8</release>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -538,6 +539,8 @@
                         <configuration>
                             <source>${maven.compiler.release}</source>
                             <target>${maven.compiler.release}</target>
+                            <!-- Ensure we compile against JDK 8 APIs -->
+                            <release>8</release>
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <showWarnings>true</showWarnings>
                             <compilerArgs>
