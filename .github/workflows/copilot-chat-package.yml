@@ -6,7 +6,7 @@ name: copilot-chat-package
 
 on:
   pull_request:
-    branches: [ "sk-piplines" ]
+    branches: [ "main", "feature*" ]
     paths:
       - 'samples/apps/copilot-chat-app/**'
   push:
