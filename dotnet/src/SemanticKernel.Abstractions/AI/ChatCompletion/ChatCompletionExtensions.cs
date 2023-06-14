@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,15 +24,12 @@ public static class ChatCompletionExtensions
         ChatRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var chatCompletionResults = chatCompletion.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
-
-        await foreach (var chatCompletionResult in chatCompletionResults)
+        await foreach (var chatCompletionResult in chatCompletion.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false))
         {
             await foreach (var chatMessageStream in chatCompletionResult.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return chatMessageStream.Content;
             }
-            yield break;
         }
     }
 
@@ -53,15 +49,8 @@ public static class ChatCompletionExtensions
         CancellationToken cancellationToken = default)
     {
         var chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
+        var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
 
-        StringBuilder messageContent = new();
-        foreach (var chatResult in chatResults)
-        {
-            var chatMessage = await chatResult.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
-            messageContent.Append(chatMessage.Content);
-            break;
-        }
-
-        return messageContent.ToString();
+        return firstChatMessage.Content;
     }
 }

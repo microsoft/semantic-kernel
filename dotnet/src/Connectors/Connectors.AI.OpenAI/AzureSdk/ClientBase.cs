@@ -197,14 +197,7 @@ public abstract class ClientBase
         }
 
         using StreamingChatCompletions streamingChatCompletions = response.Value;
-
-        var choices = await response.Value.GetChoicesStreaming(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
-        if (choices.Count == 0)
-        {
-            throw new OpenAIInvalidResponseException<StreamingChatCompletions>(streamingChatCompletions, "Streaming chat completions not found");
-        }
-
-        foreach (StreamingChatChoice choice in choices)
+        await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
         {
             yield return new ChatStreamingResult(response.Value, choice);
         }
