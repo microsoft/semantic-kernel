@@ -18,7 +18,7 @@ functions that work together to construct each response.
 
 Refer to [./scripts/README.md](./scripts/README.md) for local configuration and deployment.
 
-Refer to [./deploy/README.md](./scripts/README.md) for Azure configuration and deployment.
+Refer to [./deploy/README.md](./deploy/README.md) for Azure configuration and deployment.
 
 # Manual Setup and Local Deployment
 
