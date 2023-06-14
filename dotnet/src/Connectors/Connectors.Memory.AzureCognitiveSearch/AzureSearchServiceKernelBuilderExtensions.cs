@@ -21,7 +21,7 @@ public static class AzureSearchServiceKernelBuilderExtensions
     /// <param name="apiKey">The Api key used to authenticate requests against the Search service.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder WithAzureAzureCognitiveSearchMemory(this KernelBuilder builder,
+    public static KernelBuilder WithAzureCognitiveSearchMemory(this KernelBuilder builder,
         string endpoint,
         string apiKey,
         HttpClient? httpClient = null)

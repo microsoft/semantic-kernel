@@ -10,7 +10,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.UnitTests.Memory.AzureCognitiveSearch;
 
 /// <summary>
-/// Unit tests for <see cref="AzureCognitiveSearchMemoryTests"/> class.
+/// Unit tests for <see cref="AzureCognitiveSearchMemory"/> class.
 /// </summary>
 public sealed class AzureCognitiveSearchMemoryTests : IDisposable
 {
