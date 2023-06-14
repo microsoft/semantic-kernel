@@ -29,15 +29,11 @@ interface ModelOption {
 
 export type IResourceInput = Pick<IBackendConfig, 'key' | 'endpoint'>;
 
-type AzureOpenAIModels = {
+type AIModels = {
     otherModels: ModelOption[];
-    completionModels: ModelOption[];
+    chatCompletionModels: ModelOption[];
+    textCompletionModels?: ModelOption[];
     embeddingsModels: ModelOption[];
-};
-
-type OpenAIModels = {
-    otherModels: ModelOption[];
-    probableEmbeddingsModels: ModelOption[];
 };
 
 const GenericFetchErrorMessage = 'Failed to fetch';
@@ -51,7 +47,8 @@ const ModelConfig: FC<IData> = ({
     setIsValidModel,
     defaultModel = '',
 }) => {
-    const modelTitle = modelType === ModelType.Embeddings ? ['embeddings', 'Embeddings'] : ['completion', 'Completion'];
+    const modelTitle =
+        modelType === ModelType.Embeddings ? ['embeddings', 'Embeddings'] : ['chat completion', 'Chat Completion'];
     const labelPrefix = `${isOpenAI ? 'oai' : 'aoai'}${modelTitle[0]}`;
     const [suggestedModels, setSuggestedModels] = useState<ModelOption[] | undefined>();
     const [modelIds, setModelIds] = useState<ModelOption[] | undefined>();
@@ -79,22 +76,17 @@ const ModelConfig: FC<IData> = ({
 
             const fetchModels = resourceInput.key && ((!isOpenAI && resourceInput.endpoint) || isOpenAI);
 
-            const setModels = (backendModels?: AzureOpenAIModels | OpenAIModels) => {
-                const completionModels = isOpenAI
-                    ? backendModels?.otherModels
-                    : (backendModels as AzureOpenAIModels).completionModels;
-                const embeddingsModels = isOpenAI
-                    ? (backendModels as OpenAIModels).probableEmbeddingsModels
-                    : (backendModels as AzureOpenAIModels).embeddingsModels;
+            const setModels = (backendModels?: AIModels) => {
+                const chatCompletionModels = backendModels?.chatCompletionModels ?? [];
+                const embeddingsModels = backendModels?.embeddingsModels ?? [];
+                var otherModels = (isOpenAI ? backendModels?.otherModels : backendModels?.textCompletionModels) ?? [];
 
-                const sortedCompletionModelsArray = completionModels?.sort((a, b) => a.id.localeCompare(b.id));
-                const sortedEmbeddingsModelArray = embeddingsModels?.sort((a, b) => a.id.localeCompare(b.id));
                 if (modelType === ModelType.Embeddings) {
-                    setModelIds(sortedCompletionModelsArray);
-                    setSuggestedModels(sortedEmbeddingsModelArray);
+                    setSuggestedModels(embeddingsModels.sort((a, b) => a.id.localeCompare(b.id)));
+                    setModelIds(otherModels.concat(chatCompletionModels).sort((a, b) => a.id.localeCompare(b.id)));
                 } else {
-                    setSuggestedModels(sortedCompletionModelsArray);
-                    setModelIds(sortedEmbeddingsModelArray);
+                    setSuggestedModels(chatCompletionModels.sort((a, b) => a.id.localeCompare(b.id)));
+                    setModelIds(otherModels.concat(embeddingsModels).sort((a, b) => a.id.localeCompare(b.id)));
                 }
                 setIsBusy(false);
             };
@@ -277,7 +269,8 @@ const getAzureOpenAiDeployments = async (
 
                 const ids = {
                     embeddingsModels: [] as ModelOption[],
-                    completionModels: [] as ModelOption[],
+                    textCompletionModels: [] as ModelOption[],
+                    chatCompletionModels: [] as ModelOption[],
                     otherModels: [] as ModelOption[],
                 };
                 for (const key in deployments) {
@@ -288,10 +281,17 @@ const getAzureOpenAiDeployments = async (
                             disabled: deployment.status && deployment.status !== 'succeeded',
                         });
                     } else if (aoaiCompletionModels.has(deployment.model)) {
-                        ids.completionModels.push({
-                            id: deployment.id,
-                            disabled: deployment.status && deployment.status !== 'succeeded',
-                        });
+                        if (deployment.model.includes('gpt')) {
+                            ids.chatCompletionModels.push({
+                                id: deployment.id,
+                                disabled: deployment.status && deployment.status !== 'succeeded',
+                            });
+                        } else {
+                            ids.textCompletionModels.push({
+                                id: deployment.id,
+                                disabled: deployment.status && deployment.status !== 'succeeded',
+                            });
+                        }
                     } else {
                         ids.otherModels.push({
                             id: deployment.id,
@@ -338,13 +338,20 @@ const getOpenAiModels = async (apiKey: string, onFailureCallback: (errorMessage?
         });
 
     const ids = {
-        probableEmbeddingsModels: [] as ModelOption[],
+        embeddingsModels: [] as ModelOption[],
+        textCompletionModels: [] as ModelOption[],
+        chatCompletionModels: [] as ModelOption[],
         otherModels: [] as ModelOption[],
     };
     for (const key in models) {
         const model = models[key];
         if (model.id.includes('embedding') || model.id.includes('search')) {
-            ids.probableEmbeddingsModels.push({
+            ids.embeddingsModels.push({
+                id: model.id,
+                disabled: model.status && model.status !== 'succeeded',
+            });
+        } else if (model.id.includes('gpt')) {
+            ids.chatCompletionModels.push({
                 id: model.id,
                 disabled: model.status && model.status !== 'succeeded',
             });
