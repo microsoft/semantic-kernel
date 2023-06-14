@@ -196,8 +196,8 @@ class TimeSkill:
         return d.strftime("%A, %d %B, %Y")
 
     @sk_function(
-        description="""Get the date of the last day matching the supplied week day name in English. 
-        Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday, 
+        description="""Get the date of the last day matching the supplied week day name in English.
+        Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday,
         16 May, 2023"""
     )
     def date_matching_last_day_name(self, day_name: str) -> str:
