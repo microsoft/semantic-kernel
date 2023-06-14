@@ -30,7 +30,7 @@ public sealed class AzureSearchServiceKernelBuilderExtensionsTests : IDisposable
         this.messageHandlerStub.ResponseToReturn.Content = new StringContent("{\"value\": [{\"name\": \"fake-index1\"}]}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new KernelBuilder();
-        builder.WithAzureAzureCognitiveSearchMemory("https://fake-random-test-host/fake-path", "fake-api-key", this.httpClient);
+        builder.WithAzureCognitiveSearchMemory("https://fake-random-test-host/fake-path", "fake-api-key", this.httpClient);
         builder.WithAzureTextEmbeddingGenerationService("fake-deployment-name", "https://fake-random-test-host/fake-path1", "fake -api-key");
         var kernel = builder.Build(); //This call triggers the internal factory registered by WithAzureAzureCognitiveSearchMemory method to create an instance of the AzureCognitiveSearchMemory class.
 

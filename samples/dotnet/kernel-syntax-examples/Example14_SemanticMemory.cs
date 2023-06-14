@@ -35,7 +35,7 @@ public static class Example14_SemanticMemory
 
         var kernelWithACS = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithAzureAzureCognitiveSearchMemory(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
+            .WithAzureCognitiveSearchMemory(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
             .Build();
 
         await RunExampleAsync(kernelWithACS);
