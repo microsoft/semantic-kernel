@@ -24,6 +24,7 @@ import { PlanState } from './models/Plan';
 import { IAskVariables } from './semantic-kernel/model/Ask';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
+import { DocumentImportService } from './services/DocumentImportService';
 import * as PlanUtils from './utils/PlanUtils';
 
 import botIcon1 from '../assets/bot-icons/bot-icon-1.png';
@@ -47,6 +48,7 @@ export const useChat = () => {
 
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
+    const documentImportService = new DocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
 
     const botProfilePictures: string[] = [botIcon1, botIcon2, botIcon3, botIcon4, botIcon5];
 
@@ -135,12 +137,6 @@ export const useChat = () => {
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 getEnabledPlugins(),
             );
-
-            // When a document is uploaded we only save the user's message to storage, and
-            // do not generate a bot response. Therefore, we do not need to update the conversation.
-            if (messageType === ChatMessageType.Document) {
-                return;
-            }
 
             const messageResult: IChatMessage = {
                 type: (result.variables.find((v) => v.key === 'messageType')?.value ??
@@ -261,6 +257,23 @@ export const useChat = () => {
         return [];
     };
 
+    const importDocument = async (chatId: string, file: File) => {
+        try {
+            const message = await documentImportService.importDocumentAsync(
+                account!.homeAccountId!,
+                (account!.name ?? account!.username) as string,
+                chatId,
+                file,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+
+            dispatch(updateConversation({ message, chatId }));
+        } catch (e: any) {
+            const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+    };
+
     /*
      * Once enabled, each plugin will have a custom dedicated header in every Semantic Kernel request
      * containing respective auth information (i.e., token, encoded client info, etc.)
@@ -294,5 +307,6 @@ export const useChat = () => {
         downloadBot,
         uploadBot,
         getChatMemorySources,
+        importDocument,
     };
 };
