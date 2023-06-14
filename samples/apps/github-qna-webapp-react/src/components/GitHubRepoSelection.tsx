@@ -101,7 +101,7 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
                 />
             </div>
             <Label>
-                <strong>GitHub PAT Token (optional)</strong>
+                <strong>GitHub Personal Access Token (optional)</strong>
             </Label>
             <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
                 <Input
