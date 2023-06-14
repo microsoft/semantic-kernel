@@ -62,7 +62,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
     public WeaviateMemoryStore(string scheme, string host, int port, string? apiKey = null, HttpClient? httpClient = null, ILogger? logger = null)
     {
-        Verify.NotNullOrWhiteSpace(scheme, "Scheme cannot be null or empty");
+        Verify.NotNullOrWhiteSpace(scheme);
         Verify.NotNullOrWhiteSpace(host, "Host cannot be null or empty");
 
         this._logger = logger ?? NullLogger<WeaviateMemoryStore>.Instance;
