@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/api-test/api-usage-example/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-test/api-usage-example/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-test/integration-tests/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-test/integration-tests/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-test/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api-test/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/openai-sdk/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/openai-sdk/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-connectors-parent/semantickernel-connectors/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-connectors-parent/semantickernel-connectors/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-connectors-parent/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-connectors-parent/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-core-skills/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-core-skills/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-core/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-core/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-extensions-parent/sequentialplanner-extensions/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-extensions-parent/sequentialplanner-extensions/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-extensions-parent/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-extensions-parent/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-openai-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/semantickernel-openai-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>
