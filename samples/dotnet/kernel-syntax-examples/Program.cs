@@ -145,5 +145,8 @@ public static class Program
 
         await Example46_Weaviate.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example47_Redis.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
