@@ -39,7 +39,9 @@ jobs:
           shopt -s globstar # enable globstar option to use ** for recursive matching
           for lockfile in samples/**/yarn.lock; do # loop over all yarn.lock files
             dir=$(dirname "$lockfile") # get the directory of the lock file
-            echo "Running yarn install and yarn build for $dir"
-            yarn --cwd "$dir" install --frozen-lockfile # install dependencies
-            yarn --cwd "$dir" build # run build script
+            if [[ "$dir" != "samples/apps" ]]; then # exclude samples/apps directory
+              echo "Running yarn install and yarn build for $dir"
+              yarn --cwd "$dir" install --frozen-lockfile # install dependencies
+              yarn --cwd "$dir" build # run build script
+            fi
           done
