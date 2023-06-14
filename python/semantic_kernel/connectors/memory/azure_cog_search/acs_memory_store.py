@@ -387,7 +387,6 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
 
-        ## TODO: call delete_documents API pass list of dicts -- Look at upsert_batch_async, make changes
         for acs_key in keys:
             self.remove_async(collection_name=collection_name, key=acs_key)
 
