@@ -206,7 +206,7 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "userName", Description = "Name of the user")]
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     [SKFunctionContextParameter(Name = "proposedPlan", Description = "Previously proposed plan that is approved")]
-    [SKFunctionContextParameter(Name = "type", Description = "Type of the chat")]
+    [SKFunctionContextParameter(Name = "messageType", Description = "Type of the message")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
         // TODO: check if user has access to the chat
@@ -218,13 +218,7 @@ public class ChatSkill
         // Save this new message to memory such that subsequent chat responses can use it
         try
         {
-            var userMessage = await this.SaveNewMessageAsync(message, userId, userName, chatId, messageType);
-
-            // If the message represents a file upload then we don't generate a bot response.
-            if (userMessage.Type == ChatMessage.ChatMessageType.Document)
-            {
-                return context;
-            }
+            await this.SaveNewMessageAsync(message, userId, userName, chatId, messageType);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
