@@ -137,7 +137,7 @@ BEGIN SUMMARY:
 
             this._logger.LogDebug("Downloading {RepoBundle}", repoBundle);
 
-            if (context.Variables.Get(PatTokenParamName, out string patToken))
+            if (context.Variables.TryGetValue(PatTokenParamName, out string? patToken))
             {
                 this._logger.LogDebug($"PAT detected, adding authorization headers");
 
