@@ -60,7 +60,8 @@ jobs:
     - name: Build dotnet solution
       #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: |
-        docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "chmod +X /app/samples/apps/copilot-chat-app/deploy/package-webapi.sh; /app/samples/apps/copilot-chat-app/deploy/package-webapi.sh;"
+        chmod +x $(pwd)/samples/apps/copilot-chat-app/deploy/package-webapi.sh;
+        docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "/app/samples/apps/copilot-chat-app/deploy/package-webapi.sh"
 
     - name: Extract package
       #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
