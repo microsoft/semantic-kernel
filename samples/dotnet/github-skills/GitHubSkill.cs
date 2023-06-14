@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -112,6 +113,7 @@ BEGIN SUMMARY:
     [SKFunctionContextParameter(Name = SearchPatternParamName, Description = "The search string to match against the names of files in the repository")]
     public async Task SummarizeRepositoryAsync(string source, SKContext context)
     {
+        // source: https://github.com/adrianwyatt/azure-cog-cyberdeck
         if (!context.Variables.TryGetValue(RepositoryBranchParamName, out string? repositoryBranch) || string.IsNullOrEmpty(repositoryBranch))
         {
             repositoryBranch = "main";
@@ -128,16 +130,17 @@ BEGIN SUMMARY:
 
         try
         {
-            var repositoryUri = source.Trim(s_trimChars);
-            var repoBundle = $"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip";
+            // https://api.github.com/repos/adrianwyatt/azure-cog-cyberdeck/zipball/main
+            var repositoryUri = Regex.Replace(source.Trim(s_trimChars), "github.com", "api.github.com/repos", RegexOptions.IgnoreCase);
+            var repoBundle = $"{repositoryUri}/zipball/{repositoryBranch}";
 
             this._logger.LogDebug("Downloading {RepoBundle}", repoBundle);
 
             var headers = new Dictionary<string, string>();
-            if (context.Variables.TryGetValue(PatTokenParamName, out string? patToken))
+            if (context.Variables.TryGetValue(PatTokenParamName, out string? pat))
             {
                 this._logger.LogDebug("Access token detected, adding authorization headers");
-                headers.Add("Authorization", $"token {patToken}");
+                headers.Add("Authorization", $"Bearer {pat}");
             }
 
             await this.DownloadToFileAsync(repoBundle, headers, filePath, context.CancellationToken);
