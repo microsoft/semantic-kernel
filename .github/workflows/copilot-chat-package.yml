@@ -2,7 +2,7 @@
 # This workflow will package the Copilot Chat application for deployment.
 #
 
-name: copilotchat-package
+name: copilot-chat-package
 
 on:
   pull_request:
@@ -68,4 +68,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: copilotchat-webapi
-        path: /app/samples/apps/copilot-chat-app/deploy/publish/*
+        path: ./samples/apps/copilot-chat-app/deploy/publish
