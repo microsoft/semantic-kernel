@@ -1,3 +1,20 @@
 {
- "java.compile.nullAnalysis.mode": "automatic"
+    // Java section
+    "[java]": {
+        "editor.formatOnSave": false,
+        "editor.tabSize": 4,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": false
+        },
+    },
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "\\.java$",
+                "cmd": "java -Xmx128m -jar ${workspaceFolder}/utilities/google-java-format-1.17.0-all-deps.jar --replace --aosp ${file}"
+            },
+        ],
+    },
+    "java.debug.settings.onBuildFailureProceed": true,
+    "java.compile.nullAnalysis.mode": "disabled"
 }
