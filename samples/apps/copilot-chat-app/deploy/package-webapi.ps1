@@ -18,7 +18,7 @@ param(
     
     [string]
     # Output directory for published assets.
-    $OutputDirectory = "$PSSCriptRoot"
+    $OutputDirectory = "$PSScriptRoot"
 )
 
 Write-Host "BuildConfiguration: $BuildConfiguration"

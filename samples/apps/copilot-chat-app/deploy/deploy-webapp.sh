@@ -11,7 +11,7 @@ usage() {
     echo ""
     echo "Arguments:"
     echo "  -s, --subscription SUBSCRIPTION        Subscription to which to make the deployment (mandatory)"
-    echo "  -rg, --resource-group RESOUCE_GROUP    Resource group name from a 'deploy-azure.sh' deployment (mandatory)"
+    echo "  -rg, --resource-group RESOURCE_GROUP    Resource group name from a 'deploy-azure.sh' deployment (mandatory)"
     echo "  -d, --deployment-name DEPLOYMENT_NAME  Name of the deployment from a 'deploy-azure.sh' deployment (mandatory)"
     echo "  -a, --application-id                   Client application ID (mandatory)"
 }

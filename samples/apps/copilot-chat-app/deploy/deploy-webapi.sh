@@ -9,7 +9,7 @@ usage() {
     echo ""
     echo "Arguments:"
     echo "  -s, --subscription SUBSCRIPTION        Subscription to which to make the deployment (mandatory)"
-    echo "  -rg, --resource-group RESOUCE_GROUP    Resource group name from a 'deploy-azure.sh' deployment (mandatory)"
+    echo "  -rg, --resource-group RESOURCE_GROUP    Resource group name from a 'deploy-azure.sh' deployment (mandatory)"
     echo "  -d, --deployment-name DEPLOYMENT_NAME  Name of the deployment from a 'deploy-azure.sh' deployment (mandatory)"
     echo "  -p, --package PACKAGE_FILE_PATH        Path to the WebAPI package file from a 'package-webapi.sh' run (mandatory)"
 }
