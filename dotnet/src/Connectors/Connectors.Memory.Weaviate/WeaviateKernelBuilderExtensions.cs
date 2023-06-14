@@ -38,13 +38,13 @@ public static class WeaviateKernelBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="httpClient">The optional <see cref="HttpClient"/> instance used for making HTTP requests.</param>
-    /// <param name="apiKey">The API key for accessing Weaviate server.</param>
     /// <param name="endpoint">The Weaviate server endpoint URL. If not specified, the base address of the HTTP client is used.</param>
+    /// <param name="apiKey">The API key for accessing Weaviate server.</param>
     /// <returns>Self instance</returns>
     public static KernelBuilder WithWeaviateMemoryStore(this KernelBuilder builder,
         HttpClient httpClient,
-        string? apiKey = null,
-        string? endpoint = null)
+        string? endpoint = null,
+        string? apiKey = null)
     {
         builder.WithMemoryStorage((parameters) =>
         {

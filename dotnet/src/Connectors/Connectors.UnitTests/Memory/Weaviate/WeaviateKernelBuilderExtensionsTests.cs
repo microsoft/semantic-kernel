@@ -42,7 +42,7 @@ public sealed class WeaviateKernelBuilderExtensionsTests : IDisposable
         this.messageHandlerStub.ResponseToReturn.Content = new StringContent(JsonSerializer.Serialize(getResponse, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }), Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new KernelBuilder();
-        builder.WithWeaviateMemoryStore(this.httpClient, "fake-api-key", "https://fake-random-test-weaviate-host");
+        builder.WithWeaviateMemoryStore(this.httpClient, "https://fake-random-test-weaviate-host", "fake-api-key");
         builder.WithAzureTextEmbeddingGenerationService("fake-deployment-name", "https://fake-random-test-host/fake-path", "fake -api-key");
         var kernel = builder.Build(); //This call triggers the internal factory registered by WithWeaviateMemoryStore method to create an instance of the WeaviateMemoryStore class.
 
