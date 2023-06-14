@@ -106,7 +106,11 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
         : { name: fullName, color: 'colorful' as 'colorful' };
 
     return (
-        <div className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}>
+        <div
+            className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}
+            data-testid={`chat-history-item-${messageIndex}`}   // needed for testing
+            data-username={fullName}    // needed for testing
+        >
             {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
             <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
                 <div className={classes.header}>

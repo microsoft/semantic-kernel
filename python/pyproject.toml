@@ -21,7 +21,6 @@ pytest = "7.2.0"
 ruff = "0.0.272"
 pytest-asyncio = "0.21.0"
 
-
 [tool.poetry.group.hugging_face.dependencies]
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
@@ -38,6 +37,7 @@ weaviate-client = "^3.18.0"
 profile = "black"
 
 [tool.ruff]
+select = ["E", "F", "I"]
 line-length = 120
 
 [build-system]
