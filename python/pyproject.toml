@@ -29,6 +29,13 @@ torch = "2.0.1"
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.3.23"
 
+[[tool.poetry.source]]
+name = "azure-sdk-dev"
+url = "https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-python/pypi/simple/"
+priority = "supplemental"
+
+[tool.poetry.group.azure_cognitive_search.dependencies]
+azure-search-documents = {version = "11.4.0a20230509004", source = "azure-sdk-dev"}
 
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = "^3.18.0"
