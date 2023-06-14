@@ -67,7 +67,7 @@ if [[ ! -d "$PUBLISH_ZIP_DIRECTORY" ]]; then
 fi
 
 echo "Build configuration: $CONFIGURATION"
-dotnet publish ../webapi/CopilotChatWebApi.csproj --configuration $CONFIGURATION --framework $DOTNET --runtime $RUNTIME --self-contained --output $PUBLISH_OUTPUT_DIRECTORY
+dotnet publish "$SCRIPT_ROOT/../webapi/CopilotChatWebApi.csproj" --configuration $CONFIGURATION --framework $DOTNET --runtime $RUNTIME --self-contained --output "$PUBLISH_OUTPUT_DIRECTORY"
 if [ $? -ne 0 ]; then
     exit 1
 fi

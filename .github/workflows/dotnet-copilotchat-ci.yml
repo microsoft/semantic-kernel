@@ -1,0 +1,76 @@
+#
+# This workflow will package the Copilot Chat application for deployment.
+#
+
+name: dotnet-pr
+
+on:
+  pull_request:
+    branches: [ "main", "feature*" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check-for-copilot-chat-app-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.filter.outputs.copilot-chat-app}}
+    steps:
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          copilot-chat-app:
+            - 'samples/apps/copilot-chat-app/**'
+    - uses: actions/checkout@v3
+    # run only if 'copilot-chat-app' files were changed
+    - name: copilot-chat-app changes found
+      if: steps.filter.outputs.copilot-chat-app == 'true'
+      run: echo "copilot-chat-app file"
+    # run only if not 'copilot-chat-app' files were changed
+    - name: no copilot-chat-app changes found
+      if: steps.filter.outputs.copilot-chat-app != 'true'
+      run: echo "NOT copilot-chat-app file"
+
+  build:
+    strategy:
+        fail-fast: false
+        matrix:
+          include:
+          - { dotnet: '6.0', configuration: Release, os: ubuntu-latest }
+
+    runs-on: ${{ matrix.os }}
+    needs: check-for-copilot-chat-app-changes
+    env:
+      NUGET_CERT_REVOCATION_MODE: offline
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        clean: true
+        
+    - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
+      run: docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+
+    - name: Build dotnet solution
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
+      run: |
+        docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "chmod +X /app/samples/apps/copilot-chat-app/deploy/package-webapi.sh; /app/samples/apps/copilot-chat-app/deploy/package-webapi.sh;"
+
+    - name: Extract package
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
+      run: |
+        docker cp mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}:/app/samples/apps/copilot-chat-app/deploy/out/webapi.zip ./webapi.zip
+        docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "chmod +X /app/samples/apps/copilot-chat-app/deploy/package-webapi.sh; /app/samples/apps/copilot-chat-app/deploy/package-webapi.sh;"
+  
+    - name: Upload package to artifacts
+      if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: copilotchat-webapi
+        path: ./webapi.zip

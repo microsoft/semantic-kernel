@@ -37,7 +37,7 @@ if (!(Test-Path $publishOutputDirectory)) {
 }
 
 Write-Host "Build configuration: $BuildConfiguration"
-dotnet publish ../webapi/CopilotChatWebApi.csproj --configuration $BuildConfiguration --framework $DotNetFramework --runtime $TargetRuntime --self-contained --output $publishOutputDirectory
+dotnet publish "$PSScriptRoot/../webapi/CopilotChatWebApi.csproj" --configuration $BuildConfiguration --framework $DotNetFramework --runtime $TargetRuntime --self-contained --output "$publishOutputDirectory"
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
