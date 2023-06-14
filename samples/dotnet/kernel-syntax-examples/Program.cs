@@ -148,7 +148,6 @@ public static class Program
 
         await Example47_Redis.RunAsync();
         Console.WriteLine("== DONE ==");
-        */
 
         await Example48_Apim.RunAsync();
         Console.WriteLine("== DONE ==");
