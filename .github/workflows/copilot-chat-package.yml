@@ -49,23 +49,37 @@ jobs:
     env:
       NUGET_CERT_REVOCATION_MODE: offline
     steps:
-    - uses: actions/checkout@v3
-      with:
-        clean: true
-        
-    - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
-      #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
-      run: docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+      - name: Output Run ID
+        run: |
+          echo ${{ github.run_id }}
+          echo ${{ github.run_number }}
+          echo ${{ github.run_attempt }}
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y%m%d')"
+      - name: Test with environment variables
+        run: echo $TAG_NAME - $RELEASE_NAME
+        env:
+          TAG_NAME: nightly-tag-${{ steps.date.outputs.date }}
+          RELEASE_NAME: nightly-release-${{ steps.date.outputs.date }}
 
-    - name: Package Copilot Chat Web API
-      #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
-      run: |
-        chmod +x $(pwd)/samples/apps/copilot-chat-app/deploy/package-webapi.sh;
-        docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "/app/samples/apps/copilot-chat-app/deploy/package-webapi.sh --no-zip";
+    # - uses: actions/checkout@v3
+    #   with:
+    #     clean: true
+        
+    # - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
+    #   #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
+    #   run: docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+
+    # - name: Package Copilot Chat Web API
+    #   #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
+    #   run: |
+    #     chmod +x $(pwd)/samples/apps/copilot-chat-app/deploy/package-webapi.sh;
+    #     docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "/app/samples/apps/copilot-chat-app/deploy/package-webapi.sh --no-zip";
   
-    - name: Upload package to artifacts
-      #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
-      uses: actions/upload-artifact@v3
-      with:
-        name: copilotchat-webapi
-        path: ./samples/apps/copilot-chat-app/deploy/publish
+    # - name: Upload package to artifacts
+    #   #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: copilotchat-webapi
+    #     path: ./samples/apps/copilot-chat-app/deploy/publish
