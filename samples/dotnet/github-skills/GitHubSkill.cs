@@ -4,13 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Text;
 
 namespace GitHubSkills;
@@ -62,7 +63,6 @@ public class GitHubSkill
 
     private readonly ISKFunction _summarizeCodeFunction;
     private readonly IKernel _kernel;
-    private readonly WebFileDownloadSkill _downloadSkill;
     private readonly ILogger<GitHubSkill> _logger;
     private static readonly char[] s_trimChars = new char[] { ' ', '/' };
 
@@ -84,10 +84,9 @@ BEGIN SUMMARY:
     /// <param name="kernel">Kernel instance</param>
     /// <param name="downloadSkill">Instance of WebFileDownloadSkill used to download web files</param>
     /// <param name="logger">Optional logger</param>
-    public GitHubSkill(IKernel kernel, WebFileDownloadSkill downloadSkill, ILogger<GitHubSkill>? logger = null)
+    public GitHubSkill(IKernel kernel, ILogger<GitHubSkill>? logger = null)
     {
         this._kernel = kernel;
-        this._downloadSkill = downloadSkill;
         this._logger = logger ?? NullLogger<GitHubSkill>.Instance;
 
         this._summarizeCodeFunction = kernel.CreateSemanticFunction(
@@ -130,30 +129,18 @@ BEGIN SUMMARY:
         try
         {
             var repositoryUri = source.Trim(s_trimChars);
-            var downloadSkillContext = new SKContext(logger: context.Log);
-            downloadSkillContext.Variables.Set(FilePathParamName, filePath);
-
             var repoBundle = $"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip";
 
             this._logger.LogDebug("Downloading {RepoBundle}", repoBundle);
 
+            var headers = new Dictionary<string, string>();
             if (context.Variables.TryGetValue(PatTokenParamName, out string? patToken))
             {
-                this._logger.LogDebug($"PAT detected, adding authorization headers");
-
-                // If variables would be a dictionary of object we could probably pass headers,
-                // we can also serialize it to string...
-                var headers = new Dictionary<string, string>()
-                {
-                    { "Authorization", $"token {patToken}" }
-                };
-
-                await this._downloadSkill.DownloadToFileAsync(repoBundle, headers, downloadSkillContext);
+                this._logger.LogDebug("Access token detected, adding authorization headers");
+                headers.Add("Authorization", $"token {patToken}");
             }
-            else
-            {
-                await this._downloadSkill.DownloadToFileAsync(repoBundle, downloadSkillContext);
-            }
+
+            await this.DownloadToFileAsync(repoBundle, headers, filePath, context.CancellationToken);
 
             ZipFile.ExtractToDirectory(filePath, directoryPath);
 
@@ -174,6 +161,25 @@ BEGIN SUMMARY:
                 Directory.Delete(directoryPath, true);
             }
         }
+    }
+
+    private async Task DownloadToFileAsync(string uri, IDictionary<string, string> headers, string filePath, CancellationToken cancellationToken)
+    {
+        // Download URI to file.
+        using HttpClient client = new();
+        using HttpRequestMessage request = new(HttpMethod.Get, uri);
+        foreach (var header in headers)
+        {
+            request.Headers.Add(header.Key, header.Value);
+        }
+
+        using HttpResponseMessage response = await client.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        using Stream contentStream = await response.Content.ReadAsStreamAsync();
+        using FileStream fileStream = File.Create(filePath);
+        await contentStream.CopyToAsync(fileStream, 81920, cancellationToken);
+        await fileStream.FlushAsync(cancellationToken);
     }
 
     /// <summary>

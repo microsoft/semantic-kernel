@@ -10,7 +10,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SemanticKernel" Version="0.15.230531.5-preview" />
     <PackageReference Include="Microsoft.SemanticKernel.Skills.Document" Version="0.15.230531.5-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.15.230531.5-preview" />
   </ItemGroup>
 
   <ItemGroup>
