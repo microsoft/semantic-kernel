@@ -2,9 +2,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
@@ -57,7 +59,7 @@ public class CopilotChatPlanner
         }
 
         Plan plan = this._plannerOptions?.Type == PlanType.Sequential
-                ? await new SequentialPlanner(this.Kernel).CreatePlanAsync(goal)
+                ? await new SequentialPlanner(this.Kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.75 }).CreatePlanAsync(goal)
                 : await new ActionPlanner(this.Kernel).CreatePlanAsync(goal);
 
         return availableFunctionsOnly ? this.SanitizePlan(plan, plannerFunctionsView) : plan;
@@ -71,15 +73,46 @@ public class CopilotChatPlanner
     private Plan SanitizePlan(Plan plan, FunctionsView availableFunctions)
     {
         List<Plan> sanitizedSteps = new();
+        List<string> planOutputs = new();
+
         foreach (var step in plan.Steps)
         {
             if (this.Kernel.Skills.TryGetFunction(step.SkillName, step.Name, out var function))
             {
+                planOutputs.AddRange(step.Outputs);
+
+                // Create a regex object to match variable names
+                Regex variableRegEx = new(@"\$([A-Za-z_]+)", RegexOptions.Singleline);
+
+                foreach (var input in step.Parameters)
+                {
+                    // Check for any inputs that may have dependencies from removed steps
+                    // Override these values with unknown constant to prompt for user input
+                    Match inputVariableMatch = variableRegEx.Match(input.Value);
+
+                    if (inputVariableMatch.Success)
+                    {
+                        foreach (Capture match in inputVariableMatch.Groups[1].Captures)
+                        {
+                            var inputVariableValue = match.Value;
+                            if (!planOutputs.Any(output => string.Equals(output, inputVariableValue, System.StringComparison.OrdinalIgnoreCase)))
+                            {
+                                var overrideValue =
+                                    string.Equals("INPUT", input.Key, System.StringComparison.OrdinalIgnoreCase) && inputVariableMatch.Groups[1].Captures.Count == 1
+                                        ? "$PLAN.RESULT"
+                                        : "$???";
+                                step.Parameters.Set(input.Key, Regex.Replace(input.Value, variableRegEx.ToString(), overrideValue));
+                            }
+                        }
+                    }
+                }
+
                 sanitizedSteps.Add(step);
+
             }
         }
 
-        Plan sanitizedPlan = new Plan(plan.Description, sanitizedSteps.ToArray<Plan>());
+        Plan sanitizedPlan = new (plan.Description, sanitizedSteps.ToArray<Plan>());
 
         // Merge any state back into new plan object
         sanitizedPlan.State.Update(plan.State);

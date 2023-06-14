@@ -60,7 +60,7 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
         ) => {
             const { content, messageIndex, chatId, planState } = action.payload;
             const id = chatId ?? state.selectedId;
-            state.conversations[id].messages[messageIndex].state = planState;
+            if (planState) state.conversations[id].messages[messageIndex].state = planState;
             state.conversations[id].messages[messageIndex].content = content;
             frontLoadChat(state, id);
         },
