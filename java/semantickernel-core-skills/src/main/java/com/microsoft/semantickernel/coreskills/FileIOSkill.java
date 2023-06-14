@@ -1,17 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
 
-import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 
-import reactor.core.publisher.Mono;
-
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 /**
  * Read and write from a file.
@@ -40,24 +37,17 @@ public class FileIOSkill {
      * @return File content.
      */
     @DefineSKFunction(description = "Read a file", name = "readAsync")
-    public Mono<String> readFileAsync(
+    public String readFileAsync(
             @SKFunctionInputAttribute
                     @SKFunctionParameters(name = "path", description = "Source file")
                     String path,
-            SKContext context) {
-        return Mono.create(
-                monoSink -> {
-                    try {
-                        Path filePath = Paths.get(path);
-                        byte[] fileBytes = Files.readAllBytes(filePath);
-                        String charset = context.getVariables().get("charset");
-                        String fileContents =
-                                new String(fileBytes, Optional.ofNullable(charset).orElse("UTF-8"));
-                        monoSink.success(fileContents);
-                    } catch (Exception e) {
-                        monoSink.error(e);
-                    }
-                });
+                    @SKFunctionParameters(name = "charset", description = "Character set to use to read the file", defaultValue="UTF-8")
+                    String charset) throws IOException {
+        Path filePath = Paths.get(path);
+        byte[] fileBytes;
+        fileBytes = Files.readAllBytes(filePath);
+        String fileContents = new String(fileBytes, charset);
+        return fileContents;
     }
 
     /**
@@ -74,29 +64,19 @@ public class FileIOSkill {
      * @return An awaitable task.
      */
     @DefineSKFunction(description = "Write a file", name = "writeAsync")
-    public Mono<Void> writeFileAsync(
+    public void writeFileAsync(
             @SKFunctionInputAttribute
                     @SKFunctionParameters(name = "path", description = "Destination file")
                     String path,
-            @SKFunctionParameters(
+                    @SKFunctionParameters(
                             name = "content",
                             description = "File content",
                             defaultValue = "",
                             type = String.class)
                     String content,
-            SKContext context) {
-        return Mono.create(
-                monoSink -> {
-                    try {
+                    @SKFunctionParameters(name = "charset", description = "Character set to use to read the file", defaultValue="UTF-8")
+                    String charset) throws IOException {
                         Path filePath = Paths.get(path);
-                        String charset = context.getVariables().get("charset");
-                        Files.write(
-                                filePath,
-                                content.getBytes(Optional.ofNullable(charset).orElse("UTF-8")));
-                        monoSink.success();
-                    } catch (Exception e) {
-                        monoSink.error(e);
-                    }
-                });
+                        Files.write(filePath, content.getBytes(charset));
     }
 }
