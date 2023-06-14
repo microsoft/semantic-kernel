@@ -28,7 +28,7 @@ public abstract class MemoryStorageTestBase
     protected abstract Task<IMemoryStore> CreateStoreAsync();
 
     /// <summary>
-    /// Overide to add cleanup code for your <see cref="IMemoryStore"/> instance after unit test
+    /// Override to add cleanup code for your <see cref="IMemoryStore"/> instance after unit test
     /// </summary>
     /// <param name="memoryStore"></param>
     /// <returns></returns>
