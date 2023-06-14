@@ -21,7 +21,6 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
-using Microsoft.SemanticKernel.Text;
 using Newtonsoft.Json;
 
 #pragma warning disable IDE0130
