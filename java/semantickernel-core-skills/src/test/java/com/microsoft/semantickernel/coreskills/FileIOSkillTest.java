@@ -26,18 +26,12 @@ public class FileIOSkillTest {
         // Create an instance of FileIOSkill
         FileIOSkill fileIOSkill = new FileIOSkill();
 
-        // Mock the SKContext
-        SKContext context = Mockito.mock(SKContext.class);
-        ContextVariables variables = Mockito.mock(ContextVariables.class);
-        Mockito.when(context.getVariables()).thenReturn(variables);
-        Mockito.when(context.getVariables().get("charset")).thenReturn("UTF-8");
-
         // Call the readFileAsync method with the temporary file path
         String filePath = tempFile.toAbsolutePath().toString();
-        StepVerifier.create(fileIOSkill.readFileAsync(filePath, context))
-                .expectNext(content)
-                .expectComplete()
-                .verify();
+        String outcome = fileIOSkill.readFileAsync(filePath, "UTF-8");
+
+        // Assert content (expected) is the same as the outcome (actual)
+        Assertions.assertEquals(content, outcome);
 
         // Delete the temporary file
         Files.delete(tempFile);
@@ -54,17 +48,8 @@ public class FileIOSkillTest {
         // Define the content to write
         String content = "Hello, World!";
 
-        // Mock the SKContext
-        SKContext context = Mockito.mock(SKContext.class);
-        ContextVariables variables = Mockito.mock(ContextVariables.class);
-        Mockito.when(context.getVariables()).thenReturn(variables);
-        Mockito.when(context.getVariables().get("charset")).thenReturn("UTF-8");
-
         // Call the writeFileAsync method with the temporary file path and content
-        StepVerifier.create(
-                        fileIOSkill.writeFileAsync(tempFile.toAbsolutePath().toString(), content, context))
-                .expectComplete()
-                .verify();
+        fileIOSkill.writeFileAsync(tempFile.toAbsolutePath().toString(), content, "UTF-8");
 
         // Read the written file to verify the content
         String fileContents = new String(Files.readAllBytes(tempFile));
