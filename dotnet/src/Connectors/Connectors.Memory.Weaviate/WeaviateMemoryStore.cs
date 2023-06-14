@@ -37,7 +37,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// The authorization header name
     /// </summary>
-    private const string AuthorizationHeaderName = "authorization";
+    private const string AuthorizationHeaderName = nameof(HttpRequestHeader.Authorization);
 
     // Regex to ensure Weaviate class names confirm to the naming convention
     // https://weaviate.io/developers/weaviate/configuration/schema-configuration#class
