@@ -53,6 +53,16 @@ export const ChatRoom: React.FC = () => {
     const scrollTargetRef = React.useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = React.useState(true);
 
+    const [isDraggingOver, setIsDraggingOver] = React.useState(false);
+    const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+    };
+    const onDragLeave = (e: React.DragEvent<HTMLDivElement | HTMLTextAreaElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(false);
+    };
+
     // hardcode to care only about the bot typing for now.
     const [isBotTyping, setIsBotTyping] = React.useState(false);
 
@@ -110,7 +120,7 @@ export const ChatRoom: React.FC = () => {
     };
 
     return (
-        <div className={classes.root}>
+        <div className={classes.root} onDragEnter={onDragEnter} onDragOver={onDragEnter} onDragLeave={onDragLeave}>
             <div ref={scrollViewTargetRef} className={classes.scroll}>
                 <div ref={scrollViewTargetRef} className={classes.history}>
                     <ChatHistory messages={messages} onGetResponse={handleSubmit} />
@@ -120,7 +130,12 @@ export const ChatRoom: React.FC = () => {
                 </div>
             </div>
             <div className={classes.input}>
-                <ChatInput isTyping={isBotTyping} onSubmit={handleSubmit} />
+                <ChatInput
+                    isTyping={isBotTyping}
+                    isDraggingOver={isDraggingOver}
+                    onDragLeave={onDragLeave}
+                    onSubmit={handleSubmit}
+                />
             </div>
         </div>
     );
