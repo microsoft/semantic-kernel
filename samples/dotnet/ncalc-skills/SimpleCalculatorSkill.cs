@@ -12,6 +12,8 @@ public class SimpleCalculatorSkill
 {
     private readonly ISKFunction _mathTranslator;
 
+    private static readonly string[] s_stopSequences = new[] { "Problem:", "Solution:" };
+
     public SimpleCalculatorSkill(IKernel kernel)
     {
         this._mathTranslator = kernel.CreateSemanticFunction(
@@ -22,6 +24,6 @@ public class SimpleCalculatorSkill
             maxTokens: 256,
             temperature: 0.0,
             topP: 1,
-            stopSequences: new[] { "Problem:", "Solution:" });
+            stopSequences: s_stopSequences);
     }
 }
