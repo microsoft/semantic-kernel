@@ -150,7 +150,14 @@ public class ChatMessage : IStorageEntity
     /// <returns>A formatted string</returns>
     public string ToFormattedString()
     {
-        return $"[{this.Timestamp.ToString("G", CultureInfo.CurrentCulture)}] {this.UserName}: {this.Content}";
+        var content = this.Content;
+        if (this.Type == ChatMessageType.Document)
+        {
+            var documentDetails = DocumentMessageContent.FromString(content);
+            content = $"Sent a file named \"{documentDetails?.Name}\" with a size of {documentDetails?.Size}.";
+        }
+
+        return $"[{this.Timestamp.ToString("G", CultureInfo.CurrentCulture)}] {this.UserName}: {content}";
     }
 
     /// <summary>
