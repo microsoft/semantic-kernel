@@ -15,6 +15,7 @@ usage() {
     echo "  -d, --dotnet DOTNET_FRAMEWORK_VERSION  Target dotnet framework (default: net6.0)"
     echo "  -r, --runtime TARGET_RUNTIME           Runtime identifier (default: linux-x64)"
     echo "  -p, --output OUTPUT_DIRECTORY          Output directory (default: $SCRIPT_ROOT)"
+    echo "  -nz, --no-zip                          Do not zip package (default: false)"
 }
 
 # Parse arguments
@@ -39,6 +40,10 @@ while [[ $# -gt 0 ]]; do
         -o|--output)
         OUTPUT_DIRECTORY="$2"
         shift
+        shift
+        ;;
+        -nz|--no-zip)
+        NO_ZIP=true
         shift
         ;;
         *)
@@ -72,5 +77,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Compressing to $PACKAGE_FILE_PATH"
-zip -r  $PACKAGE_FILE_PATH $PUBLISH_OUTPUT_DIRECTORY/*
+# if not NO_ZIP then zip the package
+if [[ -z "$NO_ZIP" ]]; then
+    echo "Compressing to $PACKAGE_FILE_PATH"
+    zip -r $PACKAGE_FILE_PATH $PUBLISH_OUTPUT_DIRECTORY/*
+fi
+
+

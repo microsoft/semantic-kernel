@@ -61,11 +61,11 @@ jobs:
       #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       run: |
         chmod +x $(pwd)/samples/apps/copilot-chat-app/deploy/package-webapi.sh;
-        docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "apt-get update && apt-get -y install sudo && sudo apt-get -y install zip && /app/samples/apps/copilot-chat-app/deploy/package-webapi.sh";
+        docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "/app/samples/apps/copilot-chat-app/deploy/package-webapi.sh --no-zip";
   
     - name: Upload package to artifacts
       #if: needs.check-for-dotnet-changes.outputs.output1 == 'true'
       uses: actions/upload-artifact@v3
       with:
         name: copilotchat-webapi
-        path: ./samples/apps/copilot-chat-app/deploy/out/webapi.zip
+        path: /app/samples/apps/copilot-chat-app/deploy/publish/*
