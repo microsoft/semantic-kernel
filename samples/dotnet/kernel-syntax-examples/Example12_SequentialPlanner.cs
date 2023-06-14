@@ -28,7 +28,6 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_SERVICE_ID"),
                 Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_ENDPOINT"),
                 Env.Var("AZURE_OPENAI_KEY"))
@@ -165,7 +164,6 @@ internal static class Example12_SequentialPlanner
 
         kernel.ImportSkill(new EmailSkill(), "email");
         kernel.ImportSkill(new StaticTextSkill(), "statictext");
-        kernel.ImportSkill(new TextSkill(), "text");
         kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
@@ -215,6 +213,7 @@ internal static class Example12_SequentialPlanner
                 else
                 {
                     plan = await kernel.StepAsync(input, plan);
+                    input = string.Empty;
                 }
 
                 if (!plan.HasNextStep)
@@ -230,7 +229,7 @@ internal static class Example12_SequentialPlanner
         }
         catch (KernelException e)
         {
-            Console.WriteLine($"Step - Execution failed:");
+            Console.WriteLine("Step - Execution failed:");
             Console.WriteLine(e.Message);
         }
 

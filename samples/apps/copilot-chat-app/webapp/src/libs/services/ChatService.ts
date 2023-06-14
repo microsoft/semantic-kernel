@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+import { ChatMemorySource } from '../models/ChatMemorySource';
 import { IChatMessage } from '../models/ChatMessage';
 import { IChatSession } from '../models/ChatSession';
 import { IAsk, IAskVariables } from '../semantic-kernel/model/Ask';
@@ -140,6 +141,18 @@ export class ChatService extends BaseService {
             },
             accessToken,
             enabledPlugins,
+        );
+
+        return result;
+    };
+
+    public getChatMemorySourcesAsync = async (chatId: string, accessToken: string): Promise<ChatMemorySource[]> => {
+        const result = await this.getResponseAsync<ChatMemorySource[]>(
+            {
+                commandPath: `chatSession/${chatId}/sources`,
+                method: 'GET',
+            },
+            accessToken,
         );
 
         return result;

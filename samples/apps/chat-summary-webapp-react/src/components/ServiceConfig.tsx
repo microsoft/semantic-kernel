@@ -124,7 +124,7 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                         }}
                         placeholder="Enter your Azure OpenAI key here"
                     />
-                    <Label htmlFor="oaimodel">Model</Label>
+                    <Label htmlFor="oaimodel">Deployment</Label>
                     <Input
                         id="aoaideployment"
                         value={azureOpenAiDeployment}
@@ -139,7 +139,7 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                                 },
                             });
                         }}
-                        placeholder="Enter your deployment id here, ie: my-deployment"
+                        placeholder="Enter your deployment name here, ie: my-deployment"
                     />
                     <Label htmlFor="oaiendpoint">Endpoint</Label>
                     <Input

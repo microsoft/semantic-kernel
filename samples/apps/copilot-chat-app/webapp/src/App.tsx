@@ -3,7 +3,6 @@
 import {
     AuthenticatedTemplate,
     UnauthenticatedTemplate,
-    useAccount,
     useIsAuthenticated,
     useMsal,
 } from '@azure/msal-react';
@@ -68,15 +67,14 @@ const App: FC = () => {
     const { alerts } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
 
-    const { instance, accounts, inProgress } = useMsal();
-    const account = useAccount(accounts[0] || {});
+    const { instance, inProgress } = useMsal();
+    const account = instance.getActiveAccount();
     const isAuthenticated = useIsAuthenticated();
 
     const chat = useChat();
 
     useEffect(() => {
         if (isAuthenticated && account && appState === AppState.LoadingChats) {
-            instance.setActiveAccount(account);
 
             // Load all chats from memory
             async function loadChats() {

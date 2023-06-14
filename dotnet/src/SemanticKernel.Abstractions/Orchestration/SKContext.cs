@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,11 @@ public sealed class SKContext
     public string Result => this.Variables.ToString();
 
     /// <summary>
+    /// Whether all the context variables are trusted or not.
+    /// </summary>
+    public bool IsTrusted => this.Variables.IsAllTrusted();
+
+    /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
     /// </summary>
     public bool ErrorOccurred { get; private set; }
@@ -36,6 +42,12 @@ public sealed class SKContext
     /// When an error occurs, this is the most recent exception.
     /// </summary>
     public Exception? LastException { get; private set; }
+
+    /// <summary>
+    /// When a prompt is processed, aka the current data after any model results processing occurred.
+    /// (One prompt can have multiple results).
+    /// </summary>
+    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
 
     /// <summary>
     /// The token to monitor for cancellation requests.
@@ -126,6 +138,22 @@ public sealed class SKContext
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
         this.Log = logger ?? NullLogger.Instance;
         this.CancellationToken = cancellationToken;
+    }
+
+    /// <summary>
+    /// Make all the variables stored in the context untrusted.
+    /// </summary>
+    public void UntrustAll()
+    {
+        this.Variables.UntrustAll();
+    }
+
+    /// <summary>
+    /// Make the result untrusted.
+    /// </summary>
+    public void UntrustResult()
+    {
+        this.Variables.UntrustInput();
     }
 
     /// <summary>
