@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
+
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.skill_definition.functions_view import FunctionsView
