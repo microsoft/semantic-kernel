@@ -2,7 +2,7 @@
 # This workflow will package the Copilot Chat application for deployment.
 #
 
-name: dotnet-pr
+name: copilotchat-package
 
 on:
   pull_request:
