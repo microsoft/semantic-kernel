@@ -53,19 +53,19 @@ Write-Host "webapiUrl: $webapiUrl"
 # Set UTF8 as default encoding for Out-File
 $PSDefaultParameterValues['Out-File:Encoding'] = 'ascii'
 
-$envFilePath="$PSSCriptRoot/../webapp/.env"
+$envFilePath="$PSScriptRoot/../webapp/.env"
 Write-Host "Writing environment variables to '$envFilePath'..."
 "REACT_APP_BACKEND_URI=https://$webapiUrl/" | Out-File -FilePath $envFilePath
 "REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/common" | Out-File -FilePath $envFilePath -Append
 "REACT_APP_AAD_CLIENT_ID=$ApplicationClientId" | Out-File -FilePath $envFilePath -Append
 "REACT_APP_SK_API_KEY=$webapiApiKey" | Out-File -FilePath $envFilePath -Append
 
-$swaConfig = $(Get-Content "$PSSCriptRoot/../webapp/template.swa-cli.config.json" -Raw) 
+$swaConfig = $(Get-Content "$PSScriptRoot/../webapp/template.swa-cli.config.json" -Raw) 
 $swaConfig = $swaConfig.Replace("{{appDevserverUrl}}", "https://$webappUrl") 
-$swaConfig | Out-File -FilePath "$PSSCriptRoot/../webapp/swa-cli.config.json"
-Write-Host $(Get-Content "$PSSCriptRoot/../webapp/swa-cli.config.json" -Raw)
+$swaConfig | Out-File -FilePath "$PSScriptRoot/../webapp/swa-cli.config.json"
+Write-Host $(Get-Content "$PSScriptRoot/../webapp/swa-cli.config.json" -Raw)
 
-Push-Location -Path "$PSSCriptRoot/../webapp"
+Push-Location -Path "$PSScriptRoot/../webapp"
 Write-Host "Installing yarn dependencies..."
 yarn install
 if ($LASTEXITCODE -ne 0) {

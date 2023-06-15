@@ -42,14 +42,9 @@ chmod +x ./deploy-azure.sh
 
 ## Azure Portal
 You can also deploy the infrastructure directly from the Azure Portal by clicking the button below:
+> This will automatically deploy the most recent release of CopilotChat backend binaries ([link](https://github.com/microsoft/semantic-kernel/releases?q=copilotchat)).
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fmain%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
-
-**TODO TEST REMOVE**
-
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fadrianwyatt%2Fsemantic-kernel%2Fsk-pipelines%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
-
-**TODO TEST REMOVE**
 
  - To use an existing Azure OpenAI resource, set `Ai Service` to `AzureOpenAI` and include `Ai Api Key` and `Ai Endpoint`.
   - To deploy a new Azure OpenAI resource, set `Ai Service` to `AzureOpenAI` and omit `Ai Api Key` and `ai Endpoint`.
@@ -77,7 +72,12 @@ chmod +x ./deploy-webapi.sh
 
 
 # Deploy Frontend (WebApp)
-**TODO application ID**
+You will need an Azure Active Directory (AAD) application registration. 
+> For details on creating an application registration, go [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+- Select `Single-page application (SPA)` as platform type, and set the Web redirect URI to `http://localhost:3000`
+- Select `Accounts in any organizational directory and personal Microsoft Accounts` as supported account types for this sample.
+- Make a note of the `Application (client) ID` from the Azure Portal for use in the `Deploy` below.
+
 ## Install Azure's Static Web Apps CLI
 ```bash
 npm install -g @azure/static-web-apps-cli

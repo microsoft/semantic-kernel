@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Package CiopilotChat's WebAPI for deployment to Azure
+Package CopilotChat's WebAPI for deployment to Azure
 #>
 
 param(

@@ -5,7 +5,7 @@
 set -e
 
 usage() {
-    echo "Usage: $0 -d DEPLOYMENT_NAME -s SUBSCRIPTION --ai AI_SERVICE_TYPE -aikey AI_SERVICE_KEY [OPTIONS]"
+    echo "Usage: $0 -d DEPLOYMENT_NAME -s SUBSCRIPTION -ai AI_SERVICE_TYPE -aikey AI_SERVICE_KEY [OPTIONS]"
     echo ""
     echo "Arguments:"
     echo "  -d, --deployment-name DEPLOYMENT_NAME      Name for the deployment (mandatory)"
