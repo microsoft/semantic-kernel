@@ -7,7 +7,7 @@ import { PlanState } from "../../../libs/models/Plan";
 import { IAskResult } from "../../../libs/semantic-kernel/model/AskResult";
 import { addAlert } from "../app/appSlice";
 import { ChatState } from "../conversations/ChatState";
-import { AuthorRoles, IChatMessage } from './../../../libs/models/ChatMessage';
+import { AuthorRoles, ChatMessageType, IChatMessage } from './../../../libs/models/ChatMessage';
 import { isPlan } from './../../../libs/utils/PlanUtils';
 import { getSelectedChatID } from './../../app/store';
 
@@ -135,12 +135,15 @@ export const registerSignalREvents = async (store: any) => {
         const isPlanForLoggedInUser = loggedInUserId === originalMessageUserId;
 
         const message = {
+            type: (askResult.variables.find((v) => v.key === 'messageType')?.value ??
+                ChatMessageType.Message) as ChatMessageType,
             timestamp: new Date().getTime(),
             userName: 'bot',
             userId: 'bot',
             content: askResult.value,
-            authorRole: AuthorRoles.Bot,
             prompt: askResult.variables.find((v) => v.key === 'prompt')?.value,
+            authorRole: AuthorRoles.Bot,
+            id: askResult.variables.find((v) => v.key === 'messageId')?.value,
             state: (isPlan(askResult.value) && isPlanForLoggedInUser)
                 ? PlanState.PlanApprovalRequired : PlanState.NoOp,
         } as IChatMessage;

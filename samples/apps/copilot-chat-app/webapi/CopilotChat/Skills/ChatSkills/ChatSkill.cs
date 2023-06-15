@@ -252,6 +252,7 @@ public class ChatSkill
     [SKFunctionContextParameter(Name = "chatId", Description = "Unique and persistent identifier for the chat")]
     [SKFunctionContextParameter(Name = "proposedPlan", Description = "Previously proposed plan that is approved")]
     [SKFunctionContextParameter(Name = "messageType", Description = "Type of the message")]
+    [SKFunctionContextParameter(Name = "responseMessageId", Description = "ID of the response message for planner")]
     public async Task<SKContext> ChatAsync(string message, SKContext context)
     {
         // TODO: check if user has access to the chat
