@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class ChatStreamingResult : IChatStreamingResult, ITextCompletionStreamingResult
+internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreamingResult
 {
     private readonly ModelResult _modelResult;
     private readonly StreamingChatChoice _choice;
