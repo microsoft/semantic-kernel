@@ -159,7 +159,7 @@ public class TimeSkill
     public string Day()
     {
         // Example: 12
-        return DateTimeOffset.Now.ToString("DD", CultureInfo.CurrentCulture);
+        return DateTimeOffset.Now.ToString("dd", CultureInfo.CurrentCulture);
     }
 
     /// <summary>
