@@ -1,12 +1,23 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Button, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Label, makeStyles, tokens } from "@fluentui/react-components";
-import React, { useCallback, useEffect } from "react";
+import {
+    Button,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
+    Label,
+    makeStyles,
+    tokens,
+} from '@fluentui/react-components';
+import { Checkmark20Filled } from '@fluentui/react-icons';
+import React, { useCallback, useEffect } from 'react';
 
 const useStyles = makeStyles({
     content: {
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
         rowGap: tokens.spacingVerticalMNudge,
     },
 });
@@ -37,14 +48,16 @@ export const InvitationCreateDialog: React.FC<InvitationCreateDialogProps> = ({ 
                 <DialogBody>
                     <DialogTitle>Invite others to your Bot</DialogTitle>
                     <DialogContent className={classes.content}>
-                        <Label>
-                            Please provide the following Chat ID to your friends so they can join the chat.
-                        </Label>
-                        <Label weight="semibold">{ chatId }</Label>
+                        <Label>Please provide the following Chat ID to your friends so they can join the chat.</Label>
+                        <Label weight="semibold">{chatId}</Label>
                     </DialogContent>
                     <DialogActions>
-                        <Button appearance="secondary" onClick={onCancel}>Close</Button>
-                        <Button appearance="primary" onClick={copyId}>{isIdCopied ? "Copied" : "Copy"}</Button>
+                        <Button appearance="secondary" onClick={onCancel}>
+                            Close
+                        </Button>
+                        <Button appearance="primary" onClick={copyId} icon={isIdCopied ? <Checkmark20Filled /> : null}>
+                            {isIdCopied ? 'Copied' : 'Copy'}
+                        </Button>
                     </DialogActions>
                 </DialogBody>
             </DialogSurface>
