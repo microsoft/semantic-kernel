@@ -159,7 +159,6 @@ internal static class Extensions
 
         if (ShouldLoad(nameof(GitHubSkill), skillsToLoad))
         {
-            var downloadSkill = new WebFileDownloadSkill();
             GitHubSkill githubSkill = new(kernel);
             _ = kernel.ImportSkill(githubSkill, nameof(GitHubSkill));
         }
