@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel;
 
-import com.microsoft.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
 
 import java.io.IOException;
@@ -24,7 +24,7 @@ public class Example06_MemoryAndEmbeddings {
     return kernel;
   }
 
-  public static void run (Config.ClientType clientType) throws IOException {
+  public static void run(Config.ClientType clientType) throws IOException {
     Kernel kernel = getKernel(clientType.getClient());
   }
 

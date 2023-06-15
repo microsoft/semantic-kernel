@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.ai.AIException;
+import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
@@ -25,17 +26,14 @@ import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
 import jakarta.inject.Inject;
-
 import reactor.core.publisher.Mono;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
 
 public class DefaultKernel implements Kernel {
 
@@ -83,7 +81,17 @@ public class DefaultKernel implements Kernel {
             }
 
             return (T) factory.apply(this);
-        } else {
+        } else if (EmbeddingGeneration.class.isAssignableFrom(clazz)) {
+            Function<Kernel, EmbeddingGeneration<String,Float>> factory =
+                    kernelConfig.getTextEmbeddingGenerationServiceOrDefault(serviceId);
+            if (factory == null) {
+                throw new KernelException(
+                        KernelException.ErrorCodes.ServiceNotFound,
+                        "No chat completion service available");
+            }
+
+            return (T) factory.apply(this);
+        }else {
             // TODO correct exception
             throw new NotSupportedException(
                     "The kernel service collection doesn't support the type " + clazz.getName());

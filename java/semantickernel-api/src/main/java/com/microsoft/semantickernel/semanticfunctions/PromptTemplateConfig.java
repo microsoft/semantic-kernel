@@ -23,6 +23,90 @@ public class PromptTemplateConfig {
         return completionConfig;
     }
 
+    /** Builder for CompletionConfig */
+    public static class CompletionConfigBuilder {
+
+        private CompletionConfig completionConfig;
+
+        public CompletionConfigBuilder() {
+            completionConfig = new CompletionConfig();
+        }
+
+        public CompletionConfigBuilder(CompletionConfig completionConfig) {
+            this.completionConfig = completionConfig;
+        }
+
+        public CompletionConfigBuilder temperature(double temperature) {
+            return new CompletionConfigBuilder(
+                    new CompletionConfig(
+                            temperature,
+                            completionConfig.topP,
+                            completionConfig.presencePenalty,
+                            completionConfig.frequencyPenalty,
+                            completionConfig.maxTokens,
+                            completionConfig.stopSequences));
+        }
+
+        public CompletionConfigBuilder topP(double topP) {
+            return new CompletionConfigBuilder(
+                    new CompletionConfig(
+                            completionConfig.temperature,
+                            topP,
+                            completionConfig.presencePenalty,
+                            completionConfig.frequencyPenalty,
+                            completionConfig.maxTokens,
+                            completionConfig.stopSequences));
+        }
+
+        public CompletionConfigBuilder presencePenalty(double presencePenalty) {
+            return new CompletionConfigBuilder(
+                    new CompletionConfig(
+                            completionConfig.temperature,
+                            completionConfig.topP,
+                            presencePenalty,
+                            completionConfig.frequencyPenalty,
+                            completionConfig.maxTokens,
+                            completionConfig.stopSequences));
+        }
+
+        public CompletionConfigBuilder frequencyPenalty(double frequencyPenalty) {
+            return new CompletionConfigBuilder(
+                    new CompletionConfig(
+                            completionConfig.temperature,
+                            completionConfig.topP,
+                            completionConfig.presencePenalty,
+                            frequencyPenalty,
+                            completionConfig.maxTokens,
+                            completionConfig.stopSequences));
+        }
+
+        public CompletionConfigBuilder maxTokens(int maxTokens) {
+            return new CompletionConfigBuilder(
+                    new CompletionConfig(
+                            completionConfig.temperature,
+                            completionConfig.topP,
+                            completionConfig.presencePenalty,
+                            completionConfig.frequencyPenalty,
+                            maxTokens,
+                            completionConfig.stopSequences));
+        }
+
+        public CompletionConfigBuilder stopSequences(List<String> stopSequences) {
+            return new CompletionConfigBuilder(
+                    new CompletionConfig(
+                            completionConfig.temperature,
+                            completionConfig.topP,
+                            completionConfig.presencePenalty,
+                            completionConfig.frequencyPenalty,
+                            completionConfig.maxTokens,
+                            stopSequences));
+        }
+
+        public CompletionConfig build() {
+            return completionConfig;
+        }
+    }
+
     /** Completion configuration parameters */
     public static class CompletionConfig {
         /*

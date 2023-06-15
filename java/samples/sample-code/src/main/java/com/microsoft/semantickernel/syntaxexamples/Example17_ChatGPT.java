@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
-
-import com.microsoft.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
@@ -14,7 +13,8 @@ import com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAICh
 import java.io.IOException;
 
 /**
- * The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
+ * The following example shows how to use Semantic Kernel with OpenAI ChatGPT
+ * API
  */
 public class Example17_ChatGPT {
 
@@ -24,8 +24,7 @@ public class Example17_ChatGPT {
         KernelConfig kernelConfig = SKBuilders.kernelConfig()
                 .addChatCompletionService(
                         "chat-test",
-                        kernel -> SKBuilders.chatCompletion().build(client, "chat-test")
-                )
+                        kernel -> SKBuilders.chatCompletion().build(client, "chat-test"))
                 .build();
 
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
@@ -44,7 +43,8 @@ public class Example17_ChatGPT {
         messageOutputAsync(chatHistory);
 
         // Second user message
-        chatHistory.addUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
+        chatHistory.addUserMessage(
+                "I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
         messageOutputAsync(chatHistory);
 
         // Second bot assistant message

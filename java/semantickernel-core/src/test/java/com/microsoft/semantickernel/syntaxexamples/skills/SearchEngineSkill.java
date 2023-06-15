@@ -11,7 +11,8 @@ public class SearchEngineSkill {
 
     @DefineSKFunction(description = "Append the day variable", name = "search")
     public Mono<String> search(
-            @SKFunctionInputAttribute @SKFunctionParameters(description = "Text to search")
+            @SKFunctionInputAttribute
+                    @SKFunctionParameters(description = "Text to search", name = "input")
                     String input) {
         return Mono.just("Gran Torre Santiago is the tallest building in South America");
     }

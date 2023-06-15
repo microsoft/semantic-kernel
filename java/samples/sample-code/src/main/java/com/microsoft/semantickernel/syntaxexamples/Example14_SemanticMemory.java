@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemory;
+import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -27,7 +28,7 @@ public class Example14_SemanticMemory
 {
     private static final String MEMORY_COLLECTION_NAME = "SKGitHub";
 
-    public static void main(String[] args)
+    public static void main(String[] args) throws Exception
     {
         System.out.println("==============================================================");
         System.out.println("======== Semantic Memory using Azure Cognitive Search ========");
@@ -38,8 +39,6 @@ public class Example14_SemanticMemory
          * Azure Cognitive Search automatically indexes your data semantically, so you don't
          * need to worry about embedding generation.
          */
-        var openAIAsyncClient = Config.getClient(true);
-
         var kernelConfig = SKBuilders.kernelConfig().build();
 
         var kernelWithACS = SKBuilders.kernel()
@@ -47,7 +46,7 @@ public class Example14_SemanticMemory
                 .withMemory(new AzureCognitiveSearchMemory(System.getenv("ACS_ENDPOINT"), System.getenv("ACS_API_KEY")))
                 .build();
 
-        runExampleAsync(kernelWithACS).block();//.subscribe(v -> System.out.println("Done!"), Throwable::printStackTrace);
+        runExampleAsync(kernelWithACS).block();
 
         System.out.println("====================================================");
         System.out.println("======== Semantic Memory (volatile, in RAM) ========");
@@ -61,19 +60,20 @@ public class Example14_SemanticMemory
          * You can replace VolatileMemoryStore with Qdrant (see QdrantMemoryStore connector)
          * or implement your connectors for Pinecone, Vespa, Postgres + pgvector, SQLite VSS, etc.
          */
+        var openAIAsyncClient = Config.ClientType.AZURE_OPEN_AI.getClient();
 
-//        var kernelConfigWithTextEmbedding = SKBuilders.kernelConfig()
-//                .addTextEmbeddingsGenerationService(
-//                        "ada",
-//                        kernel -> SKBuilders.textEmbeddingGenerationService().build(openAIAsyncClient, "text-embedding-ada-002"))
-//                .build();
-//
-//        var kernelWithCustomDb = SKBuilders.kernel()
-//                .setKernelConfig(kernelConfigWithTextEmbedding)
-//                .withMemoryStore(new VolatileMemoryStore()) // TODO: should not depend on core
-//                .build();
-//
-//        runExampleAsync(kernelWithCustomDb).subscribe(v -> System.out.println("Done!"), Throwable::printStackTrace);
+        var kernelConfigWithTextEmbedding = SKBuilders.kernelConfig()
+                .addTextEmbeddingsGenerationService(
+                        "ada",
+                        kernel -> SKBuilders.textEmbeddingGenerationService().build(openAIAsyncClient, "text-embedding-ada-002"))
+                .build();
+
+        var kernelWithCustomDb = SKBuilders.kernel()
+                .setKernelConfig(kernelConfigWithTextEmbedding)
+                .withMemoryStore(SKBuilders.memoryStore().build())
+                .build();
+
+        runExampleAsync(kernelWithCustomDb).block();
     }
 
     public static Mono<Void> runExampleAsync(Kernel kernel)

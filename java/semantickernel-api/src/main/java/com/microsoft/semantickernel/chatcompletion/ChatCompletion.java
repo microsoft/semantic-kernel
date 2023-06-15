@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.chatcompletion;
 
-import com.microsoft.openai.OpenAIAsyncClient;
+import javax.annotation.Nullable;
+
+import com.azure.ai.openai.OpenAIAsyncClient;
 
 import reactor.core.publisher.Mono;
-
-import javax.annotation.Nullable;
 
 public interface ChatCompletion<ChatHistoryType extends ChatHistory> {
     /**
      * Generate a new chat message
      *
-     * @param chat Chat history
+     * @param chat            Chat history
      * @param requestSettings AI request settings
      * @return Generated chat message in string format
      */

@@ -1,106 +1,94 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
-import com.microsoft.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class Example06_TemplateLanguage {
-    /// <summary>
-    /// Show how to invoke a Native Function written in C#
-    /// from a Semantic Function written in natural language
-    /// </summary>
+        /// <summary>
+        /// Show how to invoke a Native Function written in C#
+        /// from a Semantic Function written in natural language
+        /// </summary>
 
-    public static void main(String[] args) throws IOException {
-        System.out.println("======== TemplateLanguage ========");
+        public static void main(String[] args) throws IOException {
+                System.out.println("======== TemplateLanguage ========");
 
+                OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
 
-        OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
+                Kernel kernel = SKBuilders.kernel().build();
 
-        KernelConfig kernelConfig = SKBuilders.kernelConfig()
-                .addTextCompletionService(
-                        "text-davinci-003",
-                        kernel -> SKBuilders.textCompletionService().build(client, "text-davinci-003")
-                )
-                .addTextEmbeddingsGenerationService(
-                        "text-embedding-ada-002",
-                        kernel -> SKBuilders.textEmbeddingGenerationService().build(client, "text-embedding-ada-002"))
-                .build();
+                // Load native skill into the kernel skill collection, sharing its functions
+                // with prompt templates
+                // Functions loaded here are available as "time.*"
+                kernel.importSkill(new TimeSkill(), "time");
 
-        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+                // Semantic Function invoking time.Date and time.Time native functions
+                String functionDefinition = """
+                                Today is: {{time.Date}}
+                                Current time is: {{time.Time}}
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
-        // Functions loaded here are available as "time.*"
-        kernel.importSkill(new TimeSkill(), "time");
+                                Answer to the following questions using JSON syntax, including the data used.
+                                Is it morning, afternoon, evening, or night (morning/afternoon/evening/night)?
+                                Is it weekend time (weekend/not weekend)?
+                                """;
 
-        // Semantic Function invoking time.Date and time.Time native functions
-        String functionDefinition = """    
-                Today is: {{time.Date}}
-                Current time is: {{time.Time}}
-                            
-                Answer to the following questions using JSON syntax, including the data used.
-                Is it morning, afternoon, evening, or night (morning/afternoon/evening/night)?
-                Is it weekend time (weekend/not weekend)?
-                """;
+                // This allows to see the prompt before it's sent to OpenAI
+                System.out.println("--- Rendered Prompt");
 
-        // This allows to see the prompt before it's sent to OpenAI
-        System.out.println("--- Rendered Prompt");
+                var promptRenderer = SKBuilders.promptTemplate().build(functionDefinition, null);
 
-        var promptRenderer = SKBuilders.promptTemplate().build(functionDefinition, null);
+                SKContext skContext = SKBuilders
+                                .context()
+                                .build(kernel.getSkills());
 
-        SKContext skContext = SKBuilders
-                .context()
-                .build(kernel.getSkills());
+                PromptTemplateEngine promptTemplateEngine = SKBuilders.promptTemplateEngine().build();
 
-        PromptTemplateEngine promptTemplateEngine = SKBuilders.promptTemplateEngine().build();
+                var renderedPrompt = promptRenderer.renderAsync(skContext, promptTemplateEngine);
+                System.out.println(renderedPrompt.block());
 
-        var renderedPrompt = promptRenderer.renderAsync(skContext, promptTemplateEngine);
-        System.out.println(renderedPrompt.block());
+                // Run the prompt / semantic function
+                var kindOfDay = kernel.getSemanticFunctionBuilder()
+                                .createFunction(
+                                                functionDefinition,
+                                                null,
+                                                null,
+                                                null,
+                                                new PromptTemplateConfig.CompletionConfig(
+                                                                0, 0, 0, 0, 256, new ArrayList<>()));
 
-        // Run the prompt / semantic function
-        var kindOfDay = kernel.getSemanticFunctionBuilder()
-                .createFunction(
-                        functionDefinition,
-                        null,
-                        null,
-                        null,
-                        new PromptTemplateConfig.CompletionConfig(
-                                0, 0, 0, 0, 256, new ArrayList<>()
-                        )
-                );
-
-        // Show the result
-        System.out.println("--- Semantic Function result");
-        var result = kindOfDay.invokeAsync("").block().getResult();
-        System.out.println(result);
-        /* OUTPUT:
-
-            --- Rendered Prompt
-
-            Today is: Friday, April 28, 2023
-            Current time is: 11:04:30 PM
-
-            Answer to the following questions using JSON syntax, including the data used.
-            Is it morning, afternoon, evening, or night (morning/afternoon/evening/night)?
-            Is it weekend time (weekend/not weekend)?
-
-            --- Semantic Function result
-
-            {
-                "date": "Friday, April 28, 2023",
-                "time": "11:04:30 PM",
-                "period": "night",
-                "weekend": "weekend"
-            }
-         */
-    }
+                // Show the result
+                System.out.println("--- Semantic Function result");
+                var result = kindOfDay.invokeAsync("").block().getResult();
+                System.out.println(result);
+                /*
+                 * OUTPUT:
+                 * 
+                 * --- Rendered Prompt
+                 * 
+                 * Today is: Friday, April 28, 2023
+                 * Current time is: 11:04:30 PM
+                 * 
+                 * Answer to the following questions using JSON syntax, including the data used.
+                 * Is it morning, afternoon, evening, or night
+                 * (morning/afternoon/evening/night)?
+                 * Is it weekend time (weekend/not weekend)?
+                 * 
+                 * --- Semantic Function result
+                 * 
+                 * {
+                 * "date": "Friday, April 28, 2023",
+                 * "time": "11:04:30 PM",
+                 * "period": "night",
+                 * "weekend": "weekend"
+                 * }
+                 */
+        }
 }

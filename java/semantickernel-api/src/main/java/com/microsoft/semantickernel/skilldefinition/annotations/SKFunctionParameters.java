@@ -15,7 +15,7 @@ public @interface SKFunctionParameters {
 
     String description() default "";
 
-    String name() default "";
+    String name();
 
     String defaultValue() default NO_DEFAULT_VALUE;
 
