@@ -90,13 +90,13 @@ public class ChatParticipantController : ControllerBase
     [HttpGet]
     [Route("chatParticipant/getAllParticipants/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAllParticipantsAsync(Guid chatId)
     {
         // Make sure the chat session exists.
         if (!await this._chatSessionRepository.TryFindByIdAsync(chatId.ToString(), v => _ = v))
         {
-            return this.BadRequest("Chat session does not exist.");
+            return this.NotFound("Chat session does not exist.");
         }
 
         var chatParticipants = await this._chatParticipantRepository.FindByChatIdAsync(chatId.ToString());
