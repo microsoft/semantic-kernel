@@ -43,7 +43,7 @@ public class OrganizationHierarchySkillTests : IDisposable
         Assert.NotNull(emails);
         foreach (string directReportEmail in anyDirectReportsEmail)
         {
-            Assert.Contains(directReportEmail, set);
+            Assert.Contains(directReportEmail, emails);
         }
 
         connectorMock.VerifyAll();
