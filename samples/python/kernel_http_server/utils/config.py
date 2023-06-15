@@ -2,6 +2,11 @@ from dataclasses import dataclass
 
 from enum import Enum
 
+import semantic_kernel as sk
+
+
+DEFAULT_OPENAI_MODEL = "text-davinci-003"
+
 
 class AIService(Enum):
     AZURE_OPENAI = "0"
@@ -45,3 +50,23 @@ def headers_to_config(headers: dict) -> AIServiceConfig:
             serviceid=headers[SKHttpHeaders.EMBEDDING_SERVICE.value],
         )
     raise ValueError("No valid headers found")
+
+
+def dotenv_to_config(use_azure_openai=True):
+    if use_azure_openai:
+        deployment_model_id, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+        return AIServiceConfig(
+            deployment_model_id=deployment_model_id,
+            endpoint=endpoint,
+            key=api_key,
+            serviceid=AIService.AZURE_OPENAI.value,
+        )
+    else:
+        api_key, org_id = sk.openai_settings_from_dot_env()
+        return AIServiceConfig(
+            deployment_model_id=DEFAULT_OPENAI_MODEL,
+            endpoint=None,
+            key=api_key,
+            serviceid=AIService.OPENAI.value,
+            org_id=org_id,
+        )
