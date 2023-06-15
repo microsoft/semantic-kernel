@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -367,16 +366,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
         public bool IsSensitive { get; set; }
     }
 
-    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextCompletionResult> completions, CancellationToken cancellationToken = default)
+    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
-        StringBuilder completionResult = new();
-
-        foreach (ITextCompletionResult result in completions)
-        {
-            completionResult.Append(await result.GetCompletionAsync(cancellationToken).ConfigureAwait(false));
-        }
-
-        return completionResult.ToString();
+        // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
+        return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
     }
 
     internal SKFunction(

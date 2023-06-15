@@ -10,14 +10,14 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingResult
+internal sealed class TextStreamingResult : ITextStreamingResult
 {
     private readonly ModelResult _modelResult;
     private readonly StreamingChoice _choice;
 
     public ModelResult ModelResult => this._modelResult;
 
-    public TextCompletionStreamingResult(StreamingCompletions resultData, StreamingChoice choice)
+    public TextStreamingResult(StreamingCompletions resultData, StreamingChoice choice)
     {
         this._modelResult = new ModelResult(resultData);
         this._choice = choice;
