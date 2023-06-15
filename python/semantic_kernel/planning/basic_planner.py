@@ -3,6 +3,8 @@
 """A basic JSON-based planner for the Python Semantic Kernel"""
 import json
 
+import regex
+
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.planning.plan import Plan
@@ -182,21 +184,24 @@ class BasicPlanner:
         generated_plan = await planner.invoke_async(variables=context)
         return Plan(prompt=prompt, goal=goal, plan=generated_plan)
 
-    async def execute_plan_async(self, plan: Plan, kernel: Kernel, debug_print: bool = False) -> str:
+    async def execute_plan_async(self, plan: Plan, kernel: Kernel) -> str:
         """
         Given a plan, execute each of the functions within the plan
         from start to finish and output the result.
         """
-        generated_plan = json.loads(plan.generated_plan.result)
+
+        # Filter out good JSON from the result in case additional text is present
+        json_regex = r"\{(?:[^{}]|(?R))*\}"
+        generated_plan_string = regex.search(
+            json_regex, plan.generated_plan.result
+        ).group()
+        generated_plan = json.loads(generated_plan_string)
 
         context = ContextVariables()
         context["input"] = generated_plan["input"]
         subtasks = generated_plan["subtasks"]
 
         for subtask in subtasks:
-            if debug_print:
-                print(f"{subtask['function']}: BEGIN")
-                
             skill_name, function_name = subtask["function"].split(".")
             sk_function = kernel.skills.get_function(skill_name, function_name)
 
@@ -205,15 +210,10 @@ class BasicPlanner:
             if args:
                 for key, value in args.items():
                     context[key] = value
+                output = await sk_function.invoke_async(variables=context)
 
-            if debug_print:
-                for k, v in context._variables.items():
-                    print(f"Context {k}: {v}")
-
-            output = await sk_function.invoke_async(variables=context)
-
-            if debug_print:
-                print(f"{subtask['function']} output: {output.result}")
+            else:
+                output = await sk_function.invoke_async(variables=context)
 
             # Override the input context variable with the output of the function
             context["input"] = output.result

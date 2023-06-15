@@ -131,4 +131,11 @@ public class TextSkill
     {
         return string.Concat(text, context["input2"]);
     }
+
+    [SKFunction("Echo the input string. Useful for capturing plan input for use in multiple functions.")]
+    [SKFunctionInput(Description = "Input string to echo.")]
+    public string Echo(string text)
+    {
+        return text;
+    }
 }
