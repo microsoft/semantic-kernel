@@ -2,19 +2,19 @@
 Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-Bicep template for deploying Semantic Kernel to Azure as a web app service.
+Bicep template for deploying CopilotChat Azure resources.
 */
 
-@description('Name for the deployment - Must consist of alphanumeric characters or \'-\'')
-param name string = 'semkernel'
+@description('Name for the deployment consisting of alphanumeric characters or dashes (\'-\')')
+param name string = 'copichat'
 
 @description('SKU for the Azure App Service plan')
 @allowed(['B1', 'S1', 'S2', 'S3', 'P1V3', 'P2V3', 'I1V2', 'I2V2' ])
-param appServiceSku string = 'B1'
+param webAppServiceSku string = 'B1'
 
 @description('Location of package to deploy as the web service')
-#disable-next-line no-hardcoded-env-urls // This is an arbitrary package URI
-param packageUri string = 'https://skaasdeploy.blob.core.windows.net/api/semantickernelapi.zip'
+#disable-next-line no-hardcoded-env-urls
+param packageUri string = 'https://aka.ms/copilotchat/webapi/latest'
 
 @description('Underlying AI service')
 @allowed([
@@ -32,36 +32,39 @@ param embeddingModel string = 'text-embedding-ada-002'
 @description('Completion model the task planner should use')
 param plannerModel string = 'gpt-35-turbo'
 
-@description('Azure OpenAI endpoint to use (ignored when AI service is not AzureOpenAI)')
-param endpoint string = ''
+@description('Azure OpenAI endpoint to use (Azure OpenAI only)')
+param aiEndpoint string = ''
 
 @secure()
 @description('Azure OpenAI or OpenAI API key')
-param apiKey string = ''
+param aiApiKey string = ''
 
-@description('Semantic Kernel server API key - Generated GUID by default (Provide empty string to disable API key auth)')
-param semanticKernelApiKey string = newGuid()
+@secure()
+@description('WebAPI key to use for authorization')
+param webApiKey string = newGuid()
 
 @description('Whether to deploy a new Azure OpenAI instance')
-param deployNewAzureOpenAI bool = true
+param deployNewAzureOpenAI bool = false
 
-@description('Whether to deploy Cosmos DB for chat storage')
+@description('Whether to deploy Cosmos DB for persistent chat storage')
 param deployCosmosDB bool = true
 
-@description('Whether to deploy Qdrant (in a container) for memory storage')
+@description('Whether to deploy Qdrant (in a container) for persistent memory storage')
 param deployQdrant bool = true
 
-@description('Whether to deploy Azure Speech Services to be able to input chat text by voice')
+@description('Whether to deploy Azure Speech Services to enable input by voice')
 param deploySpeechServices bool = true
 
 @description('Region for the resources')
-#disable-next-line no-loc-expr-outside-params // We force the location to be the same as the resource group's for a simpler,
-var location = resourceGroup().location       // more intelligible deployment experience at the cost of some flexibility
+param location string = resourceGroup().location
+
+@description('Region for the webapp frontend')
+param webappLocation string = 'westus2'
 
 @description('Hash of the resource group ID')
 var rgIdHash = uniqueString(resourceGroup().id)
 
-@description('Name for the deployment - Made unique')
+@description('Deployment name unique to resource group')
 var uniqueName = '${name}-${rgIdHash}'
 
 @description('Name of the Azure Storage file share to create')
@@ -112,16 +115,18 @@ resource openAI_embeddingModel 'Microsoft.CognitiveServices/accounts/deployments
 }
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: 'asp-${uniqueName}-skweb'
+  name: 'asp-${uniqueName}-webapi'
   location: location
+  kind: 'app'
   sku: {
-    name: appServiceSku
+    name: webAppServiceSku
   }
 }
 
 resource appServiceWeb 'Microsoft.Web/sites@2022-09-01' = {
-  name: 'app-${uniqueName}-skweb'
+  name: 'app-${uniqueName}-webapi'
   location: location
+  kind: 'app'
   tags: {
     skweb: '1'
   }
@@ -157,11 +162,11 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       }
       {
         name: 'AIService:Endpoint'
-        value: deployNewAzureOpenAI ? openAI.properties.endpoint : endpoint
+        value: deployNewAzureOpenAI ? openAI.properties.endpoint : aiEndpoint
       }
       {
         name: 'AIService:Key'
-        value: deployNewAzureOpenAI ? openAI.listKeys().key1 : apiKey
+        value: deployNewAzureOpenAI ? openAI.listKeys().key1 : aiApiKey
       }
       {
         name: 'AIService:Models:Completion'
@@ -177,11 +182,11 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       }
       {
         name: 'Authorization:Type'
-        value: empty(semanticKernelApiKey) ? 'None' : 'ApiKey'
+        value: empty(webApiKey) ? 'None' : 'ApiKey'
       }
       {
         name: 'Authorization:ApiKey'
-        value: semanticKernelApiKey
+        value: webApiKey
       }
       {
         name: 'ChatStore:Type'
@@ -280,7 +285,7 @@ resource appServiceWebDeploy 'Microsoft.Web/sites/extensions@2022-09-01' = {
 }
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: 'appi-${uniqueName}'
+  name: 'appins-${uniqueName}'
   location: location
   kind: 'string'
   tags: {
@@ -393,7 +398,7 @@ resource appServiceQdrant 'Microsoft.Web/sites@2022-09-01' = if (deployQdrant) {
 }
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' = {
-  name: 'vnet-semantickernel'
+  name: 'vnet-${uniqueName}'
   location: location
   properties: {
     addressSpace: {
@@ -461,7 +466,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' = {
 }
 
 resource webNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
-  name: 'nsg-${uniqueName}-web'
+  name: 'nsg-${uniqueName}-webapi'
   location: location
   properties: {
     securityRules: [
@@ -646,5 +651,19 @@ resource speechAccount 'Microsoft.CognitiveServices/accounts@2022-12-01' = if (d
   }
 }
 
+resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
+  name: 'swa-${uniqueName}'
+  location: webappLocation
+  properties: {
+    provider: 'None'
+  }
+  sku: {
+    name: 'Free'
+    tier: 'Free'
+  }
+}
 
-output deployedUrl string = appServiceWeb.properties.defaultHostName
+output webappUrl string = staticWebApp.properties.defaultHostname
+output webappName string = staticWebApp.name
+output webapiUrl string = appServiceWeb.properties.defaultHostName
+output webapiName string = appServiceWeb.name
