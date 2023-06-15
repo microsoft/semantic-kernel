@@ -1,10 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useMsal } from "@azure/msal-react";
 import { Button, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Divider, Input, Label, makeStyles, tokens } from "@fluentui/react-components";
 import React from "react";
-import { AuthHelper } from "../../../libs/auth/AuthHelper";
-import { ChatService } from "../../../libs/services/ChatService";
 import { useChat } from "../../../libs/useChat";
 
 const useStyles = makeStyles({
@@ -24,9 +21,6 @@ interface InvitationJoinDialogProps {
 }
 
 export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = ({ onCloseDialog }) => {
-    const { instance, inProgress } = useMsal();
-    const account = instance.getActiveAccount();
-    const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
     const chat = useChat();
     const [errorOccurred, setErrorOccurred] = React.useState<boolean>(false);
     const [errorMessage, setErrorMessage] = React.useState<string>("");
@@ -39,17 +33,11 @@ export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = ({ onCl
 
         const chatId = ev.currentTarget.elements.namedItem("chat-id-input") as HTMLInputElement;
 
-        try {
-            await chatService.joinChatAsync(
-                account!.homeAccountId!,
-                chatId.value,
-                await AuthHelper.getSKaaSAccessToken(instance, inProgress)
-            );
-            await chat.loadChats();
+        const { success, message } = await chat.joinChat(chatId.value);
+
+        if (success) {
             onCloseDialog();
-        } catch (error: any) {
-            const message = `Error joining chat ${chatId.value}: ${(error as Error).message}`;
-            console.log(message);
+        } else {
             setErrorOccurred(true);
             setErrorMessage(message);
         }

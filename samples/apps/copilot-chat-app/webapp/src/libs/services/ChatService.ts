@@ -145,13 +145,13 @@ export class ChatService extends BaseService {
         return result;
     };
 
-    public joinChatAsync = async (userId: string, chatId: string, accessToken: string): Promise<any> => {
+    public joinChatAsync = async (userId: string, chatId: string, accessToken: string): Promise<IChatSession> => {
         const body: IChatParticipant = {
             userId: userId,
             chatId: chatId,
         };
 
-        const result = await this.getResponseAsync<any>(
+        await this.getResponseAsync<any>(
             {
                 commandPath: `chatParticipant/join`,
                 method: 'POST',
@@ -160,7 +160,7 @@ export class ChatService extends BaseService {
             accessToken,
         );
 
-        return result;
+        return await this.getChatAsync(chatId, accessToken);
     };
 
     public getChatMemorySourcesAsync = async (chatId: string, accessToken: string): Promise<ChatMemorySource[]> => {

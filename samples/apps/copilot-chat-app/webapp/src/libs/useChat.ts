@@ -67,19 +67,20 @@ export const useChat = () => {
 
     const createChat = async () => {
         const chatTitle = `Copilot @ ${new Date().toLocaleString()}`;
+        const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
             await chatService
                 .createChatAsync(
                     account?.homeAccountId!,
                     chatTitle,
-                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                    accessToken,
                 )
                 .then(async (result: IChatSession) => {
                     const chatMessages = await chatService.getChatMessagesAsync(
                         result.id,
                         0,
                         1,
-                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                        accessToken,
                     );
 
                     const newChat: ChatState = {
@@ -141,10 +142,11 @@ export const useChat = () => {
     };
 
     const loadChats = async () => {
+        const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
             const chatSessions = await chatService.getAllChatsAsync(
                 account?.homeAccountId!,
-                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                accessToken,
             );
 
             if (chatSessions.length > 0) {
@@ -155,12 +157,12 @@ export const useChat = () => {
                         chatSession.id,
                         0,
                         100,
-                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                        accessToken,
                     );
 
                     const chatUsers = await chatService.getAllChatParticipantsAsync(
                         chatSession.id,
-                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                        accessToken,
                     );
 
                     loadedConversations[chatSession.id] = {
@@ -200,14 +202,15 @@ export const useChat = () => {
     };
 
     const uploadBot = async (bot: Bot) => {
+        const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         botService
-            .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance, inProgress))
+            .uploadAsync(bot, account?.homeAccountId || '', accessToken)
             .then(async (chatSession: IChatSession) => {
                 const chatMessages = await chatService.getChatMessagesAsync(
                     chatSession.id,
                     0,
                     100,
-                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                    accessToken,
                 );
 
                 const newChat = {
@@ -285,6 +288,48 @@ export const useChat = () => {
         return enabledPlugins;
     };
 
+    const joinChat = async (chatId: string) => {
+        const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+        try {
+            await chatService.joinChatAsync(
+                account!.homeAccountId!,
+                chatId,
+                accessToken
+            ).then(async (result: IChatSession) => {
+                // Get chat messages
+                const chatMessages = await chatService.getChatMessagesAsync(
+                    result.id,
+                    0,
+                    100,
+                    accessToken
+                );
+
+                // Get chat users
+                const chatUsers = await chatService.getAllChatParticipantsAsync(
+                    result.id,
+                    accessToken,
+                );
+
+                const newChat: ChatState = {
+                    id: result.id,
+                    title: result.title,
+                    messages: chatMessages,
+                    users: chatUsers,
+                    botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
+                    input: '',
+                    isBotTyping: false,
+                };
+
+                dispatch(addConversation(newChat));
+            });
+        } catch (error: any) {
+            const errorMessage = `Error joining chat ${chatId}: ${(error as Error).message}`;
+            return { success: false, message: errorMessage };
+        }
+
+        return { success: true, message: '' };
+    }
+
     return {
         getChatUserById,
         createChat,
@@ -294,5 +339,6 @@ export const useChat = () => {
         uploadBot,
         getChatMemorySources,
         importDocument,
+        joinChat,
     };
 };
