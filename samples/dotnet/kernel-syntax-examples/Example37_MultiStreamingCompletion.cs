@@ -94,7 +94,7 @@ public static class Example37_MultiStreamingCompletion
         Console.WriteLine();
     }
 
-    private static async Task ProcessStreamAsyncEnumerableAsync(ITextCompletionStreamingResult result, int resultNumber, int linesPerResult)
+    private static async Task ProcessStreamAsyncEnumerableAsync(ITextStreamingResult result, int resultNumber, int linesPerResult)
     {
         var fullSentence = string.Empty;
         await foreach (var word in result.GetCompletionStreamingAsync())
