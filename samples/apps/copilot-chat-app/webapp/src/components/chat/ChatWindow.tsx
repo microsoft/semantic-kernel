@@ -102,7 +102,6 @@ export const ChatWindow: React.FC = () => {
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 );
                 
-                // Todo: Fix title change Asynchrony issue and then broadcast title change
                 dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
             } catch (e: any) {
                 const errorMessage = `Unable to retrieve chat to change title. Details: ${e.message ?? e}`;

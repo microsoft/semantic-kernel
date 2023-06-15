@@ -6,6 +6,7 @@ import { IChatUser } from "../../../libs/models/ChatUser";
 import { PlanState } from "../../../libs/models/Plan";
 import { IAskResult } from "../../../libs/semantic-kernel/model/AskResult";
 import { addAlert } from "../app/appSlice";
+import { ChatState } from "../conversations/ChatState";
 import { AuthorRoles, IChatMessage } from './../../../libs/models/ChatMessage';
 import { isPlan } from './../../../libs/utils/PlanUtils';
 import { getSelectedChatID } from './../../app/store';
@@ -19,6 +20,7 @@ const enum SignalRCallbackMethods {
     ReceiveBotTypingState = "ReceiveBotTypingState",
     GlobalDocumentUploaded = "GlobalDocumentUploaded",
     ChatDocumentUploaded = "ChatDocumentUploaded",
+    ChatEdited = "ChatEdited",
 }
 
 // Set up a SignalR connection to the messageRelayHub on the server
@@ -171,5 +173,16 @@ export const registerSignalREvents = async (store: any) => {
 
     hubConnection.on(SignalRCallbackMethods.ChatDocumentUploaded, (message: IChatMessage, chatId: string) => {
         store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
-    }); 
+    });
+
+    hubConnection.on(SignalRCallbackMethods.ChatEdited, (chat: ChatState) => {
+        const { id, title } = chat
+        if (!(id in store.getState().conversations.conversations)) {
+            store.dispatch(addAlert({
+                message: `Chat ${id} not found in store. Chat edited signal from server is not processed.`,
+                type: AlertType.Error
+            }));
+        }
+        store.dispatch({ type: "conversations/editConversationTitle", payload: { id: id, newTitle: title } });
+    });
 };

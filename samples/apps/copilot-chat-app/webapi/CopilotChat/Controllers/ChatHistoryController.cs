@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
+using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -31,6 +33,7 @@ public class ChatHistoryController : ControllerBase
     private readonly ChatParticipantRepository _participantRepository;
     private readonly ChatMemorySourceRepository _sourceRepository;
     private readonly PromptsOptions _promptOptions;
+    private const string ChatEditedClientCall = "ChatEdited";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryController"/> class.
@@ -188,7 +191,9 @@ public class ChatHistoryController : ControllerBase
     [Route("chatSession/edit")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> EditChatSessionAsync([FromBody] ChatSession chatParameters)
+    public async Task<IActionResult> EditChatSessionAsync(
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
+        [FromBody] ChatSession chatParameters)
     {
         string chatId = chatParameters.Id;
 
@@ -197,6 +202,7 @@ public class ChatHistoryController : ControllerBase
         {
             chat!.Title = chatParameters.Title;
             await this._sessionRepository.UpsertAsync(chat);
+            await messageRelayHubContext.Clients.Group(chatId).SendAsync(ChatEditedClientCall, chat);
             return this.Ok(chat);
         }
 
