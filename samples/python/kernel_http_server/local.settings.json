@@ -6,6 +6,7 @@
   "Values": {
     "FUNCTIONS_WORKER_RUNTIME": "python",
     "AzureWebJobsStorage": "",
-    "AzureWebJobs.KernelHttpServer.Disabled": "false"
+    "AzureWebJobs.KernelHttpServer.Disabled": "false",
+    "AzureWebJobsFeatureFlags": "EnableWorkerIndexing"
   }
 }

@@ -6,7 +6,7 @@ import azure.functions as func
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 
-from utils.config import AIService, headers_to_config
+from utils.config import AIService, headers_to_config, dotenv_to_config
 
 
 def sample_skills_path() -> str:
@@ -36,7 +36,7 @@ def sample_skills_path() -> str:
     return path
 
 
-def create_kernel_for_request(req: func.HttpRequest, skills: List[str], memory_store):
+def create_kernel_for_request(req: func.HttpRequest, skills: List[str]):
     """
     Creates a kernel for a request.
     :param req: The request.
@@ -49,31 +49,47 @@ def create_kernel_for_request(req: func.HttpRequest, skills: List[str], memory_s
     logging.info("Creating kernel and importing skills %s", skills)
 
     # Get the API configuration.
-    api_config = headers_to_config(req.headers)
+    try:
+        api_config = headers_to_config(req.headers)
+    except ValueError:
+        logging.exception(f"No headers found. Using local .env file for configuration.")
+        try: 
+            api_config = dotenv_to_config()
+        except AssertionError as e:
+            logging.exception(f"No .env file found.")
+            return None, func.HttpResponse("No valid headers found and no .env file found.", status_code=400)
 
-    if api_config.serviceid == AIService.OPENAI.value:
-        # Add an OpenAI backend
-        kernel.add_text_completion_service(
-            "dv",
-            sk_oai.OpenAITextCompletion(
-                api_config.deployment_model_id, api_config.key, api_config.org_id
-            ),
-        )
-    elif api_config.serviceid == AIService.AZURE_OPENAI.value:
-        # Add an Azure backend
-        kernel.add_text_completion_service(
-            "dv",
-            sk_oai.AzureTextCompletion(
-                api_config.deployment_model_id, api_config.key, api_config.endpoint
-            ),
-        )
+    try:
+        if api_config.serviceid == AIService.OPENAI.value or api_config.serviceid == AIService.OPENAI.name:
+            # Add an OpenAI backend
+            kernel.add_text_completion_service(
+                "dv",
+                sk_oai.OpenAITextCompletion(
+                    model_id=api_config.deployment_model_id, api_key=api_config.key, org_id=api_config.org_id
+                ),
+            )
+        elif api_config.serviceid == AIService.AZURE_OPENAI.value or api_config.serviceid == AIService.AZURE_OPENAI.name:
+            # Add an Azure backend
+            kernel.add_text_completion_service(
+                "dv",
+                sk_oai.AzureTextCompletion(
+                    deployment_name=api_config.deployment_model_id, api_key=api_config.key, endpoint=api_config.endpoint
+                ),
+            )
+    except ValueError as e:
+        logging.exception(f"Error creating completion service: {e}")
+        return None, func.HttpResponse("Error creating completion service: {e}", status_code=400)
 
-    register_semantic_skills(kernel, sample_skills_path(), skills)
+    try:
+        register_semantic_skills(kernel, sample_skills_path(), skills)
+    except ValueError as e:
+        logging.exception(f"Error registering skills: {e}")
+        return None, func.HttpResponse("Error registering skills", status_code=404)
 
-    return kernel
+    return kernel, None
 
 
-def register_semantic_skills(kernel, skills_dir, skills: List[str]):
+def register_semantic_skills(kernel: sk.Kernel, skills_dir, skills: List[str]):
     """
     Registers the semantic skills or all skills if input skills list is None
     :param kernel: The kernel.
@@ -81,10 +97,10 @@ def register_semantic_skills(kernel, skills_dir, skills: List[str]):
     :return: None.
     """
     logging.info("Importing skills %s", skills)
-
+    lowered_skills = [skill.lower() for skill in skills] if skills is not None else None
     for skill_path in os.listdir(skills_dir):
         if os.path.isdir(os.path.join(skills_dir, skill_path)):
-            should_load = skills is None or skill_path.lower() in skills
+            should_load = skills is None or skill_path.lower() in lowered_skills
             if should_load:
                 logging.info("loading skill %s", skill_path)
                 kernel.import_semantic_skill_from_directory(skills_dir, skill_path)
