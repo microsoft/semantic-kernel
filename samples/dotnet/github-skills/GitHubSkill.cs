@@ -130,7 +130,6 @@ BEGIN SUMMARY:
 
         try
         {
-            // https://api.github.com/repos/adrianwyatt/azure-cog-cyberdeck/zipball/main
             var repositoryUri = Regex.Replace(source.Trim(s_trimChars), "github.com", "api.github.com/repos", RegexOptions.IgnoreCase);
             var repoBundle = $"{repositoryUri}/zipball/{repositoryBranch}";
 
