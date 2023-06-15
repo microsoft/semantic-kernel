@@ -230,7 +230,7 @@ public sealed class TrustServiceTests
     private static Mock<ITextCompletion> MockAIService()
     {
         var aiService = new Mock<ITextCompletion>();
-        var textCompletionResult = new Mock<ITextCompletionResult>();
+        var textCompletionResult = new Mock<ITextResult>();
 
         textCompletionResult
             .Setup(x => x.GetCompletionAsync(It.IsAny<CancellationToken>()))
@@ -238,7 +238,7 @@ public sealed class TrustServiceTests
 
         aiService
             .Setup(x => x.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ITextCompletionResult> { textCompletionResult.Object });
+            .ReturnsAsync(new List<ITextResult> { textCompletionResult.Object });
 
         return aiService;
     }
