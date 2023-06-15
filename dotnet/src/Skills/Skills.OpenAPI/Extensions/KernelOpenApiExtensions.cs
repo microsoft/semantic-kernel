@@ -209,9 +209,9 @@ public static class KernelOpenApiExtensions
         Verify.ValidSkillName(skillName);
 
         // Parse
-        var parser = new OpenApiDocumentParser();
+        var parser = new OpenApiDocumentParser(kernel.Log);
 
-        var operations = await parser.ParseAsync(documentStream, cancellationToken).ConfigureAwait(false);
+        var operations = await parser.ParseAsync(documentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         //Creating HttpClient here until a proper solution allowing client code to provide its own instance is put in place.
