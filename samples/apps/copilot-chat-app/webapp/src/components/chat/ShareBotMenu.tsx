@@ -29,14 +29,6 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
         );
     }, [chat, chatId, chatTitle, downloadFile]);
 
-    const onInviteOthersClick = () => {
-        setIsGettingInvitationId(true);
-    };
-
-    const onInviteOthersCancel = () => {
-        setIsGettingInvitationId(false);
-    };
-
     return (
         <div>
             <Menu>
@@ -50,13 +42,16 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
                         <MenuItem icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
                             Download your Bot
                         </MenuItem>
-                        <MenuItem icon={<PeopleTeamAddRegular />} onClick={onInviteOthersClick}>
+                        <MenuItem icon={<PeopleTeamAddRegular />} onClick={() => setIsGettingInvitationId(true)}>
                             Invite others to your Bot
                         </MenuItem>
                     </MenuList>
                 </MenuPopover>
             </Menu>
-            {isGettingInvitationId && <InvitationCreateDialog onCancel={onInviteOthersCancel} chatId={chatId} />}
+            {isGettingInvitationId &&
+                <InvitationCreateDialog
+                    onCancel={() => setIsGettingInvitationId(false)}
+                    chatId={chatId} />}
         </div>
     );
 };

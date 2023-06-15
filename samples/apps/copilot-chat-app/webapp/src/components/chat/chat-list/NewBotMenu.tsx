@@ -17,7 +17,7 @@ export const NewBotMenu: FC = () => {
     const dispatch = useAppDispatch();
     const chat = useChat();
     const fileHandler = useFile();
-    // It needs to keep the menu open keep the FileUploader reference
+    // It needs to keep the menu open to keep the FileUploader reference
     // when the file uploader is clicked.
     const [isNewBotMenuOpen, setIsNewBotMenuOpen] = useState(false);
     const [isJoiningBot, setIsJoiningBot] = useState(false);

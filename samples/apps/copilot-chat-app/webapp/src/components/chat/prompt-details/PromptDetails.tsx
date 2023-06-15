@@ -32,7 +32,7 @@ export const PromptDetails: React.FC<IPromptDetailsProps> = ({ message }) => {
                 <DialogBody>
                     <DialogTitle>Prompt</DialogTitle>
                     <DialogContent>
-                        {(message.prompt === undefined || message.prompt === '' || message.prompt === null)
+                        {(!message.prompt)
                             ? 'No prompt available. The response is either a plan proposal or a hard-coded response.'
                             : message.prompt.split('\n').map(
                                 (paragraph, idx) => <p key={'prompt-details-'+idx}>{paragraph}</p>

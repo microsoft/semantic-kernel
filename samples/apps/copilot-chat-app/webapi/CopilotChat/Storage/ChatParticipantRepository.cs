@@ -48,9 +48,9 @@ public class ChatParticipantRepository : Repository<ChatParticipant>
     /// <param name="userId">The user id.</param>
     /// <param name="chatId">The chat id.</param>
     /// <returns>True if the user is in the chat session, false otherwise.</returns>
-    public Task<bool> IsUserInChatAsync(string userId, string chatId)
+    public async Task<bool> IsUserInChatAsync(string userId, string chatId)
     {
-        return base.StorageContext.QueryEntitiesAsync(e => e.UserId == userId && e.ChatId == chatId).
-            ContinueWith(t => t.Result.Any(), TaskScheduler.Default);
+        var users = await base.StorageContext.QueryEntitiesAsync(e => e.UserId == userId && e.ChatId == chatId);
+        return users.Any();
     }
 }

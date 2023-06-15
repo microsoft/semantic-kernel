@@ -59,16 +59,14 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
         ) => {
             const { message, chatId } = action.payload;
             const id = chatId ?? state.selectedId;
-            state.conversations[id].messages.push(message);
-            frontLoadChat(state, id);
+            updateConversation(state, id, message);
         },
         updateConversationFromServer: (
             state: ConversationsState,
             action: PayloadAction<{ message: IChatMessage; chatId: string }>,
         ) => {
             const { message, chatId } = action.payload;
-            state.conversations[chatId].messages.push(message);
-            frontLoadChat(state, chatId);
+            updateConversation(state, chatId, message);
         },
         updateMessageState: (
             state: ConversationsState,
@@ -81,19 +79,11 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
         },
         updateUserIsTyping: (state: ConversationsState, action: PayloadAction<{ userId: string; chatId: string; isTyping: boolean }>) => {
             const { userId, chatId, isTyping } = action.payload;
-            const conversation = state.conversations[chatId];
-            const user = conversation.users.find(u => u.id === userId);
-            if (user) {
-                user.isTyping = isTyping;
-            }
+            updateUserTypingState(state, userId, chatId, isTyping);
         },
         updateUserIsTypingFromServer: (state: ConversationsState, action: PayloadAction<{ userId: string; chatId: string; isTyping: boolean }>) => {
             const { userId, chatId, isTyping } = action.payload;
-            const conversation = state.conversations[chatId];
-            const user = conversation.users.find(u => u.id === userId);
-            if (user) {
-                user.isTyping = isTyping;
-            }
+            updateUserTypingState(state, userId, chatId, isTyping);
         },
         updateBotIsTypingFromServer: (state: ConversationsState, action: PayloadAction<{ chatId: string; isTyping: boolean }>) => {
             const { chatId, isTyping } = action.payload;
@@ -123,4 +113,22 @@ const frontLoadChat = (state: ConversationsState, id: string) => {
     const conversation = state.conversations[id];
     delete state.conversations[id];
     state.conversations = { [id]: conversation, ...state.conversations };
+};
+
+const updateConversation = (state: ConversationsState, chatId: string, message: IChatMessage) => {
+    state.conversations[chatId].messages.push(message);
+    frontLoadChat(state, chatId);
+};
+
+const updateUserTypingState = (
+    state: ConversationsState,
+    userId: string,
+    chatId: string,
+    isTyping: boolean
+) => {
+    const conversation = state.conversations[chatId];
+    const user = conversation.users.find(u => u.id === userId);
+    if (user) {
+        user.isTyping = isTyping;
+    }
 };
