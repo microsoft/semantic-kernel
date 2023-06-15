@@ -73,8 +73,8 @@ eval WEB_API_URL=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webapiUrl.
 echo "WEB_API_URL: $WEB_API_URL"
 eval WEB_API_NAME=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webapiName.value')
 echo "WEB_API_NAME: $WEB_API_NAME"
-echo "Getting webapi key..."
-eval WEB_API_KEY=$(az webapp config appsettings list --name $WEB_API_NAME --resource-group $RESOURCE_GROUP | jq '.[] | select(.name=="Authorization:ApiKey").value')
+# echo "Getting webapi key..."
+# eval WEB_API_KEY=$(az webapp config appsettings list --name $WEB_API_NAME --resource-group $RESOURCE_GROUP | jq '.[] | select(.name=="Authorization:ApiKey").value')
 
 ENV_FILE_PATH="$SCRIPT_ROOT/../webapp/.env"
 echo "Writing environment variables to '$ENV_FILE_PATH'..."
@@ -89,6 +89,10 @@ sed "s/{{appDevserverUrl}}/https:\/\/${WEB_APP_URL}/g" $SCRIPT_ROOT/../webapp/te
 cat $SWA_CONFIG_FILE_PATH
 
 pushd "$SCRIPT_ROOT/../webapp"
+
+ORIGIN="https://$WEB_APP_URL"
+echo "Ensuring CORS origin '$ORIGIN' to webapi '$WEB_API_NAME'..."
+
 echo "Installing yarn dependencies..."
 yarn install
 if [ $? -ne 0 ]; then
@@ -108,6 +112,14 @@ swa deploy --subscription-id $SUBSCRIPTION --app-name $WEB_APP_NAME --env produc
 if [ $? -ne 0 ]; then
     echo "Failed to deploy webapp"
     exit 1
+fi
+
+ORIGIN="https://$WEB_APP_URL"
+echo "Ensuring CORS origin '$ORIGIN' to webapi '$WEB_API_NAME'..."
+CORS_RESULT=$(az webapp cors show --name $WEB_API_NAME --resource-group $RESOURCE_GROUP --subscription $SUBSCRIPTION | jq '.allowedOrigins | index("$ORIGIN")')
+if [[ "$CORS_RESULT" == "null" ]]; then 
+    echo "Adding CORS origin '$ORIGIN' to webapi '$WEB_API_NAME'..."
+    az webapp cors add --name $WEB_API_NAME --resource-group $RESOURCE_GROUP --subscription $SUBSCRIPTION --allowed-origins $origin
 fi
 
 popd

@@ -84,6 +84,12 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
+$origin = "https://$webappUrl"
+Write-Host "Ensuring CORS origin '$origin' to webapi '$webapiName'..."
+if (-not ((az webapp cors show --name webapiName --resource-group $ResourceGroupName --subscription $Subscription | ConvertFrom-Json).allowedOrigins -contains $origin)) {
+    az webapp cors add --name $webapiName --resource-group $ResourceGroupName --subscription $Subscription --allowed-origins $origin
+}
+
 Pop-Location
 
 Write-Host "To verify your deployment, go to 'https://$webappUrl' in your browser."
