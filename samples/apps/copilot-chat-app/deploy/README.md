@@ -42,9 +42,13 @@ chmod +x ./deploy-azure.sh
 
 ## Azure Portal
 You can also deploy the infrastructure directly from the Azure Portal by clicking the button below:
-> This will automatically deploy the most recent release of CopilotChat backend binaries ([link](https://github.com/microsoft/semantic-kernel/releases?q=copilotchat)).
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fmain%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
+
+> This will automatically deploy the most recent release of CopilotChat backend binaries ([link](https://github.com/microsoft/semantic-kernel/releases?q=copilotchat)).
+
+> To find the deployment name when using `Deploy to Azure`, look for a deployment in your resource group that starts with `Microsoft.Template`.
+
 
 # Deploy Backend (WebAPI)
 To deploy the backend, build the deployment package first and deploy it to the Azure resources created above.
@@ -84,6 +88,7 @@ npm install -g @azure/static-web-apps-cli
 ```
 
 Your CoplitChat application is now deployed!
+
 
 # Appendix
 ## Using custom web frontends to access your deployment
