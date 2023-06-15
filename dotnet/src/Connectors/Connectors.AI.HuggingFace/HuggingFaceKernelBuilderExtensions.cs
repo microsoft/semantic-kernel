@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
@@ -41,7 +40,7 @@ public static class HuggingFaceKernelBuilderExtensions
             new HuggingFaceTextCompletion(
                 model,
                 apiKey,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 endpoint),
                 setAsDefault);
 
@@ -66,7 +65,7 @@ public static class HuggingFaceKernelBuilderExtensions
         builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
             new HuggingFaceTextEmbeddingGeneration(
                 model,
-                GetHttpClient(parameters.Config, httpClient: null, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient: null, parameters.Logger),
                 endpoint),
                 setAsDefault);
 
@@ -93,29 +92,10 @@ public static class HuggingFaceKernelBuilderExtensions
         builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
             new HuggingFaceTextEmbeddingGeneration(
                 model,
-                GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
                 endpoint),
                 setAsDefault);
 
         return builder;
-    }
-
-    /// <summary>
-    /// Retrieves an instance of HttpClient.
-    /// </summary>
-    /// <param name="config">The kernel configuration.</param>
-    /// <param name="httpClient">An optional pre-existing instance of HttpClient.</param>
-    /// <param name="logger">An optional logger.</param>
-    /// <returns>An instance of HttpClient.</returns>
-    private static HttpClient GetHttpClient(KernelConfig config, HttpClient? httpClient, ILogger? logger)
-    {
-        if (httpClient == null)
-        {
-            var retryHandler = config.HttpHandlerFactory.Create(logger);
-            retryHandler.InnerHandler = NonDisposableHttpClientHandler.Instance;
-            return new HttpClient(retryHandler, false); // We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
-        }
-
-        return httpClient;
     }
 }
