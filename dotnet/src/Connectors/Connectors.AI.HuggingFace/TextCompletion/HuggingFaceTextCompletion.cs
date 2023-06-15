@@ -116,7 +116,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -128,7 +128,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
+    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
@@ -147,7 +147,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
 
     #region private ================================================================================
 
-    private async Task<IReadOnlyList<ITextCompletionStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<ITextStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
         try
         {
