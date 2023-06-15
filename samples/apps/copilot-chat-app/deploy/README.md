@@ -43,7 +43,13 @@ chmod +x ./deploy-azure.sh
 ## Azure Portal
 You can also deploy the infrastructure directly from the Azure Portal by clicking the button below:
 
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fmain%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
+
+**TODO TEST REMOVE**
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fadrianwyatt%2Fsemantic-kernel%2Fsk-pipelines%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
+
+**TODO TEST REMOVE**
 
  - To use an existing Azure OpenAI resource, set `Ai Service` to `AzureOpenAI` and include `Ai Api Key` and `Ai Endpoint`.
   - To deploy a new Azure OpenAI resource, set `Ai Service` to `AzureOpenAI` and omit `Ai Api Key` and `ai Endpoint`.

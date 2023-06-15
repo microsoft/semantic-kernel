@@ -14,7 +14,7 @@ param(
     
     [string]
     # Target runtime to publish.
-    $TargetRuntime = "linux-x64",
+    $TargetRuntime = "win-x64",
     
     [string]
     # Output directory for published assets.

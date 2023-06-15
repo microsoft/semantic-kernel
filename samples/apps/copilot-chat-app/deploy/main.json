@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.17.1.54307",
-      "templateHash": "17377615831264036404"
+      "version": "0.18.4.5664",
+      "templateHash": "14624489804868742601"
     }
   },
   "parameters": {
@@ -216,7 +216,7 @@
       "apiVersion": "2022-03-01",
       "name": "[format('asp-{0}-webapi', variables('uniqueName'))]",
       "location": "[parameters('location')]",
-      "kind": "linux",
+      "kind": "app",
       "sku": {
         "name": "[parameters('webAppServiceSku')]"
       }
@@ -226,7 +226,7 @@
       "apiVersion": "2022-09-01",
       "name": "[format('app-{0}-webapi', variables('uniqueName'))]",
       "location": "[parameters('location')]",
-      "kind": "app,linux",
+      "kind": "app",
       "tags": {
         "skweb": "1"
       },
