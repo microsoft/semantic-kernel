@@ -115,8 +115,52 @@ public static class SKFunctionExtensions
         SKContext context,
         bool mutableContext = true,
         CompleteRequestSettings? settings = null)
+        => InternalInvokeAsync(function,
+             input,
+             context,
+             mutableContext,
+             settings
+             );
+
+    public async static Task<string> TextInvokeAsync(this ISKFunction function,
+        string input,
+        SKContext context,
+        bool mutableContext = true,
+        CompleteRequestSettings? settings = null)
     {
-        // Log a warning if the given input is overriding a different input in the context
+        var resultContext = await InternalInvokeAsync(
+             function,
+             input,
+             context,
+             mutableContext,
+             settings
+             ).ConfigureAwait(false);
+
+        return resultContext.Variables.Input;
+    }
+
+    public async static Task<string> TextInvokeAsync(this ISKFunction function,
+    SKContext context,
+    bool mutableContext = true,
+    CompleteRequestSettings? settings = null)
+    {
+        var resultContext = await InternalInvokeAsync(
+             function,
+             context.Variables.Input,
+             context,
+             mutableContext,
+             settings
+             ).ConfigureAwait(false);
+
+        return resultContext.Variables.Input;
+    }
+
+    private static Task<SKContext> InternalInvokeAsync(ISKFunction function,
+        string input,
+        SKContext context,
+        bool mutableContext = true,
+        CompleteRequestSettings? settings = null)
+    {
         var inputInContext = context.Variables.Input;
         if (!string.IsNullOrEmpty(inputInContext) && !string.Equals(input, inputInContext, StringComparison.Ordinal))
         {
