@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import threading
 import platform
 import sys
+import threading
 from enum import Enum
 from logging import Logger
 from typing import Any, Callable, List, Optional, cast
