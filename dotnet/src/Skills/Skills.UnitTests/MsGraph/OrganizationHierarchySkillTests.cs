@@ -39,7 +39,8 @@ public class OrganizationHierarchySkillTests : IDisposable
         string actual = await target.GetMyDirectReportsEmailAsync(this._context);
 
         // Assert
-        var set = new HashSet<string>(JsonSerializer.Deserialize<IEnumerable<string>>(actual));
+        var emails = JsonSerializer.Deserialize<IEnumerable<string>>(actual);
+        Assert.NotNull(emails);
         foreach (string directReportEmail in anyDirectReportsEmail)
         {
             Assert.Contains(directReportEmail, set);
