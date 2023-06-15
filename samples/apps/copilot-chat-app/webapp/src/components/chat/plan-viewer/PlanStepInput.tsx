@@ -1,6 +1,7 @@
 import { Badge, Button, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import { Checkmark16Regular, Dismiss16Regular, Edit16Regular } from '@fluentui/react-icons';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Constants } from '../../../Constants';
 import { IPlanInput } from '../../../libs/models/Plan';
 
 const useClasses = makeStyles({
@@ -28,30 +29,74 @@ interface PlanStepInputProps {
     input: IPlanInput;
     onEdit: (newValue: string) => void;
     enableEdits: boolean;
+    validationErrors: number;
+    setValidationErrors: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export const PlanStepInput: React.FC<PlanStepInputProps> = ({ input, onEdit, enableEdits }) => {
+export const PlanStepInput: React.FC<PlanStepInputProps> = ({
+    input,
+    onEdit,
+    enableEdits,
+    validationErrors,
+    setValidationErrors,
+}) => {
     const classes = useClasses();
-    const [isEditingInput, setIsEditingInput] = useState(false);
 
-    const [inputValue, setInputValue] = useState(input.Value);
+    const [formValue, setFormValue] = useState(input.Value);
+    const [isEditingInput, setIsEditingInput] = useState(input.Value.includes(Constants.sk.unknownVariableFlag));
+    const [inputRequired, setInputRequired] = useState(
+        enableEdits && input.Value.includes(Constants.sk.unknownVariableFlag),
+    );
+
+    useEffect(() => {
+        if (inputRequired) setValidationErrors(validationErrors + 1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [input.Value]);
 
     const onEditClick = useCallback(() => {
         setIsEditingInput(true);
     }, []);
 
+    const keyStrokeTimeout = useRef(-1);
+
+    const updateAndValidateInput = useCallback((event: any) => {
+        window.clearTimeout(keyStrokeTimeout.current);
+        setFormValue(event.target.value);
+
+        // debounce
+        keyStrokeTimeout.current = window.setTimeout(() => {
+            if (event.target.value.includes(Constants.sk.unknownVariableFlag) || event.target.value === '') {
+                setInputRequired(true);
+            } else {
+                setInputRequired(false);
+            }
+        }, 250);
+    }, []);
+
     const onSubmitEdit = useCallback(() => {
+        if (input.Value.includes(Constants.sk.unknownVariableFlag)) {
+            setValidationErrors(validationErrors - 1);
+        }
+
+        setInputRequired(false);
         setIsEditingInput(false);
-        onEdit(inputValue);
-    }, [inputValue, onEdit]);
+        input.Value = formValue;
+        onEdit(formValue);
+    }, [formValue, validationErrors, input, onEdit, setValidationErrors]);
 
     const onCancel = useCallback(() => {
-        setIsEditingInput(false);
-        setInputValue(input.Value);
-    }, [input.Value]);
+        setIsEditingInput(formValue.includes(Constants.sk.unknownVariableFlag));
+        setInputRequired(input.Value.includes(Constants.sk.unknownVariableFlag));
+        setFormValue(input.Value);
+    }, [input, formValue]);
 
     return (
-        <Badge color="informative" shape="rounded" appearance="tint" className={classes.root}>
+        <Badge
+            color={enableEdits && input.Value.includes(Constants.sk.unknownVariableFlag) ? 'danger' : 'informative'}
+            shape="rounded"
+            appearance="tint"
+            className={classes.root}
+        >
             {`${input.Key}: `}
             {!enableEdits && input.Value}
             {enableEdits && (
@@ -61,10 +106,8 @@ export const PlanStepInput: React.FC<PlanStepInputProps> = ({ input, onEdit, ena
                             className={mergeClasses(classes.input, classes.interactable)}
                             style={{ width: input.Value.length * 6, minWidth: '75px' }}
                             placeholder={input.Value}
-                            value={inputValue}
-                            onChange={(event: any) => {
-                                setInputValue(event.target.value);
-                            }}
+                            value={formValue}
+                            onChange={updateAndValidateInput}
                             onKeyDown={(event) => {
                                 if (event.key === 'Enter' && !event.shiftKey) {
                                     event.preventDefault();
@@ -73,13 +116,14 @@ export const PlanStepInput: React.FC<PlanStepInputProps> = ({ input, onEdit, ena
                             }}
                         />
                     ) : (
-                        inputValue
+                        formValue
                     )}
                     <Button
                         icon={isEditingInput ? <Checkmark16Regular /> : <Edit16Regular />}
                         appearance="transparent"
                         className={mergeClasses(classes.buttons, classes.interactable)}
                         onClick={isEditingInput ? onSubmitEdit : onEditClick}
+                        disabled={isEditingInput && inputRequired}
                     />
                     {isEditingInput && (
                         <Button

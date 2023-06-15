@@ -73,33 +73,36 @@ public class CopilotChatPlanner
     private Plan SanitizePlan(Plan plan, FunctionsView availableFunctions)
     {
         List<Plan> sanitizedSteps = new();
-        List<string> planOutputs = new();
+        List<string> availableOutputs = new();
+        List<string> unavailableOutputs = new();
 
         foreach (var step in plan.Steps)
         {
             if (this.Kernel.Skills.TryGetFunction(step.SkillName, step.Name, out var function))
             {
-                planOutputs.AddRange(step.Outputs);
+                availableOutputs.AddRange(step.Outputs);
 
-                // Create a regex object to match variable names
+                // Regex to match variable names
                 Regex variableRegEx = new(@"\$([A-Za-z_]+)", RegexOptions.Singleline);
 
                 foreach (var input in step.Parameters)
                 {
                     // Check for any inputs that may have dependencies from removed steps
-                    // Override these values with unknown constant to prompt for user input
                     Match inputVariableMatch = variableRegEx.Match(input.Value);
-
                     if (inputVariableMatch.Success)
                     {
                         foreach (Capture match in inputVariableMatch.Groups[1].Captures)
                         {
                             var inputVariableValue = match.Value;
-                            if (!planOutputs.Any(output => string.Equals(output, inputVariableValue, System.StringComparison.OrdinalIgnoreCase)))
+                            if (!availableOutputs.Any(output => string.Equals(output, inputVariableValue, System.StringComparison.OrdinalIgnoreCase)))
                             {
                                 var overrideValue =
-                                    string.Equals("INPUT", input.Key, System.StringComparison.OrdinalIgnoreCase) && inputVariableMatch.Groups[1].Captures.Count == 1
-                                        ? "$PLAN.RESULT"
+                                    // Use previous step's output if no direct dependency on unavailable functions' outputs
+                                    // Else use designated constant for unknowns to prompt for user input
+                                    string.Equals("INPUT", input.Key, System.StringComparison.OrdinalIgnoreCase)
+                                    && inputVariableMatch.Groups[1].Captures.Count == 1
+                                    && !unavailableOutputs.Any(output => string.Equals(output, inputVariableValue, System.StringComparison.OrdinalIgnoreCase))
+                                        ? "$PLAN.RESULT" // TODO: Extract constants from Plan class
                                         : "$???";
                                 step.Parameters.Set(input.Key, Regex.Replace(input.Value, variableRegEx.ToString(), overrideValue));
                             }
@@ -108,11 +111,14 @@ public class CopilotChatPlanner
                 }
 
                 sanitizedSteps.Add(step);
-
+            }
+            else
+            {
+                unavailableOutputs.AddRange(step.Outputs);
             }
         }
 
-        Plan sanitizedPlan = new (plan.Description, sanitizedSteps.ToArray<Plan>());
+        Plan sanitizedPlan = new(plan.Description, sanitizedSteps.ToArray<Plan>());
 
         // Merge any state back into new plan object
         sanitizedPlan.State.Update(plan.State);

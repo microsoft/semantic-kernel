@@ -36,6 +36,7 @@ export const Constants = {
         },
         // Reserved context variable names
         reservedWords: ['server_url', 'server-url'],
+        unknownVariableFlag: '$???',
     },
     // For a list of Microsoft Graph permissions, see https://learn.microsoft.com/en-us/graph/permissions-reference.
     // Your application registration will need to be granted these permissions in Azure Active Directory.
