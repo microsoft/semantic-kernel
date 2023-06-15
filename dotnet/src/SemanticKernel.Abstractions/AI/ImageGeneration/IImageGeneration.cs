@@ -6,6 +6,9 @@ using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.AI.ImageGeneration;
 
+/// <summary>
+/// Interface for image generation services
+/// </summary>
 public interface IImageGeneration : IAIService
 {
     /// <summary>

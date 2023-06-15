@@ -8,12 +8,12 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class TextCompletionResult : ITextCompletionResult
+internal sealed class TextResult : ITextResult
 {
     private readonly ModelResult _modelResult;
     private readonly Choice _choice;
 
-    public TextCompletionResult(Completions resultData, Choice choice)
+    public TextResult(Completions resultData, Choice choice)
     {
         this._modelResult = new ModelResult(resultData);
         this._choice = choice;
