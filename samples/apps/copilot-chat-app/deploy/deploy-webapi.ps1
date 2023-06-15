@@ -21,7 +21,7 @@ param(
 
     [string]
     # CopilotChat WebApi package to deploy
-    $PackageFilePath = "$PSSCriptRoot/out/webapi.zip"
+    $PackageFilePath = "$PSScriptRoot/out/webapi.zip"
 )
 
 # Ensure $PackageFilePath exists

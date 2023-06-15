@@ -46,11 +46,6 @@ You can also deploy the infrastructure directly from the Azure Portal by clickin
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fsemantic-kernel%2Fmain%2Fsamples%2Fapps%2Fcopilot-chat-app%2Fdeploy%2Fmain.json)
 
- - To use an existing Azure OpenAI resource, set `Ai Service` to `AzureOpenAI` and include `Ai Api Key` and `Ai Endpoint`.
-  - To deploy a new Azure OpenAI resource, set `Ai Service` to `AzureOpenAI` and omit `Ai Api Key` and `ai Endpoint`.
-  - To use an an OpenAI account, set `Ai Service` to `OpenAI` and include `Ai Api Key`.
-
-
 # Deploy Backend (WebAPI)
 To deploy the backend, build the deployment package first and deploy it to the Azure resources created above.
 
