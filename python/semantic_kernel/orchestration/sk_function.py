@@ -38,7 +38,7 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
 )
 from semantic_kernel.utils.null_logger import NullLogger
 
-if platform.system() == 'Windows' and sys.version_info >= (3, 8, 1):
+if platform.system() == 'Windows' and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 class SKFunction(SKFunctionBase):
