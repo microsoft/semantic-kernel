@@ -1,35 +1,35 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import * as signalR from "@microsoft/signalr";
-import { AlertType } from "../../../libs/models/AlertType";
-import { IChatUser } from "../../../libs/models/ChatUser";
-import { PlanState } from "../../../libs/models/Plan";
-import { IAskResult } from "../../../libs/semantic-kernel/model/AskResult";
-import { addAlert } from "../app/appSlice";
-import { ChatState } from "../conversations/ChatState";
+import * as signalR from '@microsoft/signalr';
+import { AlertType } from '../../../libs/models/AlertType';
+import { IChatUser } from '../../../libs/models/ChatUser';
+import { PlanState } from '../../../libs/models/Plan';
+import { IAskResult } from '../../../libs/semantic-kernel/model/AskResult';
+import { addAlert } from '../app/appSlice';
+import { ChatState } from '../conversations/ChatState';
 import { AuthorRoles, ChatMessageType, IChatMessage } from './../../../libs/models/ChatMessage';
 import { isPlan } from './../../../libs/utils/PlanUtils';
 import { getSelectedChatID } from './../../app/store';
 
 // These have to match the callback names used in the backend
 const enum SignalRCallbackMethods {
-    ReceiveMessage = "ReceiveMessage",
-    ReceiveResponse = "ReceiveResponse",
-    UserJoined = "UserJoined",
-    ReceiveUserTypingState = "ReceiveUserTypingState",
-    ReceiveBotTypingState = "ReceiveBotTypingState",
-    GlobalDocumentUploaded = "GlobalDocumentUploaded",
-    ChatDocumentUploaded = "ChatDocumentUploaded",
-    ChatEdited = "ChatEdited",
+    ReceiveMessage = 'ReceiveMessage',
+    ReceiveResponse = 'ReceiveResponse',
+    UserJoined = 'UserJoined',
+    ReceiveUserTypingState = 'ReceiveUserTypingState',
+    ReceiveBotTypingState = 'ReceiveBotTypingState',
+    GlobalDocumentUploaded = 'GlobalDocumentUploaded',
+    ChatDocumentUploaded = 'ChatDocumentUploaded',
+    ChatEdited = 'ChatEdited',
 }
 
 // Set up a SignalR connection to the messageRelayHub on the server
 const setupSignalRConnectionToChatHub = () => {
-    const connectionHubUrl = new URL("/messageRelayHub", process.env.REACT_APP_BACKEND_URI as string);
+    const connectionHubUrl = new URL('/messageRelayHub', process.env.REACT_APP_BACKEND_URI as string);
     const signalRConnectionOptions = {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
-        logger: signalR.LogLevel.Warning
+        logger: signalR.LogLevel.Warning,
     };
 
     // Create the connection instance
@@ -74,10 +74,10 @@ const registerCommonSignalConnectionEvents = async (store: any) => {
         if (hubConnection.state === signalR.HubConnectionState.Connected) {
             const message = 'Connection reestablished.';
             store.dispatch(addAlert({ message: message, type: AlertType.Success }));
-            console.log(message +  ` Connected with connectionId ${connectionId}`);
+            console.log(message + ` Connected with connectionId ${connectionId}`);
         }
     });
-}
+};
 
 export const startSignalRConnection = async (store: any) => {
     try {
@@ -99,34 +99,38 @@ export const signalRMiddleware = (store: any) => {
 
         // The following actions will be captured by the SignalR middleware and broadcasted to all clients.
         switch (action.type) {
-            case "conversations/updateConversationFromUser":
-                hubConnection.invoke("SendMessageAsync", getSelectedChatID(), action.payload.message)
-                    .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
+            case 'conversations/updateConversationFromUser':
+                hubConnection
+                    .invoke('SendMessageAsync', getSelectedChatID(), action.payload.message)
+                    .catch((err) => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
-            case "conversations/updateUserIsTyping":
+            case 'conversations/updateUserIsTyping':
                 const { userId, isTyping } = action.payload;
-                hubConnection.invoke("SendUserTypingStateAsync", getSelectedChatID(), userId, isTyping)
-                    .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
+                hubConnection
+                    .invoke('SendUserTypingStateAsync', getSelectedChatID(), userId, isTyping)
+                    .catch((err) => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
-            case "conversations/setConversations":
-                Promise.all(Object.keys(action.payload).map(async (id) => {
-                    await hubConnection.invoke("AddClientToGroupAsync", id);
-                }))
-                    .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
+            case 'conversations/setConversations':
+                Promise.all(
+                    Object.keys(action.payload).map(async (id) => {
+                        await hubConnection.invoke('AddClientToGroupAsync', id);
+                    }),
+                ).catch((err) => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
-            case "conversations/addConversation":
-                hubConnection.invoke("AddClientToGroupAsync", action.payload.id)
-                    .catch(err => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
+            case 'conversations/addConversation':
+                hubConnection
+                    .invoke('AddClientToGroupAsync', action.payload.id)
+                    .catch((err) => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
         }
 
         return result;
-    }
+    };
 };
 
 export const registerSignalREvents = async (store: any) => {
     hubConnection.on(SignalRCallbackMethods.ReceiveMessage, (message: IChatMessage, chatId: string) => {
-        store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
+        store.dispatch({ type: 'conversations/updateConversationFromServer', payload: { message, chatId } });
     });
 
     hubConnection.on(SignalRCallbackMethods.ReceiveResponse, (askResult: IAskResult, chatId: string) => {
@@ -144,11 +148,11 @@ export const registerSignalREvents = async (store: any) => {
             prompt: askResult.variables.find((v) => v.key === 'prompt')?.value,
             authorRole: AuthorRoles.Bot,
             id: askResult.variables.find((v) => v.key === 'messageId')?.value,
-            state: (isPlan(askResult.value) && isPlanForLoggedInUser)
-                ? PlanState.PlanApprovalRequired : PlanState.NoOp,
+            state:
+                isPlan(askResult.value) && isPlanForLoggedInUser ? PlanState.PlanApprovalRequired : PlanState.Disabled,
         } as IChatMessage;
 
-        store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
+        store.dispatch({ type: 'conversations/updateConversationFromServer', payload: { message, chatId } });
     });
 
     hubConnection.on(SignalRCallbackMethods.UserJoined, (chatId: string, userId: string) => {
@@ -159,15 +163,21 @@ export const registerSignalREvents = async (store: any) => {
             emailAddress: '',
             isTyping: false,
         } as IChatUser;
-        store.dispatch({ type: "conversations/addUserToConversation", payload: { user, chatId } });
+        store.dispatch({ type: 'conversations/addUserToConversation', payload: { user, chatId } });
     });
 
-    hubConnection.on(SignalRCallbackMethods.ReceiveUserTypingState, (chatId: string, userId: string, isTyping: boolean) => {
-        store.dispatch({ type: "conversations/updateUserIsTypingFromServer", payload: { chatId, userId, isTyping } });
-    });
+    hubConnection.on(
+        SignalRCallbackMethods.ReceiveUserTypingState,
+        (chatId: string, userId: string, isTyping: boolean) => {
+            store.dispatch({
+                type: 'conversations/updateUserIsTypingFromServer',
+                payload: { chatId, userId, isTyping },
+            });
+        },
+    );
 
     hubConnection.on(SignalRCallbackMethods.ReceiveBotTypingState, (chatId: string, isTyping: boolean) => {
-        store.dispatch({ type: "conversations/updateBotIsTypingFromServer", payload: { chatId, isTyping } });
+        store.dispatch({ type: 'conversations/updateBotIsTypingFromServer', payload: { chatId, isTyping } });
     });
 
     hubConnection.on(SignalRCallbackMethods.GlobalDocumentUploaded, (fileName: string, userName: string) => {
@@ -175,17 +185,19 @@ export const registerSignalREvents = async (store: any) => {
     });
 
     hubConnection.on(SignalRCallbackMethods.ChatDocumentUploaded, (message: IChatMessage, chatId: string) => {
-        store.dispatch({ type: "conversations/updateConversationFromServer", payload: { message, chatId } });
+        store.dispatch({ type: 'conversations/updateConversationFromServer', payload: { message, chatId } });
     });
 
     hubConnection.on(SignalRCallbackMethods.ChatEdited, (chat: ChatState) => {
-        const { id, title } = chat
+        const { id, title } = chat;
         if (!(id in store.getState().conversations.conversations)) {
-            store.dispatch(addAlert({
-                message: `Chat ${id} not found in store. Chat edited signal from server is not processed.`,
-                type: AlertType.Error
-            }));
+            store.dispatch(
+                addAlert({
+                    message: `Chat ${id} not found in store. Chat edited signal from server is not processed.`,
+                    type: AlertType.Error,
+                }),
+            );
         }
-        store.dispatch({ type: "conversations/editConversationTitle", payload: { id: id, newTitle: title } });
+        store.dispatch({ type: 'conversations/editConversationTitle', payload: { id: id, newTitle: title } });
     });
 };
