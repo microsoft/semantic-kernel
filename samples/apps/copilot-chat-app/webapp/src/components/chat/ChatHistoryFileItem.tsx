@@ -5,6 +5,7 @@ import {
     Caption1,
     Card,
     CardHeader,
+    Persona,
     ProgressBar,
     Text,
     makeStyles,
@@ -14,14 +15,30 @@ import {
 } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
+import { timestampToDateString } from '../utils/TextUtils';
 import { getFileIconByFileExtension } from './ChatResourceList';
 
 const useClasses = makeStyles({
     root: {
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
         alignSelf: 'flex-end',
         width: '35%',
+    },
+    persona: {
+        paddingTop: tokens.spacingVerticalS,
+    },
+    item: {
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+    },
+    header: {
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'row',
+        ...shorthands.gap(tokens.spacingHorizontalL),
+        paddingLeft: tokens.spacingHorizontalL,
     },
     card: {
         height: 'fit-content',
@@ -45,6 +62,11 @@ const useClasses = makeStyles({
         fontWeight: '500',
         color: tokens.colorNeutralForegroundDisabled,
         ...shorthands.margin(tokens.spacingVerticalXS, 0),
+    },
+    time: {
+        color: tokens.colorNeutralForeground3,
+        fontSize: '12px',
+        fontWeight: 400,
     },
     icon: {
         height: '32px',
@@ -84,16 +106,30 @@ export const ChatHistoryFileItem: React.FC<ChatHistoryFileItemProps> = ({ messag
 
     return (
         <div className={isMe ? classes.root : mergeClasses(classes.root, classes.alignEnd)}>
-            <Card appearance="filled-alternative" className={classes.card}>
-                <CardHeader
-                    className={classes.cardHeader}
-                    image={getFileIconByFileExtension(name, { className: classes.icon })}
-                    header={<Text className={classes.cardHeaderText}>{name}</Text>}
-                    description={<Caption1 className={classes.cardCaption}>{size}</Caption1>}
-                />
-                <ProgressBar thickness="large" color="success" value={1} />
-            </Card>
-            <span className={classes.footer}>Success: memory established</span>
+            {!isMe &&
+                <Persona
+                    className={classes.persona}
+                    avatar={{ name: message.userName, color: 'colorful' as 'colorful' }}
+                    presence={{ status: 'available' }}
+                />}
+            <div className={classes.item}>
+                <div className={classes.header}>
+                {!isMe && <Text weight="semibold">{message.userName}</Text>}
+                    <Text className={classes.time}>{timestampToDateString(message.timestamp, true)}</Text>
+                </div>
+                <Card appearance="filled-alternative" className={classes.card}>
+                    <CardHeader
+                        className={classes.cardHeader}
+                        image={getFileIconByFileExtension(name, { className: classes.icon })}
+                        header={<Text className={classes.cardHeaderText}>{name}</Text>}
+                        description={<Caption1 className={classes.cardCaption}>{size}</Caption1>}
+                        />
+                    <ProgressBar thickness="large" color="success" value={1} />
+                </Card>
+                <span className={isMe ? classes.footer : mergeClasses(classes.footer, classes.alignEnd)}>
+                    Success: memory established
+                </span>
+            </div>
         </div>
     );
 };
