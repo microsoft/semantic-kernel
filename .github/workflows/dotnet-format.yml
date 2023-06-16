@@ -65,11 +65,11 @@ jobs:
               done
             done
           else
-            # if the changed-files step failed, run dotnet format on all projects
-            csproj_files=$(find ./ -type f -name "*.csproj" | tr '\n' ' ');
+            # if the changed-files step failed, run dotnet on the whole sln instead of specific projects
+            csproj_files=$(find ./ -type f -name "*.sln" | tr '\n' ' ');
           fi
           csproj_files=($(printf "%s\n" "${csproj_files[@]}" | sort -u))
-          echo "Found ${#csproj_files[@]} unique csproj files: ${csproj_files[*]}"
+          echo "Found ${#csproj_files[@]} unique csproj/sln files: ${csproj_files[*]}"
           echo "::set-output name=csproj_files::${csproj_files[*]}"
 
       - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
