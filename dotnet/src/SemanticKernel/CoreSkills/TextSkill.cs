@@ -112,4 +112,11 @@ public sealed class TextSkill
         [Description("First input to concatenate with")] string input,
         [Description("Second input to concatenate with")] string input2) =>
         string.Concat(input, input2);
+
+    [SKFunction, Description("Echo the input string. Useful for capturing plan input for use in multiple functions.")]
+    public string Echo(
+      [Description("Input string to echo.")] string text)
+    {
+        return text;
+    }
 }

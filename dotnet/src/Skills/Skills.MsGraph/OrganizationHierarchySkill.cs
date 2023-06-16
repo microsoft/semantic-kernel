@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
@@ -27,8 +28,8 @@ public sealed class OrganizationHierarchySkill
     /// Get the emails of the direct reports of the current user.
     /// </summary>
     [SKFunction, Description("Get my direct report's email addresses.")]
-    public async Task<IEnumerable<string>> GetMyDirectReportsEmailAsync(CancellationToken cancellationToken = default)
-        => await this._connector.GetDirectReportsEmailAsync(cancellationToken).ConfigureAwait(false);
+    public async Task<string> GetMyDirectReportsEmailAsync(SKContext context)
+        => JsonSerializer.Serialize(await this._connector.GetDirectReportsEmailAsync(context.CancellationToken).ConfigureAwait(false));
 
     /// <summary>
     /// Get the email of the manager of the current user.

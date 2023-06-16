@@ -145,7 +145,8 @@ public sealed class TimeSkill
     [SKFunction, Description("Get the current day of the month")]
     public string Day() =>
         // Example: 12
-        DateTimeOffset.Now.ToString("DD", CultureInfo.CurrentCulture);
+        return DateTimeOffset.Now.ToString("dd", CultureInfo.CurrentCulture);
+    }
 
     /// <summary>
     /// Get the date a provided number of days in the past

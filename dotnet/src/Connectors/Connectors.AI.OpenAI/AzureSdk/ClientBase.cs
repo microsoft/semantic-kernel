@@ -242,7 +242,7 @@ public abstract class ClientBase
     private static OpenAIChatHistory PrepareChatHistory(string text, CompleteRequestSettings? requestSettings, out ChatRequestSettings settings)
     {
         requestSettings ??= new();
-        var chat = InternalCreateNewChat();
+        var chat = InternalCreateNewChat(requestSettings.ChatSystemPrompt);
         chat.AddUserMessage(text);
         settings = new ChatRequestSettings
         {

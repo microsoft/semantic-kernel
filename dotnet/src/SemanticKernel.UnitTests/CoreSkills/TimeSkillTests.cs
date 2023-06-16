@@ -44,6 +44,16 @@ public class TimeSkillTests
     }
 
     [Fact]
+    public void Day()
+    {
+        string expected = DateTime.Now.ToString("dd", CultureInfo.CurrentCulture);
+        var skill = new TimeSkill();
+        string result = skill.Day();
+        Assert.Equal(expected, result);
+        Assert.True(int.TryParse(result, out _));
+    }
+
+    [Fact]
     public async Task LastMatchingDayBadInput()
     {
         var skill = new TimeSkill();
