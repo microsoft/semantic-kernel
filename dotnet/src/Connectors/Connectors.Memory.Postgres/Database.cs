@@ -53,7 +53,16 @@ internal sealed class Database
     public async Task CreatePgVectorExtensionAsync(NpgsqlConnection conn, CancellationToken cancellationToken = default)
     {
         using NpgsqlCommand cmd = conn.CreateCommand();
-        cmd.CommandText = "CREATE EXTENSION IF NOT EXISTS vector";
+        cmd.CommandText = @"
+            DO $$ BEGIN
+                IF NOT EXISTS(SELECT 1 FROM pg_extension WHERE extname = 'vector') THEN
+                    IF EXISTS(SELECT 1 FROM pg_proc WHERE proname = 'create_extension') THEN
+                        SELECT CREATE_EXTENSION('vector');
+                    ELSE
+                        CREATE EXTENSION vector;
+                    END IF;
+                END IF;
+            END $$;";
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         await conn.ReloadTypesAsync().ConfigureAwait(false);
     }
