@@ -316,8 +316,8 @@ public class StepwisePlanner
 
             if (result.ErrorOccurred)
             {
-                this._logger?.LogError("Error occurred: {ErrorMessage}.", result.LastErrorDescription);
-                return $"Error occurred: {result.LastErrorDescription}";
+                this._logger?.LogError("Error occurred: {Error}", result.LastException);
+                return $"Error occurred: {result.LastException}";
             }
 
             this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
