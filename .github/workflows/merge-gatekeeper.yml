@@ -3,6 +3,8 @@ name: Merge Gatekeeper
 on:
   pull_request:
     branches: [ "main", "feature*" ]
+  merge_group:
+    branches: ["main"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
