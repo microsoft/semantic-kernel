@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -53,6 +52,7 @@ public class StepwisePlanner
         {
             promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
         }
+
         promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
 
         this._systemStepFunction = this.ImportSemanticFunction(this._kernel, "StepwiseStep", promptTemplate, promptConfig);
@@ -306,7 +306,7 @@ public class StepwisePlanner
         try
         {
             var function = this._kernel.Func(targetFunction.SkillName, targetFunction.Name);
-            var actionContext = CreateActionContext(actionVariables);
+            var actionContext = this.CreateActionContext(actionVariables);
 
             var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
 
@@ -440,15 +440,15 @@ public class StepwisePlanner
     /// <summary>
     /// The regex for parsing the action response
     /// </summary>
-    private static readonly Regex s_actionRegex = new Regex(@"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
+    private static readonly Regex s_actionRegex = new(@"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
 
     /// <summary>
     /// The regex for parsing the thought response
     /// </summary>
-    private static readonly Regex s_thoughtRegex = new Regex(@"(\[THOUGHT\])?(?<thought>.+?)(?=\[ACTION\]|$)", RegexOptions.Singleline);
+    private static readonly Regex s_thoughtRegex = new(@"(\[THOUGHT\])?(?<thought>.+?)(?=\[ACTION\]|$)", RegexOptions.Singleline);
 
     /// <summary>
     /// The regex for parsing the final answer response
     /// </summary>
-    private static readonly Regex s_finalAnswerRegex = new Regex(@"\[FINAL ANSWER\](?<final_answer>.+)", RegexOptions.Singleline);
+    private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL ANSWER\](?<final_answer>.+)", RegexOptions.Singleline);
 }
