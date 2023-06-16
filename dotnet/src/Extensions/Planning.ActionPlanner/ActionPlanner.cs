@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -125,7 +126,7 @@ public sealed class ActionPlanner
         {
             if (p.Value != null)
             {
-                plan.State[p.Key] = p.Value.ToString();
+                plan.Parameters[p.Key] = p.Value.ToString();
             }
         }
 
@@ -140,10 +141,10 @@ public sealed class ActionPlanner
     /// <param name="goal">Currently unused. Will be used to handle long lists of functions.</param>
     /// <param name="context">Function execution context</param>
     /// <returns>List of functions, formatted accordingly to the prompt</returns>
-    [SKFunction("List all functions available in the kernel")]
-    [SKFunctionName("ListOfFunctions")]
-    [SKFunctionInput(Description = "The current goal processed by the planner", DefaultValue = "")]
-    public string ListOfFunctions(string goal, SKContext context)
+    [SKFunction, Description("List all functions available in the kernel")]
+    public string ListOfFunctions(
+        [Description("The current goal processed by the planner")] string goal,
+        SKContext context)
     {
         Verify.NotNull(context.Skills);
         var functionsAvailable = context.Skills.GetFunctionsView();
@@ -158,10 +159,10 @@ public sealed class ActionPlanner
 
     // TODO: generate string programmatically
     // TODO: use goal to find relevant examples
-    [SKFunction("List a few good examples of plans to generate")]
-    [SKFunctionName("GoodExamples")]
-    [SKFunctionInput(Description = "The current goal processed by the planner", DefaultValue = "")]
-    public string GoodExamples(string goal, SKContext context)
+    [SKFunction, Description("List a few good examples of plans to generate")]
+    public string GoodExamples(
+        [Description("The current goal processed by the planner")] string goal,
+        SKContext context)
     {
         return @"
 [EXAMPLE]
@@ -193,10 +194,10 @@ Goal: create a file called ""something.txt"".
     }
 
     // TODO: generate string programmatically
-    [SKFunction("List a few edge case examples of plans to handle")]
-    [SKFunctionName("EdgeCaseExamples")]
-    [SKFunctionInput(Description = "The current goal processed by the planner", DefaultValue = "")]
-    public string EdgeCaseExamples(string goal, SKContext context)
+    [SKFunction, Description("List a few edge case examples of plans to handle")]
+    public string EdgeCaseExamples(
+        [Description("The current goal processed by the planner")] string goal,
+        SKContext context)
     {
         return @"
 [EXAMPLE]
