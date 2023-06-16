@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [ "main", "feature*" ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   merge-gatekeeper:
     runs-on: ubuntu-latest
