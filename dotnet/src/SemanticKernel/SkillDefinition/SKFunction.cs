@@ -509,7 +509,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             (parameterFuncs[i], ParameterView? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
-                ref hasLoggerParam, ref hasMemoryParam, ref sawFirstParameter, ref hasSKContextParam, ref hasCancellationTokenParam);
+                ref sawFirstParameter, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam);
             if (parameterView is not null)
             {
                 stringParameterViews.Add(parameterView);
