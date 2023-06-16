@@ -262,7 +262,10 @@ public class StepwisePlanner
         var scratchPadLines = new List<string>();
 
         // Add the original first thought
+        scratchPadLines.Add("This was your previous work (but I haven't seen any of it! I only see what you return as final answer):");
         scratchPadLines.Add($"{Thought} {stepsTaken[0].Thought}");
+
+        var insertPoint = scratchPadLines.Count();
 
         // Instead of most recent, we could use semantic relevance to keep important pieces and deduplicate
         for (var i = stepsTaken.Count - 1; i >= 0; i--)
@@ -277,17 +280,17 @@ public class StepwisePlanner
 
             if (!string.IsNullOrEmpty(s.Observation))
             {
-                scratchPadLines.Insert(1, $"{Observation} {s.Observation}");
+                scratchPadLines.Insert(insertPoint, $"{Observation} {s.Observation}");
             }
 
             if (!string.IsNullOrEmpty(s.Action))
             {
-                scratchPadLines.Insert(1, $"{Action} {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(s.ActionVariables)}}}");
+                scratchPadLines.Insert(insertPoint, $"{Action} {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(s.ActionVariables)}}}");
             }
 
             if (i != 0)
             {
-                scratchPadLines.Insert(1, $"{Thought} {s.Thought}");
+                scratchPadLines.Insert(insertPoint, $"{Thought} {s.Thought}");
             }
         }
 
