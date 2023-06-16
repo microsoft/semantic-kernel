@@ -4,9 +4,9 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using NCalcSkills;
@@ -17,7 +17,7 @@ using RepoUtils;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example48_StepwisePlanner
+public static class Example51_StepwisePlanner
 {
     public static async Task RunAsync()
     {
