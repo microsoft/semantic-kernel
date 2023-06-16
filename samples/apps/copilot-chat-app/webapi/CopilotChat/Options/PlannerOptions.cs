@@ -21,5 +21,5 @@ public class PlannerOptions
     /// The minimum relevancy score for a function to be considered during plan creation
     /// when using SequentialPlanner
     /// </summary>
-    public double? RelevancyThreshold = null;
+    public double? RelevancyThreshold { get; set; } = null;
 }
