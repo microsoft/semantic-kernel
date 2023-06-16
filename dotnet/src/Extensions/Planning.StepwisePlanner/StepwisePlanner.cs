@@ -69,40 +69,40 @@ public class StepwisePlanner
             throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
         }
 
-        (string functionNames, string functionDescriptions) = this.GetFunctionNamesAndDescriptions();
+        string functionDescriptions = this.GetFunctionDescriptions();
+
+        Plan planStep = new(this._nativeFunctions["ExecutePlan"]);
+        planStep.Parameters.Set("functionDescriptions", functionDescriptions);
+        planStep.Parameters.Set("question", goal);
+
+        planStep.Outputs.Add("agentScratchPad");
+        planStep.Outputs.Add("stepCount");
+        planStep.Outputs.Add("skillCount");
+        planStep.Outputs.Add("stepsTaken");
 
         Plan plan = new(goal);
 
-        plan.AddSteps(this._nativeFunctions["ExecutePlan"]);
-        plan.State.Set("functionNames", functionNames);
-        plan.State.Set("functionDescriptions", functionDescriptions);
-        plan.State.Set("question", goal);
-        plan.Steps[0].Outputs.Add("agentScratchPad");
-        plan.Steps[0].Outputs.Add("stepCount");
-        plan.Steps[0].Outputs.Add("skillCount");
-        plan.Steps[0].Outputs.Add("stepsTaken");
+        plan.AddSteps(planStep);
 
         return plan;
     }
 
     [SKFunction, SKName("ExecutePlan"), Description("Execute a plan")]
     public async Task<SKContext> ExecutePlanAsync(
-        [Description("The goal to accomplish")]
-        string goal,
-        [Description("List of tool names")]
-        string functionNames,
+        [Description("The question to answer")]
+        string question,
         [Description("List of tool descriptions")]
         string functionDescriptions,
         SKContext context)
     {
         var stepsTaken = new List<SystemStep>();
         this._logger?.BeginScope("StepwisePlanner");
-        if (!string.IsNullOrEmpty(goal))
+        if (!string.IsNullOrEmpty(question))
         {
-            this._logger?.LogInformation("Goal: {Goal}", goal);
+            this._logger?.LogInformation("Ask: {Question}", question);
             for (int i = 0; i < this.Config.MaxIterations; i++)
             {
-                var scratchPad = this.CreateScratchPad(goal, stepsTaken);
+                var scratchPad = this.CreateScratchPad(question, stepsTaken);
                 this._logger?.LogDebug("Scratchpad: {ScratchPad}", scratchPad);
                 context.Variables.Set("agentScratchPad", scratchPad);
 
@@ -118,7 +118,7 @@ public class StepwisePlanner
                 {
                     this._logger?.LogInformation("Final Answer: {FinalAnswer}", nextStep.FinalAnswer);
                     context.Variables.Update(nextStep.FinalAnswer);
-                    var updatedScratchPlan = this.CreateScratchPad(goal, stepsTaken);
+                    var updatedScratchPlan = this.CreateScratchPad(question, stepsTaken);
                     context.Variables.Set("agentScratchPad", updatedScratchPlan);
 
                     // Add additional results to the context
@@ -177,8 +177,7 @@ public class StepwisePlanner
         };
 
         // Extract final answer
-        Regex finalAnswerRegex = new(@"\[FINAL ANSWER\](.*)", RegexOptions.Singleline);
-        Match finalAnswerMatch = finalAnswerRegex.Match(input);
+        Match finalAnswerMatch = s_finalAnswerRegex.Match(input);
 
         if (finalAnswerMatch.Success)
         {
@@ -187,14 +186,13 @@ public class StepwisePlanner
         }
 
         // Extract thought
-        Regex thoughtRegex = new(@"(.*)(?=\[ACTION\])", RegexOptions.Singleline);
-        Match thoughtMatch = thoughtRegex.Match(input);
+        Match thoughtMatch = s_thoughtRegex.Match(input);
 
         if (thoughtMatch.Success)
         {
             result.Thought = thoughtMatch.Value.Trim();
         }
-        else if (!input.Contains("[ACTION]"))
+        else if (!input.Contains(Action))
         {
             result.Thought = input;
         }
@@ -203,11 +201,10 @@ public class StepwisePlanner
             throw new InvalidOperationException("Unexpected input format");
         }
 
-        result.Thought = result.Thought.Replace("[THOUGHT]", string.Empty).Trim();
+        result.Thought = result.Thought.Replace(Thought, string.Empty).Trim();
 
         // Extract action
-        Regex actionRegex = new(@"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
-        Match actionMatch = actionRegex.Match(input);
+        Match actionMatch = s_actionRegex.Match(input);
 
         if (actionMatch.Success)
         {
@@ -241,37 +238,36 @@ public class StepwisePlanner
         context.Variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
         context.Variables.Set("stepsTaken", JsonSerializer.Serialize(stepsTaken));
 
-        var nonEmptyActions = stepsTaken.Where(s => !string.IsNullOrEmpty(s.Action));
-        int skillCallCount = nonEmptyActions.Count();
+        // Materialize the nonEmptyActions collection into a List
+        var nonEmptyActions = stepsTaken.Where(s => !string.IsNullOrEmpty(s.Action)).ToList();
+        int skillCallCount = nonEmptyActions.Count;
         string skillCallCountStr = skillCallCount.ToString(CultureInfo.InvariantCulture);
 
         var distinctSkills = nonEmptyActions.Select(s => s.Action).Distinct().ToList();
         string skillCallList = string.Join(", ", distinctSkills);
 
         string skillCallListWithCounts = string.Join(", ", distinctSkills.Select(skill =>
-            $"{skill}({nonEmptyActions.Count(s => s.Action == skill)})").ToList());
+            $"{skill}({nonEmptyActions.Count(s => s.Action == skill)})"));
 
         context.Variables.Set("skillCount", $"{skillCallCountStr} ({skillCallListWithCounts})");
     }
 
-    internal string CreateScratchPad(string goal, List<SystemStep> stepsTaken)
+    private string CreateScratchPad(string question, List<SystemStep> stepsTaken)
     {
         if (stepsTaken.Count == 0)
         {
             return string.Empty;
         }
 
-        var result = new StringBuilder();
+        var scratchPadLines = new List<string>();
 
-        // add the original first thought
-        result.Append($"[THOUGHT] {stepsTaken[0].Thought}\n");
-
-        var insertPoint = result.Length;
+        // Add the original first thought
+        scratchPadLines.Add($"{Thought} {stepsTaken[0].Thought}");
 
         // Instead of most recent, we could use semantic relevance to keep important pieces and deduplicate
         for (var i = stepsTaken.Count - 1; i >= 0; i--)
         {
-            if (result.Length / 4.0 > (this.Config.MaxTokens * 0.8))
+            if (scratchPadLines.Count / 4.0 > (this.Config.MaxTokens * 0.8))
             {
                 this._logger.LogDebug("Scratchpad is too long, truncating. Skipping {CountSkipped} steps.", i + 1);
                 break;
@@ -281,45 +277,38 @@ public class StepwisePlanner
 
             if (!string.IsNullOrEmpty(s.Observation))
             {
-                result.Insert(insertPoint, $"[OBSERVATION] {s.Observation}\n");
+                scratchPadLines.Insert(1, $"{Observation} {s.Observation}");
             }
 
             if (!string.IsNullOrEmpty(s.Action))
             {
-                result.Insert(insertPoint, $"[ACTION] {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(s.ActionVariables)}}}\n");
+                scratchPadLines.Insert(1, $"{Action} {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(s.ActionVariables)}}}");
             }
 
             if (i != 0)
             {
-                result.Insert(insertPoint, $"[THOUGHT] {s.Thought}\n");
+                scratchPadLines.Insert(1, $"{Thought} {s.Thought}");
             }
         }
 
-        return result.ToString().Trim();
+        return string.Join("\n", scratchPadLines).Trim();
     }
 
-    protected virtual async Task<string> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables)
+    private async Task<string> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables)
     {
         var availableFunctions = this.GetAvailableFunctions();
-        var theFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionName);
-        if (theFunction == null)
+        var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionName);
+        if (targetFunction == null)
         {
             throw new PlanningException(PlanningException.ErrorCodes.UnknownError, $"The function '{actionName}' was not found.");
         }
 
         try
         {
-            var func = this._kernel.Func(theFunction.SkillName, theFunction.Name);
-            var actionContext = this._kernel.CreateNewContext();
-            if (actionVariables != null)
-            {
-                foreach (var kvp in actionVariables)
-                {
-                    actionContext.Variables.Set(kvp.Key, kvp.Value);
-                }
-            }
+            var function = this._kernel.Func(targetFunction.SkillName, targetFunction.Name);
+            var actionContext = CreateActionContext(actionVariables);
 
-            var result = await func.InvokeAsync(actionContext).ConfigureAwait(false);
+            var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -327,15 +316,29 @@ public class StepwisePlanner
                 return $"Error occurred: {result.LastErrorDescription}";
             }
 
-            this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", theFunction.Name, result.Result);
+            this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
 
             return result.Result;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger?.LogError(e, "Something went wrong in system step: {0}.{1}. Error: {2}", theFunction.SkillName, theFunction.Name, e.Message);
-            return $"Something went wrong in system step: {theFunction.SkillName}.{theFunction.Name}. Error: {e.Message} {e.InnerException.Message}";
+            this._logger?.LogError(e, "Something went wrong in system step: {0}.{1}. Error: {2}", targetFunction.SkillName, targetFunction.Name, e.Message);
+            return $"Something went wrong in system step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException.Message}";
         }
+    }
+
+    private SKContext CreateActionContext(Dictionary<string, string> actionVariables)
+    {
+        var actionContext = this._kernel.CreateNewContext();
+        if (actionVariables != null)
+        {
+            foreach (var kvp in actionVariables)
+            {
+                actionContext.Variables.Set(kvp.Key, kvp.Value);
+            }
+        }
+
+        return actionContext;
     }
 
     private IEnumerable<FunctionView> GetAvailableFunctions()
@@ -355,13 +358,12 @@ public class StepwisePlanner
         return availableFunctions;
     }
 
-    private (string, string) GetFunctionNamesAndDescriptions()
+    private string GetFunctionDescriptions()
     {
         var availableFunctions = this.GetAvailableFunctions();
 
-        string functionNames = string.Join(", ", availableFunctions.Select(x => ToFullyQualifiedName(x)));
         string functionDescriptions = string.Join("\n", availableFunctions.Select(x => ToManualString(x)));
-        return (functionNames, functionDescriptions);
+        return functionDescriptions;
     }
 
     private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
@@ -419,4 +421,34 @@ public class StepwisePlanner
     /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
     private const string RestrictedSkillName = "StepwisePlanner_Excluded";
+
+    /// <summary>
+    /// The Action tag
+    /// </summary>
+    private const string Action = "[ACTION]";
+
+    /// <summary>
+    /// The Thought tag
+    /// </summary>
+    private const string Thought = "[THOUGHT]";
+
+    /// <summary>
+    /// The Observation tag
+    /// </summary>
+    private const string Observation = "[OBSERVATION]";
+
+    /// <summary>
+    /// The regex for parsing the action response
+    /// </summary>
+    private static readonly Regex s_actionRegex = new Regex(@"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
+
+    /// <summary>
+    /// The regex for parsing the thought response
+    /// </summary>
+    private static readonly Regex s_thoughtRegex = new Regex(@"(\[THOUGHT\])?(?<thought>.+?)(?=\[ACTION\]|$)", RegexOptions.Singleline);
+
+    /// <summary>
+    /// The regex for parsing the final answer response
+    /// </summary>
+    private static readonly Regex s_finalAnswerRegex = new Regex(@"\[FINAL ANSWER\](?<final_answer>.+)", RegexOptions.Singleline);
 }
