@@ -49,9 +49,10 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
         /*
         * updateConversationFromUser() and updateConversationFromServer() both update the conversations state.
         * However they are for different purposes. The former action is for updating the conversation from the
-        * user and will be captured by the SignalR middleware and the payload will be broadcasted to all clients
+        * webapp and will be captured by the SignalR middleware and the payload will be broadcasted to all clients
         * in the same group.
-        * The updateConversationFromServer() action is triggered by the SignalR middleware when a response is received.
+        * The updateConversationFromServer() action is triggered by the SignalR middleware when a response is received
+        * from the webapi.
         */
         updateConversationFromUser: (
             state: ConversationsState,
@@ -77,6 +78,14 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             state.conversations[id].messages[messageIndex].state = newMessageState;
             frontLoadChat(state, id);
         },
+        /*
+        * updateUserIsTyping() and updateUserIsTypingFromServer() both update a user's typing state.
+        * However they are for different purposes. The former action is for updating an user's typing state from
+        * the webapp and will be captured by the SignalR middleware and the payload will be broadcasted to all clients
+        * in the same group.
+        * The updateUserIsTypingFromServer() action is triggered by the SignalR middleware when a state is received
+        * from the webapi.
+        */
         updateUserIsTyping: (state: ConversationsState, action: PayloadAction<{ userId: string; chatId: string; isTyping: boolean }>) => {
             const { userId, chatId, isTyping } = action.payload;
             updateUserTypingState(state, userId, chatId, isTyping);
