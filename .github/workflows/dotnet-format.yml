@@ -59,10 +59,11 @@ jobs:
           if [[ ${{ steps.changed-files.outcome }} == 'success' ]]; then
             for file in ${{ steps.changed-files.outputs.added_modified }}; do
               echo "$file was changed"
-              dir="$GITHUB_WORKSPACE/$file"
+              dir="./$file"
               while [[ $dir != "." && $dir != "/" && $dir != $GITHUB_WORKSPACE ]]; do
-                if find "$dir" -maxdepth 1 -name "*.csproj" -print -quit | grep -q .; then
-                  csproj_files+=("$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)")
+                local_csproj_files=("$(find "$dir" -maxdepth 1 -name "*.csproj" -type f -print -quit)")
+                if $local_csproj_files | grep -q .; then
+                  csproj_files+=$local_csproj_files
                   break
                 fi
                 dir=$(dirname $dir)
