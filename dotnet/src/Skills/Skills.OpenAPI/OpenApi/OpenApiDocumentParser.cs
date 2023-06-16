@@ -379,6 +379,14 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         }
     }
 
+    /// <summary>
+    /// Asserts the successful reading of OpenAPI document.
+    /// </summary>
+    /// <param name="readResult">The reading results to be checked.</param>
+    /// <param name="ignoreNonCompliantErrors">Flag indicating whether to ignore non-compliant errors.
+    /// If set to true, the parser will not throw exceptions for non-compliant documents.
+    /// Please note that enabling this option may result in incomplete or inaccurate parsing results.
+    /// </param>
     private void AssertReadingSuccessful(ReadResult readResult, bool ignoreNonCompliantErrors)
     {
         if (readResult.OpenApiDiagnostic.Errors.Any())

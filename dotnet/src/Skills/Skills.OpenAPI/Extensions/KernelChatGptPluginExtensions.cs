@@ -30,10 +30,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
     /// <param name="url">Url to in which to retrieve the ChatGPT plugin.</param>
-    /// <param name="executionParameters">OpenAPI skill execution parameters.
-    /// If set to true, the registration operation will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may result in incomplete or inaccurate registration results.
-    /// </param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromUrlAsync(
@@ -45,9 +42,9 @@ public static class KernelChatGptPluginExtensions
     {
         Verify.ValidSkillName(skillName);
 
-#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose of the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
-#pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose of the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+#pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
         using HttpResponseMessage response = await internalHttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
@@ -65,10 +62,7 @@ public static class KernelChatGptPluginExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
-    /// <param name="executionParameters">OpenAPI skill execution parameters.
-    /// If set to true, the registration operation will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may result in incomplete or inaccurate registration results.
-    /// </param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromResourceAsync(
@@ -102,10 +96,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the skill directory.</param>
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
-    /// <param name="executionParameters">OpenAPI skill execution parameters.
-    /// If set to true, the registration operation will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may result in incomplete or inaccurate registration results.
-    /// </param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromDirectoryAsync(
@@ -143,10 +134,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Name of the skill to register.</param>
     /// <param name="filePath">File path to the ChatGPT plugin definition.</param>
-    /// <param name="executionParameters">OpenAPI skill execution parameters.
-    /// If set to true, the registration operation will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may result in incomplete or inaccurate registration results.
-    /// </param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromFileAsync(

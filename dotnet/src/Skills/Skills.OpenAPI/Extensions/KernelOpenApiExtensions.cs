@@ -37,10 +37,7 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
     /// <param name="url">Url to in which to retrieve the OpenAPI definition.</param>
-    /// <param name="executionParameters">OpenAPI skill execution parameters.
-    /// If set to true, the registration operation will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may result in incomplete or inaccurate registration results.
-    /// </param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(
@@ -73,10 +70,7 @@ public static class KernelOpenApiExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
-    /// <param name="executionParameters">OpenAPI skill execution parameters.
-    /// If set to true, the registration operation will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may result in incomplete or inaccurate registration results.
-    /// </param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(
@@ -106,10 +100,7 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the skill directory.</param>
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
-    /// <param name="executionParameters">OpenAPI skill execution parameters.
-    /// If set to true, the registration operation will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may result in incomplete or inaccurate registration results.
-    /// </param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromDirectoryAsync(
@@ -147,10 +138,7 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Name of the skill to register.</param>
     /// <param name="filePath">File path to the OpenAPI document.</param>
-    /// <param name="executionParameters">OpenAPI skill execution parameters.
-    /// If set to true, the registration operation will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may result in incomplete or inaccurate registration results.
-    /// </param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromFileAsync(
@@ -178,10 +166,7 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">OpenApi document stream.</param>
     /// <param name="skillName">Skill name.</param>
-    /// <param name="executionParameters">OpenAPI skill execution parameters.
-    /// If set to true, the registration operation will not throw exceptions for non-compliant documents.
-    /// Please note that enabling this option may result in incomplete or inaccurate registration results.
-    /// </param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiSkillAsync(
