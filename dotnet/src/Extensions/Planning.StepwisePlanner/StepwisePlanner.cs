@@ -175,28 +175,23 @@ public class StepwisePlanner
             OriginalResponse = input
         };
 
-        Regex untilAction = new("(.*)(?=\\[ACTION\\])", RegexOptions.Singleline);
-        Match untilActionMatch = untilAction.Match(input);
-
-        if (input.StartsWith("[FINAL ANSWER]", StringComparison.OrdinalIgnoreCase))
-        {
-            result.FinalAnswer = input.Replace("[FINAL ANSWER]", string.Empty).Trim();
-            return result;
-        }
-
-        // Otherwise look for "[FINAL ANSWER]" with the text after captured
-        Regex finalAnswer = new("\\[FINAL ANSWER\\](.*)", RegexOptions.Singleline);
-        Match finalAnswerMatch = finalAnswer.Match(input);
+        // Extract final answer
+        Regex finalAnswerRegex = new(@"\[FINAL ANSWER\](.*)", RegexOptions.Singleline);
+        Match finalAnswerMatch = finalAnswerRegex.Match(input);
 
         if (finalAnswerMatch.Success)
         {
-            result.FinalAnswer = $"{finalAnswerMatch.Groups[1].Value.Trim()}";
+            result.FinalAnswer = finalAnswerMatch.Groups[1].Value.Trim();
             return result;
         }
 
-        if (untilActionMatch.Success)
+        // Extract thought
+        Regex thoughtRegex = new(@"(.*)(?=\[ACTION\])", RegexOptions.Singleline);
+        Match thoughtMatch = thoughtRegex.Match(input);
+
+        if (thoughtMatch.Success)
         {
-            result.Thought = untilActionMatch.Value.Trim();
+            result.Thought = thoughtMatch.Value.Trim();
         }
         else if (!input.Contains("[ACTION]"))
         {
@@ -204,12 +199,13 @@ public class StepwisePlanner
         }
         else
         {
-            throw new InvalidOperationException("This should never happen");
+            throw new InvalidOperationException("Unexpected input format");
         }
 
         result.Thought = result.Thought.Replace("[THOUGHT]", string.Empty).Trim();
 
-        Regex actionRegex = new("\\[ACTION\\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
+        // Extract action
+        Regex actionRegex = new(@"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
         Match actionMatch = actionRegex.Match(input);
 
         if (actionMatch.Success)
@@ -230,14 +226,10 @@ public class StepwisePlanner
                     result.ActionVariables = systemStepResults.ActionVariables;
                 }
             }
-            catch (Exception ex) when (!ex.IsCriticalException())
+            catch (JsonException)
             {
                 result.Observation = $"System step parsing error, invalid JSON: {json}";
             }
-        }
-        else
-        {
-            // This just means there was only a thought, so we should just carry on.
         }
 
         return result;
