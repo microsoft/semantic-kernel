@@ -1,6 +1,7 @@
 import json
+import re
 import regex
-from typing import Any, List, Union, Optional
+from typing import Any, Callable, List, Union, Optional
 from logging import Logger
 from semantic_kernel import Kernel
 from python.semantic_kernel.kernel_exception import KernelException
@@ -15,19 +16,20 @@ from python.semantic_kernel.skill_definition.parameter_view import ParameterView
 
 
 class Plan(SKFunctionBase):
-    state: ContextVariables
-    steps: List["Plan"]
-    parameters: ContextVariables
-    outputs: List[str]
-    has_next_step: bool
-    next_step_index: int
-    name: str
-    skill_name: str
-    description: str
-    is_semantic: bool
-    is_sensitive: bool
-    trust_service_instance: bool
-    request_settings: CompleteRequestSettings
+    _state: ContextVariables
+    _steps: List["Plan"]    
+    _function: SKFunctionBase
+    _parameters: ContextVariables
+    _outputs: List[str]
+    _has_next_step: bool
+    _next_step_index: int
+    _name: str
+    _skill_name: str
+    _description: str
+    _is_semantic: bool
+    _is_sensitive: bool
+    _trust_service_instance: bool
+    _request_settings: CompleteRequestSettings
     DEFAULT_RESULT_KEY = "PLAN.RESULT"
 
     @property
@@ -41,6 +43,10 @@ class Plan(SKFunctionBase):
     @property
     def description(self) -> str:
         return self._description
+    
+    @property
+    def function(self) -> Callable[..., Any]:
+        return self._function
 
     @property
     def parameters(self) -> List[ParameterView]:
@@ -56,7 +62,7 @@ class Plan(SKFunctionBase):
 
     @property
     def request_settings(self) -> CompleteRequestSettings:
-        return self._ai_request_settings
+        return self._request_settings
     
     @property
     def is_sensitive(self) -> bool:
@@ -68,7 +74,7 @@ class Plan(SKFunctionBase):
     
     @property
     def has_next_step(self) -> bool:
-        return self.next_step_index < len(self.steps)
+        return self._next_step_index < len(self._steps)
     
     @property
     def next_step_index(self) -> int:
@@ -85,18 +91,18 @@ class Plan(SKFunctionBase):
         outputs: List[str],
         steps: List["Plan"],
     ) -> None:
-        self.name = name
-        self.skill_name = skill_name
-        self.description = description
-        self.next_step_index = next_step_index
-        self.state = state
-        self.parameters = parameters
-        self.outputs = outputs
-        self.steps = steps
+        self._name = name
+        self._skill_name = skill_name
+        self._description = description
+        self._next_step_index = next_step_index
+        self._state = state
+        self._parameters = parameters
+        self._outputs = outputs
+        self._steps = steps
 
 
     def describe(self) -> FunctionView:
-        return self.function.describe()
+        return self._function.describe()
 
     def to_json(self, indented: Optional[bool] = False) -> str:
         return json.dumps(self.__dict__, indent=4 if indented else None)
@@ -133,7 +139,7 @@ class Plan(SKFunctionBase):
     def add_steps(self, steps: Optional[List[SKFunctionBase]]) -> None:
         for step in steps:
             if type(step) is Plan:
-                self.steps.append(step)
+                self._steps.append(step)
             else:
                 new_step = Plan(
                     step.name,
@@ -146,17 +152,17 @@ class Plan(SKFunctionBase):
                     [],
                 )
                 new_step.set_function(step)
-                self.steps.append(new_step)
+                self._steps.append(new_step)
 
     def set_function(self, function: SKFunctionBase) -> None:
-        self.function = function
-        self.name = function.name
-        self.skill_name = function.skill_name
-        self.description = function.description
-        self.is_semantic = function.is_semantic
-        self.is_sensitive = function.is_sensitive
-        self.trust_service_instance = function.trust_service_instance
-        self.request_settings = function.request_settings
+        self._function = function
+        self._name = function.name
+        self._skill_name = function.skill_name
+        self._description = function.description
+        self._is_semantic = function.is_semantic
+        self._is_sensitive = function.is_sensitive
+        self._trust_service_instance = function.trust_service_instance
+        self._request_settings = function.request_settings
     
     def run_next_step_async(
         self,
@@ -167,8 +173,8 @@ class Plan(SKFunctionBase):
         return self.invoke_next_step(context)
 
     async def invoke_next_step(self, context: SKContext) -> "Plan":
-        if self.has_next_step:
-            step = self.steps[self.next_step_index]
+        if self._has_next_step:
+            step = self._steps[self._next_step_index]
 
             # merge the state with the current context variables for step execution
             variables = self.get_next_step_variables(context.variables, step)
@@ -178,7 +184,7 @@ class Plan(SKFunctionBase):
                 variables=variables,
                 memory=context._memory,
                 skills=context.skills,
-                logger=context.logger
+                logger=context.log
             )
             result = await step.invoke_async(func_context)
             result_value = result.result.strip()
@@ -194,22 +200,22 @@ class Plan(SKFunctionBase):
             self.state.update(result_value)
 
             # Update plan result in state with matching outputs (if any)
-            if self.outputs.intersect(step.outputs).any():                
+            if set(self._outputs & step._outputs):                
                 current_plan_result = ""
-                if Plan.DEFAULT_RESULT_KEY in self.state:
-                    current_plan_result = self.state[Plan.DEFAULT_RESULT_KEY]
-                self.state.set(Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value)
+                if Plan.DEFAULT_RESULT_KEY in self._state:
+                    current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
+                self._state.set(Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value)
 
 
             # Update state with outputs (if any)
-            for output in step.outputs:
+            for output in step._outputs:
                 if output in result.variables:
-                    self.state.set(output, result.variables[output])
+                    self._state.set(output, result.variables[output])
                 else:
-                    self.state.set(output, result_value)
+                    self._state.set(output, result_value)
 
             # Increment the step
-            self.next_step_index += 1
+            self._next_step_index += 1
 
         return self
     
@@ -223,21 +229,21 @@ class Plan(SKFunctionBase):
         # TODO: cancellation_token: CancellationToken,
     ) -> SKContext:
         if input is not None:
-            self.state.update(input)
+            self._state.update(input)
         
         context = SKContext(
-            variables=self.state,
+            variables=self._state,
             memory=memory,
             logger=logger
         )
         
-        if self.function is not None:
-            result = await self.function.invoke_async(context=context, settings=settings)
+        if self._function is not None:
+            result = await self._function.invoke_async(context=context, settings=settings)
             if result.error_occurred:
                 result.log.error(
                     msg="Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self.skill_name,
-                        self.name,
+                        self._skill_name,
+                        self._name,
                         context.last_error_description
                     )
                 )
@@ -246,9 +252,9 @@ class Plan(SKFunctionBase):
             context.variables.update(result.result)
         else:
             # loop through steps until completion
-            while self.has_next_step:
+            while self._has_next_step:
                 function_context = context
-                self.add_variables_to_context(self.state, function_context)
+                self.add_variables_to_context(self._state, function_context)
                 await self.invoke_next_step(function_context)
                 self.update_context_with_outputs(context)
 
@@ -259,23 +265,93 @@ class Plan(SKFunctionBase):
         variables: ContextVariables,
         context: SKContext
     ) -> None:
-        for key in variables.keys():
+        for key in variables:
             if not context.variables.contains_key(key):
                 context.variables.set(key, variables[key])
 
     def update_context_with_outputs(self, context: SKContext) -> None:
         result_string = ""
-        if Plan.DEFAULT_RESULT_KEY in self.state:
-            result_string = self.state[Plan.DEFAULT_RESULT_KEY]
+        if Plan.DEFAULT_RESULT_KEY in self._state:
+            result_string = self._state[Plan.DEFAULT_RESULT_KEY]
         else:
-            result_string = str(self.state)
+            result_string = str(self._state)
 
         context.variables.update(result_string)
 
-        for item in self.steps[self.next_step_index-1].outputs:
-            if item in self.state:
-                context.variables.set(item, self.state[item])
+        for item in self._steps[self._next_step_index-1]._outputs:
+            if item in self._state:
+                context.variables.set(item, self._state[item])
             else:
                 context.variables.set(item, result_string)
 
         return context
+    
+    def get_next_step_variables(
+        self,
+        variables: ContextVariables,
+        step: "Plan"
+    ) -> ContextVariables:
+        # Priority for Input
+        # - Parameters (expand from variables if needed)
+        # - SKContext.Variables
+        # - Plan.State
+        # - Empty if sending to another plan
+        # - Plan.Description
+        input_string = ""
+        if step.parameters["input"] is not None:
+            input_string = self.expand_from_variables(variables, step.parameters["input"])
+        elif variables["input"] is not None:
+            input_string = variables["input"]
+        elif self._state["input"] is not None:
+            input_string = self._state["input"]
+        elif len(step._steps) > 0:
+            input_string = ""
+        elif self._description is not None:
+            input_string = self._description
+
+        step_variables = ContextVariables(input_string)
+        
+        # Priority for remaining stepVariables is:
+        # - Function Parameters (pull from variables or state by a key value)
+        # - Step Parameters (pull from variables or state by a key value)
+        function_params = step.describe()
+        for param in function_params.parameters:
+            if param.name.lower == "input":
+                continue
+            if step_variables.contains_key(param.name):
+                step_variables.set(param.name, variables[param.name])
+            elif self._state.contains_key(param.name) and self._state[param.name] is not None:
+                step_variables.set(param.name, self._state[param.name])
+
+        for param in step.parameters:
+            if step_variables.contains_key(param.name):
+                continue
+
+            expanded_value = self.expand_from_variables(variables, param._default_value)
+            if expanded_value.lower() == param._default_value.lower():
+                step_variables.set(param.name, expanded_value)
+            elif variables.contains_key(param.name):
+                step_variables.set(param.name, variables[param.name])
+            elif self._state.contains_key(param.name):
+                step_variables.set(param.name, self._state[param.name])
+            else:
+                step_variables.set(param.name, expanded_value)
+
+        return step_variables
+    
+    def expand_from_variables(
+        self,
+        variables: ContextVariables,
+        input_string: str
+    ) -> str:
+        result = input_string
+        variables_regex = r"\$(?P<var>\w+)"
+        matches = re.findall(variables_regex, input_string)
+        ordered_matches = sorted(matches, key=lambda m: len(m.group("var")), reverse=True)
+        
+        for match in ordered_matches:
+            var_name = match.group("var")
+            if variables.contains_key(var_name):
+                result = result.replace(f"${var_name}", variables[var_name])
+                
+        return result
