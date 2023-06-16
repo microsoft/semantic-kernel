@@ -127,7 +127,7 @@ public class StepwisePlanner
                     return context;
                 }
 
-                this._logger?.LogWarning("Thought: {Thought}", nextStep.Thought);
+                this._logger?.LogInformation("Thought: {Thought}", nextStep.Thought);
 
                 if (!string.IsNullOrEmpty(nextStep!.Action!))
                 {
