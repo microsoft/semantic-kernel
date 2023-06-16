@@ -59,7 +59,7 @@ public class CopilotChatPlanner
         }
 
         Plan plan = this._plannerOptions?.Type == PlanType.Sequential
-                ? await new SequentialPlanner(this.Kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.75 }).CreatePlanAsync(goal)
+                ? await new SequentialPlanner(this.Kernel, new SequentialPlannerConfig { RelevancyThreshold = this._plannerOptions?.RelevancyThreshold }).CreatePlanAsync(goal)
                 : await new ActionPlanner(this.Kernel).CreatePlanAsync(goal);
 
         return availableFunctionsOnly ? this.SanitizePlan(plan, plannerFunctionsView) : plan;
