@@ -2,7 +2,7 @@
 # These are optional elements. Feel free to remove any of them.
 status: proposed
 date: 2023-05-29
-deciders: dluc,shawncal,hathind
+deciders: dluc,shawncal,hathind,alliscode
 consulted: 
 informed: 
 ---
