@@ -143,8 +143,7 @@ public sealed class ActionPlanner
     /// <returns>List of functions, formatted accordingly to the prompt</returns>
     [SKFunction, Description("List all functions available in the kernel")]
     public string ListOfFunctions(
-        [Description("The current goal processed by the planner")]
-        string goal,
+        [Description("The current goal processed by the planner")] string goal,
         SKContext context)
     {
         Verify.NotNull(context.Skills);
@@ -162,8 +161,7 @@ public sealed class ActionPlanner
     // TODO: use goal to find relevant examples
     [SKFunction, Description("List a few good examples of plans to generate")]
     public string GoodExamples(
-        [Description("The current goal processed by the planner")]
-        string goal,
+        [Description("The current goal processed by the planner")] string goal,
         SKContext context)
     {
         return @"
@@ -198,8 +196,7 @@ Goal: create a file called ""something.txt"".
     // TODO: generate string programmatically
     [SKFunction, Description("List a few edge case examples of plans to handle")]
     public string EdgeCaseExamples(
-        [Description("The current goal processed by the planner")]
-        string goal,
+        [Description("The current goal processed by the planner")] string goal,
         SKContext context)
     {
         return @"
