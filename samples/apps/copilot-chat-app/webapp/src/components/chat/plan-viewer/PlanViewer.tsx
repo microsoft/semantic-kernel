@@ -50,6 +50,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
     var planState = message.state ?? parsedContent.state;
 
     // If plan came from ActionPlanner, use parameters from top-level plan state
+    // TODO: Can remove this after consuming nugets with #997 fixed
     if (parsedContent.type === PlanType.Action) {
         originalPlan.steps[0].parameters = originalPlan.state;
     }
