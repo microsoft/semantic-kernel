@@ -205,6 +205,10 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
         value: 'chatmessages'
       }
       {
+        name: 'ChatStore:Cosmos:ChatMemorySourcesContainer'
+        value: 'chatmemorysources'
+      }
+      {
         name: 'ChatStore:Cosmos:ConnectionString'
         value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
       }
@@ -607,6 +611,37 @@ resource participantContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabase
   properties: {
     resource: {
       id: 'chatparticipants'
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
+      }
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
+        kind: 'Hash'
+        version: 2
+      }
+    }
+  }
+}
+
+resource memorySourcesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = if (deployCosmosDB) {
+  parent: cosmosDatabase
+  name: 'chatmemorysources'
+  properties: {
+    resource: {
+      id: 'chatmemorysources'
       indexingPolicy: {
         indexingMode: 'consistent'
         automatic: true
