@@ -8,7 +8,6 @@ interface ServiceRequest {
     body?: FormData | unknown;
 }
 const noResponseBodyStatusCodes = [202];
-const noResponseBodyOperations = ['importDocument'];
 
 export class BaseService {
     // eslint-disable-next-line @typescript-eslint/space-before-function-paren
@@ -64,9 +63,7 @@ export class BaseService {
                 throw Object.assign(new Error(errorMessage));
             }
 
-            return noResponseBodyOperations.includes(commandPath) || noResponseBodyStatusCodes.includes(response.status)
-                ? ({} as T)
-                : ((await response.json()) as T);
+            return noResponseBodyStatusCodes.includes(response.status) ? ({} as T) : ((await response.json()) as T);
         } catch (e) {
             var additional_error_msg = '';
             if (e instanceof TypeError) {

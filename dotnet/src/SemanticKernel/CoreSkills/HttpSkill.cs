@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 /// </example>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
-public class HttpSkill : IDisposable
+public sealed class HttpSkill : IDisposable
 {
     private static readonly HttpClientHandler s_httpClientHandler = new() { CheckCertificateRevocationList = true };
     private readonly HttpClient _client;
@@ -49,50 +49,60 @@ public class HttpSkill : IDisposable
     /// Sends an HTTP GET request to the specified URI and returns the response body as a string.
     /// </summary>
     /// <param name="uri">URI of the request</param>
-    /// <param name="context">The context for the operation.</param>
+    /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction("Makes a GET request to a uri")]
-    public Task<string> GetAsync(string uri, SKContext context) =>
-        this.SendRequestAsync(uri, HttpMethod.Get, cancellationToken: context.CancellationToken);
+    [SKFunction, Description("Makes a GET request to a uri")]
+    public Task<string> GetAsync(
+        [Description("The URI of the request")] string uri,
+        CancellationToken cancellationToken = default) =>
+        this.SendRequestAsync(uri, HttpMethod.Get, requestContent: null, cancellationToken);
 
     /// <summary>
     /// Sends an HTTP POST request to the specified URI and returns the response body as a string.
     /// </summary>
     /// <param name="uri">URI of the request</param>
-    /// <param name="context">Contains the body of the request</param>
+    /// <param name="body">The body of the request</param>
+    /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction("Makes a POST request to a uri")]
-    [SKFunctionContextParameter(Name = "body", Description = "The body of the request")]
-    public Task<string> PostAsync(string uri, SKContext context) =>
-        this.SendRequestAsync(uri, HttpMethod.Post, new StringContent(context["body"]), context.CancellationToken);
+    [SKFunction, Description("Makes a POST request to a uri")]
+    public Task<string> PostAsync(
+        [Description("The URI of the request")] string uri,
+        [Description("The body of the request")] string body,
+        CancellationToken cancellationToken = default) =>
+        this.SendRequestAsync(uri, HttpMethod.Post, new StringContent(body), cancellationToken);
 
     /// <summary>
     /// Sends an HTTP PUT request to the specified URI and returns the response body as a string.
     /// </summary>
     /// <param name="uri">URI of the request</param>
-    /// <param name="context">Contains the body of the request</param>
+    /// <param name="body">The body of the request</param>
+    /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction("Makes a PUT request to a uri")]
-    [SKFunctionContextParameter(Name = "body", Description = "The body of the request")]
-    public Task<string> PutAsync(string uri, SKContext context) =>
-        this.SendRequestAsync(uri, HttpMethod.Put, new StringContent(context["body"]), context.CancellationToken);
+    [SKFunction, Description("Makes a PUT request to a uri")]
+    public Task<string> PutAsync(
+        [Description("The URI of the request")] string uri,
+        [Description("The body of the request")] string body,
+        CancellationToken cancellationToken = default) =>
+        this.SendRequestAsync(uri, HttpMethod.Put, new StringContent(body), cancellationToken);
 
     /// <summary>
     /// Sends an HTTP DELETE request to the specified URI and returns the response body as a string.
     /// </summary>
     /// <param name="uri">URI of the request</param>
-    /// <param name="context">The context for the operation.</param>
+    /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [SKFunction("Makes a DELETE request to a uri")]
-    public Task<string> DeleteAsync(string uri, SKContext context) =>
-        this.SendRequestAsync(uri, HttpMethod.Delete, cancellationToken: context.CancellationToken);
+    [SKFunction, Description("Makes a DELETE request to a uri")]
+    public Task<string> DeleteAsync(
+        [Description("The URI of the request")] string uri,
+        CancellationToken cancellationToken = default) =>
+        this.SendRequestAsync(uri, HttpMethod.Delete, requestContent: null, cancellationToken);
 
     /// <summary>Sends an HTTP request and returns the response content as a string.</summary>
     /// <param name="uri">The URI of the request.</param>
     /// <param name="method">The HTTP method for the request.</param>
     /// <param name="requestContent">Optional request content.</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
-    private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent = null, CancellationToken cancellationToken = default)
+    private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
         using var response = await this._client.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -102,21 +112,5 @@ public class HttpSkill : IDisposable
     /// <summary>
     /// Disposes resources
     /// </summary>
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Dispose internal resources
-    /// </summary>
-    /// <param name="disposing">Whether the method is explicitly called by the public Dispose method</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._client.Dispose();
-        }
-    }
+    public void Dispose() => this._client.Dispose();
 }

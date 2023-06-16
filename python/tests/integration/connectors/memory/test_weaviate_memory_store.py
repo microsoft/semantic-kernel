@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import sys
+import time
 
 import numpy as np
 import numpy.testing as npt
@@ -26,6 +27,7 @@ def documents():
             "1",
             "The quick brown fox jumps over the lazy dog.",
             "A classic pangram.",
+            "additional info",
             np.array([0.1, 0.1]),
         )
     )
@@ -34,6 +36,7 @@ def documents():
             "2",
             "The five boxing wizards jump quickly.",
             "Another popular pangram.",
+            "additional info",
             np.array([0.1, 0.11]),
         )
     )
@@ -42,6 +45,7 @@ def documents():
             "3",
             "Pack my box with five dozen liquor jugs.",
             "A useful pangram.",
+            "additional info",
             np.array([0.11, 0.1]),
         )
     )
@@ -51,6 +55,7 @@ def documents():
             "4",
             "Lorem ipsum dolor sit amet.",
             "A common placeholder text.",
+            "additional info",
             np.array([-10, -10]),
         )
     )
@@ -59,6 +64,7 @@ def documents():
             "5",
             "Etiam faucibus orci vitae lacus pellentesque.",
             "A Latin text.",
+            "additional info",
             np.array([-10.1, -10.2]),
         )
     )
@@ -70,7 +76,7 @@ def memory_store():
     max_attempts = 5  # the number of retry attempts
     delay = 30  # delay in seconds between each attempt
 
-    config = weaviate_memory_store.WeaviateConfig(use_embed=True, startup_period=5)
+    config = weaviate_memory_store.WeaviateConfig(use_embed=True)
     for attempt in range(max_attempts):
         try:
             store = weaviate_memory_store.WeaviateMemoryStore(config)

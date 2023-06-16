@@ -6,36 +6,33 @@
     Packages specified here are analyzers and are intended to maintain code consistency in the Semantic Kernel repo.
     Any project-specific dependencies should be specified in the project's own .csproj file.
   -->
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" >
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" >
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.6.40" >
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.6.40">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
-    <PackageReference Include="Roslynator.Analyzers" Version="4.3.0" >
+    <PackageReference Include="Roslynator.Analyzers" Version="4.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
-    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.3.0" >
+    <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
-    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.3.0" >
+    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 </Project>

@@ -16,7 +16,9 @@ functions that work together to construct each response.
 
 # Automated Setup and Local Deployment
 
-Refer to [./scripts/README.md](./scripts/README.md) for automated configuration and local deployment of CopilotChat.
+Refer to [./scripts/README.md](./scripts/README.md) for local configuration and deployment.
+
+Refer to [./deploy/README.md](./deploy/README.md) for Azure configuration and deployment.
 
 # Manual Setup and Local Deployment
 
@@ -99,7 +101,7 @@ First, let’s set up and verify the back-end API server is running.
       ```
       > For more detail on AAD authorities, see [Client Application Configuration Authorities](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority).
 
-      > `REACT_APP_SK_API_KEY` is only required if you're using an Semantic Kernel service deployed to Azure. See the [Authorization section of Deploying Semantic Kernel to Azure in a web app service](https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/copilot-chat-app/webapi/DeploymentTemplates/README.md#authorization) for more details and instruction on how to find your API key.
+      > `REACT_APP_SK_API_KEY` is only required if you're using an Semantic Kernel service deployed to Azure. See the [Authorization section of Deploying Semantic Kernel to Azure in a web app service](./deploy/README.md#authorization) for more details and instruction on how to find your API key.
       ```bash
       REACT_APP_SK_API_KEY={Your API Key, should be the same as Authorization:ApiKey from appsettings.json}
       ```
