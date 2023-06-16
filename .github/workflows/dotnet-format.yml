@@ -61,12 +61,12 @@ jobs:
               echo "$file was changed"
               dir="./$file"
               while [[ $dir != "." && $dir != "/" && $dir != $GITHUB_WORKSPACE ]]; do
-                local_csproj_files=("$(find "$dir" -maxdepth 1 -name "*.csproj" -type f -print -quit)")
-                if $local_csproj_files | grep -q .; then
-                  csproj_files+=$local_csproj_files
+                if find "$dir" -maxdepth 1 -name "*.csproj" -print -quit | grep -q .; then
+                  csproj_files+=("$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)")
                   break
                 fi
-                dir=$(dirname $dir)
+          
+                dir=$(echo ${dir%/*})
               done
             done
           else
