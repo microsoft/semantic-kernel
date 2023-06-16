@@ -25,9 +25,10 @@ def test_split_plain_text_lines_with_token_count():
         "This is only a test.",
     ]
     split = split_plaintext_lines(
-        text=text, 
-        max_token_per_line=max_token_per_line, 
-        token_counter=lambda x: len(x) // 3)
+        text=text,
+        max_token_per_line=max_token_per_line,
+        token_counter=lambda x: len(x) // 3,
+    )
     assert expected == split
 
 
@@ -39,22 +40,12 @@ def test_split_plain_text_lines_half():
 
     max_token_per_line = 10
 
-    expected_1 = [
-        "This is a test of. cutting.",
-        "at the half point."
-    ]
-    split_1 = split_plaintext_lines(
-        text=text_1, 
-        max_token_per_line=max_token_per_line)
+    expected_1 = ["This is a test of. cutting.", "at the half point."]
+    split_1 = split_plaintext_lines(text=text_1, max_token_per_line=max_token_per_line)
     assert expected_1 == split_1
 
-    expected_2 = [
-        "This is a test of .",
-        "cutting. at the half point."
-    ]
-    split_2 = split_plaintext_lines(
-        text=text_2, 
-        max_token_per_line=max_token_per_line)
+    expected_2 = ["This is a test of .", "cutting. at the half point."]
+    split_2 = split_plaintext_lines(text=text_2, max_token_per_line=max_token_per_line)
     assert expected_2 == split_2
 
 

@@ -56,7 +56,10 @@ def split_plaintext_lines(
     it will split on new lines first, and then on punctuation.
     """
     return _split_text_lines(
-        text=text, max_token_per_line=max_token_per_line, trim=True, token_counter=token_counter
+        text=text,
+        max_token_per_line=max_token_per_line,
+        trim=True,
+        token_counter=token_counter,
     )
 
 
