@@ -8,6 +8,12 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ "main", "feature*" ]
+    paths:
+      - 'dotnet/**'
+      - 'samples/dotnet/**'
+      - '**.cs'
+      - '**.csproj'
+      - '**.editorconfig'
 
 jobs:
   check-format:

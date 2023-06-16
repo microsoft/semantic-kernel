@@ -33,7 +33,7 @@ public class EmailSkillTests
         this._context.Variables.Set(Parameters.Subject, anySubject);
 
         // Act
-        await target.SendEmailAsync(anyContent, this._context);
+        await target.SendEmailAsync(anyContent, anyRecipient, anySubject);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
@@ -50,14 +50,11 @@ public class EmailSkillTests
         string anyContent = Guid.NewGuid().ToString();
         string anySubject = Guid.NewGuid().ToString();
 
-        this._context.Variables.Set(Parameters.Subject, anySubject);
-        this._context.Variables.Update(anyContent);
-
-        // Act
-        await target.SendEmailAsync(anyContent, this._context);
+        // Act/Assert
+        await Assert.ThrowsAnyAsync<ArgumentException>(() =>
+            target.SendEmailAsync(anyContent, null!, anySubject));
 
         // Assert
-        Assert.True(this._context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -71,14 +68,11 @@ public class EmailSkillTests
         string anyContent = Guid.NewGuid().ToString();
         string anyRecipient = Guid.NewGuid().ToString();
 
-        this._context.Variables.Set(Parameters.Recipients, anyRecipient);
-        this._context.Variables.Update(anyContent);
-
-        // Act
-        await target.SendEmailAsync(anyContent, this._context);
+        // Act/Assert
+        await Assert.ThrowsAnyAsync<ArgumentException>(() =>
+            target.SendEmailAsync(anyContent, anyRecipient, null!));
 
         // Assert
-        Assert.True(this._context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
