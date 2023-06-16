@@ -18,9 +18,9 @@ internal interface IOpenApiDocumentParser
     /// </summary>
     /// <param name="stream">Stream containing OpenAPI document to parse.</param>
     /// <param name="ignoreNonCompliantErrors">Flag indicating whether to ignore non-compliant errors.
-    /// <param name="cancellationToken">The cancellation token.</param>
     /// If set to true, the parser will not throw exceptions for non-compliant documents.
     /// Please note that enabling this option may result in incomplete or inaccurate parsing results.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>List of rest operations.</returns>
     Task<IList<RestApiOperation>> ParseAsync(Stream stream, bool ignoreNonCompliantErrors = false, CancellationToken cancellationToken = default);
 }
