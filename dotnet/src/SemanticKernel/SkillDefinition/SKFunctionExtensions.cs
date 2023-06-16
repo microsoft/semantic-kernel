@@ -122,7 +122,17 @@ public static class SKFunctionExtensions
              settings
              );
 
-    public async static Task<string> TextInvokeAsync(this ISKFunction function,
+    /// <summary>
+    /// Simple wrapper version of InvokeAsync allowing to pass the main input separately from the rest of the context and getting the result as text.
+    /// Note: if the context contains an INPUT key/value, that value is ignored, logging a warning.
+    /// </summary>
+    /// <param name="function">Function to execute</param>
+    /// <param name="input">Main input string</param>
+    /// <param name="context">Execution context, including variables other than input</param>
+    /// <param name="mutableContext">Whether the function can modify the context variables, True by default</param>
+    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <returns>The result of the function execution in pure string format</returns>
+    public async static Task<string> SimpleInvokeAsync(this ISKFunction function,
         string input,
         SKContext context,
         bool mutableContext = true,
@@ -139,7 +149,16 @@ public static class SKFunctionExtensions
         return resultContext.Variables.Input;
     }
 
-    public async static Task<string> TextInvokeAsync(this ISKFunction function,
+    /// <summary>
+    /// Simple wrapper version of InvokeAsync allowing to pass the main input separately from the rest of the context and getting the result as text.
+    /// Note: if the context contains an INPUT key/value, that value is ignored, logging a warning.
+    /// </summary>
+    /// <param name="function">Function to execute</param>
+    /// <param name="context">Execution context, including variables other than input</param>
+    /// <param name="mutableContext">Whether the function can modify the context variables, True by default</param>
+    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <returns>The result of the function execution in pure string format</returns>
+    public async static Task<string> SimpleInvokeAsync(this ISKFunction function,
     SKContext context,
     bool mutableContext = true,
     CompleteRequestSettings? settings = null)
@@ -155,12 +174,40 @@ public static class SKFunctionExtensions
         return resultContext.Variables.Input;
     }
 
+    /// <summary>
+    /// Simple wrapper version of InvokeAsync allowing to pass the main input separately from the rest of the context and getting the result as text.
+    /// Note: if the context contains an INPUT key/value, that value is ignored, logging a warning.
+    /// </summary>
+    /// <param name="function">Function to execute</param>
+    /// <param name="input">Main input string</param>
+    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <returns>The result of the function execution in pure string format</returns>
+    public async static Task<string> SimpleInvokeAsync(this ISKFunction function,
+    string? input = null,
+    CompleteRequestSettings? settings = null)
+    {
+        var resultContext = await InternalInvokeAsync(
+             function,
+             input,
+             null,
+             false,
+             settings
+             ).ConfigureAwait(false);
+
+        return resultContext.Variables.Input;
+    }
+
     private static Task<SKContext> InternalInvokeAsync(ISKFunction function,
-        string input,
-        SKContext context,
+        string? input,
+        SKContext? context = null,
         bool mutableContext = true,
         CompleteRequestSettings? settings = null)
     {
+        if (context is null)
+        {
+            return function.InvokeAsync(input, settings);
+        }
+
         var inputInContext = context.Variables.Input;
         if (!string.IsNullOrEmpty(inputInContext) && !string.Equals(input, inputInContext, StringComparison.Ordinal))
         {

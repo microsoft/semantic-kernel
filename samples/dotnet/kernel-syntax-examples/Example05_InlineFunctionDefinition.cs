@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -42,8 +43,8 @@ Event: {{$input}}
         var result = await excuseFunction.InvokeAsync("I missed the F1 final race");
         Console.WriteLine(result);
 
-        result = await excuseFunction.InvokeAsync("sorry I forgot your birthday");
-        Console.WriteLine(result);
+        string simpleResult = await excuseFunction.SimpleInvokeAsync("sorry I forgot your birthday");
+        Console.WriteLine(simpleResult);
 
         var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", maxTokens: 100);
 
