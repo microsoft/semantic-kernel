@@ -10,9 +10,9 @@ import pytest
 from semantic_kernel.connectors.memory.weaviate import weaviate_memory_store
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-if not sys.platform.startswith("linux") or sys.version_info < (3, 9):
+if not sys.platform.startswith("linux"):
     pytest.skip(
-        "test_weaviate_memory_store uses embedded weaviate which only runs on Linux with Python 3.9+ at the moment",
+        "test_weaviate_memory_store uses embedded weaviate which only runs on Linux at the moment",
         allow_module_level=True,
     )
 
