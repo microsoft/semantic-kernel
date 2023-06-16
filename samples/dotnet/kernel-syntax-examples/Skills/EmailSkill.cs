@@ -1,29 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading.Tasks;
+using System.ComponentModel;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Skills;
 
 internal sealed class EmailSkill
 {
-    [SKFunction("Given an e-mail and message body, send an email")]
-    [SKFunctionInput(Description = "The body of the email message to send.")]
-    [SKFunctionContextParameter(Name = "email_address", Description = "The email address to send email to.")]
-    public Task<SKContext> SendEmail(string input, SKContext context)
-    {
-        context.Variables.Update($"Sent email to: {context.Variables["email_address"]}. Body: {input}");
-        return Task.FromResult(context);
-    }
+    [SKFunction, Description("Given an e-mail and message body, send an email")]
+    public string SendEmail(
+        [Description("The body of the email message to send.")] string input,
+        [Description("The email address to send email to.")] string email_address) =>
 
-    [SKFunction("Given a name, find email address")]
-    [SKFunctionInput(Description = "The name of the person to email.")]
-    public Task<SKContext> GetEmailAddress(string input, SKContext context)
+        $"Sent email to: {email_address}. Body: {input}";
+
+    [SKFunction, Description("Given a name, find email address")]
+    public string GetEmailAddress(
+        [Description("The name of the person whose email address needs to be found.")] string input,
+        ILogger? logger = null)
     {
-        context.Log.LogDebug("Returning hard coded email for {0}", input);
-        context.Variables.Update("johndoe1234@example.com");
-        return Task.FromResult(context);
+        logger?.LogDebug("Returning hard coded email for {0}", input);
+        return "johndoe1234@example.com";
     }
 }
