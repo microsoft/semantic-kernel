@@ -530,6 +530,7 @@ public sealed class Plan : ISKFunction
         // Priority for remaining stepVariables is:
         // - Function Parameters (pull from variables or state by a key value)
         // - Step Parameters (pull from variables or state by a key value)
+        // - All other variables. These are carried over in case the function wants access to the ambient content.
         var functionParameters = step.Describe();
         foreach (var param in functionParameters.Parameters)
         {
@@ -572,6 +573,14 @@ public sealed class Plan : ISKFunction
             else
             {
                 stepVariables.Set(item.Key, expandedValue);
+            }
+        }
+
+        foreach (KeyValuePair<string, TrustAwareString> item in variables)
+        {
+            if (!stepVariables.ContainsKey(item.Key))
+            {
+                stepVariables.Set(item.Key, item.Value);
             }
         }
 
