@@ -19,7 +19,7 @@ public class CalendarEvent
     /// <summary>
     /// Body/content of the event.
     /// </summary>
-    public string? Content { get; set; } = null;
+    public string? Content { get; set; }
 
     /// <summary>
     /// Start time of the event.
@@ -34,7 +34,7 @@ public class CalendarEvent
     /// <summary>
     /// Location of the event.
     /// </summary>
-    public string? Location { get; set; } = null;
+    public string? Location { get; set; }
 
     /// <summary>
     /// Attendees of the event.

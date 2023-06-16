@@ -37,6 +37,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         text: str,
         id: str,
         description: Optional[str] = None,
+        additional_metadata: Optional[str] = None,
     ) -> None:
         """Save information to the memory (calls the memory store's upsert method).
 
@@ -57,7 +58,11 @@ class SemanticTextMemory(SemanticTextMemoryBase):
 
         embedding = await self._embeddings_generator.generate_embeddings_async([text])
         data = MemoryRecord.local_record(
-            id=id, text=text, description=description, embedding=embedding
+            id=id,
+            text=text,
+            description=description,
+            additional_metadata=additional_metadata,
+            embedding=embedding,
         )
 
         await self._storage.upsert_async(collection_name=collection, record=data)
@@ -69,6 +74,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         external_id: str,
         external_source_name: str,
         description: Optional[str] = None,
+        additional_metadata: Optional[str] = None,
     ) -> None:
         """Save a reference to the memory (calls the memory store's upsert method).
 
@@ -93,6 +99,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             external_id=external_id,
             source_name=external_source_name,
             description=description,
+            additional_metadata=additional_metadata,
             embedding=embedding,
         )
 
