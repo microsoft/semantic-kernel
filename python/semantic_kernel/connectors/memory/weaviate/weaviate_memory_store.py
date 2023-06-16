@@ -123,7 +123,10 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
     def _initialize_client(self):
         if self.config.use_embed:
-            return weaviate.Client(embedded_options=EmbeddedOptions(), startup_period=self.config.startup_period)
+            return weaviate.Client(
+                embedded_options=EmbeddedOptions(),
+                startup_period=self.config.startup_period,
+            )
         elif self.config.url:
             if self.config.api_key:
                 return weaviate.Client(
@@ -131,10 +134,12 @@ class WeaviateMemoryStore(MemoryStoreBase):
                     auth_client_secret=weaviate.auth.AuthApiKey(
                         api_key=self.config.api_key
                     ),
-                    startup_period=self.config.startup_period
+                    startup_period=self.config.startup_period,
                 )
             else:
-                return weaviate.Client(url=self.config.url, startup_period=self.config.startup_period)
+                return weaviate.Client(
+                    url=self.config.url, startup_period=self.config.startup_period
+                )
         else:
             raise ValueError("Weaviate config must have either url or use_embed set")
 

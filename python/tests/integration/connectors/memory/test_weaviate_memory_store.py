@@ -6,7 +6,6 @@ import time
 import numpy as np
 import numpy.testing as npt
 import pytest
-import time
 
 from semantic_kernel.connectors.memory.weaviate import weaviate_memory_store
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -70,6 +69,7 @@ def documents():
     )
 
     yield records
+
 
 @pytest.fixture
 def memory_store():
