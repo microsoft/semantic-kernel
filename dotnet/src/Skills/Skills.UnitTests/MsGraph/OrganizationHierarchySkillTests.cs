@@ -36,7 +36,7 @@ public class OrganizationHierarchySkillTests : IDisposable
         OrganizationHierarchySkill target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetMyDirectReportsEmailAsync(this._context);
+        string actual = await target.GetMyDirectReportsEmailAsync();
 
         // Assert
         var emails = JsonSerializer.Deserialize<IEnumerable<string>>(actual);
