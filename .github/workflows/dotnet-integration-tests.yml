@@ -11,6 +11,8 @@ on:
     paths: 
       - 'dotnet/**'
       - 'samples/dotnet/**'
+  merge_group:
+    branches: ["main"]
 
 permissions:
   contents: read
