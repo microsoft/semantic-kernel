@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -83,16 +84,19 @@ public class StepwisePlanner
         return plan;
     }
 
-    [SKFunctionName("ExecutePlan")]
-    [SKFunction("Execute a plan")]
-    [SKFunctionContextParameter(Name = "functionNames", Description = "List of tool names.")]
-    [SKFunctionContextParameter(Name = "functionDescriptions", Description = "List of tool descriptions.")]
-    [SKFunctionContextParameter(Name = "question", Description = "The question to answer.")]
-    public async Task<SKContext> ExecutePlanAsync(SKContext context)
+    [SKFunction, SKName("ExecutePlan"), Description("Execute a plan")]
+    public async Task<SKContext> ExecutePlanAsync(
+        [Description("The goal to accomplish")]
+        string goal,
+        [Description("List of tool names")]
+        string functionNames,
+        [Description("List of tool descriptions")]
+        string functionDescriptions,
+        SKContext context)
     {
         var stepsTaken = new List<SystemStep>();
         this._logger?.BeginScope("StepwisePlanner");
-        if (context.Variables.TryGetValue("question", out string? goal))
+        if (!string.IsNullOrEmpty(goal))
         {
             this._logger?.LogInformation("Goal: {Goal}", goal);
             for (int i = 0; i < this.Config.MaxIterations; i++)
