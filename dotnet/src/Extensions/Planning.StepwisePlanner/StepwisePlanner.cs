@@ -265,7 +265,8 @@ public class StepwisePlanner
         scratchPadLines.Add("This was your previous work (but I haven't seen any of it! I only see what you return as final answer):");
         scratchPadLines.Add($"{Thought} {stepsTaken[0].Thought}");
 
-        var insertPoint = scratchPadLines.Count();
+        // Keep track of where to insert the next step
+        var insertPoint = scratchPadLines.Count;
 
         // Instead of most recent, we could use semantic relevance to keep important pieces and deduplicate
         for (var i = stepsTaken.Count - 1; i >= 0; i--)
