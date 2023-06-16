@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -237,13 +238,20 @@ public class StepwisePlanner
 
     private void AddExecutionStatsToContext(List<SystemStep> stepsTaken, SKContext context)
     {
-        context.Variables.Set("stepCount", stepsTaken.Count.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        context.Variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
         context.Variables.Set("stepsTaken", JsonSerializer.Serialize(stepsTaken));
-        var skillCallCount = stepsTaken.Where(s => !string.IsNullOrEmpty(s.Action)).Count().ToString(System.Globalization.CultureInfo.InvariantCulture);
-        var skillsCalled = stepsTaken.Where(s => !string.IsNullOrEmpty(s.Action)).Select(s => s.Action).Distinct().ToList();
-        var skillCallList = string.Join(", ", skillsCalled);
-        var skillCallListWithCounts = string.Join(", ", skillsCalled.Select(s => $"{s}({stepsTaken.Where(s2 => s2.Action == s).Count()})").ToList());
-        context.Variables.Set("skillCount", $"{skillCallCount} ({skillCallListWithCounts})");
+
+        var nonEmptyActions = stepsTaken.Where(s => !string.IsNullOrEmpty(s.Action));
+        int skillCallCount = nonEmptyActions.Count();
+        string skillCallCountStr = skillCallCount.ToString(CultureInfo.InvariantCulture);
+
+        var distinctSkills = nonEmptyActions.Select(s => s.Action).Distinct().ToList();
+        string skillCallList = string.Join(", ", distinctSkills);
+
+        string skillCallListWithCounts = string.Join(", ", distinctSkills.Select(skill =>
+            $"{skill}({nonEmptyActions.Count(s => s.Action == skill)})").ToList());
+
+        context.Variables.Set("skillCount", $"{skillCallCountStr} ({skillCallListWithCounts})");
     }
 
     internal string CreateScratchPad(string goal, List<SystemStep> stepsTaken)
