@@ -137,6 +137,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public void Dispose()
     {
         if (this._disposeHttpClient)
