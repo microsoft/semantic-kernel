@@ -126,7 +126,7 @@ public sealed class ActionPlanner
         {
             if (p.Value != null)
             {
-                plan.State[p.Key] = p.Value.ToString();
+                plan.Parameters[p.Key] = p.Value.ToString();
             }
         }
 
