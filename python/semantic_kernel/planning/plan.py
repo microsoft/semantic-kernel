@@ -27,14 +27,16 @@ class Plan(SKFunctionBase):
     _skill_name: str
     _description: str
     _is_semantic: bool
-    _is_sensitive: bool
-    _trust_service_instance: bool
     _request_settings: CompleteRequestSettings
     DEFAULT_RESULT_KEY = "PLAN.RESULT"
 
     @property
     def name(self) -> str:
         return self._name
+    
+    @property
+    def state(self) -> ContextVariables:
+        return self._state
 
     @property
     def skill_name(self) -> str:
@@ -65,14 +67,6 @@ class Plan(SKFunctionBase):
         return self._request_settings
     
     @property
-    def is_sensitive(self) -> bool:
-        return self._is_sensitive
-    
-    @property
-    def trust_service_instance(self) -> bool:
-        return self._trust_service_instance
-    
-    @property
     def has_next_step(self) -> bool:
         return self._next_step_index < len(self._steps)
     
@@ -80,25 +74,32 @@ class Plan(SKFunctionBase):
     def next_step_index(self) -> int:
         return self._next_step_index
 
+
     def __init__(
         self,
-        name: str,
-        skill_name: str,
-        description: str,
-        next_step_index: int,
-        state: ContextVariables,
-        parameters: ContextVariables,
-        outputs: List[str],
-        steps: List["Plan"],
+        name: Optional[str] = None,
+        skill_name: Optional[str] = None,
+        description: Optional[str] = None,
+        next_step_index: Optional[int] = None,
+        state: Optional[ContextVariables] = None,
+        parameters: Optional[ContextVariables] = None,
+        outputs: Optional[List[str]] = None,
+        steps: Optional[List["Plan"]] = None,
+        function: Optional[SKFunctionBase] = None,
     ) -> None:
-        self._name = name
-        self._skill_name = skill_name
-        self._description = description
-        self._next_step_index = next_step_index
-        self._state = state
-        self._parameters = parameters
-        self._outputs = outputs
-        self._steps = steps
+        self._name = "" if name is None else name
+        self._skill_name = "" if skill_name is None else skill_name
+        self._description = "" if description is None else description
+        self._next_step_index = 0 if next_step_index is None else next_step_index
+        self._state = ContextVariables() if state is None else state
+        self._parameters = ContextVariables() if parameters is None else parameters
+        self._outputs = [""] if outputs is None else outputs
+        self._steps = [] if steps is None else steps
+        self._has_next_step = len(self._steps) > 0
+        self._is_semantic = None
+
+        if function is not None:
+            self.set_function(function)
 
 
     def describe(self) -> FunctionView:
@@ -111,7 +112,7 @@ class Plan(SKFunctionBase):
         # Filter out good JSON from the input in case additional text is present
         json_regex = r"\{(?:[^{}]|(?R))*\}"
         plan_string = regex.search(json_regex, json).group()
-        new_plan = Plan() ## TODO: Fix this
+        new_plan = Plan()
         new_plan.__dict__ = json.loads(plan_string)
 
         if context is None:
@@ -160,8 +161,6 @@ class Plan(SKFunctionBase):
         self._skill_name = function.skill_name
         self._description = function.description
         self._is_semantic = function.is_semantic
-        self._is_sensitive = function.is_sensitive
-        self._trust_service_instance = function.trust_service_instance
         self._request_settings = function.request_settings
     
     def run_next_step_async(
