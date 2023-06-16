@@ -402,13 +402,14 @@ public sealed class Plan : ISKFunction
     {
         var result = input;
         var matches = s_variablesRegex.Matches(input);
-        var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).OrderByDescending(m => m.Length);
+        var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).Distinct().OrderByDescending(m => m.Length);
 
         foreach (var varName in orderedMatches)
         {
-            result = result.Replace($"${varName}",
-                variables.TryGetValue(varName, out string? value) || this.State.TryGetValue(varName, out value) ? value :
-                string.Empty);
+            if (variables.TryGetValue(varName, out string? value) || this.State.TryGetValue(varName, out value))
+            {
+                result = result.Replace($"${varName}", value);
+            }
         }
 
         return result;
