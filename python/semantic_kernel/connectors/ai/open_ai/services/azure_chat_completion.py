@@ -2,14 +2,21 @@
 
 
 from logging import Logger
-from typing import Optional
+from typing import Optional, Union, List, Tuple, TYPE_CHECKING
 
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.open_ai.services.azure_credentials_mixin import (
+    AzureCredentialMixin,
+)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
     OpenAIChatCompletion,
 )
 
+if TYPE_CHECKING:
+    from azure.core.credentials import TokenCredential
 
-class AzureChatCompletion(OpenAIChatCompletion):
+
+class AzureChatCompletion(OpenAIChatCompletion, AzureCredentialMixin):
     _endpoint: str
     _api_version: str
     _api_type: str
@@ -21,7 +28,7 @@ class AzureChatCompletion(OpenAIChatCompletion):
         api_key: Optional[str] = None,
         api_version: str = "2023-03-15-preview",
         logger: Optional[Logger] = None,
-        ad_auth=False,
+        ad_auth: Union[bool, str, "azure.core.credentials.TokenCredential"] = False,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -45,24 +52,42 @@ class AzureChatCompletion(OpenAIChatCompletion):
         :param logger: The logger instance to use. (Optional)
         :param ad_auth: Whether to use Azure Active Directory authentication.
             (Optional) The default value is False.
+            True: use AD with provided api_key
+            'auto': use DefaultAzureCredential() to get key
+            credential: an instance of Azure TokenCredential to get key
+            Using credentials will automate the process of renewing the key
+            upon expiration.
         """
         if not deployment_name:
             raise ValueError("The deployment name cannot be `None` or empty")
-        if not api_key:
-            raise ValueError("The Azure API key cannot be `None` or empty`")
+        if not api_key and isinstance(ad_auth, bool):
+            raise ValueError(
+                "The Azure API key cannot be `None` or empty` when not using Azure Credentials"
+            )
         if not endpoint:
             raise ValueError("The Azure endpoint cannot be `None` or empty")
         if not endpoint.startswith("https://"):
             raise ValueError("The Azure endpoint must start with https://")
 
         self._api_type = "azure_ad" if ad_auth else "azure"
+        self._init_credentials(api_key, ad_auth)
 
         super().__init__(
             deployment_name,
-            api_key,
+            self._api_key,
             api_type=self._api_type,
             api_version=api_version,
             endpoint=endpoint,
             org_id=None,
             log=logger,
         )
+
+    async def _send_chat_request(
+        self,
+        messages: List[Tuple[str, str]],
+        request_settings: ChatRequestSettings,
+        stream: bool,
+    ):
+        self._set_renew_token()
+
+        return await super()._send_chat_request(messages, request_settings, stream)
