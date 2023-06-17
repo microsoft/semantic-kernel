@@ -3,7 +3,7 @@
 import os
 import uuid
 from datetime import datetime
-from logging import Logger, NullLogger
+from logging import Logger
 from typing import List, Optional, Tuple
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
@@ -26,7 +26,7 @@ from python.semantic_kernel.connectors.memory.azure_cog_search.acs_utils import 
 )
 from python.semantic_kernel.memory.memory_record import MemoryRecord
 from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase
-
+from python.semantic_kernel.utils.null_logger import NullLogger
 
 
 class CognitiveSearchMemoryStore(MemoryStoreBase):
@@ -108,7 +108,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        
+
         if vector_config:
             vector_search = VectorSearch(algorithm_configurations=[vector_config])
         else:
@@ -129,7 +129,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         # Check to see if collection exists
         collection_index = await self._cogsearch_indexclient.get_index(collection_name)
-        
+
         if collection_index:
             return
 
@@ -253,7 +253,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The unique database keys of the records.
         """
-        
+
         ## Look up Search client class to see if exists or create
         try:
             acs_search_client = self._cogsearch_indexclient.get_search_client(
@@ -276,7 +276,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             acs_ids.append(id)
 
             acs_doc = {
-                "timestamp": datetime.utcnow().timestamp(),
+                "timestamp": datetime.utcnow(),
                 "vector_id": str(id),
                 "payload": record._text,
                 "vector": record._embedding.tolist(),
@@ -285,7 +285,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
             acs_documents.append(acs_doc)
 
-        result = acs_search_client.upload_documents(documents=[acs_doc])
+        result = acs_search_client.upload_documents(documents=acs_documents)
 
         ## Look at result
         if result[0].succeeded:
@@ -315,7 +315,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         except HttpResponseError:
             raise ValueError(
                 "Error: Unable to get/create ACS search client for collection."
-            ) 
+            )
 
         search_id = key
 
@@ -359,7 +359,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        
+
         ## Look up or create Search client class
         try:
             acs_search_client = self._cogsearch_indexclient.get_search_client(
@@ -386,10 +386,27 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-      
+
+        ## Look up or create Search client class
+        try:
+            acs_search_client = self._cogsearch_indexclient.get_search_client(
+                collection_name
+            )
+        except HttpResponseError:
+            raise ValueError(
+                "Error: Unable to get/create ACS search client for collection."
+            )
+
+        acs_batch_data = []
+
         for acs_key in keys:
-            self.remove_async(collection_name=collection_name, key=acs_key)
-    
+            acs_data = {
+                "vector_id": acs_key,
+            }
+            acs_batch_data.append(acs_data)
+
+        acs_search_client.delete_documents(documents=acs_batch_data)
+
     async def get_nearest_match_async(
         self,
         collection_name: str,
@@ -428,11 +445,14 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             top=limit,
         )
 
+        # Test if relevance score is greater than min_relevance_score
+        if acs_result["@search.score"] < min_relevance_score:
+            return None
+
         # Convert to MemoryRecord
         vector_result = convert_to_memory_record(acs_result)
 
         return tuple(vector_result, acs_result["@search.score"])
-
 
     async def get_nearest_matches_async(
         self,
@@ -479,8 +499,11 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         # Convert the results to MemoryRecords
         for acs_result in results:
+            if acs_result["@search.score"] < min_relevance_score:
+                continue
+
             vector_result = convert_to_memory_record(acs_result)
 
             nearest_results.append(tuple(vector_result, acs_result["@search.score"]))
-        
+
         return nearest_results

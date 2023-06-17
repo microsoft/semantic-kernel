@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
-
 from datetime import datetime
 from typing import List, Optional, Union
 
@@ -17,6 +16,7 @@ from azure.search.documents.indexes.models import (
 from dotenv import load_dotenv
 from numpy import array, linalg, ndarray
 from python.semantic_kernel.memory.memory_record import MemoryRecord
+
 
 def create_credentials(
     use_async: bool, azsearch_api_key: Optional[str] = None
