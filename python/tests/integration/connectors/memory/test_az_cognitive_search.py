@@ -12,6 +12,8 @@ try:
     from azure.search.documents import SearchClient
     from azure.search.documents.indexes import SearchIndexClient
 
+    az_search: SearchClient
+    az_search_index: SearchIndexClient
     az_cog_search_installed = True
 except ImportError:
     az_cog_search_installed = False
