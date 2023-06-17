@@ -6,9 +6,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
-/// Class used to copy and export data from
-/// <see cref="SKFunctionContextParameterAttribute"/>
-/// and <see cref="SKFunctionInputAttribute"/>
+/// Class used to copy and export data about parameters
 /// for planner and related scenarios.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]

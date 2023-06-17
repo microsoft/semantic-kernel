@@ -38,10 +38,16 @@ Event: {{$input}}
 
         var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 100, temperature: 0.4, topP: 1);
 
-        // Using InvokeAsync
-        var textResult = await excuseFunction.InvokeAsync("I missed the F1 final race");
+        // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
+        var textResult = await excuseFunction.InvokeAsync("I missed the F1 final race", new CompleteRequestSettings { ResultsPerPrompt = 3 });
         Console.WriteLine(textResult);
         Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAITextResult()).AsJson());
+        Console.WriteLine();
+
+        // Using the Kernel RunAsync
+        textResult = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
+        Console.WriteLine(textResult);
+        Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAITextResult()?.Usage.AsJson());
         Console.WriteLine();
 
         // Using the Kernel RunAsync
@@ -54,7 +60,8 @@ Event: {{$input}}
         var chatCompletion = new OpenAIChatCompletion("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
-        IReadOnlyList<ITextCompletionResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new CompleteRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new CompleteRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
+
         Console.WriteLine(await completionResults[0].GetCompletionAsync());
         Console.WriteLine(completionResults[0].ModelResult.GetOpenAIChatResult().Usage.AsJson());
         Console.WriteLine();
