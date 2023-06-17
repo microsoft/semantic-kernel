@@ -79,8 +79,10 @@ fi
 
 # if not NO_ZIP then zip the package
 if [[ -z "$NO_ZIP" ]]; then
+    pushd "$PUBLISH_OUTPUT_DIRECTORY"
     echo "Compressing to $PACKAGE_FILE_PATH"
-    zip -r $PACKAGE_FILE_PATH $PUBLISH_OUTPUT_DIRECTORY/*
+    zip -r $PACKAGE_FILE_PATH .
+    popd
 fi
 
 
