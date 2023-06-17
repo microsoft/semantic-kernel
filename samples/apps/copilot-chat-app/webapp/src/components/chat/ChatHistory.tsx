@@ -6,6 +6,7 @@ import { ChatMessageType, IChatMessage } from '../../libs/models/ChatMessage';
 import { GetResponseOptions } from '../../libs/useChat';
 import { ChatHistoryFileItem } from './ChatHistoryFileItem';
 import { ChatHistoryItem } from './ChatHistoryItem';
+import { ChatStatus } from './ChatStatus';
 
 const useClasses = makeStyles({
     root: {
@@ -47,6 +48,7 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ messages, onGetRespons
                         />
                     ),
                 )}
+            <ChatStatus />
         </div>
     );
 };

@@ -18,6 +18,12 @@ public class ChatSession : IStorageEntity
     public string Id { get; set; }
 
     /// <summary>
+    /// User ID that is persistent and unique.
+    /// </summary>
+    [JsonPropertyName("userId")]
+    public string UserId { get; set; }
+
+    /// <summary>
     /// Title of the chat.
     /// </summary>
     [JsonPropertyName("title")]
@@ -29,9 +35,10 @@ public class ChatSession : IStorageEntity
     [JsonPropertyName("createdOn")]
     public DateTimeOffset CreatedOn { get; set; }
 
-    public ChatSession(string title)
+    public ChatSession(string userId, string title)
     {
         this.Id = Guid.NewGuid().ToString();
+        this.UserId = userId;
         this.Title = title;
         this.CreatedOn = DateTimeOffset.Now;
     }

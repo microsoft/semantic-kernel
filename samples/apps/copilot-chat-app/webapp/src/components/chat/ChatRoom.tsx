@@ -9,7 +9,7 @@ import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
 import { GetResponseOptions, useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { updateConversationFromUser } from '../../redux/features/conversations/conversationsSlice';
+import { updateConversation } from '../../redux/features/conversations/conversationsSlice';
 import { SharedStyles } from '../../styles';
 import { ChatHistory } from './ChatHistory';
 import { ChatInput } from './ChatInput';
@@ -63,6 +63,9 @@ export const ChatRoom: React.FC = () => {
         setIsDraggingOver(false);
     };
 
+    // hardcode to care only about the bot typing for now.
+    const [isBotTyping, setIsBotTyping] = React.useState(false);
+
     const chat = useChat();
 
     React.useEffect(() => {
@@ -104,9 +107,14 @@ export const ChatRoom: React.FC = () => {
             authorRole: AuthorRoles.User,
         };
 
-        dispatch(updateConversationFromUser({ message: chatInput }));
+        setIsBotTyping(true);
+        dispatch(updateConversation({ message: chatInput }));
 
-        await chat.getResponse(options);
+        try {
+            await chat.getResponse(options);
+        } finally {
+            setIsBotTyping(false);
+        }
 
         setShouldAutoScroll(true);
     };
@@ -123,6 +131,7 @@ export const ChatRoom: React.FC = () => {
             </div>
             <div className={classes.input}>
                 <ChatInput
+                    isTyping={isBotTyping}
                     isDraggingOver={isDraggingOver}
                     onDragLeave={onDragLeave}
                     onSubmit={handleSubmit}

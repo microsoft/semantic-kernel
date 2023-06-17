@@ -88,7 +88,7 @@ public class CosmosDbContext<T> : IStorageContext<T>, IDisposable where T : ISto
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
-            throw new KeyNotFoundException($"Entity with id {entityId} not found.");
+            throw new ArgumentOutOfRangeException(nameof(entityId), "Entity Id cannot be null or empty.");
         }
     }
 
