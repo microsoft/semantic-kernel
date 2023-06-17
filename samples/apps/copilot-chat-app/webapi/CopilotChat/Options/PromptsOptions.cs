@@ -60,6 +60,15 @@ public class PromptsOptions
     [Required, NotEmptyOrWhitespace] public string SystemDescription { get; set; } = string.Empty;
     [Required, NotEmptyOrWhitespace] public string SystemResponse { get; set; } = string.Empty;
 
+    internal string[] SystemAudiencePromptComponents => new string[]
+    {
+        this.SystemAudience,
+        "{{ChatSkill.ExtractChatHistory}}",
+        this.SystemAudienceContinuation
+    };
+
+    internal string SystemAudienceExtraction => string.Join("\n", this.SystemAudiencePromptComponents);
+
     internal string[] SystemIntentPromptComponents => new string[]
     {
         this.SystemDescription,
@@ -73,6 +82,10 @@ public class PromptsOptions
     // Intent extraction
     [Required, NotEmptyOrWhitespace] public string SystemIntent { get; set; } = string.Empty;
     [Required, NotEmptyOrWhitespace] public string SystemIntentContinuation { get; set; } = string.Empty;
+
+    // Audience extraction
+    [Required, NotEmptyOrWhitespace] public string SystemAudience { get; set; } = string.Empty;
+    [Required, NotEmptyOrWhitespace] public string SystemAudienceContinuation { get; set; } = string.Empty;
 
     // Memory extraction
     [Required, NotEmptyOrWhitespace] public string SystemCognitive { get; set; } = string.Empty;
@@ -126,6 +139,7 @@ public class PromptsOptions
     {
         this.SystemDescription,
         this.SystemResponse,
+        "{{$audience}}",
         "{{$userIntent}}",
         "{{$chatContext}}",
         this.SystemChatContinuation
