@@ -3,16 +3,15 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Text;
-using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -49,27 +48,22 @@ public class DocumentImportController : ControllerBase
     private readonly ChatSessionRepository _sessionRepository;
     private readonly ChatMemorySourceRepository _sourceRepository;
     private readonly ChatMessageRepository _messageRepository;
-    private readonly ChatParticipantRepository _participantRepository;
-    private const string GlobalDocumentUploadedClientCall = "GlobalDocumentUploaded";
-    private const string ChatDocumentUploadedClientCall = "ChatDocumentUploaded";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
     /// </summary>
     public DocumentImportController(
-        ILogger<DocumentImportController> logger,
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
+        ILogger<DocumentImportController> logger,
         ChatSessionRepository sessionRepository,
         ChatMemorySourceRepository sourceRepository,
-        ChatMessageRepository messageRepository,
-        ChatParticipantRepository participantRepository)
+        ChatMessageRepository messageRepository)
     {
-        this._logger = logger;
         this._options = documentMemoryOptions.Value;
+        this._logger = logger;
         this._sessionRepository = sessionRepository;
         this._sourceRepository = sourceRepository;
         this._messageRepository = messageRepository;
-        this._participantRepository = participantRepository;
     }
 
     /// <summary>
@@ -82,7 +76,6 @@ public class DocumentImportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ImportDocumentAsync(
         [FromServices] IKernel kernel,
-        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
         [FromForm] DocumentImportForm documentImportForm)
     {
         var formFile = documentImportForm.FormFile;
@@ -107,128 +100,65 @@ public class DocumentImportController : ControllerBase
             return this.BadRequest("User does not have access to the chat session.");
         }
 
-        var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
-        var fileContent = string.Empty;
-        switch (fileType)
-        {
-            case SupportedFileType.Txt:
-                fileContent = await this.ReadTxtFileAsync(formFile);
-                break;
-            case SupportedFileType.Pdf:
-                fileContent = this.ReadPdfFile(formFile);
-                break;
-            default:
-                return this.BadRequest($"Unsupported file type: {fileType}");
-        }
-
         this._logger.LogInformation("Importing document {0}", formFile.FileName);
 
-        // Create memory source
-        var memorySource = await this.TryCreateAndUpsertMemorySourceAsync(documentImportForm, formFile);
-        if (memorySource == null)
-        {
-            return this.BadRequest("Fail to create memory source.");
-        }
-
-        // Parse document content to memory
+        ChatMessage chatMessage;
         try
         {
-            await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, memorySource.Id);
+            var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
+            var fileContent = string.Empty;
+            switch (fileType)
+            {
+                case SupportedFileType.Txt:
+                    fileContent = await this.ReadTxtFileAsync(formFile);
+                    break;
+                case SupportedFileType.Pdf:
+                    fileContent = this.ReadPdfFile(formFile);
+                    break;
+                default:
+                    return this.BadRequest($"Unsupported file type: {fileType}");
+            }
+
+            // Create memory source
+            var memorySource = new MemorySource(
+                documentImportForm.ChatId.ToString(),
+                formFile.FileName,
+                documentImportForm.UserId,
+                MemorySourceType.File,
+                formFile.Length,
+                null);
+
+            await this._sourceRepository.UpsertAsync(memorySource);
+
+            // Create chat message that represents document upload
+            chatMessage = new ChatMessage(
+                memorySource.SharedBy,
+                documentImportForm.UserName,
+                memorySource.ChatId,
+                (new DocumentMessageContent() { Name = memorySource.Name, Size = this.GetReadableByteString(memorySource.Size) }).ToString(),
+                "",
+                ChatMessage.AuthorRoles.User,
+                ChatMessage.ChatMessageType.Document
+            );
+
+            await this._messageRepository.CreateAsync(chatMessage);
+
+            try
+            {
+                await this.ParseDocumentContentToMemoryAsync(kernel, fileContent, documentImportForm, memorySource.Id);
+            }
+            catch (Exception ex) when (!ex.IsCriticalException())
+            {
+                await this._sourceRepository.DeleteAsync(memorySource);
+                throw;
+            }
         }
-        catch (Exception ex) when (!ex.IsCriticalException())
+        catch (ArgumentOutOfRangeException ex)
         {
-            await this._sourceRepository.DeleteAsync(memorySource);
             return this.BadRequest(ex.Message);
         }
 
-        // Broadcast the document uploaded event to other users.
-        if (documentImportForm.DocumentScope == DocumentImportForm.DocumentScopes.Chat)
-        {
-            var chatMessage = await this.TryCreateDocumentUploadMessage(memorySource, documentImportForm);
-            if (chatMessage == null)
-            {
-                // It's Ok to have the message not created.
-                return this.Ok();
-            }
-
-            var chatId = documentImportForm.ChatId.ToString();
-            await messageRelayHubContext.Clients.Group(chatId)
-                .SendAsync(ChatDocumentUploadedClientCall, chatMessage, chatId);
-
-            return this.Ok(chatMessage);
-        }
-
-        await messageRelayHubContext.Clients.All
-            .SendAsync(GlobalDocumentUploadedClientCall, formFile.FileName, documentImportForm.UserName);
-
-        return this.Ok();
-    }
-
-    /// <summary>
-    /// Try to create and upsert a memory source.
-    /// </summary>
-    /// <param name="documentImportForm">The document upload form that contains additional necessary info</param>
-    /// <param name="formFile">The file to be uploaded</param>
-    /// <returns>A MemorySource object if successful, null otherwise</returns>
-    private async Task<MemorySource?> TryCreateAndUpsertMemorySourceAsync(
-        DocumentImportForm documentImportForm,
-        IFormFile formFile)
-    {
-        var memorySource = new MemorySource(
-            documentImportForm.ChatId.ToString(),
-            formFile.FileName,
-            documentImportForm.UserId,
-            MemorySourceType.File,
-            formFile.Length,
-            null);
-
-        try
-        {
-            await this._sourceRepository.UpsertAsync(memorySource);
-            return memorySource;
-        }
-        catch (Exception ex) when (ex is ArgumentOutOfRangeException)
-        {
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Try to create a chat message that represents document upload.
-    /// </summary>
-    /// <param name="memorySource">The MemorySource object that the document content is linked to</param>
-    /// <param name="documentImportForm">The document upload form that contains additional necessary info</param>
-    /// <returns>A ChatMessage object if successful, null otherwise</returns>
-    private async Task<ChatMessage?> TryCreateDocumentUploadMessage(
-        MemorySource memorySource,
-        DocumentImportForm documentImportForm)
-    {
-        // Create chat message that represents document upload
-        var content = new DocumentMessageContent()
-        {
-            Name = memorySource.Name,
-            Size = this.GetReadableByteString(memorySource.Size)
-        };
-
-        var chatMessage = new ChatMessage(
-            memorySource.SharedBy,
-            documentImportForm.UserName,
-            memorySource.ChatId,
-            content.ToString(),
-            "",
-            ChatMessage.AuthorRoles.User,
-            ChatMessage.ChatMessageType.Document
-        );
-
-        try
-        {
-            await this._messageRepository.CreateAsync(chatMessage);
-            return chatMessage;
-        }
-        catch (Exception ex) when (ex is ArgumentOutOfRangeException)
-        {
-            return null;
-        }
+        return this.Ok(chatMessage);
     }
 
     /// <summary>
@@ -340,6 +270,7 @@ public class DocumentImportController : ControllerBase
     /// <returns>A boolean indicating whether the user has access to the chat session.</returns>
     private async Task<bool> UserHasAccessToChatAsync(string userId, Guid chatId)
     {
-        return await this._participantRepository.IsUserInChatAsync(userId, chatId.ToString());
+        var chatSessions = await this._sessionRepository.FindByUserIdAsync(userId);
+        return chatSessions.Any(c => c.Id == chatId.ToString());
     }
 }

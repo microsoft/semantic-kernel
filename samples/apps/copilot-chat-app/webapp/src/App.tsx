@@ -21,7 +21,6 @@ import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { removeAlert } from './redux/features/app/appSlice';
-import { setLoggedInUserId } from './redux/features/conversations/conversationsSlice';
 import { CopilotChatTokens } from './styles';
 
 export const useClasses = makeStyles({
@@ -75,19 +74,16 @@ const App: FC = () => {
     const chat = useChat();
 
     useEffect(() => {
-        if (isAuthenticated && account) {
-            dispatch(setLoggedInUserId(account.homeAccountId));
+        if (isAuthenticated && account && appState === AppState.LoadingChats) {
 
-            if (appState === AppState.LoadingChats) {
-                // Load all chats from the backend.
-                async function loadChats() {
-                    if (await chat.loadChats()) {
-                        setAppState(AppState.Chat);
-                    }
+            // Load all chats from memory
+            async function loadChats() {
+                if (await chat.loadChats()) {
+                    setAppState(AppState.Chat);
                 }
-
-                loadChats();
             }
+
+            loadChats();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instance, inProgress, isAuthenticated, appState]);
