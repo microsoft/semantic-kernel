@@ -96,8 +96,8 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
               .replace(/ {2}/g, '&nbsp;&nbsp;')
         : '';
 
-    const isMe = message.authorRole === AuthorRoles.User && message.userId === account?.homeAccountId!;
-    const isBot = message.authorRole === AuthorRoles.Bot;
+    const isMe = message.authorRole === AuthorRoles.User || message.userId === account?.homeAccountId!;
+    const isBot = message.authorRole !== AuthorRoles.User && message.userId === 'bot';
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
     const fullName = user?.fullName ?? message.userName;
 

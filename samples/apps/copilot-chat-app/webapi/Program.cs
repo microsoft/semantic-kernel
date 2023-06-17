@@ -11,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SemanticKernel.Service.CopilotChat.Extensions;
-using SemanticKernel.Service.CopilotChat.Hubs;
 
 namespace SemanticKernel.Service;
 
@@ -45,9 +44,6 @@ public sealed class Program
             .AddCopilotChatPlannerServices()
             .AddPersistentChatStore();
 
-        // Add SignalR as the real time relay service
-        builder.Services.AddSignalR();
-
         // Add in the rest of the services.
         builder.Services
             .AddApplicationInsightsTelemetry()
@@ -66,9 +62,6 @@ public sealed class Program
         app.UseAuthorization();
         app.MapControllers();
         app.MapHealthChecks("/healthz");
-
-        // Add CopilotChat hub for real time communication
-        app.MapHub<MessageRelayHub>("/messageRelayHub");
 
         // Enable Swagger for development environments.
         if (app.Environment.IsDevelopment())
