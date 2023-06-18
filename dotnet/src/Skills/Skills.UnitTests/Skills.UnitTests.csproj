@@ -12,6 +12,8 @@
     <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
 
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
+
   <ItemGroup>
     <None Remove="Grpc\protoV3.proto" />
     <None Remove="OpenAPI\TestSkills\documentV3_1.yaml" />

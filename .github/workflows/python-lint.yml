@@ -1,0 +1,51 @@
+name: Python Lint
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ "main", "feature*" ]
+    paths:
+      - 'python/**'
+
+jobs:
+  ruff:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: echo "/root/.local/bin" >> $GITHUB_PATH
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "poetry"
+          cache-dependency-path: "python/pyproject.toml"
+      - name: Install SemanticKernel
+        run: cd python && poetry install --no-ansi
+      - name: Run lint
+        run: cd python && poetry run ruff check .
+  black:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: echo "/root/.local/bin" >> $GITHUB_PATH
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "poetry"
+          cache-dependency-path: "python/pyproject.toml"
+      - name: Install SemanticKernel
+        run: cd python && poetry install --no-ansi
+      - name: Run lint
+        run: cd python && poetry run black --check .

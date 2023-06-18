@@ -7,6 +7,8 @@
     "ms-dotnettools.dotnet-interactive-vscode",
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
-    "ms-semantic-kernel.semantic-kernel"
+    "ms-semantic-kernel.semantic-kernel",
+    "emeraldwalk.RunOnSave",
+    "ms-java.vscode-java-pack",
   ]
 }

@@ -110,6 +110,8 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null, ITrustService? trustService = null)
     {
+        Verify.NotNull(skillInstance);
+
         if (string.IsNullOrWhiteSpace(skillName))
         {
             skillName = SkillCollection.GlobalSkill;
@@ -369,16 +371,16 @@ public sealed class Kernel : IKernel, IDisposable
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
     private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ITrustService? trustService, ILogger log)
     {
-        log.LogTrace("Importing skill name: {0}", skillName);
         MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
-        log.LogTrace("Methods found {0}", methods.Length);
+        log.LogTrace("Importing skill name: {0}. Potential methods found: {1}", skillName, methods.Length);
 
-        // Filter out null functions and fail if two functions have the same name
+        // Filter out non-SKFunctions and fail if two functions have the same name
         Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
         foreach (MethodInfo method in methods)
         {
-            if (SKFunction.FromNativeMethod(method, skillInstance, skillName, trustService, log) is ISKFunction function)
+            if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
+                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, trustService, log);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new KernelException(
