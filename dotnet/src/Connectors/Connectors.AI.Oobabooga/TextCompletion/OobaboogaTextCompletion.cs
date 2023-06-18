@@ -59,7 +59,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -157,7 +157,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
+    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
