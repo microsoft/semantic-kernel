@@ -9,7 +9,7 @@ interface IData {
     runTask: () => Promise<void>;
 }
 
-const IteractionButton: FC<IData> = ({ taskDescription, runTask }) => {
+const InteractionButton: FC<IData> = ({ taskDescription, runTask }) => {
     const [isBusy, setIsBusy] = useState<boolean>(false);
     const [canRunTask, setCanRunTask] = useState<boolean>(true);
 
@@ -37,4 +37,4 @@ const IteractionButton: FC<IData> = ({ taskDescription, runTask }) => {
     );
 };
 
-export default IteractionButton;
+export default InteractionButton;

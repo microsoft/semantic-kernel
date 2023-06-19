@@ -51,23 +51,22 @@ internal sealed class Program
         AIServiceOptions aiOptions = configuration.GetRequiredSection(AIServiceOptions.PropertyName).Get<AIServiceOptions>()
             ?? throw new InvalidOperationException($"Missing configuration for {AIServiceOptions.PropertyName}.");
 
-        IKernel kernel = Kernel.Builder
-            .WithLogger(loggerFactory.CreateLogger<IKernel>())
-            .Configure(c =>
-            {
-                switch (aiOptions.Type)
-                {
-                    case AIServiceOptions.AIServiceType.AzureOpenAI:
-                        c.AddAzureChatCompletionService(aiOptions.Models.Completion, aiOptions.Endpoint, aiOptions.Key);
-                        break;
-                    case AIServiceOptions.AIServiceType.OpenAI:
-                        c.AddOpenAIChatCompletionService(aiOptions.Models.Completion, aiOptions.Key);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unhandled AI service type {aiOptions.Type}");
-                }
-            })
-            .Build();
+        KernelBuilder kb = Kernel.Builder
+            .WithLogger(loggerFactory.CreateLogger<IKernel>());
+
+        switch (aiOptions.Type)
+        {
+            case AIServiceOptions.AIServiceType.AzureOpenAI:
+                kb.WithAzureChatCompletionService(aiOptions.Models.Completion, aiOptions.Endpoint, aiOptions.Key);
+                break;
+            case AIServiceOptions.AIServiceType.OpenAI:
+                kb.WithOpenAIChatCompletionService(aiOptions.Models.Completion, aiOptions.Key);
+                break;
+            default:
+                throw new InvalidOperationException($"Unhandled AI service type {aiOptions.Type}");
+        }
+
+        var kernel = kb.Build();
 
         // Register the GitHub skill using an OpenAPI definition containing only pull request GET operations.
         GitHubSkillOptions gitHubOptions = configuration.GetRequiredSection(GitHubSkillOptions.PropertyName).Get<GitHubSkillOptions>()
