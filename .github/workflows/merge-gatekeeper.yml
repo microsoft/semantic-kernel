@@ -1,0 +1,30 @@
+name: Merge Gatekeeper
+
+on:
+  pull_request:
+    branches: [ "main", "feature*" ]
+  merge_group:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  merge-gatekeeper:
+    runs-on: ubuntu-latest
+    # Restrict permissions of the GITHUB_TOKEN.
+    # Docs: https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+    permissions:
+      checks: read
+      statuses: read
+    steps:
+      - name: Run Merge Gatekeeper
+        # NOTE: v1 is updated to reflect the latest v1.x.y. Please use any tag/branch that suits your needs:
+        #       https://github.com/upsidr/merge-gatekeeper/tags
+        #       https://github.com/upsidr/merge-gatekeeper/branches
+        uses: upsidr/merge-gatekeeper@v1
+        if: github.event_name == 'pull_request'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          timeout: 1800

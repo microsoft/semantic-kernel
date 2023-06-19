@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
@@ -46,7 +45,7 @@ public class WaitSkillTests
         var target = new WaitSkill(waitProviderMock.Object);
 
         // Act
-        await target.SecondsAsync(textSeconds);
+        var context = await FunctionHelpers.CallViaKernel(target, "Seconds", ("input", textSeconds));
 
         // Assert
         waitProviderMock.Verify(w => w.DelayAsync(It.IsIn(expectedMilliseconds)), Times.Once);
@@ -71,14 +70,9 @@ public class WaitSkillTests
         var target = new WaitSkill(waitProviderMock.Object);
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
-        {
-            await target.SecondsAsync(textSeconds);
-        });
+        var context = await FunctionHelpers.CallViaKernel(target, "Seconds", ("input", textSeconds));
 
         // Assert
-        Assert.NotNull(exception);
-        Assert.IsType<ArgumentException>(exception);
-        Assert.Equal("secondsText", exception.ParamName);
+        AssertExtensions.AssertIsArgumentOutOfRange(context.LastException, "seconds", textSeconds);
     }
 }

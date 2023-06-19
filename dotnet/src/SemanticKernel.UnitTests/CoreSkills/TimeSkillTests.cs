@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Xunit;
@@ -35,7 +36,7 @@ public class TimeSkillTests
         double interval = 2;
         DateTime expected = DateTime.Now.AddDays(-interval);
         var skill = new TimeSkill();
-        string result = skill.DaysAgo(interval.ToString(CultureInfo.CurrentCulture));
+        string result = skill.DaysAgo(interval);
         DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(expected.Day, returned.Day);
         Assert.Equal(expected.Month, returned.Month);
@@ -43,11 +44,21 @@ public class TimeSkillTests
     }
 
     [Fact]
-    public void LastMatchingDayBadInput()
+    public void Day()
+    {
+        string expected = DateTime.Now.ToString("dd", CultureInfo.CurrentCulture);
+        var skill = new TimeSkill();
+        string result = skill.Day();
+        Assert.Equal(expected, result);
+        Assert.True(int.TryParse(result, out _));
+    }
+
+    [Fact]
+    public async Task LastMatchingDayBadInput()
     {
         var skill = new TimeSkill();
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => skill.DateMatchingLastDayName("not a day name"));
-        Assert.Equal("dayName", exception.ParamName);
+        var context = await FunctionHelpers.CallViaKernel(skill, "DateMatchingLastDayName", ("input", "not a day name"));
+        AssertExtensions.AssertIsArgumentOutOfRange(context.LastException, "input", "not a day name");
     }
 
     [Theory]
@@ -65,7 +76,7 @@ public class TimeSkillTests
         Assert.True(found);
 
         var skill = new TimeSkill();
-        string result = skill.DateMatchingLastDayName(dayName.ToString());
+        string result = skill.DateMatchingLastDayName(dayName);
         DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(date.Day, returned.Day);
         Assert.Equal(date.Month, returned.Month);
