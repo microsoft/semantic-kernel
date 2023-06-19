@@ -23,24 +23,27 @@ internal sealed class OobaboogaWebSocketTestServer : WebSocketTestServer
         var responseList = stringHandler(requestObj?.Prompt ?? string.Empty);
 
         var responseSegments = new List<ArraySegment<byte>>();
+        int messageNum = 0;
         foreach (var responseChunk in responseList)
         {
             var responseObj = new TextCompletionStreamingResponse
             {
                 Event = "text_stream",
-                MessageNum = responseList.IndexOf(responseChunk),
+                MessageNum = messageNum,
                 Text = responseChunk
             };
 
             var responseJson = JsonSerializer.Serialize(responseObj);
             var responseBytes = Encoding.UTF8.GetBytes(responseJson);
             responseSegments.Add(new ArraySegment<byte>(responseBytes));
+
+            messageNum++;
         }
 
         var streamEndObj = new TextCompletionStreamingResponse
         {
             Event = "stream_end",
-            MessageNum = responseList.Count
+            MessageNum = messageNum
         };
 
         var streamEndJson = JsonSerializer.Serialize(streamEndObj);
