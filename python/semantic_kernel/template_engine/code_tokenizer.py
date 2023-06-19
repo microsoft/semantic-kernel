@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from enum import Enum
 from logging import Logger
 from typing import List
 
@@ -21,7 +22,10 @@ from semantic_kernel.utils.null_logger import NullLogger
 # [function-call]  ::= [function-id] | [function-id] [parameter]
 # [parameter]      ::= [variable] | [value]
 class CodeTokenizer:
-    def __init__(self, log: Logger = None):
+    def __init__(
+        self,
+        log: Logger = NullLogger(),
+    ):
         self.log = log or NullLogger()
 
     def tokenize(self, text: str) -> List[Block]:
