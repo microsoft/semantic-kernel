@@ -9,6 +9,13 @@ using System.Threading.Tasks;
 
 namespace SemanticKernel.Connectors.UnitTests;
 
+/// <summary>
+/// Represents a mock WebSocket server that listens for incoming WebSocket connections and handles requests.
+/// The server is built on top of the HttpListener class and provides functionality to accept WebSocket connections,
+/// receive messages, and send responses back to the clients.
+/// The WebSocketTestServer class allows customization of the request handling logic through a delegate,
+/// which takes an incoming request and returns a list of response segments.
+/// </summary>
 internal class WebSocketTestServer : IDisposable
 {
     private readonly HttpListener _httpListener;
