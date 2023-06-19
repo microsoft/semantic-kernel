@@ -131,7 +131,9 @@ class SKFunction(SKFunctionBase):
                     context.variables.update(completion)
                 else:
                     prompt = await function_config.prompt_template.render_async(context)
-                    completion = await client.complete_async(prompt, request_settings)
+                    completion = await client.complete_async(
+                        prompt, request_settings, context
+                    )
                     context.variables.update(completion)
             except Exception as e:
                 # TODO: "critical exceptions"
