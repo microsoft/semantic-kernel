@@ -161,7 +161,7 @@ public static class Program
         await Example51_StepwisePlanner.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example52_Apim.RunAsync();
+        await Example52_ApimAuth.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }
