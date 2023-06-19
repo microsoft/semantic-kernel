@@ -128,8 +128,10 @@ public static class Program
 
         var userId = userAccount!.HomeAccountId.Identifier;
         var userName = userAccount.Username;
-        formContent.Add(new StringContent(userId), "userId");
-        formContent.Add(new StringContent(userName), "userName");
+        using var userIdContent = new StringContent(userId);
+        using var userNameContent = new StringContent(userName);
+        formContent.Add(userIdContent, "userId");
+        formContent.Add(userNameContent, "userName");
 
         if (chatCollectionId != Guid.Empty)
         {
