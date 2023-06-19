@@ -7,6 +7,8 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace SemanticKernel.Connectors.UnitTests;
+
 internal class WebSocketTestServer : IDisposable
 {
     private readonly HttpListener _httpListener;
