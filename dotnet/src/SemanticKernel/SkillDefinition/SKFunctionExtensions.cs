@@ -146,7 +146,7 @@ public static class SKFunctionExtensions
              settings
              ).ConfigureAwait(false);
 
-        return resultContext.Variables.Input;
+        return resultContext.Result;
     }
 
     /// <summary>
@@ -171,7 +171,7 @@ public static class SKFunctionExtensions
              settings
              ).ConfigureAwait(false);
 
-        return resultContext.Variables.Input;
+        return resultContext.Result;
     }
 
     /// <summary>
@@ -194,7 +194,7 @@ public static class SKFunctionExtensions
              settings
              ).ConfigureAwait(false);
 
-        return resultContext.Variables.Input;
+        return resultContext.Result;
     }
 
     private static Task<SKContext> InternalInvokeAsync(ISKFunction function,

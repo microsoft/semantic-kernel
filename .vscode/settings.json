@@ -74,5 +74,6 @@
   },
   "cSpell.words": [
     "Partitioner"
-  ]
+  ],
+  "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln"
 }
