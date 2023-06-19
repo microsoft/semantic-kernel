@@ -22,5 +22,5 @@ public class PlannerOptions
     /// when using SequentialPlanner
     /// </summary>
     [Range(0, 1.0)]
-    public double? RelevancyThreshold { get; set; } = null;
+    public double? RelevancyThreshold { get; set; } = 0;
 }

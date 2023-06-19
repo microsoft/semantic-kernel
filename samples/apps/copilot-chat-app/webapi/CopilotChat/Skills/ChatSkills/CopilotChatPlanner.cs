@@ -29,7 +29,7 @@ public class CopilotChatPlanner
     private readonly PlannerOptions? _plannerOptions;
 
     /// <summary>
-    /// Gets the pptions for the planner.
+    /// Gets the options for the planner.
     /// </summary>
     public PlannerOptions? PlannerOptions => this._plannerOptions;
 
