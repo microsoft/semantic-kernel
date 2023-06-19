@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
@@ -120,21 +120,20 @@ def test_guidance_text_completion_init_with_invalid_endpoint() -> None:
 
 @pytest.mark.asyncio
 async def test_guidance_text_completion_call_with_parameters() -> None:
-    mock_openai = AsyncMock()
+    mock_program = MagicMock()
     with patch(
-        "semantic_kernel.connectors.ai.guidance.services.guidance_aoai_text_completion.GuidanceAOAITextCompletion",
-        new=mock_openai,
+        "semantic_kernel.connectors.ai.guidance.services.guidance_oai_text_completion.guidance.Program",
+        new=mock_program,
     ):
         deployment_name = "test_deployment"
         model_id = "text-davinci-001"
         endpoint = "https://test-endpoint.com"
         api_key = "test_api_key"
-        api_type = "azure"
-        api_version = "2023-03-15-preview"
-        logger = Logger("test_logger")
+        Logger("test_logger")
         prompt = "hello world"
         complete_request_settings = CompleteRequestSettings()
-        context = SKContext(ContextVariables(), NullMemory(), None, NullLogger())
+        context_var = ContextVariables("test")
+        context = SKContext(context_var, NullMemory(), None, NullLogger())
 
         guidance_text_completion = sk_guidance.GuidanceAOAITextCompletion(
             model_id=model_id,
@@ -147,9 +146,4 @@ async def test_guidance_text_completion_call_with_parameters() -> None:
             prompt, complete_request_settings, context
         )
 
-        mock_openai.Completion.acreate.assert_called_once_with(
-            model_id=model_id,
-            deployment_name=deployment_name,
-            api_key=api_key,
-            endpoint=endpoint,
-        )
+        mock_program.assert_called_once_with(prompt)

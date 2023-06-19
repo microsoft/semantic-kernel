@@ -52,4 +52,6 @@ class GuidanceOAITextCompletion(TextCompletionClientBase):
     async def complete_stream_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ):
-        pass
+        raise ValueError(
+            "GuidanceOAITextCompletion complete_stream_async not implemented"
+        )
