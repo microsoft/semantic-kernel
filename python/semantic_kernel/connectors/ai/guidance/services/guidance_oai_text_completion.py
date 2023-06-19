@@ -1,6 +1,8 @@
 from logging import Logger
 from typing import Optional
+
 import guidance
+
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )

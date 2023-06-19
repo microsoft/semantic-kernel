@@ -5,10 +5,10 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+import semantic_kernel.connectors.ai.guidance as sk_guidance
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
-import semantic_kernel.connectors.ai.guidance as sk_guidance
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -141,8 +141,6 @@ async def test_guidance_text_completion_call_with_parameters() -> None:
             deployment_name=deployment_name,
             endpoint=endpoint,
             api_key=api_key,
-            api_version=api_version,
-            logger=logger,
         )
 
         await guidance_text_completion.complete_async(

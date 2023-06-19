@@ -1,5 +1,6 @@
 from logging import Logger
 from typing import List
+
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.guidance_block import GuidanceBlock
 from semantic_kernel.template_engine.blocks.symbols import Symbols

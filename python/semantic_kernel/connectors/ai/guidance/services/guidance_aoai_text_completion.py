@@ -1,5 +1,6 @@
 from logging import Logger
 from typing import Optional
+
 import guidance
 
 from semantic_kernel.connectors.ai.guidance.services.guidance_oai_text_completion import (

@@ -20,7 +20,7 @@ class GuidanceBlock(Block, TextRenderer):
 
     def is_valid(self) -> Tuple[bool, str]:
         if not self.content:
-            error_msg = f"A Guidance block cannot be empty"
+            error_msg = "A Guidance block cannot be empty"
             self.log.error(error_msg)
             return False, error_msg
 

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from enum import Enum
 from logging import Logger
 from typing import List
 
