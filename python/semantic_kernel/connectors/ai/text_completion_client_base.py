@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from logging import Logger
 from typing import TYPE_CHECKING
 
+from semantic_kernel.orchestration.sk_context import SKContext
+
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.complete_request_settings import (
         CompleteRequestSettings,
@@ -16,6 +18,7 @@ class TextCompletionClientBase(ABC):
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
+        context: "SKContext",
         logger: Logger,
     ) -> str:
         pass
@@ -25,6 +28,7 @@ class TextCompletionClientBase(ABC):
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
+        context: "SKContext",
         logger: Logger,
     ):
         pass
