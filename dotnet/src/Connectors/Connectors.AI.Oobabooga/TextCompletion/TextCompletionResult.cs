@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
-internal sealed class TextCompletionResult : ITextCompletionResult
+internal sealed class TextCompletionResult : ITextResult
 {
     private readonly ModelResult _responseData;
 

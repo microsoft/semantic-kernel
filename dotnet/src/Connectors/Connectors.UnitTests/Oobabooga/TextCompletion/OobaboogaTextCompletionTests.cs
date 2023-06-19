@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -24,6 +24,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private const int BlockingPort = 1234;
     private const int StreamingPort = 2345;
     private const string CompletionText = "fake-test";
+    private const string CompletionMultiText = "Hello, my name is";
 
     private HttpMessageHandlerStub _messageHandlerStub;
     private HttpClient _httpClient;
@@ -125,31 +126,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldSendPromptToStreamingServicePersistentWebSocketAsync()
-    {
-        var sut = new OobaboogaTextCompletion(
-            new Uri("http://localhost/"),
-            BlockingPort,
-            StreamingPort,
-            httpClient: this._httpClient,
-            webSocket: this._webSocket);
-
-        this.ShouldSendPromptToStreamingServiceAsync(sut);
-    }
-
-    [Fact]
-    public async Task ShouldSendPromptToStreamingServiceTransientWebSocketAsync()
-    {
-        var sut = new OobaboogaTextCompletion(
-            new Uri("http://localhost/"),
-            BlockingPort,
-            StreamingPort,
-            httpClient: this._httpClient);
-
-        this.ShouldSendPromptToStreamingServiceAsync(sut);
-    }
-
-    [Fact]
     public async Task ShouldHandleStreamingServicePersistentWebSocketResponseAsync()
     {
         var sut = new OobaboogaTextCompletion(
@@ -174,30 +150,41 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         this.ShouldHandleStreamingServiceResponseAsync(sut);
     }
 
-    private void ShouldHandleStreamingServiceResponseAsync(OobaboogaTextCompletion sut)
+    [Fact]
+    public async Task ShouldHandleMultiPacketStreamingServicePersistentWebSocketResponseAsync()
     {
-        var expectedResponse = Encoding.UTF8.GetBytes(this._streamCompletionResponseStub);
-        using var server = new WebSocketTestServer($"http://localhost:{StreamingPort}/", request => new ArraySegment<byte>(expectedResponse));
+        var sut = new OobaboogaTextCompletion(
+            new Uri("http://localhost/"),
+            BlockingPort,
+            StreamingPort,
+            httpClient: this._httpClient,
+            webSocket: this._webSocket);
 
-        var localResponse = sut.CompleteStreamAsync(CompletionText, new CompleteRequestSettings()
-        {
-            Temperature = 0.01,
-            MaxTokens = 7,
-            TopP = 0.1,
-        });
-
-        //TODO: use AggregateAsync when System.Linq.Async Nuget package is installed
-        var completion = localResponse.ToEnumerable().Aggregate((s, s1) => s + s1);
-
-        Assert.Equal("This is test completion response", completion);
+        this.ShouldHandleMultiPacketStreamingServiceResponseAsync(sut);
     }
 
-    private void ShouldSendPromptToStreamingServiceAsync(OobaboogaTextCompletion sut)
+    [Fact]
+    public async Task ShouldHandleMultiPacketStreamingServiceTransientWebSocketResponseAsync()
     {
-        var expectedResponse = Encoding.UTF8.GetBytes(this._streamCompletionResponseStub);
-        using var server = new WebSocketTestServer($"http://localhost:{StreamingPort}/", request => new ArraySegment<byte>(expectedResponse));
+        var sut = new OobaboogaTextCompletion(
+            new Uri("http://localhost/"),
+            BlockingPort,
+            StreamingPort,
+            httpClient: this._httpClient);
 
-        var localResponse = sut.CompleteStreamAsync(CompletionText, new CompleteRequestSettings()
+        this.ShouldHandleMultiPacketStreamingServiceResponseAsync(sut);
+    }
+
+    private void ShouldHandleStreamingServiceResponseAsync(OobaboogaTextCompletion sut)
+    {
+        var requestMessage = CompletionText;
+        var expectedResponse = this._streamCompletionResponseStub;
+        using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => new List<string>(new[]
+        {
+            expectedResponse
+        }));
+
+        var localResponse = sut.CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
         {
             Temperature = 0.01,
             MaxTokens = 7,
@@ -206,11 +193,38 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
         //TODO: use AggregateAsync when System.Linq.Async Nuget package is installed
         var completion = localResponse.ToEnumerable().Aggregate((s, s1) => s + s1);
-        //Assert
+
         var requestPayload = JsonSerializer.Deserialize<TextCompletionRequest>(server.RequestContent);
         Assert.NotNull(requestPayload);
-
         Assert.Equal(CompletionText, requestPayload.Prompt);
+        Assert.Equal(expectedResponse, completion);
+    }
+
+    private void ShouldHandleMultiPacketStreamingServiceResponseAsync(OobaboogaTextCompletion sut)
+    {
+        var requestMessage = CompletionMultiText;
+        var expectedResponse = new List<string> { " John", ". I", "'m a", " writer" };
+        using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse);
+
+        var localResponse = sut.CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
+        {
+            Temperature = 0.01,
+            MaxTokens = 7,
+            TopP = 0.1,
+        });
+
+        //TODO: use AggregateAsync when System.Linq.Async Nuget package is installed
+        var completion = localResponse.ToEnumerable().ToList();
+
+        // Assert
+        var requestPayload = JsonSerializer.Deserialize<TextCompletionRequest>(server.RequestContent);
+        Assert.NotNull(requestPayload);
+        Assert.Equal(requestMessage, requestPayload.Prompt);
+        Assert.Equal(expectedResponse.Count, completion.Count);
+        for (int i = 0; i < expectedResponse.Count; i++)
+        {
+            Assert.Equal(expectedResponse[i], completion[i]);
+        }
     }
 
     public void Dispose()

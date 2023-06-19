@@ -76,7 +76,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
         var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
 
-        var requestBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(completionRequest));
+        var requestJson = JsonSerializer.Serialize(completionRequest);
+
+        var requestBytes = Encoding.UTF8.GetBytes(requestJson);
         ClientWebSocket? transientClientWebSocket = null;
         try
         {
@@ -98,9 +100,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             await clientWebSocket.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
 
             var buffer = new byte[8192]; // Increased buffer size
-            MemoryStream messageStream = new();
             while (true)
             {
+                MemoryStream messageStream = new();
                 WebSocketReceiveResult result;
                 do
                 {
@@ -141,8 +143,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 {
                     await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
                 }
-
-                messageStream.SetLength(0);
 
                 if (clientWebSocket.State != WebSocketState.Open)
                 {
