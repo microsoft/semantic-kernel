@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -104,11 +105,11 @@ public class SKContextTests
 
     private sealed class Parrot
     {
-        [SKFunction("say something")]
+        [SKFunction, Description("say something")]
         // ReSharper disable once UnusedMember.Local
-        public string Say(string text)
+        public string Say(string input)
         {
-            return text;
+            return input;
         }
     }
 

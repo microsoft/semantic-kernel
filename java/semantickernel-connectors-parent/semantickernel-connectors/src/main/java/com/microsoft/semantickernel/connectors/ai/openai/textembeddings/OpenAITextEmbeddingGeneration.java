@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.textembeddings;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.EmbeddingItem;
 import com.azure.ai.openai.models.Embeddings;
@@ -13,6 +10,9 @@ import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class OpenAITextEmbeddingGeneration extends ClientBase
         implements EmbeddingGeneration<String, Float> {
@@ -34,9 +34,10 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
                 .flatMapIterable(Embeddings::getData)
                 .mapNotNull(EmbeddingItem::getEmbedding)
                 .map(
-                        embedding -> embedding.stream()
-                                .map(Double::floatValue)
-                                .collect(Collectors.toList()))
+                        embedding ->
+                                embedding.stream()
+                                        .map(Double::floatValue)
+                                        .collect(Collectors.toList()))
                 .mapNotNull(Embedding::new)
                 .collectList();
     }

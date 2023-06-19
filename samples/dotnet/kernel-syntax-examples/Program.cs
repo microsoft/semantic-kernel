@@ -148,5 +148,8 @@ public static class Program
 
         await Example47_Redis.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example48_GroundednessChecks.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }

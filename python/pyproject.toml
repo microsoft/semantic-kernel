@@ -12,12 +12,13 @@ numpy = "^1.24.2"
 openai = "^0.27.0"
 aiofiles = "^23.1.0"
 python-dotenv = "1.0.0"
+regex = "^2023.6.3"
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "2.21.0"
+pre-commit = "3.3.3"
 black = {version = "23.3.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
-pytest = "7.2.0"
+pytest = "7.3.2"
 ruff = "0.0.272"
 pytest-asyncio = "0.21.0"
 
