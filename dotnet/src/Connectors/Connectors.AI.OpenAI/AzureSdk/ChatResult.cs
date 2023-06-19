@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class ChatResult : IChatResult, ITextCompletionResult
+internal sealed class ChatResult : IChatResult, ITextResult
 {
     private readonly ModelResult _modelResult;
     private readonly ChatChoice _choice;
