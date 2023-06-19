@@ -30,7 +30,7 @@ dotnet/src
            Connectors
            Extensions
            IntegrationTests
-           InternelUtilities
+           InternalUtilities
            SemanticKernel.Abstractions
            SemanticKernel.MetaPackage
            SemanticKernel.UnitTests
@@ -93,6 +93,7 @@ Follow these guidelines:
 * Use `bom` instead of `MetaPackage` as the latter is .Net centric
 * Use `api` instead of `Abstractions` as the latter is .Net centric
 * Merge `semantickernel-core-skills` and `semantickernel-core` back into a single module name `semantickernel`
+* Use the term `plugins` instead of `skills` and avoid introducing technical debt
 
 | Folder                           | Description |
 |----------------------------------|-------------|
@@ -102,4 +103,4 @@ Follow these guidelines:
 | `semantickernel-api`             | SK API definitions |
 | `semantickernel-bom`             | SK common package collection |
 | `semantickernel`                 | SK implementation |
-| `skills`                         | Containing: `skills-document`, `skills-msgraph`, ... |
+| `plugins`                        | Containing: `plugins-document`, `plugins-msgraph`, ... |
