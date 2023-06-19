@@ -4,26 +4,25 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Models;
 using Moq;
 using SemanticKernel.Skills.UnitTests.XunitHelpers;
+using SemanticKernel.UnitTests;
 using Xunit;
 using Xunit.Abstractions;
-using static Microsoft.SemanticKernel.Skills.MsGraph.CalendarSkill;
 
 namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
 public class CalendarSkillTests : IDisposable
 {
     private readonly XunitLogger<SKContext> _logger;
-    private readonly SKContext _context;
 
     public CalendarSkillTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<SKContext>(output);
-        this._context = new SKContext(logger: this._logger);
     }
 
     [Fact]
@@ -50,17 +49,17 @@ public class CalendarSkillTests : IDisposable
 
         CalendarSkill target = new(connectorMock.Object);
 
-        this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.Location, anyLocation);
-        this._context.Variables.Set(Parameters.Content, anyContent);
-        this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
-
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+            ("input", anySubject),
+            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
+            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
+            ("location", anyLocation),
+            ("content", anyContent),
+            ("attendees", string.Join(";", anyAttendees)));
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
+        Assert.False(context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -89,16 +88,16 @@ public class CalendarSkillTests : IDisposable
 
         CalendarSkill target = new(connectorMock.Object);
 
-        this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.Content, anyContent);
-        this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
-
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+            ("input", anySubject),
+            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
+            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
+            ("content", anyContent),
+            ("attendees", string.Join(";", anyAttendees)));
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
+        Assert.False(context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -127,16 +126,16 @@ public class CalendarSkillTests : IDisposable
 
         CalendarSkill target = new(connectorMock.Object);
 
-        this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.Location, anyLocation);
-        this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
-
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+            ("input", anySubject),
+            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
+            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
+            ("location", anyLocation),
+            ("attendees", string.Join(";", anyAttendees)));
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
+        Assert.False(context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -165,16 +164,16 @@ public class CalendarSkillTests : IDisposable
 
         CalendarSkill target = new(connectorMock.Object);
 
-        this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.Location, anyLocation);
-        this._context.Variables.Set(Parameters.Content, anyContent);
-
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+            ("input", anySubject),
+            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
+            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
+            ("location", anyLocation),
+            ("content", anyContent));
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
+        Assert.False(context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -192,16 +191,18 @@ public class CalendarSkillTests : IDisposable
 
         CalendarSkill target = new(connectorMock.Object);
 
-        this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.Location, anyLocation);
-        this._context.Variables.Set(Parameters.Content, anyContent);
-        this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
-
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+            ("input", anySubject),
+            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
+            ("location", anyLocation),
+            ("content", anyContent),
+            ("attendees", string.Join(";", anyAttendees)));
 
         // Assert
-        Assert.True(this._context.ErrorOccurred);
+        Assert.True(context.ErrorOccurred);
+        KernelException e = Assert.IsType<KernelException>(context.LastException);
+        Assert.Equal(KernelException.ErrorCodes.FunctionInvokeError, e.ErrorCode);
     }
 
     [Fact]
@@ -218,16 +219,18 @@ public class CalendarSkillTests : IDisposable
 
         CalendarSkill target = new(connectorMock.Object);
 
-        this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.Location, anyLocation);
-        this._context.Variables.Set(Parameters.Content, anyContent);
-        this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
-
         // Act
-        await target.AddEventAsync(anySubject, this._context);
+        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+            ("input", anySubject),
+            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
+            ("location", anyLocation),
+            ("content", anyContent),
+            ("attendees", string.Join(";", anyAttendees)));
 
         // Assert
-        Assert.True(this._context.ErrorOccurred);
+        Assert.True(context.ErrorOccurred);
+        KernelException e = Assert.IsType<KernelException>(context.LastException);
+        Assert.Equal(KernelException.ErrorCodes.FunctionInvokeError, e.ErrorCode);
     }
 
     [Fact]
@@ -244,17 +247,18 @@ public class CalendarSkillTests : IDisposable
 
         CalendarSkill target = new(connectorMock.Object);
 
-        this._context.Variables.Set(Parameters.Start, anyStartTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.End, anyEndTime.ToString(CultureInfo.InvariantCulture.DateTimeFormat));
-        this._context.Variables.Set(Parameters.Location, anyLocation);
-        this._context.Variables.Set(Parameters.Content, anyContent);
-        this._context.Variables.Set(Parameters.Attendees, string.Join(";", anyAttendees));
-
         // Act
-        await target.AddEventAsync(string.Empty, this._context);
+        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+            ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
+            ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
+            ("location", anyLocation),
+            ("content", anyContent),
+            ("attendees", string.Join(";", anyAttendees)));
 
         // Assert
-        Assert.True(this._context.ErrorOccurred);
+        Assert.True(context.ErrorOccurred);
+        ArgumentException e = Assert.IsType<ArgumentException>(context.LastException);
+        Assert.Equal("subject", e.ParamName);
     }
 
     protected virtual void Dispose(bool disposing)

@@ -81,38 +81,39 @@ export const ChatList: FC = () => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     const [isFiltering, setIsFiltering] = useState(false);
+    const [filterText, setFilterText] = useState('');
     const [conversationsView, setConversationsView] = useState(conversations);
 
     useEffect(() => {
-        // Ensure local component state is in line with app state
-        setConversationsView(conversations);
-    }, [conversations]);
+        // Ensure local component state is in line with app state.
+        if (filterText !== '') {
+            // Reapply search string to the updated conversations list.
+            const filteredConversations: Conversations = {};
+            for (var key in conversations) {
+                if (conversations[key].title.toLowerCase().includes(filterText.toLowerCase())) {
+                    filteredConversations[key] = conversations[key];
+                }
+            }
+            setConversationsView(filteredConversations);
+        }
+        else {
+            // If no search string, show full conversations list.
+            setConversationsView(conversations);
+        }
+    }, [conversations, filterText]);
 
     const onFilterClick = () => {
         setIsFiltering(true);
     };
 
     const onFilterCancel = () => {
-        setConversationsView(conversations);
+        setFilterText('');
         setIsFiltering(false);
     };
 
     const onSearch = (ev: any, data: InputOnChangeData) => {
         ev.preventDefault();
-
-        if (data.value !== '') {
-            const filteredConversations: Conversations = {};
-            for (var key in conversations) {
-                if (conversations[key].title.toLowerCase().includes(data.value.toLowerCase())) {
-                    filteredConversations[key] = conversations[key];
-                }
-            }
-
-            setConversationsView(filteredConversations);
-        } else {
-            // If no search string, show full conversations list
-            setConversationsView(conversations);
-        }
+        setFilterText(data.value);
     };
 
     return (
@@ -145,7 +146,7 @@ export const ChatList: FC = () => {
             </div>
             <Tree aria-label={'chat list'} className={classes.list}>
                 {Object.keys(conversationsView).map((id) => {
-                    const convo = conversations[id];
+                    const convo = conversationsView[id];
                     const messages = convo.messages;
                     const lastMessage = messages[convo.messages.length - 1];
                     const isSelected = id === selectedId;
