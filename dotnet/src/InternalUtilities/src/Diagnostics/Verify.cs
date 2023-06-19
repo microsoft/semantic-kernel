@@ -46,21 +46,18 @@ internal static class Verify
         }
     }
 
-    internal static void ValidFunctionName([NotNull] string? functionName)
-    {
-        NotNullOrWhiteSpace(functionName);
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionName))
-        {
-            ThrowInvalidName("function name", functionName);
-        }
-    }
+    internal static void ValidFunctionName([NotNull] string? functionName) =>
+        ValidName(functionName, "function name");
 
-    internal static void ValidFunctionParamName([NotNull] string? functionParamName)
+    internal static void ValidFunctionParamName([NotNull] string? functionParamName) =>
+        ValidName(functionParamName, "function parameter name");
+
+    private static void ValidName([NotNull] string? name, string kind)
     {
-        NotNullOrWhiteSpace(functionParamName);
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(functionParamName))
+        NotNullOrWhiteSpace(name);
+        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(name))
         {
-            ThrowInvalidName("function parameter name", functionParamName);
+            ThrowInvalidName(kind, name);
         }
     }
 
