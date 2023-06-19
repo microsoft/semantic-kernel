@@ -7,13 +7,13 @@ readme = "pip/README.md"
 packages = [{include = "semantic_kernel"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.8.1"
 numpy = "^1.24.2"
 openai = "^0.27.0"
 aiofiles = "^23.1.0"
 python-dotenv = "1.0.0"
 regex = "^2023.6.3"
-guidance = "^0.0.61"
+guidance = "^0.0.62"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "3.3.3"
