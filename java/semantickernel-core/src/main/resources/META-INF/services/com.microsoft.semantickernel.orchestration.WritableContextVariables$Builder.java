@@ -1,0 +1,1 @@
+com.microsoft.semantickernel.orchestration.DefaultContextVariables$WritableBuilder
