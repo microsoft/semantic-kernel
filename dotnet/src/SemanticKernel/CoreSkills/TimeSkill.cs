@@ -2,7 +2,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Globalization;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
@@ -49,9 +48,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current date </returns>
     [SKFunction, Description("Get the current date")]
-    public string Date() =>
+    public string Date(IFormatProvider? formatProvider = null) =>
         // Example: Sunday, 12 January, 2025
-        DateTimeOffset.Now.ToString("D", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("D", formatProvider);
 
     /// <summary>
     /// Get the current date
@@ -61,7 +60,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current date </returns>
     [SKFunction, Description("Get the current date")]
-    public string Today() => this.Date();
+    public string Today(IFormatProvider? formatProvider = null) =>
+        // Example: Sunday, 12 January, 2025
+        this.Date(formatProvider);
 
     /// <summary>
     /// Get the current date and time in the local time zone"
@@ -71,9 +72,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current date and time in the local time zone </returns>
     [SKFunction, Description("Get the current date and time in the local time zone")]
-    public string Now() =>
+    public string Now(IFormatProvider? formatProvider = null) =>
         // Sunday, January 12, 2025 9:15 PM
-        DateTimeOffset.Now.ToString("f", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("f", formatProvider);
 
     /// <summary>
     /// Get the current UTC date and time
@@ -83,9 +84,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current UTC date and time </returns>
     [SKFunction, Description("Get the current UTC date and time")]
-    public string UtcNow() =>
+    public string UtcNow(IFormatProvider? formatProvider = null) =>
         // Sunday, January 13, 2025 5:15 AM
-        DateTimeOffset.UtcNow.ToString("f", CultureInfo.CurrentCulture);
+        DateTimeOffset.UtcNow.ToString("f", formatProvider);
 
     /// <summary>
     /// Get the current time
@@ -95,9 +96,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current time </returns>
     [SKFunction, Description("Get the current time")]
-    public string Time() =>
+    public string Time(IFormatProvider? formatProvider = null) =>
         // Example: 09:15:07 PM
-        DateTimeOffset.Now.ToString("hh:mm:ss tt", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("hh:mm:ss tt", formatProvider);
 
     /// <summary>
     /// Get the current year
@@ -107,9 +108,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current year </returns>
     [SKFunction, Description("Get the current year")]
-    public string Year() =>
+    public string Year(IFormatProvider? formatProvider = null) =>
         // Example: 2025
-        DateTimeOffset.Now.ToString("yyyy", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("yyyy", formatProvider);
 
     /// <summary>
     /// Get the current month name
@@ -119,9 +120,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current month name </returns>
     [SKFunction, Description("Get the current month name")]
-    public string Month() =>
+    public string Month(IFormatProvider? formatProvider = null) =>
         // Example: January
-        DateTimeOffset.Now.ToString("MMMM", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("MMMM", formatProvider);
 
     /// <summary>
     /// Get the current month number
@@ -131,9 +132,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current month number </returns>
     [SKFunction, Description("Get the current month number")]
-    public string MonthNumber() =>
+    public string MonthNumber(IFormatProvider? formatProvider = null) =>
         // Example: 01
-        DateTimeOffset.Now.ToString("MM", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("MM", formatProvider);
 
     /// <summary>
     /// Get the current day of the month
@@ -143,9 +144,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current day of the month </returns>
     [SKFunction, Description("Get the current day of the month")]
-    public string Day() =>
+    public string Day(IFormatProvider? formatProvider = null) =>
         // Example: 12
-        DateTimeOffset.Now.ToString("dd", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("dd", formatProvider);
 
     /// <summary>
     /// Get the date a provided number of days in the past
@@ -157,8 +158,8 @@ public sealed class TimeSkill
     /// <returns> The date the provided number of days before today </returns>
     [SKFunction]
     [Description("Get the date offset by a provided number of days from today")]
-    public string DaysAgo([Description("The number of days to offset from today"), SKName("input")] double daysOffset) =>
-        DateTimeOffset.Now.AddDays(-daysOffset).ToString("D", CultureInfo.CurrentCulture);
+    public string DaysAgo([Description("The number of days to offset from today"), SKName("input")] double daysOffset, IFormatProvider? formatProvider = null) =>
+        DateTimeOffset.Now.AddDays(-daysOffset).ToString("D", formatProvider);
 
     /// <summary>
     /// Get the current day of the week
@@ -168,9 +169,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current day of the week </returns>
     [SKFunction, Description("Get the current day of the week")]
-    public string DayOfWeek() =>
+    public string DayOfWeek(IFormatProvider? formatProvider = null) =>
         // Example: Sunday
-        DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("dddd", formatProvider);
 
     /// <summary>
     /// Get the current clock hour
@@ -180,9 +181,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current clock hour </returns>
     [SKFunction, Description("Get the current clock hour")]
-    public string Hour() =>
+    public string Hour(IFormatProvider? formatProvider = null) =>
         // Example: 9 PM
-        DateTimeOffset.Now.ToString("h tt", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("h tt", formatProvider);
 
     /// <summary>
     /// Get the current clock 24-hour number
@@ -192,9 +193,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The current clock 24-hour number </returns>
     [SKFunction, Description("Get the current clock 24-hour number")]
-    public string HourNumber() =>
+    public string HourNumber(IFormatProvider? formatProvider = null) =>
         // Example: 21
-        DateTimeOffset.Now.ToString("HH", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("HH", formatProvider);
 
     /// <summary>
     /// Get the date of the previous day matching the supplied day name
@@ -206,7 +207,9 @@ public sealed class TimeSkill
     /// <exception cref="ArgumentOutOfRangeException">dayName is not a recognized name of a day of the week</exception>
     [SKFunction]
     [Description("Get the date of the last day matching the supplied week day name in English. Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday, 16 May, 2023")]
-    public string DateMatchingLastDayName([Description("The day name to match"), SKName("input")] DayOfWeek dayName)
+    public string DateMatchingLastDayName(
+        [Description("The day name to match"), SKName("input")] DayOfWeek dayName,
+        IFormatProvider? formatProvider = null)
     {
         DateTimeOffset dateTime = DateTimeOffset.Now;
 
@@ -220,7 +223,7 @@ public sealed class TimeSkill
             }
         }
 
-        return dateTime.ToString("D", CultureInfo.CurrentCulture);
+        return dateTime.ToString("D", formatProvider);
     }
 
     /// <summary>
@@ -231,9 +234,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The minutes on the current hour </returns>
     [SKFunction, Description("Get the minutes on the current hour")]
-    public string Minute() =>
+    public string Minute(IFormatProvider? formatProvider = null) =>
         // Example: 15
-        DateTimeOffset.Now.ToString("mm", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("mm", formatProvider);
 
     /// <summary>
     /// Get the seconds on the current minute
@@ -243,9 +246,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The seconds on the current minute </returns>
     [SKFunction, Description("Get the seconds on the current minute")]
-    public string Second() =>
+    public string Second(IFormatProvider? formatProvider = null) =>
         // Example: 07
-        DateTimeOffset.Now.ToString("ss", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("ss", formatProvider);
 
     /// <summary>
     /// Get the local time zone offset from UTC
@@ -255,9 +258,9 @@ public sealed class TimeSkill
     /// </example>
     /// <returns> The local time zone offset from UTC </returns>
     [SKFunction, Description("Get the local time zone offset from UTC")]
-    public string TimeZoneOffset() =>
+    public string TimeZoneOffset(IFormatProvider? formatProvider = null) =>
         // Example: -08:00
-        DateTimeOffset.Now.ToString("%K", CultureInfo.CurrentCulture);
+        DateTimeOffset.Now.ToString("%K", formatProvider);
 
     /// <summary>
     /// Get the local time zone name
