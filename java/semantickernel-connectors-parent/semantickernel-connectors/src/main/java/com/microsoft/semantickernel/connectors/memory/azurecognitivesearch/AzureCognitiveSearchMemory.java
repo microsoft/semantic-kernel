@@ -23,9 +23,10 @@ import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,9 +39,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Semantic Memory implementation using Azure Cognitive Search. For more information about Azure
@@ -244,34 +242,38 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
         indexName = normalizeIndexName(indexName);
 
         // TODO: FieldBuilder.build(AzureCognitiveSearchRecord.class, null) gives an
-        //  NPE: Cannot invoke "c.f.j.d.i.TypeResoultionContext.resolveType(j.l.r.Type)" because
+        // NPE: Cannot invoke "c.f.j.d.i.TypeResolutionContext.resolveType(j.l.r.Type)" because
         // "this._typeContext" is null
-        //  so we have to do it manually for now.
-        //        List<SearchField> fields = FieldBuilder.build(AzureCognitiveSearchRecord.class,
-        // null);
+        // so we have to do it manually for now.
+        // List<SearchField> fields =
+        //        FieldBuilder.build(AzureCognitiveSearchRecord.class, null);
         List<SearchField> fields = AzureCognitiveSearchRecord.searchFields();
+
+        SemanticField titleField = new SemanticField().setFieldName("Description");
+
+        List<SemanticField> prioritizedContentFields =
+                Arrays.asList(
+                        new SemanticField().setFieldName("Text"),
+                        new SemanticField().setFieldName("AdditionalMetadata"));
+
+        PrioritizedFields prioritizedFields =
+                new PrioritizedFields()
+                    .setTitleField(titleField)
+                    .setPrioritizedContentFields(prioritizedContentFields);
+
+        SemanticConfiguration semanticConfiguration =
+                new SemanticConfiguration("default", prioritizedFields);
+
+        SemanticSettings semanticSettings =
+                new SemanticSettings()
+                        .setConfigurations(
+                                Collections.singletonList(semanticConfiguration)
+                        );
 
         SearchIndex newIndex =
                 new SearchIndex(indexName, fields)
-                        .setSemanticSettings(
-                                new SemanticSettings()
-                                        .setConfigurations(
-                                                Collections.singletonList(
-                                                        new SemanticConfiguration(
-                                                                "default",
-                                                                new PrioritizedFields()
-                                                                        .setTitleField(
-                                                                                new SemanticField()
-                                                                                        .setFieldName(
-                                                                                                "Description"))
-                                                                        .setPrioritizedContentFields(
-                                                                                Arrays.asList(
-                                                                                        new SemanticField()
-                                                                                                .setFieldName(
-                                                                                                        "Text"),
-                                                                                        new SemanticField()
-                                                                                                .setFieldName(
-                                                                                                        "AdditionalMetadata")))))));
+                        .setSemanticSettings(semanticSettings);
+
         return this._adminClient.createIndex(newIndex);
     }
 
@@ -293,22 +295,15 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                     return response.getValue().getResults().get(0).getKey();
                 };
 
-        return Mono.fromCallable(
-                () -> {
-                    try {
-                        return client.mergeOrUploadDocumentsWithResponse(
-                                        Collections.singleton(record), throwOnAnyError)
-                                .map(transform)
-                                .block();
-                    } catch (Exception e) {
-                        return createIndexAsync(indexName)
-                                .then(
-                                        client.mergeOrUploadDocumentsWithResponse(
+        return client.mergeOrUploadDocumentsWithResponse(Collections.singleton(record), throwOnAnyError)
+                .map(transform)
+                .onErrorResume(e ->
+                        createIndexAsync(indexName)
+                                .then(client.mergeOrUploadDocumentsWithResponse(
                                                 Collections.singleton(record), throwOnAnyError))
                                 .map(transform)
-                                .block();
-                    }
-                });
+                );
+
     }
 
     private static MemoryRecordMetadata toMemoryRecordMetadata(AzureCognitiveSearchRecord data) {
