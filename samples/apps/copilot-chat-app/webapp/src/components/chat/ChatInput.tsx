@@ -76,7 +76,6 @@ interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeave, onSubmit }) => {
     const classes = useClasses();
     const { instance, inProgress } = useMsal();
-    const account = instance.getActiveAccount();
     const chat = useChat();
     const dispatch = useAppDispatch();
     const [value, setValue] = React.useState('');
@@ -84,7 +83,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const [isListening, setIsListening] = React.useState(false);
     const [documentImporting, setDocumentImporting] = React.useState(false);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
-    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations, selectedId, loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
 
     React.useEffect(() => {
         async function initSpeechRecognizer() {
@@ -180,7 +179,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             setValue(chatInput.value);
                         }
                         // User is considered typing if the input is in focus
-                        dispatch(updateUserIsTyping({ userId: account!.homeAccountId!, chatId: selectedId, isTyping: true }));
+                        dispatch(updateUserIsTyping({ userId: loggedInUserInfo?.id, chatId: selectedId, isTyping: true }));
                     }}
                     onChange={(_event, data) => {
                         if (isDraggingOver) {
@@ -198,7 +197,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     }}
                     onBlur={() => {
                         // User is considered not typing if the input is not  in focus
-                        dispatch(updateUserIsTyping({ userId: account!.homeAccountId!, chatId: selectedId, isTyping: false }));
+                        dispatch(updateUserIsTyping({ userId: loggedInUserInfo?.id, chatId: selectedId, isTyping: false }));
                     }}
                 />
             </div>

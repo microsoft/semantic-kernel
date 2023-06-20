@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useMsal } from '@azure/msal-react';
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import debug from 'debug';
 import React from 'react';
@@ -41,12 +40,9 @@ const useClasses = makeStyles({
 });
 
 export const ChatRoom: React.FC = () => {
-    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations, selectedId, loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
     const messages = conversations[selectedId].messages;
     const classes = useClasses();
-
-    const { instance } = useMsal();
-    const account = instance.getActiveAccount();
 
     const dispatch = useAppDispatch();
     const scrollViewTargetRef = React.useRef<HTMLDivElement>(null);
@@ -88,17 +84,13 @@ export const ChatRoom: React.FC = () => {
         };
     }, []);
 
-    if (!account) {
-        return null;
-    }
-
     const handleSubmit = async (options: GetResponseOptions) => {
         log('submitting user chat message');
 
         const chatInput: IChatMessage = {
             timestamp: new Date().getTime(),
-            userId: account?.homeAccountId,
-            userName: (account?.name ?? account?.username) as string,
+            userId: loggedInUserInfo?.id as string,
+            userName: loggedInUserInfo?.fullName as string,
             content: options.value,
             type: options.messageType,
             authorRole: AuthorRoles.User,

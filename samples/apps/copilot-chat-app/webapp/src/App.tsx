@@ -17,11 +17,12 @@ import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
 import Loading from './components/views/Loading';
 import { Login } from './components/views/Login';
+import { AlertType } from './libs/models/AlertType';
 import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
-import { removeAlert } from './redux/features/app/appSlice';
-import { setLoggedInUserId } from './redux/features/conversations/conversationsSlice';
+import { addAlert, removeAlert } from './redux/features/app/appSlice';
+import { setLoggedInUserInfo } from './redux/features/conversations/conversationsSlice';
 import { CopilotChatTokens } from './styles';
 
 export const useClasses = makeStyles({
@@ -69,26 +70,38 @@ const App: FC = () => {
     const dispatch = useAppDispatch();
 
     const { instance, inProgress } = useMsal();
-    const account = instance.getActiveAccount();
+    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
     const isAuthenticated = useIsAuthenticated();
 
     const chat = useChat();
 
     useEffect(() => {
-        if (isAuthenticated && account) {
-            dispatch(setLoggedInUserId(account.homeAccountId));
-
-            if (appState === AppState.LoadingChats) {
-                // Load all chats from the backend.
-                async function loadChats() {
-                    if (await chat.loadChats()) {
-                        setAppState(AppState.Chat);
-                    }
+        if (isAuthenticated) {
+            if (loggedInUserInfo === undefined) {
+                const account = instance.getActiveAccount();
+                if (!account) {
+                    dispatch(addAlert({ type: AlertType.Error, message: 'Unable to get active logged in account.' }));
+                } else {
+                    dispatch(setLoggedInUserInfo({
+                        id: account?.homeAccountId,
+                        email: account?.username,
+                        fullName: account?.name ?? account?.username,
+                    }));
                 }
+            } else {
+                if (appState === AppState.LoadingChats) {
+                    // Load all chats from the backend.
+                    async function loadChats() {
+                        if (await chat.loadChats()) {
+                            setAppState(AppState.Chat);
+                        }
+                    }
 
-                loadChats();
+                    loadChats();
+                }
             }
         }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instance, inProgress, isAuthenticated, appState]);
 

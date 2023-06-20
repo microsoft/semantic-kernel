@@ -17,7 +17,8 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
-import { resetState } from '../../redux/app/store';
+import { useAppSelector } from '../../redux/app/hooks';
+import { RootState, resetState } from '../../redux/app/store';
 
 export const useClasses = makeStyles({
     root: {
@@ -37,7 +38,7 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
     const classes = useClasses();
     const { instance } = useMsal();
 
-    const account = instance.getActiveAccount();
+    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
 
     const onLogout = useCallback(async () => {
         setLoadingState();
@@ -51,8 +52,8 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
                 {
                     <Avatar
                         className={classes.root}
-                        key={account?.name ?? account?.username}
-                        name={account?.name ?? account?.username}
+                        key={loggedInUserInfo?.fullName}
+                        name={loggedInUserInfo?.fullName}
                         size={28}
                         badge={{ status: 'available' }}
                     />
@@ -62,8 +63,8 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
                 <MenuList>
                     <MenuItem className={classes.persona}>
                         <Persona
-                            name={account?.name ?? account?.username}
-                            secondaryText={account?.username}
+                            name={loggedInUserInfo?.fullName}
+                            secondaryText={loggedInUserInfo?.email}
                             presence={{ status: 'available' }}
                             avatar={{ color: 'colorful' }}
                         />
