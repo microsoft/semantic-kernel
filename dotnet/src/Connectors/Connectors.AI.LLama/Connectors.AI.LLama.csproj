@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\nuget\icon.png" Link="icon.png">
+      <PackagePath>.</PackagePath>
+      <Pack>true</Pack>
+    </None>
+    <None Include="..\..\..\nuget\NUGET.md" Link="NUGET.md">
+      <PackagePath>.</PackagePath>
+      <Pack>true</Pack>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LLamaSharp" Version="0.4.0" />
+    <PackageReference Include="LLamaSharp.Backend.Cpu" Version="0.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+
+</Project>
