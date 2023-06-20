@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
 
-import com.microsoft.openai.AzureOpenAIClient;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -22,7 +22,7 @@ public class Example04CombineLLMPromptsAndNativeCodeTest {
 
     @Test
     public void run() {
-        AzureOpenAIClient client =
+        OpenAIAsyncClient client =
                 mockCompletionOpenAIAsyncClient(
                         Tuples.of(
                                 "Gran Torre Santiago is the tallest building in South America",

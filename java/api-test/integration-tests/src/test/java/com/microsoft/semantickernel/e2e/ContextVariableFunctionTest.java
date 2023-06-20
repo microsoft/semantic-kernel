@@ -35,14 +35,13 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
         Kernel kernel = buildTextCompletionKernel();
 
         String prompt =
-                "\n"
-                    + "ChatBot can have a conversation with you about any topic.\n"
-                    + "It can give explicit instructions or say 'I don't know' if it does not have"
-                    + " an answer.\n"
-                    + "\n"
-                    + "{{$history}}\n"
-                    + "User: {{$user_input}}\n"
-                    + "ChatBot: ";
+                """
+                        ChatBot can have a conversation with you about any topic.
+                        It can give explicit instructions or say 'I don't know' if it does not have an answer.
+
+                        {{$history}}
+                        User: {{$user_input}}
+                        ChatBot:\s""";
 
         CompletionSKFunction chat =
                 kernel.getSemanticFunctionBuilder()

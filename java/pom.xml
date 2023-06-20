@@ -26,6 +26,8 @@
         <maven.clean-plugin.version>3.2.0</maven.clean-plugin.version>
         <maven.compiler-plugin.version>3.11.0</maven.compiler-plugin.version>
         <maven.compiler.release>8</maven.compiler.release>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
         <maven.dependency-plugin.version>3.5.0</maven.dependency-plugin.version>
         <maven.deploy-plugin.version>3.1.0</maven.deploy-plugin.version>
         <maven.directory-maven-plugin.version>1.0</maven.directory-maven-plugin.version>
@@ -38,7 +40,6 @@
         <maven.jxr-plugin.version>3.3.0</maven.jxr-plugin.version>
         <!-- TODO: 2.0.x https://github.com/mojohaus/license-maven-plugin/issues/358 fixed -->
         <maven.license-plugin.version>1.20</maven.license-plugin.version>
-        <maven.nexus-staging-maven-plugin.version>1.6.13</maven.nexus-staging-maven-plugin.version>
         <maven.pmd-plugin.version>3.20.0</maven.pmd-plugin.version>
         <maven.project-info-reports-plugin.version>3.4.2</maven.project-info-reports-plugin.version>
         <maven.rat-plugin.version>0.15</maven.rat-plugin.version>
@@ -62,7 +63,6 @@
     </properties>
 
     <modules>
-        <module>openai-sdk</module>
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
         <module>semantickernel-core</module>
@@ -187,6 +187,7 @@
                     <configuration>
                         <source>${maven.compiler.release}</source>
                         <target>${maven.compiler.release}</target>
+                        <release>8</release>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -369,18 +370,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>${maven.nexus-staging-maven-plugin.version}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                    <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
-                </configuration>
-            </plugin>
         </plugins>
 
     </build>
@@ -519,7 +508,7 @@
     </repositories>
 
     <profiles>
-         <profile>
+        <profile>
             <id>compile-jdk8</id>
             <properties>
                 <maven.compiler.source>1.8</maven.compiler.source>
@@ -550,6 +539,8 @@
                         <configuration>
                             <source>${maven.compiler.release}</source>
                             <target>${maven.compiler.release}</target>
+                            <!-- Ensure we compile against JDK 8 APIs -->
+                            <release>8</release>
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <showWarnings>true</showWarnings>
                             <compilerArgs>

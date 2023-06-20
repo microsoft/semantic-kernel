@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.Choice;
 import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
-import com.microsoft.openai.AzureOpenAIClient;
-import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
@@ -130,7 +129,7 @@ public class DefaultKernelTest {
         return SKBuilders.kernel().setKernelConfig(kernelConfig).build();
     }
 
-    private static AzureOpenAIClient mockCompletionOpenAIAsyncClient(String arg, String response) {
+    private static OpenAIAsyncClient mockCompletionOpenAIAsyncClient(String arg, String response) {
         List<Tuple2<String, String>> responses =
                 Collections.singletonList(Tuples.of(arg, response));
 
@@ -138,19 +137,21 @@ public class DefaultKernelTest {
     }
 
     /*
-         Mocks a Text Completion client where if the prompt matches it will return the first arg it will return the response,
-         i.e:
+     * Mocks a Text Completion client where if the prompt matches it will return the
+     * first arg it will return the response,
+     * i.e:
+     *
+     * mockCompletionOpenAIAsyncClient(
+     * List.<>of(
+     * Tuples.of("Tell me a joke", "This is a joke")
+     * )
+     * );
+     *
+     * This if the client is prompted with "Tell me a joke", the mocked client would
+     * respond with "This is a joke"
+     */
 
-           mockCompletionOpenAIAsyncClient(
-             List.<>of(
-                     Tuples.of("Tell me a joke", "This is a joke")
-             )
-           );
-
-          This if the client is prompted with "Tell me a joke", the mocked client would respond with "This is a joke"
-    */
-
-    public static AzureOpenAIClient mockCompletionOpenAIAsyncClient(
+    public static OpenAIAsyncClient mockCompletionOpenAIAsyncClient(
             Tuple2<String, String>... responses) {
 
         List<Tuple2<ArgumentMatcher<String>, String>> matchers =
@@ -165,10 +166,9 @@ public class DefaultKernelTest {
         return mockCompletionOpenAIAsyncClientMatchers(matchers.toArray(new Tuple2[0]));
     }
 
-    public static AzureOpenAIClient mockCompletionOpenAIAsyncClientMatchers(
+    public static OpenAIAsyncClient mockCompletionOpenAIAsyncClientMatchers(
             Tuple2<ArgumentMatcher<String>, String>... responses) {
-        com.azure.ai.openai.OpenAIAsyncClient openAIAsyncClient =
-                Mockito.mock(com.azure.ai.openai.OpenAIAsyncClient.class);
+        OpenAIAsyncClient openAIAsyncClient = Mockito.mock(OpenAIAsyncClient.class);
 
         for (Tuple2<ArgumentMatcher<String>, String> response : responses) {
 
@@ -185,9 +185,14 @@ public class DefaultKernelTest {
                                     Mockito.<CompletionsOptions>argThat(
                                             it -> response.getT1().matches(it.getPrompt().get(0)))))
                     .thenReturn(Mono.just(completions));
+
+            Mockito.when(
+                            openAIAsyncClient.getCompletions(
+                                    Mockito.any(String.class),
+                                    Mockito.<String>argThat(it -> response.getT1().matches(it))))
+                    .thenReturn(Mono.just(completions));
         }
-        AzureOpenAIClient client = new AzureOpenAIClient(openAIAsyncClient);
-        return Mockito.spy(client);
+        return openAIAsyncClient;
     }
 
     @Test
@@ -231,10 +236,11 @@ public class DefaultKernelTest {
 
     private static void assertCompletionsWasCalledWithModelAndText(
             OpenAIAsyncClient openAIAsyncClient, String model, String expected) {
+
         Mockito.verify(openAIAsyncClient, Mockito.times(1))
                 .getCompletions(
                         Mockito.matches(model),
-                        Mockito.argThat(
+                        Mockito.<CompletionsOptions>argThat(
                                 completionsOptions ->
                                         completionsOptions.getPrompt().size() == 1
                                                 && completionsOptions

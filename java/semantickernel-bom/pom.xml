@@ -45,6 +45,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-ai-openai</artifactId>
+                <version>1.0.0-beta.1</version>
+            </dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>2.0.7</version>
@@ -69,11 +74,6 @@
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>jsr305</artifactId>
                 <version>3.0.2</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.semantickernel</groupId>
-                <artifactId>openai-sdk</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>

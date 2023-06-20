@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.azuresdk;
 
-import com.microsoft.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.ai.AIException;
 
 public abstract class ClientBase {

@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.chatcompletion;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatMessage;
 import com.azure.ai.openai.models.ChatRole;
-import com.microsoft.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Verify;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;

@@ -13,6 +13,7 @@ class PromptTemplateConfig:
         presence_penalty: float = 0.0
         frequency_penalty: float = 0.0
         max_tokens: int = 256
+        number_of_responses: int = 1
         stop_sequences: List[str] = field(default_factory=list)
 
     @dataclass
@@ -51,6 +52,9 @@ class PromptTemplateConfig:
         config.completion.presence_penalty = completion_dict.get("presence_penalty")
         config.completion.frequency_penalty = completion_dict.get("frequency_penalty")
         config.completion.max_tokens = completion_dict.get("max_tokens")
+        config.completion.number_of_responses = completion_dict.get(
+            "number_of_responses"
+        )
         config.completion.stop_sequences = completion_dict.get("stop_sequences", [])
         config.default_services = data.get("default_services", [])
 
@@ -102,6 +106,7 @@ class PromptTemplateConfig:
         presence_penalty: float = 0.0,
         frequency_penalty: float = 0.0,
         max_tokens: int = 256,
+        number_of_responses: int = 1,
         stop_sequences: List[str] = [],
     ) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
@@ -110,5 +115,6 @@ class PromptTemplateConfig:
         config.completion.presence_penalty = presence_penalty
         config.completion.frequency_penalty = frequency_penalty
         config.completion.max_tokens = max_tokens
+        config.completion.number_of_responses = number_of_responses
         config.completion.stop_sequences = stop_sequences
         return config

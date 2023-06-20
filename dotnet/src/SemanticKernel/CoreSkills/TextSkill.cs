@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Orchestration;
+using System.ComponentModel;
+using System.Globalization;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
@@ -21,7 +22,7 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 /// SKContext["input"] = "HELLO WORLD"
 /// {{text.lowercase $input}} => "hello world"
 /// </example>
-public class TextSkill
+public sealed class TextSkill
 {
     /// <summary>
     /// Trim whitespace from the start and end of a string.
@@ -30,13 +31,10 @@ public class TextSkill
     /// SKContext["input"] = "  hello world  "
     /// {{text.trim $input}} => "hello world"
     /// </example>
-    /// <param name="text"> The string to trim. </param>
+    /// <param name="input"> The string to trim. </param>
     /// <returns> The trimmed string. </returns>
-    [SKFunction("Trim whitespace from the start and end of a string.")]
-    public string Trim(string text)
-    {
-        return text.Trim();
-    }
+    [SKFunction, Description("Trim whitespace from the start and end of a string.")]
+    public string Trim(string input) => input.Trim();
 
     /// <summary>
     /// Trim whitespace from the start of a string.
@@ -45,13 +43,10 @@ public class TextSkill
     /// SKContext["input"] = "  hello world  "
     /// {{text.trimStart $input} => "hello world  "
     /// </example>
-    /// <param name="text"> The string to trim. </param>
+    /// <param name="input"> The string to trim. </param>
     /// <returns> The trimmed string. </returns>
-    [SKFunction("Trim whitespace from the start of a string.")]
-    public string TrimStart(string text)
-    {
-        return text.TrimStart();
-    }
+    [SKFunction, Description("Trim whitespace from the start of a string.")]
+    public string TrimStart(string input) => input.TrimStart();
 
     /// <summary>
     /// Trim whitespace from the end of a string.
@@ -60,13 +55,10 @@ public class TextSkill
     /// SKContext["input"] = "  hello world  "
     /// {{text.trimEnd $input} => "  hello world"
     /// </example>
-    /// <param name="text"> The string to trim. </param>
+    /// <param name="input"> The string to trim. </param>
     /// <returns> The trimmed string. </returns>
-    [SKFunction("Trim whitespace from the end of a string.")]
-    public string TrimEnd(string text)
-    {
-        return text.TrimEnd();
-    }
+    [SKFunction, Description("Trim whitespace from the end of a string.")]
+    public string TrimEnd(string input) => input.TrimEnd();
 
     /// <summary>
     /// Convert a string to uppercase.
@@ -75,13 +67,10 @@ public class TextSkill
     /// SKContext["input"] = "hello world"
     /// {{text.uppercase $input}} => "HELLO WORLD"
     /// </example>
-    /// <param name="text"> The string to convert. </param>
+    /// <param name="input"> The string to convert. </param>
     /// <returns> The converted string. </returns>
-    [SKFunction("Convert a string to uppercase.")]
-    public string Uppercase(string text)
-    {
-        return text.ToUpper(System.Globalization.CultureInfo.CurrentCulture);
-    }
+    [SKFunction, Description("Convert a string to uppercase.")]
+    public string Uppercase(string input) => input.ToUpper(CultureInfo.CurrentCulture);
 
     /// <summary>
     /// Convert a string to lowercase.
@@ -90,13 +79,10 @@ public class TextSkill
     /// SKContext["input"] = "HELLO WORLD"
     /// {{text.lowercase $input}} => "hello world"
     /// </example>
-    /// <param name="text"> The string to convert. </param>
+    /// <param name="input"> The string to convert. </param>
     /// <returns> The converted string. </returns>
-    [SKFunction("Convert a string to lowercase.")]
-    public string Lowercase(string text)
-    {
-        return text.ToLower(System.Globalization.CultureInfo.CurrentCulture);
-    }
+    [SKFunction, Description("Convert a string to lowercase.")]
+    public string Lowercase(string input) => input.ToLower(CultureInfo.CurrentCulture);
 
     /// <summary>
     /// Get the length of a string. Returns 0 if null or empty
@@ -105,13 +91,10 @@ public class TextSkill
     /// SKContext["input"] = "HELLO WORLD"
     /// {{text.length $input}} => "11"
     /// </example>
-    /// <param name="text"> The string to get length. </param>
+    /// <param name="input"> The string to get length. </param>
     /// <returns>The length size of string (0) if null or empty.</returns>
-    [SKFunction("Get the length of a string.")]
-    public string Length(string text)
-    {
-        return (text?.Length ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture);
-    }
+    [SKFunction, Description("Get the length of a string.")]
+    public int Length(string input) => input?.Length ?? 0;
 
     /// <summary>
     /// Concatenate two strings into one
@@ -121,14 +104,19 @@ public class TextSkill
     /// SKContext["input2"] = "WORLD"
     /// Result: "HELLO WORLD"
     /// </example>
-    /// <param name="text"> The string to get length. </param>
-    /// <param name="context">Context where the input2 value will be retrieved</param>
+    /// <param name="input">First input to concatenate with</param>
+    /// <param name="input2">Second input to concatenate with</param>
     /// <returns>Concatenation result from both inputs.</returns>
-    [SKFunction("Concat two strings into one.")]
-    [SKFunctionInput(Description = "First input to concatenate with")]
-    [SKFunctionContextParameter(Name = "input2", Description = "Second input to concatenate with")]
-    public string Concat(string text, SKContext context)
+    [SKFunction, Description("Concat two strings into one.")]
+    public string Concat(
+        [Description("First input to concatenate with")] string input,
+        [Description("Second input to concatenate with")] string input2) =>
+        string.Concat(input, input2);
+
+    [SKFunction, Description("Echo the input string. Useful for capturing plan input for use in multiple functions.")]
+    public string Echo(
+      [Description("Input string to echo.")] string text)
     {
-        return string.Concat(text, context["input2"]);
+        return text;
     }
 }

@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
 
-import com.microsoft.openai.AzureOpenAIClient;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -26,7 +26,7 @@ public class Example06TemplateLanguageTest {
 
     @Test
     public void run() {
-        AzureOpenAIClient client =
+        OpenAIAsyncClient client =
                 mockCompletionOpenAIAsyncClient(Tuples.of("Today is", "A-RESULT"));
 
         KernelConfig kernelConfig =
@@ -45,7 +45,8 @@ public class Example06TemplateLanguageTest {
 
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt
+        // Load native skill into the kernel skill collection, sharing its functions
+        // with prompt
         // templates
         // Functions loaded here are available as "time.*"
         kernel.importSkill(new TimeSkill(), "time");

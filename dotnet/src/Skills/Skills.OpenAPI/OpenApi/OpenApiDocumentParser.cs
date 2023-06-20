@@ -9,13 +9,11 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Text;
 
@@ -59,11 +57,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// Latest supported version of OpenAPI document.
     /// </summary>
     private static readonly Version s_latestSupportedVersion = new(3, 0, 1);
-
-    /// <summary>
-    /// Used to convert operationId to SK function names.
-    /// </summary>
-    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
 
     /// <summary>
     /// List of supported Media Types.
@@ -180,15 +173,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             var method = operationPair.Key.ToString();
 
             var operationItem = operationPair.Value;
-
-            try
-            {
-                Verify.ValidFunctionName(operationItem.OperationId);
-            }
-            catch (KernelException)
-            {
-                operationItem.OperationId = ConvertOperationIdToValidFunctionName(operationItem.OperationId);
-            }
 
             var operation = new RestApiOperation(
                 operationItem.OperationId,
@@ -387,32 +371,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             default:
                 throw new OpenApiDocumentParsingException($"The value type - {value.PrimitiveType} is not supported.");
         }
-    }
-
-    /// <summary>
-    /// Converts operation id to valid SK Function name.
-    /// A function name can contain only ASCII letters, digits, and underscores.
-    /// </summary>
-    /// <param name="operationId">The operation id.</param>
-    /// <returns>Valid SK Function name.</returns>
-    private static string ConvertOperationIdToValidFunctionName(string operationId)
-    {
-        // Tokenize operation id on forward and back slashes
-        string[] tokens = operationId.Split('/', '\\');
-        string result = "";
-
-        foreach (string token in tokens)
-        {
-            // Removes all characters that are not ASCII letters, digits, and underscores.
-            string formattedToken = s_removeInvalidCharsRegex.Replace(token, "");
-            result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
-        }
-
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{1}\" when invoking function.", operationId, result);
-        Console.ResetColor();
-
-        return result;
     }
 
     #endregion

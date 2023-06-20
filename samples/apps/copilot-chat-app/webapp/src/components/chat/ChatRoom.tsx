@@ -5,11 +5,12 @@ import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import debug from 'debug';
 import React from 'react';
 import { Constants } from '../../Constants';
-import { AuthorRoles } from '../../libs/models/ChatMessage';
-import { useChat } from '../../libs/useChat';
+import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
+import { GetResponseOptions, useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateConversation } from '../../redux/features/conversations/conversationsSlice';
+import { SharedStyles } from '../../styles';
 import { ChatHistory } from './ChatHistory';
 import { ChatInput } from './ChatInput';
 
@@ -24,20 +25,8 @@ const useClasses = makeStyles({
         height: '100%',
     },
     scroll: {
-        overflowY: 'scroll',
-        '&:hover': {
-            '&::-webkit-scrollbar-thumb': {
-                backgroundColor: tokens.colorScrollbarOverlay,
-                visibility: 'visible',
-            },
-            '&::-webkit-scrollbar-track': {
-                backgroundColor: tokens.colorNeutralBackground1,
-                WebkitBoxShadow: 'inset 0 0 5px rgba(0, 0, 0, 0.1)',
-                visibility: 'visible',
-            },
-        },
-        height: '100%',
-        ...shorthands.margin('4px'),
+        ...shorthands.margin(tokens.spacingVerticalXS),
+        ...SharedStyles.scroll,
     },
     history: {
         ...shorthands.padding(tokens.spacingVerticalM),
@@ -63,6 +52,16 @@ export const ChatRoom: React.FC = () => {
     const scrollViewTargetRef = React.useRef<HTMLDivElement>(null);
     const scrollTargetRef = React.useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = React.useState(true);
+
+    const [isDraggingOver, setIsDraggingOver] = React.useState(false);
+    const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+    };
+    const onDragLeave = (e: React.DragEvent<HTMLDivElement | HTMLTextAreaElement>) => {
+        e.preventDefault();
+        setIsDraggingOver(false);
+    };
 
     // hardcode to care only about the bot typing for now.
     const [isBotTyping, setIsBotTyping] = React.useState(false);
@@ -96,19 +95,15 @@ export const ChatRoom: React.FC = () => {
         return null;
     }
 
-    const handleSubmit = async (
-        value: string,
-        approvedPlanJson?: string,
-        planUserIntent?: string,
-        userCancelledPlan?: boolean,
-    ) => {
+    const handleSubmit = async (options: GetResponseOptions) => {
         log('submitting user chat message');
 
-        const chatInput = {
+        const chatInput: IChatMessage = {
             timestamp: new Date().getTime(),
             userId: account?.homeAccountId,
             userName: (account?.name ?? account?.username) as string,
-            content: value,
+            content: options.value,
+            type: options.messageType,
             authorRole: AuthorRoles.User,
         };
 
@@ -116,7 +111,7 @@ export const ChatRoom: React.FC = () => {
         dispatch(updateConversation({ message: chatInput }));
 
         try {
-            await chat.getResponse(value, selectedId, approvedPlanJson, planUserIntent, userCancelledPlan);
+            await chat.getResponse(options);
         } finally {
             setIsBotTyping(false);
         }
@@ -125,7 +120,7 @@ export const ChatRoom: React.FC = () => {
     };
 
     return (
-        <div className={classes.root}>
+        <div className={classes.root} onDragEnter={onDragEnter} onDragOver={onDragEnter} onDragLeave={onDragLeave}>
             <div ref={scrollViewTargetRef} className={classes.scroll}>
                 <div ref={scrollViewTargetRef} className={classes.history}>
                     <ChatHistory messages={messages} onGetResponse={handleSubmit} />
@@ -135,7 +130,12 @@ export const ChatRoom: React.FC = () => {
                 </div>
             </div>
             <div className={classes.input}>
-                <ChatInput isTyping={isBotTyping} onSubmit={handleSubmit} />
+                <ChatInput
+                    isTyping={isBotTyping}
+                    isDraggingOver={isDraggingOver}
+                    onDragLeave={onDragLeave}
+                    onSubmit={handleSubmit}
+                />
             </div>
         </div>
     );

@@ -3,10 +3,10 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatMessage;
-import com.microsoft.openai.AzureOpenAIClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -28,7 +28,7 @@ public class Example17ChatGPTTest {
     @Test
     public void azureOpenAIChatSampleAsync() {
 
-        AzureOpenAIClient client =
+        OpenAIAsyncClient client =
                 mockCompletionOpenAIAsyncClient(Tuples.of("Today is", "A-RESULT"));
 
         String message = "Hi, I'm looking for book suggestions";
@@ -75,7 +75,7 @@ public class Example17ChatGPTTest {
         Assertions.assertEquals("2nd response", reply);
     }
 
-    public static void mockResponse(AzureOpenAIClient client, String message, String response) {
+    public static void mockResponse(OpenAIAsyncClient client, String message, String response) {
         ChatMessage chatMessage = Mockito.mock(ChatMessage.class);
         ChatChoice chatChoice = Mockito.mock(ChatChoice.class);
         ChatCompletions completion = Mockito.mock(ChatCompletions.class);

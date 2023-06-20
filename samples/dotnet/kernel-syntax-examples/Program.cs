@@ -123,6 +123,7 @@ public static class Program
         Console.WriteLine("== DONE ==");
 
         await Example39_Postgres.RunAsync();
+        Console.WriteLine("== DONE ==");
 
         await Example40_DIContainer.RunAsync();
         Console.WriteLine("== DONE ==");
@@ -131,6 +132,24 @@ public static class Program
         Console.WriteLine("== DONE ==");
 
         Example42_KernelBuilder.Run();
+        Console.WriteLine("== DONE ==");
+
+        await Example43_GetModelResult.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example44_MultiChatCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example45_MultiStreamingChatCompletion.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example46_Weaviate.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example47_Redis.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example48_GroundednessChecks.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }

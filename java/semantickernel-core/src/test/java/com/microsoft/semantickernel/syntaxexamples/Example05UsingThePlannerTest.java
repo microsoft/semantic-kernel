@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.syntaxexamples;
 
 import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClientMatchers;
 
-import com.microsoft.openai.AzureOpenAIClient;
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -38,7 +38,7 @@ public class Example05UsingThePlannerTest {
                             "Create an XML plan step by step, to satisfy the goal given");
                 };
 
-        AzureOpenAIClient client =
+        OpenAIAsyncClient client =
                 mockCompletionOpenAIAsyncClientMatchers(Tuples.of(matcher, "A-PLAN"));
 
         KernelConfig config =

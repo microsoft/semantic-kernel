@@ -3,8 +3,9 @@ package com.microsoft.semantickernel.connectors.ai.openai.chatcompletion;
 
 import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatCompletions;
-import com.microsoft.openai.AzureOpenAIClient;
+import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.AIException;
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 public class OpenAIChatCompletionTest {
     @Test
     public void azureOpenAIChatSampleAsync() {
-        AzureOpenAIClient client =
+        OpenAIAsyncClient client =
                 mockCompletionOpenAIAsyncClient(Tuples.of("Today is", "A-RESULT"));
 
         String message = "Hi, I'm looking for book suggestions";
@@ -35,7 +36,7 @@ public class OpenAIChatCompletionTest {
         Assertions.assertEquals("1st response", result);
     }
 
-    private static String getRunExample(AzureOpenAIClient client, String message) {
+    private static String getRunExample(OpenAIAsyncClient client, String message) {
         KernelConfig kernelConfig =
                 SKBuilders.kernelConfig()
                         .addChatCompletionService(
@@ -74,7 +75,7 @@ public class OpenAIChatCompletionTest {
 
     @Test
     public void emptyResponseThrowsError() {
-        AzureOpenAIClient client =
+        OpenAIAsyncClient client =
                 mockCompletionOpenAIAsyncClient(Tuples.of("Today is", "A-RESULT"));
 
         String message = "Hi, I'm looking for book suggestions";
@@ -85,7 +86,7 @@ public class OpenAIChatCompletionTest {
         Mockito.when(
                         client.getChatCompletions(
                                 Mockito.any(),
-                                Mockito.argThat(
+                                Mockito.<ChatCompletionsOptions>argThat(
                                         msg -> {
                                             return msg != null
                                                     && msg.getMessages()

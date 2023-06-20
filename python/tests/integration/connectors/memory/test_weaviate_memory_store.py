@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import sys
+import time
 
 import numpy as np
 import numpy.testing as npt
 import pytest
 
-from semantic_kernel.connectors.memory import weaviate_memory_store
+from semantic_kernel.connectors.memory.weaviate import weaviate_memory_store
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 if not sys.platform.startswith("linux"):
@@ -25,6 +26,7 @@ def documents():
             "1",
             "The quick brown fox jumps over the lazy dog.",
             "A classic pangram.",
+            "additional info",
             np.array([0.1, 0.1]),
         )
     )
@@ -33,6 +35,7 @@ def documents():
             "2",
             "The five boxing wizards jump quickly.",
             "Another popular pangram.",
+            "additional info",
             np.array([0.1, 0.11]),
         )
     )
@@ -41,6 +44,7 @@ def documents():
             "3",
             "Pack my box with five dozen liquor jugs.",
             "A useful pangram.",
+            "additional info",
             np.array([0.11, 0.1]),
         )
     )
@@ -50,6 +54,7 @@ def documents():
             "4",
             "Lorem ipsum dolor sit amet.",
             "A common placeholder text.",
+            "additional info",
             np.array([-10, -10]),
         )
     )
@@ -58,6 +63,7 @@ def documents():
             "5",
             "Etiam faucibus orci vitae lacus pellentesque.",
             "A Latin text.",
+            "additional info",
             np.array([-10.1, -10.2]),
         )
     )
@@ -67,10 +73,25 @@ def documents():
 
 @pytest.fixture
 def memory_store():
+    max_attempts = 5  # the number of retry attempts
+    delay = 30  # delay in seconds between each attempt
+
     config = weaviate_memory_store.WeaviateConfig(use_embed=True)
-    store = weaviate_memory_store.WeaviateMemoryStore(config)
-    store.client.schema.delete_all()
+    for attempt in range(max_attempts):
+        try:
+            store = weaviate_memory_store.WeaviateMemoryStore(config)
+            store.client.schema.delete_all()
+        except Exception:
+            if attempt < max_attempts - 1:  # it's not the final attempt
+                time.sleep(delay)  # wait before retrying
+                continue  # go to the next attempt
+            else:  # it's the final attempt
+                raise  # re-raise the last exception
+        else:
+            break  # successful attempt, get out of the loop
+
     yield store
+
     store.client.schema.delete_all()
 
 

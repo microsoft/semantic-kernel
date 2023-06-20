@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.ai.embeddings;
 
-import com.microsoft.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIAsyncClient;
 
 import reactor.core.publisher.Mono;
 
