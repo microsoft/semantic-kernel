@@ -84,7 +84,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const [documentImporting, setDocumentImporting] = React.useState(false);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
     React.useEffect(() => {
         async function initSpeechRecognizer() {
@@ -180,7 +180,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             setValue(chatInput.value);
                         }
                         // User is considered typing if the input is in focus
-                        dispatch(updateUserIsTyping({ userId: loggedInUserInfo?.id, chatId: selectedId, isTyping: true }));
+                        dispatch(updateUserIsTyping({ userId: activeUserInfo?.id, chatId: selectedId, isTyping: true }));
                     }}
                     onChange={(_event, data) => {
                         if (isDraggingOver) {
@@ -198,7 +198,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     }}
                     onBlur={() => {
                         // User is considered not typing if the input is not  in focus
-                        dispatch(updateUserIsTyping({ userId: loggedInUserInfo?.id, chatId: selectedId, isTyping: false }));
+                        dispatch(updateUserIsTyping({ userId: activeUserInfo?.id, chatId: selectedId, isTyping: false }));
                     }}
                 />
             </div>

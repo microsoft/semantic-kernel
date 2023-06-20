@@ -41,7 +41,7 @@ const useClasses = makeStyles({
 
 export const ChatRoom: React.FC = () => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
     const messages = conversations[selectedId].messages;
     const classes = useClasses();
@@ -91,8 +91,8 @@ export const ChatRoom: React.FC = () => {
 
         const chatInput: IChatMessage = {
             timestamp: new Date().getTime(),
-            userId: loggedInUserInfo?.id as string,
-            userName: loggedInUserInfo?.fullName as string,
+            userId: activeUserInfo?.id as string,
+            userName: activeUserInfo?.username as string,
             content: options.value,
             type: options.messageType,
             authorRole: AuthorRoles.User,

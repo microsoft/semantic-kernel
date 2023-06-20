@@ -77,7 +77,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
 
     const chat = useChat();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
     const renderPlan = isPlan(message.content);
 
@@ -93,7 +93,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
               .replace(/ {2}/g, '&nbsp;&nbsp;')
         : '';
 
-    const isMe = message.authorRole === AuthorRoles.User && message.userId === loggedInUserInfo?.id;
+    const isMe = message.authorRole === AuthorRoles.User && message.userId === activeUserInfo?.id;
     const isBot = message.authorRole === AuthorRoles.Bot;
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
     const fullName = user?.fullName ?? message.userName;

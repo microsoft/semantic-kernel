@@ -2,7 +2,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AlertType } from '../../../libs/models/AlertType';
-import { Alert, Alerts, AppState, LoggedInUserInfo } from './AppState';
+import { ActiveUserInfo, Alert, Alerts, AppState } from './AppState';
 
 const initialState: AppState = {
     alerts: {
@@ -12,7 +12,7 @@ const initialState: AppState = {
             type: AlertType.Info,
         },
     },
-    loggedInUserInfo: undefined,
+    activeUserInfo: undefined,
 };
 
 export const appSlice = createSlice({
@@ -34,8 +34,8 @@ export const appSlice = createSlice({
         removeAlert: (state: AppState, action: PayloadAction<string>) => {
             if (state.alerts) delete state.alerts[action.payload];
         },
-        setLoggedInUserInfo: (state: AppState, action: PayloadAction<LoggedInUserInfo>) => {
-            state.loggedInUserInfo = action.payload;
+        setActiveUserInfo: (state: AppState, action: PayloadAction<ActiveUserInfo>) => {
+            state.activeUserInfo = action.payload;
         },
     },
 });
@@ -44,7 +44,7 @@ export const {
     addAlert,
     removeAlert,
     setAlerts,
-    setLoggedInUserInfo
+    setActiveUserInfo
 } = appSlice.actions;
 
 export default appSlice.reducer;

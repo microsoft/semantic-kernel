@@ -21,7 +21,7 @@ import { AlertType } from './libs/models/AlertType';
 import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
-import { addAlert, removeAlert, setLoggedInUserInfo } from './redux/features/app/appSlice';
+import { addAlert, removeAlert, setActiveUserInfo } from './redux/features/app/appSlice';
 import { CopilotChatTokens } from './styles';
 
 export const useClasses = makeStyles({
@@ -69,35 +69,37 @@ const App: FC = () => {
     const dispatch = useAppDispatch();
 
     const { instance, inProgress } = useMsal();
-    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
     const isAuthenticated = useIsAuthenticated();
 
     const chat = useChat();
 
     useEffect(() => {
         if (isAuthenticated) {
-            if (loggedInUserInfo === undefined) {
+            let isActiveUserInfoSet = activeUserInfo !== undefined;
+            if (!isActiveUserInfoSet) {
                 const account = instance.getActiveAccount();
                 if (!account) {
                     dispatch(addAlert({ type: AlertType.Error, message: 'Unable to get active logged in account.' }));
                 } else {
-                    dispatch(setLoggedInUserInfo({
+                    dispatch(setActiveUserInfo({
                         id: account.homeAccountId,
-                        email: account.username,
-                        fullName: account.name ?? account.username,
+                        email: account.username,    // username in an AccountInfo object is the email address
+                        username: account.name ?? account.username,
                     }));
                 }
-            } else {
-                if (appState === AppState.LoadingChats) {
-                    // Load all chats from the backend.
-                    async function loadChats() {
-                        if (await chat.loadChats()) {
-                            setAppState(AppState.Chat);
-                        }
-                    }
+                isActiveUserInfoSet = true;
+            }
 
-                    loadChats();
+            if (isActiveUserInfoSet && appState === AppState.LoadingChats) {
+                // Load all chats from the backend.
+                async function loadChats() {
+                    if (await chat.loadChats()) {
+                        setAppState(AppState.Chat);
+                    }
                 }
+
+                loadChats();
             }
         }
 

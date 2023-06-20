@@ -38,7 +38,7 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
     const classes = useClasses();
     const { instance } = useMsal();
 
-    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
     const onLogout = useCallback(async () => {
         setLoadingState();
@@ -52,8 +52,8 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
                 {
                     <Avatar
                         className={classes.root}
-                        key={loggedInUserInfo?.fullName}
-                        name={loggedInUserInfo?.fullName}
+                        key={activeUserInfo?.username}
+                        name={activeUserInfo?.username}
                         size={28}
                         badge={{ status: 'available' }}
                     />
@@ -63,8 +63,8 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
                 <MenuList>
                     <MenuItem className={classes.persona}>
                         <Persona
-                            name={loggedInUserInfo?.fullName}
-                            secondaryText={loggedInUserInfo?.email}
+                            name={activeUserInfo?.username}
+                            secondaryText={activeUserInfo?.email}
                             presence={{ status: 'available' }}
                             avatar={{ color: 'colorful' }}
                         />

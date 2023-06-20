@@ -41,7 +41,7 @@ export const useChat = () => {
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
-    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
@@ -50,9 +50,9 @@ export const useChat = () => {
     const botProfilePictures: string[] = [botIcon1, botIcon2, botIcon3, botIcon4, botIcon5];
 
     const loggedInUser: IChatUser = {
-        id: loggedInUserInfo?.id as string,
-        fullName: loggedInUserInfo?.fullName as string,
-        emailAddress: loggedInUserInfo?.email as string,
+        id: activeUserInfo?.id as string,
+        fullName: activeUserInfo?.username as string,
+        emailAddress: activeUserInfo?.email as string,
         photo: undefined, // TODO: Make call to Graph /me endpoint to load photo
         online: true,
         isTyping: false,
@@ -71,7 +71,7 @@ export const useChat = () => {
         try {
             await chatService
                 .createChatAsync(
-                    loggedInUserInfo?.id as string,
+                    activeUserInfo?.id as string,
                     chatTitle,
                     accessToken,
                 )
@@ -108,11 +108,11 @@ export const useChat = () => {
             variables: [
                 {
                     key: 'userId',
-                    value: loggedInUserInfo?.id as string,
+                    value: activeUserInfo?.id as string,
                 },
                 {
                     key: 'userName',
-                    value: loggedInUserInfo?.fullName as string,
+                    value: activeUserInfo?.username as string,
                 },
                 {
                     key: 'chatId',
@@ -145,7 +145,7 @@ export const useChat = () => {
         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
             const chatSessions = await chatService.getAllChatsAsync(
-                loggedInUserInfo?.id as string,
+                activeUserInfo?.id as string,
                 accessToken,
             );
 
@@ -204,7 +204,7 @@ export const useChat = () => {
     const uploadBot = async (bot: Bot) => {
         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         botService
-            .uploadAsync(bot, loggedInUserInfo?.id as string, accessToken)
+            .uploadAsync(bot, activeUserInfo?.id as string, accessToken)
             .then(async (chatSession: IChatSession) => {
                 const chatMessages = await chatService.getChatMessagesAsync(
                     chatSession.id,
@@ -251,8 +251,8 @@ export const useChat = () => {
     const importDocument = async (chatId: string, file: File) => {
         try {
             await documentImportService.importDocumentAsync(
-                loggedInUserInfo?.id as string,
-                loggedInUserInfo?.fullName as string,
+                activeUserInfo?.id as string,
+                activeUserInfo?.username as string,
                 chatId,
                 file,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
@@ -292,7 +292,7 @@ export const useChat = () => {
         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
             await chatService.joinChatAsync(
-                loggedInUserInfo?.id as string,
+                activeUserInfo?.id as string,
                 chatId,
                 accessToken
             ).then(async (result: IChatSession) => {

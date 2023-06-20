@@ -9,21 +9,21 @@ import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRende
 export const ChatStatus: React.FC = () => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { users } = conversations[selectedId];
-    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
     const [typingUserList, setTypingUserList] = React.useState<IChatUser[]>([]);
 
     React.useEffect(() => {
         const checkAreTyping = () => {
             const updatedTypingUsers: IChatUser[] = users.filter(
                 (chatUser: IChatUser) =>
-                    chatUser.id !== loggedInUserInfo?.id &&
+                    chatUser.id !== activeUserInfo?.id &&
                     chatUser.isTyping,
             );
 
             setTypingUserList(updatedTypingUsers);
         };
         checkAreTyping();
-    }, [loggedInUserInfo, users]);
+    }, [activeUserInfo, users]);
 
     return (
         <TypingIndicatorRenderer isBotTyping={conversations[selectedId].isBotTyping} numberOfUsersTyping={typingUserList.length} />
