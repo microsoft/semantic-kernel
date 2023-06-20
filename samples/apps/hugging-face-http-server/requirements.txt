@@ -3,7 +3,7 @@ cffi==1.15.1
 charset-normalizer==2.0.12
 click==8.0.4
 colorama==0.4.5
-cryptography==39.0.2
+cryptography==41.0.0
 dataclasses==0.6
 diffusers==0.2.2
 filelock==3.4.1
@@ -29,7 +29,7 @@ six==1.16.0
 tokenizers==0.12.1
 torch==1.13.1
 tqdm==4.64.1
-transformers==4.18.0
+transformers==4.30.0
 typing_extensions==4.1.1
 urllib3==1.26.14
 Werkzeug==2.2.3

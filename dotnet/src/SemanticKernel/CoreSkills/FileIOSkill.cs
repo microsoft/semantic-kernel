@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.CoreSkills;
@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.CoreSkills;
 /// {{file.readAsync $path }} => "hello world"
 /// {{file.writeAsync}}
 /// </example>
-public class FileIOSkill
+public sealed class FileIOSkill
 {
     /// <summary>
     /// Read a file
@@ -28,9 +28,8 @@ public class FileIOSkill
     /// </example>
     /// <param name="path"> Source file </param>
     /// <returns> File content </returns>
-    [SKFunction("Read a file")]
-    [SKFunctionInput(Description = "Source file")]
-    public async Task<string> ReadAsync(string path)
+    [SKFunction, Description("Read a file")]
+    public async Task<string> ReadAsync([Description("Source file")] string path)
     {
         using var reader = File.OpenText(path);
         return await reader.ReadToEndAsync().ConfigureAwait(false);
@@ -42,17 +41,15 @@ public class FileIOSkill
     /// <example>
     /// {{file.writeAsync}}
     /// </example>
-    /// <param name="context">
-    /// Contains the 'path' for the Destination file and 'content' of the file to write.
-    /// </param>
+    /// <param name="path">The destination file path</param>
+    /// <param name="content">The file content to write</param>
     /// <returns> An awaitable task </returns>
-    [SKFunction("Write a file")]
-    [SKFunctionContextParameter(Name = "path", Description = "Destination file")]
-    [SKFunctionContextParameter(Name = "content", Description = "File content")]
-    public async Task WriteAsync(SKContext context)
+    [SKFunction, Description("Write a file")]
+    public async Task WriteAsync(
+        [Description("Destination file")] string path,
+        [Description("File content")] string content)
     {
-        byte[] text = Encoding.UTF8.GetBytes(context["content"]);
-        string path = context["path"];
+        byte[] text = Encoding.UTF8.GetBytes(content);
         if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
         {
             // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.

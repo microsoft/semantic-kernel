@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
@@ -15,16 +14,15 @@ public static class Example46_Weaviate
 
     public static async Task RunAsync()
     {
-        string scheme = Env.Var("WEAVIATE_SCHEME");
         string endpoint = Env.Var("WEAVIATE_ENDPOINT");
-        int weaviatePort = int.Parse(Env.Var("WEAVIATE_PORT"), CultureInfo.InvariantCulture);
         string apiKey = Env.Var("WEAVIATE_APIKEY");
-        using WeaviateMemoryStore memoryStore = new(scheme, endpoint, weaviatePort, apiKey, logger: ConsoleLogger.Log);
+        using WeaviateMemoryStore memoryStore = new(endpoint, apiKey, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
             .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
             .WithMemoryStorage(memoryStore)
+            //.WithWeaviateMemoryStore(endpoint, apiKey) // This method offers an alternative approach to registering Weaviate memory store.
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");

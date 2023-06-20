@@ -122,15 +122,13 @@ public sealed class PromptTemplateEngineTests
     public async Task ItRendersCodeUsingInputAsync()
     {
         // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
         string MyFunctionAsync(SKContext cx)
         {
             this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
             return $"F({cx.Variables.Input})";
         }
 
-        ISKFunction? func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Update("INPUT-BAR");
@@ -153,15 +151,13 @@ public sealed class PromptTemplateEngineTests
     public async Task ItRendersCodeUsingVariablesAsync()
     {
         // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
         string MyFunctionAsync(SKContext cx)
         {
             this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
             return $"F({cx.Variables.Input})";
         }
 
-        ISKFunction? func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
@@ -184,8 +180,6 @@ public sealed class PromptTemplateEngineTests
     public async Task ItRendersAsyncCodeUsingVariablesAsync()
     {
         // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
         Task<string> MyFunctionAsync(SKContext cx)
         {
             // Input value should be "BAR" because the variable $myVar is passed in
@@ -193,7 +187,7 @@ public sealed class PromptTemplateEngineTests
             return Task.FromResult(cx.Variables.Input.Value);
         }
 
-        ISKFunction? func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
