@@ -156,12 +156,13 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                     <Text className={classes.text}> Plan Cancelled</Text>
                 </div>
             )}
-            {planState === PlanState.NoOp && (
+            {(planState === PlanState.NoOp || planState === PlanState.Disabled) && (
                 <div className={mergeClasses(classes.buttons, classes.status)}>
                     <Info24Regular />
                     <Text className={classes.text}>
-                        Your app state has changed since this plan was generated, making it unreliable for the planner.
-                        Please request a fresh plan to avoid potential conflicts.
+                        {planState === PlanState.NoOp
+                            ? 'Your app state has changed since this plan was generated, making it unreliable for the planner. Please request a fresh plan to avoid potential conflicts.'
+                            : 'Only the person who prompted this plan can take action on it.'}
                     </Text>
                 </div>
             )}
