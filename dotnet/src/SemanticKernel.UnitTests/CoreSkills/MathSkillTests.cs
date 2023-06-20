@@ -1,14 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.CoreSkills;
@@ -41,22 +35,16 @@ public class MathSkillTests
     [InlineData("-10", "10", "0")]
     [InlineData("-192", "13", "-179")]
     [InlineData("-192", "-13", "-205")]
-    public async Task AddAsyncWhenValidParametersShouldSucceedAsync(string initialValue, string amount, string expectedResult)
+    public async Task AddWhenValidParametersShouldSucceedAsync(string initialValue, string amount, string expectedResult)
     {
         // Arrange
-        var variables = new ContextVariables
-        {
-            ["Amount"] = amount
-        };
-
-        var context = new SKContext(variables, new Mock<ISemanticTextMemory>().Object, new Mock<IReadOnlySkillCollection>().Object, new Mock<ILogger>().Object);
         var target = new MathSkill();
 
         // Act
-        string result = await target.AddAsync(initialValue, context);
+        var context = await FunctionHelpers.CallViaKernel(target, "Add", ("input", initialValue), ("amount", amount));
 
         // Assert
-        Assert.Equal(expectedResult, result);
+        Assert.Equal(expectedResult, context.Variables.Input);
     }
 
     [Theory]
@@ -68,22 +56,16 @@ public class MathSkillTests
     [InlineData("-1", "10", "-11")]
     [InlineData("-10", "10", "-20")]
     [InlineData("-192", "13", "-205")]
-    public async Task SubtractAsyncWhenValidParametersShouldSucceedAsync(string initialValue, string amount, string expectedResult)
+    public async Task SubtractWhenValidParametersShouldSucceedAsync(string initialValue, string amount, string expectedResult)
     {
         // Arrange
-        var variables = new ContextVariables
-        {
-            ["Amount"] = amount
-        };
-
-        var context = new SKContext(variables, new Mock<ISemanticTextMemory>().Object, new Mock<IReadOnlySkillCollection>().Object, new Mock<ILogger>().Object);
         var target = new MathSkill();
 
         // Act
-        string result = await target.SubtractAsync(initialValue, context);
+        var context = await FunctionHelpers.CallViaKernel(target, "Subtract", ("input", initialValue), ("amount", amount));    // Assert
 
         // Assert
-        Assert.Equal(expectedResult, result);
+        Assert.Equal(expectedResult, context.Variables.Input);
     }
 
     [Theory]
@@ -98,27 +80,16 @@ public class MathSkillTests
     [InlineData("zero")]
     [InlineData("-100 units")]
     [InlineData("1 banana")]
-    public async Task AddAsyncWhenInvalidInitialValueShouldThrowAsync(string initialValue)
+    public async Task AddWhenInvalidInitialValueShouldThrowAsync(string initialValue)
     {
         // Arrange
-        var variables = new ContextVariables
-        {
-            ["Amount"] = "1"
-        };
-
-        var context = new SKContext(variables, new Mock<ISemanticTextMemory>().Object, new Mock<IReadOnlySkillCollection>().Object, new Mock<ILogger>().Object);
         var target = new MathSkill();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
-        {
-            await target.AddAsync(initialValue, context);
-        });
+        var context = await FunctionHelpers.CallViaKernel(target, "Add", ("input", initialValue), ("amount", "1"));
 
         // Assert
-        Assert.NotNull(exception);
-        Assert.Equal(initialValue, exception.ActualValue);
-        Assert.Equal("initialValueText", exception.ParamName);
+        AssertExtensions.AssertIsArgumentOutOfRange(context.LastException, "value", initialValue);
     }
 
     [Theory]
@@ -133,27 +104,16 @@ public class MathSkillTests
     [InlineData("zero")]
     [InlineData("-100 units")]
     [InlineData("1 banana")]
-    public async Task AddAsyncWhenInvalidAmountShouldThrowAsync(string amount)
+    public async Task AddWhenInvalidAmountShouldThrowAsync(string amount)
     {
         // Arrange
-        var variables = new ContextVariables
-        {
-            ["Amount"] = amount
-        };
-
-        var context = new SKContext(variables, new Mock<ISemanticTextMemory>().Object, new Mock<IReadOnlySkillCollection>().Object, new Mock<ILogger>().Object);
         var target = new MathSkill();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
-        {
-            await target.AddAsync("1", context);
-        });
+        var context = await FunctionHelpers.CallViaKernel(target, "Add", ("input", "1"), ("amount", amount));
 
         // Assert
-        Assert.NotNull(exception);
-        Assert.Equal(amount, exception.ActualValue);
-        Assert.Equal("context", exception.ParamName);
+        AssertExtensions.AssertIsArgumentOutOfRange(context.LastException, "amount", amount);
     }
 
     [Theory]
@@ -168,27 +128,16 @@ public class MathSkillTests
     [InlineData("zero")]
     [InlineData("-100 units")]
     [InlineData("1 banana")]
-    public async Task SubtractAsyncWhenInvalidInitialValueShouldThrowAsync(string initialValue)
+    public async Task SubtractWhenInvalidInitialValueShouldThrowAsync(string initialValue)
     {
         // Arrange
-        var variables = new ContextVariables
-        {
-            ["Amount"] = "1"
-        };
-
-        var context = new SKContext(variables, new Mock<ISemanticTextMemory>().Object, new Mock<IReadOnlySkillCollection>().Object, new Mock<ILogger>().Object);
         var target = new MathSkill();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
-        {
-            await target.SubtractAsync(initialValue, context);
-        });
+        var context = await FunctionHelpers.CallViaKernel(target, "Subtract", ("input", initialValue), ("amount", "1"));
 
         // Assert
-        Assert.NotNull(exception);
-        Assert.Equal(initialValue, exception.ActualValue);
-        Assert.Equal("initialValueText", exception.ParamName);
+        AssertExtensions.AssertIsArgumentOutOfRange(context.LastException, "value", initialValue);
     }
 
     [Theory]
@@ -206,23 +155,12 @@ public class MathSkillTests
     public async Task SubtractAsyncWhenInvalidAmountShouldThrowAsync(string amount)
     {
         // Arrange
-        var variables = new ContextVariables
-        {
-            ["Amount"] = amount
-        };
-
-        var context = new SKContext(variables, new Mock<ISemanticTextMemory>().Object, new Mock<IReadOnlySkillCollection>().Object, new Mock<ILogger>().Object);
         var target = new MathSkill();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
-        {
-            await target.SubtractAsync("1", context);
-        });
+        var context = await FunctionHelpers.CallViaKernel(target, "Subtract", ("input", "1"), ("amount", amount));
 
         // Assert
-        Assert.NotNull(exception);
-        Assert.Equal(amount, exception.ActualValue);
-        Assert.Equal("context", exception.ParamName);
+        AssertExtensions.AssertIsArgumentOutOfRange(context.LastException, "amount", amount);
     }
 }

@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.CoreSkills;
@@ -112,7 +107,7 @@ public class TextSkillTests
         var result = target.Length(textToLength);
 
         // Assert
-        Assert.Equal(expectedLength.ToString(System.Globalization.CultureInfo.InvariantCulture), result);
+        Assert.Equal(expectedLength, result);
     }
 
     [Theory]
@@ -126,17 +121,11 @@ public class TextSkillTests
     public void ItCanConcat(string textToConcat, string text2ToConcat)
     {
         // Arrange
-        var variables = new ContextVariables
-        {
-            ["input2"] = text2ToConcat
-        };
-
-        var context = new SKContext(variables, new Mock<ISemanticTextMemory>().Object, new Mock<IReadOnlySkillCollection>().Object, new Mock<ILogger>().Object);
         var target = new TextSkill();
         var expected = string.Concat(textToConcat, text2ToConcat);
 
         // Act
-        string result = target.Concat(textToConcat, context);
+        string result = target.Concat(textToConcat, text2ToConcat);
 
         // Assert
         Assert.Equal(expected, result);
