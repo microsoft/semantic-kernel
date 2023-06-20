@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Apply a specific format or transformation to context variables inside a plan. This method must be used each time a specific format (such as specific format of list, specific JSON formatting from source data...) or transformation (such as filtering, capitalization...) is required for a parameter of a function in the plan and if another formatting or transformation function is not called instead. If a doubt exists about does the output format a function corresponds to the required input of another one, this methods must be called",
+  "description": "Format or transform context variables for plan functions. Use this method when a function parameter requires a specific format (such as list or JSON string) or transformation (such as filtering or capitalization) that is not already done by another function. If unsure whether a function's output matches a subsequent function's input, use this method.",
   "type": "completion",
   "completion": {
     "max_tokens": 1000,
