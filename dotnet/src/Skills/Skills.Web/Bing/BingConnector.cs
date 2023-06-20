@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Skills.Web.Bing;
 
@@ -20,15 +21,32 @@ namespace Microsoft.SemanticKernel.Skills.Web.Bing;
 public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
 {
     private readonly ILogger _logger;
-    private readonly HttpClientHandler _httpClientHandler;
     private readonly HttpClient _httpClient;
+    private readonly string? _apiKey;
 
-    public BingConnector(string apiKey, ILogger<BingConnector>? logger = null)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BingConnector"/> class.
+    /// </summary>
+    /// <param name="apiKey">The API key to authenticate the connector.</param>
+    /// <param name="logger">An optional logger to log connector-related information.</param>
+    public BingConnector(string apiKey, ILogger<BingConnector>? logger = null) :
+        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), logger)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BingConnector"/> class.
+    /// </summary>
+    /// <param name="apiKey">The API key to authenticate the connector.</param>
+    /// <param name="httpClient">The HTTP client to use for making requests.</param>
+    /// <param name="logger">An optional logger to log connector-related information.</param>
+    public BingConnector(string apiKey, HttpClient httpClient, ILogger<BingConnector>? logger = null)
+    {
+        Verify.NotNull(httpClient);
+
+        this._apiKey = apiKey;
         this._logger = logger ?? NullLogger<BingConnector>.Instance;
-        this._httpClientHandler = new() { CheckCertificateRevocationList = true };
-        this._httpClient = new HttpClient(this._httpClientHandler);
-        this._httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", apiKey);
+        this._httpClient = httpClient;
     }
 
     /// <inheritdoc/>
@@ -43,28 +61,47 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
         Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
 
         this._logger.LogDebug("Sending request: {0}", uri);
-        HttpResponseMessage response = await this._httpClient.GetAsync(uri, cancellationToken).ConfigureAwait(false);
+
+        using HttpResponseMessage response = await this.SendGetRequest(uri, cancellationToken).ConfigureAwait(false);
+
         response.EnsureSuccessStatusCode();
+
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
         string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         this._logger.LogTrace("Response content received: {0}", json);
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
+
         WebPage[]? results = data?.WebPages?.Value;
 
         return results == null ? Enumerable.Empty<string>() : results.Select(x => x.Snippet);
     }
 
-    private void Dispose(bool disposing)
+    /// <summary>
+    /// Sends a GET request to the specified URI.
+    /// </summary>
+    /// <param name="uri">The URI to send the request to.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
+    /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
+    private async Task<HttpResponseMessage> SendGetRequest(Uri uri, CancellationToken cancellationToken = default)
     {
-        if (disposing)
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+
+        if (!string.IsNullOrEmpty(this._apiKey))
         {
-            this._httpClient.Dispose();
-            this._httpClientHandler.Dispose();
+            httpRequestMessage.Headers.Add("Ocp-Apim-Subscription-Key", this._apiKey);
         }
+
+        return await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
     }
 
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
+    private void Dispose(bool disposing)
+    {
+    }
+
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method

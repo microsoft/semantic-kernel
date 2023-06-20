@@ -24,18 +24,26 @@ public sealed class WebFileDownloadSkill : IDisposable
     public const string FilePathParamName = "filePath";
 
     private readonly ILogger _logger;
-    private readonly HttpClientHandler _httpClientHandler;
     private readonly HttpClient _httpClient;
 
     /// <summary>
-    /// Constructor for WebFileDownloadSkill.
+    /// Initializes a new instance of the <see cref="WebFileDownloadSkill"/> class.
     /// </summary>
-    /// <param name="logger">Optional logger.</param>
-    public WebFileDownloadSkill(ILogger<WebFileDownloadSkill>? logger = null)
+    /// <param name="logger">An optional logger to log skill-related information.</param>
+    public WebFileDownloadSkill(ILogger<WebFileDownloadSkill>? logger = null) :
+        this(new HttpClient(NonDisposableHttpClientHandler.Instance, false), logger)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WebFileDownloadSkill"/> class.
+    /// </summary>
+    /// <param name="httpClient">The HTTP client to use for making requests.</param>
+    /// <param name="logger">An optional logger to log skill-related information.</param>
+    public WebFileDownloadSkill(HttpClient httpClient, ILogger<WebFileDownloadSkill>? logger = null)
+    {
+        this._httpClient = httpClient;
         this._logger = logger ?? NullLogger<WebFileDownloadSkill>.Instance;
-        this._httpClientHandler = new() { CheckCertificateRevocationList = true };
-        this._httpClient = new HttpClient(this._httpClientHandler);
     }
 
     /// <summary>
@@ -68,9 +76,8 @@ public sealed class WebFileDownloadSkill : IDisposable
     /// <summary>
     /// Implementation of IDisposable.
     /// </summary>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
     public void Dispose()
     {
-        this._httpClient.Dispose();
-        this._httpClientHandler.Dispose();
     }
 }
