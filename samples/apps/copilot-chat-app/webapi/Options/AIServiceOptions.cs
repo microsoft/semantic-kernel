@@ -60,7 +60,23 @@ public sealed class AIServiceOptions
         /// </summary>
         public string PlannerKey { get; set; } = string.Empty;
     }
-
+"AIService": {
+    "Type": "AzureOpenAI",
+    "Endpoint": "", // ignored when AIService is "OpenAI"
+    // "Key": "",
+    "Models": {
+      "Completion": "gpt-35-turbo", // For OpenAI, change to 'gpt-3.5-turbo' (with a period).
+      "Embedding": "text-embedding-ada-002",
+    },
+    "PlannerOverrides": {
+        // Planner will default to the same settings for the Chat Completion model set above
+        // Set below properties if you want to use a different chat completion model or Azure OpenAI endpoint for the Planner, otherwise, leave as is
+        "Model": "", 
+        "Endpoint": "",
+        // - Set "Key" using dotnet's user secrets (i.e. dotnet user-secrets set "AIService:PlannerOverrides:Key" "MY_AZURE_OPENAI_KEY")
+        "Key": "" // Required if you want to use a different endpoint for the planner
+    }
+  }
     /// <summary>
     /// Type of AI service.
     /// </summary>
