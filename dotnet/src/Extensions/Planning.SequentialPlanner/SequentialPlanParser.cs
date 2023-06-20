@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
@@ -45,10 +46,10 @@ internal static class SequentialPlanParser
     /// <param name="xmlString">The plan xml string.</param>
     /// <param name="goal">The goal for the plan.</param>
     /// <param name="context">The semantic kernel context.</param>
-    /// <param name="ignoreMissingFunctions"></param>
+    /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
-    internal static Plan ToPlanFromXml(this string xmlString, string goal, SKContext context, bool ignoreMissingFunctions = false)
+    internal static Plan ToPlanFromXml(this string xmlString, string goal, SKContext context, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
         try
@@ -57,24 +58,33 @@ internal static class SequentialPlanParser
         }
         catch (XmlException e)
         {
-            // xmlString wasn't valid xml, let's try and parse it out.
-            // From my python code, for regex for getting json.
-            //                 # Filter out good JSON from the result in case additional text is present
-            // json_regex = r"\{(?:[^{}]|(?R))*\}"
-            // I want similar, but for xml that starts with <plan> and ends with </plan>
-            // Regex planRegex = new(@"\<plan\>(?:[^\<\>]|(?R))*\<\/plan\>", RegexOptions.Singleline);
-            // Match match = planRegex.Match(xmlString);
-            // if (match.Success)
-            // {
-            //     string planXml = match.Value;
-            //     xmlDoc.LoadXml("<xml>" + planXml + "</xml>");
-            // }
-            // else
-            // {
-            //     throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan xml: {xmlString}", e);
-            // }
+            // xmlString wasn't valid xml, let's try and parse <plan> out of it
 
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan xml string: {xmlString}", e);
+            // '<plan': Matches the literal string "<plan".
+            // '\b': Represents a word boundary to ensure that "<plan" is not part of a larger word.
+            // '[^>]*': Matches zero or more characters that are not the closing angle bracket (">"), effectively matching any attributes present in the opening <plan> tag.
+            // '>': Matches the closing angle bracket (">") to indicate the end of the opening <plan> tag.
+            // '(.*?)': Captures the content between the opening and closing <plan> tags using a non-greedy match. It matches any character (except newline) in a lazy manner, i.e., it captures the smallest possible match.
+            // '</plan>': Matches the literal string "</plan>", indicating the closing tag of the <plan> element.
+            Regex planRegex = new(@"<plan\b[^>]*>(.*?)</plan>", RegexOptions.Singleline);
+            Match match = planRegex.Match(xmlString);
+            if (match.Success)
+            {
+                string planXml = match.Value;
+
+                try
+                {
+                    xmlDoc.LoadXml("<xml>" + planXml + "</xml>");
+                }
+                catch (XmlException ex)
+                {
+                    throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan xml strings: '{xmlString}' or '{planXml}'", ex);
+                }
+            }
+            else
+            {
+                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan xml string: '{xmlString}'", e);
+            }
         }
 
         try
@@ -153,15 +163,14 @@ internal static class SequentialPlanParser
                         }
                         else
                         {
-                            if (ignoreMissingFunctions)
+                            if (allowMissingFunctions)
                             {
-                                context.Log.LogTrace("{0}: appending missing function node {1}", parentNodeName, skillFunctionName);
+                                context.Log.LogTrace("{0}: allowing missing function node {1}", parentNodeName, skillFunctionName);
                                 plan.AddSteps(new Plan(childNode.InnerText));
                             }
                             else
                             {
-                                // Plan
-                                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to find function {skillFunctionName} in skill {skillName}.");
+                                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to find function '{skillFunctionName}' in skill '{skillName}'.");
                             }
                         }
 
@@ -182,7 +191,7 @@ internal static class SequentialPlanParser
         catch (Exception e) when (!e.IsCriticalException())
         {
             context.Log.LogError(e, "Plan parsing failed: {0}", e.Message);
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to process plan: {xmlString}", e);
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to process plan: '{xmlString}'", e);
         }
     }
 

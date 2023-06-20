@@ -54,6 +54,7 @@ public sealed class SequentialPlanner
     /// </summary>
     /// <param name="goal">The goal to create a plan for.</param>
     /// <returns>The plan.</returns>
+    /// <exception cref="PlanningException">Thrown when the plan cannot be created.</exception>
     public async Task<Plan> CreatePlanAsync(string goal)
     {
         if (string.IsNullOrEmpty(goal))
@@ -72,7 +73,7 @@ public sealed class SequentialPlanner
 
         try
         {
-            var plan = planResultString.ToPlanFromXml(goal, this._context);
+            var plan = planResultString.ToPlanFromXml(goal, this._context, this.Config.AllowMissingFunctions);
             return plan;
         }
         catch (PlanningException planException) when (planException.ErrorCode == PlanningException.ErrorCodes.InvalidPlan ||
