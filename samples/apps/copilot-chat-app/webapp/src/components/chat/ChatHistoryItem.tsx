@@ -76,7 +76,8 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     const classes = useClasses();
 
     const chat = useChat();
-    const { conversations, selectedId, loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
 
     const renderPlan = isPlan(message.content);
 

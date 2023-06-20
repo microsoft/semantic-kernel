@@ -7,8 +7,9 @@ import { RootState } from '../../redux/app/store';
 import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
 
 export const ChatStatus: React.FC = () => {
-    const { conversations, selectedId, loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { users } = conversations[selectedId];
+    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
     const [typingUserList, setTypingUserList] = React.useState<IChatUser[]>([]);
 
     React.useEffect(() => {

@@ -40,7 +40,9 @@ const useClasses = makeStyles({
 });
 
 export const ChatRoom: React.FC = () => {
-    const { conversations, selectedId, loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
+
     const messages = conversations[selectedId].messages;
     const classes = useClasses();
 

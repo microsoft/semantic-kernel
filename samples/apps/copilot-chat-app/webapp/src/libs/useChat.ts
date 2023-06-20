@@ -40,7 +40,8 @@ export interface GetResponseOptions {
 export const useChat = () => {
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
-    const { conversations, loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations } = useAppSelector((state: RootState) => state.conversations);
+    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
 
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);

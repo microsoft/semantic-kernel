@@ -21,8 +21,7 @@ import { AlertType } from './libs/models/AlertType';
 import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
-import { addAlert, removeAlert } from './redux/features/app/appSlice';
-import { setLoggedInUserInfo } from './redux/features/conversations/conversationsSlice';
+import { addAlert, removeAlert, setLoggedInUserInfo } from './redux/features/app/appSlice';
 import { CopilotChatTokens } from './styles';
 
 export const useClasses = makeStyles({
@@ -70,7 +69,7 @@ const App: FC = () => {
     const dispatch = useAppDispatch();
 
     const { instance, inProgress } = useMsal();
-    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
+    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
     const isAuthenticated = useIsAuthenticated();
 
     const chat = useChat();

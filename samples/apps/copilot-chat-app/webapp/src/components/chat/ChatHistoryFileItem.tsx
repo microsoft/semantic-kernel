@@ -94,7 +94,7 @@ interface DocumentMessageContent {
 export const ChatHistoryFileItem: React.FC<ChatHistoryFileItemProps> = ({ message }) => {
     const classes = useClasses();
 
-    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
+    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
     const isMe = message.authorRole === AuthorRoles.User && message.userId === loggedInUserInfo?.id;
 
     let name = '',

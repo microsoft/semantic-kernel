@@ -10,8 +10,7 @@ import {
     Conversations,
     ConversationsState,
     ConversationTitleChange,
-    initialState,
-    LoggedInUserInfo,
+    initialState
 } from './ConversationsState';
 
 export const conversationsSlice: Slice<ConversationsState> = createSlice({
@@ -20,9 +19,6 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
     reducers: {
         setConversations: (state: ConversationsState, action: PayloadAction<Conversations>) => {
             state.conversations = action.payload;
-        },
-        setLoggedInUserInfo: (state: ConversationsState, action: PayloadAction<LoggedInUserInfo>) => {
-            state.loggedInUserInfo = action.payload;
         },
         editConversationTitle: (state: ConversationsState, action: PayloadAction<ConversationTitleChange>) => {
             const id = action.payload.id;
@@ -105,7 +101,6 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
 
 export const {
     setConversations,
-    setLoggedInUserInfo,
     editConversationTitle,
     editConversationInput,
     setSelectedConversation,

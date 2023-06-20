@@ -38,7 +38,7 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
     const classes = useClasses();
     const { instance } = useMsal();
 
-    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.conversations);
+    const { loggedInUserInfo } = useAppSelector((state: RootState) => state.app);
 
     const onLogout = useCallback(async () => {
         setLoadingState();
