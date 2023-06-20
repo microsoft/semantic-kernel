@@ -2,8 +2,8 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using RepoUtils;
 
 /**
@@ -22,13 +22,10 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureTextCompletionService(
-            Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
-
-        ITextCompletion textCompletion = kernel.GetService<ITextCompletion>();
+        var textCompletion = new AzureTextCompletion(
+                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_KEY"));
 
         await TextCompletionStreamAsync(textCompletion);
     }
@@ -37,10 +34,7 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-003");
-
-        ITextCompletion textCompletion = kernel.GetService<ITextCompletion>();
+        var textCompletion = new OpenAITextCompletion("text-davinci-003", Env.Var("OPENAI_API_KEY"));
 
         await TextCompletionStreamAsync(textCompletion);
     }

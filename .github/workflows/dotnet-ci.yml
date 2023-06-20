@@ -8,6 +8,9 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main", "feature*" ]
+    paths: 
+      - 'dotnet/**'
+      - 'samples/dotnet/**'
 
 permissions:
   contents: read
@@ -102,6 +105,6 @@ jobs:
     - name: Archive artifacts ${{ matrix.os }}-${{ matrix.configuration }}
       uses: actions/upload-artifact@v3
       with:
-        name: drop-${{ matrix.os }}-dotnet${{matrix.dotnet-version}}-${{ matrix.configuration }}
+        name: drop-${{ matrix.os }}-${{ matrix.configuration }}
         path: ./out
       if: ${{ github.event_name == 'push' }}

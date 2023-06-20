@@ -18,22 +18,62 @@ public class VectorSpanTests
     public void ItOnlySupportsFPDataTypes()
     {
         // Assert
-        Assert.True(EmbeddingSpan<double>.IsSupported);
-        Assert.True(EmbeddingSpan<float>.IsSupported);
+        TestTypeUnmanaged<float>(true);
+        TestTypeUnmanaged<double>(true);
 
-        Assert.False(EmbeddingSpan<bool>.IsSupported);
-        Assert.False(EmbeddingSpan<byte>.IsSupported);
-        Assert.False(EmbeddingSpan<sbyte>.IsSupported);
-        Assert.False(EmbeddingSpan<char>.IsSupported);
-        Assert.False(EmbeddingSpan<decimal>.IsSupported);
-        Assert.False(EmbeddingSpan<int>.IsSupported);
-        Assert.False(EmbeddingSpan<uint>.IsSupported);
-        Assert.False(EmbeddingSpan<nint>.IsSupported);
-        Assert.False(EmbeddingSpan<nuint>.IsSupported);
-        Assert.False(EmbeddingSpan<long>.IsSupported);
-        Assert.False(EmbeddingSpan<ulong>.IsSupported);
-        Assert.False(EmbeddingSpan<short>.IsSupported);
-        Assert.False(EmbeddingSpan<ushort>.IsSupported);
+        TestTypeUnmanaged<bool>(false);
+        TestTypeUnmanaged<byte>(false);
+        TestTypeUnmanaged<sbyte>(false);
+        TestTypeUnmanaged<char>(false);
+        TestTypeUnmanaged<decimal>(false);
+        TestTypeUnmanaged<int>(false);
+        TestTypeUnmanaged<uint>(false);
+        TestTypeUnmanaged<nint>(false);
+        TestTypeUnmanaged<nuint>(false);
+        TestTypeUnmanaged<long>(false);
+        TestTypeUnmanaged<ulong>(false);
+        TestTypeUnmanaged<short>(false);
+        TestTypeUnmanaged<ushort>(false);
+        TestType<object>(false);
+        TestType<string>(false);
+
+        static void TestType<T>(bool expected)
+        {
+            if (expected)
+            {
+                Assert.True(Embedding.IsSupported<T>());
+                Assert.True(Embedding.IsSupported(typeof(T)));
+                Assert.Contains(typeof(T), Embedding.SupportedTypes);
+            }
+            else
+            {
+                Assert.False(Embedding.IsSupported<T>());
+                Assert.False(Embedding.IsSupported(typeof(T)));
+                Assert.DoesNotContain(typeof(T), Embedding.SupportedTypes);
+            }
+        }
+
+        static void TestTypeUnmanaged<T>(bool expected) where T : unmanaged
+        {
+            TestType<T>(expected);
+            if (expected)
+            {
+                _ = new Embedding<T>(Array.Empty<T>());
+                _ = new Embedding<T>(Array.Empty<T>(), transferOwnership: true);
+                _ = new EmbeddingSpan<T>(Array.Empty<T>());
+                _ = new EmbeddingReadOnlySpan<T>(Array.Empty<T>());
+            }
+            else
+            {
+                Assert.False(Embedding.IsSupported<T>());
+                Assert.False(Embedding.IsSupported(typeof(T)));
+                Assert.DoesNotContain(typeof(T), Embedding.SupportedTypes);
+                Assert.Throws<NotSupportedException>(() => new Embedding<T>(Array.Empty<T>()));
+                Assert.Throws<NotSupportedException>(() => new Embedding<T>(Array.Empty<T>(), transferOwnership: true));
+                Assert.Throws<NotSupportedException>(() => new EmbeddingSpan<T>(Array.Empty<T>()));
+                Assert.Throws<NotSupportedException>(() => new EmbeddingReadOnlySpan<T>(Array.Empty<T>()));
+            }
+        }
     }
 
     [Fact]

@@ -3,39 +3,39 @@
 import {
     AuthenticatedTemplate,
     UnauthenticatedTemplate,
-    useAccount,
     useIsAuthenticated,
     useMsal,
 } from '@azure/msal-react';
-import { Avatar, Spinner, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
 import * as React from 'react';
 import { FC, useEffect } from 'react';
+import { UserSettings } from './components/header/UserSettings';
 import { PluginGallery } from './components/open-api-plugins/PluginGallery';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
+import Loading from './components/views/Loading';
 import { Login } from './components/views/Login';
 import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { removeAlert } from './redux/features/app/appSlice';
+import { setLoggedInUserId } from './redux/features/conversations/conversationsSlice';
 import { CopilotChatTokens } from './styles';
 
-const useClasses = makeStyles({
+export const useClasses = makeStyles({
     container: {
+        ...shorthands.overflow('hidden'),
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
         height: '100vh',
     },
-    content: {
-        Flex: 'auto',
-    },
     header: {
         backgroundColor: CopilotChatTokens.backgroundColor,
         width: '100%',
-        height: '5.5%',
+        height: '48px',
         color: '#FFF',
         display: 'flex',
         '& h1': {
@@ -58,6 +58,7 @@ enum AppState {
     ProbeForBackend,
     LoadingChats,
     Chat,
+    SigningOut,
 }
 
 const App: FC = () => {
@@ -67,24 +68,26 @@ const App: FC = () => {
     const { alerts } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
 
-    const { instance, accounts, inProgress } = useMsal();
-    const account = useAccount(accounts[0] || {});
+    const { instance, inProgress } = useMsal();
+    const account = instance.getActiveAccount();
     const isAuthenticated = useIsAuthenticated();
 
     const chat = useChat();
 
     useEffect(() => {
-        if (isAuthenticated && account && appState === AppState.LoadingChats) {
-            instance.setActiveAccount(account);
+        if (isAuthenticated && account) {
+            dispatch(setLoggedInUserId(account.homeAccountId));
 
-            // Load all chats from memory
-            async function loadChats() {
-                if (await chat.loadChats()) {
-                    setAppState(AppState.Chat);
+            if (appState === AppState.LoadingChats) {
+                // Load all chats from the backend.
+                async function loadChats() {
+                    if (await chat.loadChats()) {
+                        setAppState(AppState.Chat);
+                    }
                 }
-            }
 
-            loadChats();
+                loadChats();
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instance, inProgress, isAuthenticated, appState]);
@@ -101,7 +104,8 @@ const App: FC = () => {
                     <div className={classes.header}>
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                     </div>
-                    <Login />
+                    {appState === AppState.SigningOut && <Loading text="Signing you out..." />}
+                    {appState !== AppState.SigningOut && <Login />}
                 </div>
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
@@ -110,46 +114,38 @@ const App: FC = () => {
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <div className={classes.cornerItems}>
                             <PluginGallery />
-                            <Avatar
-                                className={classes.persona}
-                                key={account?.name}
-                                name={account?.name}
-                                size={28}
-                                badge={{ status: 'available' }}
-                            />
+                            <UserSettings setLoadingState={() => setAppState(AppState.SigningOut)} />
                         </div>
                     </div>
-                    <div className={classes.content}>
-                        {alerts &&
-                            Object.keys(alerts).map((key) => {
-                                const alert = alerts[key];
-                                return (
-                                    <Alert
-                                        intent={alert.type}
-                                        action={{
-                                            icon: (
-                                                <Dismiss16Regular
-                                                    aria-label="dismiss message"
-                                                    onClick={() => onDismissAlert(key)}
-                                                    color="black"
-                                                />
-                                            ),
-                                        }}
-                                        key={key}
-                                    >
-                                        {alert.message}
-                                    </Alert>
-                                );
-                            })}
-                        {appState === AppState.ProbeForBackend && (
-                            <BackendProbe
-                                uri={process.env.REACT_APP_BACKEND_URI as string}
-                                onBackendFound={() => setAppState(AppState.LoadingChats)}
-                            />
-                        )}
-                        {appState === AppState.LoadingChats && <Spinner labelPosition="below" label="Loading Chats" />}
-                        {appState === AppState.Chat && <ChatView />}
-                    </div>
+                    {alerts &&
+                        Object.keys(alerts).map((key) => {
+                            const alert = alerts[key];
+                            return (
+                                <Alert
+                                    intent={alert.type}
+                                    action={{
+                                        icon: (
+                                            <Dismiss16Regular
+                                                aria-label="dismiss message"
+                                                onClick={() => onDismissAlert(key)}
+                                                color="black"
+                                            />
+                                        ),
+                                    }}
+                                    key={key}
+                                >
+                                    {alert.message}
+                                </Alert>
+                            );
+                        })}
+                    {appState === AppState.ProbeForBackend && (
+                        <BackendProbe
+                            uri={process.env.REACT_APP_BACKEND_URI as string}
+                            onBackendFound={() => setAppState(AppState.LoadingChats)}
+                        />
+                    )}
+                    {appState === AppState.LoadingChats && <Loading text="Loading Chats..." />}
+                    {appState === AppState.Chat && <ChatView />}
                 </div>
             </AuthenticatedTemplate>
         </div>

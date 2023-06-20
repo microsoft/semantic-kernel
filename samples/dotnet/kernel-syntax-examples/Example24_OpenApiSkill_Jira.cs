@@ -35,7 +35,7 @@ public static class Example24_OpenApiSkill_Jira
             return Task.FromResult(s);
         });
 
-        using HttpClient httpClient = new HttpClient();
+        using HttpClient httpClient = new();
 
         // The bool useLocalFile can be used to toggle the ingestion method for the openapi schema between a file path and a URL
         bool useLocalFile = true;

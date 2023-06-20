@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// Class used to copy and export data from the skill collection.
 /// The data is mutable, but changes do not affect the skill collection.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class FunctionView
 {
     /// <summary>
@@ -71,4 +73,7 @@ public sealed class FunctionView
         this.IsSemantic = isSemantic;
         this.IsAsynchronous = isAsynchronous;
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
 }

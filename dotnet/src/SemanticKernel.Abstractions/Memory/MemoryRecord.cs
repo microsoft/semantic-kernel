@@ -119,7 +119,7 @@ public class MemoryRecord : DataEntryBase
     /// <param name="embedding">Optional embedding associated with a memory record.</param>
     /// <param name="key">Optional existing database key.</param>
     /// <param name="timestamp">optional timestamp.</param>
-    /// <returns></returns>
+    /// <returns>Memory record</returns>
     /// <exception cref="MemoryException"></exception>
     public static MemoryRecord FromJsonMetadata(
         string json,
@@ -128,14 +128,11 @@ public class MemoryRecord : DataEntryBase
         DateTimeOffset? timestamp = null)
     {
         var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
-        if (metadata != null)
-        {
-            return new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp);
-        }
-
-        throw new MemoryException(
-            MemoryException.ErrorCodes.UnableToDeserializeMetadata,
-            "Unable to create memory record from serialized metadata");
+        return metadata != null
+            ? new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp)
+            : throw new MemoryException(
+                MemoryException.ErrorCodes.UnableToDeserializeMetadata,
+                "Unable to create memory record from serialized metadata");
     }
 
     /// <summary>
@@ -145,7 +142,7 @@ public class MemoryRecord : DataEntryBase
     /// <param name="embedding">Optional embedding associated with a memory record.</param>
     /// <param name="key">Optional existing database key.</param>
     /// <param name="timestamp">optional timestamp.</param>
-    /// <returns></returns>
+    /// <returns>Memory record</returns>
     public static MemoryRecord FromMetadata(
         MemoryRecordMetadata metadata,
         Embedding<float>? embedding,

@@ -3,19 +3,14 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.CoreSkills;
 
 public class FileIOSkillTests
 {
-    private readonly SKContext _context = new(new ContextVariables(), NullMemory.Instance, null, NullLogger.Instance);
-
     [Fact]
     public void ItCanBeInstantiated()
     {
@@ -27,7 +22,7 @@ public class FileIOSkillTests
     public void ItCanBeImported()
     {
         // Arrange
-        var kernel = KernelBuilder.Create();
+        var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
         _ = kernel.ImportSkill(new FileIOSkill(), "fileIO");
@@ -72,11 +67,9 @@ public class FileIOSkillTests
         // Arrange
         var skill = new FileIOSkill();
         var path = Path.GetTempFileName();
-        this._context["path"] = path;
-        this._context["content"] = "hello world";
 
         // Act
-        await skill.WriteAsync(this._context);
+        await skill.WriteAsync(path, "hello world");
 
         // Assert
         Assert.Equal("hello world", await File.ReadAllTextAsync(path));
@@ -89,13 +82,11 @@ public class FileIOSkillTests
         var skill = new FileIOSkill();
         var path = Path.GetTempFileName();
         File.SetAttributes(path, FileAttributes.ReadOnly);
-        this._context["path"] = path;
-        this._context["content"] = "hello world";
 
         // Act
         Task Fn()
         {
-            return skill.WriteAsync(this._context);
+            return skill.WriteAsync(path, "hello world");
         }
 
         // Assert

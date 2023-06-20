@@ -4,9 +4,13 @@
     <RootNamespace>SemanticKernel.UnitTests</RootNamespace>
     <AssemblyName>SemanticKernel.UnitTests</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
+    <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -25,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 

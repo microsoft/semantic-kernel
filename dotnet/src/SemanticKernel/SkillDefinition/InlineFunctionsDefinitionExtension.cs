@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -32,19 +33,23 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="topP">Top P parameter passed to LLM</param>
     /// <param name="presencePenalty">Presence Penalty parameter passed to LLM</param>
     /// <param name="frequencyPenalty">Frequency Penalty parameter passed to LLM</param>
+    /// <param name="isSensitive">Whether the function is set to be sensitive or not (default false)</param>
+    /// <param name="trustService">Service used for trust checks (if null will use the default registered in the kernel)</param>
     /// <param name="stopSequences">Strings the LLM will detect to stop generating (before reaching max tokens)</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
         this IKernel kernel,
         string promptTemplate,
         string? functionName = null,
-        string skillName = "",
+        string? skillName = null,
         string? description = null,
         int maxTokens = 256,
         double temperature = 0,
         double topP = 0,
         double presencePenalty = 0,
         double frequencyPenalty = 0,
+        bool isSensitive = false,
+        ITrustService? trustService = null,
         IEnumerable<string>? stopSequences = null)
     {
         functionName ??= RandomFunctionName();
@@ -53,6 +58,7 @@ public static class InlineFunctionsDefinitionExtension
         {
             Description = description ?? "Generic function, unknown purpose",
             Type = "completion",
+            IsSensitive = isSensitive,
             Completion = new PromptTemplateConfig.CompletionConfig
             {
                 Temperature = temperature,
@@ -68,25 +74,28 @@ public static class InlineFunctionsDefinitionExtension
             promptTemplate: promptTemplate,
             config: config,
             functionName: functionName,
-            skillName: skillName);
+            skillName: skillName,
+            trustService: trustService);
     }
 
     /// <summary>
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
-    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="config">Optional function settings</param>
+    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="skillName">An optional skill name, e.g. to namespace functions with the same name. When empty,
     /// the function is added to the global namespace, overwriting functions with the same name</param>
-    /// <param name="config">Optional function settings</param>
+    /// <param name="trustService">Service used for trust checks (if null will use the default registered in the kernel)</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
         this IKernel kernel,
         string promptTemplate,
         PromptTemplateConfig config,
         string? functionName = null,
-        string skillName = "")
+        string? skillName = null,
+        ITrustService? trustService = null)
     {
         functionName ??= RandomFunctionName();
         Verify.ValidFunctionName(functionName);
@@ -99,8 +108,8 @@ public static class InlineFunctionsDefinitionExtension
 
         // TODO: manage overwrites, potentially error out
         return string.IsNullOrEmpty(skillName)
-            ? kernel.RegisterSemanticFunction(functionName, functionConfig)
-            : kernel.RegisterSemanticFunction(skillName, functionName, functionConfig);
+            ? kernel.RegisterSemanticFunction(functionName, functionConfig, trustService)
+            : kernel.RegisterSemanticFunction(skillName!, functionName, functionConfig, trustService);
     }
 
     private static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");

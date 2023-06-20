@@ -3,9 +3,11 @@
 import { FC, useCallback } from 'react';
 
 import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tooltip } from '@fluentui/react-components';
-import { ArrowDownloadRegular, ShareRegular } from '@fluentui/react-icons';
+import { ArrowDownloadRegular, PeopleTeamAddRegular, ShareRegular } from '@fluentui/react-icons';
+import React from 'react';
 import { useChat } from '../../libs/useChat';
 import { useFile } from '../../libs/useFile';
+import { InvitationCreateDialog } from './invitation-dialog/InvitationCreateDialog';
 
 interface ShareBotMenuProps {
     chatId: string;
@@ -15,6 +17,7 @@ interface ShareBotMenuProps {
 export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
     const chat = useChat();
     const { downloadFile } = useFile();
+    const [ isGettingInvitationId, setIsGettingInvitationId ] = React.useState(false);
 
     const onDownloadBotClick = useCallback(async () => {
         // TODO: Add a loading indicator
@@ -27,19 +30,28 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
     }, [chat, chatId, chatTitle, downloadFile]);
 
     return (
-        <Menu>
-            <MenuTrigger disableButtonEnhancement>
-                <Tooltip content="Share" relationship="label">
-                    <Button icon={<ShareRegular />} appearance="transparent" />
-                </Tooltip>
-            </MenuTrigger>
-            <MenuPopover>
-                <MenuList>
-                    <MenuItem icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
-                        Download your Bot
-                    </MenuItem>
-                </MenuList>
-            </MenuPopover>
-        </Menu>
+        <div>
+            <Menu>
+                <MenuTrigger disableButtonEnhancement>
+                    <Tooltip content="Share" relationship="label">
+                        <Button icon={<ShareRegular />} appearance="transparent" />
+                    </Tooltip>
+                </MenuTrigger>
+                <MenuPopover>
+                    <MenuList>
+                        <MenuItem icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
+                            Download your Bot
+                        </MenuItem>
+                        <MenuItem icon={<PeopleTeamAddRegular />} onClick={() => setIsGettingInvitationId(true)}>
+                            Invite others to your Bot
+                        </MenuItem>
+                    </MenuList>
+                </MenuPopover>
+            </Menu>
+            {isGettingInvitationId &&
+                <InvitationCreateDialog
+                    onCancel={() => setIsGettingInvitationId(false)}
+                    chatId={chatId} />}
+        </div>
     );
 };

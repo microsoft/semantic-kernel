@@ -1,12 +1,11 @@
 <Project>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <IsPackable>true</IsPackable>
-    <!-- Central version prefix - applies to all nuget packages -->
-    <Version>0.14</Version>
-  </PropertyGroup>
-
   <PropertyGroup>
+    <!-- Central version prefix - applies to all nuget packages. -->
+    <Version>0.17</Version>
+
+    <Configurations>Debug;Release;Publish</Configurations>
+    <IsPackable>true</IsPackable>
+
     <!-- Default description and tags. Packages can override. -->
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
@@ -46,4 +45,8 @@
     <None Include="$(RepoRoot)/dotnet/nuget/icon.png" Link="icon.png" Pack="true" PackagePath="." />
     <None Include="$(RepoRoot)/dotnet/nuget/NUGET.md" Link="NUGET.md" Pack="true" PackagePath="." />
   </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
 </Project>

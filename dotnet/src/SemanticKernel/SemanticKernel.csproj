@@ -22,9 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernel.UnitTests" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="SemanticKernel.IntegrationTests" PublicKey="$(StrongNamePublicKey)"/>
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" PublicKey="$(StrongNamePublicKey)"/> <!-- Moq -->
+    <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>

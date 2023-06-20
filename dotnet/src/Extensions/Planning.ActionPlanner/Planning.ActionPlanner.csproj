@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/InternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -19,10 +19,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="IntegrationTests" PublicKey="$(StrongNamePublicKey)" />
   </ItemGroup>
 
   <ItemGroup>

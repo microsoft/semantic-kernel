@@ -1,8 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import glob
+import importlib
 import inspect
+import os
 from logging import Logger
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
+from uuid import uuid4
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -18,11 +22,10 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.kernel_base import KernelBase
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel.kernel_extensions import KernelExtensions
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
+from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
@@ -31,7 +34,11 @@ from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
-from semantic_kernel.reliability.retry_mechanism import RetryMechanism
+from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
+from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
+from semantic_kernel.semantic_functions.prompt_template_config import (
+    PromptTemplateConfig,
+)
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
@@ -50,7 +57,7 @@ from semantic_kernel.utils.validation import validate_function_name, validate_sk
 T = TypeVar("T")
 
 
-class Kernel(KernelBase, KernelExtensions):
+class Kernel:
     _log: Logger
     _skill_collection: SkillCollectionBase
     _prompt_template_engine: PromptTemplatingEngine
@@ -75,23 +82,20 @@ class Kernel(KernelBase, KernelExtensions):
         self._memory = memory if memory else NullMemory()
 
         self._text_completion_services: Dict[
-            str, Callable[["KernelBase"], TextCompletionClientBase]
+            str, Callable[["Kernel"], TextCompletionClientBase]
         ] = {}
         self._chat_services: Dict[
-            str, Callable[["KernelBase"], ChatCompletionClientBase]
+            str, Callable[["Kernel"], ChatCompletionClientBase]
         ] = {}
         self._text_embedding_generation_services: Dict[
-            str, Callable[["KernelBase"], EmbeddingGeneratorBase]
+            str, Callable[["Kernel"], EmbeddingGeneratorBase]
         ] = {}
 
         self._default_text_completion_service: Optional[str] = None
         self._default_chat_service: Optional[str] = None
         self._default_text_embedding_generation_service: Optional[str] = None
 
-        self._retry_mechanism: RetryMechanism = PassThroughWithoutRetry()
-
-    def kernel(self) -> KernelBase:
-        return self
+        self._retry_mechanism: RetryMechanismBase = PassThroughWithoutRetry()
 
     @property
     def logger(self) -> Logger:
@@ -212,6 +216,29 @@ class Kernel(KernelBase, KernelExtensions):
 
         return self.skills.get_semantic_function(skill_name, function_name)
 
+    def use_memory(
+        self,
+        storage: MemoryStoreBase,
+        embeddings_generator: Optional[EmbeddingGeneratorBase] = None,
+    ) -> None:
+        if embeddings_generator is None:
+            service_id = self.get_text_embedding_generation_service_id()
+            if not service_id:
+                raise ValueError("The embedding service id cannot be `None` or empty")
+
+            embeddings_service = self.get_ai_service(EmbeddingGeneratorBase, service_id)
+            if not embeddings_service:
+                raise ValueError(f"AI configuration is missing for: {service_id}")
+
+            embeddings_generator = embeddings_service(self)
+
+        if storage is None:
+            raise ValueError("The storage instance provided cannot be `None`")
+        if embeddings_generator is None:
+            raise ValueError("The embedding generator cannot be `None`")
+
+        self.register_memory(SemanticTextMemory(storage, embeddings_generator))
+
     def register_memory(self, memory: SemanticTextMemoryBase) -> None:
         self._memory = memory
 
@@ -267,7 +294,7 @@ class Kernel(KernelBase, KernelExtensions):
 
     def get_ai_service(
         self, type: Type[T], service_id: Optional[str] = None
-    ) -> Callable[["KernelBase"], T]:
+    ) -> Callable[["Kernel"], T]:
         matching_type = {}
         if type == TextCompletionClientBase:
             service_id = service_id or self._default_text_completion_service
@@ -301,7 +328,7 @@ class Kernel(KernelBase, KernelExtensions):
         self,
         service_id: str,
         service: Union[
-            TextCompletionClientBase, Callable[["KernelBase"], TextCompletionClientBase]
+            TextCompletionClientBase, Callable[["Kernel"], TextCompletionClientBase]
         ],
         overwrite: bool = True,
     ) -> "Kernel":
@@ -324,7 +351,7 @@ class Kernel(KernelBase, KernelExtensions):
         self,
         service_id: str,
         service: Union[
-            ChatCompletionClientBase, Callable[["KernelBase"], ChatCompletionClientBase]
+            ChatCompletionClientBase, Callable[["Kernel"], ChatCompletionClientBase]
         ],
         overwrite: bool = True,
     ) -> "Kernel":
@@ -352,7 +379,7 @@ class Kernel(KernelBase, KernelExtensions):
         self,
         service_id: str,
         service: Union[
-            EmbeddingGeneratorBase, Callable[["KernelBase"], EmbeddingGeneratorBase]
+            EmbeddingGeneratorBase, Callable[["Kernel"], EmbeddingGeneratorBase]
         ],
         overwrite: bool = False,
     ) -> "Kernel":
@@ -567,3 +594,139 @@ class Kernel(KernelBase, KernelExtensions):
             function.set_ai_service(lambda: service(self))
 
         return function
+
+    def import_native_skill_from_directory(
+        self, parent_directory: str, skill_directory_name: str
+    ) -> Dict[str, SKFunctionBase]:
+        MODULE_NAME = "native_function"
+
+        validate_skill_name(skill_directory_name)
+
+        skill_directory = os.path.abspath(
+            os.path.join(parent_directory, skill_directory_name)
+        )
+        native_py_file_path = os.path.join(skill_directory, f"{MODULE_NAME}.py")
+
+        if not os.path.exists(native_py_file_path):
+            raise ValueError(
+                f"Native Skill Python File does not exist: {native_py_file_path}"
+            )
+
+        skill_name = os.path.basename(skill_directory)
+        try:
+            spec = importlib.util.spec_from_file_location(
+                MODULE_NAME, native_py_file_path
+            )
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            class_name = next(
+                (
+                    name
+                    for name, cls in inspect.getmembers(module, inspect.isclass)
+                    if cls.__module__ == MODULE_NAME
+                ),
+                None,
+            )
+            if class_name:
+                skill_obj = getattr(module, class_name)()
+                return self.import_skill(skill_obj, skill_name)
+        except Exception:
+            pass
+
+        return {}
+
+    def import_semantic_skill_from_directory(
+        self, parent_directory: str, skill_directory_name: str
+    ) -> Dict[str, SKFunctionBase]:
+        CONFIG_FILE = "config.json"
+        PROMPT_FILE = "skprompt.txt"
+
+        validate_skill_name(skill_directory_name)
+
+        skill_directory = os.path.join(parent_directory, skill_directory_name)
+        skill_directory = os.path.abspath(skill_directory)
+
+        if not os.path.exists(skill_directory):
+            raise ValueError(f"Skill directory does not exist: {skill_directory_name}")
+
+        skill = {}
+
+        directories = glob.glob(skill_directory + "/*/")
+        for directory in directories:
+            dir_name = os.path.dirname(directory)
+            function_name = os.path.basename(dir_name)
+            prompt_path = os.path.join(directory, PROMPT_FILE)
+
+            # Continue only if the prompt template exists
+            if not os.path.exists(prompt_path):
+                continue
+
+            config = PromptTemplateConfig()
+            config_path = os.path.join(directory, CONFIG_FILE)
+            with open(config_path, "r") as config_file:
+                config = config.from_json(config_file.read())
+
+            # Load Prompt Template
+            with open(prompt_path, "r") as prompt_file:
+                template = PromptTemplate(
+                    prompt_file.read(), self.prompt_template_engine, config
+                )
+
+            # Prepare lambda wrapping AI logic
+            function_config = SemanticFunctionConfig(config, template)
+
+            skill[function_name] = self.register_semantic_function(
+                skill_directory_name, function_name, function_config
+            )
+
+        return skill
+
+    def create_semantic_function(
+        self,
+        prompt_template: str,
+        function_name: Optional[str] = None,
+        skill_name: Optional[str] = None,
+        description: Optional[str] = None,
+        max_tokens: int = 256,
+        temperature: float = 0.0,
+        top_p: float = 1.0,
+        presence_penalty: float = 0.0,
+        frequency_penalty: float = 0.0,
+        number_of_responses: int = 1,
+        stop_sequences: Optional[List[str]] = None,
+    ) -> "SKFunctionBase":
+        function_name = (
+            function_name
+            if function_name is not None
+            else f"f_{str(uuid4()).replace('-', '_')}"
+        )
+
+        config = PromptTemplateConfig(
+            description=(
+                description
+                if description is not None
+                else "Generic function, unknown purpose"
+            ),
+            type="completion",
+            completion=PromptTemplateConfig.CompletionConfig(
+                temperature,
+                top_p,
+                presence_penalty,
+                frequency_penalty,
+                max_tokens,
+                number_of_responses,
+                stop_sequences if stop_sequences is not None else [],
+            ),
+        )
+
+        validate_function_name(function_name)
+        if skill_name is not None:
+            validate_skill_name(skill_name)
+
+        template = PromptTemplate(prompt_template, self.prompt_template_engine, config)
+        function_config = SemanticFunctionConfig(config, template)
+
+        return self.register_semantic_function(
+            skill_name, function_name, function_config
+        )

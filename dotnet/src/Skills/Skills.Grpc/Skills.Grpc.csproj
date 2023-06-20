@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/InternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -17,9 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>SemanticKernel.Skills.UnitTests</_Parameter1>
-    </AssemblyAttribute>
+    <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>

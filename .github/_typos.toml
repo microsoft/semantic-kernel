@@ -1,0 +1,34 @@
+# Typos configuration file
+#
+# Info:    https://github.com/marketplace/actions/typos-action
+# Install: brew install typos-cli
+# Install: conda install typos
+# Run:     typos -c .github/_typos.toml
+
+[files]
+extend-exclude = [
+    "_typos.toml",
+    "package-lock.json",
+    "*.bicep",
+    "encoder.json",
+    "vocab.bpe",
+    "GPT3TokenizerTests.cs",
+    "CodeTokenizerTests.cs",
+    "test_code_tokenizer.py",
+]
+
+[default.extend-words]
+ACI = "ACI" # Azure Container Instance
+
+[default.extend-identifiers]
+ags = "ags" # Azure Graph Service
+
+[type.jupyter]
+extend-ignore-re = [
+    '"[A-Fa-f0-9]{8}"', # cell id strings
+]
+
+[type.msbuild]
+extend-ignore-re = [
+    'Version=".*"', # ignore package version numbers
+]

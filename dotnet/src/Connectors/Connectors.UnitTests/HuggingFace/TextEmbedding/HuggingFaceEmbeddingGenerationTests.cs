@@ -3,10 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
@@ -14,63 +14,127 @@ namespace SemanticKernel.Connectors.UnitTests.HuggingFace.TextEmbedding;
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
 /// </summary>
-public class HuggingFaceEmbeddingGenerationTests : IDisposable
+public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
 {
-    private const string Endpoint = "http://localhost:5000/embeddings";
-    private const string Model = "gpt2";
+    private HttpMessageHandlerStub messageHandlerStub;
+    private HttpClient httpClient;
 
-    private readonly HttpResponseMessage _response = new()
+    public HuggingFaceEmbeddingGenerationTests()
     {
-        StatusCode = HttpStatusCode.OK,
-    };
+        this.messageHandlerStub = new HttpMessageHandlerStub();
+        this.messageHandlerStub.ResponseToReturn.Content = new StringContent(HuggingFaceTestHelper.GetTestResponse("embeddings_test_response.json"));
 
-    /// <summary>
-    /// Verifies that <see cref="HuggingFaceTextEmbeddingGeneration.GenerateEmbeddingsAsync"/>
-    /// returns expected list of generated embeddings without errors.
-    /// </summary>
-    [Fact]
-    public async Task ItReturnsEmbeddingsCorrectlyAsync()
-    {
-        // Arrange
-        const int ExpectedEmbeddingCount = 1;
-        const int ExpectedVectorCount = 8;
-        List<string> data = new() { "test_string_1", "test_string_2", "test_string_3" };
-
-        using var service = this.CreateService(HuggingFaceTestHelper.GetTestResponse("embeddings_test_response.json"));
-
-        // Act
-        var embeddings = await service.GenerateEmbeddingsAsync(data);
-
-        // Assert
-        Assert.NotNull(embeddings);
-        Assert.Equal(ExpectedEmbeddingCount, embeddings.Count);
-        Assert.Equal(ExpectedVectorCount, embeddings.First().Count);
+        this.httpClient = new HttpClient(this.messageHandlerStub, false);
     }
 
-    /// <summary>
-    /// Initializes <see cref="HuggingFaceTextEmbeddingGeneration"/> with mocked <see cref="HttpClientHandler"/>.
-    /// </summary>
-    /// <param name="testResponse">Test response for <see cref="HttpClientHandler"/> to return.</param>
-    private HuggingFaceTextEmbeddingGeneration CreateService(string testResponse)
+    [Fact]
+    public async Task SpecifiedModelShouldBeUsedAsync()
     {
-        this._response.Content = new StringContent(testResponse);
+        //Arrange
+        using var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this.httpClient, "https://fake-random-test-host/fake-path");
 
-        var httpClientHandler = HuggingFaceTestHelper.GetHttpClientHandlerMock(this._response);
+        //Act
+        await sut.GenerateEmbeddingsAsync(new List<string>());
 
-        return new HuggingFaceTextEmbeddingGeneration(new Uri(Endpoint), Model, httpClientHandler);
+        //Assert
+        Assert.EndsWith("/fake-model", this.messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task UserAgentHeaderShouldBeUsedAsync()
+    {
+        //Arrange
+        using var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this.httpClient, "https://fake-random-test-host/fake-path");
+
+        //Act
+        await sut.GenerateEmbeddingsAsync(new List<string>());
+
+        //Assert
+        Assert.True(this.messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
+
+        var values = this.messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
+
+        var value = values.SingleOrDefault();
+        Assert.Equal("Microsoft-Semantic-Kernel", value);
+    }
+
+    [Fact]
+    public async Task ProvidedEndpointShouldBeUsedAsync()
+    {
+        //Arrange
+        using var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this.httpClient, "https://fake-random-test-host/fake-path");
+
+        //Act
+        await sut.GenerateEmbeddingsAsync(new List<string>());
+
+        //Assert
+        Assert.StartsWith("https://fake-random-test-host/fake-path", this.messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task HttpClientBaseAddressShouldBeUsedAsync()
+    {
+        //Arrange
+        this.httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path");
+
+        using var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this.httpClient);
+
+        //Act
+        await sut.GenerateEmbeddingsAsync(new List<string>());
+
+        //Assert
+        Assert.StartsWith("https://fake-random-test-host/fake-path", this.messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
+    {
+        //Arrange
+        using var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this.httpClient, endpoint: "https://fake-random-test-host/fake-path");
+
+        //Act
+        await sut.GenerateEmbeddingsAsync(new List<string>());
+
+        //Assert
+        Assert.Equal("https://fake-random-test-host/fake-path/fake-model", this.messageHandlerStub.RequestUri?.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task ShouldSendDataToServiceAsync()
+    {
+        //Arrange
+        using var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this.httpClient, "https://fake-random-test-host/fake-path");
+        var data = new List<string>() { "test_string_1", "test_string_2", "test_string_3" };
+
+        //Act
+        await sut.GenerateEmbeddingsAsync(data);
+
+        //Assert
+        var requestPayload = JsonSerializer.Deserialize<TextEmbeddingRequest>(this.messageHandlerStub.RequestContent);
+        Assert.NotNull(requestPayload);
+
+        Assert.Equivalent(data, requestPayload.Input);
+    }
+
+    [Fact]
+    public async Task ShouldHandleServiceResponseAsync()
+    {
+        //Arrange
+        using var sut = new HuggingFaceTextEmbeddingGeneration("fake-model", this.httpClient, "https://fake-random-test-host/fake-path");
+
+        //Act
+        var embeddings = await sut.GenerateEmbeddingsAsync(new List<string>());
+
+        //Assert
+
+        Assert.NotNull(embeddings);
+        Assert.Equal(1, embeddings.Count);
+        Assert.Equal(8, embeddings.First().Count);
     }
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._response.Dispose();
-        }
+        this.httpClient.Dispose();
+        this.messageHandlerStub.Dispose();
     }
 }

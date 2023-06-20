@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -16,12 +17,14 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// The list is used by the planner and when executing pipelines of function compositions.
 /// </summary>
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "It is a collection")]
+[DebuggerTypeProxy(typeof(IReadOnlySkillCollectionTypeProxy))]
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class SkillCollection : ISkillCollection
 {
     internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
     /// <inheritdoc/>
-    public IReadOnlySkillCollection ReadOnlySkillCollection { get; private set; }
+    public IReadOnlySkillCollection ReadOnlySkillCollection { get; }
 
     public SkillCollection(ILogger? log = null)
     {
@@ -59,8 +62,8 @@ public class SkillCollection : ISkillCollection
     }
 
     /// <inheritdoc/>
-    public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? functionInstance) =>
-        this.TryGetFunction(GlobalSkill, functionName, out functionInstance);
+    public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction) =>
+        this.TryGetFunction(GlobalSkill, functionName, out availableFunction);
 
     /// <inheritdoc/>
     public bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
@@ -98,6 +101,9 @@ public class SkillCollection : ISkillCollection
 
         return result;
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    internal string DebuggerDisplay => $"Count = {this._skillCollection.Count}";
 
     #region private ================================================================================
 

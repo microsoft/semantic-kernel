@@ -16,15 +16,15 @@ export const pluginsState = createSlice({
                     plugin = state.MsGraph;
                     break;
                 case Plugins.Jira:
-                    plugin = state.Jira;                    
-                    authData = `${action.payload.username}:${action.payload.accessToken}`;
+                    plugin = state.Jira;
+                    authData = `${action.payload.email}:${action.payload.accessToken}`;
                     break;
                 case Plugins.GitHub:
                     plugin = state.GitHub;
                     break;
                 case Plugins.Klarna:
                     plugin = state.Klarna;
-                    authData = "klarna-auth-data";
+                    authData = 'klarna-auth-data';
                     break;
             }
 
@@ -33,25 +33,20 @@ export const pluginsState = createSlice({
             plugin.apiProperties = action.payload.apiProperties;
         },
         disconnectPlugin: (state: PluginsState, action: PayloadAction<Plugins>) => {
-            var plugin: Plugin;
-
             switch (action.payload) {
                 case Plugins.MsGraph:
-                    plugin = state.MsGraph;
+                    state.MsGraph = initialState.Jira;
                     break;
                 case Plugins.Jira:
-                    plugin = state.Jira;
+                    state.Jira = initialState.MsGraph;
                     break;
                 case Plugins.GitHub:
-                    plugin = state.GitHub;
+                    state.GitHub = initialState.GitHub;
                     break;
                 case Plugins.Klarna:
-                    plugin = state.Klarna;
+                    state.Klarna = initialState.Klarna;
                     break;
             }
-
-            plugin.enabled = false;
-            plugin.authData = undefined;
         },
     },
 });

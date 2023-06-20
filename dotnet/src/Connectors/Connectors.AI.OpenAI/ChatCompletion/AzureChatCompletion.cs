@@ -53,43 +53,44 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     }
 
     /// <inheritdoc/>
-    public Task<string> GenerateMessageAsync(
+    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGenerateChatMessageAsync(chat, requestSettings ?? new(), cancellationToken);
+        return this.InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> GenerateMessageStreamAsync(
+    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalGenerateChatMessageStreamAsync(chat, requestSettings ?? new(), cancellationToken);
+        return this.InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string instructions = "")
+    public ChatHistory CreateNewChat(string? instructions = null)
     {
         return InternalCreateNewChat(instructions);
     }
 
     /// <inheritdoc/>
-    public Task<string> CompleteAsync(
+    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextUsingChatAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetChatStreamingResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> CompleteStreamAsync(string text,
-        CompleteRequestSettings requestSettings,
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+        string text,
+        CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalCompleteTextUsingChatStreamAsync(text, requestSettings, cancellationToken);
+        return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 }

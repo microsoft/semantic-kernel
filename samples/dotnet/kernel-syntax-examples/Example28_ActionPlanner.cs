@@ -13,10 +13,10 @@ public static class Example28_ActionPlanner
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Action Planner ========");
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        // Note: Action Planner works with old models like text-davinci-002
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"));
+        var kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"))// Note: Action Planner works with old models like text-davinci-002
+            .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
