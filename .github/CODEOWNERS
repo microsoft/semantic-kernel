@@ -11,7 +11,7 @@
 # @microsoft/octo-semantickernel-pr-python owns any files in the java
 # directory at the root of the repository and any of its
 # subdirectories.
-/python/ @microsoft/octo-semantickernel-pr-java
+/java/ @microsoft/octo-semantickernel-pr-java
 
 # @microsoft/octo-semantickernel-pr-apps owns any files in the samples
 # directory at the root of the repository and any of its
