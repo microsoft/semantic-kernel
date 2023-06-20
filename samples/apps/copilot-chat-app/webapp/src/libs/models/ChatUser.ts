@@ -6,5 +6,5 @@ export interface IChatUser {
     fullName: string;
     emailAddress: string;
     photo: string | undefined; // TODO: change this to required when we enable token / Graph support
-    lastTypingTimestamp: number;
+    isTyping: boolean;
 }
