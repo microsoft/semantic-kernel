@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.Web;
 using Moq;
@@ -22,7 +21,7 @@ public sealed class WebSearchEngineSkillTests : IDisposable
     public WebSearchEngineSkillTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<SKContext>(output);
-        this._context = new SKContext(new ContextVariables(), NullMemory.Instance, null, this._logger);
+        this._context = new SKContext(logger: this._logger);
     }
 
     [Fact]
@@ -40,7 +39,7 @@ public sealed class WebSearchEngineSkillTests : IDisposable
         string anyQuery = Guid.NewGuid().ToString();
 
         // Act
-        await target.SearchAsync(anyQuery, this._context);
+        await target.SearchAsync(anyQuery);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);

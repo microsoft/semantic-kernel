@@ -1,0 +1,38 @@
+﻿---
+version: '3.4'
+services:
+  weaviate:
+
+    image: semitechnologies/weaviate:1.18.0
+    links:
+      - "contextionary:contextionary"
+    ports:
+      - 8080:8080
+    restart: on-failure:0
+    environment:
+      LOG_LEVEL: "debug"
+      CONTEXTIONARY_URL: contextionary:9999
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: "./data"
+      DEFAULT_VECTORIZER_MODULE: text2vec-contextionary
+      ENABLE_MODULES: text2vec-contextionary,backup-filesystem,generative-openai
+      BACKUP_FILESYSTEM_PATH: "/tmp/backups"
+      CLUSTER_GOSSIP_BIND_PORT: "7100"
+      CLUSTER_DATA_BIND_PORT: "7101"
+      AUTHENTICATION_APIKEY_ALLOWED_KEYS: 'my-secret-key'
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/v1" ]
+      interval: 1m
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+  contextionary:
+    image: semitechnologies/contextionary:en0.16.0-v1.2.0
+    environment:
+      LOG_LEVEL: "debug"
+      OCCURRENCE_WEIGHT_LINEAR_FACTOR: 0.75
+      EXTENSIONS_STORAGE_MODE: weaviate
+      EXTENSIONS_STORAGE_ORIGIN: http://weaviate:8080
+      NEIGHBOR_OCCURRENCE_IGNORE_PERCENTILE: 5
+      ENABLE_COMPOUND_SPLITTING: 'false'

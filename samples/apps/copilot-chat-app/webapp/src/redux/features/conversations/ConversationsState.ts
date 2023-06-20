@@ -10,13 +10,13 @@ export type Conversations = {
 export interface ConversationsState {
     conversations: Conversations;
     selectedId: string;
-    botProfilePictureIndex: number;
+    loggedInUserId: string;
 }
 
 export const initialState: ConversationsState = {
     conversations: {},
     selectedId: '',
-    botProfilePictureIndex: 0,
+    loggedInUserId: '',
 };
 
 export type UpdateConversationPayload = {
@@ -27,4 +27,9 @@ export type UpdateConversationPayload = {
 export interface ConversationTitleChange {
     id: string;
     newTitle: string;
+}
+
+export interface ConversationInputChange {
+    id: string;
+    newInput: string;
 }

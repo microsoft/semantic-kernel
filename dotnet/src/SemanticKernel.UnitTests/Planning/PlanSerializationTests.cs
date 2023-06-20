@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -70,8 +69,8 @@ public sealed class PlanSerializationTests
         Assert.NotNull(serializedPlan);
         Assert.NotEmpty(serializedPlan);
         Assert.Contains($"\"description\":\"{goal}\"", serializedPlan, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains($"\"description\":\"Write a poem or joke\"", serializedPlan, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains($"\"description\":\"Send it in an e-mail to Kai\"", serializedPlan, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"description\":\"Write a poem or joke\"", serializedPlan, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"description\":\"Send it in an e-mail to Kai\"", serializedPlan, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expectedSteps, serializedPlan, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -98,8 +97,8 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -138,8 +137,8 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -178,8 +177,8 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -218,8 +217,8 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -257,8 +256,8 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -295,8 +294,8 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -354,10 +353,10 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
-                c.Variables.Get("variables", out var v);
+                c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
@@ -391,7 +390,7 @@ public sealed class PlanSerializationTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Exactly(2));
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Exactly(2));
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -426,10 +425,10 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
             {
-                c.Variables.Get("variables", out var v);
+                c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
@@ -478,7 +477,7 @@ public sealed class PlanSerializationTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default), Times.Exactly(2));
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Exactly(2));
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -512,8 +511,8 @@ public sealed class PlanSerializationTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, null, default))
-            .Callback<SKContext, CompleteRequestSettings, ILogger, CancellationToken?>((c, s, l, ct) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 

@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
 
+#pragma warning disable CA1861 // Avoid constant arrays as arguments
 // ReSharper disable once InconsistentNaming
 public static class Example22_OpenApiSkill_AzureKeyVault
 {

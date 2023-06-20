@@ -29,4 +29,10 @@
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Add CLSCompliant=false to all projects by default. Projects can override. -->
+    <AssemblyAttribute Include="System.CLSCompliantAttribute">
+      <_Parameter1>false</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

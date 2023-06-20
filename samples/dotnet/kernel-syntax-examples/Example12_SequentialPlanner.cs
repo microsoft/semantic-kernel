@@ -25,11 +25,13 @@ internal static class Example12_SequentialPlanner
     private static async Task PoetrySamplesAsync()
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Poetry Plan ========");
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureTextCompletionService(
-            Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
+        var kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithAzureTextCompletionService(
+                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_KEY"))
+            .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSemanticSkillFromDirectory(folder,
@@ -135,19 +137,14 @@ internal static class Example12_SequentialPlanner
 
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .Configure(
-                config =>
-                {
-                    config.AddAzureTextCompletionService(
+            .WithAzureTextCompletionService(
                         Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_KEY"));
-
-                    config.AddAzureTextEmbeddingGenerationService(
+                        Env.Var("AZURE_OPENAI_KEY"))
+            .WithAzureTextEmbeddingGenerationService(
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
                         Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
-                })
+                        Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -167,7 +164,6 @@ internal static class Example12_SequentialPlanner
 
         kernel.ImportSkill(new EmailSkill(), "email");
         kernel.ImportSkill(new StaticTextSkill(), "statictext");
-        kernel.ImportSkill(new TextSkill(), "text");
         kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
@@ -182,11 +178,13 @@ internal static class Example12_SequentialPlanner
 
     private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddAzureTextCompletionService(
-            Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
+        var kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithAzureTextCompletionService(
+                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_KEY"))
+            .Build();
 
         planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { MaxTokens = maxTokens });
 
@@ -215,6 +213,7 @@ internal static class Example12_SequentialPlanner
                 else
                 {
                     plan = await kernel.StepAsync(input, plan);
+                    input = string.Empty;
                 }
 
                 if (!plan.HasNextStep)
@@ -230,7 +229,7 @@ internal static class Example12_SequentialPlanner
         }
         catch (KernelException e)
         {
-            Console.WriteLine($"Step - Execution failed:");
+            Console.WriteLine("Step - Execution failed:");
             Console.WriteLine(e.Message);
         }
 

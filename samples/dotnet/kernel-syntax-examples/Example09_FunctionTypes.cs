@@ -5,7 +5,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
@@ -17,10 +16,12 @@ public static class Example09_FunctionTypes
     {
         Console.WriteLine("======== Native function types ========");
 
-        var fakeContext = new SKContext(new ContextVariables(), NullMemory.Instance, null, ConsoleLogger.Log);
+        var fakeContext = new SKContext(logger: ConsoleLogger.Log);
 
-        var kernel = Kernel.Builder.WithLogger(ConsoleLogger.Log).Build();
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        var kernel = Kernel.Builder
+            .WithLogger(ConsoleLogger.Log)
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .Build();
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
         var test = kernel.ImportSkill(new LocalExampleSkill(), "test");
@@ -81,26 +82,11 @@ public static class Example09_FunctionTypes
         await kernel.Func("test", "type10").InvokeAsync("");
         await test["type10"].InvokeAsync("");
 
-        await kernel.Func("test", "type11").InvokeAsync("", fakeContext);
-        await test["type11"].InvokeAsync("", fakeContext);
+        await kernel.Func("test", "type11").InvokeAsync("");
+        await test["type11"].InvokeAsync("");
 
-        await kernel.Func("test", "type12").InvokeAsync("", fakeContext);
-        await test["type12"].InvokeAsync("", fakeContext);
-
-        await kernel.Func("test", "type13").InvokeAsync("", fakeContext);
-        await test["type13"].InvokeAsync("", fakeContext);
-
-        await kernel.Func("test", "type14").InvokeAsync("", fakeContext);
-        await test["type14"].InvokeAsync("", fakeContext);
-
-        await kernel.Func("test", "type15").InvokeAsync("");
-        await test["type15"].InvokeAsync("");
-
-        await kernel.Func("test", "type16").InvokeAsync(fakeContext);
-        await test["type16"].InvokeAsync(fakeContext);
-
-        await kernel.Func("test", "type17").InvokeAsync("", fakeContext);
-        await test["type17"].InvokeAsync("", fakeContext);
+        await kernel.Func("test", "type12").InvokeAsync(fakeContext);
+        await test["type12"].InvokeAsync(fakeContext);
 
         await kernel.Func("test", "type18").InvokeAsync();
         await test["type18"].InvokeAsync();
@@ -109,21 +95,20 @@ public static class Example09_FunctionTypes
 
 public class LocalExampleSkill
 {
-    [SKFunction("Native function type 1")]
+    [SKFunction]
     public void Type01()
     {
         Console.WriteLine("Running function type 1");
     }
 
-    [SKFunction("Native function type 2")]
+    [SKFunction]
     public string Type02()
     {
         Console.WriteLine("Running function type 2");
         return "";
     }
 
-    [SKFunction("Native function type 3")]
-    [SKFunctionName("Type03")]
+    [SKFunction]
     public async Task<string> Type03Async()
     {
         await Task.Delay(0);
@@ -131,21 +116,20 @@ public class LocalExampleSkill
         return "";
     }
 
-    [SKFunction("Native function type 4")]
+    [SKFunction]
     public void Type04(SKContext context)
     {
         Console.WriteLine("Running function type 4");
     }
 
-    [SKFunction("Native function type 5")]
+    [SKFunction]
     public string Type05(SKContext context)
     {
         Console.WriteLine("Running function type 5");
         return "";
     }
 
-    [SKFunction("Native function type 6")]
-    [SKFunctionName("Type06")]
+    [SKFunction]
     public async Task<string> Type06Async(SKContext context)
     {
         var summarizer = context.Func("SummarizeSkill", "Summarize");
@@ -156,8 +140,7 @@ public class LocalExampleSkill
         return "";
     }
 
-    [SKFunction("Native function type 7")]
-    [SKFunctionName("Type07")]
+    [SKFunction]
     public async Task<SKContext> Type07Async(SKContext context)
     {
         await Task.Delay(0);
@@ -165,21 +148,20 @@ public class LocalExampleSkill
         return context;
     }
 
-    [SKFunction("Native function type 8")]
+    [SKFunction]
     public void Type08(string x)
     {
         Console.WriteLine("Running function type 8");
     }
 
-    [SKFunction("Native function type 9")]
+    [SKFunction]
     public string Type09(string x)
     {
         Console.WriteLine("Running function type 9");
         return "";
     }
 
-    [SKFunction("Native function type 10")]
-    [SKFunctionName("Type10")]
+    [SKFunction]
     public async Task<string> Type10Async(string x)
     {
         await Task.Delay(0);
@@ -187,21 +169,20 @@ public class LocalExampleSkill
         return "";
     }
 
-    [SKFunction("Native function type 11")]
+    [SKFunction]
     public void Type11(string x, SKContext context)
     {
         Console.WriteLine("Running function type 11");
     }
 
-    [SKFunction("Native function type 12")]
+    [SKFunction]
     public string Type12(string x, SKContext context)
     {
         Console.WriteLine("Running function type 12");
         return "";
     }
 
-    [SKFunction("Native function type 13")]
-    [SKFunctionName("Type13")]
+    [SKFunction]
     public async Task<string> Type13Async(string x, SKContext context)
     {
         await Task.Delay(0);
@@ -209,8 +190,7 @@ public class LocalExampleSkill
         return "";
     }
 
-    [SKFunction("Native function type 14")]
-    [SKFunctionName("Type14")]
+    [SKFunction]
     public async Task<SKContext> Type14Async(string x, SKContext context)
     {
         await Task.Delay(0);
@@ -218,32 +198,28 @@ public class LocalExampleSkill
         return context;
     }
 
-    [SKFunction("Native function type 15")]
-    [SKFunctionName("Type15")]
+    [SKFunction]
     public async Task Type15Async(string x)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 15");
     }
 
-    [SKFunction("Native function type 16")]
-    [SKFunctionName("Type16")]
+    [SKFunction]
     public async Task Type16Async(SKContext context)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 16");
     }
 
-    [SKFunction("Native function type 17")]
-    [SKFunctionName("Type17")]
+    [SKFunction]
     public async Task Type17Async(string x, SKContext context)
     {
         await Task.Delay(0);
         Console.WriteLine("Running function type 17");
     }
 
-    [SKFunction("Native function type 18")]
-    [SKFunctionName("Type18")]
+    [SKFunction]
     public async Task Type18Async()
     {
         await Task.Delay(0);

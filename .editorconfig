@@ -90,14 +90,76 @@ dotnet_style_prefer_conditional_expression_over_assignment = true:silent
 dotnet_style_prefer_conditional_expression_over_return = true:silent
 dotnet_style_prefer_simplified_interpolation = true:suggestion
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
-dotnet_style_namespace_match_folder = true:suggestion
 dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_compound_assignment = true:suggestion
 # Code quality rules
 dotnet_code_quality_unused_parameters = all:suggestion
 
+[*.cs]
+
+# TODO: enable this but stop "dotnet format" from applying incorrect fixes and introducing a lot of unwanted changes.
+dotnet_analyzer_diagnostic.severity = none
+
+# Note: these settings cause "dotnet format" to fix the code. You should review each change if you uses "dotnet format".
+dotnet_diagnostic.RCS1036.severity = warning # Remove unnecessary blank line.
+dotnet_diagnostic.RCS1037.severity = warning # Remove trailing white-space.
+dotnet_diagnostic.RCS1097.severity = warning # Remove redundant 'ToString' call.
+dotnet_diagnostic.RCS1138.severity = warning # Add summary to documentation comment.
+dotnet_diagnostic.RCS1139.severity = warning # Add summary element to documentation comment.
+dotnet_diagnostic.RCS1168.severity = warning # Parameter name 'foo' differs from base name 'bar'.
+dotnet_diagnostic.RCS1175.severity = warning # Unused 'this' parameter 'operation'.
+dotnet_diagnostic.RCS1192.severity = warning # Unnecessary usage of verbatim string literal.
+dotnet_diagnostic.RCS1194.severity = warning # Implement exception constructors.
+dotnet_diagnostic.RCS1211.severity = warning # Remove unnecessary else clause.
+dotnet_diagnostic.RCS1214.severity = warning # Unnecessary interpolated string.
+dotnet_diagnostic.RCS1225.severity = warning # Make class sealed.
+dotnet_diagnostic.RCS1232.severity = warning # Order elements in documentation comment.
+
+# Commented out because `dotnet format` change can be disruptive.
+# dotnet_diagnostic.RCS1085.severity = warning # Use auto-implemented property.
+
+# Commented out because `dotnet format` removes the xmldoc element, while we should add the missing documentation instead.
+# dotnet_diagnostic.RCS1228.severity = warning # Unused element in documentation comment.
+
+# Diagnostics elevated as warnings
+dotnet_diagnostic.CA1000.severity = warning # Do not declare static members on generic types
+dotnet_diagnostic.CA1031.severity = warning # Do not catch general exception types
+dotnet_diagnostic.CA1050.severity = warning # Declare types in namespaces
+dotnet_diagnostic.CA1063.severity = warning # Implement IDisposable correctly
+dotnet_diagnostic.CA1064.severity = warning # Exceptions should be public
+dotnet_diagnostic.CA1416.severity = warning # Validate platform compatibility
+dotnet_diagnostic.CA1508.severity = warning # Avoid dead conditional code
+dotnet_diagnostic.CA1852.severity = warning # Sealed classes
+dotnet_diagnostic.CA1859.severity = warning # Use concrete types when possible for improved performance
+dotnet_diagnostic.CA1860.severity = warning # Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance
+dotnet_diagnostic.CA2000.severity = warning # Call System.IDisposable.Dispose on object before all references to it are out of scope
+dotnet_diagnostic.CA2201.severity = warning # Exception type System.Exception is not sufficiently specific
+
+dotnet_diagnostic.IDE0001.severity = warning # Simplify name
+dotnet_diagnostic.IDE0005.severity = warning # Remove unnecessary using directives
+dotnet_diagnostic.IDE0009.severity = warning # Add this or Me qualification
+dotnet_diagnostic.IDE0011.severity = warning # Add braces
+dotnet_diagnostic.IDE0018.severity = warning # Inline variable declaration
+dotnet_diagnostic.IDE0032.severity = warning # Use auto-implemented property
+dotnet_diagnostic.IDE0034.severity = warning # Simplify 'default' expression
+dotnet_diagnostic.IDE0035.severity = warning # Remove unreachable code
+dotnet_diagnostic.IDE0040.severity = warning # Add accessibility modifiers
+dotnet_diagnostic.IDE0049.severity = warning # Use language keywords instead of framework type names for type references
+dotnet_diagnostic.IDE0050.severity = warning # Convert anonymous type to tuple
+dotnet_diagnostic.IDE0051.severity = warning # Remove unused private member
+dotnet_diagnostic.IDE0055.severity = warning # Formatting rule
+dotnet_diagnostic.IDE0060.severity = warning # Remove unused parameter
+dotnet_diagnostic.IDE0070.severity = warning # Use 'System.HashCode.Combine'
+dotnet_diagnostic.IDE0071.severity = warning # Simplify interpolation
+dotnet_diagnostic.IDE0073.severity = warning # Require file header
+dotnet_diagnostic.IDE0082.severity = warning # Convert typeof to nameof
+dotnet_diagnostic.IDE0090.severity = warning # Simplify new expression
+dotnet_diagnostic.IDE0130.severity = warning # Namespace does not match folder structure
+dotnet_diagnostic.IDE0161.severity = warning # Use file-scoped namespace
+
 # Suppressed diagnostics
 dotnet_diagnostic.CA1002.severity = none # Change 'List<string>' in '...' to use 'Collection<T>' ...
+dotnet_diagnostic.CA1032.severity = none # We're using RCS1194 which seems to cover more ctors
 dotnet_diagnostic.CA1034.severity = none # Do not nest type. Alternatively, change its accessibility so that it is not externally visible
 dotnet_diagnostic.CA1062.severity = none # Disable null check, C# already does it for us
 dotnet_diagnostic.CA1303.severity = none # Do not pass literals as localized parameters
@@ -109,19 +171,59 @@ dotnet_diagnostic.CA2007.severity = none # Do not directly await a Task
 dotnet_diagnostic.CA2225.severity = none # Operator overloads have named alternates
 dotnet_diagnostic.CA2227.severity = none # Change to be read-only by removing the property setter
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
+
 dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
+dotnet_diagnostic.xUnit1004.severity = none # Test methods should not be skipped. Remove the Skip property to start running the test again.
 
-# Diagnostics elevated as warnings
-dotnet_diagnostic.CA1000.severity = warning # Do not declare static members on generic types
-dotnet_diagnostic.CA1031.severity = warning # Do not catch general exception types
-dotnet_diagnostic.CA1032.severity = warning # Add the following constructor to ...Exception: public ...
-dotnet_diagnostic.CA1063.severity = warning # Implement IDisposable correctly
-dotnet_diagnostic.CA1064.severity = warning # Exceptions should be public
-dotnet_diagnostic.CA1416.severity = warning # Validate platform compatibility
-dotnet_diagnostic.CA1508.severity = warning # Avoid dead conditional code
-dotnet_diagnostic.CA2000.severity = warning # Call System.IDisposable.Dispose on object before all references to it are out of scope
-dotnet_diagnostic.CA2201.severity = warning # Exception type System.Exception is not sufficiently specific
+dotnet_diagnostic.RCS1021.severity = none # Use expression-bodied lambda.
+dotnet_diagnostic.RCS1032.severity = none # Remove redundant parentheses.
+dotnet_diagnostic.RCS1061.severity = none # Merge 'if' with nested 'if'.
+dotnet_diagnostic.RCS1069.severity = none # Remove unnecessary case label.
+dotnet_diagnostic.RCS1074.severity = none # Remove redundant constructor.
+dotnet_diagnostic.RCS1077.severity = none # Optimize LINQ method call.
+dotnet_diagnostic.RCS1118.severity = none # Mark local variable as const.
+dotnet_diagnostic.RCS1124.severity = none # Inline local variable.
+dotnet_diagnostic.RCS1129.severity = none # Remove redundant field initialization.
+dotnet_diagnostic.RCS1140.severity = none # Add exception to documentation comment.
+dotnet_diagnostic.RCS1141.severity = none # Add 'param' element to documentation comment.
+dotnet_diagnostic.RCS1142.severity = none # Add 'typeparam' element to documentation comment.
+dotnet_diagnostic.RCS1146.severity = none # Use conditional access.
+dotnet_diagnostic.RCS1151.severity = none # Remove redundant cast.
+dotnet_diagnostic.RCS1158.severity = none # Static member in generic type should use a type parameter.
+dotnet_diagnostic.RCS1161.severity = none # Enum should declare explicit value
+dotnet_diagnostic.RCS1163.severity = none # Unused parameter 'foo'.
+dotnet_diagnostic.RCS1170.severity = none # Use read-only auto-implemented property.
+dotnet_diagnostic.RCS1173.severity = none # Use coalesce expression instead of 'if'.
+dotnet_diagnostic.RCS1181.severity = none # Convert comment to documentation comment.
+dotnet_diagnostic.RCS1186.severity = none # Use Regex instance instead of static method.
+dotnet_diagnostic.RCS1188.severity = none # Remove redundant auto-property initialization.
+dotnet_diagnostic.RCS1189.severity = none # Add region name to #endregion.
+dotnet_diagnostic.RCS1197.severity = none # Optimize StringBuilder.AppendLine call.
+dotnet_diagnostic.RCS1201.severity = none # Use method chaining.
+dotnet_diagnostic.RCS1205.severity = none # Order named arguments according to the order of parameters.
+dotnet_diagnostic.RCS1212.severity = none # Remove redundant assignment.
+dotnet_diagnostic.RCS1217.severity = none # Convert interpolated string to concatenation.
+dotnet_diagnostic.RCS1222.severity = none # Merge preprocessor directives.
+dotnet_diagnostic.RCS1226.severity = none # Add paragraph to documentation comment.
+dotnet_diagnostic.RCS1229.severity = none # Use async/await when necessary.
+dotnet_diagnostic.RCS1234.severity = none # Enum duplicate value
+dotnet_diagnostic.RCS1238.severity = none # Avoid nested ?: operators.
+dotnet_diagnostic.RCS1241.severity = none # Implement IComparable when implementing IComparable<T><T>.
 
+dotnet_diagnostic.IDE0001.severity = none # Simplify name
+dotnet_diagnostic.IDE0002.severity = none # Simplify member access
+dotnet_diagnostic.IDE0004.severity = none # Remove unnecessary cast
+dotnet_diagnostic.IDE0035.severity = none # Remove unreachable code
+dotnet_diagnostic.IDE0051.severity = none # Remove unused private member
+dotnet_diagnostic.IDE0052.severity = none # Remove unread private member
+dotnet_diagnostic.IDE0058.severity = none # Remove unused expression value
+dotnet_diagnostic.IDE0059.severity = none # Unnecessary assignment of a value
+dotnet_diagnostic.IDE0060.severity = none # Remove unused parameter
+dotnet_diagnostic.IDE0080.severity = none # Remove unnecessary suppression operator
+dotnet_diagnostic.IDE0100.severity = none # Remove unnecessary equality operator
+dotnet_diagnostic.IDE0110.severity = none # Remove unnecessary discards
+dotnet_diagnostic.IDE0032.severity = none # Use auto property
+dotnet_diagnostic.IDE0160.severity = none # Use block-scoped namespace
 
 ###############################
 # Naming Conventions          #
@@ -193,7 +295,7 @@ dotnet_naming_rule.async_methods_end_in_async.severity = error
 ###############################
 # C# Coding Conventions       #
 ###############################
-[*.cs]
+
 # var preferences
 csharp_style_var_for_built_in_types = false:none
 csharp_style_var_when_type_is_apparent = false:none
@@ -223,7 +325,7 @@ csharp_style_inlined_variable_declaration = true:suggestion
 ###############################
 # C# Formatting Rules         #
 ###############################
-[*.cs]
+
 # New line preferences
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
@@ -261,40 +363,261 @@ csharp_style_prefer_top_level_statements = true:silent
 csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 
-##################
-# C# Style       #
-##################
-
-# Disable unneccesary style rules by default
-[*.cs]
-dotnet_diagnostic.IDE0001.severity = none # Simplify name
-dotnet_diagnostic.IDE0002.severity = none # Simplify member access
-dotnet_diagnostic.IDE0004.severity = none # Remove unnecessary cast
-# dotnet_diagnostic.IDE0005.severity = none # Remove unnecessary usings
-dotnet_diagnostic.IDE0035.severity = none # Remove unreachable code
-dotnet_diagnostic.IDE0051.severity = none # Remove unused private member
-dotnet_diagnostic.IDE0052.severity = none # Remove unread private member
-dotnet_diagnostic.IDE0058.severity = none # Remove unused expression value
-dotnet_diagnostic.IDE0059.severity = none # Unnecessary assignment of a value
-dotnet_diagnostic.IDE0060.severity = none # Remove unused parameter
-dotnet_diagnostic.IDE0080.severity = none # Remove unnecessary suppression operator
-dotnet_diagnostic.IDE0100.severity = none # Remove unnecessary equality operator
-dotnet_diagnostic.IDE0110.severity = none # Remove unnecessary discards
-
-# Disable select expression-level style rules
-[*.cs]
-dotnet_diagnostic.IDE0032.severity = none # Use auto property
-
-# Disable select language style rules
-[*.cs]
-dotnet_diagnostic.IDE0160.severity = none # Use block-scoped namespace
 
 ###############################
-# VB Coding Conventions       #
+# Java Coding Conventions     #
 ###############################
-[*.vb]
-trim_trailing_whitespace = true
-tab_width = 4
-indent_size = 4
-# Modifier preferences
-visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public,Friend,NotOverridable,Overridable,MustOverride,Overloads,Overrides,MustInherit,NotInheritable,Static,Shared,Shadows,ReadOnly,WriteOnly,Dim,Const,WithEvents,Widening,Narrowing,Custom,Async:suggestion
+[*.java]
+charset = utf-8
+end_of_line = lf
+indent_size = 2
+indent_style = space
+insert_final_newline = false
+tab_width = 2
+ij_formatter_off_tag = @formatter:off
+ij_formatter_on_tag = @formatter:on
+ij_smart_tabs = false
+ij_visual_guides = none
+
+max_line_length = 100
+ij_continuation_indent_size = 4
+ij_formatter_tags_enabled = false
+ij_wrap_on_typing = false
+
+ij_java_align_consecutive_assignments = false
+ij_java_align_consecutive_variable_declarations = false
+ij_java_align_group_field_declarations = false
+ij_java_align_multiline_annotation_parameters = false
+ij_java_align_multiline_array_initializer_expression = false
+ij_java_align_multiline_assignment = false
+ij_java_align_multiline_binary_operation = false
+ij_java_align_multiline_chained_methods = false
+ij_java_align_multiline_extends_list = false
+ij_java_align_multiline_for = false
+ij_java_align_multiline_method_parentheses = false
+ij_java_align_multiline_parameters = false
+ij_java_align_multiline_parameters_in_calls = false
+ij_java_align_multiline_parenthesized_expression = false
+ij_java_align_multiline_resources = false
+ij_java_align_multiline_ternary_operation = false
+ij_java_align_multiline_throws_list = false
+ij_java_align_subsequent_simple_methods = false
+ij_java_align_throws_keyword = false
+ij_java_annotation_parameter_wrap = off
+ij_java_array_initializer_new_line_after_left_brace = false
+ij_java_array_initializer_right_brace_on_new_line = false
+ij_java_array_initializer_wrap = normal
+ij_java_assert_statement_colon_on_next_line = false
+ij_java_assert_statement_wrap = off
+ij_java_assignment_wrap = off
+ij_java_binary_operation_sign_on_next_line = true
+ij_java_binary_operation_wrap = normal
+ij_java_blank_lines_after_anonymous_class_header = 0
+ij_java_blank_lines_after_class_header = 1
+ij_java_blank_lines_after_imports = 1
+ij_java_blank_lines_after_package = 1
+ij_java_blank_lines_around_class = 1
+ij_java_blank_lines_around_field = 0
+ij_java_blank_lines_around_field_in_interface = 0
+ij_java_blank_lines_around_initializer = 1
+ij_java_blank_lines_around_method = 1
+ij_java_blank_lines_around_method_in_interface = 1
+ij_java_blank_lines_before_class_end = 0
+ij_java_blank_lines_before_imports = 1
+ij_java_blank_lines_before_method_body = 0
+ij_java_blank_lines_before_package = 0
+ij_java_block_brace_style = end_of_line
+ij_java_block_comment_at_first_column = true
+ij_java_call_parameters_new_line_after_left_paren = false
+ij_java_call_parameters_right_paren_on_new_line = false
+ij_java_call_parameters_wrap = normal
+ij_java_case_statement_on_separate_line = true
+ij_java_catch_on_new_line = false
+ij_java_class_annotation_wrap = split_into_lines
+ij_java_class_brace_style = end_of_line
+ij_java_class_count_to_use_import_on_demand = 999
+ij_java_class_names_in_javadoc = 1
+ij_java_do_not_indent_top_level_class_members = false
+ij_java_do_not_wrap_after_single_annotation = false
+ij_java_do_while_brace_force = always
+ij_java_doc_add_blank_line_after_description = true
+ij_java_doc_add_blank_line_after_param_comments = false
+ij_java_doc_add_blank_line_after_return = false
+ij_java_doc_add_p_tag_on_empty_lines = true
+ij_java_doc_align_exception_comments = true
+ij_java_doc_align_param_comments = true
+ij_java_doc_do_not_wrap_if_one_line = false
+ij_java_doc_enable_formatting = true
+ij_java_doc_enable_leading_asterisks = true
+ij_java_doc_indent_on_continuation = false
+ij_java_doc_keep_empty_lines = true
+ij_java_doc_keep_empty_parameter_tag = true
+ij_java_doc_keep_empty_return_tag = true
+ij_java_doc_keep_empty_throws_tag = true
+ij_java_doc_keep_invalid_tags = true
+ij_java_doc_param_description_on_new_line = false
+ij_java_doc_preserve_line_breaks = false
+ij_java_doc_use_throws_not_exception_tag = true
+ij_java_else_on_new_line = false
+ij_java_entity_dd_suffix = EJB
+ij_java_entity_eb_suffix = Bean
+ij_java_entity_hi_suffix = Home
+ij_java_entity_lhi_prefix = Local
+ij_java_entity_lhi_suffix = Home
+ij_java_entity_li_prefix = Local
+ij_java_entity_pk_class = java.lang.String
+ij_java_entity_vo_suffix = VO
+ij_java_enum_constants_wrap = off
+ij_java_extends_keyword_wrap = off
+ij_java_extends_list_wrap = normal
+ij_java_field_annotation_wrap = split_into_lines
+ij_java_finally_on_new_line = false
+ij_java_for_brace_force = always
+ij_java_for_statement_new_line_after_left_paren = false
+ij_java_for_statement_right_paren_on_new_line = false
+ij_java_for_statement_wrap = normal
+ij_java_generate_final_locals = false
+ij_java_generate_final_parameters = false
+ij_java_if_brace_force = always
+ij_java_imports_layout = $*, |, *
+ij_java_indent_case_from_switch = true
+ij_java_insert_inner_class_imports = true
+ij_java_insert_override_annotation = true
+ij_java_keep_blank_lines_before_right_brace = 2
+ij_java_keep_blank_lines_between_package_declaration_and_header = 2
+ij_java_keep_blank_lines_in_code = 1
+ij_java_keep_blank_lines_in_declarations = 2
+ij_java_keep_control_statement_in_one_line = false
+ij_java_keep_first_column_comment = true
+ij_java_keep_indents_on_empty_lines = false
+ij_java_keep_line_breaks = true
+ij_java_keep_multiple_expressions_in_one_line = false
+ij_java_keep_simple_blocks_in_one_line = false
+ij_java_keep_simple_classes_in_one_line = false
+ij_java_keep_simple_lambdas_in_one_line = false
+ij_java_keep_simple_methods_in_one_line = false
+ij_java_lambda_brace_style = end_of_line
+ij_java_layout_static_imports_separately = true
+ij_java_line_comment_add_space = false
+ij_java_line_comment_at_first_column = true
+ij_java_message_dd_suffix = EJB
+ij_java_message_eb_suffix = Bean
+ij_java_method_annotation_wrap = split_into_lines
+ij_java_method_brace_style = end_of_line
+ij_java_method_call_chain_wrap = normal
+ij_java_method_parameters_new_line_after_left_paren = false
+ij_java_method_parameters_right_paren_on_new_line = false
+ij_java_method_parameters_wrap = normal
+ij_java_modifier_list_wrap = false
+ij_java_names_count_to_use_import_on_demand = 999
+ij_java_parameter_annotation_wrap = off
+ij_java_parentheses_expression_new_line_after_left_paren = false
+ij_java_parentheses_expression_right_paren_on_new_line = false
+ij_java_place_assignment_sign_on_next_line = false
+ij_java_prefer_longer_names = true
+ij_java_prefer_parameters_wrap = false
+ij_java_repeat_synchronized = true
+ij_java_replace_instanceof_and_cast = false
+ij_java_replace_null_check = true
+ij_java_replace_sum_lambda_with_method_ref = true
+ij_java_resource_list_new_line_after_left_paren = false
+ij_java_resource_list_right_paren_on_new_line = false
+ij_java_resource_list_wrap = off
+ij_java_session_dd_suffix = EJB
+ij_java_session_eb_suffix = Bean
+ij_java_session_hi_suffix = Home
+ij_java_session_lhi_prefix = Local
+ij_java_session_lhi_suffix = Home
+ij_java_session_li_prefix = Local
+ij_java_session_si_suffix = Service
+ij_java_space_after_closing_angle_bracket_in_type_argument = false
+ij_java_space_after_colon = true
+ij_java_space_after_comma = true
+ij_java_space_after_comma_in_type_arguments = true
+ij_java_space_after_for_semicolon = true
+ij_java_space_after_quest = true
+ij_java_space_after_type_cast = true
+ij_java_space_before_annotation_array_initializer_left_brace = false
+ij_java_space_before_annotation_parameter_list = false
+ij_java_space_before_array_initializer_left_brace = false
+ij_java_space_before_catch_keyword = true
+ij_java_space_before_catch_left_brace = true
+ij_java_space_before_catch_parentheses = true
+ij_java_space_before_class_left_brace = true
+ij_java_space_before_colon = true
+ij_java_space_before_colon_in_foreach = true
+ij_java_space_before_comma = false
+ij_java_space_before_do_left_brace = true
+ij_java_space_before_else_keyword = true
+ij_java_space_before_else_left_brace = true
+ij_java_space_before_finally_keyword = true
+ij_java_space_before_finally_left_brace = true
+ij_java_space_before_for_left_brace = true
+ij_java_space_before_for_parentheses = true
+ij_java_space_before_for_semicolon = false
+ij_java_space_before_if_left_brace = true
+ij_java_space_before_if_parentheses = true
+ij_java_space_before_method_call_parentheses = false
+ij_java_space_before_method_left_brace = true
+ij_java_space_before_method_parentheses = false
+ij_java_space_before_opening_angle_bracket_in_type_parameter = false
+ij_java_space_before_quest = true
+ij_java_space_before_switch_left_brace = true
+ij_java_space_before_switch_parentheses = true
+ij_java_space_before_synchronized_left_brace = true
+ij_java_space_before_synchronized_parentheses = true
+ij_java_space_before_try_left_brace = true
+ij_java_space_before_try_parentheses = true
+ij_java_space_before_type_parameter_list = false
+ij_java_space_before_while_keyword = true
+ij_java_space_before_while_left_brace = true
+ij_java_space_before_while_parentheses = true
+ij_java_space_inside_one_line_enum_braces = false
+ij_java_space_within_empty_array_initializer_braces = false
+ij_java_space_within_empty_method_call_parentheses = false
+ij_java_space_within_empty_method_parentheses = false
+ij_java_spaces_around_additive_operators = true
+ij_java_spaces_around_assignment_operators = true
+ij_java_spaces_around_bitwise_operators = true
+ij_java_spaces_around_equality_operators = true
+ij_java_spaces_around_lambda_arrow = true
+ij_java_spaces_around_logical_operators = true
+ij_java_spaces_around_method_ref_dbl_colon = false
+ij_java_spaces_around_multiplicative_operators = true
+ij_java_spaces_around_relational_operators = true
+ij_java_spaces_around_shift_operators = true
+ij_java_spaces_around_type_bounds_in_type_parameters = true
+ij_java_spaces_around_unary_operator = false
+ij_java_spaces_within_angle_brackets = false
+ij_java_spaces_within_annotation_parentheses = false
+ij_java_spaces_within_array_initializer_braces = false
+ij_java_spaces_within_braces = false
+ij_java_spaces_within_brackets = false
+ij_java_spaces_within_cast_parentheses = false
+ij_java_spaces_within_catch_parentheses = false
+ij_java_spaces_within_for_parentheses = false
+ij_java_spaces_within_if_parentheses = false
+ij_java_spaces_within_method_call_parentheses = false
+ij_java_spaces_within_method_parentheses = false
+ij_java_spaces_within_parentheses = false
+ij_java_spaces_within_switch_parentheses = false
+ij_java_spaces_within_synchronized_parentheses = false
+ij_java_spaces_within_try_parentheses = false
+ij_java_spaces_within_while_parentheses = false
+ij_java_special_else_if_treatment = true
+ij_java_subclass_name_suffix = Impl
+ij_java_ternary_operation_signs_on_next_line = true
+ij_java_ternary_operation_wrap = normal
+ij_java_test_name_suffix = Test
+ij_java_throws_keyword_wrap = normal
+ij_java_throws_list_wrap = off
+ij_java_use_external_annotations = false
+ij_java_use_fq_class_names = false
+ij_java_use_single_class_imports = true
+ij_java_variable_annotation_wrap = off
+ij_java_visibility = public
+ij_java_while_brace_force = always
+ij_java_while_on_new_line = false
+ij_java_wrap_comments = true
+ij_java_wrap_first_method_in_call_chain = false
+ij_java_wrap_long_lines = false

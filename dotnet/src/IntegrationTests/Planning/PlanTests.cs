@@ -58,7 +58,29 @@ public sealed class PlanTests : IDisposable
         var emailSkill = target.ImportSkill(new EmailSkillFake());
         var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
 
-        var plan = new Plan(emailSkill["SendEmailAsync"]);
+        var plan = new Plan(emailSkill["SendEmail"]);
+
+        // Act
+        var cv = new ContextVariables();
+        cv.Update(inputToEmail);
+        cv.Set("email_address", expectedEmail);
+        var result = await target.RunAsync(cv, plan);
+
+        // Assert
+        Assert.Equal(expectedBody, result.Result);
+    }
+
+    [Theory]
+    [InlineData("This is a story about a dog.", "kai@email.com")]
+    public async Task CanExecuteAsChatAsync(string inputToEmail, string expectedEmail)
+    {
+        // Arrange
+        IKernel target = this.InitializeKernel(false, true);
+
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
+
+        var plan = new Plan(emailSkill["SendEmail"]);
 
         // Act
         var cv = new ContextVariables();
@@ -81,7 +103,7 @@ public sealed class PlanTests : IDisposable
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
         var plan = new Plan(goal);
-        plan.AddSteps(writerSkill["Translate"], emailSkill["SendEmailAsync"]);
+        plan.AddSteps(writerSkill["Translate"], emailSkill["SendEmail"]);
 
         // Act
         var cv = new ContextVariables();
@@ -109,8 +131,8 @@ public sealed class PlanTests : IDisposable
         // Arrange
         var returnContext = target.CreateNewContext();
 
-        subPlan.AddSteps(emailSkill["WritePoemAsync"], emailSkill["WritePoemAsync"], emailSkill["WritePoemAsync"]);
-        plan.AddSteps(subPlan, emailSkill["SendEmailAsync"]);
+        subPlan.AddSteps(emailSkill["WritePoem"], emailSkill["WritePoem"], emailSkill["WritePoem"]);
+        plan.AddSteps(subPlan, emailSkill["SendEmail"]);
         plan.State.Set("email_address", "something@email.com");
 
         // Act
@@ -119,7 +141,7 @@ public sealed class PlanTests : IDisposable
         // Assert
         Assert.NotNull(result);
         Assert.Equal(
-            $"Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
+            "Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
             result.Result);
     }
 
@@ -136,7 +158,7 @@ public sealed class PlanTests : IDisposable
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv,
         };
@@ -170,7 +192,7 @@ public sealed class PlanTests : IDisposable
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
         cv.Set("email_address", string.Empty);
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv,
         };
@@ -205,7 +227,7 @@ public sealed class PlanTests : IDisposable
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv
         };
@@ -257,7 +279,7 @@ public sealed class PlanTests : IDisposable
         {
             "TheEmailFromState"
         };
-        var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
+        var getEmailPlan = new Plan(emailSkill["GetEmailAddress"])
         {
             Parameters = cv,
             Outputs = outputs,
@@ -266,7 +288,7 @@ public sealed class PlanTests : IDisposable
         cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
         cv.Set("input", "$TRANSLATED_SUMMARY");
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv
         };
@@ -331,7 +353,7 @@ public sealed class PlanTests : IDisposable
         {
             "TheEmailFromState"
         };
-        var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
+        var getEmailPlan = new Plan(emailSkill["GetEmailAddress"])
         {
             Parameters = cv,
             Outputs = outputs,
@@ -340,7 +362,7 @@ public sealed class PlanTests : IDisposable
         cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
         cv.Set("input", "$TRANSLATED_SUMMARY");
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv
         };
@@ -390,7 +412,7 @@ public sealed class PlanTests : IDisposable
         {
             "TheEmailFromState"
         };
-        var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
+        var getEmailPlan = new Plan(emailSkill["GetEmailAddress"])
         {
             Parameters = cv,
             Outputs = outputs,
@@ -399,7 +421,7 @@ public sealed class PlanTests : IDisposable
         cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
         cv.Set("input", "$TRANSLATED_SUMMARY");
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv
         };
@@ -432,7 +454,7 @@ public sealed class PlanTests : IDisposable
 
         var summarizePlan = new Plan(summarizeSkill["Summarize"]);
         var translatePlan = new Plan(writerSkill["Translate"]);
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"]);
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"]);
 
         var plan = new Plan(goal);
         plan.AddSteps(summarizePlan, translatePlan, sendEmailPlan);
@@ -448,7 +470,7 @@ public sealed class PlanTests : IDisposable
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
     }
 
-    private IKernel InitializeKernel(bool useEmbeddings = false)
+    private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -456,27 +478,31 @@ public sealed class PlanTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder
-            .WithLogger(this._logger)
-            .Configure(config =>
-            {
-                config.AddAzureTextCompletionService(
-                    deploymentName: azureOpenAIConfiguration.DeploymentName,
-                    endpoint: azureOpenAIConfiguration.Endpoint,
-                    apiKey: azureOpenAIConfiguration.ApiKey);
+        var builder = Kernel.Builder.WithLogger(this._logger);
 
-                if (useEmbeddings)
-                {
-                    config.AddAzureTextEmbeddingGenerationService(
-                        deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                        endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                        apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
-                }
-            });
+        if (useChatModel)
+        {
+            builder.WithAzureChatCompletionService(
+                        deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey);
+        }
+        else
+        {
+            builder.WithAzureTextCompletionService(
+                        deploymentName: azureOpenAIConfiguration.DeploymentName,
+                        endpoint: azureOpenAIConfiguration.Endpoint,
+                        apiKey: azureOpenAIConfiguration.ApiKey);
+        }
 
         if (useEmbeddings)
         {
-            builder = builder.WithMemoryStorage(new VolatileMemoryStore());
+            builder
+                .WithAzureTextEmbeddingGenerationService(
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
+                .WithMemoryStorage(new VolatileMemoryStore());
         }
 
         var kernel = builder.Build();

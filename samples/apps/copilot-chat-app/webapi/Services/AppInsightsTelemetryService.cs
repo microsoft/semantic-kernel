@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.ApplicationInsights;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using SemanticKernel.Service.Diagnostics;
 
 namespace SemanticKernel.Service.Services;
 

@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextCompletion;
@@ -35,8 +36,8 @@ public sealed class HuggingFaceTextCompletionTests
         // Arrange
         const string Input = "This is test";
 
-        using var huggingFaceLocal = new HuggingFaceTextCompletion(new Uri(Endpoint), Model);
-        using var huggingFaceRemote = new HuggingFaceTextCompletion(this.GetApiKey(), Model);
+        using var huggingFaceLocal = new HuggingFaceTextCompletion(Model, endpoint: Endpoint);
+        using var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey());
 
         // Act
         var localResponse = await huggingFaceLocal.CompleteAsync(Input, new CompleteRequestSettings());
@@ -47,6 +48,26 @@ public sealed class HuggingFaceTextCompletionTests
         Assert.NotNull(remoteResponse);
 
         Assert.StartsWith(Input, localResponse, StringComparison.Ordinal);
+        Assert.StartsWith(Input, remoteResponse, StringComparison.Ordinal);
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task RemoteHuggingFaceTextCompletionWithCustomHttpClientAsync()
+    {
+        // Arrange
+        const string Input = "This is test";
+
+        using var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri("https://api-inference.huggingface.co/models");
+
+        using var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey(), httpClient: httpClient);
+
+        // Act
+        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input, new CompleteRequestSettings());
+
+        // Assert
+        Assert.NotNull(remoteResponse);
+
         Assert.StartsWith(Input, remoteResponse, StringComparison.Ordinal);
     }
 

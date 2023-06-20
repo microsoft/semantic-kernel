@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using Microsoft.SemanticKernel.Skills.Web.Google;
@@ -20,9 +21,10 @@ public static class Example07_BingAndGoogleSkills
 {
     public static async Task RunAsync()
     {
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
-        kernel.Config.AddOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        IKernel kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .Build();
 
         // Load Bing skill
         using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));

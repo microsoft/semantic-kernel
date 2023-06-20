@@ -153,6 +153,15 @@ public class PromptTemplateConfig
     public InputConfig Input { get; set; } = new();
 
     /// <summary>
+    /// Whether the function is sensitive (default false).
+    /// When a function is sensitive, the default trust service will throw an exception
+    /// if the function is invoked passing in some untrusted input (or context, or prompt).
+    /// </summary>
+    [JsonPropertyName("is_sensitive")]
+    [JsonPropertyOrder(7)]
+    public bool IsSensitive { get; set; } = false;
+
+    /// <summary>
     /// Remove some default properties to reduce the JSON complexity.
     /// </summary>
     /// <returns>Compacted prompt template configuration.</returns>
@@ -179,11 +188,6 @@ public class PromptTemplateConfig
     public static PromptTemplateConfig FromJson(string json)
     {
         var result = Json.Deserialize<PromptTemplateConfig>(json);
-        if (result is null)
-        {
-            throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
-        }
-
-        return result;
+        return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
     }
 }

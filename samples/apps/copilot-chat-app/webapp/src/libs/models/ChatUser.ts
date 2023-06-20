@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { SKBotAudienceMember } from '../semantic-kernel/bot-agent/models/SKBotAudienceMember';
-
-export interface ChatUser extends SKBotAudienceMember {
-    lastTypingTimestamp: number;
+export interface IChatUser {
+    id: string;
+    online: boolean;
+    fullName: string;
+    emailAddress: string;
+    photo: string | undefined; // TODO: change this to required when we enable token / Graph support
+    isTyping: boolean;
 }

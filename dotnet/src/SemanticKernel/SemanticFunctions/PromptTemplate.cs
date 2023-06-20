@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 namespace Microsoft.SemanticKernel.SemanticFunctions;
 
 /// <summary>
-/// Prompt template. 
+/// Prompt template.
 /// </summary>
 public sealed class PromptTemplate : IPromptTemplate
 {

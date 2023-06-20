@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
-/// Class used to copy and export data from
-/// <see cref="SKFunctionContextParameterAttribute"/>
-/// and <see cref="SKFunctionInputAttribute"/>
+/// Class used to copy and export data about parameters
 /// for planner and related scenarios.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class ParameterView
 {
     private string _name = "";
@@ -19,10 +19,7 @@ public sealed class ParameterView
     /// </summary>
     public string Name
     {
-        get
-        {
-            return this._name;
-        }
+        get => this._name;
         set
         {
             Verify.ValidFunctionParamName(value);
@@ -64,4 +61,9 @@ public sealed class ParameterView
         this.Description = description;
         this.DefaultValue = defaultValue;
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => string.IsNullOrEmpty(this.Description)
+        ? this.Name
+        : $"{this.Name} ({this.Description})";
 }

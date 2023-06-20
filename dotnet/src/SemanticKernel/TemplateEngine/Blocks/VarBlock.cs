@@ -73,10 +73,14 @@ internal sealed class VarBlock : Block, ITextRendering
             throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, ErrMsg);
         }
 
-        var exists = variables.Get(this.Name, out string value);
-        if (!exists) { this.Log.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name); }
+        if (variables.TryGetValue(this.Name, out string? value))
+        {
+            return value;
+        }
 
-        return exists ? value : string.Empty;
+        this.Log.LogWarning("Variable `{0}{1}` not found", Symbols.VarPrefix, this.Name);
+
+        return string.Empty;
     }
 
     private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$");

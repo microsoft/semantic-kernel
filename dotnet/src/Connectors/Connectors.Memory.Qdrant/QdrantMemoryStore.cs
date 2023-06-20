@@ -15,25 +15,26 @@ using Microsoft.SemanticKernel.Memory;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
 /// <summary>
-/// An implementation of <see cref="IMemoryStore"/> for Qdrant Vector database.
+/// An implementation of <see cref="IMemoryStore"/> for Qdrant Vector Database.
 /// </summary>
-/// <remarks>The Embedding data is saved to a Qdrant Vector database instance specified in the constructor by url and port.
+/// <remarks>The Embedding data is saved to a Qdrant Vector Database instance specified in the constructor by url and port.
 /// The embedding data persists between subsequent instances and has similarity search capability.
 /// </remarks>
 public class QdrantMemoryStore : IMemoryStore
 {
     /// <summary>
-    /// The Qdrant Vector database memory store logger.
+    /// The Qdrant Vector Database memory store logger.
     /// </summary>
     private readonly ILogger? _logger;
 
     /// <summary>
-    /// Constructor for a memory store backed by a Qdrant Vector database instance.
+    /// Constructor for a memory store backed by a Qdrant Vector Database instance.
     /// </summary>
     /// <param name="host"></param>
     /// <param name="port"></param>
     /// <param name="vectorSize"></param>
     /// <param name="logger"></param>
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
     public QdrantMemoryStore(string host, int port, int vectorSize, ILogger? logger = null)
     {
         this._logger = logger;
@@ -41,8 +42,45 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="QdrantMemoryStore"/> class.
+    /// </summary>
+    /// <param name="endpoint">The Qdrant Vector Database endpoint.</param>
+    /// <param name="vectorSize">The size of the vectors used.</param>
+    /// <param name="logger">Optional logger instance.</param>
+    public QdrantMemoryStore(string endpoint, int vectorSize, ILogger? logger = null)
+    {
+        this._qdrantClient = new QdrantVectorDbClient(endpoint, vectorSize, logger);
+        this._logger = logger;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QdrantMemoryStore"/> class.
+    /// </summary>
+    /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
+    /// <param name="vectorSize">The size of the vectors used in the Qdrant Vector Database.</param>
+    /// <param name="endpoint">The optional endpoint URL for the Qdrant Vector Database. If not specified, the base address of the HTTP client is used.</param>
+    /// <param name="logger">Optional logger instance.</param>
+    public QdrantMemoryStore(HttpClient httpClient, int vectorSize, string? endpoint = null, ILogger? logger = null)
+    {
+        this._qdrantClient = new QdrantVectorDbClient(httpClient, vectorSize, endpoint, logger);
+        this._logger = logger;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QdrantMemoryStore"/> class.
+    /// </summary>
+    /// <param name="client">The Qdrant Db client for interacting with Qdrant Vector Database.</param>
+    /// <param name="logger">Optional logger instance.</param>
+    public QdrantMemoryStore(IQdrantVectorDbClient client, ILogger? logger = null)
+    {
+        this._qdrantClient = client;
+        this._logger = logger;
+    }
+
+    /// <summary>
     /// Constructor for a memory store backed by a <see cref="IQdrantVectorDbClient"/>
     /// </summary>
+    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
     public QdrantMemoryStore(IQdrantVectorDbClient client)
     {
         this._qdrantClient = client;
@@ -72,7 +110,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        if (!await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
+        if (await this._qdrantClient.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
             await this._qdrantClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
@@ -138,17 +176,12 @@ public class QdrantMemoryStore : IMemoryStore
         try
         {
             var vectorData = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
-            if (vectorData != null)
-            {
-                return MemoryRecord.FromJsonMetadata(
-                    json: vectorData.GetSerializedPayload(),
-                    embedding: new Embedding<float>(vectorData.Embedding),
-                    key: vectorData.PointId);
-            }
-            else
-            {
-                return null;
-            }
+            if (vectorData == null) { return null; }
+
+            return MemoryRecord.FromJsonMetadata(
+                json: vectorData.GetSerializedPayload(),
+                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true),
+                key: vectorData.PointId);
         }
         catch (HttpRequestException ex)
         {
@@ -185,9 +218,10 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="pointId">The unique indexed ID associated with the Qdrant vector record to get.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
+    /// <returns>Memory record</returns>
     /// <exception cref="QdrantMemoryException"></exception>
-    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -196,16 +230,11 @@ public class QdrantMemoryStore : IMemoryStore
 
             var vectorData = await vectorDataList.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
-            if (vectorData != null)
-            {
-                return MemoryRecord.FromJsonMetadata(
-                    json: vectorData.GetSerializedPayload(),
-                    embedding: new Embedding<float>(vectorData.Embedding));
-            }
-            else
-            {
-                return null;
-            }
+            if (vectorData == null) { return null; }
+
+            return MemoryRecord.FromJsonMetadata(
+                json: vectorData.GetSerializedPayload(),
+                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true));
         }
         catch (HttpRequestException ex)
         {
@@ -222,14 +251,17 @@ public class QdrantMemoryStore : IMemoryStore
     }
 
     /// <summary>
-    /// Get a MemoryRecord from the Qdrant Vector database by a group of pointIds.
+    /// Get memory records from the Qdrant Vector database using a group of pointIds.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointIds">The unique indexed IDs associated with Qdrant vector records to get.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, bool withEmbeddings = false,
+    /// <returns>Memory records</returns>
+    public async IAsyncEnumerable<MemoryRecord> GetWithPointIdBatchAsync(
+        string collectionName,
+        IEnumerable<string> pointIds,
+        bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var vectorDataList = this._qdrantClient
@@ -239,7 +271,7 @@ public class QdrantMemoryStore : IMemoryStore
         {
             yield return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
-                embedding: new Embedding<float>(vectorData.Embedding),
+                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true),
                 key: vectorData.PointId);
         }
     }
@@ -271,7 +303,6 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointId">The unique indexed ID associated with the Qdrant vector record to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
     public async Task RemoveWithPointIdAsync(string collectionName, string pointId, CancellationToken cancellationToken = default)
     {
@@ -293,7 +324,6 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointIds">The unique indexed IDs associated with the Qdrant vector records to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
     /// <exception cref="QdrantMemoryException"></exception>
     public async Task RemoveWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancellationToken = default)
     {
@@ -357,7 +387,7 @@ public class QdrantMemoryStore : IMemoryStore
                 yield return (
                     MemoryRecord.FromJsonMetadata(
                         json: result.Value.Item1.GetSerializedPayload(),
-                        embedding: new Embedding<float>(result.Value.Item1.Embedding)),
+                        embedding: new Embedding<float>(result.Value.Item1.Embedding, transferOwnership: true)),
                     result.Value.Item2);
             }
         } while (hasResult);
@@ -388,7 +418,10 @@ public class QdrantMemoryStore : IMemoryStore
 
     private readonly IQdrantVectorDbClient _qdrantClient;
 
-    private async Task<QdrantVectorRecord> ConvertFromMemoryRecordAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
+    private async Task<QdrantVectorRecord> ConvertFromMemoryRecordAsync(
+        string collectionName,
+        MemoryRecord record,
+        CancellationToken cancellationToken = default)
     {
         string pointId;
 
@@ -400,7 +433,11 @@ public class QdrantMemoryStore : IMemoryStore
         // Check if the data store contains a record with the provided metadata ID
         else
         {
-            var existingRecord = await this._qdrantClient.GetVectorByPayloadIdAsync(collectionName, record.Metadata.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var existingRecord = await this._qdrantClient.GetVectorByPayloadIdAsync(
+                    collectionName,
+                    record.Metadata.Id,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
 
             if (existingRecord != null)
             {

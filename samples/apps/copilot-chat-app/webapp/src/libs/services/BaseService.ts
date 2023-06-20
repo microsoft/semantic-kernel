@@ -1,9 +1,11 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
 
 interface ServiceRequest {
     commandPath: string;
     method?: string;
-    body?: unknown;
+    body?: FormData | unknown;
 }
 const noResponseBodyStatusCodes = [202];
 
@@ -21,14 +23,24 @@ export class BaseService {
         }[],
     ): Promise<T> => {
         const { commandPath, method, body } = request;
+        const isFormData = body instanceof FormData;
+
         const headers = new Headers({
             Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
         });
 
-        // For each enabled plugin, pass its auth information as a customer header
-        // to the backend so the server can authenticate to the plugin
+        if (!isFormData) {
+            headers.append(`Content-Type`, 'application/json');
+        }
+
+        // API key auth for private hosted instances
+        if (process.env.REACT_APP_SK_API_KEY) {
+            headers.append(`x-sk-api-key`, process.env.REACT_APP_SK_API_KEY as string);
+        }
+
         if (enabledPlugins && enabledPlugins.length > 0) {
+            // For each enabled plugin, pass its auth information as a customer header
+            // to the backend so the server can authenticate to the plugin
             for (var idx in enabledPlugins) {
                 var plugin = enabledPlugins[idx];
                 headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData);
@@ -39,7 +51,7 @@ export class BaseService {
             const requestUrl = new URL(commandPath, this.serviceUrl);
             const response = await fetch(requestUrl, {
                 method: method ?? 'GET',
-                body: JSON.stringify(body),
+                body: isFormData ? body : JSON.stringify(body),
                 headers: headers,
             });
 

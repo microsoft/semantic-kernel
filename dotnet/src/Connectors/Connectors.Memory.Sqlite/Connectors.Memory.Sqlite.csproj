@@ -9,7 +9,8 @@
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - SQLite Connector</Title>
@@ -22,10 +23,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernelConnectorsSqliteTests"/>
   </ItemGroup>
 
 </Project>

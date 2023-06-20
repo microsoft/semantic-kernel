@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
@@ -40,7 +41,8 @@ internal static class Example31_CustomPlanner
         plan.AddSteps(skills["ContextQuery"], markup["RunMarkup"]);
 
         // Execute plan
-        var result = await plan.InvokeAsync("Who is my president? Who was president 3 years ago? What should I eat for dinner", context);
+        context.Variables.Update("Who is my president? Who was president 3 years ago? What should I eat for dinner");
+        var result = await plan.InvokeAsync(context);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.Result);
@@ -74,12 +76,15 @@ internal static class Example31_CustomPlanner
         context.Variables.Set("city", "Tacoma");
         context.Variables.Set("state", "WA");
         context.Variables.Set("country", "USA");
+        context.Variables.Set("collection", "contextQueryMemories");
+        context.Variables.Set("limit", "5");
+        context.Variables.Set("relevance", "0.3");
         return context;
     }
 
     private static async Task RememberFactsAsync(IKernel kernel)
     {
-        kernel.ImportSkill(new TextMemorySkill("contextQueryMemories", "0.3", "5"));
+        kernel.ImportSkill(new TextMemorySkill());
 
         List<string> memoriesToSave = new()
         {
@@ -120,19 +125,14 @@ internal static class Example31_CustomPlanner
     {
         return new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .Configure(
-                config =>
-                {
-                    config.AddAzureTextCompletionService(
-                        Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                        Env.Var("AZURE_OPENAI_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_KEY"));
-
-                    config.AddAzureTextEmbeddingGenerationService(
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"));
-                })
+            .WithAzureTextCompletionService(
+                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_KEY"))
+            .WithAzureTextEmbeddingGenerationService(
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
     }
@@ -141,11 +141,9 @@ internal static class Example31_CustomPlanner
 // Example Skill that can process XML Markup created by ContextQuery
 public class MarkupSkill
 {
-    [SKFunction("Run Markup")]
-    [SKFunctionName("RunMarkup")]
-    public async Task<SKContext> RunMarkupAsync(SKContext context)
+    [SKFunction, Description("Run Markup")]
+    public async Task<string> RunMarkupAsync(string docString, SKContext context)
     {
-        var docString = context.Variables.Input;
         var plan = docString.FromMarkup("Run a piece of xml markup", context);
 
         Console.WriteLine("Markup plan:");
@@ -153,8 +151,7 @@ public class MarkupSkill
         Console.WriteLine();
 
         var result = await plan.InvokeAsync();
-        context.Variables.Update(result.Result);
-        return context;
+        return result.Result;
     }
 }
 

@@ -3,7 +3,6 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -123,15 +122,13 @@ public sealed class PromptTemplateEngineTests
     public async Task ItRendersCodeUsingInputAsync()
     {
         // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
         string MyFunctionAsync(SKContext cx)
         {
             this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
             return $"F({cx.Variables.Input})";
         }
 
-        ISKFunction? func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Update("INPUT-BAR");
@@ -154,15 +151,13 @@ public sealed class PromptTemplateEngineTests
     public async Task ItRendersCodeUsingVariablesAsync()
     {
         // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
         string MyFunctionAsync(SKContext cx)
         {
             this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
             return $"F({cx.Variables.Input})";
         }
 
-        ISKFunction? func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
@@ -185,16 +180,14 @@ public sealed class PromptTemplateEngineTests
     public async Task ItRendersAsyncCodeUsingVariablesAsync()
     {
         // Arrange
-        [SKFunction("test")]
-        [SKFunctionName("test")]
         Task<string> MyFunctionAsync(SKContext cx)
         {
             // Input value should be "BAR" because the variable $myVar is passed in
             this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
-            return Task.FromResult(cx.Variables.Input);
+            return Task.FromResult(cx.Variables.Input.Value);
         }
 
-        ISKFunction? func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
@@ -223,8 +216,7 @@ public sealed class PromptTemplateEngineTests
     {
         return new SKContext(
             this._variables,
-            NullMemory.Instance,
-            this._skills.Object,
-            TestConsoleLogger.Log);
+            skills: this._skills.Object,
+            logger: TestConsoleLogger.Log);
     }
 }

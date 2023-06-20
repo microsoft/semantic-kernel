@@ -1,0 +1,12 @@
+﻿{
+  "created": 1686192127,
+  "expires": 1686278532,
+  "id": "32ba9f77-d620-4b6c-9265-ad50cb314a5c",
+  "result": {
+    "created": 1686192127,
+    "data": [
+      { "url": "https://dalleproduse.blob.core.windows.net/private/images/generated_00.png" }  
+    ]
+  },
+  "status": "succeeded"
+}

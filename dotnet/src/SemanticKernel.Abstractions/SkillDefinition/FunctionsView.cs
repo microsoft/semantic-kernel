@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// The data is mutable, but changes do not affect the skill collection.
 /// The class can be used to create custom lists in case your scenario needs to.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class FunctionsView
 {
     /// <summary>
@@ -107,4 +109,7 @@ public sealed class FunctionsView
 
         return nf;
     }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"Native = {this.NativeFunctions.Count}, Semantic = {this.SemanticFunctions.Count}";
 }
