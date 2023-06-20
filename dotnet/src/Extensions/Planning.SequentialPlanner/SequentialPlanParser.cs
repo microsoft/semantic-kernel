@@ -58,7 +58,24 @@ internal static class SequentialPlanParser
             }
             catch (XmlException e)
             {
-                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Failed to parse plan xml.", e);
+                // xmlString wasn't valid xml, let's try and parse it out.
+                // From my python code, for regex for getting json.
+                //                 # Filter out good JSON from the result in case additional text is present
+                // json_regex = r"\{(?:[^{}]|(?R))*\}"
+                // I want similar, but for xml that starts with <plan> and ends with </plan>
+                // Regex planRegex = new(@"\<plan\>(?:[^\<\>]|(?R))*\<\/plan\>", RegexOptions.Singleline);
+                // Match match = planRegex.Match(xmlString);
+                // if (match.Success)
+                // {
+                //     string planXml = match.Value;
+                //     xmlDoc.LoadXml("<xml>" + planXml + "</xml>");
+                // }
+                // else
+                // {
+                //     throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan xml: {xmlString}", e);
+                // }
+
+                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan xml: {xmlString}", e);
             }
 
             // Get the Solution
