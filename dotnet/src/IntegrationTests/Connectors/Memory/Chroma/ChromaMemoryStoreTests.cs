@@ -100,7 +100,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     [Fact]
     //[Fact(Skip = "Requires Chroma server up and running")]
-    public async Task ItThrowsExceptionOnNonExistingCollectionDeletionAsync()
+    public async Task ItThrowsExceptionOnNonExistentCollectionDeletionAsync()
     {
         // Arrange
         var collectionName = "SK" + Guid.NewGuid();
@@ -114,7 +114,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Assert
         Assert.IsType<ChromaMemoryStoreException>(exception);
         Assert.Contains(
-            $"Cannot delete non existing collection {collectionName}",
+            $"Cannot delete non-existent collection {collectionName}",
             exception.Message,
             StringComparison.InvariantCulture);
     }
