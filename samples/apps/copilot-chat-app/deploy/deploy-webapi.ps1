@@ -42,7 +42,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Getting Azure WebApp resource name..."
-$webappName=$(az deployment group show --name $DeploymentName --resource-group $ResourceGroupName --output json | ConvertFrom-Json).properties.outputs.webapiName.value
+$webappName=$(az deployment group show --name $DeploymentName --resource-group $ResourceGroupName --output json | ConvertFrom-Json).properties.outputs.webappName.value
 if ($null -eq $webAppName) {
     Write-Error "Could not get Azure WebApp resource name from deployment output."
     exit 1
