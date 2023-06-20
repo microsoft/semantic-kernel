@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
@@ -34,9 +33,7 @@ public class ChromaClient : IChromaClient
     {
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                "The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new ChromaClientException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
 
         this._httpClient = httpClient;
@@ -97,6 +94,28 @@ public class ChromaClient : IChromaClient
         {
             yield return collection.Name;
         }
+    }
+
+    public async Task AddEmbeddingsAsync(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default)
+    {
+        this._logger.LogDebug("Adding embeddings to collection with id: {0}", collectionId);
+
+        using var request = AddEmbeddingsRequest.Create(collectionId, ids, embeddings, metadatas).Build();
+
+        await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ChromaEmbeddingsModel> GetEmbeddingsAsync(string collectionId, string[] ids, string[]? include = null, CancellationToken cancellationToken = default)
+    {
+        this._logger.LogDebug("Getting embeddings from collection with id: {0}", collectionId);
+
+        using var request = GetEmbeddingsRequest.Create(collectionId, ids, include).Build();
+
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+        var embeddings = JsonSerializer.Deserialize<ChromaEmbeddingsModel>(responseContent);
+
+        return embeddings ?? new ChromaEmbeddingsModel();
     }
 
     #region private ================================================================================

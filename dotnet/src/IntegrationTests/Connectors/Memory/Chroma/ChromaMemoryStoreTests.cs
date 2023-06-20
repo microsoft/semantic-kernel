@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Chroma;
@@ -21,7 +24,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     [Fact]
     //[Fact(Skip = "Requires Chroma server up and running")]
-    public async Task ItCreatesCollectionsAsync()
+    public async Task ItCanCreateCollectionsAsync()
     {
         // Arrange
         var collectionName1 = "SK" + Guid.NewGuid();
@@ -119,6 +122,80 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             StringComparison.InvariantCulture);
     }
 
+    [Fact]
+    //[Fact(Skip = "Requires Chroma server up and running")]
+    public async Task ItReturnsNullOnNonExistentRecordRetrieval()
+    {
+        // Arrange
+        var collectionName = "SK" + Guid.NewGuid();
+        var key = Guid.NewGuid().ToString();
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+
+        // Act
+        var record = await this._chromaMemoryStore.GetAsync(collectionName, key, true);
+
+        // Assert
+        Assert.Null(record);
+    }
+
+    [Fact]
+    //[Fact(Skip = "Requires Chroma server up and running")]
+    public async Task ItCanUpsertMemoryRecordAsync()
+    {
+        // Arrange
+        var collectionName = "SK" + Guid.NewGuid();
+        var expectedRecord = this.GetRandomMemoryRecord();
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+
+        // Act
+        var createdRecordKey = await this._chromaMemoryStore.UpsertAsync(collectionName, expectedRecord);
+
+        // Assert
+        Assert.Equal(expectedRecord.Key, createdRecordKey);
+
+        var actualRecord = await this._chromaMemoryStore.GetAsync(collectionName, expectedRecord.Key, true);
+
+        Assert.NotNull(actualRecord);
+
+        this.AssertMemoryRecordEqual(expectedRecord, actualRecord);
+    }
+
+    [Fact]
+    //[Fact(Skip = "Requires Chroma server up and running")]
+    public async Task ItCanUpsertMemoryRecordBatchAsync()
+    {
+        // Arrange
+        var collectionName = "SK" + Guid.NewGuid();
+
+        var expectedRecord1 = this.GetRandomMemoryRecord();
+        var expectedRecord2 = this.GetRandomMemoryRecord();
+        var expectedRecord3 = this.GetRandomMemoryRecord();
+
+        var batch = new List<MemoryRecord> { expectedRecord1, expectedRecord2, expectedRecord3 };
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+
+        // Act
+        var createdRecordKeys = await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).ToListAsync();
+
+        // Assert
+        Assert.Equal(expectedRecord1.Key, createdRecordKeys[0]);
+        Assert.Equal(expectedRecord2.Key, createdRecordKeys[1]);
+        Assert.Equal(expectedRecord3.Key, createdRecordKeys[2]);
+
+        var actualRecords = await this._chromaMemoryStore.GetBatchAsync(collectionName, batch.Select(l => l.Key), true).ToListAsync();
+
+        Assert.NotNull(actualRecords[0]);
+        Assert.NotNull(actualRecords[1]);
+        Assert.NotNull(actualRecords[2]);
+
+        this.AssertMemoryRecordEqual(expectedRecord1, actualRecords[0]);
+        this.AssertMemoryRecordEqual(expectedRecord2, actualRecords[1]);
+        this.AssertMemoryRecordEqual(expectedRecord3, actualRecords[2]);
+    }
+
     public void Dispose()
     {
         this.Dispose(true);
@@ -136,6 +213,33 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         {
             this._httpClient.Dispose();
         }
+    }
+
+    private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
+    {
+        Assert.Equal(expectedRecord.Key, actualRecord.Key);
+        Assert.Equal(expectedRecord.Embedding.Vector, actualRecord.Embedding.Vector);
+        Assert.Equal(expectedRecord.Metadata.Id, actualRecord.Metadata.Id);
+        Assert.Equal(expectedRecord.Metadata.Text, actualRecord.Metadata.Text);
+        Assert.Equal(expectedRecord.Metadata.Description, actualRecord.Metadata.Description);
+        Assert.Equal(expectedRecord.Metadata.AdditionalMetadata, actualRecord.Metadata.AdditionalMetadata);
+        Assert.Equal(expectedRecord.Metadata.IsReference, actualRecord.Metadata.IsReference);
+        Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
+    }
+
+    private MemoryRecord GetRandomMemoryRecord()
+    {
+        var id = Guid.NewGuid().ToString();
+        var key = Guid.NewGuid().ToString();
+        var embedding = new Embedding<float>(new[] { 1f, 3f, 5f });
+
+        return MemoryRecord.LocalRecord(
+            id: id,
+            text: "text" + Guid.NewGuid().ToString(),
+            description: "description" + Guid.NewGuid().ToString(),
+            embedding: embedding,
+            additionalMetadata: "custom metadata" + Guid.NewGuid().ToString(),
+            key: key);
     }
 
     #endregion
