@@ -159,7 +159,7 @@ const CreateBookWithPlanner: FC<IData> = ({ uri, title, description, keyConfig, 
         setProcessHistory((processHistory) => [...processHistory, historyItem]);
     };
 
-    const onTaskCompleted = (ask: IAsk, result: string) => {
+    const onTaskCompleted = (ask: IAsk, result: string, variables?: IAskInput[]) => {
         var historyItem = {
             functionName: 'executeplan',
             input: JSON.stringify(ask),
@@ -168,7 +168,7 @@ const CreateBookWithPlanner: FC<IData> = ({ uri, title, description, keyConfig, 
         };
         setProcessHistory((processHistory) => [...processHistory, historyItem]);
 
-        var jsonValue = result.substring(result.indexOf('['));
+        var jsonValue = result.substring(result.indexOf('['), result.indexOf(']') + 1);
         var results = JSON.parse(jsonValue);
 
         var pages: IPage[] = [];
