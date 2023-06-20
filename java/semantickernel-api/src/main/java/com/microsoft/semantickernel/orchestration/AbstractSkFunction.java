@@ -17,9 +17,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-public abstract class AbstractSkFunction<
-                RequestConfiguration, ContextType extends SKContext<ContextType>>
-        implements SKFunction<RequestConfiguration, ContextType>, RegistrableSkFunction {
+public abstract class AbstractSkFunction<RequestConfiguration>
+        implements SKFunction<RequestConfiguration>, RegistrableSkFunction {
 
     private final DelegateTypes delegateType;
     private final List<ParameterView> parameters;
@@ -60,8 +59,10 @@ public abstract class AbstractSkFunction<
     }
 
     @Override
-    public Mono<ContextType> invokeAsync(
-            String input, @Nullable ContextType context, @Nullable RequestConfiguration settings) {
+    public Mono<SKContext> invokeAsync(
+            @Nullable String input,
+            @Nullable SKContext context,
+            @Nullable RequestConfiguration settings) {
         if (context == null) {
             assertSkillSupplierRegistered();
             context =
@@ -73,19 +74,20 @@ public abstract class AbstractSkFunction<
             context = context.copy();
         }
 
-        context = context.update(input);
+        if (input != null) {
+            context = context.update(input);
+        }
 
         return this.invokeAsync(context, settings);
     }
 
     @Override
-    public Mono<ContextType> invokeAsync(String input) {
+    public Mono<SKContext> invokeAsync(String input) {
         return invokeAsync(input, null, null);
     }
 
     @Override
-    public Mono<ContextType> invokeAsync(
-            ContextType context, @Nullable RequestConfiguration settings) {
+    public Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings) {
         // return new FutureTask<SKContext>(() -> function.run(null, settings, context));
 
         if (context == null) {
@@ -97,8 +99,8 @@ public abstract class AbstractSkFunction<
         return this.invokeAsyncInternal(context, settings);
     }
 
-    protected abstract Mono<ContextType> invokeAsyncInternal(
-            ContextType context, @Nullable RequestConfiguration settings);
+    protected abstract Mono<SKContext> invokeAsyncInternal(
+            SKContext context, @Nullable RequestConfiguration settings);
 
     @Override
     public String getSkillName() {
@@ -206,17 +208,22 @@ public abstract class AbstractSkFunction<
     }
 
     @Override
-    public ContextType buildContext() {
+    public SKContext buildContext() {
         assertSkillSupplierRegistered();
         return buildContext(SKBuilders.variables().build(), null, getSkillsSupplier().get());
     }
 
     @Override
-    public Mono<ContextType> invokeWithCustomInputAsync(
+    public Mono<SKContext> invokeWithCustomInputAsync(
             ContextVariables input,
             SemanticTextMemory semanticMemory,
             ReadOnlySkillCollection skills) {
-        ContextType tmpContext = buildContext(input, semanticMemory, skills);
+        SKContext tmpContext = buildContext(input, semanticMemory, skills);
         return invokeAsync(tmpContext, null);
+    }
+
+    @Override
+    public Mono<SKContext> invokeAsync() {
+        return invokeAsync(null, null, null);
     }
 }

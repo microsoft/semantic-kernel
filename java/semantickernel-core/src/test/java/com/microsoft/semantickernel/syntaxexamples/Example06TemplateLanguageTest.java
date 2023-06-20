@@ -36,11 +36,6 @@ public class Example06TemplateLanguageTest {
                                 kernel ->
                                         SKBuilders.textCompletionService()
                                                 .build(client, "text-davinci-003"))
-                        .addTextEmbeddingsGenerationService(
-                                "text-embedding-ada-002",
-                                kernel ->
-                                        SKBuilders.textEmbeddingGenerationService()
-                                                .build(client, "text-embedding-ada-002"))
                         .build();
 
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
@@ -63,13 +58,16 @@ public class Example06TemplateLanguageTest {
                         + " (morning/afternoon/evening/night)?\n"
                         + "Is it weekend time (weekend/not weekend)?";
 
-        PromptTemplate promptRenderer = SKBuilders.promptTemplate().build(functionDefinition, null);
+        PromptTemplate promptRenderer =
+                SKBuilders.promptTemplate()
+                        .withPromptTemplate(functionDefinition)
+                        .build(kernel.getPromptTemplateEngine());
 
         SKContext skContext = SKBuilders.context().build(kernel.getSkills());
 
         PromptTemplateEngine promptTemplateEngine = SKBuilders.promptTemplateEngine().build();
 
-        Mono<String> renderedPrompt = promptRenderer.renderAsync(skContext, promptTemplateEngine);
+        Mono<String> renderedPrompt = promptRenderer.renderAsync(skContext);
 
         // Check that it has been rendered
         Assertions.assertTrue(!renderedPrompt.block().contains("time.Date"));

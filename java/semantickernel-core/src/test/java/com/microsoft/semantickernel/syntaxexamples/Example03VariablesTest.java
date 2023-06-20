@@ -31,7 +31,7 @@ public class Example03VariablesTest {
                         .writableClone()
                         .setVariable("day", "Monday");
 
-        Mono<SKContext<?>> result =
+        Mono<SKContext> result =
                 kernel.runAsync(
                         variables,
                         functionCollection.getFunction("AppendDay"),

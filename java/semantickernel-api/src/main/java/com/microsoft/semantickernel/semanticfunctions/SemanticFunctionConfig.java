@@ -6,7 +6,7 @@ public class SemanticFunctionConfig {
     private final PromptTemplateConfig config;
 
     /** Prompt template */
-    private final PromptTemplate template;
+    private final String template;
 
     /**
      * Constructor for SemanticFunctionConfig.
@@ -14,7 +14,7 @@ public class SemanticFunctionConfig {
      * @param config Prompt template configuration.
      * @param template Prompt template.
      */
-    public SemanticFunctionConfig(PromptTemplateConfig config, PromptTemplate template) {
+    public SemanticFunctionConfig(PromptTemplateConfig config, String template) {
         this.config = config;
         this.template = template;
     }
@@ -23,7 +23,7 @@ public class SemanticFunctionConfig {
         return config;
     }
 
-    public PromptTemplate getTemplate() {
+    public String getTemplate() {
         return template;
     }
 }

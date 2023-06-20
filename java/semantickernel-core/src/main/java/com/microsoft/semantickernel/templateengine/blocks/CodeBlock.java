@@ -121,8 +121,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         // Function in the global skill
         if ((skillName == null || skillName.isEmpty())
                 && skills.hasFunction(fBlock.getFunctionName())) {
-            SKFunction<?, ?> function =
-                    skills.getFunction(fBlock.getFunctionName(), SKFunction.class);
+            SKFunction<?> function = skills.getFunction(fBlock.getFunctionName(), SKFunction.class);
             return function;
         }
 

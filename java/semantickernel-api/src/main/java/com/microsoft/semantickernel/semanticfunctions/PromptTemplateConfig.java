@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import reactor.util.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /** Prompt template configuration */
@@ -105,6 +106,10 @@ public class PromptTemplateConfig {
         public CompletionConfig build() {
             return completionConfig;
         }
+    }
+
+    public InputConfig getInput() {
+        return input;
     }
 
     /** Completion configuration parameters */
@@ -226,6 +231,18 @@ public class PromptTemplateConfig {
             this.description = description;
             this.defaultValue = defaultValue;
         }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getDefaultValue() {
+            return defaultValue;
+        }
     }
 
     /** Input configuration (list of all input parameters for a semantic function). */
@@ -235,7 +252,11 @@ public class PromptTemplateConfig {
 
         @JsonCreator
         public InputConfig(@JsonProperty("parameters") List<InputParameter> parameters) {
-            this.parameters = parameters;
+            this.parameters = Collections.unmodifiableList(parameters);
+        }
+
+        public List<InputParameter> getParameters() {
+            return Collections.unmodifiableList(parameters);
         }
     }
 
@@ -277,7 +298,7 @@ public class PromptTemplateConfig {
             @JsonProperty("description") String description,
             @JsonProperty("type") String type,
             @Nullable @JsonProperty("completion") CompletionConfig completionConfig,
-            @JsonProperty("input") InputConfig input) {
+            @Nullable @JsonProperty("input") InputConfig input) {
         if (completionConfig == null) {
             completionConfig = new CompletionConfig();
         }
@@ -285,6 +306,9 @@ public class PromptTemplateConfig {
         this.description = description;
         this.type = type;
         this.completionConfig = completionConfig;
+        if (input == null) {
+            input = new InputConfig(new ArrayList<>());
+        }
         this.input = input;
     }
 

@@ -15,8 +15,8 @@ import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import com.microsoft.semantickernel.util.AIProviderSettings;
@@ -91,7 +91,7 @@ public class Example08_RetryHandler {
                 CompletionSKFunction summarize = kernel.getSkills().getFunction("summarize",
                                 CompletionSKFunction.class);
 
-                CompletionSKContext context = summarize.invokeAsync(text).block();
+        SKContext context = summarize.invokeAsync(text).block();
 
                 System.out.println(context.getResult());
         }

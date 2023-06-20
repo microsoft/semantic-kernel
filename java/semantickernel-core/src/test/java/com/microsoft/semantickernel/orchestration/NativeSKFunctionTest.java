@@ -31,7 +31,7 @@ public class NativeSKFunctionTest {
         Test skill = Mockito.spy(new Test());
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
-        Mono<?> ignore = skills.getFunction("doSomething").invokeAsync("foo");
+        SKContext ignore = skills.getFunction("doSomething").invokeAsync("foo").block();
         Mockito.verify(skill, Mockito.times(1)).doSomething("foo");
     }
 
@@ -129,7 +129,7 @@ public class NativeSKFunctionTest {
         WithContext skill = Mockito.spy(new WithContext());
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
-        Mono<?> ignore = skills.getFunction("doSomething").invokeAsync("foo");
+        SKContext ignore = skills.getFunction("doSomething").invokeAsync("foo").block();
         Mockito.verify(skill, Mockito.only()).doSomething(Mockito.notNull());
     }
 
@@ -145,7 +145,7 @@ public class NativeSKFunctionTest {
         WithMono skill = Mockito.spy(new WithMono());
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
-        SKContext<?> result = skills.getFunction("doSomething").invokeAsync("foo").block();
+        SKContext result = skills.getFunction("doSomething").invokeAsync("foo").block();
         Assertions.assertEquals("A-RESULT", result.getResult());
     }
 }

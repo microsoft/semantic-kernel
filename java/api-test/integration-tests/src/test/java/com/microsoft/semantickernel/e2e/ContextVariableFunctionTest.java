@@ -2,15 +2,13 @@
 package com.microsoft.semantickernel.e2e;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -53,7 +51,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
                                 new PromptTemplateConfig.CompletionConfig(
                                         0.7, 0.5, 0, 0, 2000, new ArrayList<>()));
 
-        CompletionSKContext readOnlySkContext = chat.buildContext();
+        SKContext readOnlySkContext = chat.buildContext();
 
         chat("Hi, I'm looking for book suggestions?", chat, readOnlySkContext)
                 .flatMap(
@@ -72,7 +70,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
                 .block();
     }
 
-    private Function<CompletionSKContext, Mono<CompletionSKContext>> chat(
+    private Function<SKContext, Mono<SKContext>> chat(
             String input, CompletionSKFunction chat) {
         return (context) -> {
             try {
@@ -83,14 +81,14 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
         };
     }
 
-    private Mono<CompletionSKContext> chat(
-            String input, CompletionSKFunction chat, CompletionSKContext context)
+    private Mono<SKContext> chat(
+            String input, CompletionSKFunction chat, SKContext context)
             throws ExecutionException, InterruptedException, TimeoutException {
         context = context.setVariable("user_input", input);
 
         LOGGER.info("User:\n" + input);
 
-        CompletionSKContext finalContext = context;
+        SKContext finalContext = context;
         return chat.invokeAsync(context, null)
                 .map(
                         result -> {

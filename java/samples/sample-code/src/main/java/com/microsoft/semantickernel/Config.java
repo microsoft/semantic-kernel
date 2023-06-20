@@ -19,7 +19,12 @@ public class Config {
         OPEN_AI {
             @Override
             public OpenAIAsyncClient getClient() throws IOException {
-                OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromFile(CONF_PROPERTIES);
+                return getClient(CONF_PROPERTIES);
+            }
+
+            @Override
+            public OpenAIAsyncClient getClient(String file) throws IOException {
+                OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromFile(file);
 
                 return new OpenAIClientBuilder()
                         .credential(new NonAzureOpenAIKeyCredential(settings.getKey()))
@@ -28,9 +33,14 @@ public class Config {
         },
         AZURE_OPEN_AI {
             @Override
-            public OpenAIAsyncClient getClient()
+            public OpenAIAsyncClient getClient() throws IOException {
+                return getClient(CONF_PROPERTIES);
+            }
+
+            @Override
+            public OpenAIAsyncClient getClient(String file)
                     throws IOException {
-                AzureOpenAISettings settings = AIProviderSettings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
+                AzureOpenAISettings settings = AIProviderSettings.getAzureOpenAISettingsFromFile(file);
 
                 return new OpenAIClientBuilder().endpoint(settings.getEndpoint())
                         .credential(new AzureKeyCredential(settings.getKey())).buildAsyncClient();
@@ -43,5 +53,12 @@ public class Config {
          * @return client to be used by the kernel.
          */
         public abstract OpenAIAsyncClient getClient() throws IOException;
+
+        /**
+         * Returns the client that will handle AzureOpenAI or OpenAI requests.
+         *
+         * @return client to be used by the kernel.
+         */
+        public abstract OpenAIAsyncClient getClient(String file) throws IOException;
     }
 }

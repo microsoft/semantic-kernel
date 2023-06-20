@@ -57,6 +57,6 @@ public class Example05UsingThePlannerTest {
                 planner.createPlanAsync(
                                 "Write a poem about John Doe, then translate it into Italian.")
                         .block()
-                        .getResult());
+                        .toEmbeddingString());
     }
 }

@@ -31,7 +31,7 @@ To create a plan, follow these steps:
     - input: the text to translate
     - translate_to_language: the language to translate to
 
-  WriterSkill.Summarize:
+  SummarizeSkill.Summarize:
     description: summarize input text
     inputs:
     - input: the text to summarize
@@ -40,7 +40,7 @@ To create a plan, follow these steps:
 
 <goal>Summarize the input, then translate to japanese and email it to Martin</goal>
 <plan>
-  <function.WriterSkill.Summarize/>
+  <function.SummarizeSkill.Summarize/>
   <function.LanguageHelpers.TranslateTo translate_to_language="Japanese" setContextVariable="TRANSLATED_TEXT" />
   <function.EmailConnector.LookupContactEmail input="Martin" setContextVariable="CONTACT_RESULT" />
   <function.EmailConnector.EmailTo input="$TRANSLATED_TEXT" recipient="$CONTACT_RESULT"/>

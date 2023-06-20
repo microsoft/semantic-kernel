@@ -21,6 +21,10 @@ public interface ContextVariables {
     @CheckReturnValue
     WritableContextVariables writableClone();
 
+    String getInput();
+
+    String prettyPrint();
+
     interface Builder {
         ContextVariables build();
 

@@ -33,6 +33,8 @@ public interface WritableContextVariables extends ContextVariables {
 
     ContextVariables update(@NonNull ContextVariables newData, boolean merge);
 
+    ContextVariables remove(String key);
+
     interface Builder {
         /**
          * Builds an instance with the given variables
