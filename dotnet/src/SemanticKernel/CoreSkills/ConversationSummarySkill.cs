@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -64,10 +65,10 @@ public class ConversationSummarySkill
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="context">The SKContext for function execution.</param>
-    [SKFunction("Given a long conversation transcript, summarize the conversation.")]
-    [SKFunctionName("SummarizeConversation")]
-    [SKFunctionInput(Description = "A long conversation transcript.")]
-    public Task<SKContext> SummarizeConversationAsync(string input, SKContext context)
+    [SKFunction, Description("Given a long conversation transcript, summarize the conversation.")]
+    public Task<SKContext> SummarizeConversationAsync(
+        [Description("A long conversation transcript.")] string input,
+        SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
@@ -81,10 +82,10 @@ public class ConversationSummarySkill
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="context">The SKContext for function execution.</param>
-    [SKFunction("Given a long conversation transcript, identify action items.")]
-    [SKFunctionName("GetConversationActionItems")]
-    [SKFunctionInput(Description = "A long conversation transcript.")]
-    public Task<SKContext> GetConversationActionItemsAsync(string input, SKContext context)
+    [SKFunction, Description("Given a long conversation transcript, identify action items.")]
+    public Task<SKContext> GetConversationActionItemsAsync(
+        [Description("A long conversation transcript.")] string input,
+        SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
@@ -98,10 +99,10 @@ public class ConversationSummarySkill
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="context">The SKContext for function execution.</param>
-    [SKFunction("Given a long conversation transcript, identify topics worth remembering.")]
-    [SKFunctionName("GetConversationTopics")]
-    [SKFunctionInput(Description = "A long conversation transcript.")]
-    public Task<SKContext> GetConversationTopicsAsync(string input, SKContext context)
+    [SKFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
+    public Task<SKContext> GetConversationTopicsAsync(
+        [Description("A long conversation transcript.")] string input,
+        SKContext context)
     {
         List<string> lines = TextChunker.SplitPlainTextLines(input, MaxTokens);
         List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, MaxTokens);
