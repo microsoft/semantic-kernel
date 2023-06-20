@@ -64,6 +64,10 @@ Write-Host $(Get-Content $envFilePath -Raw)
 Write-Host "Generating SWA config..."
 $swaConfig = $(Get-Content "$PSScriptRoot/../webapp/template.swa-cli.config.json" -Raw) 
 $swaConfig = $swaConfig.Replace("{{appDevserverUrl}}", "https://$webappUrl") 
+$swaConfig = $swaConfig.Replace("{{appName}}", "$webappName") 
+$swaConfig = $swaConfig.Replace("{{resourceGroup}}", "$ResourceGroupName") 
+$swaConfig = $swaConfig.Replace("{{subscription-id}}", "$Subscription") 
+
 $swaConfig | Out-File -FilePath "$PSScriptRoot/../webapp/swa-cli.config.json"
 Write-Host $(Get-Content "$PSScriptRoot/../webapp/swa-cli.config.json" -Raw)
 
@@ -81,7 +85,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Deploying webapp..."
-swa deploy --subscription-id $Subscription --app-name $webappName --env production
+swa deploy
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
