@@ -3,16 +3,16 @@
 import { useMsal } from '@azure/msal-react';
 import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { AuthorRoles, ChatMessageType, IChatMessage } from '../../libs/models/ChatMessage';
-import { GetResponseOptions, useChat } from '../../libs/useChat';
-import { useAppSelector } from '../../redux/app/hooks';
-import { RootState } from '../../redux/app/store';
-import { Breakpoints } from '../../styles';
-import { timestampToDateString } from '../utils/TextUtils';
-import { ChatHistoryItemDocumentContent } from './ChatHistoryItemDocumentContent';
-import { ChatHistoryItemTextContent } from './ChatHistoryItemTextContent';
-import { PlanViewer } from './plan-viewer/PlanViewer';
-import { PromptDetails } from './prompt-details/PromptDetails';
+import { AuthorRoles, ChatMessageType, IChatMessage } from '../../../libs/models/ChatMessage';
+import { GetResponseOptions, useChat } from '../../../libs/useChat';
+import { useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
+import { Breakpoints } from '../../../styles';
+import { timestampToDateString } from '../../utils/TextUtils';
+import { PlanViewer } from '../plan-viewer/PlanViewer';
+import { PromptDetails } from '../prompt-details/PromptDetails';
+import { ChatHistoryDocumentContent } from './ChatHistoryDocumentContent';
+import { ChatHistoryTextContent } from './ChatHistoryTextContent';
 
 const useClasses = makeStyles({
     root: {
@@ -88,9 +88,9 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     if (isBot && message.type === ChatMessageType.Plan) {
         content = <PlanViewer message={message} messageIndex={messageIndex} getResponse={getResponse} />;
     } else if (message.type === ChatMessageType.Document) {
-        content = <ChatHistoryItemDocumentContent isMe={isMe} message={message} />;
+        content = <ChatHistoryDocumentContent isMe={isMe} message={message} />;
     } else {
-        content = <ChatHistoryItemTextContent message={message} />;
+        content = <ChatHistoryTextContent message={message} />;
     }
 
     return (

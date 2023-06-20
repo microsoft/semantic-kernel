@@ -2,8 +2,8 @@
 
 import { makeStyles } from '@fluentui/react-components';
 import React from 'react';
-import { IChatMessage } from '../../libs/models/ChatMessage';
-import { convertToAnchorTags } from '../utils/TextUtils';
+import { IChatMessage } from '../../../libs/models/ChatMessage';
+import { convertToAnchorTags } from '../../utils/TextUtils';
 
 const useClasses = makeStyles({
     content: {
@@ -11,11 +11,11 @@ const useClasses = makeStyles({
     },
 });
 
-interface ChatHistoryItemTextContentProps {
+interface ChatHistoryTextContentProps {
     message: IChatMessage;
 }
 
-export const ChatHistoryItemTextContent: React.FC<ChatHistoryItemTextContentProps> = ({ message }) => {
+export const ChatHistoryTextContent: React.FC<ChatHistoryTextContentProps> = ({ message }) => {
     const classes = useClasses();
 
     const content = message.content

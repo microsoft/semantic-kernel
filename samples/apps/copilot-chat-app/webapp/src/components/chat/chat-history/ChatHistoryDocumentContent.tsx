@@ -12,8 +12,8 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import React from 'react';
-import { IChatMessage } from '../../libs/models/ChatMessage';
-import { getFileIconByFileExtension } from './ChatResourceList';
+import { IChatMessage } from '../../../libs/models/ChatMessage';
+import { getFileIconByFileExtension } from '../ChatResourceList';
 
 const useClasses = makeStyles({
     card: {
@@ -49,7 +49,7 @@ const useClasses = makeStyles({
     },
 });
 
-interface ChatHistoryItemDocumentContentProps {
+interface ChatHistoryDocumentContentProps {
     isMe: boolean;
     message: IChatMessage;
 }
@@ -59,7 +59,7 @@ interface DocumentMessageContent {
     size: string;
 }
 
-export const ChatHistoryItemDocumentContent: React.FC<ChatHistoryItemDocumentContentProps> = ({ isMe, message }) => {
+export const ChatHistoryDocumentContent: React.FC<ChatHistoryDocumentContentProps> = ({ isMe, message }) => {
     const classes = useClasses();
 
     let name = '',
