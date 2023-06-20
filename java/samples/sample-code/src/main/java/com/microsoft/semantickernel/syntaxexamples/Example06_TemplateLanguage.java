@@ -8,7 +8,7 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -43,15 +43,15 @@ public class Example06_TemplateLanguage {
                 // This allows to see the prompt before it's sent to OpenAI
                 System.out.println("--- Rendered Prompt");
 
-                var promptRenderer = SKBuilders.promptTemplate().build(functionDefinition, null);
+        var promptRenderer = SKBuilders.promptTemplate()
+                .withPromptTemplate(functionDefinition)
+                .build(kernel.getPromptTemplateEngine());
 
                 SKContext skContext = SKBuilders
                                 .context()
                                 .build(kernel.getSkills());
 
-                PromptTemplateEngine promptTemplateEngine = SKBuilders.promptTemplateEngine().build();
-
-                var renderedPrompt = promptRenderer.renderAsync(skContext, promptTemplateEngine);
+        var renderedPrompt = promptRenderer.renderAsync(skContext);
                 System.out.println(renderedPrompt.block());
 
                 // Run the prompt / semantic function
@@ -70,19 +70,19 @@ public class Example06_TemplateLanguage {
                 System.out.println(result);
                 /*
                  * OUTPUT:
-                 * 
+                 *
                  * --- Rendered Prompt
-                 * 
+                 *
                  * Today is: Friday, April 28, 2023
                  * Current time is: 11:04:30 PM
-                 * 
+                 *
                  * Answer to the following questions using JSON syntax, including the data used.
                  * Is it morning, afternoon, evening, or night
                  * (morning/afternoon/evening/night)?
                  * Is it weekend time (weekend/not weekend)?
-                 * 
+                 *
                  * --- Semantic Function result
-                 * 
+                 *
                  * {
                  * "date": "Friday, April 28, 2023",
                  * "time": "11:04:30 PM",

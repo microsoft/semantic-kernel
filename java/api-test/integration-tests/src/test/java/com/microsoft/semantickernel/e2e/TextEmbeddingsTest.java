@@ -1,27 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.e2e;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.TextMemorySkill;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TextEmbeddingsTest extends AbstractKernelTest {
 
@@ -92,8 +90,8 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                                 .setStorage(volatileMemoryStore)
                                 .build();
 
-                CompletionSKContext context = chat.buildContext(SKBuilders.variables().build(), memory,
-                                kernel.getSkills());
+        SKContext context =
+                chat.buildContext(SKBuilders.variables().build(), memory, kernel.getSkills());
 
                 context.getSemanticMemory()
                                 .saveInformationAsync("aboutMe", "My name is Andrea", "fact1", null, null)
@@ -147,19 +145,4 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                                                                 expectedEmbeddingSize, embedding.getVector().size()));
         }
 
-        private Kernel buildTextEmbeddingsKernel() throws IOException {
-                String model = "text-embedding-ada-002";
-                OpenAITextEmbeddingGeneration embeddingGeneration = new OpenAITextEmbeddingGeneration(getOpenAIClient(),
-                                model);
-
-                KernelConfig kernelConfig = SKBuilders.kernelConfig()
-                                .addTextEmbeddingsGenerationService(model, kernel -> embeddingGeneration)
-                                .build();
-
-                // TODO: .WithMemoryStorage(new VolatileMemoryStore())
-
-                // TODO: .WithMemoryStorage(new VolatileMemoryStore())
-
-                return SKBuilders.kernel().setKernelConfig(kernelConfig).build();
-        }
 }

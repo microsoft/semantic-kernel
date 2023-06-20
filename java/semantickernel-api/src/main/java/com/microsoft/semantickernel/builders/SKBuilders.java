@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
+import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -14,8 +15,6 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
-import javax.annotation.Nullable;
 
 public class SKBuilders {
     // Prevent creating object
@@ -30,8 +29,9 @@ public class SKBuilders {
      * provided
      *
      * @param kernel The kernel to register the function on
+     * @return a function builder
      */
-    public static CompletionSKFunction.Builder completionFunctions(@Nullable Kernel kernel) {
+    public static CompletionSKFunction.Builder completionFunctions(Kernel kernel) {
         return FunctionBuilders.getCompletionBuilder(kernel);
     }
 
@@ -53,6 +53,10 @@ public class SKBuilders {
 
     public static SemanticTextMemory.Builder semanticTextMemory() {
         return BuildersSingleton.INST.getSemanticTextMemoryBuilder();
+    }
+
+    public static MemoryStore.Builder memoryStore() {
+        return BuildersSingleton.INST.memoryStoreBuilder();
     }
 
     public static ReadOnlySkillCollection.Builder skillCollection() {

@@ -100,8 +100,33 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     }
 
     @Override
+    public ContextVariables remove(String key) {
+        variables.remove(key);
+        return this;
+    }
+
+    @Override
     public WritableContextVariables writableClone() {
         return new DefaultContextVariables(variables);
+    }
+
+    @Override
+    public String getInput() {
+        return get(MAIN_KEY);
+    }
+
+    @Override
+    public String prettyPrint() {
+        return variables.entrySet().stream()
+                .reduce(
+                        "",
+                        (str, entry) ->
+                                str
+                                        + System.lineSeparator()
+                                        + entry.getKey()
+                                        + ": "
+                                        + entry.getValue(),
+                        (a, b) -> a + b);
     }
 
     @Override

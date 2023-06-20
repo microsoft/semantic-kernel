@@ -18,5 +18,6 @@
 
     <modules>
         <module>sequentialplanner-extensions</module>
+        <module>actionplanner-extension</module>
     </modules>
 </project>

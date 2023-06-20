@@ -72,4 +72,8 @@ public final class VarBlock extends Block implements TextRendering {
 
         return true;
     }
+
+    public String getName() {
+        return name;
+    }
 }

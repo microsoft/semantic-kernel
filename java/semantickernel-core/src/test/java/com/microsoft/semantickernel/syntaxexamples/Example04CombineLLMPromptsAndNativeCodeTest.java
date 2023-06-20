@@ -49,7 +49,7 @@ public class Example04CombineLLMPromptsAndNativeCodeTest {
         // Run
         String ask = "What's the tallest building in South America?";
 
-        Mono<SKContext<?>> result =
+        Mono<SKContext> result =
                 kernel.runAsync(ask, kernel.getSkills().getFunction("Search", null));
 
         Assertions.assertEquals(

@@ -3,7 +3,6 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
-import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -41,7 +40,7 @@ public interface Kernel {
      *
      * @return the MemoryStore instance
      */
-    MemoryStore getMemoryStore();
+    SemanticTextMemory getMemoryStore();
 
     /**
      * Set the SemanticTextMemory to use.
@@ -56,7 +55,7 @@ public interface Kernel {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext<?>> runAsync(SKFunction<?, ?>... pipeline);
+    Mono<SKContext> runAsync(SKFunction<?>... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -65,7 +64,7 @@ public interface Kernel {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext<?>> runAsync(String input, SKFunction<?, ?>... pipeline);
+    Mono<SKContext> runAsync(String input, SKFunction<?>... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -74,7 +73,7 @@ public interface Kernel {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction<?, ?>... pipeline);
+    Mono<SKContext> runAsync(ContextVariables variables, SKFunction<?>... pipeline);
 
     /**
      * Import a set of skills
@@ -100,6 +99,27 @@ public interface Kernel {
     /**
      * Imports the native functions annotated on the given object as a skill.
      *
+     * @param skillName
+     * @return
+     */
+    ReadOnlyFunctionCollection importSkillFromDirectory(
+            String skillName, String parentDirectory, String skillDirectoryName);
+
+    /** Imports the native functions annotated on the given object as a skill. */
+    void importSkillsFromDirectory(String parentDirectory, String... skillNames);
+
+    /**
+     * Imports the native functions annotated on the given object as a skill. Assumes that the
+     * directory that contains the skill is the same as skillName
+     *
+     * @param skillName
+     * @return
+     */
+    ReadOnlyFunctionCollection importSkillFromDirectory(String skillName, String parentDirectory);
+
+    /**
+     * Imports the native functions annotated on the given object as a skill.
+     *
      * @param nativeSkill
      * @param skillName
      * @return
@@ -117,10 +137,7 @@ public interface Kernel {
     <T> T getService(@Nullable String name, Class<T> clazz) throws KernelException;
 
     /** Registers a semantic functon on this kernel */
-    <
-                    RequestConfiguration,
-                    ContextType extends SKContext<ContextType>,
-                    FunctionType extends SKFunction<RequestConfiguration, ContextType>>
+    <RequestConfiguration, FunctionType extends SKFunction<RequestConfiguration>>
             FunctionType registerSemanticFunction(FunctionType semanticFunctionDefinition);
 
     // <T extends ReadOnlySKContext<T>> T createNewContext();
@@ -128,7 +145,7 @@ public interface Kernel {
     class Builder {
         @Nullable private KernelConfig kernelConfig = null;
         @Nullable private PromptTemplateEngine promptTemplateEngine = null;
-        @Nullable private MemoryStore memoryStore = null;
+        @Nullable private SemanticTextMemory memoryStore = null;
 
         public Builder setKernelConfig(KernelConfig kernelConfig) {
             this.kernelConfig = kernelConfig;
@@ -140,7 +157,7 @@ public interface Kernel {
             return this;
         }
 
-        public Builder withMemoryStore(MemoryStore memoryStore) {
+        public Builder withMemoryStore(SemanticTextMemory memoryStore) {
             this.memoryStore = memoryStore;
             return this;
         }
@@ -160,6 +177,6 @@ public interface Kernel {
         Kernel build(
                 KernelConfig kernelConfig,
                 @Nullable PromptTemplateEngine promptTemplateEngine,
-                @Nullable MemoryStore memoryStore);
+                @Nullable SemanticTextMemory memoryStore);
     }
 }

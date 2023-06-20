@@ -11,9 +11,7 @@ public class Example06_MemoryAndEmbeddings {
     KernelConfig config = SKBuilders.kernelConfig()
         .addTextCompletionService(
             "davinci", kernel -> SKBuilders.textCompletionService().build(client, "text-davinci-003"))
-        .addTextEmbeddingsGenerationService(
-            "embeddings", kernel -> SKBuilders.textEmbeddingGenerationService().build(client, "text-embedding-ada-002"))
-        .build();
+       .build();
 
     // TODO: Add Volatile memory
 

@@ -10,9 +10,9 @@ import reactor.util.annotation.Nullable;
 import javax.annotation.CheckReturnValue;
 
 /** Semantic Kernel context. */
-public interface SKContext<Type extends SKContext<Type>> {
+public interface SKContext {
 
-    Type build(
+    SKContext build(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable ReadOnlySkillCollection skills);
@@ -42,7 +42,6 @@ public interface SKContext<Type extends SKContext<Type>> {
      *
      * @return
      */
-    @Nullable
     ReadOnlySkillCollection getSkills();
 
     /**
@@ -52,7 +51,7 @@ public interface SKContext<Type extends SKContext<Type>> {
      * @param content
      * @return Context for fluent calls
      */
-    Type setVariable(@NonNull String key, @NonNull String content);
+    SKContext setVariable(@NonNull String key, @NonNull String content);
 
     /**
      * Appends data to the given key
@@ -61,7 +60,7 @@ public interface SKContext<Type extends SKContext<Type>> {
      * @param content
      * @return Context for fluent calls
      */
-    Type appendToVariable(@NonNull String key, @NonNull String content);
+    SKContext appendToVariable(@NonNull String key, @NonNull String content);
 
     /**
      * Updates the input entry with the given data
@@ -70,7 +69,7 @@ public interface SKContext<Type extends SKContext<Type>> {
      * @return Context for fluent calls
      */
     @CheckReturnValue
-    Type update(@NonNull String content);
+    SKContext update(@NonNull String content);
 
     /**
      * Merges in the given variables. Duplicate keys provided by newData will overwrite existing
@@ -80,11 +79,23 @@ public interface SKContext<Type extends SKContext<Type>> {
      * @return Context for fluent calls
      */
     @CheckReturnValue
-    Type update(@NonNull ContextVariables newData);
+    SKContext update(@NonNull ContextVariables newData);
 
-    Type copy();
+    SKContext copy();
 
     interface Builder {
         SKContext build(ReadOnlySkillCollection skills);
+
+        SKContext build();
+
+        SKContext build(Class<? extends SKContext> clazz);
+
+        Builder with(ContextVariables variables);
+
+        Builder with(ReadOnlySkillCollection skills);
+
+        Builder with(SemanticTextMemory memory);
+
+        Builder clone(SKContext context);
     }
 }

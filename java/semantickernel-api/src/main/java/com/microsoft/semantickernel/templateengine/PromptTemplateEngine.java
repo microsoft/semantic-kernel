@@ -2,8 +2,11 @@
 package com.microsoft.semantickernel.templateengine;
 
 import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.templateengine.blocks.Block;
 
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 /** Prompt template engine interface */
 public interface PromptTemplateEngine {
@@ -29,6 +32,8 @@ public interface PromptTemplateEngine {
      * @return The prompt template ready to be used for an AI request
      */
     Mono<String> renderAsync(String templateText, SKContext context);
+
+    List<Block> extractBlocks(String promptTemplate);
 
     abstract class Builder {
         protected Builder() {}

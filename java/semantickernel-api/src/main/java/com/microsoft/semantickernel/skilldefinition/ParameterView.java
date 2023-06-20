@@ -28,6 +28,10 @@ public class ParameterView {
         this.defaultValue = defaultValue;
     }
 
+    public ParameterView(String name) {
+        this(name, "", "");
+    }
+
     public String getName() {
         return name;
     }

@@ -2,8 +2,7 @@
 package com.microsoft.semantickernel.extensions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
+import com.microsoft.semantickernel.KernelException;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 
@@ -14,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +33,9 @@ public class KernelExtensions {
 
         File[] files = skillDir.listFiles();
         if (files == null) {
-            return Collections.unmodifiableMap(new HashMap<>());
+            throw new KernelException(
+                    KernelException.ErrorCodes.FunctionNotAvailable,
+                    "No Skills found in directory " + skillDir.getAbsolutePath());
         }
 
         HashMap<String, SemanticFunctionConfig> skills = new HashMap<>();
@@ -64,13 +64,9 @@ public class KernelExtensions {
                 // config.ToJson());
 
                 // Load prompt template
-                PromptTemplate template =
-                        SKBuilders.promptTemplate()
-                                .build(
-                                        new String(
-                                                Files.readAllBytes(promptPath.toPath()),
-                                                Charset.defaultCharset()),
-                                        config);
+                String template =
+                        new String(
+                                Files.readAllBytes(promptPath.toPath()), Charset.defaultCharset());
 
                 skills.put(dir.getName(), new SemanticFunctionConfig(config, template));
             } catch (IOException e) {

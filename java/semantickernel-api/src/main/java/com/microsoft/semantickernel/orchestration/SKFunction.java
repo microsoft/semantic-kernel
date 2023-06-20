@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
 import reactor.core.publisher.Mono;
@@ -15,7 +16,7 @@ import javax.annotation.Nullable;
  * @param <RequestConfiguration> The type of the configuration argument that will be provided when
  *     the function is invoked
  */
-public interface SKFunction<RequestConfiguration, ContextType extends SKContext<ContextType>> {
+public interface SKFunction<RequestConfiguration> {
     /*
         /// <summary>
         /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
@@ -44,12 +45,13 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
         /// </summary>
         public CompleteRequestSettings RequestSettings { get; }
 
-        /// <summary>
-        /// Returns a description of the function, including parameters.
-        /// </summary>
-        /// <returns>An instance of <see cref="FunctionView"/> describing the function</returns>
-        FunctionView Describe();
     */
+    /// <summary>
+    /// Returns a description of the function, including parameters.
+    /// </summary>
+    /// <returns>An instance of <see cref="FunctionView"/> describing the function</returns>
+    FunctionView describe();
+
     // TODO: CancellationToken
     /// <summary>
     /// Invoke the internal delegate with an explicit string input
@@ -71,7 +73,9 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
-    Mono<ContextType> invokeAsync(String input, ContextType context, RequestConfiguration settings);
+    Mono<SKContext> invokeAsync(String input, SKContext context, RequestConfiguration settings);
+
+    Mono<SKContext> invokeAsync();
 
     /**
      * Invokes the function with the given input
@@ -80,7 +84,7 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
-    Mono<ContextType> invokeAsync(String input);
+    Mono<SKContext> invokeAsync(String input);
 
     Class<RequestConfiguration> getType();
 
@@ -92,7 +96,7 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
-    Mono<ContextType> invokeAsync(ContextType context, @Nullable RequestConfiguration settings);
+    Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings);
 
     /// <summary>
     /// Set the default skill collection to use when the function is invoked
@@ -141,21 +145,14 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
 
     String toManualString();
 
-    ContextType buildContext(
+    SKContext buildContext(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable ReadOnlySkillCollection skills);
 
-    ContextType buildContext();
+    SKContext buildContext();
 
-    /**
-     * Build a context cloning the state of the given context
-     *
-     * @param toClone The context to clone
-     */
-    ContextType buildContext(SKContext toClone);
-
-    Mono<ContextType> invokeWithCustomInputAsync(
+    Mono<SKContext> invokeWithCustomInputAsync(
             ContextVariables variablesClone,
             SemanticTextMemory semanticMemory,
             ReadOnlySkillCollection skills);

@@ -131,6 +131,11 @@
                 <artifactId>sequentialplanner-extensions</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantickernel.extensions</groupId>
+                <artifactId>actionplanner-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
