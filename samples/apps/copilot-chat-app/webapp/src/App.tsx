@@ -83,9 +83,9 @@ const App: FC = () => {
                     dispatch(addAlert({ type: AlertType.Error, message: 'Unable to get active logged in account.' }));
                 } else {
                     dispatch(setLoggedInUserInfo({
-                        id: account?.homeAccountId,
-                        email: account?.username,
-                        fullName: account?.name ?? account?.username,
+                        id: account.homeAccountId,
+                        email: account.username,
+                        fullName: account.name ?? account.username,
                     }));
                 }
             } else {
