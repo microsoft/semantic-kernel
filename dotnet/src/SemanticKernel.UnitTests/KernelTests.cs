@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -312,19 +313,19 @@ public class KernelTests
 
     public class MySkill
     {
-        [SKFunction("Return any value.")]
+        [SKFunction, Description("Return any value.")]
         public string GetAnyValue()
         {
             return Guid.NewGuid().ToString();
         }
 
-        [SKFunction("Just say hello")]
+        [SKFunction, Description("Just say hello")]
         public void SayHello()
         {
             Console.WriteLine("Hello folks!");
         }
 
-        [SKFunction("Export info.")]
+        [SKFunction, Description("Export info."), SKName("ReadSkillCollectionAsync")]
         public async Task<SKContext> ReadSkillCollectionAsync(SKContext context)
         {
             await Task.Delay(0);

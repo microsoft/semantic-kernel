@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
+using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -15,7 +17,7 @@ namespace SemanticKernel.UnitTests.SkillDefinition;
 public sealed class SKFunctionTests3
 {
     [Fact]
-    public void ItDoesntThrowForValidFunctions()
+    public void ItDoesntThrowForValidFunctionsViaDelegate()
     {
         // Arrange
         var skillInstance = new LocalExampleSkill();
@@ -24,17 +26,28 @@ public sealed class SKFunctionTests3
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        IEnumerable<ISKFunction> functions = from method in methods select SKFunction.FromNativeMethod(method, skillInstance, "skill");
-        List<ISKFunction> result = (from function in functions where function != null select function).ToList();
+        ISKFunction[] functions = (from method in methods select SKFunction.FromNativeMethod(method, skillInstance, "skill")).ToArray();
 
-        // Act - Assert that no exception occurs and functions are not null
-        Assert.Equal(26, methods.Length);
-        Assert.Equal(26, result.Count);
-        foreach (var method in methods)
-        {
-            ISKFunction? func = SKFunction.FromNativeMethod(method, skillInstance, "skill");
-            Assert.NotNull(func);
-        }
+        // Act
+        Assert.Equal(methods.Length, functions.Length);
+        Assert.All(functions, f => Assert.NotNull(f));
+    }
+
+    [Fact]
+    public void ItDoesntThrowForValidFunctionsViaSkill()
+    {
+        // Arrange
+        var skillInstance = new LocalExampleSkill();
+        MethodInfo[] methods = skillInstance.GetType()
+            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
+            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
+            .ToArray();
+
+        ISKFunction[] functions = Kernel.Builder.Build().ImportSkill(skillInstance).Select(s => s.Value).ToArray();
+
+        // Act
+        Assert.Equal(methods.Length, functions.Length);
+        Assert.All(functions, f => Assert.NotNull(f));
     }
 
     [Fact]
@@ -55,14 +68,14 @@ public sealed class SKFunctionTests3
             {
                 SKFunction.FromNativeMethod(method, instance, "skill");
             }
-            catch (KernelException e) when (e.ErrorCode == KernelException.ErrorCodes.FunctionTypeNotSupported)
+            catch (KernelException e) when (e.ErrorCode is KernelException.ErrorCodes.FunctionTypeNotSupported or KernelException.ErrorCodes.InvalidFunctionDescription)
             {
                 count++;
             }
         }
 
         // Assert
-        Assert.Equal(2, count);
+        Assert.Equal(4, count);
     }
 
     [Fact]
@@ -193,174 +206,250 @@ public sealed class SKFunctionTests3
 
     private sealed class InvalidSkill
     {
-        [SKFunction("one")]
-        public void Invalid1(string x, string y)
+        [SKFunction]
+        public void Invalid1([SKName("input"), Description("The x parameter")] string x, [SKName("input"), Description("The y parameter")] string y)
         {
         }
 
-        [SKFunction("three")]
-        public void Invalid2(string y, int n)
+        [SKFunction]
+        public void Invalid2(string y, CustomUnknownType n)
         {
         }
+
+        [SKFunction]
+        public void Invalid3(SKContext context1, SKContext context2)
+        {
+        }
+
+        [SKFunction]
+        public void Invalid4(CancellationToken ct1, CancellationToken ct2)
+        {
+        }
+
+        public struct CustomUnknownType { }
     }
 
     private sealed class LocalExampleSkill
     {
-        [SKFunction("one")]
+        [SKFunction]
         public void Type01()
         {
         }
 
-        [SKFunction("two")]
+        [SKFunction]
         public string Type02()
         {
             return "";
         }
 
-        [SKFunction("two2")]
+        [SKFunction]
         public string? Type02Nullable()
         {
             return null;
         }
 
-        [SKFunction("three")]
+        [SKFunction]
         public async Task<string> Type03Async()
         {
             await Task.Delay(0);
             return "";
         }
 
-        [SKFunction("three2")]
+        [SKFunction]
         public async Task<string?> Type03NullableAsync()
         {
             await Task.Delay(0);
             return null;
         }
 
-        [SKFunction("four")]
+        [SKFunction]
         public void Type04(SKContext context)
         {
         }
 
-        [SKFunction("four2")]
+        [SKFunction]
         public void Type04Nullable(SKContext? context)
         {
         }
 
-        [SKFunction("five")]
+        [SKFunction]
         public string Type05(SKContext context)
         {
             return "";
         }
 
-        [SKFunction("five2")]
+        [SKFunction]
         public string? Type05Nullable(SKContext? context)
         {
             return null;
         }
 
-        [SKFunction("six")]
+        [SKFunction]
         public async Task<string> Type06Async(SKContext context)
         {
             await Task.Delay(0);
             return "";
         }
 
-        [SKFunction("seven")]
+        [SKFunction]
         public async Task<SKContext> Type07Async(SKContext context)
         {
             await Task.Delay(0);
             return context;
         }
 
-        [SKFunction("eight")]
-        public void Type08(string x)
+        [SKFunction]
+        public void Type08(string input)
         {
         }
 
-        [SKFunction("eight2")]
-        public void Type08Nullable(string? x)
+        [SKFunction]
+        public void Type08Nullable(string? input)
         {
         }
 
-        [SKFunction("nine")]
-        public string Type09(string x)
-        {
-            return "";
-        }
-
-        [SKFunction("nine2")]
-        public string? Type09Nullable(string? x = null)
+        [SKFunction]
+        public string Type09(string input)
         {
             return "";
         }
 
-        [SKFunction("ten")]
-        public async Task<string> Type10Async(string x)
+        [SKFunction]
+        public string? Type09Nullable(string? input = null)
+        {
+            return "";
+        }
+
+        [SKFunction]
+        public async Task<string> Type10Async(string input)
         {
             await Task.Delay(0);
             return "";
         }
 
-        [SKFunction("ten2")]
-        public async Task<string?> Type10NullableAsync(string? x)
+        [SKFunction]
+        public async Task<string?> Type10NullableAsync(string? input)
         {
             await Task.Delay(0);
             return "";
         }
 
-        [SKFunction("eleven")]
-        public void Type11(string x, SKContext context)
+        [SKFunction]
+        public void Type11(string input, SKContext context)
         {
         }
 
-        [SKFunction("eleven2")]
-        public void Type11Nullable(string? x = null, SKContext? context = null)
+        [SKFunction]
+        public void Type11Nullable(string? input = null, SKContext? context = null)
         {
         }
 
-        [SKFunction("twelve")]
-        public string Type12(string x, SKContext context)
+        [SKFunction]
+        public string Type12(string input, SKContext context)
         {
             return "";
         }
 
-        [SKFunction("thirteen")]
-        public async Task<string> Type13Async(string x, SKContext context)
+        [SKFunction]
+        public async Task<string> Type13Async(string input, SKContext context)
         {
             await Task.Delay(0);
             return "";
         }
 
-        [SKFunction("fourteen")]
-        public async Task<SKContext> Type14Async(string x, SKContext context)
+        [SKFunction]
+        public async Task<SKContext> Type14Async(string input, SKContext context)
         {
             await Task.Delay(0);
             return context;
         }
 
-        [SKFunction("fifteen")]
-        public async Task Type15Async(string x)
+        [SKFunction]
+        public async Task Type15Async(string input)
         {
             await Task.Delay(0);
         }
 
-        [SKFunction("sixteen")]
+        [SKFunction]
         public async Task Type16Async(SKContext context)
         {
             await Task.Delay(0);
         }
 
-        [SKFunction("seventeen")]
-        public async Task Type17Async(string x, SKContext context)
+        [SKFunction]
+        public async Task Type17Async(string input, SKContext context)
         {
             await Task.Delay(0);
         }
 
-        [SKFunction("eighteen")]
+        [SKFunction]
         public async Task Type18Async()
         {
             await Task.Delay(0);
+        }
+
+        [SKFunction]
+        public async ValueTask ReturnsValueTaskAsync()
+        {
+            await Task.Delay(0);
+        }
+
+        [SKFunction]
+        public async ValueTask<string> ReturnsValueTaskStringAsync()
+        {
+            await Task.Delay(0);
+            return "hello world";
+        }
+
+        [SKFunction]
+        public async ValueTask<SKContext> ReturnsValueTaskContextAsync(SKContext context)
+        {
+            await Task.Delay(0);
+            return context;
+        }
+
+        [SKFunction]
+        public string WithPrimitives(
+            byte a1,
+            byte? b1,
+            sbyte c1,
+            sbyte? d1,
+            short e1,
+            short? f1,
+            ushort g1,
+            ushort? h1,
+            int i1,
+            int? j1,
+            uint k1,
+            uint? l1,
+            long m1,
+            long? n1,
+            ulong o1,
+            ulong? p1,
+            float q1,
+            float? r1,
+            double s1,
+            double? t1,
+            decimal u1,
+            decimal? v1,
+            char w1,
+            char? x1,
+            bool y1,
+            bool? z1,
+            DateTime a2,
+            DateTime? b2,
+            DateTimeOffset c2,
+            DateTimeOffset? d2,
+            TimeSpan e2,
+            TimeSpan? f2,
+            Guid g2,
+            Guid? h2,
+            DayOfWeek i2,
+            DayOfWeek? j2,
+            Uri k2,
+            string l2)
+        {
+            return "";
         }
     }
 
