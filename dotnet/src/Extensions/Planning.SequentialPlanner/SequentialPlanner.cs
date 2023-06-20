@@ -75,9 +75,14 @@ public sealed class SequentialPlanner
             var plan = planResultString.ToPlanFromXml(goal, this._context);
             return plan;
         }
+        catch (PlanningException planException) when (planException.ErrorCode == PlanningException.ErrorCodes.InvalidPlan ||
+                                                      planException.ErrorCode == PlanningException.ErrorCodes.InvalidGoal)
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, "Unable to create plan", planException);
+        }
         catch (Exception e)
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Plan parsing error, invalid XML", e);
+            throw new PlanningException(PlanningException.ErrorCodes.UnknownError, "Unknown error creating plan", e);
         }
     }
 

@@ -86,5 +86,10 @@ public class PlanningException : SKException
         /// Invalid configuration.
         /// </summary>
         InvalidConfiguration,
+
+        /// <summary>
+        /// Create plan error.
+        /// </summary>
+        CreatePlanError,
     }
 }
