@@ -260,9 +260,7 @@ public class TextChunkerTest {
                         "This is only a test",
                         "We repeat, this is only a test, A unit test",
                         "A small note, And another, And once again, Seriously,",
-                        "this is the end, We're finished, All set, Bye."
-                                + "\n"
-                                + "Done.");
+                        "this is the end, We're finished, All set, Bye." + "\n" + "Done.");
 
         List<String> result = TextChunker.splitPlainTextParagraphs(input, 15);
 
@@ -307,9 +305,7 @@ public class TextChunkerTest {
                         "broadcast system-This is only a test",
                         "We repeat-this is only a test-A unit test",
                         "A small note-And another-And once again-Seriously,",
-                        "this is the end-We're finished-All set-Bye."
-                                + "\n"
-                                + "Done.");
+                        "this is the end-We're finished-All set-Bye." + "\n" + "Done.");
 
         List<String> result = TextChunker.splitPlainTextParagraphs(input, 15);
 
@@ -327,9 +323,7 @@ public class TextChunkerTest {
                         "SeriouslythisistheendWe'refinishedAllsetByeDoneThisOneWillBeSplitToMeetTheLimit");
         List<String> expected =
                 Arrays.asList(
-                        "Thisisatestoftheemergencybroadcastsystem"
-                                + "\n"
-                                + "Thisisonlyatest",
+                        "Thisisatestoftheemergencybroadcastsystem" + "\n" + "Thisisonlyatest",
                         "WerepeatthisisonlyatestAunittest",
                         "AsmallnoteAndanotherAndonceagain",
                         "SeriouslythisistheendWe'refinishedAllse",

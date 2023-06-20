@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.DefaultKernelTest;
 import com.microsoft.semantickernel.Kernel;
@@ -13,27 +10,33 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.syntaxexamples.skills.StaticTextSkill;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import reactor.core.publisher.Mono;
 
 public class Example03VariablesTest {
-        @Test
-        public void run() {
-                OpenAIAsyncClient client = DefaultKernelTest.mockCompletionOpenAIAsyncClient();
-                Kernel kernel = DefaultKernelTest.buildKernel("model", client);
+    @Test
+    public void run() {
+        OpenAIAsyncClient client = DefaultKernelTest.mockCompletionOpenAIAsyncClient();
+        Kernel kernel = DefaultKernelTest.buildKernel("model", client);
 
-                // Load native skill
-                ReadOnlyFunctionCollection functionCollection = kernel.importSkill(new StaticTextSkill(), "text");
+        // Load native skill
+        ReadOnlyFunctionCollection functionCollection =
+                kernel.importSkill(new StaticTextSkill(), "text");
 
-                ContextVariables variables = SKBuilders.variables()
-                                .build("Today is: ")
-                                .writableClone()
-                                .setVariable("day", "Monday");
+        ContextVariables variables =
+                SKBuilders.variables()
+                        .build("Today is: ")
+                        .writableClone()
+                        .setVariable("day", "Monday");
 
-                Mono<SKContext<?>> result = kernel.runAsync(
-                                variables,
-                                functionCollection.getFunction("AppendDay"),
-                                functionCollection.getFunction("Uppercase"));
+        Mono<SKContext<?>> result =
+                kernel.runAsync(
+                        variables,
+                        functionCollection.getFunction("AppendDay"),
+                        functionCollection.getFunction("Uppercase"));
 
-                Assertions.assertEquals("TODAY IS: MONDAY", result.block().getResult());
-        }
+        Assertions.assertEquals("TODAY IS: MONDAY", result.block().getResult());
+    }
 }

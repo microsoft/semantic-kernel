@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
-using Microsoft.SemanticKernel.Orchestration;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -16,7 +15,6 @@ namespace SemanticKernel.UnitTests.CoreSkills;
 
 public class HttpSkillTests : IDisposable
 {
-    private readonly SKContext _context = new();
     private readonly string _content = "hello world";
     private readonly string _uriString = "http://www.example.com";
 
@@ -53,7 +51,7 @@ public class HttpSkillTests : IDisposable
         using var skill = new HttpSkill(client);
 
         // Act
-        var result = await skill.GetAsync(this._uriString, this._context);
+        var result = await skill.GetAsync(this._uriString);
 
         // Assert
         Assert.Equal(this._content, result);
@@ -67,10 +65,9 @@ public class HttpSkillTests : IDisposable
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         using var skill = new HttpSkill(client);
-        this._context["body"] = this._content;
 
         // Act
-        var result = await skill.PostAsync(this._uriString, this._context);
+        var result = await skill.PostAsync(this._uriString, this._content);
 
         // Assert
         Assert.Equal(this._content, result);
@@ -84,10 +81,9 @@ public class HttpSkillTests : IDisposable
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         using var skill = new HttpSkill(client);
-        this._context["body"] = this._content;
 
         // Act
-        var result = await skill.PutAsync(this._uriString, this._context);
+        var result = await skill.PutAsync(this._uriString, this._content);
 
         // Assert
         Assert.Equal(this._content, result);
@@ -103,7 +99,7 @@ public class HttpSkillTests : IDisposable
         using var skill = new HttpSkill(client);
 
         // Act
-        var result = await skill.DeleteAsync(this._uriString, this._context);
+        var result = await skill.DeleteAsync(this._uriString);
 
         // Assert
         Assert.Equal(this._content, result);
