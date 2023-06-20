@@ -36,7 +36,7 @@ public class TimeSkillTests
         double interval = 2;
         DateTime expected = DateTime.Now.AddDays(-interval);
         var skill = new TimeSkill();
-        string result = skill.DaysAgo(interval);
+        string result = skill.DaysAgo(interval, CultureInfo.CurrentCulture);
         DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(expected.Day, returned.Day);
         Assert.Equal(expected.Month, returned.Month);
@@ -48,7 +48,7 @@ public class TimeSkillTests
     {
         string expected = DateTime.Now.ToString("dd", CultureInfo.CurrentCulture);
         var skill = new TimeSkill();
-        string result = skill.Day();
+        string result = skill.Day(CultureInfo.CurrentCulture);
         Assert.Equal(expected, result);
         Assert.True(int.TryParse(result, out _));
     }
@@ -76,7 +76,7 @@ public class TimeSkillTests
         Assert.True(found);
 
         var skill = new TimeSkill();
-        string result = skill.DateMatchingLastDayName(dayName);
+        string result = skill.DateMatchingLastDayName(dayName, CultureInfo.CurrentCulture);
         DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(date.Day, returned.Day);
         Assert.Equal(date.Month, returned.Month);

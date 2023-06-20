@@ -25,13 +25,12 @@ namespace Microsoft.SemanticKernel.CoreSkills;
     Justification = "Semantic Kernel operates on strings")]
 public sealed class HttpSkill : IDisposable
 {
-    private static readonly HttpClientHandler s_httpClientHandler = new() { CheckCertificateRevocationList = true };
     private readonly HttpClient _client;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpSkill"/> class.
     /// </summary>
-    public HttpSkill() : this(new HttpClient(s_httpClientHandler, disposeHandler: false))
+    public HttpSkill() : this(new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false))
     {
     }
 
@@ -112,5 +111,8 @@ public sealed class HttpSkill : IDisposable
     /// <summary>
     /// Disposes resources
     /// </summary>
-    public void Dispose() => this._client.Dispose();
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
+    public void Dispose()
+    {
+    }
 }

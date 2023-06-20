@@ -68,9 +68,10 @@ public sealed class TextSkill
     /// {{text.uppercase $input}} => "HELLO WORLD"
     /// </example>
     /// <param name="input"> The string to convert. </param>
+    /// <param name="cultureInfo"> An object that supplies culture-specific casing rules. </param>
     /// <returns> The converted string. </returns>
     [SKFunction, Description("Convert a string to uppercase.")]
-    public string Uppercase(string input) => input.ToUpper(CultureInfo.CurrentCulture);
+    public string Uppercase(string input, CultureInfo? cultureInfo = null) => input.ToUpper(cultureInfo);
 
     /// <summary>
     /// Convert a string to lowercase.
@@ -80,9 +81,10 @@ public sealed class TextSkill
     /// {{text.lowercase $input}} => "hello world"
     /// </example>
     /// <param name="input"> The string to convert. </param>
+    /// <param name="cultureInfo"> An object that supplies culture-specific casing rules. </param>
     /// <returns> The converted string. </returns>
     [SKFunction, Description("Convert a string to lowercase.")]
-    public string Lowercase(string input) => input.ToLower(CultureInfo.CurrentCulture);
+    public string Lowercase(string input, CultureInfo? cultureInfo = null) => input.ToLower(cultureInfo);
 
     /// <summary>
     /// Get the length of a string. Returns 0 if null or empty
