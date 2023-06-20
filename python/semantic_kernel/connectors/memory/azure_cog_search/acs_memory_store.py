@@ -24,6 +24,7 @@ from python.semantic_kernel.connectors.memory.azure_cog_search.acs_utils import 
     convert_to_memory_record,
     create_credentials,
 )
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
