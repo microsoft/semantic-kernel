@@ -37,7 +37,7 @@ jobs:
           done
           
           echo "All yarn projects found: '${yarndirs[*]}'"
-          yarndirs_json=$(jq -R -s 'split(" ")' <<< "${yarndirs[*]%\n}")
+          yarndirs_json=$(echo "${yarndirs[*]}" | jq -R -s 'split(" ")')
           
           echo "Setting output yarn-folders to $yarndirs_json"
           echo "::set-output name=yarn-folders::$yarndirs_json"
