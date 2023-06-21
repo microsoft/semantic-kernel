@@ -18,14 +18,15 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
     const { downloadFile } = useFile();
     const [isGettingInvitationId, setIsGettingInvitationId] = React.useState(false);
 
-    const onDownloadBotClick = useCallback(async () => {
+    const onDownloadBotClick = useCallback(() => {
         // TODO: Add a loading indicator
-        const content = await chat.downloadBot(chatId);
-        downloadFile(
-            `chat-history-${chatTitle}-${new Date().toISOString()}.json`,
-            JSON.stringify(content),
-            'text/json',
-        );
+        chat.downloadBot(chatId).then(content => {
+            downloadFile(
+                `chat-history-${chatTitle}-${new Date().toISOString()}.json`,
+                JSON.stringify(content),
+                'text/json',
+            );
+        }).catch(() => { });
     }, [chat, chatId, chatTitle, downloadFile]);
 
     return (

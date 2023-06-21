@@ -56,8 +56,8 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
     }
 
     const userIntentPrefix = 'User Intent:User intent: ';
-    const userIntentIndex = originalPlan.description.indexOf(userIntentPrefix);
-    const description =
+    const userIntentIndex = originalPlan.description.indexOf(userIntentPrefix) as number;
+    const description: string =
         userIntentIndex !== -1
             ? originalPlan.description.substring(userIntentIndex + userIntentPrefix.length).trim()
             : '';
@@ -135,10 +135,10 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 <>
                     Would you like to proceed with the plan?
                     <div className={classes.buttons}>
-                        <Button appearance="secondary" onClick={async () => { await onPlanAction(PlanState.PlanRejected); }}>
+                        <Button appearance="secondary" onClick={() => { onPlanAction(PlanState.PlanRejected).catch(() => { }); }}>
                             No, cancel plan
                         </Button>
-                        <Button type="submit" appearance="primary" onClick={async () => { await onPlanAction(PlanState.PlanApproved); }}>
+                        <Button type="submit" appearance="primary" onClick={() => { onPlanAction(PlanState.PlanApproved).catch(() => { }); }}>
                             Yes, proceed
                         </Button>
                     </div>

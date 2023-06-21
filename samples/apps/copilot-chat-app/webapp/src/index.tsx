@@ -19,7 +19,7 @@ if (!localStorage.getItem('debug')) {
 
 let container: HTMLElement | null = null;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     if (!container) {
         container = document.getElementById('root');
         if (!container) {
@@ -34,11 +34,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (validEnvFile) {
             msalInstance = new PublicClientApplication(AuthHelper.msalConfig);
 
-            msalInstance.handleRedirectPromise().then((response) => {
-                if (response) {
-                    msalInstance?.setActiveAccount(response?.account);
-                }
-            });
+            msalInstance
+                .handleRedirectPromise()
+                .then((response) => {
+                    if (response) {
+                        msalInstance?.setActiveAccount(response?.account);
+                    }
+                })
+                .catch(() => {});
         }
 
         root.render(
@@ -46,6 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 {!validEnvFile && <MissingEnvVariablesError missingVariables={missingEnvVariables} />}
                 {validEnvFile && (
                     <ReduxProvider store={store}>
+                        {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
                         <MsalProvider instance={msalInstance!}>
                             <FluentProvider className="app-container" theme={webLightTheme}>
                                 <App />

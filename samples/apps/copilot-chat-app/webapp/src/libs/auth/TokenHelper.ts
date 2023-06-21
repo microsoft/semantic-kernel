@@ -19,6 +19,7 @@ export const getAccessTokenUsingMsal = async (
     scopes: string[],
     extraScopesToConsent?: string[],
 ) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const account = msalInstance.getActiveAccount()!;
     const accessTokenRequest: PopupRequest = {
         authority: `https://login.microsoftonline.com/${account.tenantId}`,
@@ -63,11 +64,11 @@ const acquireToken = async (
                         })
                         .catch(function (error) {
                             // Acquire token interactive failure
-                            throw new Error(`Received error while retrieving access token: ${error}`);
+                            throw new Error(`Received error while retrieving access token: ${error as string}`);
                         });
                 }
             }
-            throw new Error(`Received error while retrieving access token: ${error}`);
+            throw new Error(`Received error while retrieving access token: ${error as string}`);
         });
 };
 
@@ -86,10 +87,10 @@ const interactionInProgressHandler = async (
 
 const waitFor = async (hasInteractionCompleted: () => boolean) => {
     const checkInteraction = (resolve: (arg0: null) => void, _reject: any) => {
-        const interactionInProgress = !hasInteractionCompleted();
+        let interactionInProgress = !hasInteractionCompleted();
         while (interactionInProgress) {
             setTimeout(() => {
-                hasInteractionCompleted();
+                interactionInProgress = hasInteractionCompleted();
             }, 500);
         }
         resolve(null);

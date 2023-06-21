@@ -54,7 +54,7 @@ const logoutRequest: EndSessionRequest = {
 };
 
 const ssoSilentRequest = async (msalInstance: IPublicClientApplication) => {
-    await msalInstance.ssoSilent({ account: msalInstance.getActiveAccount() || undefined, scopes: Constants.msal.semanticKernelScopes });
+    await msalInstance.ssoSilent({ account: msalInstance.getActiveAccount() ?? undefined, scopes: Constants.msal.semanticKernelScopes });
 };
 
 const loginAsync = async (instance: IPublicClientApplication) => {

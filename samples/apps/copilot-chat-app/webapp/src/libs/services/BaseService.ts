@@ -41,8 +41,7 @@ export class BaseService {
         if (enabledPlugins && enabledPlugins.length > 0) {
             // For each enabled plugin, pass its auth information as a customer header
             // to the backend so the server can authenticate to the plugin
-            for (const idx in enabledPlugins) {
-                const plugin = enabledPlugins[idx];
+            for (const plugin of enabledPlugins) {
                 headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData);
             }
         }
@@ -57,21 +56,22 @@ export class BaseService {
 
             if (!response.ok) {
                 const responseText = await response.text();
-                const errorMessage =
-                    `${response.status}: ${response.statusText}` + (responseText ? ` => ${responseText}` : '');
+                const errorMessage = `${response.status}: ${response.statusText}${
+                    responseText ? ` => ${responseText}` : ''
+                }`;
 
                 throw Object.assign(new Error(errorMessage));
             }
 
-            return noResponseBodyStatusCodes.includes(response.status) ? ({} as T) : ((await response.json()) as T);
-        } catch (e) {
-            let additional_error_msg = '';
+            return noResponseBodyStatusCodes.includes(response.status) ? {} : (await response.json());
+        } catch (e: any) {
+            let additionalErrorMsg = '';
             if (e instanceof TypeError) {
                 // fetch() will reject with a TypeError when a network error is encountered.
-                additional_error_msg =
+                additionalErrorMsg =
                     '\n\nPlease check that your backend is running and that it is accessible by the app';
             }
-            throw Object.assign(new Error(e + additional_error_msg));
+            throw Object.assign(new Error(`${e as string} ${additionalErrorMsg}`));
         }
     };
 }

@@ -25,8 +25,9 @@ export const NewBotMenu: FC = () => {
     const fileUploaderRef = useRef<HTMLInputElement>(null);
 
     const onAddChat = () => {
-        chat.createChat();
-        setIsNewBotMenuOpen(false);
+        chat.createChat().then(() => {
+            setIsNewBotMenuOpen(false);
+        }).catch(() => { });
     };
 
     const onUpload = useCallback(
@@ -35,7 +36,7 @@ export const NewBotMenu: FC = () => {
                 .loadFile<Bot>(file, chat.uploadBot)
                 .catch((error) =>
                     dispatch(
-                        addAlert({ message: `Failed to parse uploaded file. ${error.message}`, type: AlertType.Error }),
+                        addAlert({ message: `Failed to parse uploaded file. ${error.message as string}`, type: AlertType.Error }),
                     ),
                 );
             setIsNewBotMenuOpen(false);

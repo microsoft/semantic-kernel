@@ -70,7 +70,7 @@ const useClasses = makeStyles({
 interface ChatInputProps {
     isDraggingOver?: boolean;
     onDragLeave: React.DragEventHandler<HTMLDivElement | HTMLTextAreaElement>;
-    onSubmit: (options: GetResponseOptions) => void;
+    onSubmit: (options: GetResponseOptions) => Promise<void>;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeave, onSubmit }) => {
@@ -98,8 +98,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             }
         }
 
-        initSpeechRecognizer();
-    }, [instance, inProgress]);
+        initSpeechRecognizer().catch((e) => {
+            const errorMessage = `Unable to initialize speech recognizer. Details: ${(e.message ?? e) as string}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        });
+    }, [dispatch, instance, inProgress]);
 
     React.useEffect(() => {
         const chatState = conversations[selectedId];
@@ -120,17 +123,19 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         }
     };
 
-    const handleImport = async (dragAndDropFile?: File) => {
+    const handleImport = (dragAndDropFile?: File) => {
         setDocumentImporting(true);
         const file = dragAndDropFile ?? documentFileRef.current?.files?.[0];
         if (file) {
-            await chat.importDocument(selectedId, file);
+            chat.importDocument(selectedId, file).catch(() => { });
         }
         setDocumentImporting(false);
 
         // Reset the file input so that the onChange event will
         // be triggered even if the same file is selected again.
-        documentFileRef.current!.value = '';
+        if (documentFileRef.current?.value) {
+            documentFileRef.current.value = '';
+        }
     };
 
     const handleSubmit = (value: string, messageType: ChatMessageType = ChatMessageType.Message) => {
@@ -138,7 +143,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             if (value.trim() === '') {
                 return; // only submit if value is not empty
             }
-            onSubmit({ value, messageType, chatId: selectedId });
+            onSubmit({ value, messageType, chatId: selectedId }).catch(() => { });
             setValue('');
             dispatch(editConversationInput({ id: selectedId, newInput: '' }));
         } catch (error) {
@@ -153,9 +158,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         }
     };
 
-    const handleDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
+    const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
         onDragLeave(e);
-        await handleImport(e.dataTransfer?.files[0]);
+        handleImport(e.dataTransfer?.files[0]);
     };
 
     return (
@@ -211,7 +216,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         style={{ display: 'none' }}
                         accept=".txt,.pdf"
                         multiple={false}
-                        onChange={async () => { await handleImport(); }}
+                        onChange={() => { handleImport(); }}
                     />
                     <Button
                         disabled={documentImporting}

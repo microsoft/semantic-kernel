@@ -101,7 +101,7 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
                     <CardHeader
                         header={
                             <Body1>
-                                <b className={classes.header}>Step {step.index + 1} •</b> {step.skill_name}.{step.name}
+                                <b className={classes.header}>Step {(step.index as number) + 1} •</b> {step.skill_name}.{step.name}
                                 <br />
                             </Body1>
                         }
@@ -122,9 +122,7 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
                                         <DialogBody>
                                             <DialogTitle>Are you sure you want to delete this step?</DialogTitle>
                                             <DialogContent>
-                                                Deleting this step could disrupt the plan's initial logic and cause
-                                                errors in subsequent steps. Make sure the next steps don't depend on
-                                                this step's outputs.
+                                                {'Deleting this step could disrupt the plan\'s initial logic and cause errors in subsequent steps. Make sure the next steps don\'t depend on this step\'s outputs.'}
                                             </DialogContent>
                                             <DialogActions>
                                                 <DialogTrigger disableButtonEnhancement>

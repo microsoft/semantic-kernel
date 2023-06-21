@@ -46,5 +46,5 @@ export const TypingIndicatorRenderer: React.FC<TypingIndicatorRendererProps> = (
         </div>
     );
 
-    return <Animation name="slideInCubic" keyframeParams={{ distance: '2.4rem' }} children={typingIndicator} />;
+    return <Animation name="slideInCubic" keyframeParams={{ distance: '2.4rem' }}>{typingIndicator}</Animation>;
 };

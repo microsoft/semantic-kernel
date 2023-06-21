@@ -87,7 +87,7 @@ export const ChatWindow: React.FC = () => {
     const dispatch = useAppDispatch();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
-    const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
+    const [title = '', setTitle] = useState<string | undefined>(selectedId ?? undefined);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const { instance, inProgress } = useMsal();
 
@@ -98,13 +98,13 @@ export const ChatWindow: React.FC = () => {
             try {
                 await chatService.editChatAsync(
                     conversations[selectedId].id,
-                    title!,
+                    title,
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 );
 
-                dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
+                dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title }));
             } catch (e: any) {
-                const errorMessage = `Unable to retrieve chat to change title. Details: ${e.message ?? e}`;
+                const errorMessage = `Unable to retrieve chat to change title. Details: ${(e.message ?? e) as string}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
             }
         }
@@ -116,7 +116,7 @@ export const ChatWindow: React.FC = () => {
         setSelectedTab(data.value);
     };
 
-    const onClose = async () => {
+    const onClose = () => {
         setTitle(chatName);
         setIsEditing(!isEditing);
     };
@@ -127,7 +127,7 @@ export const ChatWindow: React.FC = () => {
 
     const handleKeyDown = (event: any) => {
         if (event.key === 'Enter') {
-            onSave();
+            onSave().catch(() => {});
         }
     };
 
@@ -188,7 +188,7 @@ export const ChatWindow: React.FC = () => {
                             <AvatarGroupItem name={user.id} key={user.id} />
                         ))}
                     </AvatarGroupPopover>
-                    <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
+                    <ShareBotMenu chatId={selectedId} chatTitle={title} />
                 </div>
             </div>
             {selectedTab === 'chat' && <ChatRoom />}

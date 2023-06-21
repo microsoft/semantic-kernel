@@ -13,16 +13,14 @@ const BackendProbe: FC<IData> = ({ uri, onBackendFound }) => {
         const timer = setInterval(() => {
             const requestUrl = new URL('healthz', uri);
             const fetchAsync = async () => {
-                try {
-                    const result = await fetch(requestUrl);
+                const result = await fetch(requestUrl);
 
-                    if (result.ok) {
-                        onBackendFound();
-                    }
-                } catch { }
+                if (result.ok) {
+                    onBackendFound();
+                }
             };
 
-            fetchAsync();
+            fetchAsync().catch(() => {});
         }, 3000);
 
         return () => { clearInterval(timer); };

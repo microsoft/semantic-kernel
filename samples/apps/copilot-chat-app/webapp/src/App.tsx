@@ -78,22 +78,20 @@ const App: FC = () => {
         if (isAuthenticated && account) {
             dispatch(setLoggedInUserId(account.homeAccountId));
 
-            if (appState === AppState.LoadingChats) {
-                // Load all chats from the backend.
-                async function loadChats() {
-                    if (await chat.loadChats()) {
+            // Load all chats from memory
+            chat.loadChats()
+                .then((succeeded) => {
+                    if (succeeded) {
                         setAppState(AppState.Chat);
                     }
-                }
-
-                loadChats();
-            }
+                })
+                .catch(() => {});
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instance, inProgress, isAuthenticated, appState]);
 
-    const onDismissAlert = (key: string) => {
-        dispatch(removeAlert(key));
+    const onDismissAlert = (index: number) => {
+        dispatch(removeAlert(index));
     };
 
     // TODO: handle error case of missing account information
@@ -117,9 +115,7 @@ const App: FC = () => {
                             <UserSettings setLoadingState={() => { setAppState(AppState.SigningOut); }} />
                         </div>
                     </div>
-                    {alerts &&
-                        Object.keys(alerts).map((key) => {
-                            const alert = alerts[key];
+                    {alerts.map((alert, index) => {
                             return (
                                 <Alert
                                     intent={alert.type}
@@ -127,12 +123,12 @@ const App: FC = () => {
                                         icon: (
                                             <Dismiss16Regular
                                                 aria-label="dismiss message"
-                                                onClick={() => { onDismissAlert(key); }}
+                                                onClick={() => { onDismissAlert(index); }}
                                                 color="black"
                                             />
                                         ),
                                     }}
-                                    key={key}
+                                    key={index}
                                 >
                                     {alert.message}
                                 </Alert>

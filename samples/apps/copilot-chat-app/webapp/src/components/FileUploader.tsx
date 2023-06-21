@@ -50,3 +50,5 @@ export const FileUploader: React.FC<FileUploaderProps> = forwardRef<HTMLInputEle
         );
     },
 );
+
+FileUploader.displayName = 'FileUploader';

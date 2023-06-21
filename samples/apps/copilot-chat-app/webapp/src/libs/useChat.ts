@@ -49,10 +49,13 @@ export const useChat = () => {
 
     const botProfilePictures: string[] = [botIcon1, botIcon2, botIcon3, botIcon4, botIcon5];
 
+    const homeAccountId = account?.homeAccountId ?? '';
+    const emailAddress = account?.username ?? '';
+    const fullName = account?.name ?? emailAddress;
     const loggedInUser: IChatUser = {
-        id: account?.homeAccountId || '',
-        fullName: (account?.name ?? account?.username) || '',
-        emailAddress: account?.username || '',
+        id: homeAccountId,
+        fullName,
+        emailAddress,
         photo: undefined, // TODO: Make call to Graph /me endpoint to load photo
         online: true,
         isTyping: false,
@@ -71,7 +74,7 @@ export const useChat = () => {
         try {
             await chatService
                 .createChatAsync(
-                    account?.homeAccountId!,
+                    homeAccountId,
                     chatTitle,
                     accessToken,
                 )
@@ -97,7 +100,7 @@ export const useChat = () => {
                     return newChat.id;
                 });
         } catch (e: any) {
-            const errorMessage = `Unable to create new chat. Details: ${e.message ?? e}`;
+            const errorMessage = `Unable to create new chat. Details: ${(e.message ?? e) as string}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         }
     };
@@ -108,11 +111,11 @@ export const useChat = () => {
             variables: [
                 {
                     key: 'userId',
-                    value: account?.homeAccountId!,
+                    value: homeAccountId,
                 },
                 {
                     key: 'userName',
-                    value: account?.name ?? account?.username!,
+                    value: fullName,
                 },
                 {
                     key: 'chatId',
@@ -136,7 +139,7 @@ export const useChat = () => {
                 getEnabledPlugins(),
             );
         } catch (e: any) {
-            const errorMessage = `Unable to generate bot response. Details: ${e.message ?? e}`;
+            const errorMessage = `Unable to generate bot response. Details: ${(e.message ?? e) as string}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         }
     };
@@ -145,14 +148,13 @@ export const useChat = () => {
         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
             const chatSessions = await chatService.getAllChatsAsync(
-                account?.homeAccountId!,
+                homeAccountId,
                 accessToken,
             );
 
             if (chatSessions.length > 0) {
                 const loadedConversations: Conversations = {};
-                for (const index in chatSessions) {
-                    const chatSession = chatSessions[index];
+                for (const chatSession of chatSessions) {
                     const chatMessages = await chatService.getChatMessagesAsync(
                         chatSession.id,
                         0,
@@ -185,7 +187,7 @@ export const useChat = () => {
 
             return true;
         } catch (e: any) {
-            const errorMessage = `Unable to load chats. Details: ${e.message ?? e}`;
+            const errorMessage = `Unable to load chats. Details: ${(e.message ?? e) as string}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
 
             return false;
@@ -196,7 +198,7 @@ export const useChat = () => {
         try {
             return await botService.downloadAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance, inProgress));
         } catch (e: any) {
-            const errorMessage = `Unable to download the bot. Details: ${e.message ?? e}`;
+            const errorMessage = `Unable to download the bot. Details: ${(e.message ?? e) as string}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         }
     };
@@ -204,7 +206,7 @@ export const useChat = () => {
     const uploadBot = async (bot: Bot) => {
         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         botService
-            .uploadAsync(bot, account?.homeAccountId || '', accessToken)
+            .uploadAsync(bot, homeAccountId, accessToken)
             .then(async (chatSession: IChatSession) => {
                 const chatMessages = await chatService.getChatMessagesAsync(
                     chatSession.id,
@@ -225,7 +227,7 @@ export const useChat = () => {
                 dispatch(addConversation(newChat));
             })
             .catch((e: any) => {
-                const errorMessage = `Unable to upload the bot. Details: ${e.message ?? e}`;
+                const errorMessage = `Unable to upload the bot. Details: ${(e.message ?? e) as string}`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
             });
     };
@@ -241,7 +243,7 @@ export const useChat = () => {
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
         } catch (e: any) {
-            const errorMessage = `Unable to get chat files. Details: ${e.message ?? e}`;
+            const errorMessage = `Unable to get chat files. Details: ${(e.message ?? e) as string}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         }
 
@@ -251,14 +253,14 @@ export const useChat = () => {
     const importDocument = async (chatId: string, file: File) => {
         try {
             await documentImportService.importDocumentAsync(
-                account!.homeAccountId,
-                (account!.name ?? account!.username),
+                homeAccountId,
+                fullName,
                 chatId,
                 file,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
         } catch (e: any) {
-            const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
+            const errorMessage = `Failed to upload document. Details: ${(e.message ?? e) as string}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         }
     };
@@ -269,15 +271,16 @@ export const useChat = () => {
      * that the server can use to authenticate to the downstream APIs
      */
     const getEnabledPlugins = () => {
-        const enabledPlugins: Array<{ headerTag: AuthHeaderTags; authData: string; apiProperties?: any }> = [];
+        const enabledPlugins: Array<{ name: string; headerTag: AuthHeaderTags; authData: string; apiProperties?: any }> = [];
 
         Object.entries(plugins).map((entry) => {
             const plugin = entry[1];
 
             if (plugin.enabled) {
                 enabledPlugins.push({
+                    name: plugin.name,
                     headerTag: plugin.headerTag,
-                    authData: plugin.authData!,
+                    authData: plugin.authData,
                     apiProperties: plugin.apiProperties,
                 });
             }

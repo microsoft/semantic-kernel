@@ -97,6 +97,7 @@ export class ChatService extends BaseService {
         ask: IAsk,
         accessToken: string,
         enabledPlugins?: Array<{
+            name: string;
             headerTag: AuthHeaderTags;
             authData: string;
             apiProperties?: AdditionalApiProperties;
@@ -106,9 +107,7 @@ export class ChatService extends BaseService {
         if (enabledPlugins && enabledPlugins.length > 0) {
             const openApiSkillVariables: IAskVariables[] = [];
 
-            for (const idx in enabledPlugins) {
-                const plugin = enabledPlugins[idx];
-
+            for (const plugin of enabledPlugins) {
                 if (plugin.apiProperties) {
                     const apiProperties = plugin.apiProperties;
 
@@ -116,13 +115,13 @@ export class ChatService extends BaseService {
                         const propertyDetails = apiProperties[property];
 
                         if (propertyDetails.required && !propertyDetails.value) {
-                            throw new Error(`Missing required property ${property} for ${plugin} skill.`);
+                            throw new Error(`Missing required property ${property} for ${plugin.name} skill.`);
                         }
 
                         if (propertyDetails.value) {
                             openApiSkillVariables.push({
                                 key: `${property}`,
-                                value: apiProperties[property].value!,
+                                value: propertyDetails.value,
                             });
                         }
                     }

@@ -65,18 +65,18 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
 }) => {
     const classes = useClasses();
 
-    const usernameRequired = authRequirements.username;
-    const emailRequired = authRequirements.email;
-    const passwordRequired = authRequirements.password;
-    const accessTokenRequired = authRequirements.personalAccessToken;
-    const msalRequired = authRequirements.Msal;
-    const oauthRequired = authRequirements.OAuth;
+    const usernameRequired = !!authRequirements.username;
+    const emailRequired = !!authRequirements.email;
+    const passwordRequired = !!authRequirements.password;
+    const accessTokenRequired = !!authRequirements.personalAccessToken;
+    const msalRequired = !!authRequirements.Msal;
+    const oauthRequired = !!authRequirements.OAuth;
 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [accessToken, setAccessToken] = useState('');
-    const [apiPropertiesInput, setApiRequirementsInput] = useState(apiProperties);
+    const [apiPropertiesInput, setApiRequirementsInput] = useState(apiProperties ?? {});
 
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -84,18 +84,19 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
 
-    const handleSubmit = async (event: FormEvent) => {
+    const handleSubmit = (event: FormEvent) => {
         event.preventDefault();
         try {
             if (msalRequired) {
-                const token = await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, authRequirements.scopes!);
-                dispatch(
-                    connectPlugin({
-                        plugin: name,
-                        accessToken: token,
-                        apiProperties: apiPropertiesInput,
-                    }),
-                );
+                TokenHelper.getAccessTokenUsingMsal(inProgress, instance, authRequirements.scopes ?? []).then(token => {
+                    dispatch(
+                        connectPlugin({
+                            plugin: name,
+                            accessToken: token,
+                            apiProperties: apiPropertiesInput,
+                        }),
+                    );
+                }).catch(() => { });
             } else if (oauthRequired) {
                 // TODO: implement OAuth Flow
             } else {
@@ -173,8 +174,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                             {(msalRequired || oauthRequired) && (
                                 <Body1>
                                     {' '}
-                                    You will be prompted into sign in with {publisher} on the next screen if you haven't
-                                    already provided prior consent.
+                                    {`You will be prompted into sign in with ${publisher} on the next screen if you haven't already provided prior consent.`}
                                 </Body1>
                             )}
                             {usernameRequired && (
@@ -243,9 +243,9 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                             {apiProperties && (
                                 <>
                                     <Body1Strong> Configuration </Body1Strong>
-                                    <Body1>Some additional information is required to enable {name}'s REST APIs.</Body1>
+                                    <Body1>{`Some additional information is required to enable ${name}'s REST APIs.`}</Body1>
                                     {Object.keys(apiProperties).map((property) => {
-                                        const propertyDetails = apiPropertiesInput![property];
+                                        const propertyDetails = apiPropertiesInput[property];
                                         return (
                                             <div className={classes.section} key={property}>
                                                 <Input

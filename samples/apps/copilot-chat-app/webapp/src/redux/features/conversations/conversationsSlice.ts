@@ -120,8 +120,8 @@ export default conversationsSlice.reducer;
 
 const frontLoadChat = (state: ConversationsState, id: string) => {
     const conversation = state.conversations[id];
-    delete state.conversations[id];
-    state.conversations = { [id]: conversation, ...state.conversations };
+    const { [id]: _, ...rest } = state.conversations;
+    state.conversations = { [id]: conversation, ...rest };
 };
 
 const updateConversation = (state: ConversationsState, chatId: string, message: IChatMessage) => {
