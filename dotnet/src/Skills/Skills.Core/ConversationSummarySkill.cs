@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.CoreSkills;
+namespace Microsoft.SemanticKernel.Skills.Core;
 
 /// <summary>
 /// <para>Semantic skill that enables conversations summarization.</para>

@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.CoreSkills;
+namespace Microsoft.SemanticKernel.Skills.Core;
 
 /// <summary>
 /// TimeSkill provides a set of functions to get the current time and date.
