@@ -69,6 +69,11 @@ public sealed class SequentialPlanner
 
         var planResult = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
 
+        if (planResult.ErrorOccurred)
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, $"Error creating plan for goal: {planResult.LastErrorDescription}", planResult.LastException);
+        }
+
         string planResultString = planResult.Result.Trim();
 
         try
