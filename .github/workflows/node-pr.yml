@@ -41,7 +41,7 @@ jobs:
           yarndirs_json=$(echo -n "${yarndirs[*]%\n}" | jq -R -s -j 'split(" ")')
           
           echo "Setting output yarn-folders to $yarndirs_json"
-          echo '::set-output name=matrix::{node_version: [18.x], yarn_folder=$yarndirs_json}'
+          echo '::set-output name=matrix::{node_version: [18], yarn_folder=$yarndirs_json}'
   
   build:
     runs-on: ubuntu-latest
