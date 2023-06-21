@@ -73,8 +73,8 @@ eval WEB_API_URL=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webapiUrl.
 echo "WEB_API_URL: $WEB_API_URL"
 eval WEB_API_NAME=$(echo $DEPLOYMENT_JSON | jq -r '.properties.outputs.webapiName.value')
 echo "WEB_API_NAME: $WEB_API_NAME"
-# echo "Getting webapi key..."
-# eval WEB_API_KEY=$(az webapp config appsettings list --name $WEB_API_NAME --resource-group $RESOURCE_GROUP | jq '.[] | select(.name=="Authorization:ApiKey").value')
+echo "Getting webapi key..."
+eval WEB_API_KEY=$(az webapp config appsettings list --name $WEB_API_NAME --resource-group $RESOURCE_GROUP | jq '.[] | select(.name=="Authorization:ApiKey").value')
 
 ENV_FILE_PATH="$SCRIPT_ROOT/../webapp/.env"
 echo "Writing environment variables to '$ENV_FILE_PATH'..."
