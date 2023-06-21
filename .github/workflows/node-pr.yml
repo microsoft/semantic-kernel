@@ -41,7 +41,7 @@ jobs:
           yarndirs_json=$(echo -n "${yarndirs[*]%\n}" | jq -R -s -j 'split(" ")')
           
           echo "Setting output yarn-folders to $yarndirs_json"
-          echo "::set-output name=yarn-folders::$yarndirs_json"
+          echo '::set-output name=yarn-folders::{"yarnpaths"=$yarndirs_json}'
   
   build:
     runs-on: ubuntu-latest
@@ -49,7 +49,7 @@ jobs:
 
     strategy:
       matrix:
-        yarn-folders: ${{ fromJson(needs.find-yarn-projects.outputs.yarn-folders) }}
+        yarn-folders: ${{ fromJson(needs.find-yarn-projects.outputs.yarn-folders.yarnpaths) }}
         node-version: [18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         
