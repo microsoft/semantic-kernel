@@ -32,8 +32,8 @@ jobs:
           shopt -s globstar # enable globstar option to use ** for recursive matching
           yarndirs=()
           for lockfile in samples/apps/**/yarn.lock; do # loop over all yarn.lock files
+            dir=$(dirname "$lockfile") # get the directory of the lock file
             if [[ "$dir" != "samples/apps" ]]; then # exclude samples/apps directory
-              dir=$(dirname "$lockfile") # get the directory of the lock file
               echo "Found yarn project in $dir"
               yarndirs+=("$dir") # add the directory to the yarndirs array
             fi
