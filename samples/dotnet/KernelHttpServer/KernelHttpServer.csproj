@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <RollForward>LatestMajor</RollForward>
@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.Graph" Version="4.54.0" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="0.15.230531.5-preview" />
     <PackageReference Include="Microsoft.SemanticKernel.Skills.Document" Version="0.15.230531.5-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.MsGraph" Version="0.15.230531.5-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.MsGraph" Version="0.16.230615.1-preview" />
     <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.15.230531.5-preview" />
   </ItemGroup>
 
