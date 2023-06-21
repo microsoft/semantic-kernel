@@ -66,7 +66,7 @@ jobs:
         run: |
           #!/bin/bash
           set -e # exit with nonzero exit code if anything fails
-            dir=$(dirname ${{ matrix.yarn_folder }}) # get the directory of the lock file
+            dir=${{ matrix.yarn_folder }} # get the directory of the lock file
             echo "Running yarn install and yarn build for $dir"
             yarn --cwd "$dir" install --frozen-lockfile # install dependencies
             yarn --cwd "$dir" build # run build script
