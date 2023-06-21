@@ -42,7 +42,12 @@ public class FileIOSkill {
                     @SKFunctionParameters(name = "path", description = "Source file")
                     String path,
                     @SKFunctionParameters(name = "charset", description = "Character set to use to read the file", defaultValue="UTF-8")
-                    String charset) throws IOException {
+            @SKFunctionParameters(
+                            name = "charset",
+                            description = "Character set to use to read the file",
+                            defaultValue = "UTF-8")
+                    String charset)
+            throws IOException {
         Path filePath = Paths.get(path);
         byte[] fileBytes;
         fileBytes = Files.readAllBytes(filePath);
@@ -68,15 +73,19 @@ public class FileIOSkill {
             @SKFunctionInputAttribute
                     @SKFunctionParameters(name = "path", description = "Destination file")
                     String path,
-                    @SKFunctionParameters(
+            @SKFunctionParameters(
                             name = "content",
                             description = "File content",
                             defaultValue = "",
                             type = String.class)
                     String content,
-                    @SKFunctionParameters(name = "charset", description = "Character set to use to read the file", defaultValue="UTF-8")
-                    String charset) throws IOException {
-                        Path filePath = Paths.get(path);
-                        Files.write(filePath, content.getBytes(charset));
+            @SKFunctionParameters(
+                            name = "charset",
+                            description = "Character set to use to read the file",
+                            defaultValue = "UTF-8")
+                    String charset)
+            throws IOException {
+        Path filePath = Paths.get(path);
+        Files.write(filePath, content.getBytes(charset));
     }
 }
