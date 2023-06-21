@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="TextEmbedding\" />
+    <None Remove="Skills\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\nuget\NUGET.md" Link="NUGET.md">
+      <PackagePath>.</PackagePath>
+      <Pack>true</Pack>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="TextEmbedding\" />
+    <Folder Include="Skills\" />
+  </ItemGroup>
+</Project>
