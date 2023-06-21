@@ -12,7 +12,7 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Document Skill</Title>
+    <Title>Semantic Kernel - Core Skills</Title>
     <Description>Semantic Kernel core skills.</Description>
   </PropertyGroup>
 
