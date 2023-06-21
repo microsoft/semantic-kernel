@@ -118,7 +118,8 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "year", description = "Get the current year")
     public String year() {
-        return LocalDate.now().getYear();
+        int currentYear = LocalDate.now().getYear();  
+        return String.valueOf(currentYear);
     }
 
     /**
@@ -145,7 +146,8 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "monthNumber", description = "Get the current month number")
     public String monthNumber() {
-        return LocalDate.now().getMonth().getValue();
+        int monthNumber = LocalDate.now().getMonth().getValue();
+        return String.valueOf(monthNumber);
     }
 
     /**
@@ -158,7 +160,8 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "day", description = "Get the current daye")
     public String day() {
-        return LocalDate.now().getDayOfMonth();
+        int day = LocalDate.now().getDayOfMonth();
+        return String.valueOf(day);
     }
 
     /**
@@ -199,7 +202,8 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "hourNumber", description = "Get the current hour number")
     public String hourNumber() {
-        return LocalTime.now().getHour();
+        int hour = LocalTime.now().getHour();
+        return String.valueOf(hour);
     }
 
     /**
@@ -255,7 +259,8 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "minute", description = "Get the current minute")
     public String minute() {
-        return LocalTime.now().getMinute();
+        int currentMinute = LocalTime.now().getMinute();
+        return String.valueOf(currentMinute);
     }
 
     /**
@@ -268,7 +273,8 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "second", description = "Get the current time")
     public String second() {
-        return LocalTime.now().getSecond();
+        int currentSecond = LocalTime.now().getSecond();
+        return String.valueOf(currentSecond);
     }
 
     /**
@@ -281,7 +287,7 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "timeZoneOffset", description = "Get the current time")
     public String timeZoneOffset() {
-        return ZonedDateTime.now().getOffset();
+        return ZonedDateTime.now().getOffset().toString();
     }
 
     /**
