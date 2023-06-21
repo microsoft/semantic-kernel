@@ -108,6 +108,13 @@ public class StepwisePlanner
 
                 var llmResponse = (await this._systemStepFunction.InvokeAsync(context).ConfigureAwait(false));
 
+                if (llmResponse.ErrorOccurred)
+                {
+                    var exception = new PlanningException(PlanningException.ErrorCodes.UnknownError, $"Error occurred while executing stepwise plan: {llmResponse.LastErrorDescription}", llmResponse.LastException);
+                    context.Fail(exception.Message, exception);
+                    return context;
+                }
+
                 string actionText = llmResponse.Result.Trim();
                 this._logger?.LogDebug("Response : {ActionText}", actionText);
 
