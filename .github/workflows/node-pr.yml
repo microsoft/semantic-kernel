@@ -41,7 +41,7 @@ jobs:
           yarndirs_json=$(echo -n "${yarndirs[*]%\n}" | jq -R -s -j --compact-output 'split(" ")')
           matrix_json="{\"node_version\":[18], \"yarn_folder\":$yarndirs_json}"
           echo "Setting output matrix to $matrix_json"
-          echo "::set-output name=matrix::$matrix_json"
+          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
   
   build:
     runs-on: ubuntu-latest
