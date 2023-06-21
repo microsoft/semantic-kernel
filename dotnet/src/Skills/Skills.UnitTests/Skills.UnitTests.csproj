@@ -17,12 +17,14 @@
   <ItemGroup>
     <None Remove="Grpc\protoV3.proto" />
     <None Remove="OpenAPI\TestSkills\documentV3_1.yaml" />
+    <None Remove="OpenAPI\TestSkills\nonCompliant_documentV3_0.json" />
     <None Remove="OpenAPI\TestSkills\openapi.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Grpc\Protobuf\TestSkills\protoV3.proto" />
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV2_0.json" />
+    <EmbeddedResource Include="OpenAPI\TestSkills\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV3_1.yaml" />
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV3_0.json" />
   </ItemGroup>
