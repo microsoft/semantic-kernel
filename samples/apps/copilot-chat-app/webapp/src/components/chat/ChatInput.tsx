@@ -124,12 +124,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     };
 
     const handleImport = (dragAndDropFile?: File) => {
-        setDocumentImporting(true);
         const file = dragAndDropFile ?? documentFileRef.current?.files?.[0];
         if (file) {
-            chat.importDocument(selectedId, file).catch(() => { });
+            setDocumentImporting(true);
+            chat.importDocument(selectedId, file)
+                .catch(() => {})
+                .finally(() => {
+                    setDocumentImporting(false);
+                });
         }
-        setDocumentImporting(false);
 
         // Reset the file input so that the onChange event will
         // be triggered even if the same file is selected again.
@@ -143,7 +146,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             if (value.trim() === '') {
                 return; // only submit if value is not empty
             }
-            onSubmit({ value, messageType, chatId: selectedId }).catch(() => { });
+            onSubmit({ value, messageType, chatId: selectedId }).catch(() => {});
             setValue('');
             dispatch(editConversationInput({ id: selectedId, newInput: '' }));
         } catch (error) {
@@ -165,7 +168,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
 
     return (
         <div className={classes.root}>
-            <div className={classes.typingIndicator}><ChatStatus /></div>
+            <div className={classes.typingIndicator}>
+                <ChatStatus />
+            </div>
             <div className={classes.content}>
                 <Textarea
                     id="chat-input"
@@ -185,7 +190,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             setValue(chatInput.value);
                         }
                         // User is considered typing if the input is in focus
-                        dispatch(updateUserIsTyping({ userId: account!.homeAccountId, chatId: selectedId, isTyping: true }));
+                        dispatch(
+                            updateUserIsTyping({ userId: account?.homeAccountId, chatId: selectedId, isTyping: true }),
+                        );
                     }}
                     onChange={(_event, data) => {
                         if (isDraggingOver) {
@@ -203,7 +210,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     }}
                     onBlur={() => {
                         // User is considered not typing if the input is not  in focus
-                        dispatch(updateUserIsTyping({ userId: account!.homeAccountId, chatId: selectedId, isTyping: false }));
+                        dispatch(
+                            updateUserIsTyping({ userId: account?.homeAccountId, chatId: selectedId, isTyping: false }),
+                        );
                     }}
                 />
             </div>
@@ -216,7 +225,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         style={{ display: 'none' }}
                         accept=".txt,.pdf"
                         multiple={false}
-                        onChange={() => { handleImport(); }}
+                        onChange={() => {
+                            handleImport();
+                        }}
                     />
                     <Button
                         disabled={documentImporting}
@@ -235,7 +246,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             onClick={handleSpeech}
                         />
                     )}
-                    <Button appearance="transparent" icon={<SendRegular />} onClick={() => { handleSubmit(value); }} />
+                    <Button
+                        appearance="transparent"
+                        icon={<SendRegular />}
+                        onClick={() => {
+                            handleSubmit(value);
+                        }}
+                    />
                 </div>
             </div>
         </div>

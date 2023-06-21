@@ -54,7 +54,7 @@ const hubConnection = setupSignalRConnectionToChatHub();
 
 const registerCommonSignalConnectionEvents = async (store: any) => {
     // Re-establish the connection if connection dropped
-    hubConnection.onclose((error: any) => {
+    hubConnection.onclose(error => {
         if (hubConnection.state === signalR.HubConnectionState.Disconnected) {
             const errorMessage = 'Connection closed due to error. Try refreshing this page to restart the connection';
             store.dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -62,7 +62,7 @@ const registerCommonSignalConnectionEvents = async (store: any) => {
         }
     });
 
-    hubConnection.onreconnecting((error: any) => {
+    hubConnection.onreconnecting(error => {
         if (hubConnection.state === signalR.HubConnectionState.Reconnecting) {
             const errorMessage = 'Connection lost due to error. Reconnecting...';
             store.dispatch(addAlert({ message: errorMessage, type: AlertType.Info }));
@@ -70,7 +70,7 @@ const registerCommonSignalConnectionEvents = async (store: any) => {
         }
     });
 
-    hubConnection.onreconnected((connectionId: any) => {
+    hubConnection.onreconnected((connectionId = '') => {
         if (hubConnection.state === signalR.HubConnectionState.Connected) {
             const message = 'Connection reestablished.';
             store.dispatch(addAlert({ message, type: AlertType.Success }));
@@ -80,16 +80,17 @@ const registerCommonSignalConnectionEvents = async (store: any) => {
 };
 
 export const startSignalRConnection = async (store: any) => {
-    try {
-        registerCommonSignalConnectionEvents(store);
+    registerCommonSignalConnectionEvents(store).then(async () => {
         await hubConnection.start();
         console.assert(hubConnection.state === signalR.HubConnectionState.Connected);
         console.log('SignalR connection established');
-    } catch (err) {
+    }).catch((err) => {
         console.assert(hubConnection.state === signalR.HubConnectionState.Disconnected);
         console.error('SignalR Connection Error: ', err);
-        setTimeout(async () => { await startSignalRConnection(store); }, 5000);
-    }
+        setTimeout(() => {
+            startSignalRConnection(store).catch(() => {});
+        }, 5000);
+    });
 };
 
 export const signalRMiddleware = (store: any) => {
@@ -105,9 +106,13 @@ export const signalRMiddleware = (store: any) => {
                     .catch((err) => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
             case 'conversations/updateUserIsTyping':
-                const { userId, isTyping } = action.payload;
                 hubConnection
-                    .invoke('SendUserTypingStateAsync', getSelectedChatID(), userId, isTyping)
+                    .invoke(
+                        'SendUserTypingStateAsync',
+                        getSelectedChatID(),
+                        action.payload.userId,
+                        action.payload.isTyping,
+                    )
                     .catch((err) => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
                 break;
             case 'conversations/setConversations':
@@ -134,11 +139,11 @@ export const registerSignalREvents = async (store: any) => {
     });
 
     hubConnection.on(SignalRCallbackMethods.ReceiveResponse, (askResult: IAskResult, chatId: string) => {
-        const loggedInUserId = store.getState().conversations.loggedInUserId;
-        const originalMessageUserId = askResult.variables.find((v) => v.key === 'userId')?.value;
+        const loggedInUserId: string = store.getState().conversations.loggedInUserId;
+        const originalMessageUserId: string | undefined = askResult.variables.find((v) => v.key === 'userId')?.value;
         const isPlanForLoggedInUser = loggedInUserId === originalMessageUserId;
 
-        const message = {
+        const message: IChatMessage = {
             type: (askResult.variables.find((v) => v.key === 'messageType')?.value ??
                 ChatMessageType.Message) as ChatMessageType,
             timestamp: new Date().getTime(),
@@ -150,19 +155,20 @@ export const registerSignalREvents = async (store: any) => {
             id: askResult.variables.find((v) => v.key === 'messageId')?.value,
             state:
                 isPlan(askResult.value) && isPlanForLoggedInUser ? PlanState.PlanApprovalRequired : PlanState.Disabled,
-        } as IChatMessage;
+        };
 
         store.dispatch({ type: 'conversations/updateConversationFromServer', payload: { message, chatId } });
     });
 
     hubConnection.on(SignalRCallbackMethods.UserJoined, (chatId: string, userId: string) => {
-        const user = {
+        const user: IChatUser = {
             id: userId,
             online: false,
             fullName: '',
             emailAddress: '',
             isTyping: false,
-        } as IChatUser;
+            photo: '',
+        };
         store.dispatch({ type: 'conversations/addUserToConversation', payload: { user, chatId } });
     });
 

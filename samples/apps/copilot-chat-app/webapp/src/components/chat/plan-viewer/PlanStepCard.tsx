@@ -106,7 +106,8 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
                             </Body1>
                         }
                         action={
-                            enableEdits && enableStepDelete ? (
+                            enableEdits && enableStepDelete
+? (
                                 <Dialog open={openDialog}>
                                     <DialogTrigger disableButtonEnhancement>
                                         <Button
@@ -148,7 +149,8 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
                                         </DialogBody>
                                     </DialogSurface>
                                 </Dialog>
-                            ) : undefined
+                            )
+: undefined
                         }
                     />
                     {step.description && (

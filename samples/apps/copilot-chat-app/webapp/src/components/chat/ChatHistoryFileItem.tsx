@@ -94,7 +94,7 @@ export const ChatHistoryFileItem: React.FC<ChatHistoryFileItemProps> = ({ messag
     const classes = useClasses();
     const { instance } = useMsal();
     const account = instance.getActiveAccount();
-    const isMe = message.authorRole === AuthorRoles.User && message.userId === account?.homeAccountId!;
+    const isMe = message.authorRole === AuthorRoles.User && message.userId === account?.homeAccountId;
 
     let name = '';
     let size = '';

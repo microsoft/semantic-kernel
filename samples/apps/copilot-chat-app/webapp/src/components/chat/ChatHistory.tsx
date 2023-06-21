@@ -36,9 +36,11 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({ messages, onGetRespons
                 .slice()
                 .sort((a, b) => a.timestamp - b.timestamp)
                 .map((message, index) =>
-                    message.type === ChatMessageType.Document ? (
+                    message.type === ChatMessageType.Document
+? (
                         <ChatHistoryFileItem key={message.timestamp} message={message} />
-                    ) : (
+                    )
+: (
                         <ChatHistoryItem
                             key={message.timestamp}
                             message={message}

@@ -183,15 +183,14 @@ export class ChatService extends BaseService {
             accessToken,
         );
 
-        const chatUsers: IChatUser[] = result.map((participant: any) => {
-            return {
-                id: participant.userId,
-                online: false,
-                fullName: '', // The user's full name is not returned from the server
-                emailAddress: '', // The user's email address is not returned from the server
-                isTyping: false,
-            } as IChatUser;
-        });
+        const chatUsers = result.map((participant: any): IChatUser => ({
+            id: participant.userId,
+            online: false,
+            fullName: '', // The user's full name is not returned from the server
+            emailAddress: '', // The user's email address is not returned from the server
+            isTyping: false,
+            photo: '',
+        }));
 
         return chatUsers;
     };

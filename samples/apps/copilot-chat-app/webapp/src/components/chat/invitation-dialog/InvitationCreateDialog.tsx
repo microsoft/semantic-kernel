@@ -32,8 +32,8 @@ export const InvitationCreateDialog: React.FC<InvitationCreateDialogProps> = ({ 
 
     const classes = useStyles();
 
-    const copyId = useCallback(async () => {
-        navigator.clipboard.writeText(chatId);
+    const copyId = useCallback(() => {
+        navigator.clipboard.writeText(chatId).catch(() => {});
         setIsIdCopied(true);
     }, [chatId]);
 

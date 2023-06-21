@@ -56,7 +56,8 @@ export const PlanStepInput: React.FC<PlanStepInputProps> = ({ input, onEdit, ena
             {!enableEdits && input.Value}
             {enableEdits && (
                 <>
-                    {isEditingInput ? (
+                    {isEditingInput
+? (
                         <input
                             className={mergeClasses(classes.input, classes.interactable)}
                             style={{ width: input.Value.length * 6, minWidth: '75px' }}
@@ -72,7 +73,8 @@ export const PlanStepInput: React.FC<PlanStepInputProps> = ({ input, onEdit, ena
                                 }
                             }}
                         />
-                    ) : (
+                    )
+: (
                         inputValue
                     )}
                     <Button

@@ -295,7 +295,7 @@ export const useChat = () => {
         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
             await chatService.joinChatAsync(
-                account!.homeAccountId,
+                homeAccountId,
                 chatId,
                 accessToken,
             ).then(async (result: IChatSession) => {
