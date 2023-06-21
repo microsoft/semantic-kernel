@@ -159,6 +159,7 @@ const CreateBookWithPlanner: FC<IData> = ({ uri, title, description, keyConfig, 
         setProcessHistory((processHistory) => [...processHistory, historyItem]);
     };
 
+    // TODO: refactor to support ambiguous return types (required to enable SequentialPlanner)
     const onTaskCompleted = (ask: IAsk, result: string, variables?: IAskInput[]) => {
         var historyItem = {
             functionName: 'executeplan',

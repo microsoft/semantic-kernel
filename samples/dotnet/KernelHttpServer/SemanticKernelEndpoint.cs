@@ -97,6 +97,7 @@ public class SemanticKernelEndpoint
             return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, "Missing one or more expected HTTP Headers");
         }
 
+        // TODO: Support SequentialPlanner
         var planner = new ActionPlanner(kernel);
         var goal = ask.Value;
 
