@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
@@ -15,47 +14,23 @@ public class ChromaQueryResultModel
     /// List of embedding identifiers.
     /// </summary>
     [JsonPropertyName("ids")]
-    public List<List<string>>? CollectionIds { get; set; }
+    public List<List<string>>? Ids { get; set; }
 
     /// <summary>
     /// List of embedding vectors.
     /// </summary>
     [JsonPropertyName("embeddings")]
-    public List<List<float[]>>? CollectionEmbeddings { get; set; }
+    public List<List<float[]>>? Embeddings { get; set; }
 
     /// <summary>
     /// List of embedding metadatas.
     /// </summary>
     [JsonPropertyName("metadatas")]
-    public List<List<Dictionary<string, object>>>? CollectionMetadatas { get; set; }
+    public List<List<Dictionary<string, object>>>? Metadatas { get; set; }
 
     /// <summary>
     /// List of embedding distances.
     /// </summary>
     [JsonPropertyName("distances")]
-    public List<List<double>>? CollectionDistances { get; set; }
-
-    /// <summary>
-    /// Embedding identifiers.
-    /// </summary>
-    [JsonIgnore]
-    public List<string>? Ids => this.CollectionIds?.FirstOrDefault();
-
-    /// <summary>
-    /// Embedding vectors.
-    /// </summary>
-    [JsonIgnore]
-    public List<float[]>? Embeddings => this.CollectionEmbeddings?.FirstOrDefault();
-
-    /// <summary>
-    /// Embedding metadatas.
-    /// </summary>
-    [JsonIgnore]
-    public List<Dictionary<string, object>>? Metadatas => this.CollectionMetadatas?.FirstOrDefault();
-
-    /// <summary>
-    /// Embedding distances.
-    /// </summary>
-    [JsonIgnore]
-    public List<double>? Distances => this.CollectionDistances?.FirstOrDefault();
+    public List<List<double>>? Distances { get; set; }
 }

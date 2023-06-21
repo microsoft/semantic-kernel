@@ -150,7 +150,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         var queryResultModel = await this._chromaClient.QueryEmbeddingsAsync(collection.Id, queryEmbeddings, nResults, include, cancellationToken).ConfigureAwait(false);
 
-        var recordCount = queryResultModel.Ids?.Count ?? 0;
+        var recordCount = queryResultModel.Ids?.FirstOrDefault()?.Count ?? 0;
 
         for (var recordIndex = 0; recordIndex < recordCount; recordIndex++)
         {
@@ -261,8 +261,13 @@ public class ChromaMemoryStore : IMemoryStore
 
     private (MemoryRecord, double) GetMemoryRecordFromQueryResultModel(ChromaQueryResultModel queryResultModel, int recordIndex)
     {
-        var memoryRecord = this.GetMemoryRecordFromModel(queryResultModel.Metadatas, queryResultModel.Embeddings, queryResultModel.Ids, recordIndex);
-        var similarityScore = this.GetSimilarityScore(queryResultModel.Distances, recordIndex);
+        var ids = queryResultModel.Ids?.FirstOrDefault();
+        var embeddings = queryResultModel.Embeddings?.FirstOrDefault();
+        var metadatas = queryResultModel.Metadatas?.FirstOrDefault();
+        var distances = queryResultModel.Distances?.FirstOrDefault();
+
+        var memoryRecord = this.GetMemoryRecordFromModel(metadatas, embeddings, ids, recordIndex);
+        var similarityScore = this.GetSimilarityScore(distances, recordIndex);
 
         return (memoryRecord, similarityScore);
     }
