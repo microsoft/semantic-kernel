@@ -373,7 +373,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     private MemoryRecord GetRandomMemoryRecord(Embedding<float>? embedding = null)
     {
         var id = Guid.NewGuid().ToString();
-        var key = Guid.NewGuid().ToString();
         var memoryEmbedding = embedding ?? new Embedding<float>(new[] { 1f, 3f, 5f });
 
         return MemoryRecord.LocalRecord(
@@ -382,7 +381,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             description: "description-" + Guid.NewGuid().ToString(),
             embedding: memoryEmbedding,
             additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
-            key: key);
+            key: id);
     }
 
     #endregion

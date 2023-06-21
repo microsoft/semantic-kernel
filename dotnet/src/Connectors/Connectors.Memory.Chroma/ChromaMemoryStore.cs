@@ -126,8 +126,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         for (var recordIndex = 0; recordIndex < recordCount; recordIndex++)
         {
-            var memoryRecord = this.GetMemoryRecordFromQueryResultModel(queryResultModel, recordIndex);
-            var similarityScore = embedding.AsReadOnlySpan().CosineSimilarity(memoryRecord.Embedding.AsReadOnlySpan());
+            (MemoryRecord memoryRecord, double similarityScore) = this.GetMemoryRecordFromQueryResultModel(queryResultModel, recordIndex);
 
             if (similarityScore >= minRelevanceScore)
             {
@@ -176,7 +175,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         for (var i = 0; i < recordsLength; i++)
         {
-            ids[i] = recordsArray[i].Key;
+            ids[i] = recordsArray[i].Metadata.Id;
             embeddings[i] = recordsArray[i].Embedding.Vector.ToArray();
             metadatas[i] = recordsArray[i].Metadata;
         }
@@ -185,7 +184,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         foreach (var record in recordsArray)
         {
-            yield return record.Key;
+            yield return record.Metadata.Id;
         }
     }
 
@@ -228,9 +227,12 @@ public class ChromaMemoryStore : IMemoryStore
         return this.GetMemoryRecordFromModel(embeddingsModel.Metadatas, embeddingsModel.Embeddings, embeddingsModel.Ids, recordIndex);
     }
 
-    private MemoryRecord GetMemoryRecordFromQueryResultModel(ChromaQueryResultModel queryResultModel, int recordIndex)
+    private (MemoryRecord, double) GetMemoryRecordFromQueryResultModel(ChromaQueryResultModel queryResultModel, int recordIndex)
     {
-        return this.GetMemoryRecordFromModel(queryResultModel.Metadatas, queryResultModel.Embeddings, queryResultModel.Ids, recordIndex);
+        var memoryRecord = this.GetMemoryRecordFromModel(queryResultModel.Metadatas, queryResultModel.Embeddings, queryResultModel.Ids, recordIndex);
+        var similarityScore = this.GetSimilarityScore(queryResultModel.Distances, recordIndex);
+
+        return (memoryRecord, similarityScore);
     }
 
     private MemoryRecord GetMemoryRecordFromModel(List<Dictionary<string, object>>? metadatas, List<float[]>? embeddings, List<string>? ids, int recordIndex)
@@ -253,6 +255,18 @@ public class ChromaMemoryStore : IMemoryStore
     private Embedding<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)
     {
         return embeddings != null ? new Embedding<float>(embeddings[recordIndex]) : Embedding<float>.Empty;
+    }
+
+    private double GetSimilarityScore(List<double>? distances, int recordIndex)
+    {
+        var similarityScore = distances != null ? 1 - distances[recordIndex] : default;
+
+        if (similarityScore < 0)
+        {
+            similarityScore = 0;
+        }
+
+        return similarityScore;
     }
 
     #endregion
