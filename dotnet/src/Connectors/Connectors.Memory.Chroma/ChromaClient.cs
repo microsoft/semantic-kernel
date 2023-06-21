@@ -26,7 +26,7 @@ public class ChromaClient : IChromaClient
     public ChromaClient(string endpoint, ILogger? logger = null)
     {
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._httpClient.BaseAddress = new Uri(endpoint);
+        this._endpoint = endpoint;
         this._logger = logger ?? NullLogger<ChromaClient>.Instance;
     }
 
@@ -38,6 +38,7 @@ public class ChromaClient : IChromaClient
         }
 
         this._httpClient = httpClient;
+        this._endpoint = endpoint;
         this._logger = logger ?? NullLogger<ChromaClient>.Instance;
     }
 
@@ -147,13 +148,13 @@ public class ChromaClient : IChromaClient
 
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
-    private readonly Uri? _endpoint = null;
+    private readonly string? _endpoint = null;
 
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken = default)
     {
-        string endpoint = this._endpoint?.ToString() ?? this._httpClient.BaseAddress.ToString();
+        string endpoint = this._endpoint ?? this._httpClient.BaseAddress.ToString();
         endpoint = this.SanitizeEndpoint(endpoint);
 
         string operationName = request.RequestUri.ToString();
