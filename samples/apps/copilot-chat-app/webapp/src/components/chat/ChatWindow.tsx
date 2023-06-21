@@ -101,7 +101,7 @@ export const ChatWindow: React.FC = () => {
                     title!,
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 );
-                
+
                 dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
             } catch (e: any) {
                 const errorMessage = `Unable to retrieve chat to change title. Details: ${e.message ?? e}`;

@@ -194,7 +194,7 @@ export const useChat = () => {
 
     const downloadBot = async (chatId: string) => {
         try {
-            return botService.downloadAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance, inProgress));
+            return await botService.downloadAsync(chatId, await AuthHelper.getSKaaSAccessToken(instance, inProgress));
         } catch (e: any) {
             const errorMessage = `Unable to download the bot. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -251,8 +251,8 @@ export const useChat = () => {
     const importDocument = async (chatId: string, file: File) => {
         try {
             await documentImportService.importDocumentAsync(
-                account!.homeAccountId!,
-                (account!.name ?? account!.username) as string,
+                account!.homeAccountId,
+                (account!.name ?? account!.username),
                 chatId,
                 file,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
@@ -269,7 +269,7 @@ export const useChat = () => {
      * that the server can use to authenticate to the downstream APIs
      */
     const getEnabledPlugins = () => {
-        const enabledPlugins: { headerTag: AuthHeaderTags; authData: string; apiProperties?: any }[] = [];
+        const enabledPlugins: Array<{ headerTag: AuthHeaderTags; authData: string; apiProperties?: any }> = [];
 
         Object.entries(plugins).map((entry) => {
             const plugin = entry[1];
@@ -292,16 +292,16 @@ export const useChat = () => {
         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
             await chatService.joinChatAsync(
-                account!.homeAccountId!,
+                account!.homeAccountId,
                 chatId,
-                accessToken
+                accessToken,
             ).then(async (result: IChatSession) => {
                 // Get chat messages
                 const chatMessages = await chatService.getChatMessagesAsync(
                     result.id,
                     0,
                     100,
-                    accessToken
+                    accessToken,
                 );
 
                 // Get chat users
@@ -328,7 +328,7 @@ export const useChat = () => {
         }
 
         return { success: true, message: '' };
-    }
+    };
 
     return {
         getChatUserById,

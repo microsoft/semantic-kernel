@@ -20,17 +20,17 @@ interface TypingIndicatorRendererProps {
 export const TypingIndicatorRenderer: React.FC<TypingIndicatorRendererProps> = ({ isBotTyping, numberOfUsersTyping }) => {
     const classes = useClasses();
 
-    let message = "";
+    let message = '';
     if (isBotTyping) {
         if (numberOfUsersTyping === 0) {
-            message = "Bot is typing";
+            message = 'Bot is typing';
         } else if (numberOfUsersTyping === 1) {
-            message = `Bot and 1 user are typing`;
+            message = 'Bot and 1 user are typing';
         } else {
             message = `Bot and ${numberOfUsersTyping} users are typing`;
         }
     } else if (numberOfUsersTyping === 1) {
-        message = "1 user is typing";
+        message = '1 user is typing';
     } else if (numberOfUsersTyping > 1) {
         message = `${numberOfUsersTyping} users are typing`;
     }

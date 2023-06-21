@@ -5,7 +5,7 @@ import {
     EndSessionRequest,
     IPublicClientApplication,
     InteractionStatus,
-    LogLevel
+    LogLevel,
 } from '@azure/msal-browser';
 import debug from 'debug';
 import { Constants } from '../../Constants';

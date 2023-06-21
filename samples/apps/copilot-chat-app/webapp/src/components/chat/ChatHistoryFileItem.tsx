@@ -96,8 +96,8 @@ export const ChatHistoryFileItem: React.FC<ChatHistoryFileItemProps> = ({ messag
     const account = instance.getActiveAccount();
     const isMe = message.authorRole === AuthorRoles.User && message.userId === account?.homeAccountId!;
 
-    let name = '',
-        size = '';
+    let name = '';
+    let size = '';
     try {
         ({ name, size } = JSON.parse(message.content) as DocumentMessageContent);
     } catch (e) {
@@ -114,7 +114,7 @@ export const ChatHistoryFileItem: React.FC<ChatHistoryFileItemProps> = ({ messag
                 />}
             <div className={classes.item}>
                 <div className={classes.header}>
-                {!isMe && <Text weight="semibold">{message.userName}</Text>}
+                    {!isMe && <Text weight="semibold">{message.userName}</Text>}
                     <Text className={classes.time}>{timestampToDateString(message.timestamp, true)}</Text>
                 </div>
                 <Card appearance="filled-alternative" className={classes.card}>
@@ -123,7 +123,7 @@ export const ChatHistoryFileItem: React.FC<ChatHistoryFileItemProps> = ({ messag
                         image={getFileIconByFileExtension(name, { className: classes.icon })}
                         header={<Text className={classes.cardHeaderText}>{name}</Text>}
                         description={<Caption1 className={classes.cardCaption}>{size}</Caption1>}
-                        />
+                    />
                     <ProgressBar thickness="large" color="success" value={1} />
                 </Card>
                 <span className={isMe ? classes.footer : mergeClasses(classes.footer, classes.alignEnd)}>

@@ -89,7 +89,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     React.useEffect(() => {
         async function initSpeechRecognizer() {
             const speechService = new SpeechService(process.env.REACT_APP_BACKEND_URI as string);
-            var response = await speechService.getSpeechTokenAsync(
+            const response = await speechService.getSpeechTokenAsync(
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
             if (response.isSuccess) {
@@ -180,7 +180,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             setValue(chatInput.value);
                         }
                         // User is considered typing if the input is in focus
-                        dispatch(updateUserIsTyping({ userId: account!.homeAccountId!, chatId: selectedId, isTyping: true }));
+                        dispatch(updateUserIsTyping({ userId: account!.homeAccountId, chatId: selectedId, isTyping: true }));
                     }}
                     onChange={(_event, data) => {
                         if (isDraggingOver) {
@@ -198,7 +198,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     }}
                     onBlur={() => {
                         // User is considered not typing if the input is not  in focus
-                        dispatch(updateUserIsTyping({ userId: account!.homeAccountId!, chatId: selectedId, isTyping: false }));
+                        dispatch(updateUserIsTyping({ userId: account!.homeAccountId, chatId: selectedId, isTyping: false }));
                     }}
                 />
             </div>
@@ -211,7 +211,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         style={{ display: 'none' }}
                         accept=".txt,.pdf"
                         multiple={false}
-                        onChange={() => handleImport()}
+                        onChange={async () => { await handleImport(); }}
                     />
                     <Button
                         disabled={documentImporting}
@@ -230,7 +230,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             onClick={handleSpeech}
                         />
                     )}
-                    <Button appearance="transparent" icon={<SendRegular />} onClick={() => handleSubmit(value)} />
+                    <Button appearance="transparent" icon={<SendRegular />} onClick={() => { handleSubmit(value); }} />
                 </div>
             </div>
         </div>

@@ -9,16 +9,16 @@ import resetStateReducer, { resetApp } from './rootReducer';
 
 export const store = configureStore({
     reducer: resetStateReducer,
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(signalRMiddleware)
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(signalRMiddleware),
 });
 
-export type RootState = {
+export interface RootState {
     app: AppState;
     conversations: ConversationsState;
     plugins: PluginsState;
-};
+}
 
-export const getSelectedChatID = () : string => {
+export const getSelectedChatID = (): string => {
     return store.getState().conversations.selectedId;
 };
 

@@ -60,7 +60,7 @@ export const NewBotMenu: FC = () => {
                         <Button
                             icon={<BotAdd20Regular />}
                             appearance="transparent"
-                            onClick={() => setIsNewBotMenuOpen(!isNewBotMenuOpen)}
+                            onClick={() => { setIsNewBotMenuOpen(!isNewBotMenuOpen); }}
                         />
                     </Tooltip>
                 </MenuTrigger>

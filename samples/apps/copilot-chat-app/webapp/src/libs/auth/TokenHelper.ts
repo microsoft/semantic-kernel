@@ -16,20 +16,20 @@ enum TokenErrors {
 export const getAccessTokenUsingMsal = async (
     inProgress: InteractionStatus,
     msalInstance: IPublicClientApplication,
-    scopes: Array<string>,
-    extraScopesToConsent?: Array<string>,
+    scopes: string[],
+    extraScopesToConsent?: string[],
 ) => {
     const account = msalInstance.getActiveAccount()!;
     const accessTokenRequest: PopupRequest = {
         authority: `https://login.microsoftonline.com/${account.tenantId}`,
-        scopes: scopes,
-        extraScopesToConsent: extraScopesToConsent,
-        account: account,
+        scopes,
+        extraScopesToConsent,
+        account,
     };
 
-    return await acquireToken(accessTokenRequest, msalInstance, inProgress).catch((e) => {
+    return await acquireToken(accessTokenRequest, msalInstance, inProgress).catch(async (e) => {
         if (e.message === TokenErrors.InteractionInProgress) {
-            return interactionInProgressHandler(inProgress, msalInstance, accessTokenRequest);
+            return await interactionInProgressHandler(inProgress, msalInstance, accessTokenRequest);
         }
 
         throw e;
@@ -41,7 +41,7 @@ const acquireToken = async (
     msalInstance: IPublicClientApplication,
     interactionStatus: InteractionStatus,
 ) => {
-    return msalInstance
+    return await msalInstance
         .acquireTokenSilent(accessTokenRequest)
         .then(function (accessTokenResponse) {
             // Acquire token silent success
@@ -55,7 +55,7 @@ const acquireToken = async (
                     // throw a new error to be handled in the caller above
                     throw new Error(TokenErrors.InteractionInProgress);
                 } else {
-                    return msalInstance
+                    return await msalInstance
                         .acquireTokenPopup({ ...accessTokenRequest })
                         .then(function (accessTokenResponse) {
                             // Acquire token interactive success
@@ -84,7 +84,7 @@ const interactionInProgressHandler = async (
     return await acquireToken(accessTokenRequest, msalInstance, interactionStatus);
 };
 
-const waitFor = (hasInteractionCompleted: () => boolean) => {
+const waitFor = async (hasInteractionCompleted: () => boolean) => {
     const checkInteraction = (resolve: (arg0: null) => void, _reject: any) => {
         const interactionInProgress = !hasInteractionCompleted();
         while (interactionInProgress) {
@@ -95,7 +95,7 @@ const waitFor = (hasInteractionCompleted: () => boolean) => {
         resolve(null);
     };
 
-    return new Promise(checkInteraction);
+    return await new Promise(checkInteraction);
 };
 
 export const TokenHelper = {

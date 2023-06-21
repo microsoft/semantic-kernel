@@ -16,11 +16,11 @@ export class BaseService {
     protected readonly getResponseAsync = async <T>(
         request: ServiceRequest,
         accessToken: string,
-        enabledPlugins?: {
+        enabledPlugins?: Array<{
             headerTag: AuthHeaderTags;
             authData: string;
             apiProperties?: AdditionalApiProperties;
-        }[],
+        }>,
     ): Promise<T> => {
         const { commandPath, method, body } = request;
         const isFormData = body instanceof FormData;
@@ -30,19 +30,19 @@ export class BaseService {
         });
 
         if (!isFormData) {
-            headers.append(`Content-Type`, 'application/json');
+            headers.append('Content-Type', 'application/json');
         }
 
         // API key auth for private hosted instances
         if (process.env.REACT_APP_SK_API_KEY) {
-            headers.append(`x-sk-api-key`, process.env.REACT_APP_SK_API_KEY as string);
+            headers.append('x-sk-api-key', process.env.REACT_APP_SK_API_KEY);
         }
 
         if (enabledPlugins && enabledPlugins.length > 0) {
             // For each enabled plugin, pass its auth information as a customer header
             // to the backend so the server can authenticate to the plugin
-            for (var idx in enabledPlugins) {
-                var plugin = enabledPlugins[idx];
+            for (const idx in enabledPlugins) {
+                const plugin = enabledPlugins[idx];
                 headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData);
             }
         }
@@ -52,7 +52,7 @@ export class BaseService {
             const response = await fetch(requestUrl, {
                 method: method ?? 'GET',
                 body: isFormData ? body : JSON.stringify(body),
-                headers: headers,
+                headers,
             });
 
             if (!response.ok) {
@@ -65,7 +65,7 @@ export class BaseService {
 
             return noResponseBodyStatusCodes.includes(response.status) ? ({} as T) : ((await response.json()) as T);
         } catch (e) {
-            var additional_error_msg = '';
+            let additional_error_msg = '';
             if (e instanceof TypeError) {
                 // fetch() will reject with a TypeError when a network error is encountered.
                 additional_error_msg =

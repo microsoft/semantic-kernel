@@ -8,8 +8,8 @@ export const pluginsState = createSlice({
     initialState,
     reducers: {
         connectPlugin: (state: PluginsState, action: PayloadAction<EnablePluginPayload>) => {
-            var plugin: Plugin;
-            var authData = action.payload.accessToken;
+            let plugin: Plugin;
+            let authData = action.payload.accessToken;
 
             switch (action.payload.plugin) {
                 case Plugins.MsGraph:

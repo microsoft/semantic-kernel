@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { FC, useCallback } from 'react';
+import React, { FC, useCallback } from 'react';
 
 import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tooltip } from '@fluentui/react-components';
 import { ArrowDownloadRegular, PeopleTeamAddRegular, ShareRegular } from '@fluentui/react-icons';
-import React from 'react';
 import { useChat } from '../../libs/useChat';
 import { useFile } from '../../libs/useFile';
 import { InvitationCreateDialog } from './invitation-dialog/InvitationCreateDialog';
@@ -17,7 +16,7 @@ interface ShareBotMenuProps {
 export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
     const chat = useChat();
     const { downloadFile } = useFile();
-    const [ isGettingInvitationId, setIsGettingInvitationId ] = React.useState(false);
+    const [isGettingInvitationId, setIsGettingInvitationId] = React.useState(false);
 
     const onDownloadBotClick = useCallback(async () => {
         // TODO: Add a loading indicator
@@ -42,7 +41,7 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
                         <MenuItem icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
                             Download your Bot
                         </MenuItem>
-                        <MenuItem icon={<PeopleTeamAddRegular />} onClick={() => setIsGettingInvitationId(true)}>
+                        <MenuItem icon={<PeopleTeamAddRegular />} onClick={() => { setIsGettingInvitationId(true); }}>
                             Invite others to your Bot
                         </MenuItem>
                     </MenuList>
@@ -50,7 +49,7 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
             </Menu>
             {isGettingInvitationId &&
                 <InvitationCreateDialog
-                    onCancel={() => setIsGettingInvitationId(false)}
+                    onCancel={() => { setIsGettingInvitationId(false); }}
                     chatId={chatId} />}
         </div>
     );

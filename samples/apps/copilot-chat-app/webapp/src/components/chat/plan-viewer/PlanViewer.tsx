@@ -47,7 +47,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
     const parsedContent = JSON.parse(message.content);
     const originalPlan = parsedContent.proposedPlan;
 
-    var planState = message.state ?? parsedContent.state;
+    const planState = message.state ?? parsedContent.state;
 
     // If plan came from ActionPlanner, use parameters from top-level plan state
     // TODO: Can remove this after consuming nugets with #997 fixed
@@ -68,7 +68,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
         dispatch(
             updateMessageState({
                 newMessageState: planState,
-                messageIndex: messageIndex,
+                messageIndex,
                 chatId: selectedId,
             }),
         );
@@ -103,7 +103,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
         // Invoke plan
         await getResponse({
             value: planState === PlanState.PlanApproved ? 'Yes, proceed' : 'No, cancel',
-            contextVariables: contextVariables,
+            contextVariables,
             messageType: ChatMessageType.Plan,
             chatId: selectedId,
         });
@@ -124,7 +124,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 return (
                     <PlanStepCard
                         key={`Plan step: ${index}`}
-                        step={{ ...step, index: index }}
+                        step={{ ...step, index }}
                         enableEdits={planState === PlanState.PlanApprovalRequired}
                         enableStepDelete={plan.steps.length > 1}
                         onDeleteStep={onDeleteStep}
@@ -135,10 +135,10 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 <>
                     Would you like to proceed with the plan?
                     <div className={classes.buttons}>
-                        <Button appearance="secondary" onClick={() => onPlanAction(PlanState.PlanRejected)}>
+                        <Button appearance="secondary" onClick={async () => { await onPlanAction(PlanState.PlanRejected); }}>
                             No, cancel plan
                         </Button>
-                        <Button type="submit" appearance="primary" onClick={() => onPlanAction(PlanState.PlanApproved)}>
+                        <Button type="submit" appearance="primary" onClick={async () => { await onPlanAction(PlanState.PlanApproved); }}>
                             Yes, proceed
                         </Button>
                     </div>

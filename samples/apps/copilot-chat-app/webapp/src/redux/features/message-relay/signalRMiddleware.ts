@@ -34,7 +34,7 @@ const setupSignalRConnectionToChatHub = () => {
 
     // Create the connection instance
     // withAutomaticReconnect will automatically try to reconnect and generate a new socket connection if needed
-    var hubConnection = new signalR.HubConnectionBuilder()
+    const hubConnection = new signalR.HubConnectionBuilder()
         .withUrl(connectionHubUrl.toString(), signalRConnectionOptions)
         .withAutomaticReconnect()
         .withHubProtocol(new signalR.JsonHubProtocol())
@@ -73,7 +73,7 @@ const registerCommonSignalConnectionEvents = async (store: any) => {
     hubConnection.onreconnected((connectionId: any) => {
         if (hubConnection.state === signalR.HubConnectionState.Connected) {
             const message = 'Connection reestablished.';
-            store.dispatch(addAlert({ message: message, type: AlertType.Success }));
+            store.dispatch(addAlert({ message, type: AlertType.Success }));
             console.log(message + ` Connected with connectionId ${connectionId}`);
         }
     });
@@ -88,7 +88,7 @@ export const startSignalRConnection = async (store: any) => {
     } catch (err) {
         console.assert(hubConnection.state === signalR.HubConnectionState.Disconnected);
         console.error('SignalR Connection Error: ', err);
-        setTimeout(() => startSignalRConnection(store), 5000);
+        setTimeout(async () => { await startSignalRConnection(store); }, 5000);
     }
 };
 
@@ -198,6 +198,6 @@ export const registerSignalREvents = async (store: any) => {
                 }),
             );
         }
-        store.dispatch({ type: 'conversations/editConversationTitle', payload: { id: id, newTitle: title } });
+        store.dispatch({ type: 'conversations/editConversationTitle', payload: { id, newTitle: title } });
     });
 };

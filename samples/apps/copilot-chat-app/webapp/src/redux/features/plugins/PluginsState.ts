@@ -1,8 +1,8 @@
 import { Constants } from '../../../Constants';
 import GithubIcon from '../../../assets/plugin-icons/github.png';
 import JiraIcon from '../../../assets/plugin-icons/jira.png';
-import GraphIcon from '../../../assets/plugin-icons/ms-graph.png';
 import KlarnaIcon from '../../../assets/plugin-icons/klarna.png';
+import GraphIcon from '../../../assets/plugin-icons/ms-graph.png';
 
 /*
  * For each OpenAPI Spec you're supporting in the Kernel,
@@ -22,7 +22,7 @@ export const enum AuthHeaderTags {
     Klarna = 'klarna',
 }
 
-export type PluginAuthRequirements = {
+export interface PluginAuthRequirements {
     username?: boolean;
     email?: boolean;
     password?: boolean;
@@ -31,21 +31,19 @@ export type PluginAuthRequirements = {
     Msal?: boolean;
     scopes?: string[];
     helpLink?: string;
-};
+}
 
 // Additional information required to enable OpenAPI skills, i.e., server-url
-export type AdditionalApiProperties = {
-    // Key should be the property name and in kebab case (valid format for request header),
-    // make sure it matches exactly with the property name the API requires
-    [key: string]: {
+// Key should be the property name and in kebab case (valid format for request header),
+// make sure it matches exactly with the property name the API requires
+export type AdditionalApiProperties = Record<string, {
         required: boolean;
         helpLink?: string;
         value?: string;
         description?: string;
-    };
-};
+    }>;
 
-export type Plugin = {
+export interface Plugin {
     name: Plugins;
     publisher: string;
     description: string;
@@ -55,7 +53,7 @@ export type Plugin = {
     icon: string; // Can be imported as shown above or direct URL
     authData?: string; // token or encoded auth header value
     apiProperties?: AdditionalApiProperties;
-};
+}
 
 export interface PluginsState {
     MsGraph: Plugin;
@@ -135,11 +133,11 @@ export const initialState: PluginsState = {
     },
 };
 
-export type EnablePluginPayload = {
+export interface EnablePluginPayload {
     plugin: Plugins;
     username?: string;
     email?: string;
     password?: string;
     accessToken?: string;
     apiProperties?: AdditionalApiProperties;
-};
+}

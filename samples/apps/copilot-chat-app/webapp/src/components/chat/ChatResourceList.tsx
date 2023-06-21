@@ -95,7 +95,7 @@ function useTable(resources: ChatMemorySource[]) {
         sortDirection: getSortDirection(columnId),
     });
 
-    const columns: TableColumnDefinition<TableItem>[] = [
+    const columns: Array<TableColumnDefinition<TableItem>> = [
         createTableColumn<TableItem>({
             columnId: 'name',
             renderHeaderCell: () => (

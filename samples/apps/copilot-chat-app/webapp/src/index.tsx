@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const missingEnvVariables = getMissingEnvVariables();
         const validEnvFile = missingEnvVariables.length === 0;
 
-        var msalInstance: IPublicClientApplication | null = null;
+        let msalInstance: IPublicClientApplication | null = null;
         if (validEnvFile) {
             msalInstance = new PublicClientApplication(AuthHelper.msalConfig);
 

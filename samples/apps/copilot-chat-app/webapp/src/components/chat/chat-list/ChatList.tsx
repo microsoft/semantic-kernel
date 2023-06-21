@@ -89,7 +89,7 @@ export const ChatList: FC = () => {
         if (filterText !== '') {
             // Reapply search string to the updated conversations list.
             const filteredConversations: Conversations = {};
-            for (var key in conversations) {
+            for (const key in conversations) {
                 if (conversations[key].title.toLowerCase().includes(filterText.toLowerCase())) {
                     filteredConversations[key] = conversations[key];
                 }
@@ -168,7 +168,7 @@ export const ChatList: FC = () => {
                                             ? 'Sent a file'
                                             : isPlan(lastMessage.content)
                                             ? 'Click to view proposed plan'
-                                            : (lastMessage.content as string)
+                                            : (lastMessage.content)
                                         : 'Click to start the chat'
                                 }
                                 botProfilePicture={convo.botProfilePicture}

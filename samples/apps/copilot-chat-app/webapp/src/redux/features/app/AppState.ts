@@ -5,9 +5,9 @@ export interface AppState {
     alerts?: Alerts;
 }
 
-export type Alert = {
+export interface Alert {
     message: string;
     type: AlertType;
-};
+}
 
-export type Alerts = { [key: string]: Alert };
+export type Alerts = Record<string, Alert>;

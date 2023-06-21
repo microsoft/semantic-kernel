@@ -114,7 +114,7 @@ const App: FC = () => {
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <div className={classes.cornerItems}>
                             <PluginGallery />
-                            <UserSettings setLoadingState={() => setAppState(AppState.SigningOut)} />
+                            <UserSettings setLoadingState={() => { setAppState(AppState.SigningOut); }} />
                         </div>
                     </div>
                     {alerts &&
@@ -127,7 +127,7 @@ const App: FC = () => {
                                         icon: (
                                             <Dismiss16Regular
                                                 aria-label="dismiss message"
-                                                onClick={() => onDismissAlert(key)}
+                                                onClick={() => { onDismissAlert(key); }}
                                                 color="black"
                                             />
                                         ),
@@ -141,7 +141,7 @@ const App: FC = () => {
                     {appState === AppState.ProbeForBackend && (
                         <BackendProbe
                             uri={process.env.REACT_APP_BACKEND_URI as string}
-                            onBackendFound={() => setAppState(AppState.LoadingChats)}
+                            onBackendFound={() => { setAppState(AppState.LoadingChats); }}
                         />
                     )}
                     {appState === AppState.LoadingChats && <Loading text="Loading Chats..." />}

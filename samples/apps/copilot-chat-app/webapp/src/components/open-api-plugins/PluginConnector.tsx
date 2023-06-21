@@ -103,10 +103,10 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                 dispatch(
                     connectPlugin({
                         plugin: name,
-                        username: username,
-                        email: email,
-                        password: password,
-                        accessToken: accessToken,
+                        username,
+                        email,
+                        password,
+                        accessToken,
                         apiProperties: apiPropertiesInput,
                     }),
                 );

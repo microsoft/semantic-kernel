@@ -18,7 +18,7 @@ export const Login: React.FC = () => {
                 </a>
             </Body1>
 
-            <Button style={{ padding: 0 }} appearance="transparent" onClick={() => instance.loginRedirect()}>
+            <Button style={{ padding: 0 }} appearance="transparent" onClick={async () => { await instance.loginRedirect(); }}>
                 <Image src={signInLogo} />
             </Button>
         </div>

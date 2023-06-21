@@ -85,7 +85,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     const renderPlan = isPlan(message.content);
 
     const content = !renderPlan
-        ? (message.content as string)
+        ? message.content
               .trim()
               .replace(/[\u00A0-\u9999<>&]/g, function (i: string) {
                   return `&#${i.charCodeAt(0)};`;
@@ -108,8 +108,8 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     return (
         <div
             className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}
-            data-testid={`chat-history-item-${messageIndex}`}   // needed for testing
-            data-username={fullName}    // needed for testing
+            data-testid={`chat-history-item-${messageIndex}`} // needed for testing
+            data-username={fullName} // needed for testing
         >
             {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
             <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>

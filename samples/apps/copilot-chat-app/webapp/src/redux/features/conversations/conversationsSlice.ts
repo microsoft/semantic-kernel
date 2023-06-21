@@ -42,7 +42,7 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             state.conversations = { [newId]: action.payload, ...state.conversations };
             state.selectedId = newId;
         },
-        addUserToConversation: (state: ConversationsState, action: PayloadAction<{ user: IChatUser, chatId: string }>) => {
+        addUserToConversation: (state: ConversationsState, action: PayloadAction<{ user: IChatUser; chatId: string }>) => {
             const { user, chatId } = action.payload;
             state.conversations[chatId].users.push(user);
         },
@@ -133,7 +133,7 @@ const updateUserTypingState = (
     state: ConversationsState,
     userId: string,
     chatId: string,
-    isTyping: boolean
+    isTyping: boolean,
 ) => {
     const conversation = state.conversations[chatId];
     const user = conversation.users.find(u => u.id === userId);
