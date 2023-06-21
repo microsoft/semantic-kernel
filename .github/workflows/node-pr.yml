@@ -38,8 +38,8 @@ jobs:
           
       - id: set-yarn-folders
         run: |
-          echo "Setting output yarn-folders to $(echo yarndirs jq -Rc 'split(",")')"
-          echo "::set-output name=yarn-folders::$(echo yarndirs jq -Rc 'split(",")')"
+          echo "Setting output yarn-folders to $(echo "$yarndirs" | jq -R -s 'split(",")')"
+          echo "::set-output name=yarn-folders::$(echo "$yarndirs" | jq -R -s 'split(",")')"
   
   build:
     runs-on: ubuntu-latest
