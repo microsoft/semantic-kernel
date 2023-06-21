@@ -12,18 +12,22 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Chroma;
 
+/// <summary>
+/// Integration tests for <see cref="ChromaMemoryStore"/> class.
+/// </summary>
 public sealed class ChromaMemoryStoreTests : IDisposable
 {
+    private const string BaseAddress = "http://localhost:8000";
+
     public ChromaMemoryStoreTests()
     {
         this._httpClient = new();
-        this._httpClient.BaseAddress = new Uri("http://localhost:8000");
+        this._httpClient.BaseAddress = new Uri(BaseAddress);
 
         this._chromaMemoryStore = new(this._httpClient);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItCanCreateCollectionsAsync()
     {
         // Arrange
@@ -44,8 +48,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Contains(collectionName3, collections);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItCanHandleDuplicateNameDuringCollectionCreationAsync()
     {
         // Arrange
@@ -63,8 +66,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Equal(expectedCollectionCount, filteredCollections.Count);
     }
 
-    [Theory]
-    //[Theory(Skip = "Requires Chroma server up and running")]
+    [Theory(Skip = "Requires Chroma server up and running")]
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItCanCheckIfCollectionExistsAsync(bool createCollection)
@@ -84,8 +86,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Equal(createCollection, doesCollectionExist);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItCanDeleteExistingCollectionAsync()
     {
         // Arrange
@@ -104,8 +105,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.DoesNotContain(collectionName, collectionsAfterDeletion);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItThrowsExceptionOnNonExistentCollectionDeletionAsync()
     {
         // Arrange
@@ -122,8 +122,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             StringComparison.InvariantCulture);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItReturnsNullOnNonExistentRecordRetrieval()
     {
         // Arrange
@@ -139,8 +138,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Null(record);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItCanUpsertMemoryRecordAsync()
     {
         // Arrange
@@ -162,8 +160,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this.AssertMemoryRecordEqual(expectedRecord, actualRecord);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItCanUpsertMemoryRecordBatchAsync()
     {
         // Arrange
@@ -194,8 +191,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this.AssertMemoryRecordEqual(expectedRecord3, actualRecords[2]);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItCanRemoveMemoryRecordAsync()
     {
         // Arrange
@@ -216,8 +212,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Null(recordAfterDeletion);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItCanRemoveMemoryRecordBatchAsync()
     {
         // Arrange
@@ -246,8 +241,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Empty(recordsAfterDeletion);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItCanGetNearestMatchAsync()
     {
         // Arrange
@@ -278,8 +272,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this.AssertMemoryRecordEqual(expectedRecord3, actualRecord);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItCanGetNearestMatchesAsync()
     {
         // Arrange
@@ -317,8 +310,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this.AssertMemoryRecordEqual(expectedRecord1, actualRecord3);
     }
 
-    [Fact]
-    //[Fact(Skip = "Requires Chroma server up and running")]
+    [Fact(Skip = "Requires Chroma server up and running")]
     public async Task ItReturnsNoMatchesFromEmptyCollection()
     {
         // Arrange

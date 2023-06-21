@@ -16,22 +16,44 @@ using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 
+/// <summary>
+/// An implementation of <see cref="IMemoryStore" /> for Chroma.
+/// </summary>
 public class ChromaMemoryStore : IMemoryStore
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChromaMemoryStore"/> class.
+    /// </summary>
+    /// <param name="endpoint">Chroma server endpoint URL.</param>
+    /// <param name="logger">Optional logger instance.</param>
     public ChromaMemoryStore(string endpoint, ILogger? logger = null)
         : this(new ChromaClient(endpoint, logger), logger)
-    { }
+    {
+    }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChromaMemoryStore"/> class.
+    /// </summary>
+    /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
+    /// <param name="endpoint">Chroma server endpoint URL.</param>
+    /// <param name="logger">Optional logger instance.</param>
     public ChromaMemoryStore(HttpClient httpClient, string? endpoint = null, ILogger? logger = null)
         : this(new ChromaClient(httpClient, endpoint, logger), logger)
-    { }
+    {
+    }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChromaMemoryStore"/> class.
+    /// </summary>
+    /// <param name="client">Instance of <see cref="IChromaClient"/> implementation.</param>
+    /// <param name="logger">Optional logger instance.</param>
     public ChromaMemoryStore(IChromaClient client, ILogger? logger = null)
     {
         this._chromaClient = client;
         this._logger = logger ?? NullLogger<ChromaMemoryStore>.Instance;
     }
 
+    /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -39,6 +61,7 @@ public class ChromaMemoryStore : IMemoryStore
         await this._chromaClient.CreateCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -54,6 +77,7 @@ public class ChromaMemoryStore : IMemoryStore
         }
     }
 
+    /// <inheritdoc />
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -63,6 +87,7 @@ public class ChromaMemoryStore : IMemoryStore
         return collection != null;
     }
 
+    /// <inheritdoc />
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         return await this.GetBatchAsync(collectionName, new[] { key }, withEmbedding, cancellationToken)
@@ -70,6 +95,7 @@ public class ChromaMemoryStore : IMemoryStore
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -89,11 +115,13 @@ public class ChromaMemoryStore : IMemoryStore
         }
     }
 
+    /// <inheritdoc />
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
         return this._chromaClient.ListCollectionsAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         var results = this.GetNearestMatchesAsync(
@@ -109,6 +137,7 @@ public class ChromaMemoryStore : IMemoryStore
         return (memoryRecord, similarityScore);
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -134,11 +163,13 @@ public class ChromaMemoryStore : IMemoryStore
         }
     }
 
+    /// <inheritdoc />
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
         await this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -148,6 +179,7 @@ public class ChromaMemoryStore : IMemoryStore
         await this._chromaClient.DeleteEmbeddingsAsync(collection.Id, keys.ToArray(), cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
@@ -159,6 +191,7 @@ public class ChromaMemoryStore : IMemoryStore
         return key ?? string.Empty;
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);

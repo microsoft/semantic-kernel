@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 
+// ReSharper disable once InconsistentNaming
 public static class Example49_Chroma
 {
     private const string MemoryCollectionName = "chroma-test";

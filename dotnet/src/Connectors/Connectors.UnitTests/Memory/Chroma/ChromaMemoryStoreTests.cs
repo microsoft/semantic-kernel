@@ -8,6 +8,9 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.Chroma;
 
+/// <summary>
+/// Unit tests for <see cref="ChromaMemoryStore"/> class.
+/// </summary>
 public sealed class ChromaMemoryStoreTests : IDisposable
 {
     private HttpMessageHandlerStub messageHandlerStub;

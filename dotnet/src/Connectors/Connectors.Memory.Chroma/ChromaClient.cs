@@ -17,12 +17,17 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 
 /// <summary>
 /// An implementation of a client for the Chroma Vector DB. This class is used to
-/// connect, create, delete, and get embeddings data from Chroma Vector DB instance.
+/// create, delete, and get embeddings data from Chroma Vector DB instance.
 /// </summary>
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. Explanation - In this case, there is no need to dispose because either the NonDisposableHttpClientHandler or a custom HTTP client is being used.
 public class ChromaClient : IChromaClient
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. Explanation - In this case, there is no need to dispose because either the NonDisposableHttpClientHandler or a custom HTTP client is being used.
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChromaClient"/> class.
+    /// </summary>
+    /// <param name="endpoint">Chroma server endpoint URL.</param>
+    /// <param name="logger">Optional logger instance.</param>
     public ChromaClient(string endpoint, ILogger? logger = null)
     {
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
@@ -30,6 +35,13 @@ public class ChromaClient : IChromaClient
         this._logger = logger ?? NullLogger<ChromaClient>.Instance;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChromaClient"/> class.
+    /// </summary>
+    /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
+    /// <param name="endpoint">Chroma server endpoint URL.</param>
+    /// <param name="logger">Optional logger instance.</param>
+    /// <exception cref="ChromaClientException">Occurs when <see cref="HttpClient"/> doesn't have base address and endpoint parameter is not provided.</exception>
     public ChromaClient(HttpClient httpClient, string? endpoint = null, ILogger? logger = null)
     {
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
@@ -42,6 +54,7 @@ public class ChromaClient : IChromaClient
         this._logger = logger ?? NullLogger<ChromaClient>.Instance;
     }
 
+    /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Creating collection {0}", collectionName);
@@ -51,6 +64,7 @@ public class ChromaClient : IChromaClient
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Getting collection {0}", collectionName);
@@ -73,6 +87,7 @@ public class ChromaClient : IChromaClient
         }
     }
 
+    /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Deleting collection {0}", collectionName);
@@ -82,6 +97,7 @@ public class ChromaClient : IChromaClient
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Listing collections");
@@ -98,6 +114,7 @@ public class ChromaClient : IChromaClient
         }
     }
 
+    /// <inheritdoc />
     public async Task AddEmbeddingsAsync(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Adding embeddings to collection with id: {0}", collectionId);
@@ -107,6 +124,7 @@ public class ChromaClient : IChromaClient
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<ChromaEmbeddingsModel> GetEmbeddingsAsync(string collectionId, string[] ids, string[]? include = null, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Getting embeddings from collection with id: {0}", collectionId);
@@ -120,6 +138,7 @@ public class ChromaClient : IChromaClient
         return embeddings ?? new ChromaEmbeddingsModel();
     }
 
+    /// <inheritdoc />
     public async Task DeleteEmbeddingsAsync(string collectionId, string[] ids, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Deleting embeddings from collection with id: {0}", collectionId);
@@ -129,6 +148,7 @@ public class ChromaClient : IChromaClient
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<ChromaQueryResultModel> QueryEmbeddingsAsync(string collectionId, float[][] queryEmbeddings, int nResults, string[]? include = null, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Query embeddings in collection with id: {0}", collectionId);
