@@ -11,6 +11,8 @@ on:
     paths:
       - 'dotnet/**'
       - 'samples/dotnet/**'
+      - '**.cs'
+      - '**.csproj'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
