@@ -28,7 +28,7 @@ var basicAuthProvider = new BasicAuthenticationProvider(() =>
         Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("JIRA_API_KEY")
     );
 });
-var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.Jira, basicAuthProvider.AuthenticateRequestAsync);
+var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.Jira, new OpenApiSkillExecutionParameters { AuthCallback = basicAuthProvider.AuthenticateRequestAsync } );
 ```
 
 ### [`BearerAuthenticationProvider`](./BearerAuthenticationProvider.cs)
@@ -40,7 +40,7 @@ var bearerAuthProvider = new BearerAuthenticationProvider(() =>
 {
     return Task.FromResult(Env.Var("AZURE_KEYVAULT_TOKEN"));
 });
-var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, bearerAuthProvider.AuthenticateRequestAsync)
+var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, new OpenApiSkillExecutionParameters { AuthCallback =  bearerAuthProvider.AuthenticateRequestAsync } )
 ```
 
 ### [`InteractiveMsalAuthenticationProvider`](./InteractiveMsalAuthenticationProvider.cs)
@@ -62,5 +62,5 @@ var msalAuthProvider = new InteractiveMsalAuthenticationProvider(
     new string[] { ".default" },        // scopes
     new Uri("http://localhost")         // redirectUri
 );
-var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, msalAuthProvider.AuthenticateRequestAsync)
+var skill = kernel.ImportOpenApiSkillFromResource(SkillResourceNames.AzureKeyVault, new OpenApiSkillExecutionParameters { AuthCallback =  msalAuthProvider.AuthenticateRequestAsync } )
 ```
