@@ -177,11 +177,9 @@ BEGIN SUMMARY:
         foreach (var header in headers)
         {
             client.DefaultRequestHeaders.Add(header.Key, header.Value);
-
         }
 
         using HttpResponseMessage response = await client.SendAsync(request, cancellationToken);
-
         response.EnsureSuccessStatusCode();
 
         using Stream contentStream = await response.Content.ReadAsStreamAsync();
