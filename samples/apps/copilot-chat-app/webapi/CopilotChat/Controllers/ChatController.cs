@@ -25,6 +25,7 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
+using SemanticKernel.Service.Diagnostics;
 using SemanticKernel.Service.Models;
 
 namespace SemanticKernel.Service.CopilotChat.Controllers;
@@ -37,14 +38,16 @@ public class ChatController : ControllerBase, IDisposable
 {
     private readonly ILogger<ChatController> _logger;
     private readonly List<IDisposable> _disposables;
+    private readonly ITelemetryService _telemetryService;
     private const string ChatSkillName = "ChatSkill";
     private const string ChatFunctionName = "Chat";
     private const string ReceiveResponseClientCall = "ReceiveResponse";
     private const string GeneratingResponseClientCall = "ReceiveBotTypingState";
 
-    public ChatController(ILogger<ChatController> logger)
+    public ChatController(ILogger<ChatController> logger, ITelemetryService telemetryService)
     {
         this._logger = logger;
+        this._telemetryService = telemetryService;
         this._disposables = new List<IDisposable>();
     }
 
@@ -103,7 +106,16 @@ public class ChatController : ControllerBase, IDisposable
         }
 
         // Run the function.
-        SKContext result = await kernel.RunAsync(contextVariables, function!);
+        SKContext? result = null;
+        try
+        {
+            result = await kernel.RunAsync(contextVariables, function!);
+        }
+        finally
+        {
+            this._telemetryService.TrackSkillFunction(ChatSkillName, ChatFunctionName, (!result?.ErrorOccurred) ?? false);
+        }
+
         if (result.ErrorOccurred)
         {
             if (result.LastException is AIException aiException && aiException.Detail is not null)
