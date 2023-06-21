@@ -33,13 +33,13 @@ jobs:
           for lockfile in samples/apps/**/yarn.lock; do # loop over all yarn.lock files
             dir=$(dirname "$lockfile") # get the directory of the lock file
             echo "Found yarn project in $dir"
-            yarndirs+=("$dir") # add the directory to the yarndirs array
+            yarndirs+="$dir" # add the directory to the yarndirs array
           done
           
       - id: set-yarn-folders
         run: |
-          echo "Setting output yarn-folders to $(echo "$yarndirs" | jq -R -s 'split(",")')"
-          echo "::set-output name=yarn-folders::$(echo "$yarndirs" | jq -R -s 'split(",")')"
+          echo "Setting output yarn-folders to $(echo "$yarndirs" | jq -R -s 'split("\n")')"
+          echo "::set-output name=yarn-folders::$(echo "$yarndirs" | jq -R -s 'split("\n")')"
   
   build:
     runs-on: ubuntu-latest
