@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 public class ChromaQueryResultModel
 {
     /// <summary>
-    /// List of embedding idenfifiers.
+    /// List of embedding identifiers.
     /// </summary>
     [JsonPropertyName("ids")]
     public List<List<string>>? CollectionIds { get; set; }
