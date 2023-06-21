@@ -151,8 +151,5 @@ public static class Program
 
         await Example48_GroundednessChecks.RunAsync();
         Console.WriteLine("== DONE ==");
-
-        await Example49_Chroma.RunAsync();
-        Console.WriteLine("== DONE ==");
     }
 }
