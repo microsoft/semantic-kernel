@@ -36,7 +36,7 @@ jobs:
             yarndirs+="$dir" # add the directory to the yarndirs array
           done
           
-          echo "All yarn projects found: '${yarndirs[*]}'
+          echo "All yarn projects found: '${yarndirs[*]}'"
           yarndirs_json=$(jq -R -s 'split("\n")' <<< "${yarndirs[*]}")
           
           echo "Setting output yarn-folders to $yarndirs_json"
