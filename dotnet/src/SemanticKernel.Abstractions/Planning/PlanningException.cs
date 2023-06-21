@@ -56,6 +56,7 @@ public class PlanningException : SKException
             ErrorCodes.InvalidGoal => "Invalid goal",
             ErrorCodes.InvalidPlan => "Invalid plan",
             ErrorCodes.InvalidConfiguration => "Invalid configuration",
+            ErrorCodes.CreatePlanError => "Create plan error",
             _ => $"Unknown error ({errorCode:G})",
         };
 

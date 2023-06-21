@@ -74,7 +74,17 @@ public sealed class SequentialPlanner
         try
         {
             var plan = planResultString.ToPlanFromXml(goal, this._context, this.Config.AllowMissingFunctions);
+
+            if (plan.Steps.Count == 0)
+            {
+                throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, $"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
+            }
+
             return plan;
+        }
+        catch (PlanningException planException) when (planException.ErrorCode == PlanningException.ErrorCodes.CreatePlanError)
+        {
+            throw;
         }
         catch (PlanningException planException) when (planException.ErrorCode == PlanningException.ErrorCodes.InvalidPlan ||
                                                       planException.ErrorCode == PlanningException.ErrorCodes.InvalidGoal)
