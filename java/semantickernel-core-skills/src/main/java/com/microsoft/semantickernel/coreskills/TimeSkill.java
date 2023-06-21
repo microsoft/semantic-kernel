@@ -15,6 +15,8 @@ public class TimeSkill {
     /**
      * Get the current date.
      *
+     * <p>Example: {{time.date}} => Sunday, January 12, 2025
+     *
      * @return The current date.
      */
     @DefineSKFunction(name = "date", description = "Get the current date")
@@ -25,6 +27,8 @@ public class TimeSkill {
     /**
      * Get the current time.
      *
+     * <p>Example: {{time.time}} => 9:15:00 AM
+     *
      * @return The current time.
      */
     @DefineSKFunction(name = "time", description = "Get the current time")
@@ -34,6 +38,8 @@ public class TimeSkill {
 
     /**
      * Get the current UTC date and time.
+     *
+     * <p>Example: {{time.utcNow}} => Sunday, January 13, 2025 5:15 AM
      *
      * @return The current UTC date and time.
      */
@@ -46,6 +52,8 @@ public class TimeSkill {
     /**
      * Get the current date (alias for date() method).
      *
+     * <p>Example: {{time.today}} => Sunday, January 12, 2025
+     *
      * @return The current date.
      */
     @DefineSKFunction(name = "today", description = "Get the current date")
@@ -55,6 +63,8 @@ public class TimeSkill {
 
     /**
      * Get the current date and time in the local time zone.
+     *
+     * <p>Example: {{time.now}} => Sunday, January 12, 2025 9:15 AM
      *
      * @return The current date and time in the local time zone.
      */
@@ -69,6 +79,8 @@ public class TimeSkill {
     /**
      * Get the current year.
      *
+     * <p>Example: {{time.year}} => 2025
+     *
      * @return The current year.
      */
     @DefineSKFunction(name = "year", description = "Get the current year")
@@ -78,6 +90,8 @@ public class TimeSkill {
 
     /**
      * Get the current month name.
+     *
+     * <p>Example: {{time.month}} => January
      *
      * @return The current month name.
      */
@@ -89,6 +103,8 @@ public class TimeSkill {
     /**
      * Get the current month number.
      *
+     * <p>Example: {{time.monthNumber}} => 01
+     *
      * @return The current month number.
      */
     @DefineSKFunction(name = "monthNumber", description = "Get the current month number")
@@ -98,6 +114,8 @@ public class TimeSkill {
 
     /**
      * Get the current day of the month.
+     *
+     * <p>Example: {{time.day}} => 12
      *
      * @return The current day of the month.
      */
@@ -109,6 +127,8 @@ public class TimeSkill {
     /**
      * Get the current day of the week.
      *
+     * <p>Example: {{time.dayOfWeek}} => Sunday
+     *
      * @return The current day of the week.
      */
     @DefineSKFunction(name = "dayOfWeek", description = "Get the current day of the week")
@@ -118,6 +138,8 @@ public class TimeSkill {
 
     /**
      * Get the current clock hour.
+     *
+     * <p>Example: {{time.hour}} => 9 AM
      *
      * @return The current clock hour.
      */
@@ -129,6 +151,8 @@ public class TimeSkill {
     /**
      * Get the current clock 24-hour number.
      *
+     * <p>Example: {{time.hourNumber}} => 09
+     *
      * @return The current clock 24-hour number.
      */
     @DefineSKFunction(name = "hourNumber", description = "Get the current clock 24-hour number")
@@ -138,6 +162,8 @@ public class TimeSkill {
 
     /**
      * Get the minutes on the current hour.
+     *
+     * <p>Example: {{time.minute}} => 15
      *
      * @return The minutes on the current hour.
      */
@@ -149,6 +175,8 @@ public class TimeSkill {
     /**
      * Get the seconds on the current minute.
      *
+     * <p>Example: {{time.second}} => 00
+     *
      * @return The seconds on the current minute.
      */
     @DefineSKFunction(name = "second", description = "Get the seconds on the current minute")
@@ -158,6 +186,8 @@ public class TimeSkill {
 
     /**
      * Get the local time zone offset from UTC.
+     *
+     * <p>Example: {{time.timeZoneOffset}} => +03:00
      *
      * @return The local time zone offset from UTC.
      */
@@ -171,11 +201,13 @@ public class TimeSkill {
     /**
      * Get the local time zone name.
      *
+     * <p>Example: {{time.timeZoneName}} => Pacific Time
+     *
      * @return The local time zone name.
      */
     @DefineSKFunction(name = "timeZoneName", description = "Get the local time zone name")
     public String timeZoneName() {
         ZoneId zoneId = ZoneId.systemDefault();
-        return zoneId.getDisplayName(TextStyle.SHORT, Locale.getDefault());
+        return zoneId.getDisplayName(TextStyle.FULL, Locale.getDefault());
     }
 }
