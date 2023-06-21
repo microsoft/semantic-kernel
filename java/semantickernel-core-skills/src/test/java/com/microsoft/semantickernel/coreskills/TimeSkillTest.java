@@ -1,13 +1,15 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
-
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
 import java.time.*;
 
+@SuppressWarnings("ReturnValueIgnored")
 public class TimeSkillTest {
     private static final ZonedDateTime mockDateTime;
 

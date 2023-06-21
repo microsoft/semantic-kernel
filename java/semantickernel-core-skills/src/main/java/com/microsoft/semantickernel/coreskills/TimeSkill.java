@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
@@ -38,7 +39,8 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "utcNow", description = "Get the current UTC date and time")
     public String utcNow() {
-        return DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy h:mm a").format(ZonedDateTime.now().withZoneSameInstant(ZoneOffset.UTC));
+        return DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy h:mm a")
+                .format(ZonedDateTime.now().withZoneSameInstant(ZoneOffset.UTC));
     }
 
     /**
@@ -56,11 +58,13 @@ public class TimeSkill {
      *
      * @return The current date and time in the local time zone.
      */
-    @DefineSKFunction(name = "now", description = "Get the current date and time in the local time zone")
+    @DefineSKFunction(
+            name = "now",
+            description = "Get the current date and time in the local time zone")
     public String now() {
-        return DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy h:mm a").format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy h:mm a")
+                .format(ZonedDateTime.now());
     }
-
 
     /**
      * Get the current year.
@@ -157,7 +161,9 @@ public class TimeSkill {
      *
      * @return The local time zone offset from UTC.
      */
-    @DefineSKFunction(name = "timeZoneOffset", description = "Get the local time zone offset from UTC")
+    @DefineSKFunction(
+            name = "timeZoneOffset",
+            description = "Get the local time zone offset from UTC")
     public String timeZoneOffset() {
         return DateTimeFormatter.ofPattern("XXX").format(ZonedDateTime.now());
     }
