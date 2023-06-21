@@ -166,7 +166,7 @@ internal static class SequentialPlanParser
                             if (allowMissingFunctions)
                             {
                                 context.Log.LogTrace("{0}: allowing missing function node {1}", parentNodeName, skillFunctionName);
-                                plan.AddSteps(new Plan(childNode.InnerText));
+                                plan.AddSteps(new Plan(skillFunctionName));
                             }
                             else
                             {
