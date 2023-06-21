@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
 
@@ -31,9 +32,12 @@ public static class Example22_OpenApiSkill_AzureKeyVault
 
     public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
-
         var retryConfig = new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true };
+
+        var kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Log)
+            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
+            .Build();
 
         // Import a OpenApi skill using one of the following Kernel extension methods
         // kernel.ImportOpenApiSkillFromResource
@@ -41,9 +45,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         // kernel.ImportOpenApiSkillFromFile
         // kernel.ImportOpenApiSkillFromUrlAsync
         // kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault,
-            authCallback: authenticationProvider.AuthenticateRequestAsync,
-            retryConfiguration: retryConfig);
+        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -67,8 +69,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         // kernel.ImportOpenApiSkillFromFile
         // kernel.ImportOpenApiSkillFromUrlAsync
         // kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault,
-            authenticationProvider.AuthenticateRequestAsync);
+        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
