@@ -113,7 +113,6 @@ BEGIN SUMMARY:
     [SKFunctionContextParameter(Name = SearchPatternParamName, Description = "The search string to match against the names of files in the repository")]
     public async Task SummarizeRepositoryAsync(string source, SKContext context)
     {
-        // source: https://github.com/adrianwyatt/azure-cog-cyberdeck
         if (!context.Variables.TryGetValue(RepositoryBranchParamName, out string? repositoryBranch) || string.IsNullOrEmpty(repositoryBranch))
         {
             repositoryBranch = "main";
