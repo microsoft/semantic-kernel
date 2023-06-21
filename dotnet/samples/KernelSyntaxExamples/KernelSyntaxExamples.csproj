@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
   </PropertyGroup>
@@ -43,7 +43,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\..\src\Skills\Skills.Web\Skills.Web.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel\SemanticKernel.csproj" />
-    <ProjectReference Include="..\..\..\samples\dotnet\ncalc-skills\NCalcSkills.csproj" />
+    <ProjectReference Include="..\NCalcSkills\NCalcSkills.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\30-user-prompt.txt" />
