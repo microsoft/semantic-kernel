@@ -72,7 +72,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                 use_async=True, azsearch_api_key=acs_search_key
             )
 
-        if not self._cogsearch_creds or not self._cogsearch_token_creds:
+        if self._cogsearch_creds is None and self._cogsearch_token_creds is None:
             raise ValueError(
                 "Error: Unable to create azure cognitive search client credentials."
             )
