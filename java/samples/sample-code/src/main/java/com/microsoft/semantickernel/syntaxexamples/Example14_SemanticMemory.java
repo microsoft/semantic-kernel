@@ -122,7 +122,7 @@ public class Example14_SemanticMemory
                     for (int n = 0; n < memories.size(); n++) {
                         var memory = memories.get(n);
                         System.out.println("Result " + (n + 1) + ":");
-                        System.out.println("  URL:     : " + memory.getMetadata().getText());
+                        System.out.println("  URL:     : " + memory.getMetadata().getId());
                         System.out.println("  Title    : " + memory.getMetadata().getDescription());
                         System.out.println();
                     }
@@ -147,7 +147,7 @@ public class Example14_SemanticMemory
                     System.out.println("Save '" + entry.getKey() + "' to memory.");
                     return kernel.getMemory().saveReferenceAsync(
                                     MEMORY_COLLECTION_NAME,
-                                    entry.getKey(),
+                                    entry.getValue(),
                                     entry.getKey(),
                                     "GitHub",
                                     entry.getValue(),
