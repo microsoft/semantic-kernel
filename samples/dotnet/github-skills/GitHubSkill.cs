@@ -140,6 +140,9 @@ BEGIN SUMMARY:
             {
                 this._logger.LogDebug("Access token detected, adding authorization headers");
                 headers.Add("Authorization", $"Bearer {pat}");
+                headers.Add("X-GitHub-Api-Version", "2022-11-28");
+                headers.Add("Accept", "application/vnd.github+json");
+                headers.Add("User-Agent", "msft-semantic-kernel-sample");
             }
 
             await this.DownloadToFileAsync(repoBundle, headers, filePath, context.CancellationToken);
@@ -169,13 +172,16 @@ BEGIN SUMMARY:
     {
         // Download URI to file.
         using HttpClient client = new();
+
         using HttpRequestMessage request = new(HttpMethod.Get, uri);
         foreach (var header in headers)
         {
-            request.Headers.Add(header.Key, header.Value);
+            client.DefaultRequestHeaders.Add(header.Key, header.Value);
+
         }
 
         using HttpResponseMessage response = await client.SendAsync(request, cancellationToken);
+
         response.EnsureSuccessStatusCode();
 
         using Stream contentStream = await response.Content.ReadAsStreamAsync();
