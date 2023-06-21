@@ -48,7 +48,7 @@ dotnet/src
 | SemanticKernel.MetaPackage     | SK common package collection |
 | SemanticKernel.UnitTests       | Unit tests |
 | SemanticKernel                 | SK implementation |
-| Skills                         | Parent folder for various Skills implementations e.g., MS Graph, GRPC, OpenAI, ... |
+| Skills                         | Parent folder for various Skills implementations e.g., Core, MS Graph, GRPC, OpenAI, ... |
 
 Some observations:
 
@@ -92,7 +92,8 @@ Follow these guidelines:
 * The folder names will match those used (or planned for .Net) but in the idiomatic Java folder naming convention
 * Use `bom` instead of `MetaPackage` as the latter is .Net centric
 * Use `api` instead of `Abstractions` as the latter is .Net centric
-* Merge `semantickernel-core-skills` and `semantickernel-core` back into a single module name `semantickernel`
+* Rename `semantickernel-core` to `semantickernel` to be consistent with .Net naming
+* Move `semantickernel-core-skills` to a new `plugins` folder and rename to `plugins-core`
 * Use the term `plugins` instead of `skills` and avoid introducing technical debt
 
 | Folder                           | Description |
@@ -103,4 +104,4 @@ Follow these guidelines:
 | `semantickernel-api`             | SK API definitions |
 | `semantickernel-bom`             | SK common package collection |
 | `semantickernel`                 | SK implementation |
-| `plugins`                        | Containing: `plugins-document`, `plugins-msgraph`, ... |
+| `plugins`                        | Containing: `plugins-core`, `plugins-document`, `plugins-msgraph`, ... |
