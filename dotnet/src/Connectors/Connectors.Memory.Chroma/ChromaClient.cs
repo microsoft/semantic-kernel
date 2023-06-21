@@ -118,6 +118,15 @@ public class ChromaClient : IChromaClient
         return embeddings ?? new ChromaEmbeddingsModel();
     }
 
+    public async Task DeleteEmbeddingsAsync(string collectionId, string[] ids, CancellationToken cancellationToken = default)
+    {
+        this._logger.LogDebug("Deleting embeddings from collection with id: {0}", collectionId);
+
+        using var request = DeleteEmbeddingsRequest.Create(collectionId, ids).Build();
+
+        await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
     #region private ================================================================================
 
     private const string ApiRoute = "api/v1/";

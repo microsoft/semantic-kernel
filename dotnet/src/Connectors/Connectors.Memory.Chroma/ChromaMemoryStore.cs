@@ -110,14 +110,18 @@ public class ChromaMemoryStore : IMemoryStore
         throw new System.NotImplementedException();
     }
 
-    public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
+    public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        await this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken).ConfigureAwait(false);
     }
 
-    public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        var collection = await this.GetCollectionOrThrowAsync(collectionName, cancellationToken).ConfigureAwait(false);
+
+        await this._chromaClient.DeleteEmbeddingsAsync(collection.Id, keys.ToArray(), cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)

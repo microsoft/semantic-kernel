@@ -48,6 +48,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanHandleDuplicateNameDuringCollectionCreationAsync()
     {
         // Arrange
+        const int expectedCollectionCount = 1;
         var collectionName = "SK" + Guid.NewGuid();
 
         // Act
@@ -58,7 +59,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var collections = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
         var filteredCollections = collections.Where(collection => collection.Equals(collectionName, StringComparison.Ordinal)).ToList();
 
-        Assert.Equal(1, filteredCollections.Count);
+        Assert.Equal(expectedCollectionCount, filteredCollections.Count);
     }
 
     [Theory]
@@ -70,12 +71,12 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Arrange
         var collectionName = "SK" + Guid.NewGuid();
 
-        // Act
         if (createCollection)
         {
             await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
         }
 
+        // Act
         bool doesCollectionExist = await this._chromaMemoryStore.DoesCollectionExistAsync(collectionName);
 
         // Assert
@@ -89,11 +90,12 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Arrange
         var collectionName = "SK" + Guid.NewGuid();
 
-        // Act
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+
         var collectionsBeforeDeletion = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
         Assert.Contains(collectionName, collectionsBeforeDeletion);
 
+        // Act
         await this._chromaMemoryStore.DeleteCollectionAsync(collectionName);
 
         // Assert
@@ -109,9 +111,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var collectionName = "SK" + Guid.NewGuid();
 
         // Act
-        var collections = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
-        Assert.DoesNotContain(collectionName, collections);
-
         var exception = await Record.ExceptionAsync(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
 
         // Assert
@@ -187,13 +186,62 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         var actualRecords = await this._chromaMemoryStore.GetBatchAsync(collectionName, batch.Select(l => l.Key), true).ToListAsync();
 
-        Assert.NotNull(actualRecords[0]);
-        Assert.NotNull(actualRecords[1]);
-        Assert.NotNull(actualRecords[2]);
+        actualRecords.ForEach(Assert.NotNull);
 
         this.AssertMemoryRecordEqual(expectedRecord1, actualRecords[0]);
         this.AssertMemoryRecordEqual(expectedRecord2, actualRecords[1]);
         this.AssertMemoryRecordEqual(expectedRecord3, actualRecords[2]);
+    }
+
+    [Fact]
+    //[Fact(Skip = "Requires Chroma server up and running")]
+    public async Task ItCanRemoveMemoryRecordAsync()
+    {
+        // Arrange
+        var collectionName = "SK" + Guid.NewGuid();
+        var expectedRecord = this.GetRandomMemoryRecord();
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+        await this._chromaMemoryStore.UpsertAsync(collectionName, expectedRecord);
+
+        var recordBeforeDeletion = await this._chromaMemoryStore.GetAsync(collectionName, expectedRecord.Key);
+        Assert.NotNull(recordBeforeDeletion);
+
+        // Act
+        await this._chromaMemoryStore.RemoveAsync(collectionName, expectedRecord.Key);
+
+        // Assert
+        var recordAfterDeletion = await this._chromaMemoryStore.GetAsync(collectionName, expectedRecord.Key);
+        Assert.Null(recordAfterDeletion);
+    }
+
+    [Fact]
+    //[Fact(Skip = "Requires Chroma server up and running")]
+    public async Task ItCanRemoveMemoryRecordBatchAsync()
+    {
+        // Arrange
+        var collectionName = "SK" + Guid.NewGuid();
+        var expectedRecord1 = this.GetRandomMemoryRecord();
+        var expectedRecord2 = this.GetRandomMemoryRecord();
+        var expectedRecord3 = this.GetRandomMemoryRecord();
+
+        var batch = new List<MemoryRecord> { expectedRecord1, expectedRecord2, expectedRecord3 };
+        var keys = batch.Select(l => l.Key);
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+        await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).ToListAsync();
+
+        var recordsBeforeDeletion = await this._chromaMemoryStore.GetBatchAsync(collectionName, keys).ToListAsync();
+
+        Assert.Equal(batch.Count, recordsBeforeDeletion.Count);
+        recordsBeforeDeletion.ForEach(Assert.NotNull);
+
+        // Act
+        await this._chromaMemoryStore.RemoveBatchAsync(collectionName, keys);
+
+        // Assert
+        var recordsAfterDeletion = await this._chromaMemoryStore.GetBatchAsync(collectionName, keys).ToListAsync();
+        Assert.Empty(recordsAfterDeletion);
     }
 
     public void Dispose()

@@ -19,4 +19,6 @@ public interface IChromaClient
     Task AddEmbeddingsAsync(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default);
 
     Task<ChromaEmbeddingsModel> GetEmbeddingsAsync(string collectionId, string[] ids, string[]? include = null, CancellationToken cancellationToken = default);
+
+    Task DeleteEmbeddingsAsync(string collectionId, string[] ids, CancellationToken cancellationToken = default);
 }
