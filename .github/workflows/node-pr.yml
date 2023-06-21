@@ -41,7 +41,7 @@ jobs:
           yarndirs_json=$(echo -n "${yarndirs[*]%\n}" | jq -R -s -j 'split(" ")')
           
           echo "Setting output yarn-folders to $yarndirs_json"
-          echo '::set-output name=matrix::{node-version: [18.x], yarn-folders=$yarndirs_json}'
+          echo '::set-output name=matrix::{node_version: [18.x], yarn_folder=$yarndirs_json}'
   
   build:
     runs-on: ubuntu-latest
@@ -52,10 +52,10 @@ jobs:
         
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node_version }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ matrix.node_version }}
           cache: "yarn"
           cache-dependency-path: 'samples/apps/**/yarn.lock'
 
@@ -66,7 +66,7 @@ jobs:
         run: |
           #!/bin/bash
           set -e # exit with nonzero exit code if anything fails
-            dir=$(dirname ${{ matrix.project-folder }}) # get the directory of the lock file
+            dir=$(dirname ${{ matrix.yarn_folder }}) # get the directory of the lock file
             echo "Running yarn install and yarn build for $dir"
             yarn --cwd "$dir" install --frozen-lockfile # install dependencies
             yarn --cwd "$dir" build # run build script
