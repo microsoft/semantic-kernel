@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel;
-using RepoUtils;
-using System.Threading.Tasks;
 using System;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
+using Microsoft.SemanticKernel.Memory;
+using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example49_Chroma
