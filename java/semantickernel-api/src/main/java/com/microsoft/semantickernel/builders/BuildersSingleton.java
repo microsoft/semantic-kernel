@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Enum singleton that service loads builder implementations */
+@SuppressWarnings("ImmutableEnumChecker")
 public enum BuildersSingleton {
     INST;
 

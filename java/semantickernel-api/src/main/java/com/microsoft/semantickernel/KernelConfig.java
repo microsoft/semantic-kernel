@@ -117,7 +117,8 @@ public final class KernelConfig {
          */
         public Builder addChatCompletionService(
                 @Nullable String serviceId, Function<Kernel, ChatCompletion> serviceFactory) {
-            if (serviceId != null && serviceId.toUpperCase().equals(DEFAULT_SERVICE_ID)) {
+            if (serviceId != null
+                    && serviceId.toUpperCase(Locale.ROOT).equals(DEFAULT_SERVICE_ID)) {
                 String msg =
                         "The service id '"
                                 + serviceId

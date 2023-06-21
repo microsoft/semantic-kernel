@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
+import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
 import org.slf4j.Logger;
@@ -21,6 +22,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,11 +44,12 @@ public class SequentialPlanParser {
 
     // The attribute tag used in the plan xml for setting the context variable name to set the
     // output of a function to.
-    private static final String SetContextVariableTag = "setContextVariable".toLowerCase();
+    private static final String SetContextVariableTag =
+            "setContextVariable".toLowerCase(Locale.ROOT);
 
     // The attribute tag used in the plan xml for appending the output of a function to the final
     // result for a plan.
-    private static final String AppendToResultTag = "appendToResult".toLowerCase();
+    private static final String AppendToResultTag = "appendToResult".toLowerCase(Locale.ROOT);
 
     /**
      * Convert a plan xml string to a plan
@@ -87,9 +91,9 @@ public class SequentialPlanParser {
                         continue;
                     }
 
-                    if (childNode.getNodeName().toLowerCase().startsWith(FunctionTag)) {
+                    if (childNode.getNodeName().toLowerCase(Locale.ROOT).startsWith(FunctionTag)) {
                         String[] skillFunctionNameParts =
-                                childNode.getNodeName().split(FunctionTag);
+                                childNode.getNodeName().split(FunctionTag, -1);
                         String skillFunctionName = "";
 
                         if (skillFunctionNameParts.length > 1) {
@@ -104,21 +108,24 @@ public class SequentialPlanParser {
                                 && !functionName.isEmpty()
                                 && skills.hasFunction(skillName, functionName)) {
                             SKFunction skillFunction =
-                                    context.getSkills()
-                                            .getFunctions(skillName)
+                                    Objects.requireNonNull(
+                                                    context.getSkills().getFunctions(skillName))
                                             .getFunction(functionName, SKFunction.class);
 
                             WritableContextVariables functionVariables =
                                     SKBuilders.variables().build().writableClone();
 
-                            skillFunction
-                                    .describe()
-                                    .getParameters()
-                                    .forEach(
-                                            p -> {
-                                                functionVariables.setVariable(
-                                                        p.getName(), p.getDefaultValue());
-                                            });
+                            FunctionView description = skillFunction.describe();
+
+                            if (description != null) {
+                                description
+                                        .getParameters()
+                                        .forEach(
+                                                p -> {
+                                                    functionVariables.setVariable(
+                                                            p.getName(), p.getDefaultValue());
+                                                });
+                            }
 
                             List<String> functionOutputs = new ArrayList<>();
                             List<String> functionResults = new ArrayList<>();
@@ -134,11 +141,11 @@ public class SequentialPlanParser {
                                             attr.toString());
 
                                     if (attr.getNodeName()
-                                            .toLowerCase()
+                                            .toLowerCase(Locale.ROOT)
                                             .equals(SetContextVariableTag)) {
                                         functionOutputs.add(attr.getTextContent());
                                     } else if (attr.getNodeName()
-                                            .toLowerCase()
+                                            .toLowerCase(Locale.ROOT)
                                             .equals(AppendToResultTag)) {
                                         functionOutputs.add(attr.getTextContent());
                                         functionResults.add(attr.getTextContent());
@@ -182,12 +189,12 @@ public class SequentialPlanParser {
     }
 
     private static String getSkillName(String skillFunctionName) {
-        String[] skillFunctionNameParts = skillFunctionName.split("\\.");
+        String[] skillFunctionNameParts = skillFunctionName.split("\\.", -1);
         return skillFunctionNameParts.length > 0 ? skillFunctionNameParts[0] : "";
     }
 
     private static String getFunctionName(String skillFunctionName) {
-        String[] skillFunctionNameParts = skillFunctionName.split("\\.");
+        String[] skillFunctionNameParts = skillFunctionName.split("\\.", -1);
         return skillFunctionNameParts.length > 1 ? skillFunctionNameParts[1] : skillFunctionName;
     }
 }

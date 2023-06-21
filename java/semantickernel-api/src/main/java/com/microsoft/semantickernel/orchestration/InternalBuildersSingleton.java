@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.builders.ServiceLoadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("ImmutableEnumChecker")
 enum InternalBuildersSingleton {
     INST;
 

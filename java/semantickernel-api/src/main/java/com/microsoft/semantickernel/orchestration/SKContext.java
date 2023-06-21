@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.orchestration;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
-import reactor.util.annotation.NonNull;
 import reactor.util.annotation.Nullable;
 
 import javax.annotation.CheckReturnValue;
@@ -51,7 +50,7 @@ public interface SKContext {
      * @param content
      * @return Context for fluent calls
      */
-    SKContext setVariable(@NonNull String key, @NonNull String content);
+    SKContext setVariable(String key, String content);
 
     /**
      * Appends data to the given key
@@ -60,7 +59,7 @@ public interface SKContext {
      * @param content
      * @return Context for fluent calls
      */
-    SKContext appendToVariable(@NonNull String key, @NonNull String content);
+    SKContext appendToVariable(String key, String content);
 
     /**
      * Updates the input entry with the given data
@@ -69,7 +68,7 @@ public interface SKContext {
      * @return Context for fluent calls
      */
     @CheckReturnValue
-    SKContext update(@NonNull String content);
+    SKContext update(String content);
 
     /**
      * Merges in the given variables. Duplicate keys provided by newData will overwrite existing
@@ -79,7 +78,7 @@ public interface SKContext {
      * @return Context for fluent calls
      */
     @CheckReturnValue
-    SKContext update(@NonNull ContextVariables newData);
+    SKContext update(ContextVariables newData);
 
     SKContext copy();
 
@@ -92,9 +91,21 @@ public interface SKContext {
 
         Builder with(ContextVariables variables);
 
-        Builder with(ReadOnlySkillCollection skills);
+        /**
+         * Sets the skills
+         *
+         * @param skills null argument will be ignored
+         * @return Context for fluent calls
+         */
+        Builder with(@Nullable ReadOnlySkillCollection skills);
 
-        Builder with(SemanticTextMemory memory);
+        /**
+         * Sets the memory
+         *
+         * @param memory null argument will be ignored
+         * @return Context for fluent calls
+         */
+        Builder with(@Nullable SemanticTextMemory memory);
 
         Builder clone(SKContext context);
     }

@@ -20,8 +20,14 @@ public class SKBuilders {
     // Prevent creating object
     private SKBuilders() {}
 
+    /**
+     * A CompletionSKFunction builder, the created function will not be registered on any kernel and
+     * will need to be registered manually
+     *
+     * @return a function builder
+     */
     public static CompletionSKFunction.Builder completionFunctions() {
-        return completionFunctions(null);
+        return FunctionBuilders.getCompletionBuilder(null);
     }
 
     /**

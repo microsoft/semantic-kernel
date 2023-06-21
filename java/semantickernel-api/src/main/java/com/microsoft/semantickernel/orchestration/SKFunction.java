@@ -17,52 +17,13 @@ import javax.annotation.Nullable;
  *     the function is invoked
  */
 public interface SKFunction<RequestConfiguration> {
-    /*
-        /// <summary>
-        /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
-        /// </summary>
-        string Name { get; }
-
-        /// <summary>
-        /// Name of the skill containing the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
-        /// </summary>
-        string SkillName { get; }
-
-        /// <summary>
-        /// Function description. The description is used in combination with embeddings when searching relevant functions.
-        /// </summary>
-        string Description { get; }
-
-        /// <summary>
-        /// Whether the function is defined using a prompt template.
-        /// IMPORTANT: native functions might use semantic functions internally,
-        /// so when this property is False, executing the function might still involve AI calls.
-        /// </summary>
-        public bool IsSemantic { get; }
-
-        /// <summary>
-        /// AI service settings
-        /// </summary>
-        public CompleteRequestSettings RequestSettings { get; }
-
-    */
-    /// <summary>
-    /// Returns a description of the function, including parameters.
-    /// </summary>
-    /// <returns>An instance of <see cref="FunctionView"/> describing the function</returns>
+    /**
+     * Returns a description of the function, including parameters.
+     *
+     * @return An instance of {@link FunctionView} describing the function
+     */
+    @Nullable
     FunctionView describe();
-
-    // TODO: CancellationToken
-    /// <summary>
-    /// Invoke the internal delegate with an explicit string input
-    /// </summary>
-    /// <param name="input">String input</param>
-    /// <param name="context">SK context</param>
-    /// <param name="settings">LLM completion settings</param>
-    /// <param name="log">Application logger</param>
-    /// <param name="cancel">Cancellation token</param>
-    /// <returns>The updated context, potentially a new one if context switching is
-    // implemented.</returns>
 
     /**
      * Invokes the function with the given input, context and settings
@@ -86,6 +47,7 @@ public interface SKFunction<RequestConfiguration> {
     @CheckReturnValue
     Mono<SKContext> invokeAsync(String input);
 
+    @Nullable
     Class<RequestConfiguration> getType();
 
     /**
@@ -97,30 +59,6 @@ public interface SKFunction<RequestConfiguration> {
      */
     @CheckReturnValue
     Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings);
-
-    /// <summary>
-    /// Set the default skill collection to use when the function is invoked
-    /// without a context or with a context that doesn't have a collection.
-    /// </summary>
-    /// <param name="skills">Kernel's skill collection</param>
-    /// <returns>Self instance</returns>
-    /*
-    SKFunction<RequestConfiguration> setDefaultSkillCollection(SkillCollection skills);
-      /// <summary>
-      /// Set the AI service used by the semantic function, passing a factory method.
-      /// The factory allows to lazily instantiate the client and to properly handle its disposal.
-      /// </summary>
-      /// <param name="serviceFactory">AI service factory</param>
-      /// <returns>Self instance</returns>
-      SKFunction setAIService(Supplier<TextCompletion> serviceFactory);
-
-      /// <summary>
-      /// Set the AI completion settings used with LLM requests
-      /// </summary>
-      /// <param name="settings">LLM completion settings</param>
-      /// <returns>Self instance</returns>
-      SKFunction setAIConfiguration(CompleteRequestSettings settings);
-    */
 
     /**
      * @return The name of the skill that this function is within
@@ -139,6 +77,9 @@ public interface SKFunction<RequestConfiguration> {
      */
     String toFullyQualifiedName();
 
+    /**
+     * @return A description of the function
+     */
     String getDescription();
 
     String toEmbeddingString();
@@ -154,6 +95,6 @@ public interface SKFunction<RequestConfiguration> {
 
     Mono<SKContext> invokeWithCustomInputAsync(
             ContextVariables variablesClone,
-            SemanticTextMemory semanticMemory,
-            ReadOnlySkillCollection skills);
+            @Nullable SemanticTextMemory semanticMemory,
+            @Nullable ReadOnlySkillCollection skills);
 }

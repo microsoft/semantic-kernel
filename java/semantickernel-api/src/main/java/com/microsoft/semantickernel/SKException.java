@@ -3,14 +3,10 @@ package com.microsoft.semantickernel;
 
 import javax.annotation.Nullable;
 
-/**
- * Provides the base exception from which all Semantic Kernel exceptions derive.
- */
-public class SKException  extends RuntimeException {
+/** Provides the base exception from which all Semantic Kernel exceptions derive. */
+public class SKException extends RuntimeException {
 
-    /**
-     * Initializes a new instance of the {@code SKException} class with a default message.
-     */
+    /** Initializes a new instance of the {@code SKException} class with a default message. */
     protected SKException() {
         super();
     }
@@ -30,7 +26,7 @@ public class SKException  extends RuntimeException {
      * message}.
      *
      * @param message A string that describes the error.
-     * @param cause   The exception that is the cause of the current exception.
+     * @param cause The exception that is the cause of the current exception.
      */
     protected SKException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);

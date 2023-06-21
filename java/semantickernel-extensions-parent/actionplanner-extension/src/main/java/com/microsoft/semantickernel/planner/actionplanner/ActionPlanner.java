@@ -101,8 +101,8 @@ public class ActionPlanner {
                 .invokeAsync(
                         this.context,
                         new CompletionRequestSettings(0, 0, 0, 0, 2048, new ArrayList<>()))
-                .map(
-                        result -> {
+                .handle(
+                        (result, sink) -> {
                             ActionPlanResponse planData;
 
                             try {
@@ -112,22 +112,26 @@ public class ActionPlanner {
                                                         result.getResult(),
                                                         ActionPlanResponse.class);
                             } catch (Exception e) {
-                                throw new PlanningException(
-                                        PlanningException.ErrorCodes.InvalidPlan,
-                                        "Plan parsing error, invalid JSON",
-                                        e);
+                                sink.error(
+                                        new PlanningException(
+                                                PlanningException.ErrorCodes.InvalidPlan,
+                                                "Plan parsing error, invalid JSON",
+                                                e));
+                                return;
                             }
 
                             if (planData == null) {
-                                throw new PlanningException(
-                                        PlanningException.ErrorCodes.InvalidPlan,
-                                        "The plan deserialized to a null object");
+                                sink.error(
+                                        new PlanningException(
+                                                PlanningException.ErrorCodes.InvalidPlan,
+                                                "The plan deserialized to a null object"));
+                                return;
                             }
 
                             // Build and return plan
                             Plan plan;
                             if (planData.plan.function.contains(".")) {
-                                String[] parts = planData.plan.function.split("\\.");
+                                String[] parts = planData.plan.function.split("\\.", -1);
                                 CompletionSKFunction skill =
                                         context.getSkills()
                                                 .getFunction(
@@ -136,27 +140,36 @@ public class ActionPlanner {
                                                         CompletionSKFunction.class);
 
                                 if (skill == null) {
-                                    throw new PlanningException(
-                                            PlanningException.ErrorCodes.InvalidPlan,
-                                            "Unknown skill " + planData.plan.function);
+                                    sink.error(
+                                            new PlanningException(
+                                                    PlanningException.ErrorCodes.InvalidPlan,
+                                                    "Unknown skill " + planData.plan.function));
+                                    return;
                                 }
                                 plan = new Plan(goal, () -> kernel.getSkills(), skill);
 
                             } else if (!planData.plan.function.isEmpty()) {
-                                plan =
-                                        new Plan(
-                                                goal,
-                                                () -> kernel.getSkills(),
-                                                context.getSkills()
-                                                        .getFunction(
-                                                                planData.plan.function,
-                                                                CompletionSKFunction.class));
+                                CompletionSKFunction function =
+                                        context.getSkills()
+                                                .getFunction(
+                                                        planData.plan.function,
+                                                        CompletionSKFunction.class);
+
+                                if (function == null) {
+                                    sink.error(
+                                            new PlanningException(
+                                                    PlanningException.ErrorCodes.InvalidPlan,
+                                                    "Unknown skill " + planData.plan.function));
+                                    return;
+                                }
+
+                                plan = new Plan(goal, () -> kernel.getSkills(), function);
                             } else {
                                 // No function was found - return a plan with no steps.
                                 plan = new Plan(goal, () -> kernel.getSkills());
                             }
 
-                            return plan;
+                            sink.next(plan);
                         });
     }
 

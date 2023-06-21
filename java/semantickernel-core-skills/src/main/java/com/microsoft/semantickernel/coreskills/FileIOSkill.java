@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputA
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,7 +51,7 @@ public class FileIOSkill {
         Path filePath = Paths.get(path);
         byte[] fileBytes;
         fileBytes = Files.readAllBytes(filePath);
-        String fileContents = new String(fileBytes, charset);
+        String fileContents = new String(fileBytes, Charset.forName(charset));
         return fileContents;
     }
 
@@ -65,7 +66,6 @@ public class FileIOSkill {
      *
      * @param path The destination file.
      * @param content Contains the 'content' to write
-     * @return An awaitable task.
      */
     @DefineSKFunction(description = "Write a file", name = "writeAsync")
     public void writeFileAsync(

@@ -65,14 +65,18 @@ public class DefaultSKContext extends AbstractSKContext {
         }
 
         @Override
-        public SKContext.Builder with(ReadOnlySkillCollection skills) {
-            this.skills = skills;
+        public SKContext.Builder with(@Nullable ReadOnlySkillCollection skills) {
+            if (skills != null) {
+                this.skills = skills;
+            }
             return this;
         }
 
         @Override
-        public SKContext.Builder with(SemanticTextMemory memory) {
-            this.memory = memory.copy();
+        public SKContext.Builder with(@Nullable SemanticTextMemory memory) {
+            if (memory != null) {
+                this.memory = memory.copy();
+            }
             return this;
         }
 

@@ -23,10 +23,7 @@ import reactor.core.scheduler.Schedulers;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -197,16 +194,12 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                                                 annotation.description(),
                                                 annotation.defaultValue());
                                     } else {
-                                        SKFunctionInputAttribute annotation =
-                                                parameter.getAnnotation(
-                                                        SKFunctionInputAttribute.class);
                                         return new ParameterView("input");
                                     }
                                 })
                         .collect(Collectors.toList());
 
-        HashSet<ParameterView> out = new HashSet<>();
-        out.addAll(params);
+        HashSet<ParameterView> out = new HashSet<>(params);
 
         boolean hasInput = params.stream().anyMatch(p -> p.getName().equals("input"));
 
@@ -221,7 +214,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
             out.addAll(inputArgs);
         }
 
-        return out.stream().collect(Collectors.toList());
+        return new ArrayList<>(out);
     }
 
     private static SKNativeTask<SKContext> getFunction(Method method, Object instance) {

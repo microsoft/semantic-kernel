@@ -4,11 +4,11 @@ package com.microsoft.semantickernel.skilldefinition;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /// <summary>
@@ -78,15 +78,15 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
     @Override
     @Nullable
     public <T extends SKFunction<?>> T getFunction(
-            String funName, @Nonnull Class<T> functionClazz) {
+            String funName, @Nullable Class<T> functionClazz) {
         return getFunction(GlobalSkill, funName, functionClazz);
     }
 
     @Override
     @Nullable
     public <T extends SKFunction<?>> T getFunction(
-            String skillName, String funName, Class<T> functionClazz) {
-        FunctionCollection skills = skillCollection.get(skillName.toLowerCase());
+            String skillName, String funName, @Nullable Class<T> functionClazz) {
+        FunctionCollection skills = skillCollection.get(skillName.toLowerCase(Locale.ROOT));
         if (skills == null) {
             return null;
         }
@@ -96,7 +96,7 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
     @Nullable
     @Override
     public FunctionCollection getFunctions(String skillName) {
-        return skillCollection.get(skillName.toLowerCase());
+        return skillCollection.get(skillName.toLowerCase(Locale.ROOT));
     }
 
     @Override
@@ -106,7 +106,7 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
 
     @Override
     public boolean hasFunction(String skillName, String functionName) {
-        FunctionCollection skills = skillCollection.get(skillName.toLowerCase());
+        FunctionCollection skills = skillCollection.get(skillName.toLowerCase(Locale.ROOT));
         if (skills == null) {
             return false;
         }
@@ -130,10 +130,10 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
                 .forEach(
                         entry -> {
                             FunctionCollection existing =
-                                    skillCollection.get(entry.getKey().toLowerCase());
+                                    skillCollection.get(entry.getKey().toLowerCase(Locale.ROOT));
                             if (existing == null) {
                                 skillCollection.put(
-                                        entry.getKey().toLowerCase(),
+                                        entry.getKey().toLowerCase(Locale.ROOT),
                                         new FunctionCollection(entry.getValue()));
                             } else {
                                 existing.merge(new FunctionCollection(entry.getValue()));

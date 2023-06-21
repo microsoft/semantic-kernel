@@ -63,7 +63,7 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public <T> T getService(String serviceId, Class<T> clazz) {
+    public <T> T getService(@Nullable String serviceId, Class<T> clazz) {
         if (TextCompletion.class.isAssignableFrom(clazz)) {
             Function<Kernel, TextCompletion> factory =
                     kernelConfig.getTextCompletionServiceOrDefault(serviceId);
@@ -203,6 +203,7 @@ public class DefaultKernel implements Kernel {
         return functions;
     }
 
+    @Override
     public ReadOnlyFunctionCollection importSkillFromDirectory(
             String skillName, String parentDirectory, String skillDirectoryName) {
         Map<String, SemanticFunctionConfig> skills =

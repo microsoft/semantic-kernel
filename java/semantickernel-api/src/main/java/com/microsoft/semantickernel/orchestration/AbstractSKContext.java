@@ -84,7 +84,6 @@ public abstract class AbstractSKContext implements SKContext {
         return memory != null ? memory.copy() : null;
     }
 
-    @Nullable
     @Override
     public ReadOnlySkillCollection getSkills() {
         return skills;

@@ -39,7 +39,7 @@ public interface ReadOnlySkillCollection {
 
     @Nullable
     <T extends SKFunction<?>> T getFunction(
-            String skillName, String funName, Class<T> functionClazz);
+            String skillName, String funName, @Nullable Class<T> functionClazz);
 
     @Nullable
     ReadOnlyFunctionCollection getFunctions(String skillName);

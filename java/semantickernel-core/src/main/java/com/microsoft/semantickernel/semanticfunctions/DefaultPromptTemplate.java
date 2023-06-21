@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 /// <summary>
 /// Prompt template.
 /// </summary>
@@ -70,11 +72,14 @@ public class DefaultPromptTemplate implements PromptTemplate {
     }
 
     public static final class Builder extends PromptTemplate.Builder {
-        private String promptTemplate;
-        private PromptTemplateConfig config;
+        @Nullable private String promptTemplate = null;
+        @Nullable private PromptTemplateConfig config = null;
 
         @Override
         public PromptTemplate build(PromptTemplateEngine promptTemplateEngine) {
+            if (promptTemplate == null || config == null)
+                throw new IllegalStateException(
+                        "PromptTemplate and PromptTemplateConfig must be set");
             return new DefaultPromptTemplate(promptTemplate, config, promptTemplateEngine);
         }
 

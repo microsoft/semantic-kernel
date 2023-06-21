@@ -6,20 +6,16 @@ import com.microsoft.semantickernel.SKException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/**
- * AI logic exception
- */
+/** AI logic exception */
 public class AIException extends SKException {
 
-    @Nonnull
-    private final ErrorCodes errorCode;
+    @Nonnull private final ErrorCodes errorCode;
 
     /**
      * Initializes a new instance of the {@link AIException} class.
      *
      * @param error The error code.
      */
-
     public AIException(@Nonnull ErrorCodes error) {
         this(error, null, null);
     }
@@ -28,7 +24,7 @@ public class AIException extends SKException {
      * Initializes a new instance of the {@link AIException} class.
      *
      * @param errorCode The error code.
-     * @param message   The message.
+     * @param message The message.
      */
     public AIException(@Nonnull ErrorCodes errorCode, @Nullable String message) {
         this(errorCode, message, null);
@@ -37,8 +33,8 @@ public class AIException extends SKException {
     /**
      * Initializes a new instance of the {@link AIException} class.
      *
-     * @param errorCode      The error code.
-     * @param message        The message.
+     * @param errorCode The error code.
+     * @param message The message.
      * @param innerException The cause of the exception.
      */
     public AIException(
@@ -58,9 +54,7 @@ public class AIException extends SKException {
         return errorCode;
     }
 
-    /**
-     * Translate the error code into a default message
-     */
+    /** Translate the error code into a default message */
     private static String getDefaultMessage(
             @Nonnull ErrorCodes errorCode, @Nullable String message) {
         return String.format("%s: %s", errorCode.getMessage(), message);
