@@ -3,15 +3,16 @@
 import { useMsal } from '@azure/msal-react';
 import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
-import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
-import { GetResponseOptions, useChat } from '../../libs/useChat';
-import { isPlan } from '../../libs/utils/PlanUtils';
-import { useAppSelector } from '../../redux/app/hooks';
-import { RootState } from '../../redux/app/store';
-import { Breakpoints } from '../../styles';
-import { convertToAnchorTags, timestampToDateString } from '../utils/TextUtils';
-import { PlanViewer } from './plan-viewer/PlanViewer';
-import { PromptDetails } from './prompt-details/PromptDetails';
+import { AuthorRoles, ChatMessageType, IChatMessage } from '../../../libs/models/ChatMessage';
+import { GetResponseOptions, useChat } from '../../../libs/useChat';
+import { useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
+import { Breakpoints } from '../../../styles';
+import { timestampToDateString } from '../../utils/TextUtils';
+import { PlanViewer } from '../plan-viewer/PlanViewer';
+import { PromptDetails } from '../prompt-details/PromptDetails';
+import { ChatHistoryDocumentContent } from './ChatHistoryDocumentContent';
+import { ChatHistoryTextContent } from './ChatHistoryTextContent';
 
 const useClasses = makeStyles({
     root: {
@@ -53,9 +54,6 @@ const useClasses = makeStyles({
         flexDirection: 'row',
         ...shorthands.gap(tokens.spacingHorizontalL),
     },
-    content: {
-        wordBreak: 'break-word',
-    },
     canvas: {
         width: '100%',
         textAlign: 'center',
@@ -68,11 +66,6 @@ interface ChatHistoryItemProps {
     messageIndex: number;
 }
 
-const createCommandLink = (command: string) => {
-    const escapedCommand = encodeURIComponent(command);
-    return `<span style="text-decoration: underline; cursor: pointer" data-command="${escapedCommand}" onclick="(function(){ let chatInput = document.getElementById('chat-input'); chatInput.value = decodeURIComponent('${escapedCommand}'); chatInput.focus(); return false; })();return false;">${command}</span>`;
-};
-
 export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getResponse, messageIndex }) => {
     const classes = useClasses();
 
@@ -81,20 +74,6 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
 
     const chat = useChat();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-
-    const renderPlan = isPlan(message.content);
-
-    const content = !renderPlan
-        ? (message.content as string)
-              .trim()
-              .replace(/[\u00A0-\u9999<>&]/g, function (i: string) {
-                  return `&#${i.charCodeAt(0)};`;
-              })
-              .replace(/^sk:\/\/.*$/gm, (match: string) => createCommandLink(match))
-              .replace(/^!sk:.*$/gm, (match: string) => createCommandLink(match))
-              .replace(/\n/g, '<br />')
-              .replace(/ {2}/g, '&nbsp;&nbsp;')
-        : '';
 
     const isMe = message.authorRole === AuthorRoles.User && message.userId === account?.homeAccountId!;
     const isBot = message.authorRole === AuthorRoles.Bot;
@@ -105,11 +84,20 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
         ? { image: { src: conversations[selectedId].botProfilePicture } }
         : { name: fullName, color: 'colorful' as 'colorful' };
 
+    let content: JSX.Element;
+    if (isBot && message.type === ChatMessageType.Plan) {
+        content = <PlanViewer message={message} messageIndex={messageIndex} getResponse={getResponse} />;
+    } else if (message.type === ChatMessageType.Document) {
+        content = <ChatHistoryDocumentContent isMe={isMe} message={message} />;
+    } else {
+        content = <ChatHistoryTextContent message={message} />;
+    }
+
     return (
         <div
             className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}
-            data-testid={`chat-history-item-${messageIndex}`}   // needed for testing
-            data-username={fullName}    // needed for testing
+            data-testid={`chat-history-item-${messageIndex}`} // needed for testing
+            data-username={fullName} // needed for testing
         >
             {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
             <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
@@ -118,14 +106,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                     <Text className={classes.time}>{timestampToDateString(message.timestamp, true)}</Text>
                     {isBot && <PromptDetails message={message} />}
                 </div>
-                {renderPlan ? (
-                    <PlanViewer message={message} messageIndex={messageIndex} getResponse={getResponse} />
-                ) : (
-                    <div
-                        className={classes.content}
-                        dangerouslySetInnerHTML={{ __html: convertToAnchorTags(content) }}
-                    />
-                )}
+                {content}
             </div>
         </div>
     );
