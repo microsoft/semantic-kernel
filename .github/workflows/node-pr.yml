@@ -29,6 +29,7 @@ jobs:
           #!/bin/bash
           set -e # exit with nonzero exit code if anything fails
           shopt -s globstar # enable globstar option to use ** for recursive matching
+          yarndirs=[]
           for lockfile in samples/apps/**/yarn.lock; do # loop over all yarn.lock files
             dir=$(dirname "$lockfile") # get the directory of the lock file
             echo "Found yarn project in $dir"
@@ -36,8 +37,9 @@ jobs:
           done
           
       - id: set-yarn-folders
-        run: echo "::set-output name=yarn-folders::'[${yarndirs[@]}]'"
-
+        run: |
+          echo "Setting output yarn-folders to '[${yarndirs[@]}]'"
+          echo "::set-output name=yarn-folders::'[${yarndirs[@]}]'"
   
   build:
     runs-on: ubuntu-latest
@@ -45,7 +47,7 @@ jobs:
 
     strategy:
       matrix:
-        yarn-folders: ${{ fromJson(needs.setup-matrix.outputs.yarn-folders) }}
+        yarn-folders: ${{ fromJson(needs.find-yarn-projects.outputs.yarn-folders) }}
         node-version: [18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         
