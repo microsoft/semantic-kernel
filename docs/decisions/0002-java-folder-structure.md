@@ -75,7 +75,7 @@ java
 | `semantickernel-bom`                | SK Bill Of Materials |
 | `semantickernel-connectors-parent`  | Parent folder for various Connector implementations |
 | `semantickernel-core-skills`        | SK core skills (in .Net these are part of the core implementation) |
-| `semantickernel-core`               | SK implementation |
+| `semantickernel-core`               | SK core implementation |
 | `semantickernel-extensions-parent`  | Parent folder for SK extensions e.g., planner implementation |
 
 Some observations:
@@ -92,7 +92,6 @@ Follow these guidelines:
 * The folder names will match those used (or planned for .Net) but in the idiomatic Java folder naming convention
 * Use `bom` instead of `MetaPackage` as the latter is .Net centric
 * Use `api` instead of `Abstractions` as the latter is .Net centric
-* Rename `semantickernel-core` to `semantickernel` to be consistent with .Net naming
 * Move `semantickernel-core-skills` to a new `plugins` folder and rename to `plugins-core`
 * Use the term `plugins` instead of `skills` and avoid introducing technical debt
 
@@ -103,5 +102,5 @@ Follow these guidelines:
 | `integration-tests`              | Integration tests |
 | `semantickernel-api`             | SK API definitions |
 | `semantickernel-bom`             | SK common package collection |
-| `semantickernel`                 | SK implementation |
+| `semantickernel-core`            | SK core implementation |
 | `plugins`                        | Containing: `plugins-core`, `plugins-document`, `plugins-msgraph`, ... |
