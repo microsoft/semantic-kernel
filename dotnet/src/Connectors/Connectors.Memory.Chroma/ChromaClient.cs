@@ -71,20 +71,11 @@ public class ChromaClient : IChromaClient
 
         using var request = GetCollectionRequest.Create(collectionName).Build();
 
-        try
-        {
-            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-            var collection = JsonSerializer.Deserialize<ChromaCollectionModel>(responseContent);
+        var collection = JsonSerializer.Deserialize<ChromaCollectionModel>(responseContent);
 
-            return collection;
-        }
-        catch (ChromaClientException e) when (e.CollectionDoesNotExistException(collectionName))
-        {
-            this._logger.LogError("Collection {0} does not exist", collectionName);
-
-            return null;
-        }
+        return collection;
     }
 
     /// <inheritdoc />

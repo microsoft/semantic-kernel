@@ -82,7 +82,7 @@ public class ChromaMemoryStore : IMemoryStore
     {
         Verify.NotNullOrWhiteSpace(collectionName);
 
-        var collection = await this._chromaClient.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
+        var collection = await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
 
         return collection != null;
     }
@@ -233,8 +233,22 @@ public class ChromaMemoryStore : IMemoryStore
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
     {
         return
-            await this._chromaClient.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false) ??
+            await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false) ??
             throw new ChromaMemoryStoreException($"Collection {collectionName} does not exist");
+    }
+
+    private async Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await this._chromaClient.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
+        }
+        catch (ChromaClientException e) when (e.CollectionDoesNotExistException(collectionName))
+        {
+            this._logger.LogError("Collection {0} does not exist", collectionName);
+
+            return null;
+        }
     }
 
     private string[] GetEmbeddingIncludeTypes(bool withEmbeddings = false, bool withDistances = false)
