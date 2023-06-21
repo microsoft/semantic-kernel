@@ -14,7 +14,7 @@ You can also use environment variables if you prefer.
 To set your secrets with Secret Manager:
 
 ```
-cd samples/dotnet/kernel-syntax-examples
+cd dotnet/samples/KernelSyntaxExamples
 
 dotnet user-secrets set "BING_API_KEY" "..."
 dotnet user-secrets set "OPENAI_API_KEY" "..."
