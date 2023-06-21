@@ -14,6 +14,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Chroma;
 
 /// <summary>
 /// Integration tests for <see cref="ChromaMemoryStore"/> class.
+/// Tests work with local Chroma server. To setup the server, see dotnet/src/Connectors/Connectors.Memory.Chroma/README.md.
 /// </summary>
 public sealed class ChromaMemoryStoreTests : IDisposable
 {
