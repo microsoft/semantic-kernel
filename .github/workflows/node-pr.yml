@@ -24,6 +24,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Find yarn projects
+        id: set-yarn-folders
         # This step uses a bash script to find all subfolders of /samples that contain a yarn.lock file
         run: |
           #!/bin/bash
