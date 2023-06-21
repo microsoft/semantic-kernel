@@ -3,6 +3,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -12,6 +14,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SemanticKernel.Service.CopilotChat.Extensions;
 using SemanticKernel.Service.CopilotChat.Hubs;
+using SemanticKernel.Service.Diagnostics;
+using SemanticKernel.Service.Services;
 
 namespace SemanticKernel.Service;
 
@@ -48,10 +52,20 @@ public sealed class Program
         // Add SignalR as the real time relay service
         builder.Services.AddSignalR();
 
+        // Add AppInsights telemetry
+        builder.Services
+            .AddHttpContextAccessor()
+            .AddApplicationInsightsTelemetry(options => { options.ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]; })
+            .AddSingleton<ITelemetryInitializer, AppInsightsUserTelemetryInitializerService>()
+            .AddLogging(logBuilder => logBuilder.AddApplicationInsights())
+            .AddSingleton<ITelemetryService, AppInsightsTelemetryService>();
+
+#if DEBUG
+        TelemetryDebugWriter.IsTracingDisabled = false;
+#endif
+
         // Add in the rest of the services.
         builder.Services
-            .AddApplicationInsightsTelemetry()
-            .AddLogging(logBuilder => logBuilder.AddApplicationInsights())
             .AddAuthorization(builder.Configuration)
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
