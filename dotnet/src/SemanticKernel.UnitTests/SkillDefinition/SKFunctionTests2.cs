@@ -853,6 +853,37 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
+    public async Task ItUsesContextCultureForParsingFormatting()
+    {
+        // Arrange
+        var context = this.MockContext("");
+        ISKFunction func = SKFunction.FromNativeFunction((double input) => input * 2, functionName: "Test");
+
+        // Act/Assert
+
+        context.Culture = new CultureInfo("fr-FR");
+        context.Variables.Update("12,34"); // tries first to parse with the specified culture
+        context = await func.InvokeAsync(context);
+        Assert.Equal("24,68", context.Variables.Input);
+
+        context.Culture = new CultureInfo("fr-FR");
+        context.Variables.Update("12.34"); // falls back to invariant culture
+        context = await func.InvokeAsync(context);
+        Assert.Equal("24,68", context.Variables.Input);
+
+        context.Culture = new CultureInfo("en-US");
+        context.Variables.Update("12.34"); // works with current culture
+        context = await func.InvokeAsync(context);
+        Assert.Equal("24.68", context.Variables.Input);
+
+        context.Culture = new CultureInfo("en-US");
+        context.Variables.Update("12,34"); // not parsable with current or invariant culture
+        context = await func.InvokeAsync(context);
+        Assert.True(context.ErrorOccurred);
+        Assert.IsType<ArgumentOutOfRangeException>(context.LastException);
+    }
+
+    [Fact]
     public async Task ItThrowsWhenItFailsToConvertAnArgument()
     {
         static string Test(Guid g) => g.ToString();
