@@ -12,8 +12,13 @@
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
+  </PropertyGroup>
+
+
   <ItemGroup>
-    <PackageReference Include="CoreCLR-NCalc" Version="2.2.113"/>
+    <PackageReference Include="CoreCLR-NCalc"/>
   </ItemGroup>
 
 </Project>
