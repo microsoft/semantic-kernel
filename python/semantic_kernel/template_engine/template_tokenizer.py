@@ -3,6 +3,7 @@
 from logging import Logger
 from typing import List
 
+from semantic_kernel.orchestration.callback_handler_base import CallbackHandlerBase
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -21,9 +22,10 @@ from semantic_kernel.utils.null_logger import NullLogger
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
 class TemplateTokenizer:
-    def __init__(self, log: Logger = None):
+    def __init__(self, log: Logger = None, handler: CallbackHandlerBase = None):
         self.log = log or NullLogger()
         self.code_tokenizer = CodeTokenizer(self.log)
+        self.handler = CallbackHandlerBase()
 
     def tokenize(self, text: str) -> List[Block]:
         # An empty block consists of 4 chars: "{{}}"
@@ -155,6 +157,7 @@ class TemplateTokenizer:
                                         content_without_delimiters,
                                         code_blocks,
                                         self.log,
+                                        self.handler,
                                     )
                                 )
                             else:

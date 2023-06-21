@@ -5,7 +5,16 @@ import importlib
 import inspect
 import os
 from logging import Logger
-from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
 from uuid import uuid4
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -27,6 +36,7 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.orchestration.callback_handler_base import CallbackHandlerBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function import SKFunction
@@ -62,6 +72,7 @@ class Kernel:
     _skill_collection: SkillCollectionBase
     _prompt_template_engine: PromptTemplatingEngine
     _memory: SemanticTextMemoryBase
+    _handler: "CallbackHandlerBase"
 
     def __init__(
         self,
@@ -69,15 +80,17 @@ class Kernel:
         prompt_template_engine: Optional[PromptTemplatingEngine] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         log: Optional[Logger] = None,
+        handler: "CallbackHandlerBase" = None,
     ) -> None:
         self._log = log if log else NullLogger()
+        self._handler = handler or CallbackHandlerBase()
         self._skill_collection = (
             skill_collection if skill_collection else SkillCollection(self._log)
         )
         self._prompt_template_engine = (
             prompt_template_engine
             if prompt_template_engine
-            else PromptTemplateEngine(self._log)
+            else PromptTemplateEngine(self._log, self._handler)
         )
         self._memory = memory if memory else NullMemory()
 
@@ -139,6 +152,7 @@ class Kernel:
         input_context: Optional[SKContext] = None,
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
+        pipeline_label: Optional[str] = None,
     ) -> SKContext:
         # if the user passed in a context, prioritize it, but merge with any other inputs
         if input_context is not None:
@@ -171,8 +185,10 @@ class Kernel:
                 self._memory,
                 self._skill_collection.read_only_skill_collection,
                 self._log,
+                self._handler,
             )
 
+        context.handler.on_pipeline_start(context, pipeline_label or "")
         pipeline_step = 0
         for func in functions:
             assert isinstance(func, SKFunctionBase), (
@@ -193,6 +209,7 @@ class Kernel:
                 context = await func.invoke_async(input=None, context=context)
 
                 if context.error_occurred:
+                    context.handler.on_function_error(context, func)
                     self._log.error(
                         f"Something went wrong in pipeline step {pipeline_step}. "
                         f"During function invocation: '{func.skill_name}.{func.name}'. "
@@ -206,8 +223,10 @@ class Kernel:
                     f"Error description: '{str(ex)}'"
                 )
                 context.fail(str(ex), ex)
+                context.handler.on_function_error(context, func)
                 return context
 
+        context.handler.on_pipeline_end(context, pipeline_label or "")
         return context
 
     def func(self, skill_name: str, function_name: str) -> SKFunctionBase:
@@ -245,12 +264,13 @@ class Kernel:
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
 
-    def create_new_context(self) -> SKContext:
+    def create_new_context(self, handler: "CallbackHandlerBase" = None) -> SKContext:
         return SKContext(
             ContextVariables(),
             self._memory,
             self.skills,
             self._log,
+            handler if handler else self._handler,
         )
 
     def import_skill(

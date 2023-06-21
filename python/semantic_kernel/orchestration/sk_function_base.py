@@ -16,6 +16,7 @@ from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition.function_view import FunctionView
 
 if TYPE_CHECKING:
+    from semantic_kernel.orchestration.callback_handler_base import CallbackHandlerBase
     from semantic_kernel.skill_definition.read_only_skill_collection_base import (
         ReadOnlySkillCollectionBase,
     )
@@ -107,6 +108,7 @@ class SKFunctionBase(ABC):
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
+        handler: "CallbackHandlerBase" = None,
     ) -> SKContext:
         """
         Invokes the function with an explicit string input
@@ -132,6 +134,7 @@ class SKFunctionBase(ABC):
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
+        handler: "CallbackHandlerBase" = None,
     ) -> SKContext:
         """
         Invokes the function with an explicit string input

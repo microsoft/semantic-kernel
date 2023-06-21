@@ -21,6 +21,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.orchestration.callback_handler_base import CallbackHandlerBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
@@ -104,11 +105,14 @@ class SKFunction(SKFunctionBase):
         function_name: str,
         function_config: SemanticFunctionConfig,
         log: Optional[Logger] = None,
+        handlers: List[CallbackHandlerBase] = None,
     ) -> "SKFunction":
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
-        async def _local_func(client, request_settings, context):
+        tmp = {}
+
+        async def _local_func(client, request_settings, context: SKContext):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
@@ -121,6 +125,7 @@ class SKFunction(SKFunctionBase):
                     # Similar to non-chat, render prompt (which renders to a
                     # list of <role, content> messages)
                     messages = await as_chat_prompt.render_messages_async(context)
+                    context.handler.on_prompt_rendered(context, tmp["func"], messages)
                     completion = await client.complete_chat_async(
                         messages, request_settings
                     )
@@ -136,6 +141,7 @@ class SKFunction(SKFunctionBase):
                     context.variables.update(completion)
                 else:
                     prompt = await function_config.prompt_template.render_async(context)
+                    context.handler.on_prompt_rendered(context, tmp["func"], prompt)
                     completion = await client.complete_async(prompt, request_settings)
                     context.variables.update(completion)
             except Exception as e:
@@ -144,7 +150,7 @@ class SKFunction(SKFunctionBase):
 
             return context
 
-        return SKFunction(
+        tmp["func"] = SKFunction(
             delegate_type=DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
             delegate_function=_local_func,
             parameters=function_config.prompt_template.get_parameters(),
@@ -154,6 +160,8 @@ class SKFunction(SKFunctionBase):
             is_semantic=True,
             log=log,
         )
+
+        return tmp["func"]
 
     @property
     def name(self) -> str:
@@ -281,6 +289,7 @@ class SKFunction(SKFunctionBase):
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
+        handler: "CallbackHandlerBase" = None,
     ) -> SKContext:
         if context is None:
             context = SKContext(
@@ -288,6 +297,7 @@ class SKFunction(SKFunctionBase):
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
                 logger=log if log is not None else self._log,
+                handler=handler,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -327,6 +337,7 @@ class SKFunction(SKFunctionBase):
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
+        handler: "CallbackHandlerBase" = None,
     ) -> SKContext:
         if context is None:
             context = SKContext(
@@ -334,6 +345,7 @@ class SKFunction(SKFunctionBase):
                 skill_collection=self._skill_collection,
                 memory=memory if memory is not None else NullMemory.instance,
                 logger=log if log is not None else self._log,
+                handler=handler,
             )
         else:
             # If context is passed, we need to merge the variables
@@ -356,7 +368,7 @@ class SKFunction(SKFunctionBase):
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic_async(self, context, settings):
+    async def _invoke_semantic_async(self, context: SKContext, settings):
         self._verify_is_semantic()
 
         self._ensure_context_has_skills(context)
@@ -375,8 +387,11 @@ class SKFunction(SKFunctionBase):
         service = (
             self._ai_service if self._ai_service is not None else self._chat_service
         )
+        context.handler.on_function_start(context, self)
         new_context = await self._function(service, settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
+
+        context.handler.on_function_end(context, self)
         return context
 
     async def _invoke_native_async(self, context):
@@ -388,7 +403,10 @@ class SKFunction(SKFunctionBase):
         # for python3.9 compatibility (staticmethod is not callable)
         if not hasattr(delegate, "__call__"):
             delegate = delegate.__func__
+
+        context.handler.on_function_start(context, self)
         new_context = await delegate(self._function, context)
+        context.handler.on_function_end(new_context, self)
 
         return new_context
 

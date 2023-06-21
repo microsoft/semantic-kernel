@@ -3,6 +3,7 @@
 from logging import Logger
 from typing import List, Optional
 
+from semantic_kernel.orchestration.callback_handler_base import CallbackHandlerBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.template_engine.blocks.block import Block
@@ -18,9 +19,12 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 
 class PromptTemplateEngine(PromptTemplatingEngine):
-    def __init__(self, logger: Optional[Logger] = None) -> None:
+    def __init__(
+        self, logger: Optional[Logger] = None, handler: CallbackHandlerBase = None
+    ) -> None:
         self._logger = logger or NullLogger()
         self._tokenizer = TemplateTokenizer(self._logger)
+        self._handler = handler or CallbackHandlerBase()
 
     def extract_blocks(
         self, template_text: Optional[str] = None, validate: bool = True

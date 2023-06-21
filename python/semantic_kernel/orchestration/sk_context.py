@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Literal, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Tuple, Union
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -9,6 +9,9 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
+
+if TYPE_CHECKING:
+    from semantic_kernel.orchestration.callback_handler_base import CallbackHandlerBase
 
 
 class SKContext:
@@ -21,6 +24,7 @@ class SKContext:
     _memory: SemanticTextMemoryBase
     _skill_collection: ReadOnlySkillCollectionBase
     _variables: ContextVariables
+    _handler: "CallbackHandlerBase"
 
     def __init__(
         self,
@@ -28,6 +32,7 @@ class SKContext:
         memory: SemanticTextMemoryBase,
         skill_collection: ReadOnlySkillCollectionBase,
         logger: Logger,
+        handler: "CallbackHandlerBase" = None
         # TODO: cancellation token?
     ) -> None:
         """
@@ -43,6 +48,7 @@ class SKContext:
         self._memory = memory
         self._skill_collection = skill_collection
         self._logger = logger
+        self._handler = handler
 
     def fail(self, error_description: str, exception: Optional[Exception] = None):
         """
@@ -59,6 +65,17 @@ class SKContext:
         self._error_occurred = True
         self._last_error_description = error_description
         self._last_exception = exception
+
+    @property
+    def handler(self) -> "CallbackHandlerBase":
+        """
+        Print the processed input, aka the current data
+        after any processing that has occurred.
+
+        Returns:
+            CallbackHandlerBase -- The callback handler to use in this context.
+        """
+        return self._handler
 
     @property
     def result(self) -> str:

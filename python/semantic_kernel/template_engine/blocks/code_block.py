@@ -3,6 +3,7 @@
 from logging import Logger
 from typing import List, Optional, Tuple
 
+from semantic_kernel.orchestration.callback_handler_base import CallbackHandlerBase
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
@@ -20,8 +21,9 @@ class CodeBlock(Block, CodeRenderer):
         content: str,
         tokens: Optional[List[Block]] = None,
         log: Optional[Logger] = None,
+        handler: CallbackHandlerBase = None,
     ):
-        super().__init__(content=content and content.strip(), log=log)
+        super().__init__(content=content and content.strip(), log=log, handler=handler)
 
         self._tokens = tokens or CodeTokenizer(log).tokenize(content)
         self._validated = False
@@ -97,7 +99,10 @@ class CodeBlock(Block, CodeRenderer):
             variables_clone.update(input_value)
 
         result = await function.invoke_async(
-            variables=variables_clone, memory=context.memory, log=self.log
+            variables=variables_clone,
+            memory=context.memory,
+            log=self.log,
+            handler=self._handler,
         )
 
         if result.error_occurred:
