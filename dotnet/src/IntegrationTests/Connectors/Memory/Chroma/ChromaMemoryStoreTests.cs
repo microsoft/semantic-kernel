@@ -27,9 +27,9 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanCreateCollectionsAsync()
     {
         // Arrange
-        var collectionName1 = "SK" + Guid.NewGuid();
-        var collectionName2 = "SK" + Guid.NewGuid();
-        var collectionName3 = "SK" + Guid.NewGuid();
+        var collectionName1 = this.GetRandomCollectionName();
+        var collectionName2 = this.GetRandomCollectionName();
+        var collectionName3 = this.GetRandomCollectionName();
 
         // Act
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName1);
@@ -38,6 +38,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         // Assert
         var collections = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
+
         Assert.Contains(collectionName1, collections);
         Assert.Contains(collectionName2, collections);
         Assert.Contains(collectionName3, collections);
@@ -49,7 +50,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     {
         // Arrange
         const int expectedCollectionCount = 1;
-        var collectionName = "SK" + Guid.NewGuid();
+        var collectionName = this.GetRandomCollectionName();
 
         // Act
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
@@ -69,7 +70,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanCheckIfCollectionExistsAsync(bool createCollection)
     {
         // Arrange
-        var collectionName = "SK" + Guid.NewGuid();
+        var collectionName = this.GetRandomCollectionName();
 
         if (createCollection)
         {
@@ -88,7 +89,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanDeleteExistingCollectionAsync()
     {
         // Arrange
-        var collectionName = "SK" + Guid.NewGuid();
+        var collectionName = this.GetRandomCollectionName();
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
 
@@ -108,7 +109,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItThrowsExceptionOnNonExistentCollectionDeletionAsync()
     {
         // Arrange
-        var collectionName = "SK" + Guid.NewGuid();
+        var collectionName = this.GetRandomCollectionName();
 
         // Act
         var exception = await Record.ExceptionAsync(() => this._chromaMemoryStore.DeleteCollectionAsync(collectionName));
@@ -126,7 +127,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItReturnsNullOnNonExistentRecordRetrieval()
     {
         // Arrange
-        var collectionName = "SK" + Guid.NewGuid();
+        var collectionName = this.GetRandomCollectionName();
         var key = Guid.NewGuid().ToString();
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
@@ -143,7 +144,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanUpsertMemoryRecordAsync()
     {
         // Arrange
-        var collectionName = "SK" + Guid.NewGuid();
+        var collectionName = this.GetRandomCollectionName();
         var expectedRecord = this.GetRandomMemoryRecord();
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
@@ -166,7 +167,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanUpsertMemoryRecordBatchAsync()
     {
         // Arrange
-        var collectionName = "SK" + Guid.NewGuid();
+        var collectionName = this.GetRandomCollectionName();
 
         var expectedRecord1 = this.GetRandomMemoryRecord();
         var expectedRecord2 = this.GetRandomMemoryRecord();
@@ -198,7 +199,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanRemoveMemoryRecordAsync()
     {
         // Arrange
-        var collectionName = "SK" + Guid.NewGuid();
+        var collectionName = this.GetRandomCollectionName();
         var expectedRecord = this.GetRandomMemoryRecord();
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
@@ -220,7 +221,8 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanRemoveMemoryRecordBatchAsync()
     {
         // Arrange
-        var collectionName = "SK" + Guid.NewGuid();
+        var collectionName = this.GetRandomCollectionName();
+
         var expectedRecord1 = this.GetRandomMemoryRecord();
         var expectedRecord2 = this.GetRandomMemoryRecord();
         var expectedRecord3 = this.GetRandomMemoryRecord();
@@ -242,6 +244,94 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Assert
         var recordsAfterDeletion = await this._chromaMemoryStore.GetBatchAsync(collectionName, keys).ToListAsync();
         Assert.Empty(recordsAfterDeletion);
+    }
+
+    [Fact]
+    //[Fact(Skip = "Requires Chroma server up and running")]
+    public async Task ItCanGetNearestMatchAsync()
+    {
+        // Arrange
+        var collectionName = this.GetRandomCollectionName();
+
+        var expectedRecord1 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 10f, 10f, 10f }));
+        var expectedRecord2 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 5f, 5f, 5f }));
+        var expectedRecord3 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 1f, 1f, 1f }));
+
+        var searchEmbedding = new Embedding<float>(new[] { 2f, 2f, 2f });
+
+        var batch = new List<MemoryRecord> { expectedRecord1, expectedRecord2, expectedRecord3 };
+        var keys = batch.Select(l => l.Key);
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+        await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).ToListAsync();
+
+        // Act
+        var nearestMatch = await this._chromaMemoryStore.GetNearestMatchAsync(collectionName, searchEmbedding, withEmbedding: true);
+
+        // Assert
+        Assert.True(nearestMatch.HasValue);
+
+        var actualRecord = nearestMatch.Value.Item1;
+
+        Assert.NotNull(actualRecord);
+
+        this.AssertMemoryRecordEqual(expectedRecord3, actualRecord);
+    }
+
+    [Fact]
+    //[Fact(Skip = "Requires Chroma server up and running")]
+    public async Task ItCanGetNearestMatchesAsync()
+    {
+        // Arrange
+        var collectionName = this.GetRandomCollectionName();
+
+        var expectedRecord1 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 10f, 10f, 10f }));
+        var expectedRecord2 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 5f, 5f, 5f }));
+        var expectedRecord3 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 1f, 1f, 1f }));
+
+        var searchEmbedding = new Embedding<float>(new[] { 2f, 2f, 2f });
+
+        var batch = new List<MemoryRecord> { expectedRecord1, expectedRecord2, expectedRecord3 };
+        var keys = batch.Select(l => l.Key);
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+        await this._chromaMemoryStore.UpsertBatchAsync(collectionName, batch).ToListAsync();
+
+        // Act
+        var nearestMatches = await this._chromaMemoryStore
+            .GetNearestMatchesAsync(collectionName, searchEmbedding, batch.Count, withEmbeddings: true)
+            .ToListAsync();
+
+        // Assert
+        Assert.NotNull(nearestMatches);
+        Assert.Equal(batch.Count, nearestMatches.Count);
+
+        nearestMatches.ForEach(match => Assert.NotNull(match.Item1));
+
+        var actualRecord1 = nearestMatches[0].Item1;
+        var actualRecord2 = nearestMatches[1].Item1;
+        var actualRecord3 = nearestMatches[2].Item1;
+
+        this.AssertMemoryRecordEqual(expectedRecord3, actualRecord1);
+        this.AssertMemoryRecordEqual(expectedRecord2, actualRecord2);
+        this.AssertMemoryRecordEqual(expectedRecord1, actualRecord3);
+    }
+
+    [Fact]
+    //[Fact(Skip = "Requires Chroma server up and running")]
+    public async Task ItReturnsNoMatchesFromEmptyCollection()
+    {
+        // Arrange
+        var collectionName = this.GetRandomCollectionName();
+        var searchEmbedding = new Embedding<float>(new[] { 2f, 2f, 2f });
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+
+        // Act
+        var nearestMatch = await this._chromaMemoryStore.GetNearestMatchAsync(collectionName, searchEmbedding, withEmbedding: true);
+
+        // Assert
+        Assert.Null(nearestMatch.Value.Item1);
     }
 
     public void Dispose()
@@ -275,18 +365,23 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
     }
 
-    private MemoryRecord GetRandomMemoryRecord()
+    private string GetRandomCollectionName()
+    {
+        return "sk-test-" + Guid.NewGuid();
+    }
+
+    private MemoryRecord GetRandomMemoryRecord(Embedding<float>? embedding = null)
     {
         var id = Guid.NewGuid().ToString();
         var key = Guid.NewGuid().ToString();
-        var embedding = new Embedding<float>(new[] { 1f, 3f, 5f });
+        var memoryEmbedding = embedding ?? new Embedding<float>(new[] { 1f, 3f, 5f });
 
         return MemoryRecord.LocalRecord(
             id: id,
-            text: "text" + Guid.NewGuid().ToString(),
-            description: "description" + Guid.NewGuid().ToString(),
-            embedding: embedding,
-            additionalMetadata: "custom metadata" + Guid.NewGuid().ToString(),
+            text: "text-" + Guid.NewGuid().ToString(),
+            description: "description-" + Guid.NewGuid().ToString(),
+            embedding: memoryEmbedding,
+            additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
             key: key);
     }
 

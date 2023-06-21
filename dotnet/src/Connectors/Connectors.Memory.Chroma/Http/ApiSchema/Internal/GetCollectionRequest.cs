@@ -3,26 +3,26 @@
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
 
-internal sealed class DeleteCollectionRequest
+internal sealed class GetCollectionRequest
 {
     [JsonIgnore]
     public string CollectionName { get; set; }
 
-    public static DeleteCollectionRequest Create(string collectionName)
+    public static GetCollectionRequest Create(string collectionName)
     {
-        return new DeleteCollectionRequest(collectionName);
+        return new GetCollectionRequest(collectionName);
     }
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateDeleteRequest($"collections/{this.CollectionName}");
+        return HttpRequest.CreateGetRequest($"collections/{this.CollectionName}");
     }
 
     #region private ================================================================================
 
-    private DeleteCollectionRequest(string collectionName)
+    private GetCollectionRequest(string collectionName)
     {
         this.CollectionName = collectionName;
     }

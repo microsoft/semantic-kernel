@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 
@@ -21,4 +22,6 @@ public interface IChromaClient
     Task<ChromaEmbeddingsModel> GetEmbeddingsAsync(string collectionId, string[] ids, string[]? include = null, CancellationToken cancellationToken = default);
 
     Task DeleteEmbeddingsAsync(string collectionId, string[] ids, CancellationToken cancellationToken = default);
+
+    Task<ChromaQueryResultModel> QueryEmbeddingsAsync(string collectionId, float[][] queryEmbeddings, int nResults, string[]? include = null, CancellationToken cancellationToken = default);
 }

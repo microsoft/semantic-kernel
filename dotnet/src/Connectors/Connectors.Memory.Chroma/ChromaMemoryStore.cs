@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
+using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
@@ -75,23 +77,16 @@ public class ChromaMemoryStore : IMemoryStore
 
         var collection = await this.GetCollectionOrThrowAsync(collectionName, cancellationToken).ConfigureAwait(false);
 
-        string[] ids = keys.ToArray();
-        string[] include = this.GetEmbeddingIncludeTypes(withEmbeddings);
+        var ids = keys.ToArray();
+        var include = this.GetEmbeddingIncludeTypes(withEmbeddings: withEmbeddings);
 
-        var embeddings = await this._chromaClient.GetEmbeddingsAsync(collection.Id, ids, include, cancellationToken).ConfigureAwait(false);
+        var embeddingsModel = await this._chromaClient.GetEmbeddingsAsync(collection.Id, ids, include, cancellationToken).ConfigureAwait(false);
 
-        var resultCount = embeddings.Ids?.Count ?? 0;
+        var recordCount = embeddingsModel.Ids?.Count ?? 0;
 
-        for (var i = 0; i < resultCount; i++)
+        for (var recordIndex = 0; recordIndex < recordCount; recordIndex++)
         {
-            var metadata = embeddings.Metadatas != null ? JsonSerializer.Serialize(embeddings.Metadatas[i]) : string.Empty;
-            var embeddingsVector = embeddings.Embeddings != null ? new Embedding<float>(embeddings.Embeddings[i]) : Embedding<float>.Empty;
-            var key = embeddings.Ids?[i];
-
-            yield return MemoryRecord.FromJsonMetadata(
-                json: metadata,
-                embedding: embeddingsVector,
-                key: key);
+            yield return this.GetMemoryRecordFromEmbeddingsModel(embeddingsModel, recordIndex);
         }
     }
 
@@ -100,14 +95,45 @@ public class ChromaMemoryStore : IMemoryStore
         return this._chromaClient.ListCollectionsAsync(cancellationToken);
     }
 
-    public Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        var results = this.GetNearestMatchesAsync(
+            collectionName,
+            embedding,
+            minRelevanceScore: minRelevanceScore,
+            limit: 1,
+            withEmbeddings: withEmbedding,
+            cancellationToken: cancellationToken);
+
+        (MemoryRecord memoryRecord, double similarityScore) = await results.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+
+        return (memoryRecord, similarityScore);
     }
 
-    public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        var collection = await this.GetCollectionOrThrowAsync(collectionName, cancellationToken).ConfigureAwait(false);
+
+        var queryEmbeddings = new float[][] { embedding.Vector.ToArray() };
+        var nResults = limit;
+        var include = this.GetEmbeddingIncludeTypes(withEmbeddings: withEmbeddings, withDistances: true);
+
+        var queryResultModel = await this._chromaClient.QueryEmbeddingsAsync(collection.Id, queryEmbeddings, nResults, include, cancellationToken).ConfigureAwait(false);
+
+        var recordCount = queryResultModel.Ids?.Count ?? 0;
+
+        for (var recordIndex = 0; recordIndex < recordCount; recordIndex++)
+        {
+            var memoryRecord = this.GetMemoryRecordFromQueryResultModel(queryResultModel, recordIndex);
+            var similarityScore = embedding.AsReadOnlySpan().CosineSimilarity(memoryRecord.Embedding.AsReadOnlySpan());
+
+            if (similarityScore >= minRelevanceScore)
+            {
+                yield return (memoryRecord, similarityScore);
+            }
+        }
     }
 
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
@@ -144,9 +170,9 @@ public class ChromaMemoryStore : IMemoryStore
         var recordsArray = records.ToArray();
         var recordsLength = recordsArray.Length;
 
-        string[] ids = new string[recordsLength];
-        float[][] embeddings = new float[recordsLength][];
-        object[] metadatas = new object[recordsLength];
+        var ids = new string[recordsLength];
+        var embeddings = new float[recordsLength][];
+        var metadatas = new object[recordsLength];
 
         for (var i = 0; i < recordsLength; i++)
         {
@@ -167,6 +193,7 @@ public class ChromaMemoryStore : IMemoryStore
 
     private const string IncludeMetadatas = "metadatas";
     private const string IncludeEmbeddings = "embeddings";
+    private const string IncludeDistances = "distances";
 
     private readonly ILogger _logger;
     private readonly IChromaClient _chromaClient;
@@ -179,7 +206,7 @@ public class ChromaMemoryStore : IMemoryStore
             throw new ChromaMemoryStoreException($"Collection {collectionName} does not exist");
     }
 
-    private string[] GetEmbeddingIncludeTypes(bool withEmbeddings)
+    private string[] GetEmbeddingIncludeTypes(bool withEmbeddings = false, bool withDistances = false)
     {
         var includeList = new List<string>(this._defaultEmbeddingIncludeTypes);
 
@@ -188,7 +215,44 @@ public class ChromaMemoryStore : IMemoryStore
             includeList.Add(IncludeEmbeddings);
         }
 
+        if (withDistances)
+        {
+            includeList.Add(IncludeDistances);
+        }
+
         return includeList.ToArray();
+    }
+
+    private MemoryRecord GetMemoryRecordFromEmbeddingsModel(ChromaEmbeddingsModel embeddingsModel, int recordIndex)
+    {
+        return this.GetMemoryRecordFromModel(embeddingsModel.Metadatas, embeddingsModel.Embeddings, embeddingsModel.Ids, recordIndex);
+    }
+
+    private MemoryRecord GetMemoryRecordFromQueryResultModel(ChromaQueryResultModel queryResultModel, int recordIndex)
+    {
+        return this.GetMemoryRecordFromModel(queryResultModel.Metadatas, queryResultModel.Embeddings, queryResultModel.Ids, recordIndex);
+    }
+
+    private MemoryRecord GetMemoryRecordFromModel(List<Dictionary<string, object>>? metadatas, List<float[]>? embeddings, List<string>? ids, int recordIndex)
+    {
+        var metadata = this.GetMetadataForMemoryRecord(metadatas, recordIndex);
+        var embeddingsVector = this.GetEmbeddingForMemoryRecord(embeddings, recordIndex);
+        var key = ids?[recordIndex];
+
+        return MemoryRecord.FromJsonMetadata(
+            json: metadata,
+            embedding: embeddingsVector,
+            key: key);
+    }
+
+    private string GetMetadataForMemoryRecord(List<Dictionary<string, object>>? metadatas, int recordIndex)
+    {
+        return metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex]) : string.Empty;
+    }
+
+    private Embedding<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)
+    {
+        return embeddings != null ? new Embedding<float>(embeddings[recordIndex]) : Embedding<float>.Empty;
     }
 
     #endregion

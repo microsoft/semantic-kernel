@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
+using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 
@@ -125,6 +126,19 @@ public class ChromaClient : IChromaClient
         using var request = DeleteEmbeddingsRequest.Create(collectionId, ids).Build();
 
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ChromaQueryResultModel> QueryEmbeddingsAsync(string collectionId, float[][] queryEmbeddings, int nResults, string[]? include = null, CancellationToken cancellationToken = default)
+    {
+        this._logger.LogDebug("Query embeddings in collection with id: {0}", collectionId);
+
+        using var request = QueryEmbeddingsRequest.Create(collectionId, queryEmbeddings, nResults, include).Build();
+
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+        var queryResult = JsonSerializer.Deserialize<ChromaQueryResultModel>(responseContent);
+
+        return queryResult ?? new ChromaQueryResultModel();
     }
 
     #region private ================================================================================
