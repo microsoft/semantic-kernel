@@ -8,14 +8,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
@@ -161,6 +154,7 @@ public class VolatileMemoryStore implements MemoryStore {
         return new EmbeddingVector<Number>((List<Number>) list);
     }
 
+    @SuppressWarnings("UnnecessaryLambda")
     private static final ToDoubleFunction<Tuple2<MemoryRecord, ? extends Number>>
             extractSimilarity = tuple -> tuple.getT2().doubleValue();
 

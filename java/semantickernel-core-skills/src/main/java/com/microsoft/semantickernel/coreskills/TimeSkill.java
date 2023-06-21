@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.coreskills;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -11,7 +12,8 @@ public class TimeSkill {
     @DefineSKFunction(name = "date", description = "Get the current date")
     public String date() {
         // Example: Sunday, 12 January, 2025
-        return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(ZonedDateTime.now());
+        return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
+                .format(ZonedDateTime.now(ZoneOffset.UTC));
     }
 
     /*
@@ -63,7 +65,7 @@ public class TimeSkill {
     @DefineSKFunction(name = "time", description = "Get the current time")
     public String time() {
         // Example: 09:15:07 PM
-        return DateTimeFormatter.ofPattern("hh:mm:ss a").format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("hh:mm:ss a").format(ZonedDateTime.now(ZoneOffset.UTC));
     }
     /*
        /// <summary>

@@ -55,7 +55,7 @@ public class Embedding<EmbeddingType extends Number> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Embedding)) return false;
 
         Embedding<?> embedding = (Embedding<?>) o;
 

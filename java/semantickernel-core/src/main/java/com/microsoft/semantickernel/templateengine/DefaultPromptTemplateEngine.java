@@ -35,11 +35,11 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
         tokenizer = new TemplateTokenizer();
     }
 
+    @Override
     public List<Block> extractBlocks(String templateText) {
         return extractBlocks(templateText, true);
     }
 
-    /// <inheritdoc/>
     public List<Block> extractBlocks(String templateText, boolean validate) {
         // TODO
         // this._log.LogTrace("Extracting blocks from template: {0}", templateText);

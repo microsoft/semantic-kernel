@@ -65,11 +65,12 @@ public abstract class AbstractSkFunction<RequestConfiguration>
             @Nullable RequestConfiguration settings) {
         if (context == null) {
             assertSkillSupplierRegistered();
+
             context =
                     buildContext(
                             SKBuilders.variables().build(),
                             NullMemory.getInstance(),
-                            skillsSupplier.get());
+                            skillsSupplier == null ? null : skillsSupplier.get());
         } else {
             context = context.copy();
         }
@@ -159,6 +160,7 @@ public abstract class AbstractSkFunction<RequestConfiguration>
     }
 
     @Override
+    @Nullable
     public String getDescription() {
         return description;
     }
@@ -210,14 +212,17 @@ public abstract class AbstractSkFunction<RequestConfiguration>
     @Override
     public SKContext buildContext() {
         assertSkillSupplierRegistered();
-        return buildContext(SKBuilders.variables().build(), null, getSkillsSupplier().get());
+        return buildContext(
+                SKBuilders.variables().build(),
+                null,
+                skillsSupplier == null ? null : skillsSupplier.get());
     }
 
     @Override
     public Mono<SKContext> invokeWithCustomInputAsync(
             ContextVariables input,
-            SemanticTextMemory semanticMemory,
-            ReadOnlySkillCollection skills) {
+            @Nullable SemanticTextMemory semanticMemory,
+            @Nullable ReadOnlySkillCollection skills) {
         SKContext tmpContext = buildContext(input, semanticMemory, skills);
         return invokeAsync(tmpContext, null);
     }

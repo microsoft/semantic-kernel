@@ -42,6 +42,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
         return this;
     }
 
+    @Override
     public ContextVariables appendToVariable(@NonNull String key, @NonNull String content) {
         String existing = this.variables.get(key);
 
@@ -67,6 +68,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     // result for the user
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
+    @Override
     public ContextVariables update(@NonNull String content) {
         return setVariable(MAIN_KEY, content);
     }
@@ -84,6 +86,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     // data.</param>
     /// <returns>The current instance</returns>
 
+    @Override
     public DefaultContextVariables update(@NonNull ContextVariables newData, boolean merge) {
         /*
         // If requested, discard old data and keep only the new one.
@@ -111,6 +114,7 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
     }
 
     @Override
+    @Nullable
     public String getInput() {
         return get(MAIN_KEY);
     }

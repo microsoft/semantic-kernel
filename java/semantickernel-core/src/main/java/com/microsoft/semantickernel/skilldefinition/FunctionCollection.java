@@ -4,10 +4,7 @@ package com.microsoft.semantickernel.skilldefinition;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.CheckReturnValue;
@@ -28,7 +25,9 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
         this(
                 skillName,
                 functionCollection.stream()
-                        .collect(Collectors.toMap(it -> it.getName().toLowerCase(), it -> it)));
+                        .collect(
+                                Collectors.toMap(
+                                        it -> it.getName().toLowerCase(Locale.ROOT), it -> it)));
     }
 
     public FunctionCollection(String skillName) {
@@ -52,7 +51,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
 
     @Override
     public SKFunction<?> getFunction(String functionName) {
-        SKFunction<?> func = functionCollection.get(functionName.toLowerCase());
+        SKFunction<?> func = functionCollection.get(functionName.toLowerCase(Locale.ROOT));
         if (func == null) {
             throw new FunctionNotFound(functionName);
         }
@@ -110,7 +109,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
      * @return Collection for fluent callse
      */
     public FunctionCollection put(String functionName, SKFunction<?> functionInstance) {
-        this.functionCollection.put(functionName.toLowerCase(), functionInstance);
+        this.functionCollection.put(functionName.toLowerCase(Locale.ROOT), functionInstance);
         return this;
     }
 
