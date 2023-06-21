@@ -123,7 +123,7 @@ On the resource overview page, in the top right use the copy button to copy the 
 
 In addition to this there are some custom events that can inform you how users are using the service such as `SkillFunction`.
 
-To access these custom events the suggested method is to use Azure Data Explorer (ADX). To access data from Application Insights in ADX, create a new dashboard and add a new Data Source (use the elipsis dropdown in the top right).
+To access these custom events the suggested method is to use Azure Data Explorer (ADX). To access data from Application Insights in ADX, create a new dashboard and add a new Data Source (use the ellipsis dropdown in the top right).
 
 In the Cluster URI use the following link: `https://ade.applicationinsights.io/subscriptions/<Your subscription Id>`. The subscription id is shown on the resource page for your Applications Insights instance. You can then select the Database for the Application Insights resource.
 

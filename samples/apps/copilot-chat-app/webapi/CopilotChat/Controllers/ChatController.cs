@@ -25,8 +25,8 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
-using SemanticKernel.Service.Models;
 using SemanticKernel.Service.Diagnostics;
+using SemanticKernel.Service.Models;
 
 namespace SemanticKernel.Service.CopilotChat.Controllers;
 
