@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: 'Azure Key Vault [Sample]'
   description: 'A sample connector for the Azure Key Vault service.  This connector is built for the Azure Key Vault REST API.  You can see the details of the API here: https://docs.microsoft.com/rest/api/keyvault/.'
