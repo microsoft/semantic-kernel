@@ -14,7 +14,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SemanticKernel.Service.CopilotChat.Extensions;
 using SemanticKernel.Service.CopilotChat.Hubs;
-using Microsoft.SemanticKernel.Diagnostics;
 using SemanticKernel.Service.Services;
 using SemanticKernel.Service.Diagnostics;
 
