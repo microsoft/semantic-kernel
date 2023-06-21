@@ -36,14 +36,16 @@ jobs:
             yarndirs+="$dir" # add the directory to the yarndirs array
           done
           
-      - id: set-yarn-folders
-        run: |
-          echo "Setting output yarn-folders to $(echo "$yarndirs" | jq -R -s 'split("\n")')"
-          echo "::set-output name=yarn-folders::$(echo "$yarndirs" | jq -R -s 'split("\n")')"
+          echo "All yarn projects found: '${yarndirs[*]}'
+          yarndirs_json=$(jq -R -s 'split("\n")' <<< "${yarndirs[*]}")
+          
+          echo "Setting output yarn-folders to $yarndirs_json"
+          echo "::set-output name=yarn-folders::$yarndirs_json"
   
   build:
     runs-on: ubuntu-latest
     needs: find-yarn-projects
+    if: ${{ fromJson(needs.find-yarn-projects.outputs.yarn-folders).length > 0 }}
 
     strategy:
       matrix:
