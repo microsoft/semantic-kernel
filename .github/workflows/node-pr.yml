@@ -9,12 +9,16 @@ on:
     branches: ["main"]
     paths:
       - 'samples/apps/**'
+      
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   find-yarn-projects:
     runs-on: ubuntu-latest
     outputs:
-      yarnfolders: ${{ steps.set-yarn-folders.outputs.yarnfolders }}
+      yarn-folders: ${{ steps.set-yarn-folders.outputs.yarn-folders }}
 
     steps:
       - uses: actions/checkout@v3
@@ -28,11 +32,11 @@ jobs:
           for lockfile in samples/apps/**/yarn.lock; do # loop over all yarn.lock files
             dir=$(dirname "$lockfile") # get the directory of the lock file
             echo "Found yarn project in $dir"
-            yarnfolders+=("$dir") # add the directory to the yarn-folders array
+            yarndirs+=("$dir") # add the directory to the yarndirs array
           done
           
       - id: set-yarn-folders
-        run: echo "::set-output name=yarn-folders::'[${yarnfolders[@]}]'"
+        run: echo "::set-output name=yarn-folders::'[${yarndirs[@]}]'"
 
   
   build:
@@ -41,7 +45,7 @@ jobs:
 
     strategy:
       matrix:
-        yarn-folders: ${{ fromJson(needs.setup-matrix.outputs.yarnfolders) }}
+        yarn-folders: ${{ fromJson(needs.setup-matrix.outputs.yarn-folders) }}
         node-version: [18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         
