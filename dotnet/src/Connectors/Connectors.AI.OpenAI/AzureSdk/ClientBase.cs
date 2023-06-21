@@ -280,7 +280,7 @@ public abstract class ClientBase
 
         if (requestSettings.TokenSelectionBiases.Count > 0)
         {
-            foreach(var keyValue in requestSettings.TokenSelectionBiases)
+            foreach (var keyValue in requestSettings.TokenSelectionBiases)
             {
                 options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
             }
