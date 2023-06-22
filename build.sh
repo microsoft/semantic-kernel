@@ -8,6 +8,6 @@ cd "$HERE"
 cd dotnet
 
 # Release config triggers also "dotnet format"
-dotnet build --configuration Release --interactive
+dotnet build --configuration release --interactive
 
-dotnet test --configuration Release --no-build --no-restore --interactive
+dotnet test --configuration release --no-build --no-restore --interactive
