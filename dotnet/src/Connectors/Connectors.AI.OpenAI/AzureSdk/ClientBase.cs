@@ -278,12 +278,9 @@ public abstract class ClientBase
             User = null,
         };
 
-        if (requestSettings.TokenSelectionBiases.Count > 0)
+        foreach (var keyValue in requestSettings.TokenSelectionBiases)
         {
-            foreach (var keyValue in requestSettings.TokenSelectionBiases)
-            {
-                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
-            }
+            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
         }
 
         if (requestSettings.StopSequences is { Count: > 0 })
@@ -314,12 +311,9 @@ public abstract class ClientBase
             ChoicesPerPrompt = requestSettings.ResultsPerPrompt
         };
 
-        if (requestSettings.TokenSelectionBiases.Count > 0)
+        foreach (var keyValue in requestSettings.TokenSelectionBiases)
         {
-            foreach (var keyValue in requestSettings.TokenSelectionBiases)
-            {
-                options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
-            }
+            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
         }
 
         if (requestSettings.StopSequences is { Count: > 0 })
