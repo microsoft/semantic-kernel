@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="0.16.230615.1-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.OpenAPI" Version="0.15.230531.5-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.OpenAPI" Version="0.16.230615.1-preview" />
   </ItemGroup>
 
   <ItemGroup>
