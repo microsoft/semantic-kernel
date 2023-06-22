@@ -83,18 +83,18 @@ public class DocumentMessageContent
 
         if (formattedStrings.Count() == 1)
         {
-            return $"Uploaded a file {formattedStrings.First()}.";
+            return $"Uploaded a document {formattedStrings.First()}.";
         }
 
-        return $"Uploaded files: {string.Join(", ", formattedStrings)}.";
+        return $"Uploaded documents: {string.Join(", ", formattedStrings)}.";
     }
 
     /// <summary>
     /// Serialize the object to a formatted string that only
-    /// contains file names separated by comma.
+    /// contains document names separated by comma.
     /// </summary>
     /// <returns>A formatted string</returns>
-    public string ToFormattedStringFileNamesOnly()
+    public string ToFormattedStringNamesOnly()
     {
         if (Documents.Count == 0)
         {

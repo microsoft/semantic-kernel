@@ -151,6 +151,13 @@ public class ChatMessage : IStorageEntity
         return new ChatMessage("bot", "bot", chatId, content, prompt, AuthorRoles.Bot, IsPlan(content) ? ChatMessageType.Plan : ChatMessageType.Message);
     }
 
+    /// <summary>
+    /// Create a new chat message for a document upload.
+    /// </summary>
+    /// <param name="userId">The user ID that uploaded the document</param>
+    /// <param name="userName">The user name that uploaded the document</param>
+    /// <param name="chatId">The chat ID that this message belongs to</param>
+    /// <param name="documentMessageContent">The document message content</param>
     public static ChatMessage CreateDocumentMessage(string userId, string userName, string chatId, DocumentMessageContent documentMessageContent)
     {
         return new ChatMessage(userId, userName, chatId, documentMessageContent.ToString(), string.Empty, AuthorRoles.User, ChatMessageType.Document);

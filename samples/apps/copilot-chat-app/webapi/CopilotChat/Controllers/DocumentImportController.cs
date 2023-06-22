@@ -127,7 +127,7 @@ public class DocumentImportController : ControllerBase
 
         await messageRelayHubContext.Clients.All.SendAsync(
             GlobalDocumentUploadedClientCall,
-            documentMessageContent.ToFormattedStringFileNamesOnly(),
+            documentMessageContent.ToFormattedStringNamesOnly(),
             documentImportForm.UserName
         );
 
@@ -198,14 +198,14 @@ public class DocumentImportController : ControllerBase
     private async Task<bool> ImportDocumentHelperAsync(IKernel kernel, IFormFile formFile, DocumentImportForm documentImportForm)
     {
         var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
-        var fileContent = string.Empty;
+        var documentContent = string.Empty;
         switch (fileType)
         {
             case SupportedFileType.Txt:
-                fileContent = await this.ReadTxtFileAsync(formFile);
+                documentContent = await this.ReadTxtFileAsync(formFile);
                 break;
             case SupportedFileType.Pdf:
-                fileContent = this.ReadPdfFile(formFile);
+                documentContent = this.ReadPdfFile(formFile);
                 break;
             default:
                 // This should never happen. Validation should have already caught this.
@@ -224,7 +224,7 @@ public class DocumentImportController : ControllerBase
         // Parse document content to memory
         try
         {
-            await this.ParseDocumentContentToMemoryAsync(kernel, formFile.FileName, fileContent, documentImportForm, memorySource.Id);
+            await this.ParseDocumentContentToMemoryAsync(kernel, formFile.FileName, documentContent, documentImportForm, memorySource.Id);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
