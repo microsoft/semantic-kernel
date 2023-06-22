@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// </summary>
 public sealed class SequentialPlanner
 {
-    private const string StopSequence = "<!--";
+    private const string StopSequence = "<!-- END -->";
 
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
