@@ -6,12 +6,12 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
+using Microsoft.SemanticKernel.Skills.Core;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.CoreSkills;
+namespace SemanticKernel.Skills.UnitTests.Core;
 
 public class HttpSkillTests : IDisposable
 {
