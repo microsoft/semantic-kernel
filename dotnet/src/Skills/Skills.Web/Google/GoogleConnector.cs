@@ -9,6 +9,7 @@ using Google.Apis.CustomSearchAPI.v1;
 using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Skills.Web.Google;
 
@@ -22,7 +23,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     private readonly string? _searchEngineId;
 
     /// <summary>
-    /// Google search connector
+    /// Google search connector.
     /// </summary>
     /// <param name="apiKey">Google Custom Search API (looks like "ABcdEfG1...")</param>
     /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...")</param>
@@ -30,9 +31,26 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     public GoogleConnector(
         string apiKey,
         string searchEngineId,
+        ILogger<GoogleConnector>? logger = null) : this(new BaseClientService.Initializer { ApiKey = apiKey }, searchEngineId, logger)
+    {
+        Verify.NotNullOrWhiteSpace(apiKey);
+    }
+
+    /// <summary>
+    /// Google search connector.
+    /// </summary>
+    /// <param name="initializer">The connector initializer</param>
+    /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...")</param>
+    /// <param name="logger">Optional logger</param>
+    public GoogleConnector(
+        BaseClientService.Initializer initializer,
+        string searchEngineId,
         ILogger<GoogleConnector>? logger = null)
     {
-        this._search = new CustomSearchAPIService(new BaseClientService.Initializer { ApiKey = apiKey });
+        Verify.NotNull(initializer);
+        Verify.NotNullOrWhiteSpace(searchEngineId);
+
+        this._search = new CustomSearchAPIService(initializer);
         this._searchEngineId = searchEngineId;
         this._logger = logger ?? NullLogger<GoogleConnector>.Instance;
     }

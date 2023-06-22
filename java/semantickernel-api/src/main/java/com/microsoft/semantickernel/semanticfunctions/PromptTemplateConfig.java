@@ -272,7 +272,7 @@ public class PromptTemplateConfig {
         }
 
         public List<InputParameter> getParameters() {
-            return Collections.unmodifiableList(parameters);
+            return parameters;
         }
     }
 
@@ -328,6 +328,10 @@ public class PromptTemplateConfig {
         this.input = input;
     }
 
+    /**
+     * Description
+     * @return Description
+     */
     public String getDescription() {
         return description;
     }
