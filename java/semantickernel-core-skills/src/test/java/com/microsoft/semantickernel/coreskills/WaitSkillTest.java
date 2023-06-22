@@ -1,9 +1,12 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
 
-import java.time.Duration;
 import org.junit.jupiter.api.Test;
+
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.time.Duration;
 
 class WaitSkillTest {
 
@@ -26,19 +29,13 @@ class WaitSkillTest {
     void secondsAsync_givenZeroSeconds_shouldNotDelay() {
         String seconds = "0";
         Mono<Void> result = waitSkill.wait(seconds);
-        StepVerifier.create(result)
-                .expectSubscription()
-                .expectComplete()
-                .verify();
+        StepVerifier.create(result).expectSubscription().expectComplete().verify();
     }
 
     @Test
     void secondsAsync_givenNegativeSeconds_shouldNotDelay() {
         String seconds = "-1.5";
         Mono<Void> result = waitSkill.wait(seconds);
-        StepVerifier.create(result)
-                .expectSubscription()
-                .expectComplete()
-                .verify();
+        StepVerifier.create(result).expectSubscription().expectComplete().verify();
     }
 }

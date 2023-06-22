@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
-
 package com.microsoft.semantickernel.coreskills;
 
-import reactor.core.publisher.Mono;
-import java.time.Duration;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 
-/**
- * WaitSkill provides a set of functions to wait before making the rest of operations.
- */
+import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+
+/** WaitSkill provides a set of functions to wait before making the rest of operations. */
 public class WaitSkill {
 
     /**
@@ -17,8 +16,10 @@ public class WaitSkill {
      * <p>Examples:
      *
      * <p>SKContext context = SKBuilders.context().build();
+     *
      * <p>context.setVariable("input","10");
-     * <p>   {{wait.seconds $input}}
+     *
+     * <p>{{wait.seconds $input}}
      *
      * @param seconds The number of seconds to wait as a string.
      * @return A Mono<Void> that completes after the specified delay.
