@@ -117,7 +117,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
             }}
         >
             <PopoverTrigger disableButtonEnhancement>
-                <a className={mergeClasses(classes.root, isSelected && classes.selected)} onClick={onClick}>
+                <div className={mergeClasses(classes.root, isSelected && classes.selected)} onClick={onClick}>
                     <Persona avatar={{ image: { src: botProfilePicture } }} presence={{ status: 'available' }} />
                     <div className={classes.body}>
                         <div className={classes.header}>
@@ -138,7 +138,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                             </>
                         )}
                     </div>
-                </a>
+                </div>
             </PopoverTrigger>
             <PopoverSurface className={classes.popoverSurface}>
                 <Text weight="bold">{Constants.bot.profile.fullName}</Text>
