@@ -11,5 +11,4 @@
   <ItemGroup>
     <PackageReference Include="CoreCLR-NCalc"/>
   </ItemGroup>
-
 </Project>
