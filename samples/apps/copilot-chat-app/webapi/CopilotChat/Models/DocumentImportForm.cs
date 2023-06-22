@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 
 namespace SemanticKernel.Service.CopilotChat.Models;
@@ -22,7 +23,7 @@ public class DocumentImportForm
     /// <summary>
     /// The file to import.
     /// </summary>
-    public IFormFile? FormFile { get; set; }
+    public List<IFormFile> FormFiles { get; set; } = new List<IFormFile>();
 
     /// <summary>
     /// Scope of the document. This determines the collection name in the document memory.

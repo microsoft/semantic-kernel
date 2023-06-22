@@ -225,13 +225,13 @@ export const useChat = () => {
         return [];
     };
 
-    const importDocument = async (chatId: string, file: File) => {
+    const importDocument = async (chatId: string, files: FileList) => {
         try {
             await documentImportService.importDocumentAsync(
                 userId,
                 fullName,
                 chatId,
-                file,
+                files,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
         } catch (e: any) {

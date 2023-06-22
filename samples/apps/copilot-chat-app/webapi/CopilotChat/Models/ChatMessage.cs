@@ -120,7 +120,14 @@ public class ChatMessage : IStorageEntity
     /// <param name="prompt">The prompt used to generate the message</param>
     /// <param name="authorRole">Role of the author</param>
     /// <param name="type">Type of the message</param>
-    public ChatMessage(string userId, string userName, string chatId, string content, string prompt = "", AuthorRoles authorRole = AuthorRoles.User, ChatMessageType type = ChatMessageType.Message)
+    public ChatMessage(
+        string userId,
+        string userName,
+        string chatId,
+        string content,
+        string prompt = "",
+        AuthorRoles authorRole = AuthorRoles.User,
+        ChatMessageType type = ChatMessageType.Message)
     {
         this.Timestamp = DateTimeOffset.Now;
         this.UserId = userId;
@@ -144,6 +151,11 @@ public class ChatMessage : IStorageEntity
         return new ChatMessage("bot", "bot", chatId, content, prompt, AuthorRoles.Bot, IsPlan(content) ? ChatMessageType.Plan : ChatMessageType.Message);
     }
 
+    public static ChatMessage CreateDocumentMessage(string userId, string userName, string chatId, DocumentMessageContent documentMessageContent)
+    {
+        return new ChatMessage(userId, userName, chatId, documentMessageContent.ToString(), string.Empty, AuthorRoles.User, ChatMessageType.Document);
+    }
+
     /// <summary>
     /// Serialize the object to a formatted string.
     /// </summary>
@@ -153,8 +165,8 @@ public class ChatMessage : IStorageEntity
         var content = this.Content;
         if (this.Type == ChatMessageType.Document)
         {
-            var documentDetails = DocumentMessageContent.FromString(content);
-            content = $"Sent a file named \"{documentDetails?.Name}\" with a size of {documentDetails?.Size}.";
+            var documentMessageContent = DocumentMessageContent.FromString(content);
+            content = (documentMessageContent != null) ? documentMessageContent.ToFormattedString() : "Uploaded Documents";
         }
 
         return $"[{this.Timestamp.ToString("G", CultureInfo.CurrentCulture)}] {this.UserName}: {content}";
