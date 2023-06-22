@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.CoreSkills;
+namespace Microsoft.SemanticKernel.Skills.Core;
 
 /// <summary>
 /// TextSkill provides a set of functions to manipulate strings.

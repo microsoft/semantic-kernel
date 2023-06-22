@@ -29,6 +29,11 @@ public sealed class Config
 #pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
+    /// Api key for the service that is running the chat.
+    /// </summary>
+    public string ApiKey { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets configuration from appsettings.json.
     /// </summary>
     /// <returns>An Config instance</returns>

@@ -11,8 +11,8 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { updateConversationFromUser } from '../../redux/features/conversations/conversationsSlice';
 import { SharedStyles } from '../../styles';
-import { ChatHistory } from './ChatHistory';
 import { ChatInput } from './ChatInput';
+import { ChatHistory } from './chat-history/ChatHistory';
 
 const log = debug(Constants.debug.root).extend('chat-room');
 
@@ -122,11 +122,7 @@ export const ChatRoom: React.FC = () => {
                 </div>
             </div>
             <div className={classes.input}>
-                <ChatInput
-                    isDraggingOver={isDraggingOver}
-                    onDragLeave={onDragLeave}
-                    onSubmit={handleSubmit}
-                />
+                <ChatInput isDraggingOver={isDraggingOver} onDragLeave={onDragLeave} onSubmit={handleSubmit} />
             </div>
         </div>
     );
