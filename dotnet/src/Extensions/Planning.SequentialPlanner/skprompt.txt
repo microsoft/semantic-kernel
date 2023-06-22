@@ -2,22 +2,35 @@ Create an XML plan step by step, to satisfy the goal given.
 To create a plan, follow these steps:
 0. The plan should be as short as possible.
 1. From a <goal> create a <plan> as a series of <functions>.
-2. Before using any function in a plan, check that it is present in the [AVAILABLE FUNCTIONS] list. If it is not, do not use it.
-3. Only use functions that are required for the given goal.
-4. A function has at least a single 'input' and a single 'output' which are both strings and not objects. Additional parameters may be required for some functions as defined in the [AVAILABLE FUNCTIONS] list.
-5. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FullyQualifiedFunctionName} ... setContextVariable="<UNIQUE_VARIABLE_KEY>"/>
-6. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FullyQualifiedFunctionName} ... appendToResult="RESULT__<UNIQUE_RESULT_KEY>"/>
-7. Append an "END" XML comment at the end of the plan after the final closing </plan> tag.
+2. Only use functions that are defined in the [AVAILABLE FUNCTIONS] list. If it is not, do not use it.
+3. A function has at least a single 'input' and a single 'output' which are both strings and not objects. Additional parameters may be required for some functions as defined in the [AVAILABLE FUNCTIONS] list. Strings should be xml escaped.
+4. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FullyQualifiedFunctionName} ... setContextVariable="<UNIQUE_VARIABLE_KEY>"/>
+5. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FullyQualifiedFunctionName} ... appendToResult="RESULT__<UNIQUE_RESULT_KEY>"/>
+6. Append an "END" XML comment at the end of the plan after the final closing </plan> tag.
+7. Always output valid XML that can be parsed by an XML parser.
 
-Here is an example of how to call a function "_Function_.Name" with a single input and save its output:
+All plans take the form of:
+<plan>
+    <!-- ... reason for taking step ... -->
+    <function.{FullyQualifiedFunctionName} ... />
+    <!-- ... reason for taking step ... -->
+    <function.{FullyQualifiedFunctionName} ... />
+    <!-- ... reason for taking step ... -->
+    <function.{FullyQualifiedFunctionName} ... />
+</plan>
+<!-- END -->
+
+Here is a valid example of how to call a function "_Function_.Name" with a single input and save its output:
 <function._Function_.Name input="this is my input" setContextVariable="SOME_KEY"/>
 
-Here is an example of how to call a function "FunctionName2" with a single input and return its output as part of the plan result:
+Here is a valid example of how to call a function "FunctionName2" with a single input and return its output as part of the plan result:
 <function.FunctionName2 input="$SOME_KEY" appendToResult="RESULT__FINAL_ANSWER"/>
 
-Here is an example of how to call a function "Name3" with multiple inputs:
+Here is a valid example of how to call a function "Name3" with multiple inputs:
 <function.Name3 input="$SOME_PREVIOUS_OUTPUT" parameter_name="some value with a &lt;!-- comment in it--&gt;"/>
 
+Here is an INVALID example of how to call a function "Name4" as the parameter is not xml escaped:
+<function.Name3 input="$SOME_PREVIOUS_OUTPUT" parameter_name="some value with a <!-- comment in it-->"/>
 
 [AVAILABLE FUNCTIONS]
 

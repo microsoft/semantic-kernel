@@ -73,13 +73,10 @@ internal static class SequentialPlanParser
 
                 foreach (XmlNode childNode in solutionNode.ChildNodes)
                 {
-                    if (childNode.Name == "#text")
+                    if (childNode.Name == "#text" || childNode.Name == "#comment")
                     {
-                        if (childNode.Value != null)
-                        {
-                            plan.AddSteps(new Plan(childNode.Value.Trim()));
-                        }
-
+                        // Do not add text or comments as steps.
+                        // TODO - this could be a way to get Reasoning for a plan step.
                         continue;
                     }
 
@@ -142,7 +139,8 @@ internal static class SequentialPlanParser
                         continue;
                     }
 
-                    plan.AddSteps(new Plan(childNode.InnerText));
+                    // Similar to comments or text, do not add empty nodes as steps.
+                    // TODO - This could be a way to advertise desired functions for a plan.
                 }
             }
 
