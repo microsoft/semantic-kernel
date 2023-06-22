@@ -241,10 +241,8 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
 
         indexName = normalizeIndexName(indexName);
 
-        // TODO: FieldBuilder.build(AzureCognitiveSearchRecord.class, null) gives an
-        // NPE: Cannot invoke "c.f.j.d.i.TypeResolutionContext.resolveType(j.l.r.Type)" because
-        // "this._typeContext" is null
-        // so we have to do it manually for now.
+        // TODO: Use FieldBuilder pending resolution of
+        //  https://github.com/Azure/azure-sdk-for-java/issues/35584
         // List<SearchField> fields =
         //        FieldBuilder.build(AzureCognitiveSearchRecord.class, null);
         List<SearchField> fields = AzureCognitiveSearchRecord.searchFields();

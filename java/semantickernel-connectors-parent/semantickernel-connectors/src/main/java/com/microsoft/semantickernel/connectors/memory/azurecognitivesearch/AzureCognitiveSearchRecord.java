@@ -109,11 +109,8 @@ public final class AzureCognitiveSearchRecord {
         return isReference;
     }
 
-    // TODO: FieldBuilder.build(AzureCognitiveSearchRecord.class, null) gives an
-    // NPE: Cannot invoke "c.f.j.d.i.TypeResolutionContext.resolveType(j.l.r.Type)" because
-    // "this._typeContext" is null
-    // arising from com.azure.search.documents.implementation.util.FieldBuilder.buildSearchField
-    // so we have to do it manually for now.
+    // TODO: Potentially remove after resolution of
+    //  https://github.com/Azure/azure-sdk-for-java/issues/35584
     static List<SearchField> searchFields() {
         return Arrays.asList(
                 new SearchField("Id", SearchFieldDataType.STRING).setKey(true).setFilterable(false),
