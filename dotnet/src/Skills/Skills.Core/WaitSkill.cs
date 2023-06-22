@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.CoreSkills;
+namespace Microsoft.SemanticKernel.Skills.Core;
 
 /// <summary>
 /// WaitSkill provides a set of functions to wait before making the rest of operations.
@@ -46,7 +46,7 @@ public sealed class WaitSkill
     public async Task SecondsAsync([Description("The number of seconds to wait")] decimal seconds)
     {
         var milliseconds = seconds * 1000;
-        milliseconds = (milliseconds > 0) ? milliseconds : 0;
+        milliseconds = milliseconds > 0 ? milliseconds : 0;
 
         await this._waitProvider.DelayAsync((int)milliseconds).ConfigureAwait(false);
     }

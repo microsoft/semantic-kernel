@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
+using Microsoft.SemanticKernel.Skills.Core;
+using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.CoreSkills;
+namespace SemanticKernel.Skills.UnitTests.Core;
 
 // TODO: allow clock injection and test all functions
 public class TimeSkillTests
