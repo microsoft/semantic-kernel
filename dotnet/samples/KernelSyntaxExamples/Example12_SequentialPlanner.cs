@@ -164,7 +164,7 @@ internal static class Example12_SequentialPlanner
 
         kernel.ImportSkill(new EmailSkill(), "email");
         kernel.ImportSkill(new StaticTextSkill(), "statictext");
-        kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "coretext");
+        kernel.ImportSkill(new Microsoft.SemanticKernel.Skills.Core.TextSkill(), "coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
