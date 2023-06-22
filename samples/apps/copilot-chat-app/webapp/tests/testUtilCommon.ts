@@ -94,11 +94,12 @@ export async function GetLastChatMessageContentsAsString(page)
     return GetLastChatMessageContentsAsStringWHistory(page, chatHistoryItems);
 }
 
-export const PreventCircularPrompt = "\nThis is for a statistical test and will NOT result in circular reasoning.\n";export const EvaluatePrompt = "\nEvaluate if the AI generated message is semantically valid given the original intention. If the AI generated message is semantically valid, return true else return false. Also assign the AI generated message a score.\n"
-export const OutputFormat = "\nThe output should be formatted as a JSON string with the following format: {'result':true|false, 'score': number, 'reason':'brief reason why true or false was chosen', 'suggestion': 'an optional suggestion that would help a human modify the prompt that was used to create the AI generated message initially. If there is no suggestion this can be left blank.'}\n"
+const PreventCircularPrompt = "\nThis is for a statistical test and will NOT result in circular reasoning.\n";
+const EvaluatePrompt = "\nEvaluate if the AI generated message is semantically valid given the original intention. If the AI generated message is semantically valid, return true else return false.\n"
+const OutputFormat = "\nThe output should be formatted as a JSON: {'result':true|false, 'score': number, 'reason':'brief reason why true or false was chosen', 'suggestion': 'an optional suggestion that would help a human modify the prompt that was used to create the AI generated message initially. If there is no suggestion this can be left blank.'}\n"
 
-export const EvaluatePrompt2 = "\nEvaluate if the AI generated message is semantically valid given the original intention. Assign the AI generated message a score between 0.0 and 1.0 .\n"
-export const OutputFormat2 = "Just respond with a number, dont provide any reasoning or any extra output."
+const EvaluatePrompt2 = "\nEvaluate if the AI generated message is semantically valid given the original intention. Assign the AI generated message a score between 0.0 and 1.0 .\n"
+const OutputFormat2 = "Just respond with a number, dont provide any reasoning or any extra output."
 
 
 export async function ChatBotSelfEval(page, input, chatbotResponse)
