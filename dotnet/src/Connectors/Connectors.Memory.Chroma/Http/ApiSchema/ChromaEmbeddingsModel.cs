@@ -14,17 +14,17 @@ public class ChromaEmbeddingsModel
     /// Embedding identifiers.
     /// </summary>
     [JsonPropertyName("ids")]
-    public List<string>? Ids { get; set; }
+    public List<string> Ids { get; set; } = new();
 
     /// <summary>
     /// Embedding vectors.
     /// </summary>
     [JsonPropertyName("embeddings")]
-    public List<float[]>? Embeddings { get; set; }
+    public List<float[]> Embeddings { get; set; } = new();
 
     /// <summary>
     /// Embedding metadatas.
     /// </summary>
     [JsonPropertyName("metadatas")]
-    public List<Dictionary<string, object>>? Metadatas { get; set; }
+    public List<Dictionary<string, object>> Metadatas { get; set; } = new();
 }

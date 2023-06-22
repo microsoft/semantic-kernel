@@ -318,10 +318,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     {
         var embeddingsModel = new ChromaEmbeddingsModel();
 
-        embeddingsModel.Ids = new List<string>();
-        embeddingsModel.Embeddings = new List<float[]>();
-        embeddingsModel.Metadatas = new List<Dictionary<string, object>>();
-
         embeddingsModel.Ids.AddRange(memoryRecords.Select(l => l.Key));
         embeddingsModel.Embeddings.AddRange(memoryRecords.Select(l => l.Embedding.Vector.ToArray()));
         embeddingsModel.Metadatas.AddRange(memoryRecords.Select(this.GetEmbeddingMetadataFromMemoryRecord));
