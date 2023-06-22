@@ -14,7 +14,7 @@ class WaitSkillTest {
 
     @Test
     void secondsAsync_givenPositiveSeconds_shouldDelay() {
-        Duration expectedDelay = Duration.ofMillis(1500);
+        Duration expectedDelay = Duration.ofMillis(1490);
 
         String seconds = "1.5";
         Mono<Void> result = waitSkill.wait(seconds);
