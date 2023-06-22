@@ -32,7 +32,7 @@ public class LanguageCalculatorSkill
 Available functions: Abs, Acos, Asin, Atan, Ceiling, Cos, Exp, Floor, IEEERemainder, Log, Log10, Max, Min, Pow, Round, Sign, Sin, Sqrt, Tan, and Truncate. in and if are also supported.
 
 Question: $((Question with math problem.))
-expression:``` $((single line mathematical expression that solves the ))```
+expression:``` $((single line mathematical expression that solves the problem))```
 
 [Examples]
 Question: What is 37593 * 67?
@@ -95,11 +95,7 @@ Question: {{ $input }}
             return result;
         }
 
-        Console.WriteLine(input);
-        var e = new InvalidOperationException(
-            $"Input value [{input}] could not be understood, received following {answer.Result} ");
-
-        return await Task.FromException<string>(e).ConfigureAwait(false);
+        throw new InvalidOperationException($"Input value [{input}] could not be understood, received following {answer.Result}");
     }
 
     private static string EvaluateMathExpression(Match match)
