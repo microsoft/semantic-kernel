@@ -7,8 +7,7 @@ import {
     useMsal,
 } from '@azure/msal-react';
 import { Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
-import { Alert } from '@fluentui/react-components/unstable';
-import { Dismiss16Regular } from '@fluentui/react-icons';
+
 import * as React from 'react';
 import { FC, useEffect } from 'react';
 import { UserSettings } from './components/header/UserSettings';
@@ -18,39 +17,36 @@ import { ChatView } from './components/views/ChatView';
 import Loading from './components/views/Loading';
 import { Login } from './components/views/Login';
 import { useChat } from './libs/useChat';
-import { useAppDispatch, useAppSelector } from './redux/app/hooks';
-import { RootState } from './redux/app/store';
-import { removeAlert } from './redux/features/app/appSlice';
+import { useAppDispatch } from './redux/app/hooks';
 import { setLoggedInUserId } from './redux/features/conversations/conversationsSlice';
-import { CopilotChatTokens } from './styles';
 
 export const useClasses = makeStyles({
     container: {
-        ...shorthands.overflow('hidden'),
         display: 'flex',
         flexDirection: 'column',
-        width: '100%',
         height: '100vh',
+        width: '100%',
+        ...shorthands.overflow('hidden'),
     },
     header: {
-        backgroundColor: CopilotChatTokens.backgroundColor,
-        width: '100%',
-        height: '48px',
-        color: '#FFF',
+        alignItems: 'center',
+        backgroundColor: tokens.colorBrandForeground2,
+        color: tokens.colorNeutralForegroundOnBrand,
         display: 'flex',
         '& h1': {
-            paddingLeft: '20px',
+            paddingLeft: tokens.spacingHorizontalXL,
             display: 'flex',
         },
-        alignItems: 'center',
+        height: '48px',
         justifyContent: 'space-between',
+        width: '100%',
     },
     persona: {
-        marginRight: '20px',
+        marginRight: tokens.spacingHorizontalXXL,
     },
     cornerItems: {
         display: 'flex',
-        ...shorthands.gap(tokens.spacingHorizontalXS),
+        ...shorthands.gap(tokens.spacingHorizontalS),
     },
 });
 
@@ -65,7 +61,6 @@ const App: FC = () => {
     const classes = useClasses();
 
     const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
-    const { alerts } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
 
     const { instance, inProgress } = useMsal();
@@ -92,9 +87,6 @@ const App: FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instance, inProgress, isAuthenticated, appState]);
 
-    const onDismissAlert = (key: string) => {
-        dispatch(removeAlert(key));
-    };
 
     // TODO: handle error case of missing account information
     return (
@@ -117,27 +109,6 @@ const App: FC = () => {
                             <UserSettings setLoadingState={() => setAppState(AppState.SigningOut)} />
                         </div>
                     </div>
-                    {alerts &&
-                        Object.keys(alerts).map((key) => {
-                            const alert = alerts[key];
-                            return (
-                                <Alert
-                                    intent={alert.type}
-                                    action={{
-                                        icon: (
-                                            <Dismiss16Regular
-                                                aria-label="dismiss message"
-                                                onClick={() => onDismissAlert(key)}
-                                                color="black"
-                                            />
-                                        ),
-                                    }}
-                                    key={key}
-                                >
-                                    {alert.message}
-                                </Alert>
-                            );
-                        })}
                     {appState === AppState.ProbeForBackend && (
                         <BackendProbe
                             uri={process.env.REACT_APP_BACKEND_URI as string}

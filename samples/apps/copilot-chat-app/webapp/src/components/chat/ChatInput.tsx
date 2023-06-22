@@ -15,7 +15,6 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationInput } from '../../redux/features/conversations/conversationsSlice';
-import { CopilotChatTokens } from '../../styles';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { updateUserIsTyping } from './../../redux/features/conversations/conversationsSlice';
 import { ChatStatus } from './ChatStatus';
@@ -57,12 +56,12 @@ const useClasses = makeStyles({
         flexDirection: 'row',
     },
     dragAndDrop: {
-        ...shorthands.border('2px', ' solid', CopilotChatTokens.backgroundColor),
+        ...shorthands.border(tokens.strokeWidthThick, ' solid', tokens.colorBrandStroke1),
         ...shorthands.padding('8px'),
         textAlign: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        fontSize: '14px',
-        color: CopilotChatTokens.backgroundColor,
+        backgroundColor: tokens.colorNeutralBackgroundInvertedDisabled,
+        fontSize: tokens.fontSizeBase300,
+        color: tokens.colorBrandForeground1,
         caretColor: 'transparent',
     },
 });

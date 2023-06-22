@@ -3,7 +3,7 @@
 import { FC, useCallback, useRef, useState } from 'react';
 
 import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tooltip } from '@fluentui/react-components';
-import { ArrowUploadRegular, BotAdd20Regular, PeopleTeamAddRegular } from '@fluentui/react-icons';
+import { ArrowUploadRegular, BotAdd20Filled, BotAdd20Regular, PeopleTeamAddRegular, bundleIcon } from '@fluentui/react-icons';
 import { AlertType } from '../../../libs/models/AlertType';
 import { Bot } from '../../../libs/models/Bot';
 import { useChat } from '../../../libs/useChat';
@@ -19,14 +19,13 @@ export const NewBotMenu: FC = () => {
     const fileHandler = useFile();
     // It needs to keep the menu open to keep the FileUploader reference
     // when the file uploader is clicked.
-    const [isNewBotMenuOpen, setIsNewBotMenuOpen] = useState(false);
     const [isJoiningBot, setIsJoiningBot] = useState(false);
 
     const fileUploaderRef = useRef<HTMLInputElement>(null);
+    const BotAdd20 = bundleIcon(BotAdd20Filled, BotAdd20Regular)
 
     const onAddChat = () => {
         chat.createChat();
-        setIsNewBotMenuOpen(false);
     };
 
     const onUpload = useCallback(
@@ -38,7 +37,6 @@ export const NewBotMenu: FC = () => {
                         addAlert({ message: `Failed to parse uploaded file. ${error.message}`, type: AlertType.Error }),
                     ),
                 );
-            setIsNewBotMenuOpen(false);
         },
         [fileHandler, chat, dispatch],
     );
@@ -48,19 +46,17 @@ export const NewBotMenu: FC = () => {
     };
 
     const onCloseDialog = () => {
-        setIsNewBotMenuOpen(false);
         setIsJoiningBot(false);
     };
 
     return (
         <div>
-            <Menu open={isNewBotMenuOpen}>
+            <Menu >
                 <MenuTrigger disableButtonEnhancement>
                     <Tooltip content="Create new conversation" relationship="label">
                         <Button
-                            icon={<BotAdd20Regular />}
+                            icon={<BotAdd20 />}
                             appearance="transparent"
-                            onClick={() => setIsNewBotMenuOpen(!isNewBotMenuOpen)}
                         />
                     </Tooltip>
                 </MenuTrigger>
