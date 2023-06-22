@@ -173,15 +173,16 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
     /// <param name="context">The context to use for function registrations.</param>
+    /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, SKContext? context = null)
+    public static Plan FromJson(string json, SKContext? context = null, bool requireFunctions = true)
     {
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
         if (context != null)
         {
-            plan = SetAvailableFunctions(plan, context);
+            plan = SetAvailableFunctions(plan, context, requireFunctions);
         }
 
         return plan;
@@ -420,8 +421,9 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="plan">Plan to set functions for.</param>
     /// <param name="context">Context to use.</param>
+    /// <param name="requireFunctions">Whether to throw an exception if a function is not found.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetAvailableFunctions(Plan plan, SKContext context)
+    private static Plan SetAvailableFunctions(Plan plan, SKContext context, bool requireFunctions = true)
     {
         if (plan.Steps.Count == 0)
         {
@@ -436,12 +438,18 @@ public sealed class Plan : ISKFunction
             {
                 plan.SetFunction(skillFunction);
             }
+            else if (requireFunctions)
+            {
+                throw new KernelException(
+                    KernelException.ErrorCodes.FunctionNotAvailable,
+                    $"Function '{plan.SkillName}.{plan.Name}' not found in skill collection");
+            }
         }
         else
         {
             foreach (var step in plan.Steps)
             {
-                SetAvailableFunctions(step, context);
+                SetAvailableFunctions(step, context, requireFunctions);
             }
         }
 
