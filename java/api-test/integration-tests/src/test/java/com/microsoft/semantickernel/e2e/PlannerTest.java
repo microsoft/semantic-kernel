@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
@@ -22,15 +23,14 @@ public class PlannerTest extends AbstractKernelTest {
         Kernel kernel = buildTextCompletionKernel();
         kernel.importSkillFromDirectory(
                 "SummarizeSkill", "../../../samples/skills", "SummarizeSkill");
-        kernel.importSkillFromDirectory(
-                "WriterSkill", "../../../samples/skills", "WriterSkill");
+        kernel.importSkillFromDirectory("WriterSkill", "../../../samples/skills", "WriterSkill");
 
         SequentialPlanner planner = new SequentialPlanner(kernel, null, null);
 
-        Plan plan = planner
-                .createPlanAsync(
-                        "Write a poem about John Doe, then translate it into Italian.")
-                .block();
+        Plan plan =
+                planner.createPlanAsync(
+                                "Write a poem about John Doe, then translate it into Italian.")
+                        .block();
 
         SKContext result = plan.invokeAsync().block();
 

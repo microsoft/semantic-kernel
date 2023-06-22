@@ -1,16 +1,4 @@
-
 // Copyright (c) Microsoft. All rights reserved.
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
@@ -21,14 +9,27 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+
 public class InlineFunctionWithPreBuiltSkillExample {
     public static final String AZURE_CONF_PROPERTIES = "conf.properties";
-    private static final Logger LOGGER = LoggerFactory.getLogger(InlineFunctionWithPreBuiltSkillExample.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(InlineFunctionWithPreBuiltSkillExample.class);
     private static final String MODEL = "text-davinci-003";
 
     private static final String API_KEY;
     private static final String ENDPOINT;
-    private static final String TEXT_TO_SUMMARIZE = """
+    private static final String TEXT_TO_SUMMARIZE =
+            """
             Demo (ancient Greek poet)
                From Wikipedia, the free encyclopedia
                Demo or Damo (Greek: Δεμώ, Δαμώ; fl. c. AD 200) was a Greek woman of the
@@ -94,31 +95,35 @@ public class InlineFunctionWithPreBuiltSkillExample {
     }
 
     public static void main(String[] args) {
-        OpenAIAsyncClient client = new OpenAIClientBuilder()
-                .endpoint(ENDPOINT)
-                .credential(new AzureKeyCredential(API_KEY))
-                .buildAsyncClient();
+        OpenAIAsyncClient client =
+                new OpenAIClientBuilder()
+                        .endpoint(ENDPOINT)
+                        .credential(new AzureKeyCredential(API_KEY))
+                        .buildAsyncClient();
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, MODEL);
         String prompt = "{{$input}}\nSummarize the content above.";
 
-        CompletionSKFunction summarizeFunc = SKBuilders.completionFunctions()
-                .createFunction(
-                        prompt,
-                        "summarize",
-                        null,
-                        null,
-                        new PromptTemplateConfig.CompletionConfig(
-                                0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
+        CompletionSKFunction summarizeFunc =
+                SKBuilders.completionFunctions()
+                        .createFunction(
+                                prompt,
+                                "summarize",
+                                null,
+                                null,
+                                new PromptTemplateConfig.CompletionConfig(
+                                        0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
 
-        KernelConfig kernelConfig = new KernelConfig.Builder()
-                .addTextCompletionService(MODEL, kernel -> textCompletion)
-                .addSkill(summarizeFunc)
-                .build();
+        KernelConfig kernelConfig =
+                new KernelConfig.Builder()
+                        .addTextCompletionService(MODEL, kernel -> textCompletion)
+                        .addSkill(summarizeFunc)
+                        .build();
 
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
 
-        CompletionSKFunction summarize = kernel.getSkills().getFunction("summarize", CompletionSKFunction.class);
+        CompletionSKFunction summarize =
+                kernel.getSkills().getFunction("summarize", CompletionSKFunction.class);
 
         if (summarize == null) {
             LOGGER.error("Null function");

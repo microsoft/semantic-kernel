@@ -1,13 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.e2e;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
-
-import org.junit.jupiter.api.condition.EnabledIf;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
@@ -19,6 +12,13 @@ import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITe
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
+import org.junit.jupiter.api.condition.EnabledIf;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 @EnabledIf("isAzureTestEnabled")
 public class AbstractKernelTest {
 
@@ -29,31 +29,34 @@ public class AbstractKernelTest {
         String model = "text-davinci-003";
         TextCompletion textCompletion = new OpenAITextCompletion(getAzureOpenAIClient(), model);
 
-        KernelConfig kernelConfig = SKBuilders.kernelConfig()
-                .addTextCompletionService(model, kernel -> textCompletion)
-                .build();
+        KernelConfig kernelConfig =
+                SKBuilders.kernelConfig()
+                        .addTextCompletionService(model, kernel -> textCompletion)
+                        .build();
 
         return SKBuilders.kernel()
                 .setKernelConfig(kernelConfig)
-                .withMemoryStore(SKBuilders.semanticTextMemory().setStorage(new VolatileMemoryStore()).build())
+                .withMemoryStore(
+                        SKBuilders.semanticTextMemory()
+                                .setStorage(new VolatileMemoryStore())
+                                .build())
                 .build();
     }
 
     public static OpenAIAsyncClient getOpenAIClient() throws IOException {
         String apiKey = getToken(CONF_OPENAI_PROPERTIES);
         NonAzureOpenAIKeyCredential credential = new NonAzureOpenAIKeyCredential(apiKey);
-        return new OpenAIClientBuilder()
-                .credential(credential)
-                .buildAsyncClient();
+        return new OpenAIClientBuilder().credential(credential).buildAsyncClient();
     }
 
     public static OpenAIAsyncClient getAzureOpenAIClient() throws IOException {
         String apiKey = getToken(AZURE_CONF_PROPERTIES);
 
-        OpenAIAsyncClient client = new OpenAIClientBuilder()
-                .endpoint(getEndpoint(AZURE_CONF_PROPERTIES))
-                .credential(new AzureKeyCredential(apiKey))
-                .buildAsyncClient();
+        OpenAIAsyncClient client =
+                new OpenAIClientBuilder()
+                        .endpoint(getEndpoint(AZURE_CONF_PROPERTIES))
+                        .credential(new AzureKeyCredential(apiKey))
+                        .buildAsyncClient();
 
         return client;
     }

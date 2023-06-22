@@ -6,10 +6,12 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -71,8 +73,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
                 .block();
     }
 
-    private Function<SKContext, Mono<SKContext>> chat(
-            String input, CompletionSKFunction chat) {
+    private Function<SKContext, Mono<SKContext>> chat(String input, CompletionSKFunction chat) {
         return (context) -> {
             try {
                 return chat(input, chat, context);
@@ -82,8 +83,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
         };
     }
 
-    private Mono<SKContext> chat(
-            String input, CompletionSKFunction chat, SKContext context)
+    private Mono<SKContext> chat(String input, CompletionSKFunction chat, SKContext context)
             throws ExecutionException, InterruptedException, TimeoutException {
         context = context.setVariable("user_input", input);
 
