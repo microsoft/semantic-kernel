@@ -79,9 +79,9 @@ public class DocumentMessageContent
 
         var formattedStrings = Documents
             .FindAll(document => document.Status)
-            .Select(document => $"[Name: {document.Name}, Size: {document.Size}]");
+            .Select(document => $"[Name: {document.Name}, Size: {document.Size}]").ToList();
 
-        if (formattedStrings.Count() == 1)
+        if (formattedStrings.Count == 1)
         {
             return $"Uploaded a document {formattedStrings.First()}.";
         }
@@ -103,9 +103,9 @@ public class DocumentMessageContent
 
         var formattedStrings = Documents
             .FindAll(document => document.Status)
-            .Select(document => $"{document.Name}");
+            .Select(document => $"{document.Name}").ToList();
 
-        if (formattedStrings.Count() == 1)
+        if (formattedStrings.Count == 1)
         {
             return $"{formattedStrings.First()}";
         }
