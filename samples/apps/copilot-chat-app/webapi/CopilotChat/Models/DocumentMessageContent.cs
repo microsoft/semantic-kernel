@@ -48,7 +48,7 @@ public class DocumentMessageContent
     /// <param name="status">Status of the uploaded document</param>
     public void AddDocument(string name, string size, bool status)
     {
-        Documents.Add(new Document
+        this.Documents.Add(new Document
         {
             Name = name,
             Size = size,
@@ -72,12 +72,12 @@ public class DocumentMessageContent
     /// <returns>A formatted string</returns>
     public string ToFormattedString()
     {
-        if (Documents.Count == 0)
+        if (this.Documents.Count == 0)
         {
             return string.Empty;
         }
 
-        var formattedStrings = Documents
+        var formattedStrings = this.Documents
             .FindAll(document => document.Status)
             .Select(document => $"[Name: {document.Name}, Size: {document.Size}]").ToList();
 
@@ -96,12 +96,12 @@ public class DocumentMessageContent
     /// <returns>A formatted string</returns>
     public string ToFormattedStringNamesOnly()
     {
-        if (Documents.Count == 0)
+        if (this.Documents.Count == 0)
         {
             return string.Empty;
         }
 
-        var formattedStrings = Documents
+        var formattedStrings = this.Documents
             .FindAll(document => document.Status)
             .Select(document => $"{document.Name}").ToList();
 

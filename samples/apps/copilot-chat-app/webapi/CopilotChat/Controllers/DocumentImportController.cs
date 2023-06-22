@@ -97,7 +97,7 @@ public class DocumentImportController : ControllerBase
         this._logger.LogInformation("Importing {0} document(s)...", documentImportForm.FormFiles.Count);
 
         // TODO: Perform the import in parallel.
-        DocumentMessageContent documentMessageContent = new DocumentMessageContent();
+        DocumentMessageContent documentMessageContent = new();
         foreach (var formFile in documentImportForm.FormFiles)
         {
             var success = await this.ImportDocumentHelperAsync(kernel, formFile, documentImportForm);
