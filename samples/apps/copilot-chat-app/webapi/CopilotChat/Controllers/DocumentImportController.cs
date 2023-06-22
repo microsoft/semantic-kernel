@@ -96,6 +96,7 @@ public class DocumentImportController : ControllerBase
 
         this._logger.LogInformation("Importing {0} document(s)...", documentImportForm.FormFiles.Count);
 
+        // TODO: Perform the import in parallel.
         DocumentMessageContent documentMessageContent = new DocumentMessageContent();
         foreach (var formFile in documentImportForm.FormFiles)
         {
@@ -389,6 +390,7 @@ public class DocumentImportController : ControllerBase
         var lines = TextChunker.SplitPlainTextLines(content, this._options.DocumentLineSplitMaxTokens);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, this._options.DocumentParagraphSplitMaxLines);
 
+        // TODO: Perform the save in parallel.
         for (var i = 0; i < paragraphs.Count; i++)
         {
             var paragraph = paragraphs[i];
