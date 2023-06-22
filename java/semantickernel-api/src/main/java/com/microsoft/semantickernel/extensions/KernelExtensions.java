@@ -3,8 +3,11 @@ package com.microsoft.semantickernel.extensions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.KernelException;
+import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
+import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +25,9 @@ public class KernelExtensions {
     private KernelExtensions() {}
 
     public static Map<String, SemanticFunctionConfig> importSemanticSkillFromDirectory(
-            String parentDirectory, String skillDirectoryName) {
+            String parentDirectory,
+            String skillDirectoryName,
+            PromptTemplateEngine promptTemplateEngine) {
 
         String CONFIG_FILE = "config.json";
         String PROMPT_FILE = "skprompt.txt";
@@ -68,7 +73,13 @@ public class KernelExtensions {
                         new String(
                                 Files.readAllBytes(promptPath.toPath()), Charset.defaultCharset());
 
-                skills.put(dir.getName(), new SemanticFunctionConfig(config, template));
+                PromptTemplate promptTemplate =
+                        SKBuilders.promptTemplate()
+                                .withPromptTemplate(template)
+                                .withPromptTemplateConfig(config)
+                                .build(promptTemplateEngine);
+
+                skills.put(dir.getName(), new SemanticFunctionConfig(config, promptTemplate));
             } catch (IOException e) {
                 LOGGER.error("Failed to read file", e);
             }

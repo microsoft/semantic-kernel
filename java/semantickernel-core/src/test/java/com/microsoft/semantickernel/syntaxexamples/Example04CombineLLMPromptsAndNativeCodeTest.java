@@ -8,7 +8,6 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
-import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.syntaxexamples.skills.SearchEngineSkill;
 
@@ -41,10 +40,7 @@ public class Example04CombineLLMPromptsAndNativeCodeTest {
 
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
         kernel.importSkill(new SearchEngineSkill(), null);
-        kernel.importSkill(
-                "SummarizeSkill",
-                KernelExtensions.importSemanticSkillFromDirectory(
-                        "../../samples/skills", "SummarizeSkill"));
+        kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
 
         // Run
         String ask = "What's the tallest building in South America?";

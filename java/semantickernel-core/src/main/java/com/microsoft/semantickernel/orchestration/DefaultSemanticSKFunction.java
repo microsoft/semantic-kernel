@@ -40,10 +40,11 @@ public abstract class DefaultSemanticSKFunction<RequestConfiguration>
         if (context == null) {
             assertSkillSupplierRegistered();
             context =
-                    buildContext(
-                            SKBuilders.variables().build(),
-                            NullMemory.getInstance(),
-                            super.getSkillsSupplier().get());
+                    SKBuilders.context()
+                            .with(SKBuilders.variables().build())
+                            .with(NullMemory.getInstance())
+                            .with(super.getSkillsSupplier().get())
+                            .build();
         } else {
             context = context.copy();
         }

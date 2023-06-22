@@ -232,14 +232,30 @@ public class PromptTemplateConfig {
             this.defaultValue = defaultValue;
         }
 
+        /**
+         * Name of the parameter to pass to the function. e.g. when using "{{$input}}" the name is
+         * "input", when using "{{$style}}" the name is "style", etc.
+         *
+         * @return name
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Parameter description for UI apps and planner. Localization is not supported here.
+         *
+         * @return description
+         */
         public String getDescription() {
             return description;
         }
 
+        /**
+         * Default value when nothing is provided
+         *
+         * @return the default value
+         */
         public String getDefaultValue() {
             return defaultValue;
         }

@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
@@ -146,14 +145,6 @@ public class DefaultCompletionSKFunction
                 .map(context::update);
     }
 
-    @Override
-    public SKContext buildContext(
-            ContextVariables variables,
-            @Nullable SemanticTextMemory memory,
-            @Nullable ReadOnlySkillCollection skills) {
-        return new DefaultSKContext(variables, memory, skills);
-    }
-
     // Run the semantic function
     @Override
     protected Mono<SKContext> invokeAsyncInternal(
@@ -193,11 +184,7 @@ public class DefaultCompletionSKFunction
                     // TODO
                     // Verify.NotNull(client, "AI LLM backed is empty");
 
-                    PromptTemplate func =
-                            SKBuilders.promptTemplate()
-                                    .withPromptTemplate(functionConfig.getTemplate())
-                                    .withPromptTemplateConfig(functionConfig.getConfig())
-                                    .build(kernel.getPromptTemplateEngine());
+                    PromptTemplate func = functionConfig.getTemplate();
 
                     return func.renderAsync(context)
                             .flatMapMany(
@@ -274,8 +261,14 @@ public class DefaultCompletionSKFunction
         //    Verify.ValidSkillName(skillName);
         // }
 
+        PromptTemplate template =
+                SKBuilders.promptTemplate()
+                        .withPromptTemplateConfig(config)
+                        .withPromptTemplate(promptTemplate)
+                        .build(promptTemplateEngine);
+
         // Prepare lambda wrapping AI logic
-        SemanticFunctionConfig functionConfig = new SemanticFunctionConfig(config, promptTemplate);
+        SemanticFunctionConfig functionConfig = new SemanticFunctionConfig(config, template);
 
         return createFunction(skillName, functionName, functionConfig, promptTemplateEngine);
     }
@@ -310,11 +303,7 @@ public class DefaultCompletionSKFunction
                 CompletionRequestSettings.fromCompletionConfig(
                         functionConfig.getConfig().getCompletionConfig());
 
-        PromptTemplate promptTemplate =
-                SKBuilders.promptTemplate()
-                        .withPromptTemplate(functionConfig.getTemplate())
-                        .withPromptTemplateConfig(functionConfig.getConfig())
-                        .build(promptTemplateEngine);
+        PromptTemplate promptTemplate = functionConfig.getTemplate();
 
         return new DefaultCompletionSKFunction(
                 DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,

@@ -48,12 +48,13 @@ public class ActionPlanner {
     private Kernel kernel;
 
     // TODO: allow to inject skill store
-    /// <summary>
-    /// Initialize a new instance of the <see cref="ActionPlanner"/> class.
-    /// </summary>
-    /// <param name="kernel">The semantic kernel instance.</param>
-    /// <param name="prompt">Optional prompt override</param>
-    /// <param name="logger">Optional logger</param>
+
+    /**
+     * Initialize a new instance of the ActionPlanner class
+     *
+     * @param kernel The semantic kernel instance
+     * @param prompt prompt override
+     */
     public ActionPlanner(Kernel kernel, @Nullable String prompt) {
         // Verify.NotNull(kernel);
         String promptTemplate;
@@ -76,7 +77,7 @@ public class ActionPlanner {
         kernel.importSkill(this, SkillName);
 
         this.kernel = kernel;
-        this.context = plannerFunction.buildContext();
+        this.context = SKBuilders.context().build();
     }
 
     public static String read(String file) {
@@ -103,74 +104,70 @@ public class ActionPlanner {
                         new CompletionRequestSettings(0, 0, 0, 0, 2048, new ArrayList<>()))
                 .handle(
                         (result, sink) -> {
-                            ActionPlanResponse planData;
-
                             try {
-                                planData =
-                                        new ObjectMapper()
-                                                .readValue(
-                                                        result.getResult(),
-                                                        ActionPlanResponse.class);
+                                sink.next(parsePlan(goal, result));
                             } catch (Exception e) {
-                                sink.error(
-                                        new PlanningException(
-                                                PlanningException.ErrorCodes.InvalidPlan,
-                                                "Plan parsing error, invalid JSON",
-                                                e));
-                                return;
+                                sink.error(e);
                             }
-
-                            if (planData == null) {
-                                sink.error(
-                                        new PlanningException(
-                                                PlanningException.ErrorCodes.InvalidPlan,
-                                                "The plan deserialized to a null object"));
-                                return;
-                            }
-
-                            // Build and return plan
-                            Plan plan;
-                            if (planData.plan.function.contains(".")) {
-                                String[] parts = planData.plan.function.split("\\.", -1);
-                                CompletionSKFunction skill =
-                                        context.getSkills()
-                                                .getFunction(
-                                                        parts[0],
-                                                        parts[1],
-                                                        CompletionSKFunction.class);
-
-                                if (skill == null) {
-                                    sink.error(
-                                            new PlanningException(
-                                                    PlanningException.ErrorCodes.InvalidPlan,
-                                                    "Unknown skill " + planData.plan.function));
-                                    return;
-                                }
-                                plan = new Plan(goal, () -> kernel.getSkills(), skill);
-
-                            } else if (!planData.plan.function.isEmpty()) {
-                                CompletionSKFunction function =
-                                        context.getSkills()
-                                                .getFunction(
-                                                        planData.plan.function,
-                                                        CompletionSKFunction.class);
-
-                                if (function == null) {
-                                    sink.error(
-                                            new PlanningException(
-                                                    PlanningException.ErrorCodes.InvalidPlan,
-                                                    "Unknown skill " + planData.plan.function));
-                                    return;
-                                }
-
-                                plan = new Plan(goal, () -> kernel.getSkills(), function);
-                            } else {
-                                // No function was found - return a plan with no steps.
-                                plan = new Plan(goal, () -> kernel.getSkills());
-                            }
-
-                            sink.next(plan);
                         });
+    }
+
+    private Plan parsePlan(String goal, SKContext result) {
+        ActionPlanResponse planData;
+
+        try {
+            planData = new ObjectMapper().readValue(result.getResult(), ActionPlanResponse.class);
+        } catch (Exception e) {
+            throw new PlanningException(
+                    PlanningException.ErrorCodes.InvalidPlan,
+                    "Plan parsing error, invalid JSON",
+                    e);
+        }
+
+        if (planData == null) {
+            throw new PlanningException(
+                    PlanningException.ErrorCodes.InvalidPlan,
+                    "The plan deserialized to a null object");
+        }
+
+        CompletionSKFunction function = getPlanFunction(planData);
+
+        if (function == null) {
+            // No function was found - return a plan with no steps.
+            return new Plan(goal, () -> kernel.getSkills());
+        } else {
+            return new Plan(goal, () -> kernel.getSkills(), function);
+        }
+    }
+
+    public CompletionSKFunction getPlanFunction(ActionPlanResponse planData) {
+
+        if (planData.plan.function.contains(".")) {
+            String[] parts = planData.plan.function.split("\\.", -1);
+            CompletionSKFunction skill =
+                    context.getSkills().getFunction(parts[0], parts[1], CompletionSKFunction.class);
+
+            if (skill == null) {
+                throw new PlanningException(
+                        PlanningException.ErrorCodes.InvalidPlan,
+                        "Unknown skill " + planData.plan.function);
+            }
+            return skill;
+
+        } else if (!planData.plan.function.isEmpty()) {
+            CompletionSKFunction function =
+                    context.getSkills()
+                            .getFunction(planData.plan.function, CompletionSKFunction.class);
+
+            if (function == null) {
+                throw new PlanningException(
+                        PlanningException.ErrorCodes.InvalidPlan,
+                        "Unknown skill " + planData.plan.function);
+            }
+
+            return function;
+        }
+        return null;
     }
 
     // TODO: use goal to find relevant functions in a skill store

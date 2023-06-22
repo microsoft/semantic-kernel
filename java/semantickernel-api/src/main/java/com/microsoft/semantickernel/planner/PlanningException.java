@@ -14,10 +14,25 @@ public class PlanningException extends SKException {
         this(error, null, null);
     }
 
+    /**
+     * Initializes a new instance of the PlanningException class with a provided error code and
+     * message
+     *
+     * @param errorCode Error code
+     * @param message The exception message
+     */
     public PlanningException(@Nonnull ErrorCodes errorCode, @Nullable String message) {
         this(errorCode, message, null);
     }
 
+    /**
+     * Initializes a new instance of the <see cref="PlanningException"/> class with a provided error
+     * code, message, and inner exception.
+     *
+     * @param errorCode The error code
+     * @param message A string that describes the error
+     * @param innerException The exception that is the cause of the current exception
+     */
     public PlanningException(
             @Nonnull ErrorCodes errorCode,
             @Nullable String message,
@@ -26,6 +41,11 @@ public class PlanningException extends SKException {
         this.errorCode = errorCode;
     }
 
+    /**
+     * Gets the error code
+     *
+     * @return The error code
+     */
     public ErrorCodes getErrorCode() {
         return errorCode;
     }

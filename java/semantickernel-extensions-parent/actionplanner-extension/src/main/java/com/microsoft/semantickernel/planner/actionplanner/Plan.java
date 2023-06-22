@@ -10,7 +10,6 @@ import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
-import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
@@ -144,17 +143,6 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
             return null;
         }
         return function.getType();
-    }
-
-    @Override
-    public SKContext buildContext(
-            ContextVariables variables,
-            @Nullable SemanticTextMemory memory,
-            @Nullable ReadOnlySkillCollection skills) {
-        if (function == null) {
-            return steps.get(0).buildContext(variables, memory, skills);
-        }
-        return function.buildContext(variables, memory, skills);
     }
 
     /** Gets whether the plan has a next step */

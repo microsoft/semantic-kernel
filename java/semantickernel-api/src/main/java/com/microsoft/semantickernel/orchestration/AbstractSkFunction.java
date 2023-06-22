@@ -67,10 +67,10 @@ public abstract class AbstractSkFunction<RequestConfiguration>
             assertSkillSupplierRegistered();
 
             context =
-                    buildContext(
-                            SKBuilders.variables().build(),
-                            NullMemory.getInstance(),
-                            skillsSupplier == null ? null : skillsSupplier.get());
+                    SKBuilders.context()
+                            .with(NullMemory.getInstance())
+                            .with(skillsSupplier == null ? null : skillsSupplier.get())
+                            .build();
         } else {
             context = context.copy();
         }
@@ -92,7 +92,11 @@ public abstract class AbstractSkFunction<RequestConfiguration>
         // return new FutureTask<SKContext>(() -> function.run(null, settings, context));
 
         if (context == null) {
-            context = buildContext(SKBuilders.variables().build(), NullMemory.getInstance(), null);
+            context =
+                    SKBuilders.context()
+                            .with(SKBuilders.variables().build())
+                            .with(NullMemory.getInstance())
+                            .build();
         } else {
             context = context.copy();
         }
@@ -209,13 +213,12 @@ public abstract class AbstractSkFunction<RequestConfiguration>
                 + inputs;
     }
 
-    @Override
-    public SKContext buildContext() {
+    protected SKContext buildContext() {
         assertSkillSupplierRegistered();
-        return buildContext(
-                SKBuilders.variables().build(),
-                null,
-                skillsSupplier == null ? null : skillsSupplier.get());
+        return SKBuilders.context()
+                .with(SKBuilders.variables().build())
+                .with(skillsSupplier == null ? null : skillsSupplier.get())
+                .build();
     }
 
     @Override
@@ -223,7 +226,8 @@ public abstract class AbstractSkFunction<RequestConfiguration>
             ContextVariables input,
             @Nullable SemanticTextMemory semanticMemory,
             @Nullable ReadOnlySkillCollection skills) {
-        SKContext tmpContext = buildContext(input, semanticMemory, skills);
+        SKContext tmpContext =
+                SKBuilders.context().with(input).with(semanticMemory).with(skills).build();
         return invokeAsync(tmpContext, null);
     }
 

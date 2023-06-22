@@ -33,6 +33,13 @@ public interface PromptTemplateEngine {
      */
     Mono<String> renderAsync(String templateText, SKContext context);
 
+    /**
+     * Given a prompt template string, extract all the blocks (text, variables, function calls)
+     *
+     * @param promptTemplate Prompt template (see skprompt.txt files)
+     * @return A list of all the blocks, ie the template tokenized in text, variables and function
+     *     calls
+     */
     List<Block> extractBlocks(String promptTemplate);
 
     abstract class Builder {

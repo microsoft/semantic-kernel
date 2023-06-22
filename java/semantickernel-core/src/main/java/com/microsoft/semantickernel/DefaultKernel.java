@@ -208,7 +208,7 @@ public class DefaultKernel implements Kernel {
             String skillName, String parentDirectory, String skillDirectoryName) {
         Map<String, SemanticFunctionConfig> skills =
                 KernelExtensions.importSemanticSkillFromDirectory(
-                        parentDirectory, skillDirectoryName);
+                        parentDirectory, skillDirectoryName, promptTemplateEngine);
         return importSkill(skillName, skills);
     }
 
@@ -260,17 +260,18 @@ public class DefaultKernel implements Kernel {
         // TODO: The SemanticTextMemory can be null, but there should be a way to provide it.
         //       Not sure registerMemory is the right way.
         Mono<SKContext> pipelineBuilder =
-                Mono.just(pipeline[0].buildContext(variables, null, getSkills()));
+                Mono.just(SKBuilders.context().with(variables).with(getSkills()).build());
 
         for (SKFunction f : Arrays.asList(pipeline)) {
             pipelineBuilder =
                     pipelineBuilder.flatMap(
                             newContext -> {
                                 SKContext context =
-                                        f.buildContext(
-                                                newContext.getVariables(),
-                                                newContext.getSemanticMemory(),
-                                                newContext.getSkills());
+                                        SKBuilders.context()
+                                                .with(newContext.getVariables())
+                                                .with(newContext.getSemanticMemory())
+                                                .with(newContext.getSkills())
+                                                .build();
                                 return f.invokeAsync(context, null);
                             });
         }

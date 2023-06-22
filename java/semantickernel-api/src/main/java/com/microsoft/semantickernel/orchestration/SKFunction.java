@@ -86,13 +86,6 @@ public interface SKFunction<RequestConfiguration> {
 
     String toManualString();
 
-    SKContext buildContext(
-            ContextVariables variables,
-            @Nullable SemanticTextMemory memory,
-            @Nullable ReadOnlySkillCollection skills);
-
-    SKContext buildContext();
-
     Mono<SKContext> invokeWithCustomInputAsync(
             ContextVariables variablesClone,
             @Nullable SemanticTextMemory semanticMemory,

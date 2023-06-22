@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
@@ -108,5 +109,14 @@ public interface SKContext {
         Builder with(@Nullable SemanticTextMemory memory);
 
         Builder clone(SKContext context);
+
+        /**
+         * Builds a context from the given kernel. If not explicitly set, the skills and memory will
+         * be used from the kernel.
+         *
+         * @param kernel
+         * @return
+         */
+        SKContext build(Kernel kernel);
     }
 }

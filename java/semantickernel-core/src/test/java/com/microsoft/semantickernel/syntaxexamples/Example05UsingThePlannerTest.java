@@ -7,7 +7,6 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 
 import org.junit.jupiter.api.Test;
@@ -18,14 +17,8 @@ import reactor.util.function.Tuples;
 public class Example05UsingThePlannerTest {
 
     public static SequentialPlanner getPlanner(Kernel kernel) {
-        kernel.importSkill(
-                "SummarizeSkill",
-                KernelExtensions.importSemanticSkillFromDirectory(
-                        "../../samples/skills", "SummarizeSkill"));
-        kernel.importSkill(
-                "WriterSkill",
-                KernelExtensions.importSemanticSkillFromDirectory(
-                        "../../samples/skills", "WriterSkill"));
+        kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
+        kernel.importSkillFromDirectory("WriterSkill", "../../samples/skills", "WriterSkill");
 
         return new SequentialPlanner(kernel, null, null);
     }

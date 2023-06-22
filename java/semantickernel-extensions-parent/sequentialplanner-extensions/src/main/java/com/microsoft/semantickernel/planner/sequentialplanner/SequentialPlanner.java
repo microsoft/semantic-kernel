@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.planner.sequentialplanner;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
+import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
@@ -70,7 +71,7 @@ public class SequentialPlanner {
                                         this.config.getMaxTokens(),
                                         new ArrayList<>()));
 
-        this.context = functionFlowFunction.buildContext();
+        this.context = SKBuilders.context().build(kernel);
     }
 
     /**

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
@@ -85,6 +86,20 @@ public class DefaultSKContext extends AbstractSKContext {
             return with(context.getVariables())
                     .with(context.getSkills())
                     .with(context.getSemanticMemory());
+        }
+
+        @Override
+        public SKContext build(Kernel kernel) {
+            if (memory == null) {
+                memory = kernel.getMemoryStore();
+            }
+            if (skills == null) {
+                skills = kernel.getSkills();
+            }
+            if (variables == null) {
+                variables = SKBuilders.variables().build();
+            }
+            return build();
         }
     }
 }

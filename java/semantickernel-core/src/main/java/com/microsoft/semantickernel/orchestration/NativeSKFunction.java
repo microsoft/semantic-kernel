@@ -5,7 +5,6 @@ import static com.microsoft.semantickernel.skilldefinition.annotations.SKFunctio
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.AIException;
-import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -127,14 +126,6 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                 methodDetails.name,
                 methodDetails.description,
                 kernelSkillsSupplier);
-    }
-
-    @Override
-    public SKContext buildContext(
-            ContextVariables variables,
-            @Nullable SemanticTextMemory memory,
-            @Nullable ReadOnlySkillCollection skills) {
-        return new DefaultSKContext(variables, memory, skills);
     }
 
     // Run the native function

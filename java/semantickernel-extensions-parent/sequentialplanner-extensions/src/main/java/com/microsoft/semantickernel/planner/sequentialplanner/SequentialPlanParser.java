@@ -113,48 +113,9 @@ public class SequentialPlanParser {
                                             .getFunction(functionName, SKFunction.class);
 
                             WritableContextVariables functionVariables =
-                                    SKBuilders.variables().build().writableClone();
-
-                            FunctionView description = skillFunction.describe();
-
-                            if (description != null) {
-                                description
-                                        .getParameters()
-                                        .forEach(
-                                                p -> {
-                                                    functionVariables.setVariable(
-                                                            p.getName(), p.getDefaultValue());
-                                                });
-                            }
-
-                            List<String> functionOutputs = new ArrayList<>();
-                            List<String> functionResults = new ArrayList<>();
-
-                            if (childNode.getAttributes() != null) {
-
-                                for (int k = 0; k < childNode.getAttributes().getLength(); k++) {
-                                    Node attr = childNode.getAttributes().item(k);
-
-                                    LOGGER.trace(
-                                            "{}: processing attribute {}",
-                                            parentNodeName,
-                                            attr.toString());
-
-                                    if (attr.getNodeName()
-                                            .toLowerCase(Locale.ROOT)
-                                            .equals(SetContextVariableTag)) {
-                                        functionOutputs.add(attr.getTextContent());
-                                    } else if (attr.getNodeName()
-                                            .toLowerCase(Locale.ROOT)
-                                            .equals(AppendToResultTag)) {
-                                        functionOutputs.add(attr.getTextContent());
-                                        functionResults.add(attr.getTextContent());
-                                    } else {
-                                        functionVariables.setVariable(
-                                                attr.getNodeName(), attr.getTextContent());
-                                    }
-                                }
-                            }
+                                    getFunctionVariables(skillFunction, childNode);
+                            List<String> functionOutputs = getFunctionOutputs(childNode);
+                            List<String> functionResults = getFunctionResults(childNode);
 
                             Plan planStep =
                                     new Plan(
@@ -186,6 +147,58 @@ public class SequentialPlanParser {
             throw new PlanningException(
                     PlanningException.ErrorCodes.InvalidPlan, "Failed to parse plan xml.", e);
         }
+    }
+
+    private static WritableContextVariables getFunctionVariables(
+            SKFunction skillFunction, Node node) {
+        WritableContextVariables functionVariables = SKBuilders.variables().build().writableClone();
+
+        FunctionView description = skillFunction.describe();
+
+        if (description != null) {
+            description
+                    .getParameters()
+                    .forEach(
+                            p -> {
+                                functionVariables.setVariable(p.getName(), p.getDefaultValue());
+                            });
+        }
+
+        if (node.getAttributes() != null) {
+            for (int k = 0; k < node.getAttributes().getLength(); k++) {
+                Node attr = node.getAttributes().item(k);
+                String nodeName = attr.getNodeName().toLowerCase(Locale.ROOT);
+                if (!nodeName.equals(SetContextVariableTag)
+                        && !nodeName.equals(AppendToResultTag)) {
+                    functionVariables.setVariable(attr.getNodeName(), attr.getTextContent());
+                }
+            }
+        }
+        return functionVariables;
+    }
+
+    private static List<String> getFunctionOutputs(Node node) {
+        List<String> functionOutputs = new ArrayList<>();
+        for (int k = 0; k < node.getAttributes().getLength(); k++) {
+            Node attr = node.getAttributes().item(k);
+            String nodeName = attr.getNodeName().toLowerCase(Locale.ROOT);
+            if (nodeName.equals(SetContextVariableTag) || nodeName.equals(AppendToResultTag)) {
+                functionOutputs.add(attr.getTextContent());
+            }
+        }
+        return functionOutputs;
+    }
+
+    private static List<String> getFunctionResults(Node node) {
+        List<String> functionResults = new ArrayList<>();
+        for (int k = 0; k < node.getAttributes().getLength(); k++) {
+            Node attr = node.getAttributes().item(k);
+            String nodeName = attr.getNodeName().toLowerCase(Locale.ROOT);
+            if (nodeName.equals(AppendToResultTag)) {
+                functionResults.add(attr.getTextContent());
+            }
+        }
+        return functionResults;
     }
 
     private static String getSkillName(String skillFunctionName) {

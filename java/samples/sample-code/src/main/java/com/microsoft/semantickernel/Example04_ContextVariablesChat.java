@@ -1,5 +1,6 @@
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -45,7 +46,7 @@ public class Example04_ContextVariablesChat {
                 2000,
                 new ArrayList<>()));
 
-      SKContext readOnlySkContext = chat.buildContext();
+      SKContext readOnlySkContext = SKBuilders.context().build(kernel);
 
     chat("Hi, I'm looking for book suggestions?", chat, readOnlySkContext)
         .flatMap(

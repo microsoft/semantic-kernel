@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.e2e;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -51,7 +52,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
                                 new PromptTemplateConfig.CompletionConfig(
                                         0.7, 0.5, 0, 0, 2000, new ArrayList<>()));
 
-        SKContext readOnlySkContext = chat.buildContext();
+        SKContext readOnlySkContext = SKBuilders.context().build(kernel);
 
         chat("Hi, I'm looking for book suggestions?", chat, readOnlySkContext)
                 .flatMap(

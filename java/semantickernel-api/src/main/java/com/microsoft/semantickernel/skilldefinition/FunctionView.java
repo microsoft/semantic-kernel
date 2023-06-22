@@ -55,6 +55,11 @@ public class FunctionView {
         this.isAsynchronous = isAsynchronous;
     }
 
+    /**
+     * List of function parameters
+     *
+     * @return the list of function parameters
+     */
     public List<ParameterView> getParameters() {
         return parameters;
     }

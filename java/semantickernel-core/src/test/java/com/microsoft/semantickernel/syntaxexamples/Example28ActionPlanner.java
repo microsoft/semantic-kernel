@@ -6,7 +6,6 @@ import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenA
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.ActionPlanner;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
@@ -81,15 +80,9 @@ public class Example28ActionPlanner {
                                         .build())
                         .build();
 
-        kernel.importSkill(
-                "SummarizeSkill",
-                KernelExtensions.importSemanticSkillFromDirectory(
-                        "../../samples/skills", "SummarizeSkill"));
+        kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
 
-        kernel.importSkill(
-                "WriterSkill",
-                KernelExtensions.importSemanticSkillFromDirectory(
-                        "../../samples/skills", "WriterSkill"));
+        kernel.importSkillFromDirectory("WriterSkill", "../../samples/skills", "WriterSkill");
 
         // Create an instance of ActionPlanner.
         // The ActionPlanner takes one goal and returns a single function to execute.
