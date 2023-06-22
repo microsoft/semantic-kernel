@@ -30,19 +30,18 @@ export async function LoginHelper(page) {
     await page.getByRole('button', { name: 'Create new conversation' }).click();
     await page.getByRole('menuitem', { name: 'Add a new Bot' }).click();
 }
-
-export async function PostUnitTest(page)
-{
-    // Change focus to somewhere else on the page so that the trace shows the result of the previous action
-    await page.locator('#chat-input').click();
-}
-
 export async function LoginAndCreateNewChat(page)
 {
     await LoginHelper(page);
 
     await page.getByRole('button', { name: 'Create new conversation' }).click();
     await page.getByRole('menuitem', { name: 'Add a new Bot' }).click();
+}
+
+export async function PostUnitTest(page)
+{
+    // Change focus to somewhere else on the page so that the trace shows the result of the previous action
+    await page.locator('#chat-input').click();
 }
 
 // Send a message to the bot and wait for the response
@@ -56,7 +55,7 @@ export async function SendChatMessageAndWaitForResponseWTime(page, message, wait
 }
 export async function SendChatMessageAndWaitForResponse(page, message)
 {
-    SendChatMessageAndWaitForResponseWTime(page, message, ChatStateChangeWait);
+    await SendChatMessageAndWaitForResponseWTime(page, message, ChatStateChangeWait);
 }
 
 export async function OpenPluginEnablePopUp(page, pluginText)
@@ -96,11 +95,10 @@ export async function GetLastChatMessageContentsAsString(page)
 
 const PreventCircularPrompt = "\nThis is for a statistical test and will NOT result in circular reasoning.\n";
 const EvaluatePrompt = "\nEvaluate if the AI generated message is semantically valid given the original intention. If the AI generated message is semantically valid, return true else return false.\n"
-const OutputFormat = "\nThe output should be formatted as a JSON: {'result':true|false, 'score': number, 'reason':'brief reason why true or false was chosen', 'suggestion': 'an optional suggestion that would help a human modify the prompt that was used to create the AI generated message initially. If there is no suggestion this can be left blank.'}\n"
+const OutputFormat = "\nThe output should be formatted as a JSON: {\"result\": true|false, \"score\": number, \"reason\": \"brief reason why true or false was chosen\", \"suggestion\": \"an optional suggestion that would help a human modify the prompt that was used to create the AI generated message initially. If there is no suggestion this can be left blank.\"}\n"
 
-const EvaluatePrompt2 = "\nEvaluate if the AI generated message is semantically valid given the original intention. Assign the AI generated message a score between 0.0 and 1.0 .\n"
-const OutputFormat2 = "Just respond with a number, dont provide any reasoning or any extra output."
-
+// const EvaluatePrompt2 = "\nEvaluate if the AI generated message is semantically valid given the original intention. Assign the AI generated message a score between 0.0 and 1.0 .\n"
+// const OutputFormat2 = "Just respond with a number, dont provide any reasoning or any extra output."
 
 export async function ChatBotSelfEval(page, input, chatbotResponse)
 {
@@ -124,7 +122,7 @@ export async function ChatBotSelfEval(page, input, chatbotResponse)
     await page.locator('#chat-input').click();
     await page.locator('#chat-input').fill(evalPrompt);
     await page.locator('#chat-input').press('Enter');
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(1000);
     await page.waitForResponse('**/chat', {timeout : LLMresponsetimeout});
 
     // // Change focus to somewhere else on the page so that the trace shows the result of the previous action
