@@ -98,7 +98,8 @@ async function KlarnaTest(page) {
     // Plan generation and execution using Klarna (doesn't require auth)
 
     // Enable Klarna
-    await util.OpenPluginEnablePopUp(page, 'Klarna ShoppingKlarnaEnableSearch');
+    const pluginIdentifierText = 'Klarna ShoppingKlarnaEnableSearch';
+    await util.OpenPluginPopUp(page, pluginIdentifierText);
     await util.EnablePluginAndClosePopUp(page);
     
     // Try using Klarna by sending a request to the bot and wait for the response.
@@ -114,8 +115,7 @@ async function KlarnaTest(page) {
     await expect(chatHistoryItems.last()).toContainText('$');
 
     var chatbotResponse = await util.GetLastChatMessageContentsAsStringWHistory(page, chatHistoryItems);
-
-    await util.ChatBotSelfEval(page, klarnaQuery, chatbotResponse);
+    await util.DisablePluginAndEvaluateResponse(page, klarnaQuery, chatbotResponse);
 
     await util.PostUnitTest(page);
 }
@@ -126,7 +126,7 @@ async function JiraTest(page) {
     // Plan generation and execution using Jira (requires auth)
 
     // Enable Jira
-    await util.OpenPluginEnablePopUp(page, 'JiraAtlassianEnableAuthorize');
+    await util.OpenPluginPopUp(page, 'JiraAtlassianEnableAuthorize');
     
     // Enter Auth Credentials and server url
     await page.getByPlaceholder('Enter your Jira email').fill(process.env.REACT_APP_TEST_JIRA_EMAIL as string);
@@ -145,6 +145,9 @@ async function JiraTest(page) {
     await expect(chatHistoryItems.last()).toHaveAttribute('data-username', 'Copilot');
     await expect(chatHistoryItems.last()).toContainText('SKTES');
 
+    var chatbotResponse = await util.GetLastChatMessageContentsAsStringWHistory(page, chatHistoryItems);
+    await util.DisablePluginAndEvaluateResponse(page, jiraQuery, chatbotResponse);
+
     await util.PostUnitTest(page);
 }
 
@@ -154,7 +157,7 @@ async function GithubTest(page) {
     // Plan generation and execution using Github (requires auth)
 
     // Enable Github
-    await util.OpenPluginEnablePopUp(page, 'GitHubMicrosoftEnableIntegrate');
+    await util.OpenPluginPopUp(page, 'GitHubMicrosoftEnableIntegrate');
     
     // Enter Auth Credentials and server url
     await page.getByPlaceholder('Enter your GitHub Personal Access Token').fill(process.env.REACT_APP_TEST_GITHUB_ACCESS_TOKEN as string);
@@ -171,6 +174,9 @@ async function GithubTest(page) {
     // Expect the last message to be the bot's response.
     const chatHistoryItems = page.getByTestId(new RegExp('chat-history-item-*'));
     await expect(chatHistoryItems.last()).toHaveAttribute('data-username', 'Copilot');
+
+    var chatbotResponse = await util.GetLastChatMessageContentsAsStringWHistory(page, chatHistoryItems);
+    await util.DisablePluginAndEvaluateResponse(page, githubQuery, chatbotResponse);
 
     await util.PostUnitTest(page);
 }

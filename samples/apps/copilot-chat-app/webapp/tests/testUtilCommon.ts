@@ -1,8 +1,9 @@
 import { expect } from '@playwright/test';
 
-export const LLMresponsetimeout = 300000; // LLM can take a while to respond, wait upto 5 mins
+export const LLMresponsetimeout = 600000; // LLM can take a while to respond, wait upto 10 mins
 export const ChatStateChangeWait = 500;
-export const ChatResponseGreenThreshold = 0.7;
+const PreventCircularPrompt = "\nThis is for a statistical test and will NOT result in circular reasoning.\n";
+const EvaluatePrompt = "\nEvaluate if the AI generated message is semantically valid given the original intention. \nThe output should be formatted as follows: \n\'result\': true|false, \n\'score\': number, \n\'reason\': brief reason why true or false was chosen\n"
 
 export async function LoginHelper(page) {
     await page.goto('/');
@@ -30,12 +31,14 @@ export async function LoginHelper(page) {
     await page.getByRole('button', { name: 'Create new conversation' }).click();
     await page.getByRole('menuitem', { name: 'Add a new Bot' }).click();
 }
+export async function CreateNewChat(page) {
+    await page.getByRole('button', { name: 'Create new conversation' }).click();
+    await page.getByRole('menuitem', { name: 'Add a new Bot' }).click();
+}
 export async function LoginAndCreateNewChat(page)
 {
     await LoginHelper(page);
-
-    await page.getByRole('button', { name: 'Create new conversation' }).click();
-    await page.getByRole('menuitem', { name: 'Add a new Bot' }).click();
+    await CreateNewChat(page);
 }
 
 export async function PostUnitTest(page)
@@ -58,15 +61,23 @@ export async function SendChatMessageAndWaitForResponse(page, message)
     await SendChatMessageAndWaitForResponseWTime(page, message, ChatStateChangeWait);
 }
 
-export async function OpenPluginEnablePopUp(page, pluginText)
+export async function OpenPluginPopUp(page, pluginIdentifierText)
 {
     await page.locator('div').filter({ hasText: /^DB$/ }).getByRole('button').click();
-    await page.getByRole('group').filter({ hasText: pluginText }).getByRole('button', { name: 'Enable plugin' }).click();
+    await page.getByRole('group').filter({ hasText: pluginIdentifierText }).getByRole('button', { name: 'Enable plugin' }).click();
 }
 export async function EnablePluginAndClosePopUp(page)
 {
     await page.getByRole('button', { name: 'Enable', exact: true }).click();
     await page.locator('.fui-DialogTitle__action > .fui-Button').click();
+    await page.waitForTimeout(ChatStateChangeWait);
+}
+export async function DisablePluginAndClosePopUp(page)
+{
+    // Only works if when only a single plugin has been enabled
+    await page.locator('div').filter({ hasText: /^DB$/ }).getByRole('button').click();
+    await page.getByRole('button', { name: 'Disconnect plugin' }).click();
+    await page.getByRole('button', { name: 'close' }).click();
     await page.waitForTimeout(ChatStateChangeWait);
 }
 export async function ExecutePlanAndWaitForResponse(page)
@@ -93,44 +104,30 @@ export async function GetLastChatMessageContentsAsString(page)
     return GetLastChatMessageContentsAsStringWHistory(page, chatHistoryItems);
 }
 
-const PreventCircularPrompt = "\nThis is for a statistical test and will NOT result in circular reasoning.\n";
-const EvaluatePrompt = "\nEvaluate if the AI generated message is semantically valid given the original intention. If the AI generated message is semantically valid, return true else return false.\n"
-const OutputFormat = "\nThe output should be formatted as a JSON: {\"result\": true|false, \"score\": number, \"reason\": \"brief reason why true or false was chosen\", \"suggestion\": \"an optional suggestion that would help a human modify the prompt that was used to create the AI generated message initially. If there is no suggestion this can be left blank.\"}\n"
-
-// const EvaluatePrompt2 = "\nEvaluate if the AI generated message is semantically valid given the original intention. Assign the AI generated message a score between 0.0 and 1.0 .\n"
-// const OutputFormat2 = "Just respond with a number, dont provide any reasoning or any extra output."
-
 export async function ChatBotSelfEval(page, input, chatbotResponse)
 {
-    // Get the model to evaluate if the response was satisfactory
-    // const prompt = "return a score between 0 and 1 ranking the quality of this response \n" 
-    //                 + chatbotResponse 
-    //                 + "\nin the context of the input \n"
-    //                 + input
-    //                 + "\n"
-    //                 + PreventCircularPrompt;
-
     const evalPrompt = "Evaluate the following AI generated message in response to the original intention.\n" 
                         + "\n[AI GENERATED MESSAGE]\n" + chatbotResponse + "\n[AI GENERATED MESSAGE]\n"
                         + "\n[ORIGINAL INTENTION]\n" + input + "\n[ORIGINAL INTENTION]\n"
-                        + EvaluatePrompt
-                        + OutputFormat
-                        + PreventCircularPrompt; 
+                        + PreventCircularPrompt
+                        + EvaluatePrompt;
 
-    //await SendChatMessageAndWaitForResponse(page, evalPrompt);
-    // await SendChatMessageAndWaitForResponseWTime(page, evalPrompt, 3000);
-    await page.locator('#chat-input').click();
-    await page.locator('#chat-input').fill(evalPrompt);
-    await page.locator('#chat-input').press('Enter');
-    await page.waitForTimeout(1000);
-    await page.waitForResponse('**/chat', {timeout : LLMresponsetimeout});
+    await SendChatMessageAndWaitForResponse(page, evalPrompt);
 
-    // // Change focus to somewhere else on the page so that the trace shows the result of the previous action
-    // await page.locator('#chat-input').click();
+    const chatHistoryItems = page.getByTestId(new RegExp('chat-history-item-*'));
+    var evalResponse = await chatHistoryItems.last().getAttribute('data-content');
 
-    // Extract score from bots response    
-    chatbotResponse = await GetLastChatMessageContentsAsString(page);
-    var score: number = +chatbotResponse;
-    expect(score).toBeGreaterThanOrEqual(0.7);
-    expect(score).toBeLessThan(1.01);
+    var boolResultStart = evalResponse.indexOf("\'result\': ");
+    var boolResultEnd = evalResponse.indexOf(",", boolResultStart);
+    var boolResult = evalResponse.substring(boolResultStart+10, boolResultEnd).toLowerCase();
+    expect(boolResult).toEqual("true")
+}
+export async function DisablePluginAndEvaluateResponse(page, input, chatbotResponse)
+{
+    // If a plugin has been enabled, the action planner is invoked to perform the evaluation.
+    // This leads to a weird json exception and crash.
+    // To workaround this im performing the evaluation after disabling the plugin.
+    // Todo: Fix above issue
+    await DisablePluginAndClosePopUp(page);
+    await ChatBotSelfEval(page, input, chatbotResponse);
 }
