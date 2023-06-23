@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example49_Chroma
+public static class Example50_Chroma
 {
     private const string MemoryCollectionName = "chroma-test";
 
