@@ -11,11 +11,52 @@ import java.time.format.FormatStyle;
 import java.time.format.TextStyle;
 import java.util.Locale;
 
+/**
+ * Description: TimeSkill provides a set of functions to get the current time and date.
+ *
+ * <p>Usage: kernel.importSkill(new TimeSkill(), "time");
+ *
+ * <p>Examples:
+ *
+ * <p>{{time.date}} => Sunday, 12 January, 2031
+ *
+ * <p>{{time.today}} => Sunday, 12 January, 2031
+ *
+ * <p>{{time.now}} => Sunday, January 12, 2031 9:15 PM
+ *
+ * <p>{{time.utcNow}} => Sunday, January 13, 2031 5:15 AM
+ *
+ * <p>{{time.time}} => 09:15:07 PM
+ *
+ * <p>{{time.year}} => 2031
+ *
+ * <p>{{time.month}} => January
+ *
+ * <p>{{time.monthNumber}} => 01
+ *
+ * <p>{{time.day}} => 12
+ *
+ * <p>{{time.dayOfWeek}} => Sunday
+ *
+ * <p>{{time.hour}} => 9 PM
+ *
+ * <p>{{time.hourNumber}} => 21
+ *
+ * <p>{{time.days_ago $days}} => Sunday, 7 May, 2023
+ *
+ * <p>{{time.last_matching_day $dayName}} => Sunday, 7 May, 2023
+ *
+ * <p>{{time.minute}} => 15
+ *
+ * <p>{{time.second}} => 7
+ *
+ * <p>{{time.timeZoneOffset}} => -08:00
+ *
+ * <p>{{time.timeZoneName}} => Pacific Time
+ */
 public class TimeSkill {
     /**
-     * Get the current date.
-     *
-     * <p>Example: {{time.date}} => Sunday, January 12, 2025
+     * Get the current date. Example: {{time.date}} => Sunday, January 12, 2025
      *
      * @return The current date.
      */
@@ -25,9 +66,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current time.
-     *
-     * <p>Example: {{time.time}} => 9:15:00 AM
+     * Get the current time. Example: {{time.time}} => 9:15:00 AM
      *
      * @return The current time.
      */
@@ -37,9 +76,8 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current UTC date and time.
-     *
-     * <p>Example: {{time.utcNow}} => Sunday, January 13, 2025 5:15 AM
+     * Get the current UTC date and time. Example: {{time.utcNow}} => Sunday, January 13, 2025 5:15
+     * AM
      *
      * @return The current UTC date and time.
      */
@@ -50,9 +88,8 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current date (alias for date() method).
-     *
-     * <p>Example: {{time.today}} => Sunday, January 12, 2025
+     * Get the current date (alias for date() method). Example: {{time.today}} => Sunday, January
+     * 12, 2025
      *
      * @return The current date.
      */
@@ -62,9 +99,8 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current date and time in the local time zone.
-     *
-     * <p>Example: {{time.now}} => Sunday, January 12, 2025 9:15 AM
+     * Get the current date and time in the local time zone. Example: {{time.now}} => Sunday,
+     * January 12, 2025 9:15 AM
      *
      * @return The current date and time in the local time zone.
      */
@@ -77,9 +113,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current year.
-     *
-     * <p>Example: {{time.year}} => 2025
+     * Get the current year. Example: {{time.year}} => 2025
      *
      * @return The current year.
      */
@@ -89,9 +123,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current month name.
-     *
-     * <p>Example: {{time.month}} => January
+     * Get the current month name. Example: {{time.month}} => January
      *
      * @return The current month name.
      */
@@ -101,9 +133,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current month number.
-     *
-     * <p>Example: {{time.monthNumber}} => 01
+     * Get the current month number. Example: {{time.monthNumber}} => 01
      *
      * @return The current month number.
      */
@@ -113,9 +143,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current day of the month.
-     *
-     * <p>Example: {{time.day}} => 12
+     * Get the current day of the month. Example: {{time.day}} => 12
      *
      * @return The current day of the month.
      */
@@ -125,9 +153,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current day of the week.
-     *
-     * <p>Example: {{time.dayOfWeek}} => Sunday
+     * Get the current day of the week. Example: {{time.dayOfWeek}} => Sunday
      *
      * @return The current day of the week.
      */
@@ -137,9 +163,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current clock hour.
-     *
-     * <p>Example: {{time.hour}} => 9 AM
+     * Get the current clock hour. Example: {{time.hour}} => 9 AM
      *
      * @return The current clock hour.
      */
@@ -149,9 +173,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current clock 24-hour number.
-     *
-     * <p>Example: {{time.hourNumber}} => 09
+     * Get the current clock 24-hour number. Example: {{time.hourNumber}} => 09
      *
      * @return The current clock 24-hour number.
      */
@@ -161,9 +183,51 @@ public class TimeSkill {
     }
 
     /**
-     * Get the minutes on the current hour.
+     * Get the date of offset from today by a provided number of days
      *
-     * <p>Example: {{time.minute}} => 15
+     * <p>Example: SKContext context = SKBuilders.context().build(); context.setVariable("input",
+     * "3"); {{time.daysAgo $input}} => Saturday, January 11, 2031
+     *
+     * @param days Number of days to subtract from the current day
+     * @return The date of offset from today by a provided number of days
+     */
+    @DefineSKFunction(
+            name = "daysAgo",
+            description = "Get the date of offset from today by a provided number of days")
+    public static String daysAgo(String days) {
+        int offsetDays = Integer.parseInt(days);
+        return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
+                .format(ZonedDateTime.now().minusDays(offsetDays));
+    }
+
+    /**
+     * Get the date of the last day matching the supplied week day name
+     *
+     * <p>Example: {{time.dateMatchingLastDayName "Monday"}} => Monday, January 6, 2031
+     *
+     * @param dayName Name of the day to match
+     * @return The date of the last day matching the supplied week day name
+     */
+    @DefineSKFunction(
+            name = "dateMatchingLastDayName",
+            description = "Get the date of the last day matching the supplied week day name")
+    public static String dateMatchingLastDayName(String dayName) {
+        ZonedDateTime currentDate = ZonedDateTime.now();
+        Locale systemLocale = Locale.getDefault();
+        for (int i = 1; i <= 7; i++) {
+            currentDate = currentDate.minusDays(1);
+            String currentDayName =
+                    currentDate.getDayOfWeek().getDisplayName(TextStyle.FULL, systemLocale);
+
+            if (currentDayName.equalsIgnoreCase(dayName)) {
+                return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(currentDate);
+            }
+        }
+        throw new IllegalArgumentException("dayName is not recognized");
+    }
+
+    /**
+     * Get the minutes on the current hour. Example: {{time.minute}} => 15
      *
      * @return The minutes on the current hour.
      */
@@ -173,9 +237,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the seconds on the current minute.
-     *
-     * <p>Example: {{time.second}} => 00
+     * Get the seconds on the current minute. Example: {{time.second}} => 00
      *
      * @return The seconds on the current minute.
      */
@@ -185,9 +247,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the local time zone offset from UTC.
-     *
-     * <p>Example: {{time.timeZoneOffset}} => +03:00
+     * Get the local time zone offset from UTC. Example: {{time.timeZoneOffset}} => +03:00
      *
      * @return The local time zone offset from UTC.
      */
@@ -199,9 +259,7 @@ public class TimeSkill {
     }
 
     /**
-     * Get the local time zone name.
-     *
-     * <p>Example: {{time.timeZoneName}} => Pacific Time
+     * Get the local time zone name. Example: {{time.timeZoneName}} => Pacific Time
      *
      * @return The local time zone name.
      */

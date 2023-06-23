@@ -172,4 +172,68 @@ public class TimeSkillTest {
             assertEquals("07", result);
         }
     }
+
+    @Test
+    public void daysAgo() {
+        try (MockedStatic<ZonedDateTime> mocked =
+                mockStatic(
+                        ZonedDateTime.class,
+                        withSettings()
+                                .useConstructor()
+                                .outerInstance(mockDateTime)
+                                .defaultAnswer(CALLS_REAL_METHODS))) {
+            mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
+
+            assertEquals("Thursday, January 9, 2025", TimeSkill.daysAgo("3"));
+            assertEquals("Tuesday, January 7, 2025", TimeSkill.daysAgo("5"));
+        }
+    }
+
+    @Test
+    public void testDateMatchingLastDayName() {
+        try (MockedStatic<ZonedDateTime> mocked =
+                mockStatic(
+                        ZonedDateTime.class,
+                        withSettings()
+                                .useConstructor()
+                                .outerInstance(mockDateTime)
+                                .defaultAnswer(CALLS_REAL_METHODS))) {
+            mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
+
+            assertEquals("Sunday, January 5, 2025", TimeSkill.dateMatchingLastDayName("Sunday"));
+            assertEquals("Monday, January 6, 2025", TimeSkill.dateMatchingLastDayName("Monday"));
+            assertEquals("Tuesday, January 7, 2025", TimeSkill.dateMatchingLastDayName("Tuesday"));
+            assertEquals(
+                    "Wednesday, January 8, 2025", TimeSkill.dateMatchingLastDayName("wednesday"));
+            assertEquals(
+                    "Thursday, January 9, 2025", TimeSkill.dateMatchingLastDayName("thursday"));
+            assertEquals("Friday, January 10, 2025", TimeSkill.dateMatchingLastDayName("Friday"));
+            assertEquals(
+                    "Saturday, January 11, 2025", TimeSkill.dateMatchingLastDayName("Saturday"));
+        }
+    }
+
+    @Test
+    public void testAll() {
+        TimeSkill timeSkill = new TimeSkill();
+
+        System.out.println(timeSkill.date());
+        System.out.println(timeSkill.today());
+        System.out.println(timeSkill.now());
+        System.out.println(timeSkill.utcNow());
+        System.out.println(timeSkill.time());
+        System.out.println(timeSkill.year());
+        System.out.println(timeSkill.month());
+        System.out.println(timeSkill.monthNumber());
+        System.out.println(timeSkill.day());
+        System.out.println(timeSkill.dayOfWeek());
+        System.out.println(timeSkill.hour());
+        System.out.println(timeSkill.hourNumber());
+        System.out.println(TimeSkill.daysAgo("3"));
+        System.out.println(TimeSkill.dateMatchingLastDayName("Monday"));
+        System.out.println(timeSkill.minute());
+        System.out.println(timeSkill.second());
+        System.out.println(timeSkill.timeZoneOffset());
+        System.out.println(timeSkill.timeZoneName());
+    }
 }
