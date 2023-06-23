@@ -38,31 +38,15 @@
     "@types/node": "^18.11.9",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.45.0",
     "better-vsts-npm-auth": "^7.0.0",
     "depcheck": "^1.4.3",
-    "eslint": "^8.0.1",
-    "eslint-config-react-app": "^7.0.1",
-    "eslint-config-standard-with-typescript": "^23.0.0",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-n": "^15.0.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-react": "^7.31.11",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-security": "^0.1.0",
+    "eslint": "^8.42.0",
     "http-server": "^14.1.1",
     "prettier": "^2.8.1",
     "serve": "^14.2.0",
     "typescript": "*",
     "vsts-npm-auth": "^0.42.1",
     "workbox-window": "^6.5.4"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
