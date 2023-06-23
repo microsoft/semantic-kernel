@@ -22,31 +22,4 @@ public class OpenAIChatHistory : ChatHistory
             this.AddSystemMessage(assistantInstructions);
         }
     }
-
-    /// <summary>
-    /// Add a system message to the chat history
-    /// </summary>
-    /// <param name="content">Message content</param>
-    public void AddSystemMessage(string content)
-    {
-        this.AddMessage(AuthorRoles.System, content);
-    }
-
-    /// <summary>
-    /// Add an assistant message to the chat history
-    /// </summary>
-    /// <param name="content">Message content</param>
-    public void AddAssistantMessage(string content)
-    {
-        this.AddMessage(AuthorRoles.Assistant, content);
-    }
-
-    /// <summary>
-    /// Add a user message to the chat history
-    /// </summary>
-    /// <param name="content">Message content</param>
-    public void AddUserMessage(string content)
-    {
-        this.AddMessage(AuthorRoles.User, content);
-    }
 }

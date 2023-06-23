@@ -116,7 +116,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -128,7 +128,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
+    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
@@ -137,6 +137,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public void Dispose()
     {
         if (this._disposeHttpClient)
@@ -147,7 +148,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
 
     #region private ================================================================================
 
-    private async Task<IReadOnlyList<ITextCompletionStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<ITextStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -180,11 +181,11 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
             {
                 throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
                 {
-                    Data = { { "ModelResponse", body } },
+                    Data = { { "ResponseData", body } },
                 };
             }
 
-            return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c.Text));
+            return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
         }
         catch (Exception e) when (e is not AIException && !e.IsCriticalException())
         {

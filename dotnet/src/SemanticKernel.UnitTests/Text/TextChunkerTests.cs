@@ -45,6 +45,29 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    public void CanSplitMarkdownParagraphsWithOverlap()
+    {
+        List<string> input = new()
+        {
+            "This is a test of the emergency broadcast system. This is only a test.",
+            "We repeat, this is only a test. A unit test."
+        };
+
+        var expected = new[]
+        {
+            "This is a test of the emergency broadcast system.",
+            "emergency broadcast system. This is only a test.",
+            "This is only a test. We repeat, this is only a test.",
+            "We repeat, this is only a test. A unit test.",
+            "A unit test."
+        };
+
+        var result = TextChunker.SplitMarkdownParagraphs(input, 15, 8);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
     public void CanSplitTextParagraphs()
     {
         List<string> input = new()
@@ -61,6 +84,29 @@ public sealed class TextChunkerTests
         };
 
         var result = TextChunker.SplitPlainTextParagraphs(input, 13);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanSplitTextParagraphsWithOverlap()
+    {
+        List<string> input = new()
+        {
+            "This is a test of the emergency broadcast system. This is only a test.",
+            "We repeat, this is only a test. A unit test."
+        };
+
+        var expected = new[]
+        {
+            "This is a test of the emergency broadcast system.",
+            "emergency broadcast system. This is only a test.",
+            "This is only a test. We repeat, this is only a test.",
+            "We repeat, this is only a test. A unit test.",
+            "A unit test."
+        };
+
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, 8);
 
         Assert.Equal(expected, result);
     }

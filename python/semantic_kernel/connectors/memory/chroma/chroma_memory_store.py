@@ -158,12 +158,14 @@ class ChromaMemoryStore(MemoryStoreBase):
         if collection is None:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        # TODO: timestamp
+        record._key = record._id
         metadata = {
             "timestamp": record._timestamp or "",
             "is_reference": record._is_reference,
             "external_source_name": record._external_source_name or "",
             "description": record._description or "",
+            "additional_metadata": record._additional_metadata or "",
+            "id": record._id or "",
         }
 
         collection.add(
@@ -171,11 +173,12 @@ class ChromaMemoryStore(MemoryStoreBase):
             # by providing embeddings, we can skip the chroma's embedding function call
             embeddings=record.embedding.tolist(),
             documents=record._text,
-            ids=record._id,
+            ids=record._key,
         )
+
         if self._persist_directory is not None:
             self._client.persist()
-        return record._id
+        return record._key
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -237,7 +240,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         )
 
         value = collection.get(ids=keys, include=query_includes)
-        record = query_results_to_records(value)
+        record = query_results_to_records(value, with_embeddings)
         return record
 
     async def remove_async(self, collection_name: str, key: str) -> None:
@@ -318,7 +321,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         record_list = [
             (record, distance)
             for record, distance in zip(
-                query_results_to_records(query_results),
+                query_results_to_records(query_results, with_embeddings),
                 similarity_score,
             )
         ]
