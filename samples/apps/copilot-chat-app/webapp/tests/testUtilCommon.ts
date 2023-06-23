@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 
-export const LLMresponsetimeout = 600000; // LLM can take a while to respond, wait upto 10 mins
+export const TestTimeout = 600000; // LLM can take a while to respond, wait upto 10 mins
+export const LLMresponsetimeout = 300000; // LLM can take a while to respond, wait upto 5 mins
 export const ChatStateChangeWait = 500;
 const PreventCircularPrompt = "\nThis is for a statistical test and will NOT result in circular reasoning.\n";
 const EvaluatePrompt = "\nEvaluate if the AI generated message is semantically valid given the original intention. \nThe output should be formatted as follows: \n\'result\': true|false, \n\'score\': number, \n\'reason\': brief reason why true or false was chosen\n"
@@ -119,7 +120,7 @@ export async function ChatBotSelfEval(page, input, chatbotResponse)
 
     var boolResultStart = evalResponse.indexOf("\'result\': ");
     var boolResultEnd = evalResponse.indexOf(",", boolResultStart);
-    var boolResult = evalResponse.substring(boolResultStart+10, boolResultEnd).toLowerCase();
+    var boolResult = evalResponse.substring(boolResultStart+10, boolResultEnd).toLowerCase().trim();
     expect(boolResult).toEqual("true")
 }
 export async function DisablePluginAndEvaluateResponse(page, input, chatbotResponse)
@@ -129,5 +130,8 @@ export async function DisablePluginAndEvaluateResponse(page, input, chatbotRespo
     // To workaround this im performing the evaluation after disabling the plugin.
     // Todo: Fix above issue
     await DisablePluginAndClosePopUp(page);
+    // Start the evaluation in a new chat context, otherwise the LLM sometimes thinks that 
+    // there is circular logic involved and wont give you a useful response
+    await CreateNewChat(page);
     await ChatBotSelfEval(page, input, chatbotResponse);
 }

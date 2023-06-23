@@ -21,26 +21,27 @@ Here is a list of things we test right now, either standalone or as part of anot
 - Plan generation and execution for the Github plugin 
 */
 test.describe('Copilot Chat App Test Suite', () => {
+    // Server Tests
     test('Server Health', async ({ page }) => { await ServerHealth(page) });
-
+    // Basic Operations
     test('Basic Bot Responses', async ({ page }) => { 
-        test.setTimeout(300000);
+        test.setTimeout(util.TestTimeout);
         await BasicBotResponses(page) });
     test('Chat Title Change', async ({ page }) => { 
-        test.setTimeout(300000);
+        test.setTimeout(util.TestTimeout);
         await ChatTitleChange(page) });
     test('Chat Document Upload', async ({ page }) => { 
-        test.setTimeout(300000);
+        test.setTimeout(util.TestTimeout);
         await DocumentUpload(page) });
-
+    // Planner Testing
     test('Planner Test: Klarna', async ({ page }) => { 
-        test.setTimeout(300000);
+        test.setTimeout(util.TestTimeout);
         await KlarnaTest(page) });
     test('Planner Test: Jira', async ({ page }) => { 
-        test.setTimeout(300000);
+        test.setTimeout(util.TestTimeout);
         await JiraTest(page) });
     test('Planner Test: Github', async ({ page }) => { 
-        test.setTimeout(300000);
+        test.setTimeout(util.TestTimeout);
         await GithubTest(page) });
 });
 
@@ -147,7 +148,7 @@ async function JiraTest(page) {
 
     var chatbotResponse = await util.GetLastChatMessageContentsAsStringWHistory(page, chatHistoryItems);
     await util.DisablePluginAndEvaluateResponse(page, jiraQuery, chatbotResponse);
-
+    
     await util.PostUnitTest(page);
 }
 
