@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
-import semantic_kernel.connectors.ai.open_ai as sk_oai
 from test_utils import retry
+
+import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 
 @pytest.mark.asyncio
