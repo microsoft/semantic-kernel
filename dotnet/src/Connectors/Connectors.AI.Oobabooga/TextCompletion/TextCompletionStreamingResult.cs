@@ -9,7 +9,10 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
-internal sealed class TextCompletionStreamingResult : ITextCompletionStreamingResult
+/// <summary>
+/// Oobabooga implementation of <see cref="ITextStreamingResult"/>. Actual response object is stored in a ModelResult instance, and completion text is simply passed forward.
+/// </summary>
+internal sealed class TextCompletionStreamingResult : ITextStreamingResult
 {
     private readonly ModelResult _responseData;
 

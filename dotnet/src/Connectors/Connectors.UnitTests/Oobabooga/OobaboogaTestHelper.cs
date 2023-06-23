@@ -10,7 +10,7 @@ using Moq.Protected;
 namespace SemanticKernel.Connectors.UnitTests.Oobabooga;
 
 /// <summary>
-/// Helper for HuggingFace test purposes.
+/// Helper for Oobabooga test purposes.
 /// </summary>
 internal static class OobaboogaTestHelper
 {

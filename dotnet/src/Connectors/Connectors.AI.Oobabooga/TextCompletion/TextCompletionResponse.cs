@@ -6,10 +6,13 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
 /// <summary>
-/// HTTP Schema for Oobabooga completion response. Contains a list of results.
+/// HTTP Schema for Oobabooga completion response. Contains a list of results. Adapted from <see cref="https://github.com/oobabooga/text-generation-webui/blob/main/extensions/api/blocking_api.py"/>
 /// </summary>
 public sealed class TextCompletionResponse
 {
+    /// <summary>
+    /// A field used by Oobabooga to return results from the blocking API.
+    /// </summary>
     [JsonPropertyName("results")]
     public List<TextCompletionResponseText> Results { get; set; } = new();
 }
@@ -24,19 +27,4 @@ public sealed class TextCompletionResponseText
     /// </summary>
     [JsonPropertyName("text")]
     public string? Text { get; set; } = string.Empty;
-}
-
-/// <summary>
-/// HTTP Schema for streaming completion response.
-/// </summary>
-public sealed class TextCompletionStreamingResponse
-{
-    [JsonPropertyName("event")]
-    public string Event { get; set; } = string.Empty;
-
-    [JsonPropertyName("message_num")]
-    public int MessageNum { get; set; }
-
-    [JsonPropertyName("text")]
-    public string Text { get; set; } = string.Empty;
 }
