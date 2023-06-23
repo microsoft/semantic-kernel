@@ -4,13 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Text;
 
 namespace GitHubSkills;
@@ -36,6 +38,11 @@ public class GitHubSkill
     public const string FilePathParamName = "filePath";
 
     /// <summary>
+    /// Personal access token for private repositories.
+    /// </summary>
+    public const string PatTokenParamName = "patToken";
+
+    /// <summary>
     /// Directory to which to extract compressed file's data.
     /// </summary>
     public const string DestinationDirectoryPathParamName = "destinationDirectoryPath";
@@ -57,7 +64,6 @@ public class GitHubSkill
 
     private readonly ISKFunction _summarizeCodeFunction;
     private readonly IKernel _kernel;
-    private readonly WebFileDownloadSkill _downloadSkill;
     private readonly ILogger<GitHubSkill> _logger;
     private static readonly char[] s_trimChars = new char[] { ' ', '/' };
 
@@ -79,10 +85,9 @@ BEGIN SUMMARY:
     /// <param name="kernel">Kernel instance</param>
     /// <param name="downloadSkill">Instance of WebFileDownloadSkill used to download web files</param>
     /// <param name="logger">Optional logger</param>
-    public GitHubSkill(IKernel kernel, WebFileDownloadSkill downloadSkill, ILogger<GitHubSkill>? logger = null)
+    public GitHubSkill(IKernel kernel, ILogger<GitHubSkill>? logger = null)
     {
         this._kernel = kernel;
-        this._downloadSkill = downloadSkill;
         this._logger = logger ?? NullLogger<GitHubSkill>.Instance;
 
         this._summarizeCodeFunction = kernel.CreateSemanticFunction(
@@ -124,10 +129,22 @@ BEGIN SUMMARY:
 
         try
         {
-            var repositoryUri = source.Trim(s_trimChars);
-            var context1 = new SKContext(logger: context.Log);
-            context1.Variables.Set(FilePathParamName, filePath);
-            await this._downloadSkill.DownloadToFileAsync($"{repositoryUri}/archive/refs/heads/{repositoryBranch}.zip", context1);
+            var repositoryUri = Regex.Replace(source.Trim(s_trimChars), "github.com", "api.github.com/repos", RegexOptions.IgnoreCase);
+            var repoBundle = $"{repositoryUri}/zipball/{repositoryBranch}";
+
+            this._logger.LogDebug("Downloading {RepoBundle}", repoBundle);
+
+            var headers = new Dictionary<string, string>();
+            if (context.Variables.TryGetValue(PatTokenParamName, out string? pat))
+            {
+                this._logger.LogDebug("Access token detected, adding authorization headers");
+                headers.Add("Authorization", $"Bearer {pat}");
+                headers.Add("X-GitHub-Api-Version", "2022-11-28");
+                headers.Add("Accept", "application/vnd.github+json");
+                headers.Add("User-Agent", "msft-semantic-kernel-sample");
+            }
+
+            await this.DownloadToFileAsync(repoBundle, headers, filePath, context.CancellationToken);
 
             ZipFile.ExtractToDirectory(filePath, directoryPath);
 
@@ -148,6 +165,26 @@ BEGIN SUMMARY:
                 Directory.Delete(directoryPath, true);
             }
         }
+    }
+
+    private async Task DownloadToFileAsync(string uri, IDictionary<string, string> headers, string filePath, CancellationToken cancellationToken)
+    {
+        // Download URI to file.
+        using HttpClient client = new();
+
+        using HttpRequestMessage request = new(HttpMethod.Get, uri);
+        foreach (var header in headers)
+        {
+            client.DefaultRequestHeaders.Add(header.Key, header.Value);
+        }
+
+        using HttpResponseMessage response = await client.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        using Stream contentStream = await response.Content.ReadAsStreamAsync();
+        using FileStream fileStream = File.Create(filePath);
+        await contentStream.CopyToAsync(fileStream, 81920, cancellationToken);
+        await fileStream.FlushAsync(cancellationToken);
     }
 
     /// <summary>

@@ -5,8 +5,8 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Skills.Core;
 using Reliability;
 using RepoUtils;
 
