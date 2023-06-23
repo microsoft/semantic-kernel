@@ -212,28 +212,4 @@ public class TimeSkillTest {
                     "Saturday, January 11, 2025", TimeSkill.dateMatchingLastDayName("Saturday"));
         }
     }
-
-    @Test
-    public void testAll() {
-        TimeSkill timeSkill = new TimeSkill();
-
-        System.out.println(timeSkill.date());
-        System.out.println(timeSkill.today());
-        System.out.println(timeSkill.now());
-        System.out.println(timeSkill.utcNow());
-        System.out.println(timeSkill.time());
-        System.out.println(timeSkill.year());
-        System.out.println(timeSkill.month());
-        System.out.println(timeSkill.monthNumber());
-        System.out.println(timeSkill.day());
-        System.out.println(timeSkill.dayOfWeek());
-        System.out.println(timeSkill.hour());
-        System.out.println(timeSkill.hourNumber());
-        System.out.println(TimeSkill.daysAgo("3"));
-        System.out.println(TimeSkill.dateMatchingLastDayName("Monday"));
-        System.out.println(timeSkill.minute());
-        System.out.println(timeSkill.second());
-        System.out.println(timeSkill.timeZoneOffset());
-        System.out.println(timeSkill.timeZoneName());
-    }
 }
