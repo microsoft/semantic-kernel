@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.CoreSkills;
+namespace Microsoft.SemanticKernel.Skills.Core;
 
 /// <summary>
 /// TextMemorySkill provides a skill to save or recall information from the long or short term memory.

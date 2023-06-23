@@ -4,8 +4,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.Core;
 using RepoUtils;
 using Skills;
 
