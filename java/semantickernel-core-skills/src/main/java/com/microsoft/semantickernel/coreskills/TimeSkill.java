@@ -56,7 +56,9 @@ import java.util.Locale;
  */
 public class TimeSkill {
     /**
-     * Get the current date. Example: {{time.date}} => Sunday, January 12, 2025
+     * Get the current date.
+     *
+     * <p>Example: {{time.date}} => Sunday, January 12, 2025
      *
      * @return The current date.
      */
@@ -66,7 +68,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current time. Example: {{time.time}} => 9:15:00 AM
+     * Get the current time.
+     *
+     * <p>Example: {{time.time}} => 9:15:00 AM
      *
      * @return The current time.
      */
@@ -76,8 +80,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current UTC date and time. Example: {{time.utcNow}} => Sunday, January 13, 2025 5:15
-     * AM
+     * Get the current UTC date and time.
+     *
+     * <p>Example: {{time.utcNow}} => Sunday, January 13, 2025 5:15 AM
      *
      * @return The current UTC date and time.
      */
@@ -88,8 +93,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current date (alias for date() method). Example: {{time.today}} => Sunday, January
-     * 12, 2025
+     * Get the current date (alias for date() method).
+     *
+     * <p>Example: {{time.today}} => Sunday, January 12, 2025
      *
      * @return The current date.
      */
@@ -99,8 +105,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current date and time in the local time zone. Example: {{time.now}} => Sunday,
-     * January 12, 2025 9:15 AM
+     * Get the current date and time in the local time zone.
+     *
+     * <p>Example: {{time.now}} => Sunday, January 12, 2025 9:15 AM
      *
      * @return The current date and time in the local time zone.
      */
@@ -113,7 +120,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current year. Example: {{time.year}} => 2025
+     * Get the current year.
+     *
+     * <p>Example: {{time.year}} => 2025
      *
      * @return The current year.
      */
@@ -123,7 +132,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current month name. Example: {{time.month}} => January
+     * Get the current month name.
+     *
+     * <p>Example: {{time.month}} => January
      *
      * @return The current month name.
      */
@@ -133,7 +144,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current month number. Example: {{time.monthNumber}} => 01
+     * Get the current month number.
+     *
+     * <p>Example: {{time.monthNumber}} => 01
      *
      * @return The current month number.
      */
@@ -143,7 +156,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current day of the month. Example: {{time.day}} => 12
+     * Get the current day of the month.
+     *
+     * <p>Example: {{time.day}} => 12
      *
      * @return The current day of the month.
      */
@@ -153,7 +168,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current day of the week. Example: {{time.dayOfWeek}} => Sunday
+     * Get the current day of the week.
+     *
+     * <p>Example: {{time.dayOfWeek}} => Sunday
      *
      * @return The current day of the week.
      */
@@ -163,7 +180,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current clock hour. Example: {{time.hour}} => 9 AM
+     * Get the current clock hour.
+     *
+     * <p>Example: {{time.hour}} => 9 AM
      *
      * @return The current clock hour.
      */
@@ -173,7 +192,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the current clock 24-hour number. Example: {{time.hourNumber}} => 09
+     * Get the current clock 24-hour number.
+     *
+     * <p>Example: {{time.hourNumber}} => 09
      *
      * @return The current clock 24-hour number.
      */
@@ -227,7 +248,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the minutes on the current hour. Example: {{time.minute}} => 15
+     * Get the minutes on the current hour.
+     *
+     * <p>Example: {{time.minute}} => 15
      *
      * @return The minutes on the current hour.
      */
@@ -237,7 +260,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the seconds on the current minute. Example: {{time.second}} => 00
+     * Get the seconds on the current minute.
+     *
+     * <p>Example: {{time.second}} => 00
      *
      * @return The seconds on the current minute.
      */
@@ -247,7 +272,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the local time zone offset from UTC. Example: {{time.timeZoneOffset}} => +03:00
+     * Get the local time zone offset from UTC.
+     *
+     * <p>Example: {{time.timeZoneOffset}} => +03:00
      *
      * @return The local time zone offset from UTC.
      */
@@ -259,7 +286,9 @@ public class TimeSkill {
     }
 
     /**
-     * Get the local time zone name. Example: {{time.timeZoneName}} => Pacific Time
+     * Get the local time zone name.
+     *
+     * <p>Example: {{time.timeZoneName}} => Pacific Time
      *
      * @return The local time zone name.
      */
