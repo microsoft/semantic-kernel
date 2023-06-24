@@ -41,11 +41,23 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaTextCompletion"/> class.
     /// </summary>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    /// <param name="blockingPort">The port for blocking requests.</param>
-    /// <param name="streamingPort">The port for streaming requests.</param>
-    /// <param name="httpClient">The HTTP client to use for making regular blocking API requests. If not specified, a default client will be used.</param>
-    /// <param name="webSocketFactory">The client web socket factory to use for making streaming API requests. If not specified, a pool of transient clients will be used on each call. Note that there is no concurrency support for websocket client calls. Accordingly, you should supply distinct websocket clients for each call to avoid data corruption, and pool them in some way if there is a risk of port exhaustion from many concurrent calls</param>
+    /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
+    /// <param name="blockingPort">The port used for handling blocking requests.</param>
+    /// <param name="streamingPort">The port used for handling streaming requests.</param>
+    /// <param name="httpClient">Optional. The HTTP client used for making blocking API requests. If not specified, a default client will be used.</param>
+    /// <param name="webSocketFactory">Optional. The WebSocket factory used for making streaming API requests. If not provided, a pool of transient clients will be used for each request. It's important to note that this class does not support concurrent WebSocket client calls. If you provide your own WebSocket clients, ensure the following:
+    /// <list type="bullet">
+    /// <item>
+    /// <description>Supply unique WebSocket clients for each call to avoid data corruption.</description>
+    /// </item>
+    /// <item>
+    /// <description>Pool your WebSocket clients if there's a risk of port exhaustion due to numerous concurrent calls.</description>
+    /// </item>
+    /// <item>
+    /// <description>Dispose of WebSocket clients when they're no longer needed to prevent resource leakage.</description>
+    /// </item>
+    /// </list>
+    /// </param>
     public OobaboogaTextCompletion(Uri endpoint, int blockingPort, int streamingPort, HttpClient? httpClient = null, Func<ClientWebSocket>? webSocketFactory = null)
     {
         Verify.NotNull(endpoint);
