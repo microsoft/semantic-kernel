@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,7 +34,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private readonly int _blockingPort;
     private readonly int _streamingPort;
     private readonly HttpClient _httpClient;
-    private readonly ClientWebSocket? _webSocket;
+    private readonly Func<ClientWebSocket>? _webSocketFactory;
+    private static readonly ConcurrentStack<bool> s_activeConnections = new();
+    private static readonly ConcurrentStack<ClientWebSocket> s_webSocketPool = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaTextCompletion"/> class.
@@ -42,8 +45,8 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <param name="blockingPort">The port for blocking requests.</param>
     /// <param name="streamingPort">The port for streaming requests.</param>
     /// <param name="httpClient">The HTTP client to use for making regular blocking API requests. If not specified, a default client will be used.</param>
-    /// <param name="webSocket">The client web socket to use for making streaming API requests. If not specified, a transient client will be used on each call.</param>
-    public OobaboogaTextCompletion(Uri endpoint, int blockingPort, int streamingPort, HttpClient? httpClient = null, ClientWebSocket? webSocket = null)
+    /// <param name="webSocketFactory">The client web socket factory to use for making streaming API requests. If not specified, a pool of transient clients will be used on each call. Note that there is no concurrency support for websocket client calls. Accordingly, you should supply distinct websocket clients for each call to avoid data corruption, and pool them in some way if there is a risk of port exhaustion from many concurrent calls</param>
+    public OobaboogaTextCompletion(Uri endpoint, int blockingPort, int streamingPort, HttpClient? httpClient = null, Func<ClientWebSocket>? webSocketFactory = null)
     {
         Verify.NotNull(endpoint);
 
@@ -51,10 +54,14 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         this._blockingPort = blockingPort;
         this._streamingPort = streamingPort;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        if (webSocket != null)
+        if (webSocketFactory != null)
         {
-            this.SetWebSocketOptions(webSocket);
-            this._webSocket = webSocket;
+            this._webSocketFactory = () =>
+            {
+                var webSocket = webSocketFactory();
+                this.SetWebSocketOptions(webSocket);
+                return webSocket;
+            };
         }
     }
 
@@ -64,6 +71,8 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        s_activeConnections.Push(true);
+
         UriBuilder streamingUri = new(this._endpoint)
         {
             Port = this._streamingPort,
@@ -79,19 +88,20 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         var requestJson = JsonSerializer.Serialize(completionRequest);
 
         var requestBytes = Encoding.UTF8.GetBytes(requestJson);
-        ClientWebSocket? transientClientWebSocket = null;
+
+        ClientWebSocket? clientWebSocket = null;
+        bool isClientProvidedWebSocket = false;
         try
         {
-            ClientWebSocket? clientWebSocket;
-            if (this._webSocket is null)
+            if (this._webSocketFactory != null)
             {
-                transientClientWebSocket = new();
-                this.SetWebSocketOptions(transientClientWebSocket);
-                clientWebSocket = transientClientWebSocket;
+                clientWebSocket = this._webSocketFactory();
+                isClientProvidedWebSocket = true;
             }
-            else
+            else if (!s_webSocketPool.TryPop(out clientWebSocket))
             {
-                clientWebSocket = this._webSocket;
+                clientWebSocket = new();
+                this.SetWebSocketOptions(clientWebSocket);
             }
 
             await clientWebSocket.ConnectAsync(streamingUri.Uri, cancellationToken).ConfigureAwait(false);
@@ -133,7 +143,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                             yield return new TextCompletionStreamingResult(responseObject);
                             break;
                         case ResponseObjectStreamEndEvent:
-                            await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
+                            await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge stream-end oobabooga message", CancellationToken.None).ConfigureAwait(false);
                             break;
                         default:
                             break;
@@ -141,7 +151,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 }
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
+                    await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge Close frame", CancellationToken.None).ConfigureAwait(false);
                 }
 
                 if (clientWebSocket.State != WebSocketState.Open)
@@ -152,7 +162,22 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         }
         finally
         {
-            transientClientWebSocket?.Dispose();
+            s_activeConnections.TryPop(out _);
+
+            if (clientWebSocket != null && !isClientProvidedWebSocket)
+            {
+                if (s_activeConnections.IsEmpty)
+                {
+                    while (s_webSocketPool.TryPop(out ClientWebSocket clientToDispose))
+                    {
+                        clientToDispose.Dispose();
+                    }
+                }
+                else
+                {
+                    s_webSocketPool.Push(clientWebSocket);
+                }
+            }
         }
     }
 
