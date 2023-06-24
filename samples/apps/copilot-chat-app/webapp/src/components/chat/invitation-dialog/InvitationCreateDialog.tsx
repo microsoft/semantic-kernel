@@ -49,7 +49,7 @@ export const InvitationCreateDialog: React.FC<InvitationCreateDialogProps> = ({ 
                     <DialogTitle>Invite others to your Bot</DialogTitle>
                     <DialogContent className={classes.content}>
                         <Label>Please provide the following Chat ID to your friends so they can join the chat.</Label>
-                        <Label weight="semibold">{chatId}</Label>
+                        <Label data-testid='copyIDLabel' data-chatid={copyId} weight="semibold">{chatId}</Label>
                     </DialogContent>
                     <DialogActions>
                         <Button appearance="secondary" onClick={onCancel}>
