@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,13 +16,15 @@ namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
 /// <summary>
 /// Integration tests for <see cref=" OobaboogaTextCompletion"/>.
 /// </summary>
-public sealed class OobaboogaTextCompletionTests
+public sealed class OobaboogaTextCompletionTests: IDisposable
 {
     private const string Endpoint = "http://localhost";
     private const int BlockingPort = 5000;
     private const int StreamingPort = 5005;
 
     private readonly IConfigurationRoot _configuration;
+    private List<ClientWebSocket> _webSockets = new List<ClientWebSocket>();
+    private Func<ClientWebSocket> _webSocketFactory;
 
     public OobaboogaTextCompletionTests()
     {
@@ -31,6 +34,12 @@ public sealed class OobaboogaTextCompletionTests
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .Build();
+        this._webSocketFactory = () =>
+        {
+            var toReturn = new ClientWebSocket();
+            this._webSockets.Add(toReturn);
+            return toReturn;
+        };
     }
 
     private const string Input = " My name is";
@@ -54,8 +63,7 @@ public sealed class OobaboogaTextCompletionTests
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionStreamingAsync()
     {
-        using var webSocketClient = new ClientWebSocket();
-        var oobaboogaLocal = new OobaboogaTextCompletion(new Uri(Endpoint), BlockingPort, StreamingPort, webSocket: webSocketClient);
+        var oobaboogaLocal = new OobaboogaTextCompletion(new Uri(Endpoint), BlockingPort, StreamingPort, webSocketFactory: this._webSocketFactory);
 
         // Act
         var localResponse = oobaboogaLocal.CompleteStreamAsync(Input, new CompleteRequestSettings()
@@ -85,5 +93,13 @@ public sealed class OobaboogaTextCompletionTests
         // A few will return an empty string, but well those shouldn't be used for integration tests.
         var expectedRegex = new Regex(@"\s\w+.*");
         Assert.Matches(expectedRegex, localResponse);
+    }
+
+    public void Dispose()
+    {
+        foreach (ClientWebSocket clientWebSocket in this._webSockets)
+        {
+            clientWebSocket.Dispose();
+        }
     }
 }
