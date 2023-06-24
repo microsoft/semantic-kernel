@@ -172,6 +172,8 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                     {
                         clientToDispose.Dispose();
                     }
+
+                    clientWebSocket.Dispose();
                 }
                 else
                 {
