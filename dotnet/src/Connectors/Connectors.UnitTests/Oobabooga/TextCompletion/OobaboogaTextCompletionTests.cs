@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -175,7 +176,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         using var server = new WebSocketTestServer(serverUrl, request =>
         {
             // Simulate different responses for each request
-            var responseIndex = int.Parse(Encoding.UTF8.GetString(request.ToArray()));
+            var responseIndex = int.Parse(Encoding.UTF8.GetString(request.ToArray()), CultureInfo.InvariantCulture);
             byte[] bytes = Encoding.UTF8.GetBytes(expectedResponses[responseIndex]);
             var toReturn = new List<ArraySegment<byte>> { new ArraySegment<byte>(bytes) };
             return toReturn;
@@ -193,7 +194,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
                 await client.ConnectAsync(new Uri(clientUrl), CancellationToken.None);
 
                 // Send a request to the server
-                var requestBytes = Encoding.UTF8.GetBytes(currentIndex.ToString());
+                var requestBytes = Encoding.UTF8.GetBytes(currentIndex.ToString(CultureInfo.InvariantCulture));
                 await client.SendAsync(new ArraySegment<byte>(requestBytes), WebSocketMessageType.Text, true, CancellationToken.None);
 
                 // Receive the response from the server
