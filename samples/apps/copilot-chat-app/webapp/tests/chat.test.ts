@@ -21,32 +21,41 @@ Here is a list of things we test right now, either standalone or as part of anot
 - Plan generation and execution for the Github plugin 
 */
 test.describe('Copilot Chat App Test Suite', () => {
-    // Server Tests
-    test('Server Health', async ({ page }) => { await ServerHealth(page) });
-    // Basic Operations
-    test('Basic Bot Responses', async ({ page }) => { 
-        test.setTimeout(util.TestTimeout);
-        await BasicBotResponses(page) });
-    test('Chat Title Change', async ({ page }) => { 
-        test.setTimeout(util.TestTimeout);
-        await ChatTitleChange(page) });
-    test('Chat Document Upload', async ({ page }) => { 
-        test.setTimeout(util.TestTimeout);
-        await DocumentUpload(page) });
-    // Planner Testing
-    test('Planner Test: Klarna', async ({ page }) => { 
-        test.setTimeout(util.TestTimeout);
-        await KlarnaTest(page) });
-    test('Planner Test: Jira', async ({ page }) => { 
-        test.setTimeout(util.TestTimeout);
-        await JiraTest(page) });
-    test('Planner Test: Github', async ({ page }) => { 
-        test.setTimeout(util.TestTimeout);
-        await GithubTest(page) });
-    // Multi-User Chat
-    test('Multi-user chat', async ({ page }) => { 
-        test.setTimeout(util.TestTimeout);
-        await MultiUserTest(page) });
+
+   test.describe('A, runs in parallel with B', () => {
+        test.describe.configure({ mode: 'parallel' });
+        // Server Tests
+        test('Server Health', async ({ page }) => { await ServerHealth(page) });
+        // Basic Operations
+        test('Basic Bot Responses', async ({ page }) => { 
+            test.setTimeout(util.TestTimeout);
+            await BasicBotResponses(page) });
+        test('Chat Title Change', async ({ page }) => { 
+            test.setTimeout(util.TestTimeout);
+            await ChatTitleChange(page) });
+        test('Chat Document Upload', async ({ page }) => { 
+            test.setTimeout(util.TestTimeout);
+            await DocumentUpload(page) });
+    });
+        
+    test.describe('B, runs in parallel with A', () => {
+        test.describe.configure({ mode: 'serial' });
+        
+        // Planner Testing
+        test('Planner Test: Klarna', async ({ page }) => { 
+            test.setTimeout(util.TestTimeout);
+            await KlarnaTest(page) });
+        test('Planner Test: Jira', async ({ page }) => { 
+            test.setTimeout(util.TestTimeout);
+            await JiraTest(page) });
+        test('Planner Test: Github', async ({ page }) => { 
+            test.setTimeout(util.TestTimeout);
+            await GithubTest(page) });
+        // Multi-User Chat
+        test('Multi-user chat', async ({ page }) => { 
+            test.setTimeout(util.TestTimeout);
+            await MultiUserTest(page) });
+    });
 });
 
 async function ServerHealth( page ) {
@@ -216,9 +225,10 @@ async function MultiUserTest(page) {
 
     await page.getByRole('button', { name: 'Join' }).click();
 
-    const numPeople = await page.getByRole('button', { name: 'View more people.' }).textContent();
+    await page.waitForTimeout(util.ChatStateChangeWait);
     await page.getByRole('button', { name: 'View more people.' }).click();
-    
+
+    const numPeople = await page.getByRole('button', { name: 'View more people.' }).textContent();
     await expect(numPeople).toEqual("+2");
 
     await util.PostUnitTest(page);
