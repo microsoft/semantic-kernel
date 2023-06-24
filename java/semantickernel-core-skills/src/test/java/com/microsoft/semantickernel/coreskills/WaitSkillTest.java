@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.coreskills;
 
 import org.junit.jupiter.api.Test;
 
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
@@ -14,11 +13,10 @@ class WaitSkillTest {
 
     @Test
     void secondsAsync_givenPositiveSeconds_shouldDelay() {
-        Duration expectedDelay = Duration.ofMillis(1490);
+        Duration expectedDelay = Duration.ofMillis(1500);
 
         String seconds = "1.5";
-        Mono<Void> result = waitSkill.wait(seconds);
-        StepVerifier.create(result)
+        StepVerifier.withVirtualTime(() -> waitSkill.wait(seconds))
                 .expectSubscription()
                 .expectNoEvent(expectedDelay)
                 .expectComplete()
@@ -28,14 +26,18 @@ class WaitSkillTest {
     @Test
     void secondsAsync_givenZeroSeconds_shouldNotDelay() {
         String seconds = "0";
-        Mono<Void> result = waitSkill.wait(seconds);
-        StepVerifier.create(result).expectSubscription().expectComplete().verify();
+        StepVerifier.withVirtualTime(() -> waitSkill.wait(seconds))
+                .expectSubscription()
+                .expectComplete()
+                .verify();
     }
 
     @Test
     void secondsAsync_givenNegativeSeconds_shouldNotDelay() {
         String seconds = "-1.5";
-        Mono<Void> result = waitSkill.wait(seconds);
-        StepVerifier.create(result).expectSubscription().expectComplete().verify();
+        StepVerifier.withVirtualTime(() -> waitSkill.wait(seconds))
+                .expectSubscription()
+                .expectComplete()
+                .verify();
     }
 }
