@@ -110,7 +110,7 @@ public static class Example51_StepwisePlanner
 
         var config = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig();
         config.ExcludedFunctions.Add("TranslateMathProblem");
-        config.MinIterationTimeMs = 2500;
+        config.MinIterationTimeMs = 1500;
         config.MaxTokens = 4000;
 
         StepwisePlanner planner = new(kernel, config);

@@ -141,6 +141,7 @@ public class StepwisePlanner
                     this._logger?.LogInformation("Action: {Action}({ActionVariables})", nextStep.Action, JsonSerializer.Serialize(nextStep.ActionVariables));
                     try
                     {
+                        await Task.Delay(this.Config.MinIterationTimeMs).ConfigureAwait(false);
                         var result = await this.InvokeActionAsync(nextStep.Action!, nextStep!.ActionVariables!).ConfigureAwait(false);
 
                         if (string.IsNullOrEmpty(result))
@@ -164,6 +165,9 @@ public class StepwisePlanner
                 {
                     this._logger?.LogInformation("Action: No action to take");
                 }
+
+                // sleep 3 seconds
+                await Task.Delay(this.Config.MinIterationTimeMs).ConfigureAwait(false);
             }
 
             context.Variables.Update($"Result not found, review _stepsTaken to see what happened.\n{JsonSerializer.Serialize(stepsTaken)}");
