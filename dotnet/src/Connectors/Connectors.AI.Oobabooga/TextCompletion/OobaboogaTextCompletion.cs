@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
 /// <summary>
 /// Oobabooga text completion service API.
-/// Adapted from https://github.com/oobabooga/text-generation-webui/tree/main/api-examples
+/// Adapted from <see href="https://github.com/oobabooga/text-generation-webui/tree/main/api-examples"/>
 /// </summary>
 public sealed class OobaboogaTextCompletion : ITextCompletion
 {

@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
 /// <summary>
-/// HTTP Schema for streaming completion response. Adapted from <see cref="https://github.com/oobabooga/text-generation-webui/blob/main/extensions/api/streaming_api.py"/>
+/// HTTP Schema for streaming completion response. Adapted from <see href="https://github.com/oobabooga/text-generation-webui/blob/main/extensions/api/streaming_api.py"/>
 /// </summary>
 public sealed class TextCompletionStreamingResponse
 {

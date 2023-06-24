@@ -8,6 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
 /// <summary>
 /// HTTP schema to perform oobabooga completion request. Contains many parameters, some of which are specific to certain kinds of models.
+/// See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/> and subsequent links for additional information.
 /// </summary>
 [Serializable]
 public sealed class TextCompletionRequest
