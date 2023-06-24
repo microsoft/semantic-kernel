@@ -32,7 +32,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private HttpMessageHandlerStub _messageHandlerStub;
     private HttpClient _httpClient;
     private Func<ClientWebSocket> _webSocketFactory;
-    private List<ClientWebSocket> _webSockets = new List<ClientWebSocket>();
+    private List<ClientWebSocket> _webSockets = new();
     private Uri _endPointUri;
     private string _streamCompletionResponseStub;
 

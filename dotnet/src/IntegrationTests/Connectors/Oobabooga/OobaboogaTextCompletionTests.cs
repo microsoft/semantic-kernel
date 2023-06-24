@@ -16,14 +16,14 @@ namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
 /// <summary>
 /// Integration tests for <see cref=" OobaboogaTextCompletion"/>.
 /// </summary>
-public sealed class OobaboogaTextCompletionTests: IDisposable
+public sealed class OobaboogaTextCompletionTests : IDisposable
 {
     private const string Endpoint = "http://localhost";
     private const int BlockingPort = 5000;
     private const int StreamingPort = 5005;
 
     private readonly IConfigurationRoot _configuration;
-    private List<ClientWebSocket> _webSockets = new List<ClientWebSocket>();
+    private List<ClientWebSocket> _webSockets = new();
     private Func<ClientWebSocket> _webSocketFactory;
 
     public OobaboogaTextCompletionTests()
