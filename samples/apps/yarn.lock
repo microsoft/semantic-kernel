@@ -1937,10 +1937,10 @@ eslint-module-utils@^2.7.4:
   dependencies:
     debug "^3.2.7"
 
-eslint-plugin-es-x@^6.1.0:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-es-x/-/eslint-plugin-es-x-6.2.1.tgz#34c9abc22483d7d49ff9ca8b5db29d54442d2e6b"
-  integrity sha512-uR34zUhZ9EBoiSD2DdV5kHLpydVEvwWqjteUr9sXRgJknwbKZJZhdJ7uFnaTtd+Nr/2G3ceJHnHXrFhJ67n3Tw==
+eslint-plugin-es-x@^7.1.0:
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-es-x/-/eslint-plugin-es-x-7.1.0.tgz#f0d5421e658cca95c1cfb2355831851bdc83322d"
+  integrity sha512-AhiaF31syh4CCQ+C5ccJA0VG6+kJK8+5mXKKE7Qs1xcPRg02CDPOj3mWlQxuWS/AYtg7kxrDNgW9YW3vc0Q+Mw==
   dependencies:
     "@eslint-community/eslint-utils" "^4.1.2"
     "@eslint-community/regexpp" "^4.5.0"
@@ -2003,19 +2003,19 @@ eslint-plugin-jsx-a11y@^6.5.1:
     object.fromentries "^2.0.6"
     semver "^6.3.0"
 
-eslint-plugin-n@^16.0.0:
-  version "16.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-n/-/eslint-plugin-n-16.0.0.tgz#de39e4dd6cf04fd78fd6f49cb39ecb20ea0167ff"
-  integrity sha512-akkZTE3hsHBrq6CwmGuYCzQREbVUrA855kzcHqe6i0FLBkeY7Y/6tThCVkjUnjhvRBAlc+8lILcSe5QvvDpeZQ==
+eslint-plugin-n@^16.0.1:
+  version "16.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-n/-/eslint-plugin-n-16.0.1.tgz#baa62bb3af52940a53ba15386348ad9b0b425ada"
+  integrity sha512-CDmHegJN0OF3L5cz5tATH84RPQm9kG+Yx39wIqIwPR2C0uhBGMWfbbOtetR83PQjjidA5aXMu+LEFw1jaSwvTA==
   dependencies:
     "@eslint-community/eslint-utils" "^4.4.0"
     builtins "^5.0.1"
-    eslint-plugin-es-x "^6.1.0"
-    ignore "^5.1.1"
-    is-core-module "^2.12.0"
+    eslint-plugin-es-x "^7.1.0"
+    ignore "^5.2.4"
+    is-core-module "^2.12.1"
     minimatch "^3.1.2"
     resolve "^1.22.2"
-    semver "^7.5.0"
+    semver "^7.5.3"
 
 eslint-plugin-promise@^6.1.1:
   version "6.1.1"
@@ -2414,7 +2414,7 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
-ignore@^5.1.1, ignore@^5.2.0:
+ignore@^5.2.0, ignore@^5.2.4:
   version "5.2.4"
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.2.4.tgz#a291c0c6178ff1b960befe47fcdec301674a6324"
   integrity sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==
@@ -2488,7 +2488,7 @@ is-callable@^1.1.3, is-callable@^1.1.4, is-callable@^1.2.7:
   resolved "https://registry.yarnpkg.com/is-callable/-/is-callable-1.2.7.tgz#3bc2a85ea742d9e36205dcacdd72ca1fdc51b055"
   integrity sha512-1BC0BVFhS/p0qtw6enp8e+8OD0UrK0oFLztSjNzhcKA3WDuJxxAPXzPuPtKkjEY9UUoEWlX/8fgKeu2S8i9JTA==
 
-is-core-module@^2.11.0, is-core-module@^2.12.0, is-core-module@^2.9.0:
+is-core-module@^2.11.0, is-core-module@^2.12.1, is-core-module@^2.9.0:
   version "2.12.1"
   resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.12.1.tgz#0c0b6885b6f80011c71541ce15c8d66cf5a4f9fd"
   integrity sha512-Q4ZuBAe2FUsKtyQJoQHlvP8OvBERxO3jEmy1I7hcRXcJBGGHFh/aJBswbXuS9sgrDH2QUO8ilkwNPHvHMd8clg==
@@ -3050,10 +3050,10 @@ semver@^6.1.1, semver@^6.1.2, semver@^6.3.0:
   resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.0.tgz#ee0a64c8af5e8ceea67687b133761e1becbd1d3d"
   integrity sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==
 
-semver@^7.0.0, semver@^7.3.7, semver@^7.5.0:
-  version "7.5.1"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.5.1.tgz#c90c4d631cf74720e46b21c1d37ea07edfab91ec"
-  integrity sha512-Wvss5ivl8TMRZXXESstBA4uR5iXgEN/VC5/sOcuXdVLzcdkz4HWetIoRfG5gb5X+ij/G9rw9YoGn3QoQ8OCSpw==
+semver@^7.0.0, semver@^7.3.7, semver@^7.5.3:
+  version "7.5.3"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.5.3.tgz#161ce8c2c6b4b3bdca6caadc9fa3317a4c4fe88e"
+  integrity sha512-QBlUtyVk/5EeHbi7X0fw6liDZc7BBmEaSYn01fMU1OUYbf6GPsbTtd8WmnqbI20SeycoHSeiybkE/q1Q+qlThQ==
   dependencies:
     lru-cache "^6.0.0"
 
