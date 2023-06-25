@@ -3,7 +3,7 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.CoreSkills;
+namespace Microsoft.SemanticKernel.Skills.Core;
 
 /// <summary>
 /// MathSkill provides a set of functions to make Math calculations.

@@ -53,4 +53,9 @@ public class ChatRequestSettings
     /// The maximum number of tokens to generate in the completion.
     /// </summary>
     public int MaxTokens { get; set; } = 256;
+
+    /// <summary>
+    /// Modify the likelihood of specified tokens appearing in the completion.
+    /// </summary>
+    public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
 }
