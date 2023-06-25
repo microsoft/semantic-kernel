@@ -55,6 +55,17 @@ public class CompleteRequestSettings
     public int ResultsPerPrompt { get; set; } = 1;
 
     /// <summary>
+    /// The system prompt to use when generating text completions using a chat model.
+    /// Defaults to "Assistant is a large language model."
+    /// </summary>
+    public string ChatSystemPrompt { get; set; } = "Assistant is a large language model.";
+
+    /// <summary>
+    /// Modify the likelihood of specified tokens appearing in the completion.
+    /// </summary>
+    public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
+
+    /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
     /// <param name="config"></param>

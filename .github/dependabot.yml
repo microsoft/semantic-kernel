@@ -23,7 +23,7 @@ updates:
     schedule:
       interval: "daily"
       
-  # Maintain dependencies for npm
+  # Maintain dependencies for pip
   - package-ecosystem: "pip"
     directory: "python/"
     schedule:
