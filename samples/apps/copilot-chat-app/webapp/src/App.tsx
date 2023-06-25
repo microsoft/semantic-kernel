@@ -98,7 +98,7 @@ const App: FC = () => {
             <UnauthenticatedTemplate>
                 <div className={classes.container}>
                     <div className={classes.header}>
-                        <Subtitle1 as="h1">Copilot Chat</Subtitle1>
+                        <Subtitle1 as="h1">Eva (Eviden Virtual Assistant) Chat</Subtitle1>                                                
                     </div>
                     {appState === AppState.SigningOut && <Loading text="Signing you out..." />}
                     {appState !== AppState.SigningOut && <Login />}
@@ -107,7 +107,8 @@ const App: FC = () => {
             <AuthenticatedTemplate>
                 <div className={classes.container}>
                     <div className={classes.header}>
-                        <Subtitle1 as="h1">Copilot Chat</Subtitle1>
+                        <Subtitle1 as="h1">Eva (Eviden Virtual Assistant) Chat</Subtitle1>
+                                                
                         <div className={classes.cornerItems}>
                             <PluginGallery />
                             <UserSettings setLoadingState={() => setAppState(AppState.SigningOut)} />

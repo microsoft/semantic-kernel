@@ -27,8 +27,8 @@ import { ChatService } from './services/ChatService';
 import { DocumentImportService } from './services/DocumentImportService';
 import * as PlanUtils from './utils/PlanUtils';
 
-import botIcon1 from '../assets/bot-icons/bot-icon-1.png';
-import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
+import botIcon1 from '../assets/bot-icons/eviden-bot-icon-1.png';
+import botIcon2 from '../assets/bot-icons/eviden-bot-icon-2.png';
 import botIcon3 from '../assets/bot-icons/bot-icon-3.png';
 import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
 import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
@@ -69,7 +69,7 @@ export const useChat = () => {
     };
 
     const createChat = async () => {
-        const chatTitle = `Copilot @ ${new Date().toLocaleString()}`;
+        const chatTitle = `Eva @ ${new Date().toLocaleString()}`;
         try {
             await chatService
                 .createChatAsync(

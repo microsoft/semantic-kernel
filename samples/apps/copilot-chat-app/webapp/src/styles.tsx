@@ -1,7 +1,7 @@
 import { GriffelStyle, tokens } from '@fluentui/react-components';
 
 export const CopilotChatTokens = {
-    backgroundColor: '#9c2153',
+    backgroundColor: '#000',
     titleColor: '#943670',
 };
 

@@ -32,13 +32,18 @@ import { editConversationTitle } from '../../redux/features/conversations/conver
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
 import { ShareBotMenu } from './ShareBotMenu';
+import ChatBackgroundImage from '../../assets/images/chat-background.png';
 
 const useClasses = makeStyles({
     root: {
         display: 'flex',
         flexDirection: 'column',
-        width: '100%',
-        backgroundColor: '#F5F5F5',
+        width: '100%',                
+        backgroundImage: `url(${ChatBackgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPositionX: 'center',
+        backgroundPositionY: 'center',        
         boxShadow: 'rgb(0 0 0 / 25%) 0 0.2rem 0.4rem -0.075rem',
     },
     header: {
