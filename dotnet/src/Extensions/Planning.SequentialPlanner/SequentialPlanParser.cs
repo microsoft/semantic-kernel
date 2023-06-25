@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
@@ -45,22 +46,49 @@ internal static class SequentialPlanParser
     /// <param name="xmlString">The plan xml string.</param>
     /// <param name="goal">The goal for the plan.</param>
     /// <param name="context">The semantic kernel context.</param>
+    /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
-    internal static Plan ToPlanFromXml(this string xmlString, string goal, SKContext context)
+    internal static Plan ToPlanFromXml(this string xmlString, string goal, SKContext context, bool allowMissingFunctions = false)
     {
+        XmlDocument xmlDoc = new();
         try
         {
-            XmlDocument xmlDoc = new();
-            try
-            {
-                xmlDoc.LoadXml("<xml>" + xmlString + "</xml>");
-            }
-            catch (XmlException e)
-            {
-                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Failed to parse plan xml.", e);
-            }
+            xmlDoc.LoadXml("<xml>" + xmlString + "</xml>");
+        }
+        catch (XmlException e)
+        {
+            // xmlString wasn't valid xml, let's try and parse <plan> out of it
 
+            // '<plan': Matches the literal string "<plan".
+            // '\b': Represents a word boundary to ensure that "<plan" is not part of a larger word.
+            // '[^>]*': Matches zero or more characters that are not the closing angle bracket (">"), effectively matching any attributes present in the opening <plan> tag.
+            // '>': Matches the closing angle bracket (">") to indicate the end of the opening <plan> tag.
+            // '(.*?)': Captures the content between the opening and closing <plan> tags using a non-greedy match. It matches any character (except newline) in a lazy manner, i.e., it captures the smallest possible match.
+            // '</plan>': Matches the literal string "</plan>", indicating the closing tag of the <plan> element.
+            Regex planRegex = new(@"<plan\b[^>]*>(.*?)</plan>", RegexOptions.Singleline);
+            Match match = planRegex.Match(xmlString);
+            if (match.Success)
+            {
+                string planXml = match.Value;
+
+                try
+                {
+                    xmlDoc.LoadXml("<xml>" + planXml + "</xml>");
+                }
+                catch (XmlException ex)
+                {
+                    throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan xml strings: '{xmlString}' or '{planXml}'", ex);
+                }
+            }
+            else
+            {
+                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan xml string: '{xmlString}'", e);
+            }
+        }
+
+        try
+        {
             // Get the Solution
             XmlNodeList solution = xmlDoc.GetElementsByTagName(SolutionTag);
 
@@ -135,23 +163,35 @@ internal static class SequentialPlanParser
                         }
                         else
                         {
-                            context.Log.LogTrace("{0}: appending function node {1}", parentNodeName, skillFunctionName);
-                            plan.AddSteps(new Plan(childNode.InnerText));
+                            if (allowMissingFunctions)
+                            {
+                                context.Log.LogTrace("{0}: allowing missing function node {1}", parentNodeName, skillFunctionName);
+                                plan.AddSteps(new Plan(skillFunctionName));
+                            }
+                            else
+                            {
+                                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to find function '{skillFunctionName}' in skill '{skillName}'.");
+                            }
                         }
 
                         continue;
                     }
 
+                    // This step is a step in name only. It is not a function call.
                     plan.AddSteps(new Plan(childNode.InnerText));
                 }
             }
 
             return plan;
         }
+        catch (PlanningException)
+        {
+            throw;
+        }
         catch (Exception e) when (!e.IsCriticalException())
         {
             context.Log.LogError(e, "Plan parsing failed: {0}", e.Message);
-            throw;
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to process plan: '{xmlString}'", e);
         }
     }
 

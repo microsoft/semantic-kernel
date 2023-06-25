@@ -2,6 +2,8 @@
 
 import { useMsal } from '@azure/msal-react';
 import {
+    AvatarGroupItem,
+    AvatarGroupPopover,
     Button,
     Input,
     InputOnChangeData,
@@ -104,7 +106,7 @@ export const ChatWindow: React.FC = () => {
                     title!,
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 );
-
+                
                 dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
             } catch (e: any) {
                 const errorMessage = `Unable to retrieve chat to change title. Details: ${e.message ?? e}`;
@@ -186,6 +188,11 @@ export const ChatWindow: React.FC = () => {
                     </TabList>
                 </div>
                 <div className={classes.controls}>
+                    <AvatarGroupPopover>
+                        {conversations[selectedId].users.map((user) => (
+                            <AvatarGroupItem name={user.id} key={user.id} />
+                        ))}
+                    </AvatarGroupPopover>
                     <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
                 </div>
             </div>

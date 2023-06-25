@@ -90,7 +90,7 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
     // Omit reserved context variable names from displayed inputs
     const inputs = step.parameters.filter(
         (parameter: IPlanInput) =>
-            !Constants.sk.reservedWords.includes(parameter.Key.trim()) && parameter.Value.trim() !== '',
+            !(Constants.sk.reservedWords.includes(parameter.Key.trim()) || parameter.Value.trim() === ''),
     );
 
     return (
