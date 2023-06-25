@@ -79,24 +79,20 @@ const interactionInProgressHandler = async (
 ) => {
     // Polls the interaction status from the application
     // state and resolves when it's equal to "None".
-    await waitFor(() => interactionStatus === InteractionStatus.None);
+    waitFor(() => interactionStatus === InteractionStatus.None);
 
     // Wait is over, call acquireToken again to re-try acquireTokenSilent
     return await acquireToken(accessTokenRequest, msalInstance, interactionStatus);
 };
 
-const waitFor = async (hasInteractionCompleted: () => boolean) => {
-    const checkInteraction = (resolve: (arg0: null) => void, _reject: any) => {
-        let interactionInProgress = !hasInteractionCompleted();
-        while (interactionInProgress) {
-            setTimeout(() => {
-                interactionInProgress = hasInteractionCompleted();
-            }, 500);
+const waitFor = (hasInteractionCompleted: () => boolean) => {
+    const checkInteraction = () => {
+        if (!hasInteractionCompleted()) {
+            setTimeout(checkInteraction, 500);
         }
-        resolve(null);
     };
 
-    return await new Promise(checkInteraction);
+    checkInteraction();
 };
 
 export const TokenHelper = {

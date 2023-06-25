@@ -19,6 +19,8 @@ module.exports = {
         '@typescript-eslint/strict-boolean-expressions': 'off',
         '@typescript-eslint/explicit-function-return-type': 'off',
         '@typescript-eslint/consistent-type-imports': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
         'react/react-in-jsx-scope': 'off',
         'react/prop-types': 'off',
         'react/jsx-props-no-spreading': 'off',
