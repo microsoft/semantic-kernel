@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,7 @@ using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
+using Tesseract;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 using static SemanticKernel.Service.CopilotChat.Models.MemorySource;
@@ -42,16 +44,33 @@ public class DocumentImportController : ControllerBase
         /// .pdf
         /// </summary>
         Pdf,
+
+        /// <summary>
+        /// .jpg
+        /// </summary>
+        Jpg,
+
+        /// <summary>
+        /// .png
+        /// </summary>
+        Png,
+
+        /// <summary>
+        /// .tif or .tiff
+        /// </summary>
+        Tiff
     };
 
     private readonly ILogger<DocumentImportController> _logger;
     private readonly DocumentMemoryOptions _options;
+    private readonly TesseractOptions _tesseractOptions;
     private readonly ChatSessionRepository _sessionRepository;
     private readonly ChatMemorySourceRepository _sourceRepository;
     private readonly ChatMessageRepository _messageRepository;
     private readonly ChatParticipantRepository _participantRepository;
     private const string GlobalDocumentUploadedClientCall = "GlobalDocumentUploaded";
     private const string ChatDocumentUploadedClientCall = "ChatDocumentUploaded";
+    private readonly string _tesseractDataPath;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -59,6 +78,7 @@ public class DocumentImportController : ControllerBase
     public DocumentImportController(
         ILogger<DocumentImportController> logger,
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
+        IOptions<TesseractOptions> tesseractOptions,
         ChatSessionRepository sessionRepository,
         ChatMemorySourceRepository sourceRepository,
         ChatMessageRepository messageRepository,
@@ -66,10 +86,12 @@ public class DocumentImportController : ControllerBase
     {
         this._logger = logger;
         this._options = documentMemoryOptions.Value;
+        this._tesseractOptions = tesseractOptions.Value;
         this._sessionRepository = sessionRepository;
         this._sourceRepository = sourceRepository;
         this._messageRepository = messageRepository;
         this._participantRepository = participantRepository;
+        this._tesseractDataPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "tessdata");
     }
 
     /// <summary>
@@ -117,6 +139,14 @@ public class DocumentImportController : ControllerBase
             case SupportedFileType.Pdf:
                 fileContent = this.ReadPdfFile(formFile);
                 break;
+            case SupportedFileType.Jpg:
+            case SupportedFileType.Png:
+            case SupportedFileType.Tiff:
+            {
+                fileContent = await this.ReadTextFromImageFileAsync(formFile);
+                break;
+            }
+
             default:
                 return this.BadRequest($"Unsupported file type: {fileType}");
         }
@@ -262,8 +292,34 @@ public class DocumentImportController : ControllerBase
         {
             ".txt" => SupportedFileType.Txt,
             ".pdf" => SupportedFileType.Pdf,
+            ".jpg" => SupportedFileType.Jpg,
+            ".jpeg" => SupportedFileType.Jpg,
+            ".png" => SupportedFileType.Png,
+            ".tif" => SupportedFileType.Tiff,
+            ".tiff" => SupportedFileType.Tiff,
             _ => throw new ArgumentOutOfRangeException($"Unsupported file type: {extension}"),
         };
+    }
+
+    /// <summary>
+    /// Reads the text content from an image file.
+    /// </summary>
+    /// <param name="file">An IFormFile object.</param>
+    /// <returns>A string of the content of the file.</returns>
+    private async Task<string> ReadTextFromImageFileAsync(IFormFile file)
+    {
+        await using (var ms = new MemoryStream())
+        {
+            await file.CopyToAsync(ms);
+            var fileBytes = ms.ToArray();
+            await using var imgStream = new MemoryStream(fileBytes);
+
+            using var engine = new TesseractEngine(_tesseractDataPath, _tesseractOptions.Language, EngineMode.Default); // use the appropriate language model
+            using var img = Pix.LoadFromMemory(imgStream.ToArray());
+
+            using var page = engine.Process(img);
+            return page.GetText();
+        }
     }
 
     /// <summary>
