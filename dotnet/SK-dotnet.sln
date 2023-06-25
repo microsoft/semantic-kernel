@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{FA37
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoadPromptsFromCloud", "..\samples\dotnet\kernel-extension-load-prompts-from-cloud\LoadPromptsFromCloud.csproj", "{A05BF65E-085E-476C-B88A-9DA93F005416}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelSyntaxExamples", "..\samples\dotnet\kernel-syntax-examples\KernelSyntaxExamples.csproj", "{47C6F821-5103-431F-B3B8-A2868A68BB78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelSyntaxExamples", "samples\KernelSyntaxExamples\KernelSyntaxExamples.csproj", "{47C6F821-5103-431F-B3B8-A2868A68BB78}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsGraphSkillsExample", "..\samples\dotnet\graph-api-skills\MsGraphSkillsExample.csproj", "{3EB61E99-C39B-4620-9482-F8DA18E48525}"
 EndProject
@@ -99,15 +99,54 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AI.HuggingFace", "src\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj", "{136823BE-8665-4D57-87E0-EF41535539E2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InternalUtilities", "InternalUtilities", "{4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}"
-	ProjectSection(SolutionItems) = preProject
-		src\InternalUtilities\InternalUtilities.props = src\InternalUtilities\InternalUtilities.props
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Weaviate", "src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj", "{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenApiSkillsExample", "..\samples\dotnet\openapi-skills\OpenApiSkillsExample.csproj", "{4D91A3E0-C404-495B-AD4A-411C4E83CF54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.DuckDB", "src\Connectors\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj", "{50FAE231-6F24-4779-9D02-12ABBC9A49E2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D794-4EC3-8E8F-F90D4D166420}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\test\AssertExtensions.cs = src\InternalUtilities\test\AssertExtensions.cs
+		src\InternalUtilities\test\FunctionHelpers.cs = src\InternalUtilities\test\FunctionHelpers.cs
+		src\InternalUtilities\test\TestInternalUtilities.props = src\InternalUtilities\test\TestInternalUtilities.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{958AD708-F048-4FAF-94ED-D2F2B92748B9}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\InternalUtilities.props = src\InternalUtilities\src\InternalUtilities.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics", "{29E7D971-1308-4171-9872-E8E4669A1134}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs = src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs
+		src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs = src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs
+		src\InternalUtilities\src\Diagnostics\HttpStatusCodeType.cs = src\InternalUtilities\src\Diagnostics\HttpStatusCodeType.cs
+		src\InternalUtilities\src\Diagnostics\NullableAttributes.cs = src\InternalUtilities\src\Diagnostics\NullableAttributes.cs
+		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0047-4850-BEF9-BA8237EA9D8B}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\Linq\AsyncEnumerable.cs = src\InternalUtilities\src\Linq\AsyncEnumerable.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{DB950192-30F1-48B1-88D7-F43FECCA1A1C}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\Text\Json.cs = src\InternalUtilities\src\Text\Json.cs
+		src\InternalUtilities\src\Text\StringExtensions.cs = src\InternalUtilities\src\Text\StringExtensions.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{1C19D805-3573-4477-BF07-40180FCDE1BD}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\Http\HttpClientProvider.cs = src\InternalUtilities\src\Http\HttpClientProvider.cs
+		src\InternalUtilities\src\Http\NonDisposableHttpClientHandler.cs = src\InternalUtilities\src\Http\NonDisposableHttpClientHandler.cs
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skills.Core", "src\Skills\Skills.Core\Skills.Core.csproj", "{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCalcSkills", "samples\NCalcSkills\NCalcSkills.csproj", "{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -201,10 +240,8 @@ Global
 		{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB3FC57F-E591-4C88-BCD5-B6A1BC635168}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CCABF515-2C79-453E-A5A2-69C69B8D172E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CCABF515-2C79-453E-A5A2-69C69B8D172E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCABF515-2C79-453E-A5A2-69C69B8D172E}.Publish|Any CPU.ActiveCfg = Release|Any CPU
 		{CCABF515-2C79-453E-A5A2-69C69B8D172E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CCABF515-2C79-453E-A5A2-69C69B8D172E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5DEBAA62-F117-496A-8778-FED3604B70E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5DEBAA62-F117-496A-8778-FED3604B70E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DEBAA62-F117-496A-8778-FED3604B70E2}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
@@ -318,6 +355,18 @@ Global
 		{50FAE231-6F24-4779-9D02-12ABBC9A49E2}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{50FAE231-6F24-4779-9D02-12ABBC9A49E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50FAE231-6F24-4779-9D02-12ABBC9A49E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -363,6 +412,14 @@ Global
 		{6AAB0620-33A1-4A98-A63B-6560B9BA47A4} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{4D91A3E0-C404-495B-AD4A-411C4E83CF54} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{50FAE231-6F24-4779-9D02-12ABBC9A49E2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{5C246969-D794-4EC3-8E8F-F90D4D166420} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
+		{958AD708-F048-4FAF-94ED-D2F2B92748B9} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
+		{29E7D971-1308-4171-9872-E8E4669A1134} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
+		{B00AD427-0047-4850-BEF9-BA8237EA9D8B} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
+		{DB950192-30F1-48B1-88D7-F43FECCA1A1C} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
+		{1C19D805-3573-4477-BF07-40180FCDE1BD} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
+		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
+		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

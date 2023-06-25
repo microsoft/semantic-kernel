@@ -6,7 +6,11 @@
       "outputLocation": "./build",
       "appBuildCommand": "yarn build",
       "run": "yarn start",
-      "appDevserverUrl": "{{appDevserverUrl}}"
+      "appDevserverUrl": "{{appDevserverUrl}}",
+      "appName": "{{appName}}",
+      "resourceGroup": "{{resourceGroup}}",
+      "subscription-id": "{{subscription-id}}",
+      "env": "production"
     }
   }
 }
