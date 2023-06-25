@@ -95,8 +95,7 @@ export const ChatList: FC = () => {
                 }
             }
             setConversationsView(filteredConversations);
-        }
-        else {
+        } else {
             // If no search string, show full conversations list.
             setConversationsView(conversations);
         }
@@ -154,7 +153,7 @@ export const ChatList: FC = () => {
                     return (
                         <TreeItem
                             key={id}
-                            leaf
+                            itemType="leaf"
                             style={isSelected ? { background: tokens.colorNeutralBackground1 } : undefined}
                         >
                             <ChatListItem
