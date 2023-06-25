@@ -97,7 +97,8 @@ public class SemanticKernelEndpoint
             return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, "Missing one or more expected HTTP Headers");
         }
 
-        var planner = new SequentialPlanner(kernel);
+        // TODO: Support SequentialPlanner
+        var planner = new ActionPlanner(kernel);
         var goal = ask.Value;
 
         var plan = await planner.CreatePlanAsync(goal);
@@ -131,29 +132,41 @@ public class SemanticKernelEndpoint
         }
 
         var context = kernel.CreateNewContext();
-
-        var plan = Plan.FromJson(ask.Value, context);
-
-        var iterations = 1;
-
-        while (plan.HasNextStep &&
-               iterations < maxSteps)
+        foreach (var input in ask.Inputs)
         {
-            try
-            {
-                plan = await kernel.StepAsync(context.Variables, plan);
-            }
-            catch (KernelException e)
-            {
-                context.Fail(e.Message, e);
-                return await ResponseErrorWithMessageAsync(req, context);
-            }
-
-            iterations++;
+            context.Variables.Set(input.Key, input.Value);
         }
 
+        // Reload the plan with full context to be executed
+        var plan = Plan.FromJson(ask.Value, context);
         var r = req.CreateResponse(HttpStatusCode.OK);
-        await r.WriteAsJsonAsync(new AskResult { Value = plan.State.ToString() });
+
+        try
+        {
+            if (plan.Steps.Count < maxSteps)
+            {
+                var planResult = await plan.InvokeAsync(context);
+                await r.WriteAsJsonAsync(new AskResult { Value = planResult.Result });
+            }
+            else
+            {
+                var iterations = 1;
+
+                while (plan.HasNextStep &&
+                       iterations < maxSteps)
+                {
+                    plan = await kernel.StepAsync(context.Variables, plan);
+                    iterations++;
+                }
+                await r.WriteAsJsonAsync(new AskResult { Value = plan.State.ToString() });
+            }
+        }
+        catch (KernelException e)
+        {
+            context.Fail(e.Message, e);
+            return await ResponseErrorWithMessageAsync(req, context);
+        }
+
         return r;
     }
 

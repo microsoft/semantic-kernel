@@ -9,13 +9,13 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Text;
 
@@ -26,8 +26,17 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 /// </summary>
 internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenApiDocumentParser"/> class.
+    /// </summary>
+    /// <param name="logger">Optional logger instance.</param>
+    public OpenApiDocumentParser(ILogger? logger = null)
+    {
+        this._logger = logger ?? NullLogger.Instance;
+    }
+
     /// <inheritdoc/>
-    public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, CancellationToken cancellationToken = default)
+    public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, bool ignoreNonCompliantErrors = false, CancellationToken cancellationToken = default)
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
@@ -35,10 +44,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
-        if (result.OpenApiDiagnostic.Errors.Any())
-        {
-            throw new OpenApiDocumentParsingException($"Parsing of '{result.OpenApiDocument.Info?.Title}' OpenAPI document failed. Details: {string.Join(";", result.OpenApiDiagnostic.Errors)}");
-        }
+        this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
         return ExtractRestApiOperations(result.OpenApiDocument);
     }
@@ -61,11 +67,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     private static readonly Version s_latestSupportedVersion = new(3, 0, 1);
 
     /// <summary>
-    /// Used to convert operationId to SK function names.
-    /// </summary>
-    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
-
-    /// <summary>
     /// List of supported Media Types.
     /// </summary>
     private static readonly List<string> s_supportedMediaTypes = new()
@@ -74,10 +75,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         "text/plain"
     };
 
-    /// <summary>
-    /// An instance of the OpenApiStreamReader class.
-    /// </summary>
     private readonly OpenApiStreamReader _openApiReader = new();
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
@@ -180,15 +179,6 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             var method = operationPair.Key.ToString();
 
             var operationItem = operationPair.Value;
-
-            try
-            {
-                Verify.ValidFunctionName(operationItem.OperationId);
-            }
-            catch (KernelException)
-            {
-                operationItem.OperationId = ConvertOperationIdToValidFunctionName(operationItem.OperationId);
-            }
 
             var operation = new RestApiOperation(
                 operationItem.OperationId,
@@ -390,29 +380,26 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     }
 
     /// <summary>
-    /// Converts operation id to valid SK Function name.
-    /// A function name can contain only ASCII letters, digits, and underscores.
+    /// Asserts the successful reading of OpenAPI document.
     /// </summary>
-    /// <param name="operationId">The operation id.</param>
-    /// <returns>Valid SK Function name.</returns>
-    private static string ConvertOperationIdToValidFunctionName(string operationId)
+    /// <param name="readResult">The reading results to be checked.</param>
+    /// <param name="ignoreNonCompliantErrors">Flag indicating whether to ignore non-compliant errors.
+    /// If set to true, the parser will not throw exceptions for non-compliant documents.
+    /// Please note that enabling this option may result in incomplete or inaccurate parsing results.
+    /// </param>
+    private void AssertReadingSuccessful(ReadResult readResult, bool ignoreNonCompliantErrors)
     {
-        // Tokenize operation id on forward and back slashes
-        string[] tokens = operationId.Split('/', '\\');
-        string result = "";
-
-        foreach (string token in tokens)
+        if (readResult.OpenApiDiagnostic.Errors.Any())
         {
-            // Removes all characters that are not ASCII letters, digits, and underscores.
-            string formattedToken = s_removeInvalidCharsRegex.Replace(token, "");
-            result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
+            var message = $"Parsing of '{readResult.OpenApiDocument.Info?.Title}' OpenAPI document complete with the following errors: {string.Join(";", readResult.OpenApiDiagnostic.Errors)}";
+
+            this._logger.LogWarning("{Message}", message);
+
+            if (!ignoreNonCompliantErrors)
+            {
+                throw new OpenApiDocumentParsingException(message);
+            }
         }
-
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{1}\" when invoking function.", operationId, result);
-        Console.ResetColor();
-
-        return result;
     }
 
     #endregion
