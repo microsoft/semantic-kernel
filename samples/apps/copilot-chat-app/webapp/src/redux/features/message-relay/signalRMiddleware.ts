@@ -8,7 +8,6 @@ import { IAskResult } from '../../../libs/semantic-kernel/model/AskResult';
 import { addAlert } from '../app/appSlice';
 import { ChatState } from '../conversations/ChatState';
 import { AuthorRoles, ChatMessageType, IChatMessage } from './../../../libs/models/ChatMessage';
-import { isPlan } from './../../../libs/utils/PlanUtils';
 import { getSelectedChatID } from './../../app/store';
 
 // These have to match the callback names used in the backend
@@ -54,7 +53,7 @@ const hubConnection = setupSignalRConnectionToChatHub();
 
 const registerCommonSignalConnectionEvents = async (store: any) => {
     // Re-establish the connection if connection dropped
-    hubConnection.onclose(error => {
+    hubConnection.onclose((error) => {
         if (hubConnection.state === signalR.HubConnectionState.Disconnected) {
             const errorMessage = 'Connection closed due to error. Try refreshing this page to restart the connection';
             store.dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -62,7 +61,7 @@ const registerCommonSignalConnectionEvents = async (store: any) => {
         }
     });
 
-    hubConnection.onreconnecting(error => {
+    hubConnection.onreconnecting((error) => {
         if (hubConnection.state === signalR.HubConnectionState.Reconnecting) {
             const errorMessage = 'Connection lost due to error. Reconnecting...';
             store.dispatch(addAlert({ message: errorMessage, type: AlertType.Info }));
@@ -80,17 +79,19 @@ const registerCommonSignalConnectionEvents = async (store: any) => {
 };
 
 export const startSignalRConnection = async (store: any) => {
-    registerCommonSignalConnectionEvents(store).then(async () => {
-        await hubConnection.start();
-        console.assert(hubConnection.state === signalR.HubConnectionState.Connected);
-        console.log('SignalR connection established');
-    }).catch((err) => {
-        console.assert(hubConnection.state === signalR.HubConnectionState.Disconnected);
-        console.error('SignalR Connection Error: ', err);
-        setTimeout(() => {
-            startSignalRConnection(store).catch(() => {});
-        }, 5000);
-    });
+    registerCommonSignalConnectionEvents(store)
+        .then(async () => {
+            await hubConnection.start();
+            console.assert(hubConnection.state === signalR.HubConnectionState.Connected);
+            console.log('SignalR connection established');
+        })
+        .catch((err) => {
+            console.assert(hubConnection.state === signalR.HubConnectionState.Disconnected);
+            console.error('SignalR Connection Error: ', err);
+            setTimeout(() => {
+                startSignalRConnection(store).catch(() => {});
+            }, 5000);
+        });
 };
 
 export const signalRMiddleware = (store: any) => {
@@ -142,10 +143,11 @@ export const registerSignalREvents = async (store: any) => {
         const loggedInUserId: string = store.getState().conversations.loggedInUserId;
         const originalMessageUserId: string | undefined = askResult.variables.find((v) => v.key === 'userId')?.value;
         const isPlanForLoggedInUser = loggedInUserId === originalMessageUserId;
+        const messageType =
+            Number(askResult.variables.find((v) => v.key === 'messageType')?.value) ?? ChatMessageType.Message;
 
-        const message: IChatMessage = {
-            type: (askResult.variables.find((v) => v.key === 'messageType')?.value ??
-                ChatMessageType.Message) as ChatMessageType,
+        const message = {
+            type: messageType,
             timestamp: new Date().getTime(),
             userName: 'bot',
             userId: 'bot',
@@ -154,8 +156,10 @@ export const registerSignalREvents = async (store: any) => {
             authorRole: AuthorRoles.Bot,
             id: askResult.variables.find((v) => v.key === 'messageId')?.value,
             state:
-                isPlan(askResult.value) && isPlanForLoggedInUser ? PlanState.PlanApprovalRequired : PlanState.Disabled,
-        };
+                messageType === ChatMessageType.Plan && isPlanForLoggedInUser
+                    ? PlanState.PlanApprovalRequired
+                    : PlanState.Disabled,
+        } as IChatMessage;
 
         store.dispatch({ type: 'conversations/updateConversationFromServer', payload: { message, chatId } });
     });
