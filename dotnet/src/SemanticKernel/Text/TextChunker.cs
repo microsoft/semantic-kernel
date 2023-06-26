@@ -131,31 +131,34 @@ public static class TextChunker
 
     private static List<string> BuildParagraph(List<string> truncatedLines, StringBuilder paragraphBuilder, List<string> paragraphs, int maxTokensPerParagraph, Func<string, int, List<string>> longLinesSplitter)
     {
-        // Base case: no more elements in the list
-        if (truncatedLines.Count == 0)
+        while (true)
         {
-            // Adding any remaining paragraph
-            if (paragraphBuilder.Length > 0)
+            if (truncatedLines.Count == 0)
+            {
+                // Adding any remaining paragraph
+                if (paragraphBuilder.Length > 0)
+                {
+                    paragraphs.Add(paragraphBuilder.ToString().Trim());
+                }
+                return paragraphs;
+            }
+
+            string line = truncatedLines[0];
+
+            if (paragraphBuilder.Length > 0 && TokenCount(paragraphBuilder.Length) + TokenCount(line.Length) + 1 >= maxTokensPerParagraph)
             {
                 paragraphs.Add(paragraphBuilder.ToString().Trim());
+
+                // next paragraph
+                paragraphBuilder.Clear();
             }
-            return paragraphs;
+            else
+            {
+                paragraphBuilder.AppendLine(line);
+
+                truncatedLines.RemoveAt(0);
+            }
         }
-
-        // Recursive case
-        string line = truncatedLines.First();
-
-        if (paragraphBuilder.Length > 0 && TokenCount(paragraphBuilder.Length) + TokenCount(line.Length) + 1 >= maxTokensPerParagraph)
-        {
-            paragraphs.Add(paragraphBuilder.ToString().Trim());
-
-            // next paragraph
-            return BuildParagraph(truncatedLines, new StringBuilder(), paragraphs, maxTokensPerParagraph, longLinesSplitter);
-        }
-
-        paragraphBuilder.AppendLine(line);
-
-        return BuildParagraph(truncatedLines.Skip(1).ToList(), paragraphBuilder, paragraphs, maxTokensPerParagraph, longLinesSplitter);
     }
 
     private static List<string> InternalSplitLines(string text, int maxTokensPerLine, bool trim, string?[] splitOptions)
