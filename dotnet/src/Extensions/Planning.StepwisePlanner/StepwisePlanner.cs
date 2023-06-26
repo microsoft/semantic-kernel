@@ -241,6 +241,11 @@ public class StepwisePlanner
             }
         }
 
+        if (string.IsNullOrEmpty(result.Thought) && string.IsNullOrEmpty(result.Action))
+        {
+            result.Observation = "System step error, no thought or action found. Please give a valid thought and/or action.";
+        }
+
         return result;
     }
 
