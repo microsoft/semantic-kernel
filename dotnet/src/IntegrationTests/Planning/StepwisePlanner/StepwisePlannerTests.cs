@@ -94,7 +94,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.True(result.Variables.TryGetValue("stepsTaken", out string? stepsTakenString));
         var stepsTaken = JsonSerializer.Deserialize<List<SystemStep>>(stepsTakenString!);
         Assert.NotNull(stepsTaken);
-        Assert.True(stepsTaken.Count > 3 && stepsTaken.Count <= 10, $"Actual: {stepsTaken.Count}. Expected at least 3 steps and at most 10 steps to be taken.");
+        Assert.True(stepsTaken.Count >= 3 && stepsTaken.Count <= 10, $"Actual: {stepsTaken.Count}. Expected at least 3 steps and at most 10 steps to be taken.");
     }
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
