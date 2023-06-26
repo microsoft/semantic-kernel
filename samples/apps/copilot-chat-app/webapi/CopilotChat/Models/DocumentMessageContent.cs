@@ -12,47 +12,25 @@ namespace SemanticKernel.Service.CopilotChat.Models;
 /// </summary>
 public class DocumentMessageContent
 {
-    public class Document
-    {
-        /// <summary>
-        /// Name of the uploaded document.
-        /// </summary>
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Size of the uploaded document in bytes.
-        /// </summary>
-        [JsonPropertyName("size")]
-        public string Size { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Status of the uploaded document.
-        /// If true, the document is successfully uploaded. False otherwise.
-        /// </summary>
-        [JsonPropertyName("status")]
-        public bool Status { get; set; } = false;
-    }
-
     /// <summary>
     /// List of documents contained in the message.
     /// </summary>
     [JsonPropertyName("documents")]
-    public List<Document> Documents { get; set; } = new List<Document>();
+    public IEnumerable<DocumentData> Documents { get; private set; } = new List<DocumentData>();
 
     /// <summary>
     /// Add a document to the list of documents.
     /// </summary>
     /// <param name="name">Name of the uploaded document</param>
     /// <param name="size">Size of the uploaded document in bytes</param>
-    /// <param name="status">Status of the uploaded document</param>
-    public void AddDocument(string name, string size, bool status)
+    /// <param name="isUploaded">Status of the uploaded document</param>
+    public void AddDocument(string name, string size, bool isUploaded)
     {
-        this.Documents.Add(new Document
+        this.Documents = this.Documents.Append(new DocumentData
         {
             Name = name,
             Size = size,
-            Status = status,
+            IsUploaded = isUploaded,
         });
     }
 
@@ -72,13 +50,13 @@ public class DocumentMessageContent
     /// <returns>A formatted string</returns>
     public string ToFormattedString()
     {
-        if (this.Documents.Count == 0)
+        if (!this.Documents.Any())
         {
             return string.Empty;
         }
 
         var formattedStrings = this.Documents
-            .FindAll(document => document.Status)
+            .Where(document => document.IsUploaded)
             .Select(document => $"[Name: {document.Name}, Size: {document.Size}]").ToList();
 
         if (formattedStrings.Count == 1)
@@ -96,21 +74,21 @@ public class DocumentMessageContent
     /// <returns>A formatted string</returns>
     public string ToFormattedStringNamesOnly()
     {
-        if (this.Documents.Count == 0)
+        if (!this.Documents.Any())
         {
             return string.Empty;
         }
 
         var formattedStrings = this.Documents
-            .FindAll(document => document.Status)
-            .Select(document => $"{document.Name}").ToList();
+            .Where(document => document.IsUploaded)
+            .Select(document => document.Name).ToList();
 
         if (formattedStrings.Count == 1)
         {
-            return $"{formattedStrings.First()}";
+            return formattedStrings.First();
         }
 
-        return $"{string.Join(", ", formattedStrings)}";
+        return string.Join(", ", formattedStrings);
     }
 
     /// <summary>

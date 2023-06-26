@@ -62,7 +62,7 @@ interface ChatHistoryDocumentContentProps {
 interface DocumentData {
     name: string;
     size: string;
-    status: boolean;
+    isUploaded: boolean;
 }
 
 interface DocumentMessageContent {
@@ -94,10 +94,10 @@ export const ChatHistoryDocumentContent: React.FC<ChatHistoryDocumentContentProp
                                 </Caption1>
                             }
                         />
-                        <ProgressBar thickness="large" color={document.status ? "success" : "error"} value={1} />
+                        <ProgressBar thickness="large" color={document.isUploaded ? "success" : "error"} value={1} />
                     </Card>
                     <span className={isMe ? classes.footer : mergeClasses(classes.footer, classes.floatLeft)}>
-                        {document.status ? "Success: memory established" : "Failed: memory not established"}
+                        {document.isUploaded ? "Success: memory established" : "Failed: memory not established"}
                     </span>
                 </div>
             ))}

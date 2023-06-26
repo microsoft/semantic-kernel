@@ -23,7 +23,7 @@ public class DocumentImportForm
     /// <summary>
     /// The file to import.
     /// </summary>
-    public List<IFormFile> FormFiles { get; set; } = new List<IFormFile>();
+    public IEnumerable<IFormFile> FormFiles { get; set; } = new List<IFormFile>();
 
     /// <summary>
     /// Scope of the document. This determines the collection name in the document memory.

@@ -26,7 +26,7 @@ public static class Program
             return;
         }
 
-        var filesOption = new Option<List<FileInfo>>(name: "--files", description: "The file to import to document memory store.")
+        var filesOption = new Option<List<FileInfo>>(name: "--files", description: "The files to import to document memory store.")
         {
             IsRequired = true
         };

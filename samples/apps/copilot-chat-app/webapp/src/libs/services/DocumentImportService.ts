@@ -16,8 +16,8 @@ export class DocumentImportService extends BaseService {
         formData.append('userName', userName);
         formData.append('chatId', chatId);
         formData.append('documentScope', 'Chat');
-        for (let i = 0; i < documents.length; i++) {
-            formData.append('formFiles', documents[i]);
+        for (const document of documents) {
+            formData.append('formFiles', document);
         }
 
         return await this.getResponseAsync<IChatMessage>(
