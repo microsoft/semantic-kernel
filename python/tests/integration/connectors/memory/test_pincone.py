@@ -39,6 +39,7 @@ def memory_record1():
         is_reference=False,
         embedding=np.array([0.5, 0.5]),
         description="description",
+        additional_metadata="additional metadata",
         external_source_name="external source",
         timestamp="timestamp",
     )
@@ -52,6 +53,7 @@ def memory_record2():
         is_reference=False,
         embedding=np.array([0.25, 0.75]),
         description="description",
+        additional_metadata="additional metadata",
         external_source_name="external source",
         timestamp="timestamp",
     )
@@ -65,6 +67,7 @@ def memory_record3():
         is_reference=False,
         embedding=np.array([0.25, 0.80]),
         description="description",
+        additional_metadata="additional metadata",
         external_source_name="external source",
         timestamp="timestamp",
     )
@@ -72,16 +75,16 @@ def memory_record3():
 
 def test_constructor(get_pinecone_config):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
     assert memory.get_collections() is not None
 
 
 @pytest.mark.asyncio
 async def test_create_and_get_collection_async(get_pinecone_config):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
 
-    await memory.create_collection_async("test-collection", 2)
+    await memory.create_collection_async("test-collection")
     result = await memory.describe_collection_async("test-collection")
     assert result is not None
     assert result.name == "test-collection"
@@ -90,7 +93,7 @@ async def test_create_and_get_collection_async(get_pinecone_config):
 @pytest.mark.asyncio
 async def test_get_collections_async(get_pinecone_config):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
 
     await memory.create_collection_async("test-collection", 2)
     result = await memory.get_collections_async()
@@ -100,9 +103,9 @@ async def test_get_collections_async(get_pinecone_config):
 @pytest.mark.asyncio
 async def test_delete_collection_async(get_pinecone_config):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
 
-    await memory.create_collection_async("test-collection", 2)
+    await memory.create_collection_async("test-collection")
     await memory.delete_collection_async("test-collection")
     result = await memory.get_collections_async()
     assert len(result) == 0
@@ -111,9 +114,9 @@ async def test_delete_collection_async(get_pinecone_config):
 @pytest.mark.asyncio
 async def test_does_collection_exist_async(get_pinecone_config):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
 
-    await memory.create_collection_async("test-collection", 2)
+    await memory.create_collection_async("test-collection")
     result = await memory.does_collection_exist_async("test-collection")
     assert result is True
 
@@ -121,12 +124,12 @@ async def test_does_collection_exist_async(get_pinecone_config):
 @pytest.mark.asyncio
 async def test_upsert_async_and_get_async(get_pinecone_config, memory_record1):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
 
-    await memory.create_collection_async("test-collection", 2)
+    await memory.create_collection_async("test-collection")
     await memory.upsert_async("test-collection", memory_record1)
     result = await memory.get_async(
-        "test-collection", memory_record1._id, with_embedding=True
+        "test-collection", memory_record1._id, with_embedding=True,
     )
     assert result is not None
     assert result._id == memory_record1._id
@@ -140,9 +143,9 @@ async def test_upsert_batch_async_and_get_batch_async(
     get_pinecone_config, memory_record1, memory_record2
 ):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
 
-    await memory.create_collection_async("test-collection", 2)
+    await memory.create_collection_async("test-collection")
     await memory.upsert_batch_async("test-collection", [memory_record1, memory_record2])
 
     results = await memory.get_batch_async(
@@ -159,9 +162,9 @@ async def test_upsert_batch_async_and_get_batch_async(
 @pytest.mark.asyncio
 async def test_remove_async(get_pinecone_config, memory_record1):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
 
-    await memory.create_collection_async("test-collection", 2)
+    await memory.create_collection_async("test-collection")
     await memory.upsert_async("test-collection", memory_record1)
     await memory.remove_async("test-collection", memory_record1._id)
     with pytest.raises(KeyError):
@@ -173,9 +176,9 @@ async def test_remove_async(get_pinecone_config, memory_record1):
 @pytest.mark.asyncio
 async def test_remove_batch_async(get_pinecone_config, memory_record1, memory_record2):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
 
-    await memory.create_collection_async("test-collection", 2)
+    await memory.create_collection_async("test-collection")
     await memory.upsert_batch_async("test-collection", [memory_record1, memory_record2])
     await memory.remove_batch_async(
         "test-collection", [memory_record1._id, memory_record2._id]
@@ -196,9 +199,9 @@ async def test_get_nearest_match_async(
     get_pinecone_config, memory_record1, memory_record2
 ):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
 
-    await memory.create_collection_async("test-collection", 2)
+    await memory.create_collection_async("test-collection")
     await memory.upsert_batch_async("test-collection", [memory_record1, memory_record2])
     test_embedding = memory_record1.embedding
     test_embedding[0] = test_embedding[0] + 0.01
@@ -215,9 +218,9 @@ async def test_get_nearest_matches_async(
     get_pinecone_config, memory_record1, memory_record2, memory_record3
 ):
     api_key, environment = get_pinecone_config
-    memory = PineconeMemoryStore(api_key, environment)
+    memory = PineconeMemoryStore(api_key, environment, 2)
 
-    await memory.create_collection_async("test-collection", 2)
+    await memory.create_collection_async("test-collection")
     await memory.upsert_batch_async(
         "test-collection", [memory_record1, memory_record2, memory_record3]
     )

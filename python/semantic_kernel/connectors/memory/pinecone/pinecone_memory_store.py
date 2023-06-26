@@ -28,19 +28,27 @@ class PineconeMemoryStore(MemoryStoreBase):
     _logger: Logger
     _pinecone_api_key: str
     _pinecone_environment: str
+    _default_dimensionality: int
 
     def __init__(
-        self, api_key: str, environment: str, logger: Optional[Logger] = None
+        self, api_key: str, environment: str, default_dimensionality: int, logger: Optional[Logger] = None
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
         Arguments:
             pinecone_api_key {str} -- The Pinecone API key.
-            pinecone_environment {str} -- The Pinecone environment key/type.
+            pinecone_environment {str} -- The Pinecone environment.
             logger {Optional[Logger]} -- The logger to use. (default: {None})
+            default_dimensionality {int} -- The default dimensionality to use for new collections.
         """
+        if default_dimensionality > MAX_DIMENSIONALITY:
+            raise ValueError(
+                f"Dimensionality of {default_dimensionality} exceeds "
+                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+            )
         self._pinecone_api_key = api_key
         self._pinecone_environment = environment
+        self._default_dimensionality = default_dimensionality
         self._logger = logger or NullLogger()
 
         pinecone.init(
@@ -53,7 +61,7 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def create_collection_async(
         self,
         collection_name: str,
-        dimension_num: int,
+        dimension_num: Optional[int] = None,
         distance_type: Optional[str] = "cosine",
         num_of_pods: Optional[int] = 1,
         replica_num: Optional[int] = 0,
@@ -69,11 +77,12 @@ class PineconeMemoryStore(MemoryStoreBase):
             collection_name {str} -- The name of the collection to create.
             In Pinecone, a collection is represented as an index. The concept
             of "collection" in Pinecone is just a static copy of an index.
-            dimension {int} -- The dimension of embeddings in the collection.
 
         Returns:
             None
         """
+        if dimension_num is None:
+            dimension_num = self._default_dimensionality
         if dimension_num > MAX_DIMENSIONALITY:
             raise ValueError(
                 f"Dimensionality of {dimension_num} exceeds "
