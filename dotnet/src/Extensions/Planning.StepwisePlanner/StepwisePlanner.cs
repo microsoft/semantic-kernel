@@ -285,7 +285,7 @@ public class StepwisePlanner
         // Keep the most recent steps in the scratch pad.
         for (var i = stepsTaken.Count - 1; i >= 0; i--)
         {
-            if (scratchPadLines.Count / 4.0 > (this.Config.MaxTokens * 0.8))
+            if (scratchPadLines.Count / 4.0 > (this.Config.MaxTokens * 0.75))
             {
                 this._logger.LogDebug("Scratchpad is too long, truncating. Skipping {CountSkipped} steps.", i + 1);
                 break;
