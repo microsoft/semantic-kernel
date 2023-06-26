@@ -53,10 +53,12 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     private final ConcurrentMap<String, SearchAsyncClient> _clientsByIndex =
             new ConcurrentHashMap<>();
 
-    // Create a new instance of semantic memory using Azure Cognitive Search.
-    // <param name="endpoint">Azure Cognitive Search URI, e.g.
-    // "https://contoso.search.windows.net"</param>
-    // <param name="apiKey">API Key</param>
+    /**
+     * Create a new instance of semantic memory using Azure Cognitive Search.
+     *
+     * @param endpoint Azure Cognitive Search URI, e.g. {@code "https://contoso.search.windows.net"}
+     * @param apiKey The key used to authenticate HTTP requests sent to the Azure Cognitive Search service.
+     */
     public AzureCognitiveSearchMemory(String endpoint, String apiKey) {
         AzureKeyCredential credentials = new AzureKeyCredential(apiKey);
         this._adminClient =
@@ -66,10 +68,12 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                         .buildAsyncClient();
     }
 
-    // Create a new instance of semantic memory using Azure Cognitive Search.
-    // <param name="endpoint">Azure Cognitive Search URI, e.g.
-    // "https://contoso.search.windows.net"</param>
-    // <param name="credentials">Azure service</param>
+    /**
+     * Create a new instance of semantic memory using Azure Cognitive Search.
+     *
+     * @param endpoint Azure Cognitive Search URI, e.g. {@code "https://contoso.search.windows.net"}
+     * @param credentials  TokenCredential used to authorize requests sent to the Azure Cognitive Search service.
+     */
     public AzureCognitiveSearchMemory(String endpoint, TokenCredential credentials) {
         this._adminClient =
                 new SearchIndexClientBuilder()
@@ -78,13 +82,13 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                         .buildAsyncClient();
     }
 
+    private AzureCognitiveSearchMemory(AzureCognitiveSearchMemory other) {
+        this._adminClient = other._adminClient;
+    }
+
     @Override
     public AzureCognitiveSearchMemory copy() {
         return new AzureCognitiveSearchMemory(this);
-    }
-
-    private AzureCognitiveSearchMemory(AzureCognitiveSearchMemory other) {
-        this._adminClient = other._adminClient;
     }
 
     @Override
