@@ -249,16 +249,19 @@ public class StepwisePlanner
         context.Variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
         context.Variables.Set("stepsTaken", JsonSerializer.Serialize(stepsTaken));
 
-        // Materialize the nonEmptyActions collection into a List
-        var nonEmptyActions = stepsTaken.Where(s => !string.IsNullOrEmpty(s.Action)).ToList();
-        int skillCallCount = nonEmptyActions.Count;
-        string skillCallCountStr = skillCallCount.ToString(CultureInfo.InvariantCulture);
+        Dictionary<string, int> actionCounts = new();
+        foreach (var step in stepsTaken)
+        {
+            if (string.IsNullOrEmpty(step.Action)) { continue; }
 
-        var distinctSkills = nonEmptyActions.Select(s => s.Action).Distinct().ToList();
-        string skillCallList = string.Join(", ", distinctSkills);
+            _ = actionCounts.TryGetValue(step.Action!, out int currentCount);
+            actionCounts[step.Action!] = ++currentCount;
+        }
 
-        string skillCallListWithCounts = string.Join(", ", distinctSkills.Select(skill =>
-            $"{skill}({nonEmptyActions.Count(s => s.Action == skill)})"));
+        var skillCallListWithCounts = string.Join(", ", actionCounts.Keys.Select(skill =>
+            $"{skill}({actionCounts[skill]})"));
+
+        var skillCallCountStr = actionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
 
         context.Variables.Set("skillCount", $"{skillCallCountStr} ({skillCallListWithCounts})");
     }
@@ -273,13 +276,13 @@ public class StepwisePlanner
         var scratchPadLines = new List<string>();
 
         // Add the original first thought
-        scratchPadLines.Add("This was your previous work (but I haven't seen any of it! I only see what you return as final answer):");
+        scratchPadLines.Add(ScratchPadPrefix);
         scratchPadLines.Add($"{Thought} {stepsTaken[0].Thought}");
 
         // Keep track of where to insert the next step
         var insertPoint = scratchPadLines.Count;
 
-        // Instead of most recent, we could use semantic relevance to keep important pieces and deduplicate
+        // Keep the most recent steps in the scratch pad.
         for (var i = stepsTaken.Count - 1; i >= 0; i--)
         {
             if (scratchPadLines.Count / 4.0 > (this.Config.MaxTokens * 0.8))
@@ -451,6 +454,11 @@ public class StepwisePlanner
     /// The Observation tag
     /// </summary>
     private const string Observation = "[OBSERVATION]";
+
+    /// <summary>
+    /// The prefix used for the scratch pad
+    /// </summary>
+    private const string ScratchPadPrefix = "This was my previous work (but they haven't seen any of it! They only see what I return as final answer):";
 
     /// <summary>
     /// The regex for parsing the action response
