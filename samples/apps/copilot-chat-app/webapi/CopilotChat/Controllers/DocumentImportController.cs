@@ -176,7 +176,7 @@ public class DocumentImportController : ControllerBase
         /// <summary>
         /// Create a new instance of the <see cref="ImportResult"/> class representing a failed import.
         /// </summary>
-        public static ImportResult Fail() => new ImportResult(string.Empty);
+        public static ImportResult Fail() => new(string.Empty);
 
         /// <summary>
         /// Add a key to the list of keys.
