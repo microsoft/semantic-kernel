@@ -157,5 +157,8 @@ public static class Program
 
         await Example50_Chroma.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example51_StepwisePlanner.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
