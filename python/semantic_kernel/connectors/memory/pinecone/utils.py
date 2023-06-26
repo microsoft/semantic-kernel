@@ -1,6 +1,6 @@
 import numpy
-from pinecone import Vector
 
+from pinecone import Vector
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 

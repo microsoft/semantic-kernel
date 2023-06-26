@@ -3,10 +3,10 @@
 from logging import Logger
 from typing import List, Optional, Tuple
 
-import pinecone
 from numpy import ndarray
-from pinecone import FetchResponse, IndexDescription
 
+import pinecone
+from pinecone import FetchResponse, IndexDescription
 from semantic_kernel.connectors.memory.pinecone.utils import (
     build_payload,
     parse_payload,
@@ -31,7 +31,11 @@ class PineconeMemoryStore(MemoryStoreBase):
     _default_dimensionality: int
 
     def __init__(
-        self, api_key: str, environment: str, default_dimensionality: int, logger: Optional[Logger] = None
+        self,
+        api_key: str,
+        environment: str,
+        default_dimensionality: int,
+        logger: Optional[Logger] = None,
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 

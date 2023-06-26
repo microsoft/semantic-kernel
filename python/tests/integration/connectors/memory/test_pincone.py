@@ -129,7 +129,9 @@ async def test_upsert_async_and_get_async(get_pinecone_config, memory_record1):
     await memory.create_collection_async("test-collection")
     await memory.upsert_async("test-collection", memory_record1)
     result = await memory.get_async(
-        "test-collection", memory_record1._id, with_embedding=True,
+        "test-collection",
+        memory_record1._id,
+        with_embedding=True,
     )
     assert result is not None
     assert result._id == memory_record1._id
