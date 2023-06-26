@@ -46,7 +46,7 @@ public class HttpSkill {
      */
     public Mono<String> getAsync(String url) {
         if (url == null || url.isEmpty()) {
-            throw new IllegalArgumentException("url cannot be `null` or empty");
+            return Mono.error(new IllegalArgumentException("url cannot be `null` or empty"));
         }
         HttpRequest request = new HttpRequest(HttpMethod.GET, url);
         return httpClient.send(request).flatMap(response -> response.getBodyAsString());
@@ -61,7 +61,7 @@ public class HttpSkill {
      */
     public Mono<String> postAsync(String url, String body) {
         if (url == null || url.isEmpty()) {
-            throw new IllegalArgumentException("url cannot be `null` or empty");
+            return Mono.error(new IllegalArgumentException("url cannot be `null` or empty"));
         }
         HttpRequest request = new HttpRequest(HttpMethod.POST, url);
         request.setBody(body);
@@ -77,7 +77,7 @@ public class HttpSkill {
      */
     public Mono<String> putAsync(String url, String body) {
         if (url == null || url.isEmpty()) {
-            throw new IllegalArgumentException("url cannot be `null` or empty");
+            return Mono.error(new IllegalArgumentException("url cannot be `null` or empty"));
         }
         HttpRequest request = new HttpRequest(HttpMethod.PUT, url);
         request.setBody(body);
@@ -92,7 +92,7 @@ public class HttpSkill {
      */
     public Mono<HttpResponse> deleteAsync(String url) {
         if (url == null || url.isEmpty()) {
-            throw new IllegalArgumentException("url cannot be `null` or empty");
+            return Mono.error(new IllegalArgumentException("url cannot be `null` or empty"));
         }
         HttpRequest request = new HttpRequest(HttpMethod.DELETE, url);
         return httpClient.send(request).flatMap(response -> Mono.just(response));
