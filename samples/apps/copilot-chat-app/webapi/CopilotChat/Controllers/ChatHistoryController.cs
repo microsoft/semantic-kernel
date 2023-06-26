@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.SemanticKernel;
+using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -25,53 +28,70 @@ namespace SemanticKernel.Service.CopilotChat.Controllers;
 public class ChatHistoryController : ControllerBase
 {
     private readonly ILogger<ChatHistoryController> _logger;
-    private readonly ChatSessionRepository _chatSessionRepository;
-    private readonly ChatMessageRepository _chatMessageRepository;
+    private readonly ChatSessionRepository _sessionRepository;
+    private readonly ChatMessageRepository _messageRepository;
+    private readonly ChatParticipantRepository _participantRepository;
+    private readonly ChatMemorySourceRepository _sourceRepository;
     private readonly PromptsOptions _promptOptions;
+    private const string ChatEditedClientCall = "ChatEdited";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryController"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="chatSessionRepository">The chat session repository.</param>
-    /// <param name="chatMessageRepository">The chat message repository.</param>
+    /// <param name="sessionRepository">The chat session repository.</param>
+    /// <param name="messageRepository">The chat message repository.</param>
+    /// <param name="participantRepository">The chat participant repository.</param>
+    /// <param name="sourceRepository">The chat memory resource repository.</param>
     /// <param name="promptsOptions">The prompts options.</param>
     public ChatHistoryController(
         ILogger<ChatHistoryController> logger,
-        ChatSessionRepository chatSessionRepository,
-        ChatMessageRepository chatMessageRepository,
+        ChatSessionRepository sessionRepository,
+        ChatMessageRepository messageRepository,
+        ChatParticipantRepository participantRepository,
+        ChatMemorySourceRepository sourceRepository,
         IOptions<PromptsOptions> promptsOptions)
     {
         this._logger = logger;
-        this._chatSessionRepository = chatSessionRepository;
-        this._chatMessageRepository = chatMessageRepository;
+        this._sessionRepository = sessionRepository;
+        this._messageRepository = messageRepository;
+        this._participantRepository = participantRepository;
+        this._sourceRepository = sourceRepository;
         this._promptOptions = promptsOptions.Value;
     }
 
     /// <summary>
     /// Create a new chat session and populate the session with the initial bot message.
     /// </summary>
-    /// <param name="chatParameters">Object that contains the parameters to create a new chat.</param>
+    /// <param name="chatParameter">Contains the title of the chat.</param>
     /// <returns>The HTTP action result.</returns>
     [HttpPost]
     [Route("chatSession/create")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CreateChatSessionAsync(
-        [FromBody] ChatSession chatParameters)
+    public async Task<IActionResult> CreateChatSessionAsync([FromBody] CreateChatParameters chatParameter)
     {
-        var userId = chatParameters.UserId;
-        var title = chatParameters.Title;
+        if (chatParameter.UserId == null || chatParameter.Title == null)
+        {
+            return this.BadRequest("Chat session parameters cannot be null.");
+        }
 
-        var newChat = new ChatSession(userId, title);
-        await this._chatSessionRepository.CreateAsync(newChat);
+        // Create a new chat session
+        var newChat = new ChatSession(chatParameter.Title);
+        await this._sessionRepository.CreateAsync(newChat);
 
         var initialBotMessage = this._promptOptions.InitialBotMessage;
         // The initial bot message doesn't need a prompt.
-        await this.SaveResponseAsync(initialBotMessage, string.Empty, newChat.Id);
+        var chatMessage = ChatMessage.CreateBotResponseMessage(
+            newChat.Id,
+            initialBotMessage,
+            string.Empty);
+        await this._messageRepository.CreateAsync(chatMessage);
 
-        this._logger.LogDebug("Created chat session with id {0} for user {1}", newChat.Id, userId);
+        // Add the user to the chat session
+        await this._participantRepository.CreateAsync(new ChatParticipant(chatParameter.UserId, newChat.Id));
+
+        this._logger.LogDebug("Created chat session with id {0}.", newChat.Id);
         return this.CreatedAtAction(nameof(this.GetChatSessionByIdAsync), new { chatId = newChat.Id }, newChat);
     }
 
@@ -83,17 +103,16 @@ public class ChatHistoryController : ControllerBase
     [ActionName("GetChatSessionByIdAsync")]
     [Route("chatSession/getChat/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetChatSessionByIdAsync(Guid chatId)
     {
-        var chat = await this._chatSessionRepository.FindByIdAsync(chatId.ToString());
-        if (chat == null)
+        ChatSession? chat = null;
+        if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString(), v => chat = v))
         {
-            return this.NotFound($"Chat of id {chatId} not found.");
+            return this.Ok(chat);
         }
 
-        return this.Ok(chat);
+        return this.NotFound($"No chat session found for chat id '{chatId}'.");
     }
 
     /// <summary>
@@ -103,18 +122,32 @@ public class ChatHistoryController : ControllerBase
     /// The pattern matches two GUIDs in canonical textual representation separated by a period.
     /// </summary>
     /// <param name="userId">The user id.</param>
+    /// <returns>A list of chat sessions. An empty list if the user is not in any chat session.</returns>
     [HttpGet]
     [Route("chatSession/getAllChats/{userId:regex(([[a-z0-9]]+-)+[[a-z0-9]]+\\.([[a-z0-9]]+-)+[[a-z0-9]]+)}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAllChatSessionsAsync(string userId)
     {
-        var chats = await this._chatSessionRepository.FindByUserIdAsync(userId);
-        if (chats == null)
+        // Get all participants that belong to the user.
+        // Then get all the chats from the list of participants.
+        var chatParticipants = await this._participantRepository.FindByUserIdAsync(userId);
+
+        var chats = new List<ChatSession>();
+        foreach (var chatParticipant in chatParticipants)
         {
-            // Return an empty list if no chats are found
-            return this.Ok(new List<ChatSession>());
+            ChatSession? chat = null;
+            if (await this._sessionRepository.TryFindByIdAsync(chatParticipant.ChatId, v => chat = v))
+            {
+                chats.Add(chat!);
+            }
+            else
+            {
+                this._logger.LogDebug(
+                    "Failed to find chat session with id {0} for participant {1}", chatParticipant.ChatId, chatParticipant.Id);
+                return this.NotFound(
+                    $"Failed to find chat session with id {chatParticipant.ChatId} for participant {chatParticipant.Id}");
+            }
         }
 
         return this.Ok(chats);
@@ -131,7 +164,6 @@ public class ChatHistoryController : ControllerBase
     [HttpGet]
     [Route("chatSession/getChatMessages/{chatId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetChatMessagesAsync(
         Guid chatId,
@@ -139,8 +171,8 @@ public class ChatHistoryController : ControllerBase
         [FromQuery] int count = -1)
     {
         // TODO: the code mixes strings and Guid without being explicit about the serialization format
-        var chatMessages = await this._chatMessageRepository.FindByChatIdAsync(chatId.ToString());
-        if (chatMessages == null)
+        var chatMessages = await this._messageRepository.FindByChatIdAsync(chatId.ToString());
+        if (!chatMessages.Any())
         {
             return this.NotFound($"No messages found for chat id '{chatId}'.");
         }
@@ -158,40 +190,46 @@ public class ChatHistoryController : ControllerBase
     [HttpPost]
     [Route("chatSession/edit")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> EditChatSessionAsync([FromBody] ChatSession chatParameters)
+    public async Task<IActionResult> EditChatSessionAsync(
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
+        [FromBody] ChatSession chatParameters)
     {
         string chatId = chatParameters.Id;
 
-        ChatSession? chat = await this._chatSessionRepository.FindByIdAsync(chatId);
-        if (chat == null)
+        ChatSession? chat = null;
+        if (await this._sessionRepository.TryFindByIdAsync(chatId, v => chat = v))
         {
-            return this.NotFound($"Chat of id {chatId} not found.");
+            chat!.Title = chatParameters.Title;
+            await this._sessionRepository.UpsertAsync(chat);
+            await messageRelayHubContext.Clients.Group(chatId).SendAsync(ChatEditedClientCall, chat);
+            return this.Ok(chat);
         }
 
-        chat.Title = chatParameters.Title;
-        await this._chatSessionRepository.UpdateAsync(chat);
-
-        return this.Ok(chat);
+        return this.NotFound($"No chat session found for chat id '{chatId}'.");
     }
-
-    # region Private
 
     /// <summary>
-    /// Save a bot response to the chat session.
+    /// Service API to get a list of imported sources.
     /// </summary>
-    /// <param name="response">The bot response.</param>
-    /// <param name="prompt">The prompt that was used to generate the response.</param>
-    /// <param name="chatId">The chat id.</param>
-    private async Task SaveResponseAsync(string response, string prompt, string chatId)
+    [Authorize]
+    [Route("chatSession/{chatId:guid}/sources")]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<MemorySource>>> GetSourcesAsync(
+        [FromServices] IKernel kernel,
+        Guid chatId)
     {
-        // Make sure the chat session exists
-        await this._chatSessionRepository.FindByIdAsync(chatId);
+        this._logger.LogInformation("Get imported sources of chat session {0}", chatId);
 
-        var chatMessage = ChatMessage.CreateBotResponseMessage(chatId, response, prompt);
-        await this._chatMessageRepository.CreateAsync(chatMessage);
+        if (await this._sessionRepository.TryFindByIdAsync(chatId.ToString(), v => _ = v))
+        {
+            var sources = await this._sourceRepository.FindByChatIdAsync(chatId.ToString());
+            return this.Ok(sources);
+        }
+
+        return this.NotFound($"No chat session found for chat id '{chatId}'.");
     }
-
-    # endregion
 }

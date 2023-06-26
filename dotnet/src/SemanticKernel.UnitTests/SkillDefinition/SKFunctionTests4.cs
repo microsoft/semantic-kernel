@@ -54,8 +54,6 @@ public class SKFunctionTests4
     public void ItHasDefaultTrustSettings2()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static void Test()
         {
         }
@@ -73,8 +71,7 @@ public class SKFunctionTests4
     public void ItSetsTrustSettings()
     {
         // Arrange
-        [SKFunction("Test", isSensitive: true)]
-        [SKFunctionName("Test")]
+        [SKFunction(isSensitive: true)]
         static void Test()
         {
         }
@@ -185,8 +182,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType1Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static void Test()
         {
             s_actual = s_expected;
@@ -214,8 +209,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType2Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static string Test()
         {
             s_actual = s_expected;
@@ -246,8 +239,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType3Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task<string> Test()
         {
             s_actual = s_expected;
@@ -278,8 +269,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType4Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static void Test(SKContext cx)
         {
             s_actual = s_expected;
@@ -307,8 +296,6 @@ public class SKFunctionTests4
     public async Task ItKeepsContextTrustType4Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static void Test(SKContext cx)
         {
             s_actual = s_expected;
@@ -342,8 +329,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType5Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static string Test(SKContext cx)
         {
             s_actual = cx["someVar"];
@@ -371,8 +356,6 @@ public class SKFunctionTests4
     public async Task ItKeepsContextTrustType5Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static string Test(SKContext cx)
         {
             // Set this variable as untrusted
@@ -406,8 +389,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType5NullableAsync(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         string? Test(SKContext cx)
         {
             s_actual = cx["someVar"];
@@ -438,8 +419,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType6Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         Task<string> Test(SKContext cx)
         {
             s_actual = s_expected;
@@ -468,8 +447,6 @@ public class SKFunctionTests4
     public async Task ItKeepsContextTrustType6Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         Task<string> Test(SKContext cx)
         {
             // Set this variable as untrusted
@@ -504,8 +481,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType7Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         Task<SKContext> Test(SKContext cx)
         {
             s_actual = s_expected;
@@ -535,8 +510,6 @@ public class SKFunctionTests4
     public async Task ItKeepsContextTrustType7Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         Task<SKContext> Test(SKContext cx)
         {
             s_actual = s_expected;
@@ -568,8 +541,6 @@ public class SKFunctionTests4
     public async Task ItSupportsAsyncType7Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         async Task<SKContext> TestAsync(SKContext cx)
         {
             await Task.Delay(0);
@@ -603,8 +574,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType8Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         void Test(string input)
         {
             s_actual = s_expected + input;
@@ -632,8 +601,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType9Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         string Test(string input)
         {
             s_actual = s_expected;
@@ -663,8 +630,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType10Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         Task<string> Test(string input)
         {
             s_actual = s_expected;
@@ -694,8 +659,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType11Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         void Test(string input, SKContext cx)
         {
             s_actual = s_expected;
@@ -724,8 +687,6 @@ public class SKFunctionTests4
     public async Task ItKeepsContextTrustType11Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         void Test(string input, SKContext cx)
         {
             s_actual = s_expected;
@@ -760,8 +721,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType12Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static string Test(string input, SKContext cx)
         {
             s_actual = s_expected;
@@ -792,8 +751,6 @@ public class SKFunctionTests4
     public async Task ItKeepsContextTrustType12Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static string Test(string input, SKContext cx)
         {
             s_actual = s_expected;
@@ -830,8 +787,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType13Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task<string> Test(string input, SKContext cx)
         {
             s_actual = s_expected;
@@ -862,8 +817,6 @@ public class SKFunctionTests4
     public async Task ItKeepsContextTrustType13Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task<string> Test(string input, SKContext cx)
         {
             s_actual = s_expected;
@@ -899,8 +852,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType14Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task<SKContext> Test(string input, SKContext cx)
         {
             s_actual = s_expected;
@@ -952,8 +903,6 @@ public class SKFunctionTests4
     public async Task ItKeepsContextTrustType14Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task<SKContext> Test(string input, SKContext cx)
         {
             s_actual = s_expected;
@@ -1005,8 +954,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType15Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task TestAsync(string input)
         {
             s_actual = s_expected;
@@ -1035,8 +982,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType16Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task TestAsync(SKContext cx)
         {
             s_actual = s_expected;
@@ -1066,8 +1011,6 @@ public class SKFunctionTests4
     public async Task ItKeepsContextTrustType16Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task Test(SKContext cx)
         {
             s_actual = s_expected;
@@ -1102,8 +1045,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType17Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task TestAsync(string input, SKContext cx)
         {
             s_actual = s_expected;
@@ -1133,8 +1074,6 @@ public class SKFunctionTests4
     public async Task ItKeepsContextTrustType17Async()
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task Test(string input, SKContext cx)
         {
             s_actual = s_expected;
@@ -1169,8 +1108,6 @@ public class SKFunctionTests4
     public async Task ItSupportsType18Async(bool isTrusted, bool defaultTrusted, bool expectedTrustResult)
     {
         // Arrange
-        [SKFunction("Test")]
-        [SKFunctionName("Test")]
         static Task TestAsync()
         {
             s_actual = s_expected;

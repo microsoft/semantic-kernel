@@ -5,11 +5,31 @@
 
 version: 2
 updates:
+  # Maintain dependencies for nuget
   - package-ecosystem: "nuget"
     directory: "dotnet/"
     schedule:
       interval: "weekly"
       
+  # Maintain dependencies for nuget
+  - package-ecosystem: "nuget"
+    directory: "samples/"
+    schedule:
+      interval: "weekly"
+      
+  # Maintain dependencies for npm
+  - package-ecosystem: "npm"
+    directory: "samples/apps"
+    schedule:
+      interval: "weekly"
+      
+  # Maintain dependencies for pip
+  - package-ecosystem: "pip"
+    directory: "python/"
+    schedule:
+      interval: "weekly"
+      
+  # Maintain dependencies for github-actions
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
     # default location of `.github/workflows`

@@ -32,8 +32,8 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
-    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
+    [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
+    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
     public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
@@ -77,7 +77,7 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Write a poem or joke and send it in an e-mail to Kai.", "SendEmailAsync", "_GLOBAL_FUNCTIONS_")]
+    [InlineData("Write a poem or joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
     public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
@@ -129,9 +129,9 @@ public sealed class SequentialPlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureTextEmbeddingGenerationService(
-                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
                 .WithMemoryStorage(new VolatileMemoryStore());
         }
 

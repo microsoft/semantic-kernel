@@ -22,7 +22,9 @@ def camel_to_snake(camel_str):
     return snake_str
 
 
-def query_results_to_records(results: "QueryResult") -> List[MemoryRecord]:
+def query_results_to_records(
+    results: "QueryResult", with_embedding: bool
+) -> List[MemoryRecord]:
     # if results has only one record, it will be a list instead of a nested list
     # this is to make sure that results is always a nested list
     # {'ids': ['test_id1'], 'embeddings': [[...]], 'documents': ['sample text1'], 'metadatas': [{...}]}
@@ -34,28 +36,49 @@ def query_results_to_records(results: "QueryResult") -> List[MemoryRecord]:
     except IndexError:
         return []
 
-    memory_records = [
-        (
-            MemoryRecord(
-                is_reference=metadata["is_reference"],
-                external_source_name=metadata["external_source_name"],
-                id=id,
-                description=metadata["description"],
-                text=document,
-                # TODO: get_async say embedding is optional but Record constructor requires it
-                embedding=embedding,
-                # TODO: what is key for?
-                key=None,
-                timestamp=metadata["timestamp"],
+    if with_embedding:
+        memory_records = [
+            (
+                MemoryRecord(
+                    is_reference=metadata["is_reference"],
+                    external_source_name=metadata["external_source_name"],
+                    id=metadata["id"],
+                    description=metadata["description"],
+                    text=document,
+                    embedding=embedding,
+                    additional_metadata=metadata["additional_metadata"],
+                    key=id,
+                    timestamp=metadata["timestamp"],
+                )
             )
-        )
-        for id, document, embedding, metadata in zip(
-            results["ids"][0],
-            results["documents"][0],
-            results["embeddings"][0],
-            results["metadatas"][0],
-        )
-    ]
+            for id, document, embedding, metadata in zip(
+                results["ids"][0],
+                results["documents"][0],
+                results["embeddings"][0],
+                results["metadatas"][0],
+            )
+        ]
+    else:
+        memory_records = [
+            (
+                MemoryRecord(
+                    is_reference=metadata["is_reference"],
+                    external_source_name=metadata["external_source_name"],
+                    id=metadata["id"],
+                    description=metadata["description"],
+                    text=document,
+                    embedding=None,
+                    additional_metadata=metadata["additional_metadata"],
+                    key=id,
+                    timestamp=metadata["timestamp"],
+                )
+            )
+            for id, document, metadata in zip(
+                results["ids"][0],
+                results["documents"][0],
+                results["metadatas"][0],
+            )
+        ]
     return memory_records
 
 

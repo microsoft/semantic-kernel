@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
@@ -21,8 +22,10 @@ using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
+using SemanticKernel.Service.Diagnostics;
 using SemanticKernel.Service.Models;
 
 namespace SemanticKernel.Service.CopilotChat.Controllers;
@@ -35,12 +38,16 @@ public class ChatController : ControllerBase, IDisposable
 {
     private readonly ILogger<ChatController> _logger;
     private readonly List<IDisposable> _disposables;
+    private readonly ITelemetryService _telemetryService;
     private const string ChatSkillName = "ChatSkill";
     private const string ChatFunctionName = "Chat";
+    private const string ReceiveResponseClientCall = "ReceiveResponse";
+    private const string GeneratingResponseClientCall = "ReceiveBotTypingState";
 
-    public ChatController(ILogger<ChatController> logger)
+    public ChatController(ILogger<ChatController> logger, ITelemetryService telemetryService)
     {
         this._logger = logger;
+        this._telemetryService = telemetryService;
         this._disposables = new List<IDisposable>();
     }
 
@@ -48,8 +55,8 @@ public class ChatController : ControllerBase, IDisposable
     /// Invokes the chat skill to get a response from the bot.
     /// </summary>
     /// <param name="kernel">Semantic kernel obtained through dependency injection.</param>
+    /// <param name="messageRelayHubContext">Message Hub that performs the real time relay service.</param>
     /// <param name="planner">Planner to use to create function sequences.</param>
-    /// <param name="plannerOptions">Options for the planner.</param>
     /// <param name="ask">Prompt along with its parameters.</param>
     /// <param name="openApiSkillsAuthHeaders">Authentication headers to connect to OpenAPI Skills.</param>
     /// <returns>Results containing the response from the model.</returns>
@@ -61,6 +68,7 @@ public class ChatController : ControllerBase, IDisposable
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ChatAsync(
         [FromServices] IKernel kernel,
+        [FromServices] IHubContext<MessageRelayHub> messageRelayHubContext,
         [FromServices] CopilotChatPlanner planner,
         [FromBody] Ask ask,
         [FromHeader] OpenApiSkillsAuthHeaders openApiSkillsAuthHeaders)
@@ -90,8 +98,24 @@ public class ChatController : ControllerBase, IDisposable
             return this.NotFound($"Failed to find {ChatSkillName}/{ChatFunctionName} on server");
         }
 
+        // Broadcast bot typing state to all users
+        if (ask.Variables.Where(v => v.Key == "chatId").Any())
+        {
+            var chatId = ask.Variables.Where(v => v.Key == "chatId").First().Value;
+            await messageRelayHubContext.Clients.Group(chatId).SendAsync(GeneratingResponseClientCall, chatId, true);
+        }
+
         // Run the function.
-        SKContext result = await kernel.RunAsync(contextVariables, function!);
+        SKContext? result = null;
+        try
+        {
+            result = await kernel.RunAsync(contextVariables, function!);
+        }
+        finally
+        {
+            this._telemetryService.TrackSkillFunction(ChatSkillName, ChatFunctionName, (!result?.ErrorOccurred) ?? false);
+        }
+
         if (result.ErrorOccurred)
         {
             if (result.LastException is AIException aiException && aiException.Detail is not null)
@@ -102,7 +126,22 @@ public class ChatController : ControllerBase, IDisposable
             return this.BadRequest(result.LastErrorDescription);
         }
 
-        return this.Ok(new AskResult { Value = result.Result, Variables = result.Variables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value)) });
+        AskResult chatSkillAskResult = new()
+        {
+            Value = result.Result,
+            Variables = result.Variables.Select(
+                v => new KeyValuePair<string, string>(v.Key, v.Value))
+        };
+
+        // Broadcast AskResult to all users
+        if (ask.Variables.Where(v => v.Key == "chatId").Any())
+        {
+            var chatId = ask.Variables.Where(v => v.Key == "chatId").First().Value;
+            await messageRelayHubContext.Clients.Group(chatId).SendAsync(ReceiveResponseClientCall, chatSkillAskResult, chatId);
+            await messageRelayHubContext.Clients.Group(chatId).SendAsync(GeneratingResponseClientCall, chatId, false);
+        }
+
+        return this.Ok(chatSkillAskResult);
     }
 
     /// <summary>

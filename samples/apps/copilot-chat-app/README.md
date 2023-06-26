@@ -16,7 +16,9 @@ functions that work together to construct each response.
 
 # Automated Setup and Local Deployment
 
-Refer to [./scripts/README.md](./scripts/README.md) for automated configuration and local deployment of CopilotChat.
+Refer to [./scripts/README.md](./scripts/README.md) for local configuration and deployment.
+
+Refer to [./deploy/README.md](./deploy/README.md) for Azure configuration and deployment.
 
 # Manual Setup and Local Deployment
 
@@ -73,7 +75,7 @@ First, let’s set up and verify the back-end API server is running.
     
     3. Run `dotnet run` to start the server.
     
-    4. Verify the back-end server is responding, open a web browser and navigate to `https://localhost:40443/probe`
+    4. Verify the back-end server is responding, open a web browser and navigate to `https://localhost:40443/healthz`
        > The first time accessing the probe you may get a warning saying that there is a problem with website's certificate.
          Select the option to accept/continue - this is expected when running a service on `localhost`
          It is important to do this, as your browser may need to accept the certificate before allowing the frontend to communicate with the backend.
@@ -99,7 +101,7 @@ First, let’s set up and verify the back-end API server is running.
       ```
       > For more detail on AAD authorities, see [Client Application Configuration Authorities](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority).
 
-      > `REACT_APP_SK_API_KEY` is only required if you're using an Semantic Kernel service deployed to Azure. See the [Authorization section of Deploying Semantic Kernel to Azure in a web app service](https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/copilot-chat-app/webapi/DeploymentTemplates/README.md#authorization) for more details and instruction on how to find your API key.
+      > `REACT_APP_SK_API_KEY` is only required if you're using an Semantic Kernel service deployed to Azure. See the [Authorization section of Deploying Semantic Kernel to Azure in a web app service](./deploy/README.md#authorization) for more details and instruction on how to find your API key.
       ```bash
       REACT_APP_SK_API_KEY={Your API Key, should be the same as Authorization:ApiKey from appsettings.json}
       ```
@@ -145,11 +147,11 @@ the complete list of current models supporting chat completions.
 If you are stopped at an error message similar to the one above, your browser may be blocking the front-end access
 to the back end while waiting for your permission to connect. To resolve this, try the following:
 
-1. Confirm the backend service is running by opening a web browser, and navigating to `https://localhost:40443/probe`
-   - You should see a confirmation message: `Semantic Kernel service is up and running`
+1. Confirm the backend service is running by opening a web browser, and navigating to `https://localhost:40443/healthz`
+   - You should see a confirmation message: `Healthy`
 2. If your browser asks you to acknowledge the risks of visiting an insecure website, you must acknowledge the
    message before the front end will be allowed to connect to the back-end server. 
-   - Acknowledge, continue, and navigate until you see the message Semantic Kernel service is up and running
+   - Acknowledge, continue, and navigate until you see the message `Healthy`.
 3. Navigate to `http://localhost:3000` or refresh the page to use the Copilot Chat application.
 
 ## 4. Have Yarn version 2.x or 3.x

@@ -223,7 +223,7 @@ public sealed class SKFunctionTests1
     private static Mock<ITextCompletion> MockAIService(string result)
     {
         var aiService = new Mock<ITextCompletion>();
-        var textCompletionResult = new Mock<ITextCompletionResult>();
+        var textCompletionResult = new Mock<ITextResult>();
 
         textCompletionResult
             .Setup(x => x.GetCompletionAsync(It.IsAny<CancellationToken>()))
@@ -231,7 +231,7 @@ public sealed class SKFunctionTests1
 
         aiService
             .Setup(x => x.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ITextCompletionResult> { textCompletionResult.Object });
+            .ReturnsAsync(new List<ITextResult> { textCompletionResult.Object });
 
         return aiService;
     }

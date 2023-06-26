@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useAccount, useMsal } from '@azure/msal-react';
+import { useMsal } from '@azure/msal-react';
 import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
 import { RootState } from '../redux/app/store';
@@ -11,34 +11,41 @@ import {
     addConversation,
     setConversations,
     setSelectedConversation,
-    updateConversation,
 } from '../redux/features/conversations/conversationsSlice';
+import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
 import { AuthHelper } from './auth/AuthHelper';
 import { AlertType } from './models/AlertType';
 import { Bot } from './models/Bot';
-import { AuthorRoles, ChatMessageState } from './models/ChatMessage';
+import { ChatMessageType } from './models/ChatMessage';
 import { IChatSession } from './models/ChatSession';
+import { IChatUser } from './models/ChatUser';
+import { IAskVariables } from './semantic-kernel/model/Ask';
 import { BotService } from './services/BotService';
 import { ChatService } from './services/ChatService';
-import { isPlan } from './utils/PlanUtils';
+import { DocumentImportService } from './services/DocumentImportService';
 
 import botIcon1 from '../assets/bot-icons/bot-icon-1.png';
 import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
 import botIcon3 from '../assets/bot-icons/bot-icon-3.png';
 import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
 import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
-import { IChatUser } from './models/ChatUser';
 
-import { AuthHeaderTags } from '../redux/features/plugins/PluginsState';
+export interface GetResponseOptions {
+    messageType: ChatMessageType;
+    value: string;
+    chatId: string;
+    contextVariables?: IAskVariables[];
+}
 
 export const useChat = () => {
     const dispatch = useAppDispatch();
-    const { instance, accounts, inProgress } = useMsal();
-    const account = useAccount(accounts[0] || {});
+    const { instance, inProgress } = useMsal();
+    const account = instance.getActiveAccount();
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
+    const documentImportService = new DocumentImportService(process.env.REACT_APP_BACKEND_URI as string);
 
     const botProfilePictures: string[] = [botIcon1, botIcon2, botIcon3, botIcon4, botIcon5];
 
@@ -48,7 +55,7 @@ export const useChat = () => {
         emailAddress: account?.username || '',
         photo: undefined, // TODO: Make call to Graph /me endpoint to load photo
         online: true,
-        lastTypingTimestamp: 0,
+        isTyping: false,
     };
 
     const plugins = useAppSelector((state: RootState) => state.plugins);
@@ -60,20 +67,20 @@ export const useChat = () => {
 
     const createChat = async () => {
         const chatTitle = `Copilot @ ${new Date().toLocaleString()}`;
+        const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
             await chatService
                 .createChatAsync(
                     account?.homeAccountId!,
-                    account?.name ?? account?.username!,
                     chatTitle,
-                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                    accessToken,
                 )
                 .then(async (result: IChatSession) => {
                     const chatMessages = await chatService.getChatMessagesAsync(
                         result.id,
                         0,
                         1,
-                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                        accessToken,
                     );
 
                     const newChat: ChatState = {
@@ -83,6 +90,7 @@ export const useChat = () => {
                         users: [loggedInUser],
                         botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
                         input: '',
+                        isBotTyping: false,
                     };
 
                     dispatch(addConversation(newChat));
@@ -94,13 +102,7 @@ export const useChat = () => {
         }
     };
 
-    const getResponse = async (
-        value: string,
-        chatId: string,
-        approvedPlanJson?: string,
-        planUserIntent?: string,
-        userCancelledPlan?: boolean,
-    ) => {
+    const getResponse = async ({ messageType, value, chatId, contextVariables }: GetResponseOptions) => {
         const ask = {
             input: value,
             variables: [
@@ -116,47 +118,23 @@ export const useChat = () => {
                     key: 'chatId',
                     value: chatId,
                 },
+                {
+                    key: 'messageType',
+                    value: messageType.toString(),
+                },
             ],
         };
 
-        if (approvedPlanJson) {
-            ask.variables.push(
-                {
-                    key: 'proposedPlan',
-                    value: approvedPlanJson,
-                },
-                {
-                    key: 'planUserIntent',
-                    value: planUserIntent!,
-                },
-            );
-        }
-
-        if (userCancelledPlan) {
-            ask.variables.push({
-                key: 'userCancelledPlan',
-                value: 'true',
-            });
+        if (contextVariables) {
+            ask.variables.push(...contextVariables);
         }
 
         try {
-            var result = await chatService.getBotResponseAsync(
+            await chatService.getBotResponseAsync(
                 ask,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 getEnabledPlugins(),
             );
-
-            const messageResult = {
-                timestamp: new Date().getTime(),
-                userName: 'bot',
-                userId: 'bot',
-                content: result.value,
-                prompt: result.variables.find((v) => v.key === 'prompt')?.value,
-                authorRole: AuthorRoles.Bot,
-                state: isPlan(result.value) ? ChatMessageState.PlanApprovalRequired : ChatMessageState.NoOp,
-            };
-
-            dispatch(updateConversation({ message: messageResult, chatId: chatId }));
         } catch (e: any) {
             const errorMessage = `Unable to generate bot response. Details: ${e.message ?? e}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -164,10 +142,11 @@ export const useChat = () => {
     };
 
     const loadChats = async () => {
+        const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
             const chatSessions = await chatService.getAllChatsAsync(
                 account?.homeAccountId!,
-                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                accessToken,
             );
 
             if (chatSessions.length > 0) {
@@ -178,16 +157,22 @@ export const useChat = () => {
                         chatSession.id,
                         0,
                         100,
-                        await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                        accessToken,
+                    );
+
+                    const chatUsers = await chatService.getAllChatParticipantsAsync(
+                        chatSession.id,
+                        accessToken,
                     );
 
                     loadedConversations[chatSession.id] = {
                         id: chatSession.id,
                         title: chatSession.title,
-                        users: [loggedInUser],
+                        users: chatUsers,
                         messages: chatMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
                         input: '',
+                        isBotTyping: false,
                     };
                 }
 
@@ -217,14 +202,15 @@ export const useChat = () => {
     };
 
     const uploadBot = async (bot: Bot) => {
+        const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         botService
-            .uploadAsync(bot, account?.homeAccountId || '', await AuthHelper.getSKaaSAccessToken(instance, inProgress))
+            .uploadAsync(bot, account?.homeAccountId || '', accessToken)
             .then(async (chatSession: IChatSession) => {
                 const chatMessages = await chatService.getChatMessagesAsync(
                     chatSession.id,
                     0,
                     100,
-                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+                    accessToken,
                 );
 
                 const newChat = {
@@ -233,7 +219,7 @@ export const useChat = () => {
                     users: [loggedInUser],
                     messages: chatMessages,
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
-                    lastUpdatedTimestamp: new Date().getTime(),
+                    isBotTyping: false,
                 };
 
                 dispatch(addConversation(newChat));
@@ -248,12 +234,41 @@ export const useChat = () => {
         return botProfilePictures[index % botProfilePictures.length];
     };
 
-     /*
+    const getChatMemorySources = async (chatId: string) => {
+        try {
+            return await chatService.getChatMemorySourcesAsync(
+                chatId,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            const errorMessage = `Unable to get chat files. Details: ${e.message ?? e}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+
+        return [];
+    };
+
+    const importDocument = async (chatId: string, file: File) => {
+        try {
+            await documentImportService.importDocumentAsync(
+                account!.homeAccountId!,
+                (account!.name ?? account!.username) as string,
+                chatId,
+                file,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            const errorMessage = `Failed to upload document. Details: ${e.message ?? e}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+    };
+
+    /*
      * Once enabled, each plugin will have a custom dedicated header in every Semantic Kernel request
      * containing respective auth information (i.e., token, encoded client info, etc.)
      * that the server can use to authenticate to the downstream APIs
      */
-     const getEnabledPlugins = () => {
+    const getEnabledPlugins = () => {
         const enabledPlugins: { headerTag: AuthHeaderTags; authData: string; apiProperties?: any }[] = [];
 
         Object.entries(plugins).map((entry) => {
@@ -273,6 +288,48 @@ export const useChat = () => {
         return enabledPlugins;
     };
 
+    const joinChat = async (chatId: string) => {
+        const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+        try {
+            await chatService.joinChatAsync(
+                account!.homeAccountId!,
+                chatId,
+                accessToken
+            ).then(async (result: IChatSession) => {
+                // Get chat messages
+                const chatMessages = await chatService.getChatMessagesAsync(
+                    result.id,
+                    0,
+                    100,
+                    accessToken
+                );
+
+                // Get chat users
+                const chatUsers = await chatService.getAllChatParticipantsAsync(
+                    result.id,
+                    accessToken,
+                );
+
+                const newChat: ChatState = {
+                    id: result.id,
+                    title: result.title,
+                    messages: chatMessages,
+                    users: chatUsers,
+                    botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
+                    input: '',
+                    isBotTyping: false,
+                };
+
+                dispatch(addConversation(newChat));
+            });
+        } catch (error: any) {
+            const errorMessage = `Error joining chat ${chatId}: ${(error as Error).message}`;
+            return { success: false, message: errorMessage };
+        }
+
+        return { success: true, message: '' };
+    }
+
     return {
         getChatUserById,
         createChat,
@@ -280,5 +337,8 @@ export const useChat = () => {
         getResponse,
         downloadBot,
         uploadBot,
+        getChatMemorySources,
+        importDocument,
+        joinChat,
     };
 };
