@@ -61,8 +61,8 @@ The quickest way to get started with the basics is to get an API key
 and to run one of the C# or Python console applications/scripts:
 
 For C#:
-1. Create a new console app.
-2. Add the semantic kernel nuget `Microsoft.SemanticKernel`.
+1. Create a new console app (Please use .Net Version 7.0).
+2. Add the semantic kernel nuget `Hexalith.Infrastructure.MicrosoftSemanticKernel`.
 3. Copy the code from [here](dotnet/README.md) into the app `Program.cs` file.
 4. Replace the configuration placeholders for API key and other params with your key and settings.
 5. Run with `F5` or `dotnet run`
