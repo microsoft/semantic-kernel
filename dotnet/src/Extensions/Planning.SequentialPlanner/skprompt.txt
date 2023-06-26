@@ -10,6 +10,7 @@ To create a plan, follow these steps:
 7. To save an 'output' from a <function>, to pass into a future <function>, use <function.{FunctionName} ... setContextVariable: "<UNIQUE_VARIABLE_KEY>"/>
 8. To save an 'output' from a <function>, to return as part of a plan result, use <function.{FunctionName} ... appendToResult: "RESULT__<UNIQUE_RESULT_KEY>"/>
 9. Append an "END" XML comment at the end of the plan.
+10. If a plan cannot be created with the [AVAILABLE FUNCTIONS], return <noplan />.
 
 [EXAMPLES]
 [AVAILABLE FUNCTIONS]

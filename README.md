@@ -130,6 +130,7 @@ To learn more and get started:
 - Read the [documentation](https://aka.ms/sk/learn)
 - Learn how to [contribute](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) to the project
 - Join the [Discord community](https://aka.ms/SKDiscord)
+- Attend [regular office hours and SK community events](COMMUNITY.md)
 - Follow the team on our [blog](https://aka.ms/sk/blog)
 
 ## Code of Conduct
