@@ -57,7 +57,7 @@
     }
   ],
   "eslint.options": {
-    "overrideConfigFile": "package.json"
+    "overrideConfigFile": "./package.json"
   },
   "files.associations": {
     "*.json": "jsonc"

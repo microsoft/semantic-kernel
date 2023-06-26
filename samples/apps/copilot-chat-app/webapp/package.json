@@ -8,6 +8,7 @@
     "auth:mac": "better-vsts-npm-auth -config .npmrc",
     "depcheck": "depcheck --ignores=\"@types/*,typescript\" --ignore-dirs=\".vscode,.vs,.git,node_modules\" --skip-missing",
     "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "prettify": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,scss,css,html,svg}\"",
     "serve": "serve -s build",
     "start": "react-scripts start",
