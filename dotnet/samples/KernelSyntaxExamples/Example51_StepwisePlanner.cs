@@ -36,50 +36,6 @@ public static class Example51_StepwisePlanner
         }
     }
 
-    // RunTextCompletion
-    // *****************************************************
-    // Question: Who is the current president of the United States? What is his current age divided by 2
-    // Result: The current president of the United States is Joe Biden. His current age divided by 2 is 40.
-    // Steps Taken: 6
-    // Skills Used: 5 (WebSearch.Search(1), time.Year(1), time.MonthNumber(1), advancedCalculator.Calculator(2))
-    // Time Taken: 00:00:29.7883820
-    // *****************************************************
-    // RunChatCompletion
-    // *****************************************************
-    // Question: Who is the current president of the United States? What is his current age divided by 2
-    // Result: The current president of the United States is Joseph R. Biden, Jr. His current age divided by 2 is 40.5.
-    // Steps Taken: 8
-    // Skills Used: 7 (WebSearch.Search(4), time.Year(1), advancedCalculator.Calculator(2))
-    // Time Taken: 00:03:13.8966442
-    // *****************************************************
-
-    // RunTextCompletion
-    // *****************************************************
-    // Question: Who is Leo DiCaprio's girlfriend? What is her current age raised to the (his current age)/100 power?
-    // Result: Leo DiCaprio's girlfriend is Camila Morrone, and her current age raised to the (his current age)/100 power is 5.
-    // Steps Taken: 26
-    // Skills Used: 13 (WebSearch.Search(4), time.Year(1), time.MonthNumber(2), time.Day(1), store(2), advancedCalculator.Calculator(3))
-    // Time Taken: 00:01:49.6237232
-    // *****************************************************
-
-    // RunTextCompletion
-    // *****************************************************
-    // Question: What is the capital of France? Who is that cities current mayor? What percentage of their life has been in the 21st century as of today?
-    // Result: The capital of France is Paris. The current mayor of Paris is Anne Hidalgo. The percentage of her life that has been in the 21st century as of today is 36.64%.
-    // Steps Taken: 10
-    // Skills Used: 8 (WebSearch.Search(3), time.Today(1), advancedCalculator.Calculator(4))
-    // Time Taken: 00:00:56.3130173
-    // *****************************************************
-
-    // RunTextCompletion
-    // *****************************************************
-    // Question: What is the current day of the calendar year? Using that as an angle in degrees, what is the area of a unit circle with that angle?
-    // Result: The area of a sector of a unit circle with the angle corresponding to the current day of the calendar year is 1.4022465753424658 square units.
-    // Steps Taken: 5
-    // Skills Used: 4 (time.DayOfYear(1), WebSearch.Search(1), advancedCalculator.Calculator(2))
-    // Time Taken: 00:00:31.5772418
-    // *****************************************************
-
     public static async Task RunTextCompletion(string question)
     {
         Console.WriteLine("RunTextCompletion");
