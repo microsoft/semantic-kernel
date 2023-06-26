@@ -154,5 +154,8 @@ public static class Program
 
         await Example49_LogitBias.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example50_Chroma.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
