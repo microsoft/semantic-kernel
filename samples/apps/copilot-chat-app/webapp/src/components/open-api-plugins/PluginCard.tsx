@@ -58,13 +58,11 @@ export const PluginCard: React.FC<PluginCardProps> = ({ plugin }) => {
                 header={<Text weight="semibold">{name}</Text>}
                 description={<Caption1 className={styles.caption}>{publisher}</Caption1>}
                 action={
-                    enabled
-? (
+                    enabled ? (
                         <Button aria-label="Disconnect plugin" appearance="secondary" onClick={onDisconnectClick}>
                             Disable
                         </Button>
-                    )
-: (
+                    ) : (
                         <PluginConnector
                             name={name}
                             icon={icon}

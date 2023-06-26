@@ -5,11 +5,13 @@ import { AlertType } from '../../../libs/models/AlertType';
 import { Alert, AppState } from './AppState';
 
 const initialState: AppState = {
-    alerts: [{
-        message:
+    alerts: [
+        {
+            message:
                 'SK Copilot is designed for internal use only. By using this chat bot, you agree to not to share confidential or customer information or store sensitive information in chat history. Further, you agree that SK Copilot can collect and retain your chat history for service improvement.',
             type: AlertType.Info,
-    }],
+        },
+    ],
 };
 
 export const appSlice = createSlice({
@@ -20,10 +22,10 @@ export const appSlice = createSlice({
             state.alerts = action.payload;
         },
         addAlert: (state: AppState, action: PayloadAction<Alert>) => {
-            if (state.alerts?.length === 3) {
+            if (state.alerts.length === 3) {
                 state.alerts.shift();
             }
-            state.alerts?.push(action.payload);
+            state.alerts.push(action.payload);
         },
         removeAlert: (state: AppState, action: PayloadAction<number>) => {
             state.alerts.splice(action.payload, 1);
