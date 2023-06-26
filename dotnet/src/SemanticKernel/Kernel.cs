@@ -112,6 +112,8 @@ public sealed class Kernel : IKernel, IDisposable
     public IDictionary<string, ISKFunction> ImportSkill<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TSkill>(
         TSkill skillInstance, string? skillName = null, ITrustService? trustService = null)
     {
+        Verify.NotNull(skillInstance);
+
         if (string.IsNullOrWhiteSpace(skillName))
         {
             skillName = SkillCollection.GlobalSkill;
@@ -373,16 +375,16 @@ public sealed class Kernel : IKernel, IDisposable
         TSkill skillInstance,
         string skillName, ITrustService? trustService, ILogger log)
     {
-        log.LogTrace("Importing skill name: {0}", skillName);
         MethodInfo[] methods = typeof(TSkill).GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
-        log.LogTrace("Methods found {0}", methods.Length);
+        log.LogTrace("Importing skill name: {0}. Potential methods found: {1}", skillName, methods.Length);
 
-        // Filter out null functions and fail if two functions have the same name
+        // Filter out non-SKFunctions and fail if two functions have the same name
         Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
         foreach (MethodInfo method in methods)
         {
-            if (SKFunction.FromNativeMethod(method, skillInstance, skillName, trustService, log) is ISKFunction function)
+            if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
+                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, trustService, log);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new KernelException(

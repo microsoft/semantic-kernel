@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -10,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Core;
+using Azure.Core.Pipeline;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
@@ -32,21 +34,37 @@ public class AzureCognitiveSearchMemory : ISemanticTextMemory
     /// Create a new instance of semantic memory using Azure Cognitive Search.
     /// </summary>
     /// <param name="endpoint">Azure Cognitive Search URI, e.g. "https://contoso.search.windows.net"</param>
-    /// <param name="apiKey">API Key</param>
-    public AzureCognitiveSearchMemory(string endpoint, string apiKey)
+    /// <param name="apiKey">The Api key used to authenticate requests against the Search service.</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    public AzureCognitiveSearchMemory(string endpoint, string apiKey, HttpClient? httpClient = null)
     {
+        var options = new SearchClientOptions();
+
+        if (httpClient != null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+        }
+
         AzureKeyCredential credentials = new(apiKey);
-        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials);
+        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, options);
     }
 
     /// <summary>
     /// Create a new instance of semantic memory using Azure Cognitive Search.
     /// </summary>
     /// <param name="endpoint">Azure Cognitive Search URI, e.g. "https://contoso.search.windows.net"</param>
-    /// <param name="credentials">Azure service</param>
-    public AzureCognitiveSearchMemory(string endpoint, TokenCredential credentials)
+    /// <param name="credentials">The token credential used to authenticate requests against the Search service.</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    public AzureCognitiveSearchMemory(string endpoint, TokenCredential credentials, HttpClient? httpClient = null)
     {
-        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials);
+        var options = new SearchClientOptions();
+
+        if (httpClient != null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+        }
+
+        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, options);
     }
 
     /// <inheritdoc />

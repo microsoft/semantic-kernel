@@ -114,15 +114,48 @@ public abstract class OpenAIClientBase
     /// </summary>
     private readonly HttpClient _httpClient;
 
-    private async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, JsonTypeInfo<T> jsonTypeInfo, CancellationToken cancellationToken = default)
+    private protected async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, JsonTypeInfo<T> jsonTypeInfo, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+            using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
+            string responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            T result = this.JsonDeserialize<T>(responseJson, jsonTypeInfo);
+            return result;
+        }
+        catch (Exception e) when (e is not AIException)
+        {
+            throw new AIException(
+                AIException.ErrorCodes.UnknownError,
+                $"Something went wrong: {e.Message}", e);
+        }
+    }
+
+    private protected T JsonDeserialize<T>(string responseJson, JsonTypeInfo<T> jsonTypeInfo)
+    {
+        var result = JsonSerializer.Deserialize(responseJson, jsonTypeInfo);
+        if (result is null)
+        {
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");
+        }
+
+        return result;
+    }
+
+    private protected async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod method, HttpContent? content, CancellationToken cancellationToken = default)
     {
         HttpResponseMessage? response = null;
         try
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            using (var request = new HttpRequestMessage(method, url))
             {
                 this.AddRequestHeaders(request);
-                request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+                if (content != null)
+                {
+                    request.Content = content;
+                }
+
                 response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             }
 
@@ -201,13 +234,7 @@ public abstract class OpenAIClientBase
                 }
             }
 
-            var result = JsonSerializer.Deserialize(responseJson, jsonTypeInfo);
-            if (result is null)
-            {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");
-            }
-
-            return result;
+            return response;
         }
         catch (Exception e) when (e is not AIException)
         {

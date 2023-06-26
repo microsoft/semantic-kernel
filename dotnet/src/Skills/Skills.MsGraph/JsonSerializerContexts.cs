@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Models;
 
 namespace Microsoft.SemanticKernel.Text;
@@ -12,4 +13,5 @@ namespace Microsoft.SemanticKernel.Text;
 [JsonSerializable(typeof(IEnumerable<TaskManagementTask>))]
 internal sealed partial class SourceGenerationContext : JsonSerializerContext
 {
+    public static readonly SourceGenerationContext WithMsGraphOptions = new(MsGraphUtils.DefaultSerializerOptions);
 }

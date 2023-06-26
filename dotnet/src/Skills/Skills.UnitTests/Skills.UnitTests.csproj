@@ -12,15 +12,19 @@
     <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
 
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
+
   <ItemGroup>
     <None Remove="Grpc\protoV3.proto" />
     <None Remove="OpenAPI\TestSkills\documentV3_1.yaml" />
+    <None Remove="OpenAPI\TestSkills\nonCompliant_documentV3_0.json" />
     <None Remove="OpenAPI\TestSkills\openapi.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Grpc\Protobuf\TestSkills\protoV3.proto" />
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV2_0.json" />
+    <EmbeddedResource Include="OpenAPI\TestSkills\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV3_1.yaml" />
     <EmbeddedResource Include="OpenAPI\TestSkills\documentV3_0.json" />
   </ItemGroup>
@@ -38,6 +42,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\Skills.Core\Skills.Core.csproj" />
     <ProjectReference Include="..\Skills.Document\Skills.Document.csproj" />
     <ProjectReference Include="..\Skills.Grpc\Skills.Grpc.csproj" />
     <ProjectReference Include="..\Skills.MsGraph\Skills.MsGraph.csproj" />

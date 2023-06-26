@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel.Text;
 [JsonSerializable(typeof(Dictionary<string, int>))]
 [JsonSerializable(typeof(ImageGenerationRequest))]
 [JsonSerializable(typeof(ImageGenerationResponse))]
+[JsonSerializable(typeof(AzureImageGenerationResponse))]
 [JsonSerializable(typeof(JsonNode))]
 [JsonSerializable(typeof(TextEmbeddingResponse))]
 internal sealed partial class SourceGenerationContext : JsonSerializerContext

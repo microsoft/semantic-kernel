@@ -1,17 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
+using System;
 
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
-public interface ITextCompletionResult
+/// <summary>
+/// Interface for text completion results
+/// </summary>
+[Obsolete("This interface is deprecated and will be removed in one of the next SK SDK versions. Use the ITextResult interface instead.")]
+public interface ITextCompletionResult : ITextResult
 {
-    /// <summary>
-    /// Gets the model result data.
-    /// </summary>
-    ModelResult ModelResult { get; }
-
-    Task<string> GetCompletionAsync(CancellationToken cancellationToken = default);
 }
