@@ -489,8 +489,69 @@ public sealed class PlanSerializationTests
         Assert.Contains("\"next_step_index\":2", serializedPlan2, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public void CanDeserializePlan()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CanDeserializePlan(bool requireFunctions)
+    {
+        // Arrange
+        var goal = "Write a poem or joke and send it in an e-mail to Kai.";
+        var stepOutput = "Output: The input was: ";
+        var plan = new Plan(goal);
+
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var returnContext = new SKContext(
+            new ContextVariables(stepOutput),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        var mockFunction = new Mock<ISKFunction>();
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+                returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
+            .Returns(() => Task.FromResult(returnContext));
+
+        if (requireFunctions)
+        {
+            mockFunction.Setup(x => x.Name).Returns(string.Empty);
+            ISKFunction? outFunc = mockFunction.Object;
+            skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), out outFunc)).Returns(true);
+            skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out outFunc)).Returns(true);
+            skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
+        }
+
+        plan.AddSteps(new Plan("Step1", mockFunction.Object), mockFunction.Object);
+
+        // Act
+        var serializedPlan = plan.ToJson();
+        var deserializedPlan = Plan.FromJson(serializedPlan, returnContext, requireFunctions);
+
+        // Assert
+        Assert.NotNull(deserializedPlan);
+        Assert.Equal(goal, deserializedPlan.Description);
+
+        Assert.Equal(string.Join(",", plan.Outputs),
+            string.Join(",", deserializedPlan.Outputs));
+        Assert.Equal(string.Join(",", plan.Parameters.Select(kv => $"{kv.Key}:{kv.Value}")),
+            string.Join(",", deserializedPlan.Parameters.Select(kv => $"{kv.Key}:{kv.Value}")));
+        Assert.Equal(string.Join(",", plan.State.Select(kv => $"{kv.Key}:{kv.Value}")),
+            string.Join(",", deserializedPlan.State.Select(kv => $"{kv.Key}:{kv.Value}")));
+
+        Assert.Equal(plan.Steps[0].Name, deserializedPlan.Steps[0].Name);
+        Assert.Equal(plan.Steps[1].Name, deserializedPlan.Steps[1].Name);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DeserializeWithMissingFunctions(bool requireFunctions)
     {
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
@@ -518,22 +579,31 @@ public sealed class PlanSerializationTests
 
         plan.AddSteps(new Plan("Step1", mockFunction.Object), mockFunction.Object);
 
-        // Act
         var serializedPlan = plan.ToJson();
-        var deserializedPlan = Plan.FromJson(serializedPlan, returnContext);
 
-        // Assert
-        Assert.NotNull(deserializedPlan);
-        Assert.Equal(goal, deserializedPlan.Description);
+        if (requireFunctions)
+        {
+            // Act + Assert
+            Assert.Throws<KernelException>(() => Plan.FromJson(serializedPlan, returnContext));
+        }
+        else
+        {
+            // Act
+            var deserializedPlan = Plan.FromJson(serializedPlan, returnContext, requireFunctions);
 
-        Assert.Equal(string.Join(",", plan.Outputs),
-            string.Join(",", deserializedPlan.Outputs));
-        Assert.Equal(string.Join(",", plan.Parameters.Select(kv => $"{kv.Key}:{kv.Value}")),
-            string.Join(",", deserializedPlan.Parameters.Select(kv => $"{kv.Key}:{kv.Value}")));
-        Assert.Equal(string.Join(",", plan.State.Select(kv => $"{kv.Key}:{kv.Value}")),
-            string.Join(",", deserializedPlan.State.Select(kv => $"{kv.Key}:{kv.Value}")));
+            // Assert
+            Assert.NotNull(deserializedPlan);
+            Assert.Equal(goal, deserializedPlan.Description);
 
-        Assert.Equal(plan.Steps[0].Name, deserializedPlan.Steps[0].Name);
-        Assert.Equal(plan.Steps[1].Name, deserializedPlan.Steps[1].Name);
+            Assert.Equal(string.Join(",", plan.Outputs),
+                string.Join(",", deserializedPlan.Outputs));
+            Assert.Equal(string.Join(",", plan.Parameters.Select(kv => $"{kv.Key}:{kv.Value}")),
+                string.Join(",", deserializedPlan.Parameters.Select(kv => $"{kv.Key}:{kv.Value}")));
+            Assert.Equal(string.Join(",", plan.State.Select(kv => $"{kv.Key}:{kv.Value}")),
+                string.Join(",", deserializedPlan.State.Select(kv => $"{kv.Key}:{kv.Value}")));
+
+            Assert.Equal(plan.Steps[0].Name, deserializedPlan.Steps[0].Name);
+            Assert.Equal(plan.Steps[1].Name, deserializedPlan.Steps[1].Name);
+        }
     }
 }

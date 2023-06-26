@@ -8,7 +8,6 @@ import { IAskResult } from '../../../libs/semantic-kernel/model/AskResult';
 import { addAlert } from '../app/appSlice';
 import { ChatState } from '../conversations/ChatState';
 import { AuthorRoles, ChatMessageType, IChatMessage } from './../../../libs/models/ChatMessage';
-import { isPlan } from './../../../libs/utils/PlanUtils';
 import { getSelectedChatID } from './../../app/store';
 
 // These have to match the callback names used in the backend
@@ -137,10 +136,11 @@ export const registerSignalREvents = async (store: any) => {
         const loggedInUserId = store.getState().conversations.loggedInUserId;
         const originalMessageUserId = askResult.variables.find((v) => v.key === 'userId')?.value;
         const isPlanForLoggedInUser = loggedInUserId === originalMessageUserId;
+        const messageType =
+            Number(askResult.variables.find((v) => v.key === 'messageType')?.value) ?? ChatMessageType.Message;
 
         const message = {
-            type: (askResult.variables.find((v) => v.key === 'messageType')?.value ??
-                ChatMessageType.Message) as ChatMessageType,
+            type: messageType,
             timestamp: new Date().getTime(),
             userName: 'bot',
             userId: 'bot',
@@ -149,7 +149,9 @@ export const registerSignalREvents = async (store: any) => {
             authorRole: AuthorRoles.Bot,
             id: askResult.variables.find((v) => v.key === 'messageId')?.value,
             state:
-                isPlan(askResult.value) && isPlanForLoggedInUser ? PlanState.PlanApprovalRequired : PlanState.Disabled,
+                messageType === ChatMessageType.Plan && isPlanForLoggedInUser
+                    ? PlanState.PlanApprovalRequired
+                    : PlanState.Disabled,
         } as IChatMessage;
 
         store.dispatch({ type: 'conversations/updateConversationFromServer', payload: { message, chatId } });
