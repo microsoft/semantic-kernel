@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
@@ -40,16 +40,29 @@ internal static class SequentialPlanParser
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
 
+    internal static Func<string, string, ISKFunction?> GetFunction(SKContext context)
+    {
+        return (skillName, functionName) =>
+        {
+            if (context.Skills!.TryGetFunction(skillName, functionName, out var skillFunction))
+            {
+                return skillFunction;
+            }
+
+            return null;
+        };
+    }
+
     /// <summary>
     /// Convert a plan xml string to a plan.
     /// </summary>
     /// <param name="xmlString">The plan xml string.</param>
     /// <param name="goal">The goal for the plan.</param>
-    /// <param name="context">The semantic kernel context.</param>
     /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
+    /// <param name="GetFunction">The function to get a skill function.</param>
     /// <returns>The plan.</returns>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
-    internal static Plan ToPlanFromXml(this string xmlString, string goal, SKContext context, bool allowMissingFunctions = false)
+    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> GetFunction, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
         try
@@ -87,36 +100,38 @@ internal static class SequentialPlanParser
             }
         }
 
-        try
+        // Get the Solution
+        XmlNodeList solution = xmlDoc.GetElementsByTagName(SolutionTag);
+
+        var plan = new Plan(goal);
+
+        // loop through solution node and add to Steps
+        foreach (XmlNode solutionNode in solution)
         {
-            // Get the Solution
-            XmlNodeList solution = xmlDoc.GetElementsByTagName(SolutionTag);
+            var parentNodeName = solutionNode.Name;
 
-            var plan = new Plan(goal);
-
-            // loop through solution node and add to Steps
-            foreach (XmlNode solutionNode in solution)
+            foreach (XmlNode childNode in solutionNode.ChildNodes)
             {
-                var parentNodeName = solutionNode.Name;
-
-                foreach (XmlNode childNode in solutionNode.ChildNodes)
+                if (childNode.Name == "#text")
                 {
-                    if (childNode.Name == "#text")
+                    if (childNode.Value != null)
                     {
-                        if (childNode.Value != null)
-                        {
-                            plan.AddSteps(new Plan(childNode.Value.Trim()));
-                        }
-
-                        continue;
+                        plan.AddSteps(new Plan(childNode.Value.Trim()));
                     }
 
-                    if (childNode.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
-                    {
-                        var skillFunctionName = childNode.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
-                        GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
+                    continue;
+                }
 
-                        if (!string.IsNullOrEmpty(functionName) && context.Skills!.TryGetFunction(skillName, functionName, out var skillFunction))
+                if (childNode.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
+                {
+                    var skillFunctionName = childNode.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
+                    GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
+
+                    if (!string.IsNullOrEmpty(functionName))
+                    {
+                        var skillFunction = GetFunction(skillName, functionName);
+
+                        if (skillFunction is not null)
                         {
                             var planStep = new Plan(skillFunction);
 
@@ -134,7 +149,6 @@ internal static class SequentialPlanParser
                             {
                                 foreach (XmlAttribute attr in childNode.Attributes)
                                 {
-                                    context.Log.LogTrace("{0}: processing attribute {1}", parentNodeName, attr.ToString());
                                     if (attr.Name.Equals(SetContextVariableTag, StringComparison.OrdinalIgnoreCase))
                                     {
                                         functionOutputs.Add(attr.InnerText);
@@ -165,7 +179,6 @@ internal static class SequentialPlanParser
                         {
                             if (allowMissingFunctions)
                             {
-                                context.Log.LogTrace("{0}: allowing missing function node {1}", parentNodeName, skillFunctionName);
                                 plan.AddSteps(new Plan(skillFunctionName));
                             }
                             else
@@ -180,19 +193,12 @@ internal static class SequentialPlanParser
                     // This step is a step in name only. It is not a function call.
                     plan.AddSteps(new Plan(childNode.InnerText));
                 }
-            }
 
-            return plan;
+                plan.AddSteps(new Plan(childNode.InnerText));
+            }
         }
-        catch (PlanningException)
-        {
-            throw;
-        }
-        catch (Exception e) when (!e.IsCriticalException())
-        {
-            context.Log.LogError(e, "Plan parsing failed: {0}", e.Message);
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to process plan: '{xmlString}'", e);
-        }
+
+        return plan;
     }
 
     private static void GetSkillFunctionNames(string skillFunctionName, out string skillName, out string functionName)

@@ -33,7 +33,16 @@ public static class SKContextSequentialPlannerExtensions
         SequentialPlannerConfig? config = null)
     {
         config ??= new SequentialPlannerConfig();
-        var functions = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false);
+
+        IOrderedEnumerable<FunctionView> functions;
+        if (config.GetAvailableFunctionsAsync is null)
+        {
+            functions = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false);
+        }
+        else
+        {
+            functions = await config.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false);
+        }
 
         return string.Join("\n\n", functions.Select(x => x.ToManualString()));
     }
