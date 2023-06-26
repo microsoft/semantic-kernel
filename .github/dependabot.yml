@@ -9,25 +9,25 @@ updates:
   - package-ecosystem: "nuget"
     directory: "dotnet/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
       
   # Maintain dependencies for nuget
   - package-ecosystem: "nuget"
     directory: "samples/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
       
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "samples/apps"
     schedule:
-      interval: "daily"
+      interval: "weekly"
       
   # Maintain dependencies for pip
   - package-ecosystem: "pip"
     directory: "python/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
       
   # Maintain dependencies for github-actions
   - package-ecosystem: "github-actions"
@@ -35,4 +35,4 @@ updates:
     # default location of `.github/workflows`
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
