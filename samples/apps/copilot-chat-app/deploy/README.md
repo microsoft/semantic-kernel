@@ -13,7 +13,7 @@ This document details how to deploy CopilotChat's required resources to your Azu
 
 # Configure your environment
 Before you get started, make sure you have the following requirements in place:
-- Azure CLI (i.e., az) (if you already installed Azure CLI, make sure to update your installation)
+- Azure CLI (i.e., az) (if you already installed Azure CLI, make sure to update your installation to the latest version)
   - Windows, go to https://aka.ms/installazurecliwindows
   - Linux, run "`curl -L https://aka.ms/InstallAzureCli | bash`"
 - Azure Static Web App CLI (i.e., swa) can be installed by running "`npm install -g @azure/static-web-apps-cli`"
