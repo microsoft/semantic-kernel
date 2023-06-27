@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -31,8 +32,8 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
     private HttpMessageHandlerStub _messageHandlerStub;
     private HttpClient _httpClient;
-    private Func<ClientWebSocket> _webSocketFactory;
-    private List<ClientWebSocket> _webSockets = new();
+    //private Func<ClientWebSocket> _webSocketFactory;
+    //private List<ClientWebSocket> _webSockets = new();
     private Uri _endPointUri;
     private string _streamCompletionResponseStub;
 
@@ -43,12 +44,12 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         this._streamCompletionResponseStub = OobaboogaTestHelper.GetTestResponse("completion_test_streaming_response.json");
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
-        this._webSocketFactory = () =>
-        {
-            var toReturn = new ClientWebSocket();
-            this._webSockets.Add(toReturn);
-            return toReturn;
-        };
+        //this._webSocketFactory = () =>
+        //{
+        //    var toReturn = new ClientWebSocket();
+        //    this._webSockets.Add(toReturn);
+        //    return toReturn;
+        //};
         this._endPointUri = new Uri(EndPoint);
     }
 
@@ -137,14 +138,17 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact]
     public async Task ShouldHandleStreamingServicePersistentWebSocketResponseAsync()
     {
-        var sut = new OobaboogaTextCompletion(
-            new Uri("http://localhost/"),
-            BlockingPort,
-            StreamingPort,
-            httpClient: this._httpClient,
-            webSocketFactory: this._webSocketFactory);
+        using (var webSocketClient = new ClientWebSocket())
+        {
+            var sut = new OobaboogaTextCompletion(
+                new Uri("http://localhost/"),
+                BlockingPort,
+                StreamingPort,
+                httpClient: this._httpClient,
+                webSocketFactory: () => webSocketClient);
 
-        this.ShouldHandleStreamingServiceResponseAsync(sut);
+            this.ShouldHandleStreamingServiceResponseAsync(sut);
+        }
     }
 
     [Fact]
@@ -217,27 +221,57 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task ShouldHandleMultiPacketStreamingServicePersistentWebSocketResponseAsync()
-    {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(isConcurrent: false, isPersistent: true);
-    }
-
-    [Fact]
     public async Task ShouldHandleMultiPacketStreamingServiceTransientWebSocketResponseAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(isConcurrent: false, isPersistent: false);
+        await this.RunWebSocketMultiPacketStreamingTestAsync().ConfigureAwait(false);
     }
 
     [Fact]
-    public async Task ShouldHandleConcurrentMultiPacketStreamingServicePersistentWebSocketResponseAsync()
+    public async Task ShouldHandleMultiPacketStreamingServicePersistentWebSocketResponseAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(isConcurrent: true, isPersistent: true);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(isPersistent: true).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task ShouldHandleConcurrentMultiPacketStreamingServiceTransientWebSocketResponseAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(isConcurrent: true, isPersistent: false);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task ShouldHandleConcurrentMultiPacketStreamingServicePersistentWebSocketResponseAsync()
+    {
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10, isPersistent: true).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// When no hard limit is placed on concurrent calls, the number of websocket clients created could grow unbounded. However pooling should still mitigate that by recycling the clients initially created.
+    /// Here, 500 concurrent calls are made with a 5ms delay before each call is made, to allow for initial requests to complete before recycling ramps up. Pooling should limit the number of clients to 50.
+    /// </summary>
+    [Fact]
+    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync()
+    {
+        await this.RunWebSocketMultiPacketStreamingTestAsync(
+            nbConcurrentCalls: 500,
+            isPersistent: true,
+            keepAliveWebSocketsDuration: 100,
+            concurrentCallsTicksDelay: 50000,
+            maxExpectedNbClients: 50).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// When a hard limit is placed on concurrent calls, no warm up is needed since incoming calls in excess will wait for semaphore release, thus for pooling to recycle initial clients. Accordingly, the connector can be instantly hammered with a large number of concurrent calls, and the semaphore limit will dictate how many websocket clients will be initially created and then recycled to process all the subsequent calls.
+    /// </summary>
+    [Fact]
+    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync()
+    {
+        await this.RunWebSocketMultiPacketStreamingTestAsync(
+            nbConcurrentCalls: 50,
+            isPersistent: true,
+            keepAliveWebSocketsDuration: 100,
+            concurrentCallsTicksDelay: 0,
+            maxNbConcurrentSockets: 20,
+            maxExpectedNbClients: 20).ConfigureAwait(false);
     }
 
     private void ShouldHandleStreamingServiceResponseAsync(OobaboogaTextCompletion sut)
@@ -268,23 +302,60 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         Assert.Equal(expectedResponse, completion);
     }
 
-    private async Task RunWebSocketMultiPacketStreamingTestAsync(bool isConcurrent, bool isPersistent)
+    private async Task RunWebSocketMultiPacketStreamingTestAsync(
+        int nbConcurrentCalls = 1,
+        bool isPersistent = false,
+        int keepAliveWebSocketsDuration = 100,
+        int concurrentCallsTicksDelay = 0,
+        int maxNbConcurrentSockets = 0,
+        int maxExpectedNbClients = 0)
     {
         var requestMessage = CompletionMultiText;
         var expectedResponse = new List<string> { " John", ". I", "'m a", " writer" };
-        var webSocketFactory = isPersistent ? this._webSocketFactory : null;
+        Func<ClientWebSocket>? webSocketFactory = null;
+        // Counter to track the number of WebSocket clients created
+        int clientCount = 0;
+        var delayTimeSpan = new TimeSpan(concurrentCallsTicksDelay);
+        List<ClientWebSocket> webSockets = new();
+
+        if (isPersistent)
+        {
+            var externalWebSocketFactory = () =>
+            {
+                var toReturn = new ClientWebSocket();
+                webSockets.Add(toReturn);
+                return toReturn;
+            };
+            if (maxExpectedNbClients > 0)
+            {
+                Func<ClientWebSocket> incrementFactory = () =>
+                {
+                    var toReturn = externalWebSocketFactory();
+                    Interlocked.Increment(ref clientCount);
+                    return toReturn;
+                };
+                webSocketFactory = incrementFactory;
+            }
+            else
+            {
+                webSocketFactory = externalWebSocketFactory;
+            }
+        }
+
         var sut = new OobaboogaTextCompletion(
             new Uri("http://localhost/"),
             BlockingPort,
             StreamingPort,
             httpClient: this._httpClient,
-            webSocketFactory: webSocketFactory);
+            webSocketFactory: webSocketFactory,
+            keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
+            maxNbConcurrentWebSockets: maxNbConcurrentSockets);
 
-        using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse);
+        await using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse);
 
         var tasks = new List<Task<List<string>>>();
 
-        for (int i = 0; i < (isConcurrent ? 10 : 1); i++)
+        for (int i = 0; i < nbConcurrentCalls; i++)
         {
             tasks.Add(Task.Run(async () =>
             {
@@ -293,16 +364,20 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
                     Temperature = 0.01,
                     MaxTokens = 7,
                     TopP = 0.1,
-                }).ToListAsync();
+                }).ToListAsync().ConfigureAwait(false);
                 return localResponse;
             }));
+
+            // Introduce a delay between creating each WebSocket client
+            //Thread.Sleep(concurrentCallsDelay);
+            await Task.Delay(delayTimeSpan).ConfigureAwait(false);
         }
 
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(tasks).ConfigureAwait(false);
 
         foreach (var task in tasks)
         {
-            var completion = await task;
+            var completion = await task.ConfigureAwait(false);
 
             // Assert
             Assert.Equal(expectedResponse.Count, completion.Count);
@@ -311,15 +386,31 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
                 Assert.Equal(expectedResponse[i], completion[i]);
             }
         }
+
+        if (maxExpectedNbClients > 0)
+        {
+            Assert.InRange(clientCount, 1, maxExpectedNbClients);
+        }
+
+        //await this.DisposeClientsGracefullyAsync(webSockets).ConfigureAwait(false);
     }
 
     public void Dispose()
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
-        foreach (ClientWebSocket clientWebSocket in this._webSockets)
-        {
-            clientWebSocket.Dispose();
-        }
     }
+
+    //private async Task DisposeClientsGracefullyAsync(List<ClientWebSocket> webSockets)
+    //{
+    //    foreach (ClientWebSocket clientWebSocket in webSockets)
+    //    {
+    //        if (clientWebSocket.State != WebSocketState.Closed)
+    //        {
+    //            await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing client before disposal", CancellationToken.None).ConfigureAwait(false);
+    //        }
+
+    //        clientWebSocket.Dispose();
+    //    }
+    //}
 }

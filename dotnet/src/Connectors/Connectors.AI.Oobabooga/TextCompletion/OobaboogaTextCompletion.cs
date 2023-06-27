@@ -33,10 +33,21 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private readonly Uri _endpoint;
     private readonly int _blockingPort;
     private readonly int _streamingPort;
+    private readonly int _maxNbConcurrentWebSockets;
+    private UriBuilder _streamingUri;
     private readonly HttpClient _httpClient;
-    private readonly Func<ClientWebSocket>? _webSocketFactory;
-    private static readonly ConcurrentStack<bool> s_activeConnections = new();
-    private static readonly ConcurrentStack<ClientWebSocket> s_webSocketPool = new();
+    private readonly Func<ClientWebSocket> _webSocketFactory;
+    private readonly bool _useWebSocketsPooling;
+
+    private readonly SemaphoreSlim? _concurrentCallSemaphore;
+    private readonly ConcurrentStack<bool>? _activeConnections;
+    private readonly ConcurrentStack<ClientWebSocket> _webSocketPool = new();
+    private readonly int _keepAliveWebSocketsDuration;
+
+    /// <summary>
+    /// Controls the size of the buffer used to received websocket packets
+    /// </summary>
+    public int WebSocketBufferSize { get; set; } = 2048;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaTextCompletion"/> class.
@@ -45,27 +56,38 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <param name="blockingPort">The port used for handling blocking requests.</param>
     /// <param name="streamingPort">The port used for handling streaming requests.</param>
     /// <param name="httpClient">Optional. The HTTP client used for making blocking API requests. If not specified, a default client will be used.</param>
-    /// <param name="webSocketFactory">Optional. The WebSocket factory used for making streaming API requests. If not provided, a pool of transient clients will be used for each request. It's important to note that this class does not support concurrent WebSocket client calls. If you provide your own WebSocket clients, ensure the following:
-    /// <list type="bullet">
-    /// <item>
-    /// <description>Supply unique WebSocket clients for each call to avoid data corruption.</description>
-    /// </item>
-    /// <item>
-    /// <description>Pool your WebSocket clients if there's a risk of port exhaustion due to numerous concurrent calls.</description>
-    /// </item>
-    /// <item>
-    /// <description>Dispose of WebSocket clients when they're no longer needed to prevent resource leakage.</description>
-    /// </item>
-    /// </list>
-    /// </param>
-    public OobaboogaTextCompletion(Uri endpoint, int blockingPort, int streamingPort, HttpClient? httpClient = null, Func<ClientWebSocket>? webSocketFactory = null)
+    /// <param name="useWebSocketsPooling">If true, websocket clients will be recycled in a reusable pool as long as concurrent calls are detected</param>
+    /// <param name="keepAliveWebSocketsDuration">When pooling is enabled, pooled websockets are flushed on a regular basis when no more connections are made. This is the time to keep them in pool before flushing</param>
+    /// <param name="webSocketFactory">Optional. The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
+    /// <param name="maxNbConcurrentWebSockets">the max number of concurrent calls to this method. Additional calls wait for existing consumers to release a semaphore</param>
+    public OobaboogaTextCompletion(Uri endpoint,
+        int blockingPort,
+        int streamingPort,
+        HttpClient? httpClient = null,
+        bool useWebSocketsPooling = true,
+        int keepAliveWebSocketsDuration = 100,
+        Func<ClientWebSocket>? webSocketFactory = null,
+        int maxNbConcurrentWebSockets = 0)
     {
         Verify.NotNull(endpoint);
 
         this._endpoint = endpoint;
         this._blockingPort = blockingPort;
         this._streamingPort = streamingPort;
+        this._maxNbConcurrentWebSockets = maxNbConcurrentWebSockets;
+        this._streamingUri = new(this._endpoint)
+        {
+            Port = this._streamingPort,
+            Path = StreamingUriPath
+        };
+        if (this._streamingUri.Uri.Scheme.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            this._streamingUri.Scheme = (this._streamingUri.Scheme == "https") ? "wss" : "ws";
+        }
+
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._useWebSocketsPooling = useWebSocketsPooling;
+        this._keepAliveWebSocketsDuration = keepAliveWebSocketsDuration;
         if (webSocketFactory != null)
         {
             this._webSocketFactory = () =>
@@ -75,6 +97,25 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 return webSocket;
             };
         }
+        else
+        {
+            this._webSocketFactory = () =>
+            {
+                ClientWebSocket webSocket = new();
+                this.SetWebSocketOptions(webSocket);
+                return webSocket;
+            };
+        }
+
+        // if a hard limit is defined, we use a semaphore to limit the number of concurrent calls, otherwise, we use a stack to track active connections
+        if (this._maxNbConcurrentWebSockets > 0)
+        {
+            this._concurrentCallSemaphore = new(maxNbConcurrentWebSockets);
+        }
+        else
+        {
+            this._activeConnections = new();
+        }
     }
 
     /// <inheritdoc/>
@@ -83,17 +124,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        s_activeConnections.Push(true);
-
-        UriBuilder streamingUri = new(this._endpoint)
-        {
-            Port = this._streamingPort,
-            Path = StreamingUriPath
-        };
-        if (streamingUri.Uri.Scheme.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-        {
-            streamingUri.Scheme = (streamingUri.Scheme == "https") ? "wss" : "ws";
-        }
+        this.StartConcurrentCall(cancellationToken);
 
         var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
 
@@ -102,27 +133,24 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         var requestBytes = Encoding.UTF8.GetBytes(requestJson);
 
         ClientWebSocket? clientWebSocket = null;
-        bool isClientProvidedWebSocket = false;
         try
         {
-            if (this._webSocketFactory != null)
+            if (!this._useWebSocketsPooling || !this._webSocketPool.TryPop(out clientWebSocket))
             {
                 clientWebSocket = this._webSocketFactory();
-                isClientProvidedWebSocket = true;
-            }
-            else if (!s_webSocketPool.TryPop(out clientWebSocket))
-            {
-                clientWebSocket = new();
-                this.SetWebSocketOptions(clientWebSocket);
             }
 
-            await clientWebSocket.ConnectAsync(streamingUri.Uri, cancellationToken).ConfigureAwait(false);
+            if (clientWebSocket.State == WebSocketState.None)
+            {
+                await clientWebSocket.ConnectAsync(this._streamingUri.Uri, cancellationToken).ConfigureAwait(false);
+            }
 
             var sendSegment = new ArraySegment<byte>(requestBytes);
             await clientWebSocket.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
 
-            var buffer = new byte[8192]; // Increased buffer size
-            while (true)
+            var buffer = new byte[this.WebSocketBufferSize];
+            var finishedProcessing = false;
+            while (!finishedProcessing)
             {
                 MemoryStream messageStream = new();
                 WebSocketReceiveResult result;
@@ -155,7 +183,12 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                             yield return new TextCompletionStreamingResult(responseObject);
                             break;
                         case ResponseObjectStreamEndEvent:
-                            await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge stream-end oobabooga message", CancellationToken.None).ConfigureAwait(false);
+                            if (!this._useWebSocketsPooling)
+                            {
+                                await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge stream-end oobabooga message", CancellationToken.None).ConfigureAwait(false);
+                            }
+
+                            finishedProcessing = true;
                             break;
                         default:
                             break;
@@ -164,35 +197,115 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {
                     await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge Close frame", CancellationToken.None).ConfigureAwait(false);
+                    finishedProcessing = true;
                 }
 
                 if (clientWebSocket.State != WebSocketState.Open)
                 {
-                    break;
+                    finishedProcessing = true;
                 }
             }
         }
         finally
         {
-            s_activeConnections.TryPop(out _);
-
-            if (clientWebSocket != null && !isClientProvidedWebSocket)
+            if (clientWebSocket != null)
             {
-                if (s_activeConnections.IsEmpty)
+                if (this._useWebSocketsPooling)
                 {
-                    while (s_webSocketPool.TryPop(out ClientWebSocket clientToDispose))
-                    {
-                        clientToDispose.Dispose();
-                    }
-
-                    clientWebSocket.Dispose();
+                    this._webSocketPool.Push(clientWebSocket);
                 }
                 else
                 {
-                    s_webSocketPool.Push(clientWebSocket);
+                    await DisposeClientGracefullyAsync(clientWebSocket).ConfigureAwait(false);
                 }
             }
+
+            this.EndConcurrentCall();
+
+            Task.Run(this.FlushWebSocketClientsAsync, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Starts a concurrent call, either by taking a semaphore slot or by pushing a value on the active connections stack
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    private void StartConcurrentCall(CancellationToken cancellationToken)
+    {
+        if (this._maxNbConcurrentWebSockets > 0)
+        {
+            this._concurrentCallSemaphore!.Wait(cancellationToken);
+        }
+        else
+        {
+            this._activeConnections!.Push(true);
+        }
+    }
+
+    /// <summary>
+    /// Gets the number of concurrent calls, either by reading the semaphore count or by reading the active connections stack count
+    /// </summary>
+    /// <returns></returns>
+    private int GetCurrentConcurrentCallsNb()
+    {
+        if (this._maxNbConcurrentWebSockets > 0)
+        {
+            return this._maxNbConcurrentWebSockets - this._concurrentCallSemaphore!.CurrentCount;
+        }
+
+        return this._activeConnections!.Count;
+    }
+
+    /// <summary>
+    /// Ends a concurrent call, either by releasing a semaphore slot or by popping a value from the active connections stack
+    /// </summary>
+    private void EndConcurrentCall()
+    {
+        if (this._maxNbConcurrentWebSockets > 0)
+        {
+            this._concurrentCallSemaphore!.Release();
+        }
+        else
+        {
+            this._activeConnections!.TryPop(out _);
+        }
+    }
+
+    private long _lastCallTicks;
+
+    /// <summary>
+    /// Flushes the web socket clients that have been idle for too long
+    /// </summary>
+    /// <returns></returns>
+    private async Task FlushWebSocketClientsAsync()
+    {
+        Interlocked.Exchange(ref this._lastCallTicks, DateTime.UtcNow.Ticks);
+
+        await Task.Delay(this._keepAliveWebSocketsDuration).ConfigureAwait(false);
+
+        // If another call was made during the delay, do not proceed with flushing
+        if (DateTime.UtcNow.Ticks - Interlocked.Read(ref this._lastCallTicks) < TimeSpan.FromMilliseconds(this._keepAliveWebSocketsDuration).Ticks)
+        {
+            return;
+        }
+
+        while (this.GetCurrentConcurrentCallsNb() == 0 && this._webSocketPool.TryPop(out ClientWebSocket clientToDispose))
+        {
+            await DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Closes and disposes of a client web socket after use
+    /// </summary>
+    private static async Task DisposeClientGracefullyAsync(ClientWebSocket clientWebSocket)
+    {
+        if (clientWebSocket.State == WebSocketState.Open)
+        {
+            await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing client before disposal", CancellationToken.None).ConfigureAwait(false);
+        }
+
+        clientWebSocket.Dispose();
     }
 
     /// <inheritdoc/>
@@ -252,11 +365,11 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     #region private ================================================================================
 
     /// <summary>
-    /// Creates an Oobabooga request.
+    /// Creates an Oobabooga request, mapping CompleteRequestSettings fields to their Oobabooga API counter parts
     /// </summary>
     /// <param name="text">The text to complete.</param>
     /// <param name="requestSettings">The request settings.</param>
-    /// <returns>An OobaboogaTextCompletionRequest.</returns>
+    /// <returns>An Oobabooga TextCompletionRequest object with the text and completion parameters.</returns>
     private TextCompletionRequest CreateOobaboogaRequest(string text, CompleteRequestSettings requestSettings)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -285,7 +398,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     }
 
     /// <summary>
-    /// Converts the semantic-kernel presence penalty, scaled -2:+2 with default 0 for no penalty to the Oobabooga repetition penalty, strictly positive with default 1 for no penalty. See https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md and subsequent links for more details.
+    /// Converts the semantic-kernel presence penalty, scaled -2:+2 with default 0 for no penalty to the Oobabooga repetition penalty, strictly positive with default 1 for no penalty. See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/>  and subsequent links for more details.
     /// </summary>
     private static double GetRepetitionPenalty(CompleteRequestSettings requestSettings)
     {

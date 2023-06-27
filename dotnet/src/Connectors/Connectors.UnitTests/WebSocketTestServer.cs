@@ -17,6 +17,7 @@ internal class WebSocketTestServer : IDisposable
     private Func<ArraySegment<byte>, List<ArraySegment<byte>>> _arraySegmentHandler;
     private readonly CancellationTokenSource _cts;
     private readonly ConcurrentDictionary<Guid, ConcurrentQueue<byte[]>> _requestContentQueues;
+    private List<Task> _requestTasks = new();
 
     public ConcurrentDictionary<Guid, byte[]> RequestContents
     {
@@ -41,53 +42,86 @@ internal class WebSocketTestServer : IDisposable
 
     private async Task HandleRequestsAsync()
     {
+        this._requestTasks = new List<Task>();
+
         while (!this._cts.IsCancellationRequested)
         {
-            var context = await this._httpListener.GetContextAsync();
+            var context = await this._httpListener.GetContextAsync().ConfigureAwait(false);
 
             if (context.Request.IsWebSocketRequest)
             {
-                var socketContext = await context.AcceptWebSocketAsync(null);
-                var buffer = new byte[1024];
-                var closeRequested = false;
-
-                Guid requestId = Guid.NewGuid();
-                this._requestContentQueues[requestId] = new ConcurrentQueue<byte[]>();
-
-                while (!closeRequested)
-                {
-                    var result = await socketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), this._cts.Token);
-
-                    if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        closeRequested = true;
-                        break;
-                    }
-
-                    var receivedBytes = new ArraySegment<byte>(buffer, 0, result.Count).ToArray();
-                    this._requestContentQueues[requestId].Enqueue(receivedBytes);
-
-                    if (result.EndOfMessage)
-                    {
-                        var responseSegments = this._arraySegmentHandler(new ArraySegment<byte>(buffer, 0, result.Count));
-
-                        foreach (var segment in responseSegments)
-                        {
-                            await socketContext.WebSocket.SendAsync(segment, WebSocketMessageType.Text, true, this._cts.Token);
-                        }
-                    }
-                }
-
-                await socketContext.WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", this._cts.Token);
+                this._requestTasks.Add(this.HandleSingleWebSocketRequestAsync(context));
             }
         }
+
+        await Task.WhenAll(this._requestTasks).ConfigureAwait(false);
+    }
+
+    private async Task HandleSingleWebSocketRequestAsync(HttpListenerContext context)
+    {
+        var socketContext = await context.AcceptWebSocketAsync(null);
+        var buffer = new byte[1024];
+        var closeRequested = false;
+
+        Guid requestId = Guid.NewGuid();
+        this._requestContentQueues[requestId] = new ConcurrentQueue<byte[]>();
+
+        while (!this._cts.IsCancellationRequested && !closeRequested)
+        {
+            if (socketContext.WebSocket.State != WebSocketState.Open)
+            {
+                break;
+            }
+
+            WebSocketReceiveResult result;
+
+            try
+            {
+                result = await socketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), this._cts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Exit the loop if task was cancelled
+                break;
+            }
+
+            if (result.MessageType == WebSocketMessageType.Close)
+            {
+                closeRequested = true;
+                break;
+            }
+
+            var receivedBytes = new ArraySegment<byte>(buffer, 0, result.Count).ToArray();
+            this._requestContentQueues[requestId].Enqueue(receivedBytes);
+
+            if (result.EndOfMessage)
+            {
+                var responseSegments = this._arraySegmentHandler(new ArraySegment<byte>(buffer, 0, result.Count));
+
+                foreach (var segment in responseSegments)
+                {
+                    await socketContext.WebSocket.SendAsync(segment, WebSocketMessageType.Text, true, this._cts.Token).ConfigureAwait(false);
+                }
+            }
+        }
+
+        if (!this._cts.IsCancellationRequested && closeRequested)
+        {
+            await socketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing", this._cts.Token).ConfigureAwait(false);
+        }
+    }
+
+    public async Task DisposeAsync()
+    {
+        this._cts.Cancel();
+        await Task.WhenAll(this._requestTasks).ConfigureAwait(false);
+        this._httpListener.Stop();
+        this._httpListener.Close();
     }
 
     public void Dispose()
     {
-        this._cts.Cancel();
+        ((IDisposable)this._httpListener).Dispose();
         this._cts.Dispose();
-        this._httpListener.Stop();
-        this._httpListener.Close();
     }
 }
