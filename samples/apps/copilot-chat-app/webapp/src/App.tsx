@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import {
-    AuthenticatedTemplate,
-    UnauthenticatedTemplate,
-    useIsAuthenticated,
-    useMsal,
-} from '@azure/msal-react';
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
 import { Dismiss16Regular } from '@fluentui/react-icons';
@@ -78,14 +73,16 @@ const App: FC = () => {
         if (isAuthenticated && account) {
             dispatch(setLoggedInUserId(account.homeAccountId));
 
-            // Load all chats from memory
-            chat.loadChats()
-                .then((succeeded) => {
-                    if (succeeded) {
-                        setAppState(AppState.Chat);
-                    }
-                })
-                .catch(() => {});
+            if (appState === AppState.LoadingChats) {
+                // Load all chats from memory
+                chat.loadChats()
+                    .then((succeeded) => {
+                        if (succeeded) {
+                            setAppState(AppState.Chat);
+                        }
+                    })
+                    .catch(() => {});
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instance, inProgress, isAuthenticated, appState]);
@@ -112,32 +109,40 @@ const App: FC = () => {
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <div className={classes.cornerItems}>
                             <PluginGallery />
-                            <UserSettings setLoadingState={() => { setAppState(AppState.SigningOut); }} />
+                            <UserSettings
+                                setLoadingState={() => {
+                                    setAppState(AppState.SigningOut);
+                                }}
+                            />
                         </div>
                     </div>
                     {alerts.map((alert, index) => {
-                            return (
-                                <Alert
-                                    intent={alert.type}
-                                    action={{
-                                        icon: (
-                                            <Dismiss16Regular
-                                                aria-label="dismiss message"
-                                                onClick={() => { onDismissAlert(index); }}
-                                                color="black"
-                                            />
-                                        ),
-                                    }}
-                                    key={index}
-                                >
-                                    {alert.message}
-                                </Alert>
-                            );
-                        })}
+                        return (
+                            <Alert
+                                intent={alert.type}
+                                action={{
+                                    icon: (
+                                        <Dismiss16Regular
+                                            aria-label="dismiss message"
+                                            onClick={() => {
+                                                onDismissAlert(index);
+                                            }}
+                                            color="black"
+                                        />
+                                    ),
+                                }}
+                                key={index}
+                            >
+                                {alert.message}
+                            </Alert>
+                        );
+                    })}
                     {appState === AppState.ProbeForBackend && (
                         <BackendProbe
                             uri={process.env.REACT_APP_BACKEND_URI as string}
-                            onBackendFound={() => { setAppState(AppState.LoadingChats); }}
+                            onBackendFound={() => {
+                                setAppState(AppState.LoadingChats);
+                            }}
                         />
                     )}
                     {appState === AppState.LoadingChats && <Loading text="Loading Chats..." />}

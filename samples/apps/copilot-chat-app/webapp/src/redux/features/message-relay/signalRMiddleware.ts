@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import * as signalR from '@microsoft/signalr';
+import { AnyAction, Dispatch } from '@reduxjs/toolkit';
 import { AlertType } from '../../../libs/models/AlertType';
 import { IChatUser } from '../../../libs/models/ChatUser';
 import { PlanState } from '../../../libs/models/Plan';
@@ -8,7 +9,7 @@ import { IAskResult } from '../../../libs/semantic-kernel/model/AskResult';
 import { addAlert } from '../app/appSlice';
 import { ChatState } from '../conversations/ChatState';
 import { AuthorRoles, ChatMessageType, IChatMessage } from './../../../libs/models/ChatMessage';
-import { getSelectedChatID } from './../../app/store';
+import { Store, StoreMiddlewareAPI, getSelectedChatID } from './../../app/store';
 
 // These have to match the callback names used in the backend
 const enum SignalRCallbackMethods {
@@ -20,6 +21,16 @@ const enum SignalRCallbackMethods {
     GlobalDocumentUploaded = 'GlobalDocumentUploaded',
     ChatDocumentUploaded = 'ChatDocumentUploaded',
     ChatEdited = 'ChatEdited',
+}
+
+// The action sent to the SignalR middleware.
+interface SignalRAction extends AnyAction {
+    payload: {
+        message?: IChatMessage;
+        userId?: string;
+        isTyping?: boolean;
+        id?: string;
+    };
 }
 
 // Set up a SignalR connection to the messageRelayHub on the server
@@ -51,12 +62,12 @@ const setupSignalRConnectionToChatHub = () => {
 
 const hubConnection = setupSignalRConnectionToChatHub();
 
-const registerCommonSignalConnectionEvents = async (store: any) => {
+const registerCommonSignalConnectionEvents = (store: Store) => {
     // Re-establish the connection if connection dropped
     hubConnection.onclose((error) => {
         if (hubConnection.state === signalR.HubConnectionState.Disconnected) {
             const errorMessage = 'Connection closed due to error. Try refreshing this page to restart the connection';
-            store.dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            store.dispatch(addAlert({ message: String(errorMessage), type: AlertType.Error }));
             console.log(errorMessage, error);
         }
     });
@@ -64,7 +75,7 @@ const registerCommonSignalConnectionEvents = async (store: any) => {
     hubConnection.onreconnecting((error) => {
         if (hubConnection.state === signalR.HubConnectionState.Reconnecting) {
             const errorMessage = 'Connection lost due to error. Reconnecting...';
-            store.dispatch(addAlert({ message: errorMessage, type: AlertType.Info }));
+            store.dispatch(addAlert({ message: String(errorMessage), type: AlertType.Info }));
             console.log(errorMessage, error);
         }
     });
@@ -78,10 +89,11 @@ const registerCommonSignalConnectionEvents = async (store: any) => {
     });
 };
 
-export const startSignalRConnection = async (store: any) => {
-    registerCommonSignalConnectionEvents(store)
-        .then(async () => {
-            await hubConnection.start();
+export const startSignalRConnection = (store: Store) => {
+    registerCommonSignalConnectionEvents(store);
+    hubConnection
+        .start()
+        .then(() => {
             console.assert(hubConnection.state === signalR.HubConnectionState.Connected);
             console.log('SignalR connection established');
         })
@@ -89,13 +101,12 @@ export const startSignalRConnection = async (store: any) => {
             console.assert(hubConnection.state === signalR.HubConnectionState.Disconnected);
             console.error('SignalR Connection Error: ', err);
             setTimeout(() => {
-                startSignalRConnection(store).catch(() => {});
+                startSignalRConnection(store);
             }, 5000);
         });
 };
-
-export const signalRMiddleware = (store: any) => {
-    return (next: any) => async (action: any) => {
+export const signalRMiddleware = (store: StoreMiddlewareAPI) => {
+    return (next: Dispatch) => (action: SignalRAction) => {
         // Call the next dispatch method in the middleware chain before performing any async logic
         const result = next(action);
 
@@ -104,7 +115,7 @@ export const signalRMiddleware = (store: any) => {
             case 'conversations/updateConversationFromUser':
                 hubConnection
                     .invoke('SendMessageAsync', getSelectedChatID(), action.payload.message)
-                    .catch((err) => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
+                    .catch((err) => store.dispatch(addAlert({ message: String(err), type: AlertType.Error })));
                 break;
             case 'conversations/updateUserIsTyping':
                 hubConnection
@@ -114,19 +125,19 @@ export const signalRMiddleware = (store: any) => {
                         action.payload.userId,
                         action.payload.isTyping,
                     )
-                    .catch((err) => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
+                    .catch((err) => store.dispatch(addAlert({ message: String(err), type: AlertType.Error })));
                 break;
             case 'conversations/setConversations':
                 Promise.all(
                     Object.keys(action.payload).map(async (id) => {
                         await hubConnection.invoke('AddClientToGroupAsync', id);
                     }),
-                ).catch((err) => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
+                ).catch((err) => store.dispatch(addAlert({ message: String(err), type: AlertType.Error })));
                 break;
             case 'conversations/addConversation':
                 hubConnection
                     .invoke('AddClientToGroupAsync', action.payload.id)
-                    .catch((err) => store.dispatch(addAlert({ message: err, type: AlertType.Error })));
+                    .catch((err) => store.dispatch(addAlert({ message: String(err), type: AlertType.Error })));
                 break;
         }
 
@@ -134,7 +145,7 @@ export const signalRMiddleware = (store: any) => {
     };
 };
 
-export const registerSignalREvents = async (store: any) => {
+export const registerSignalREvents = (store: Store) => {
     hubConnection.on(SignalRCallbackMethods.ReceiveMessage, (message: IChatMessage, chatId: string) => {
         store.dispatch({ type: 'conversations/updateConversationFromServer', payload: { message, chatId } });
     });

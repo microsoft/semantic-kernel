@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { configureStore } from '@reduxjs/toolkit';
+import { AnyAction, Dispatch, MiddlewareAPI, MiddlewareArray, ThunkMiddleware, configureStore } from '@reduxjs/toolkit';
 import { AppState } from '../features/app/AppState';
 import { ConversationsState } from '../features/conversations/ConversationsState';
 import {
@@ -11,7 +11,15 @@ import {
 import { PluginsState } from '../features/plugins/PluginsState';
 import resetStateReducer, { resetApp } from './rootReducer';
 
-export const store = configureStore({
+export type StoreMiddlewareAPI = MiddlewareAPI<Dispatch, RootState>;
+export type Store = typeof store;
+export const store = configureStore<
+    RootState,
+    AnyAction,
+    MiddlewareArray<
+        [ThunkMiddleware<RootState, AnyAction>, (store: StoreMiddlewareAPI) => (next: Dispatch) => (action: any) => any]
+    >
+>({
     reducer: resetStateReducer,
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(signalRMiddleware),
 });
@@ -28,8 +36,8 @@ export const getSelectedChatID = (): string => {
 
 // Start the signalR connection to make sure messages are
 // sent to all clients and received by all clients
-startSignalRConnection(store).catch(() => {});
-registerSignalREvents(store).catch(() => {});
+startSignalRConnection(store);
+registerSignalREvents(store);
 
 export type AppDispatch = typeof store.dispatch;
 

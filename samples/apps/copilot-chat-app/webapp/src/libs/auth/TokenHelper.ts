@@ -29,7 +29,7 @@ export const getAccessTokenUsingMsal = async (
     };
 
     return await acquireToken(accessTokenRequest, msalInstance, inProgress).catch(async (e) => {
-        if (e.message === TokenErrors.InteractionInProgress) {
+        if (e instanceof Error && e.message === TokenErrors.InteractionInProgress) {
             return await interactionInProgressHandler(inProgress, msalInstance, accessTokenRequest);
         }
 

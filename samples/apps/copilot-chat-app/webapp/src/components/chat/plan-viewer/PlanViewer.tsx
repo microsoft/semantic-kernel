@@ -38,13 +38,27 @@ interface PlanViewerProps {
     getResponse: (options: GetResponseOptions) => Promise<void>;
 }
 
+/**
+ * See Semantic Kernel's `Plan` object below for full definition.
+ * Not explicitly defining the type here to avoid additional overhead of property maintenance.
+ * https://github.com/microsoft/semantic-kernel/blob/df07fc6f28853a481dd6f47e60d39a52fc6c9967/dotnet/src/SemanticKernel/Planning/Plan.cs#
+ */
+
+/*
+eslint-disable 
+    @typescript-eslint/no-unsafe-assignment,
+    @typescript-eslint/no-unsafe-member-access,
+    @typescript-eslint/no-unsafe-call,
+*/
+export type Plan = any;
+
 export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, getResponse }) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     // Track original plan from user message
-    const parsedContent = JSON.parse(message.content);
+    const parsedContent: Plan = JSON.parse(message.content);
     const originalPlan = parsedContent.proposedPlan;
 
     const planState = message.state ?? parsedContent.state;
@@ -135,10 +149,21 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 <>
                     Would you like to proceed with the plan?
                     <div className={classes.buttons}>
-                        <Button appearance="secondary" onClick={() => { onPlanAction(PlanState.PlanRejected).catch(() => { }); }}>
+                        <Button
+                            appearance="secondary"
+                            onClick={() => {
+                                onPlanAction(PlanState.PlanRejected).catch(() => {});
+                            }}
+                        >
                             No, cancel plan
                         </Button>
-                        <Button type="submit" appearance="primary" onClick={() => { onPlanAction(PlanState.PlanApproved).catch(() => { }); }}>
+                        <Button
+                            type="submit"
+                            appearance="primary"
+                            onClick={() => {
+                                onPlanAction(PlanState.PlanApproved).catch(() => {});
+                            }}
+                        >
                             Yes, proceed
                         </Button>
                     </div>

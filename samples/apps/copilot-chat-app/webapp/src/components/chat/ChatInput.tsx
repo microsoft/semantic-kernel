@@ -93,13 +93,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
             if (response.isSuccess) {
-                const recognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
+                const recognizer = speechService.getSpeechRecognizerAsyncWithValidKey(response);
                 setRecognizer(recognizer);
             }
         }
 
         initSpeechRecognizer().catch((e) => {
-            const errorMessage = `Unable to initialize speech recognizer. Details: ${(e.message ?? e) as string}`;
+            const errorDetails = e instanceof Error ? e.message : String(e);
+            const errorMessage = `Unable to initialize speech recognizer. Details: ${errorDetails}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
         });
     }, [dispatch, instance, inProgress]);

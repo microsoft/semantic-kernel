@@ -13,8 +13,7 @@ import {
     Popover,
     PopoverSurface,
     PopoverTrigger,
-    SelectTabData,
-    SelectTabEvent,
+    SelectTabEventHandler,
     shorthands,
     Tab,
     TabList,
@@ -104,7 +103,9 @@ export const ChatWindow: React.FC = () => {
 
                 dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title }));
             } catch (e: any) {
-                const errorMessage = `Unable to retrieve chat to change title. Details: ${(e.message ?? e) as string}`;
+                const errorMessage = `Unable to retrieve chat to change title. Details: ${
+                    e instanceof Error ? e.message : String(e)
+                }`;
                 dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
             }
         }
@@ -112,7 +113,7 @@ export const ChatWindow: React.FC = () => {
     };
 
     const [selectedTab, setSelectedTab] = React.useState<TabValue>('chat');
-    const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
+    const onTabSelect: SelectTabEventHandler = (_event, data) => {
         setSelectedTab(data.value);
     };
 
@@ -125,7 +126,7 @@ export const ChatWindow: React.FC = () => {
         setTitle(data.value);
     };
 
-    const handleKeyDown = (event: any) => {
+    const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
         if (event.key === 'Enter') {
             onSave().catch(() => {});
         }

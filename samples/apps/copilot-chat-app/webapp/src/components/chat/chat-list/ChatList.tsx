@@ -110,7 +110,7 @@ export const ChatList: FC = () => {
         setIsFiltering(false);
     };
 
-    const onSearch = (ev: any, data: InputOnChangeData) => {
+    const onSearch = (ev: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
         ev.preventDefault();
         setFilterText(data.value);
     };
@@ -167,7 +167,7 @@ export const ChatList: FC = () => {
                                             ? 'Sent a file'
                                             : isPlan(lastMessage.content)
                                             ? 'Click to view proposed plan'
-                                            : (lastMessage.content)
+                                            : lastMessage.content
                                         : 'Click to start the chat'
                                 }
                                 botProfilePicture={convo.botProfilePicture}

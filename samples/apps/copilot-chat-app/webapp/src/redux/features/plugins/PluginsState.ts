@@ -36,12 +36,15 @@ export interface PluginAuthRequirements {
 // Additional information required to enable OpenAPI skills, i.e., server-url
 // Key should be the property name and in kebab case (valid format for request header),
 // make sure it matches exactly with the property name the API requires
-export type AdditionalApiProperties = Record<string, {
+export type AdditionalApiProperties = Record<
+    string,
+    {
         required: boolean;
         helpLink?: string;
         value?: string;
         description?: string;
-    }>;
+    }
+>;
 
 export interface Plugin {
     name: Plugins;
@@ -55,12 +58,7 @@ export interface Plugin {
     apiProperties?: AdditionalApiProperties;
 }
 
-export interface PluginsState {
-    MsGraph: Plugin;
-    Jira: Plugin;
-    GitHub: Plugin;
-    Klarna: Plugin;
-}
+export type PluginsState = Record<keyof typeof Plugins, Plugin>;
 
 export const initialState: PluginsState = {
     MsGraph: {
@@ -78,7 +76,8 @@ export const initialState: PluginsState = {
     Jira: {
         name: Plugins.Jira,
         publisher: 'Atlassian',
-        description: 'Authorize Copilot Chat to link with Jira and retrieve specific issues by providing the issue key.',
+        description:
+            'Authorize Copilot Chat to link with Jira and retrieve specific issues by providing the issue key.',
         enabled: false,
         authRequirements: {
             email: true,
@@ -124,10 +123,9 @@ export const initialState: PluginsState = {
     Klarna: {
         name: Plugins.Klarna,
         publisher: 'Klarna',
-        description:
-            'Search and compare prices from thousands of online shops.',
+        description: 'Search and compare prices from thousands of online shops.',
         enabled: false,
-        authRequirements: { },
+        authRequirements: {},
         icon: KlarnaIcon,
         headerTag: AuthHeaderTags.Klarna,
     },

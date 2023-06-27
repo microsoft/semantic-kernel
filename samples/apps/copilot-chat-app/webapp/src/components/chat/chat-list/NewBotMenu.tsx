@@ -25,9 +25,11 @@ export const NewBotMenu: FC = () => {
     const fileUploaderRef = useRef<HTMLInputElement>(null);
 
     const onAddChat = () => {
-        chat.createChat().then(() => {
-            setIsNewBotMenuOpen(false);
-        }).catch(() => { });
+        chat.createChat()
+            .then(() => {
+                setIsNewBotMenuOpen(false);
+            })
+            .catch(() => {});
     };
 
     const onUpload = useCallback(
@@ -36,7 +38,10 @@ export const NewBotMenu: FC = () => {
                 .loadFile<Bot>(file, chat.uploadBot)
                 .catch((error) =>
                     dispatch(
-                        addAlert({ message: `Failed to parse uploaded file. ${error.message as string}`, type: AlertType.Error }),
+                        addAlert({
+                            message: `Failed to parse uploaded file. ${error instanceof Error ? error.message : ''}`,
+                            type: AlertType.Error,
+                        }),
                     ),
                 );
             setIsNewBotMenuOpen(false);
@@ -61,7 +66,9 @@ export const NewBotMenu: FC = () => {
                         <Button
                             icon={<BotAdd20Regular />}
                             appearance="transparent"
-                            onClick={() => { setIsNewBotMenuOpen(!isNewBotMenuOpen); }}
+                            onClick={() => {
+                                setIsNewBotMenuOpen(!isNewBotMenuOpen);
+                            }}
                         />
                     </Tooltip>
                 </MenuTrigger>
@@ -70,10 +77,7 @@ export const NewBotMenu: FC = () => {
                         <MenuItem icon={<BotAdd20Regular />} onClick={onAddChat}>
                             Add a new Bot
                         </MenuItem>
-                        <MenuItem
-                            icon={<ArrowUploadRegular />}
-                            onClick={() => fileUploaderRef.current?.click()}
-                        >
+                        <MenuItem icon={<ArrowUploadRegular />} onClick={() => fileUploaderRef.current?.click()}>
                             <div>Upload a Bot</div>
                             <FileUploader
                                 ref={fileUploaderRef}

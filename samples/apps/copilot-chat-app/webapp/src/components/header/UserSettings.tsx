@@ -41,9 +41,8 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
 
     const onLogout = useCallback(() => {
         setLoadingState();
-        AuthHelper.logoutAsync(instance).then(() => {
-            resetState();
-        }).catch(() => { });
+        AuthHelper.logoutAsync(instance);
+        resetState();
     }, [instance, setLoadingState]);
 
     return (

@@ -22,7 +22,7 @@ export class SpeechService extends BaseService {
         return result;
     };
 
-    getSpeechRecognizerAsyncWithValidKey = async (response: TokenResponse) => {
+    getSpeechRecognizerAsyncWithValidKey = (response: TokenResponse) => {
         const { token, region, isSuccess } = response;
 
         if (isSuccess) {

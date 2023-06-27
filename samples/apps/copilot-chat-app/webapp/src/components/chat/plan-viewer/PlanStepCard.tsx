@@ -22,6 +22,7 @@ import { Constants } from '../../../Constants';
 import { IPlanInput } from '../../../libs/models/Plan';
 import { CopilotChatTokens } from '../../../styles';
 import { PlanStepInput } from './PlanStepInput';
+import { Plan } from './PlanViewer';
 
 const useClasses = makeStyles({
     card: {
@@ -74,10 +75,12 @@ const useClasses = makeStyles({
 });
 
 interface PlanStepCardProps {
-    // See Semantic Kernel's Plan object for field definitions (step === Plan).
-    // Plan.cs: https://github.com/microsoft/semantic-kernel/blob/df07fc6f28853a481dd6f47e60d39a52fc6c9967/dotnet/src/SemanticKernel/Planning/Plan.cs#
-    // Not explicitly defining the type here to avoid additional overhead of property maintenance.
-    step: any;
+    /* eslint-disable 
+        @typescript-eslint/no-unsafe-assignment,
+        @typescript-eslint/no-unsafe-member-access,
+        @typescript-eslint/no-unsafe-call 
+    */
+    step: Plan;
     enableEdits: boolean;
     enableStepDelete: boolean;
     onDeleteStep: (index: number) => void;
@@ -101,13 +104,13 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
                     <CardHeader
                         header={
                             <Body1>
-                                <b className={classes.header}>Step {(step.index as number) + 1} •</b> {step.skill_name}.{step.name}
+                                <b className={classes.header}>Step {(step.index as number) + 1} •</b> {step.skill_name}.
+                                {step.name}
                                 <br />
                             </Body1>
                         }
                         action={
-                            enableEdits && enableStepDelete
-? (
+                            enableEdits && enableStepDelete ? (
                                 <Dialog open={openDialog}>
                                     <DialogTrigger disableButtonEnhancement>
                                         <Button
@@ -123,7 +126,9 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
                                         <DialogBody>
                                             <DialogTitle>Are you sure you want to delete this step?</DialogTitle>
                                             <DialogContent>
-                                                {'Deleting this step could disrupt the plan\'s initial logic and cause errors in subsequent steps. Make sure the next steps don\'t depend on this step\'s outputs.'}
+                                                {
+                                                    "Deleting this step could disrupt the plan's initial logic and cause errors in subsequent steps. Make sure the next steps don't depend on this step's outputs."
+                                                }
                                             </DialogContent>
                                             <DialogActions>
                                                 <DialogTrigger disableButtonEnhancement>
@@ -140,7 +145,7 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
                                                     appearance="primary"
                                                     onClick={() => {
                                                         setOpenDialog(false);
-                                                        onDeleteStep(step.index);
+                                                        onDeleteStep(step.index as number);
                                                     }}
                                                 >
                                                     Yes, Delete Step
@@ -149,8 +154,7 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
                                         </DialogBody>
                                     </DialogSurface>
                                 </Dialog>
-                            )
-: undefined
+                            ) : undefined
                         }
                     />
                     {step.description && (

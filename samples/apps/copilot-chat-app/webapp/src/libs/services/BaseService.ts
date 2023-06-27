@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+import { Plugin } from '../../redux/features/plugins/PluginsState';
 
 interface ServiceRequest {
     commandPath: string;
@@ -16,11 +16,7 @@ export class BaseService {
     protected readonly getResponseAsync = async <T>(
         request: ServiceRequest,
         accessToken: string,
-        enabledPlugins?: Array<{
-            headerTag: AuthHeaderTags;
-            authData: string;
-            apiProperties?: AdditionalApiProperties;
-        }>,
+        enabledPlugins?: Plugin[],
     ): Promise<T> => {
         const { commandPath, method, body } = request;
         const isFormData = body instanceof FormData;
@@ -42,7 +38,7 @@ export class BaseService {
             // For each enabled plugin, pass its auth information as a customer header
             // to the backend so the server can authenticate to the plugin
             for (const plugin of enabledPlugins) {
-                headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData);
+                headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData ?? '');
             }
         }
 
@@ -63,7 +59,7 @@ export class BaseService {
                 throw Object.assign(new Error(errorMessage));
             }
 
-            return noResponseBodyStatusCodes.includes(response.status) ? {} : (await response.json());
+            return (noResponseBodyStatusCodes.includes(response.status) ? {} : await response.json()) as T;
         } catch (e: any) {
             let additionalErrorMsg = '';
             if (e instanceof TypeError) {

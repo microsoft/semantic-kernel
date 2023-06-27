@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+import { Plugin } from '../../redux/features/plugins/PluginsState';
 import { ChatMemorySource } from '../models/ChatMemorySource';
 import { IChatMessage } from '../models/ChatMessage';
 import { IChatParticipant } from '../models/ChatParticipant';
@@ -11,11 +11,7 @@ import { IAskResult } from '../semantic-kernel/model/AskResult';
 import { BaseService } from './BaseService';
 
 export class ChatService extends BaseService {
-    public createChatAsync = async (
-        userId: string,
-        title: string,
-        accessToken: string,
-    ): Promise<IChatSession> => {
+    public createChatAsync = async (userId: string, title: string, accessToken: string): Promise<IChatSession> => {
         const body = {
             userId,
             title,
@@ -81,7 +77,7 @@ export class ChatService extends BaseService {
             title,
         };
 
-        const result = await this.getResponseAsync<any>(
+        const result = await this.getResponseAsync<IChatSession>(
             {
                 commandPath: 'chatSession/edit',
                 method: 'POST',
@@ -96,12 +92,7 @@ export class ChatService extends BaseService {
     public getBotResponseAsync = async (
         ask: IAsk,
         accessToken: string,
-        enabledPlugins?: Array<{
-            name: string;
-            headerTag: AuthHeaderTags;
-            authData: string;
-            apiProperties?: AdditionalApiProperties;
-        }>,
+        enabledPlugins?: Plugin[],
     ): Promise<IAskResult> => {
         // If skill requires any additional api properties, append to context
         if (enabledPlugins && enabledPlugins.length > 0) {
@@ -175,7 +166,7 @@ export class ChatService extends BaseService {
     };
 
     public getAllChatParticipantsAsync = async (chatId: string, accessToken: string): Promise<IChatUser[]> => {
-        const result = await this.getResponseAsync<any>(
+        const result = await this.getResponseAsync<IChatParticipant[]>(
             {
                 commandPath: `chatParticipant/getAllParticipants/${chatId}`,
                 method: 'GET',
@@ -183,7 +174,7 @@ export class ChatService extends BaseService {
             accessToken,
         );
 
-        const chatUsers = result.map((participant: any): IChatUser => ({
+        const chatUsers = result.map<IChatUser>((participant) => ({
             id: participant.userId,
             online: false,
             fullName: '', // The user's full name is not returned from the server
