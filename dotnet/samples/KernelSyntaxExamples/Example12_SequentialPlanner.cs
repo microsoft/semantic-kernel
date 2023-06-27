@@ -179,10 +179,10 @@ internal static class Example12_SequentialPlanner
 
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+            .WithAzureChatCompletionService(
+                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_CHAT_KEY"))
             .WithAzureTextEmbeddingGenerationService(
                 Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
@@ -210,7 +210,7 @@ internal static class Example12_SequentialPlanner
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
-        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.78 });
+        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.5 });
 
         var plan = await planner.CreatePlanAsync(goal);
 
@@ -222,10 +222,10 @@ internal static class Example12_SequentialPlanner
     {
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+            .WithAzureChatCompletionService(
+                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_CHAT_KEY"))
             .Build();
 
         planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { MaxTokens = maxTokens });
