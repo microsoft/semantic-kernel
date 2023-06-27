@@ -10,14 +10,14 @@ public class RunAll {
 
     public static void main(String[] args) {
         List<MainMethod> mains = Arrays.asList(
-                //Example01_NativeFunctions::main,
-                //Example02_Pipeline::main,
-                //Example06_TemplateLanguage::main,
-                //Example08_RetryHandler::main,
-                //Example12_SequentialPlanner::main,
-                //Example13_ConversationSummarySkill::main,
-               // Example14_SemanticMemory::main,
-                //Example17_ChatGPT::main,
+                Example01_NativeFunctions::main,
+                Example02_Pipeline::main,
+                Example06_TemplateLanguage::main,
+                Example08_RetryHandler::main,
+                Example12_SequentialPlanner::main,
+                Example13_ConversationSummarySkill::main,
+                Example14_SemanticMemory::main,
+                Example17_ChatGPT::main,
                 Example28_ActionPlanner::main
         );
 
