@@ -13,6 +13,7 @@ import { PlanViewer } from '../plan-viewer/PlanViewer';
 import { PromptDetails } from '../prompt-details/PromptDetails';
 import { ChatHistoryDocumentContent } from './ChatHistoryDocumentContent';
 import { ChatHistoryTextContent } from './ChatHistoryTextContent';
+import * as utils from './../../utils/TextUtils';
 
 const useClasses = makeStyles({
     root: {
@@ -66,11 +67,6 @@ interface ChatHistoryItemProps {
     messageIndex: number;
 }
 
-const createCommandLink = (command: string) => {
-    const escapedCommand = encodeURIComponent(command);
-    return `<span style="text-decoration: underline; cursor: pointer" data-command="${escapedCommand}" onclick="(function(){ let chatInput = document.getElementById('chat-input'); chatInput.value = decodeURIComponent('${escapedCommand}'); chatInput.focus(); return false; })();return false;">${command}</span>`;
-};
-
 export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getResponse, messageIndex }) => {
     const classes = useClasses();
 
@@ -98,17 +94,13 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
         content = <ChatHistoryTextContent message={message} />;
     }
 
-    const contentAsString = (message.content as string).trim()
-                            .replace(/^sk:\/\/.*$/gm, (match: string) => createCommandLink(match))
-                            .replace(/^!sk:.*$/gm, (match: string) => createCommandLink(match));
-
     return (
         <div
             className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}
             // The following data attributes are needed for CI and testing
             data-testid={`chat-history-item-${messageIndex}`}
             data-username={fullName}
-            data-content={contentAsString}
+            data-content={utils.formatChatTextContent(message.content)}
         >
             {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
             <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
