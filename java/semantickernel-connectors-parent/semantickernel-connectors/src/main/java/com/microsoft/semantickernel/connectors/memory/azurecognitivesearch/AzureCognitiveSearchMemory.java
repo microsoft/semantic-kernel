@@ -19,7 +19,6 @@ import com.azure.search.documents.models.QueryLanguage;
 import com.azure.search.documents.models.QueryType;
 import com.azure.search.documents.models.SearchOptions;
 import com.azure.search.documents.util.SearchPagedResponse;
-import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
