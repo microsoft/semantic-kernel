@@ -198,11 +198,9 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(2, plan.Steps.Count);
+        Assert.Equal(1, plan.Steps.Count);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
-        Assert.Equal("This is some text", plan.Steps[1].Description);
-        Assert.Equal(0, plan.Steps[1].Steps.Count);
     }
 
     // Test that contains a #text node in the plan
@@ -285,11 +283,9 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(2, plan.Steps.Count);
+        Assert.Equal(1, plan.Steps.Count);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
-        Assert.Equal("This is some text", plan.Steps[1].Description);
-        Assert.Equal(0, plan.Steps[1].Steps.Count);
     }
 
     [Theory]
@@ -337,12 +333,11 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(3, plan.Steps.Count);
+        Assert.Equal(2, plan.Steps.Count);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
-        Assert.Equal("Some other tag", plan.Steps[1].Description);
         Assert.Equal(0, plan.Steps[1].Steps.Count);
-        Assert.Equal("MockSkill", plan.Steps[2].SkillName);
-        Assert.Equal("Echo", plan.Steps[2].Name);
+        Assert.Equal("MockSkill", plan.Steps[1].SkillName);
+        Assert.Equal("Echo", plan.Steps[1].Name);
     }
 }

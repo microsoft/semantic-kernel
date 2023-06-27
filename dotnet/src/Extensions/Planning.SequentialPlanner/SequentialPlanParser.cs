@@ -112,13 +112,10 @@ internal static class SequentialPlanParser
 
             foreach (XmlNode childNode in solutionNode.ChildNodes)
             {
-                if (childNode.Name == "#text")
+                if (childNode.Name == "#text" || childNode.Name == "#comment")
                 {
-                    if (childNode.Value != null)
-                    {
-                        plan.AddSteps(new Plan(childNode.Value.Trim()));
-                    }
-
+                    // Do not add text or comments as steps.
+                    // TODO - this could be a way to get Reasoning for a plan step.
                     continue;
                 }
 
@@ -186,15 +183,11 @@ internal static class SequentialPlanParser
                                 throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to find function '{skillFunctionName}' in skill '{skillName}'.");
                             }
                         }
-
-                        continue;
                     }
-
-                    // This step is a step in name only. It is not a function call.
-                    plan.AddSteps(new Plan(childNode.InnerText));
                 }
 
-                plan.AddSteps(new Plan(childNode.InnerText));
+                // Similar to comments or text, do not add empty nodes as steps.
+                // TODO - This could be a way to advertise desired functions for a plan.
             }
         }
 
