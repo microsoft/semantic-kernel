@@ -6,10 +6,13 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
-import java.util.*;
-import java.util.function.Function;
-
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 public final class KernelConfig {
 
@@ -71,6 +74,22 @@ public final class KernelConfig {
         }
 
         return this.chatCompletionServices.get(serviceId);
+    }
+
+    public Function<Kernel, EmbeddingGeneration<String,Float>> getTextEmbeddingGenerationServiceOrDefault(
+            @Nullable String serviceId) {
+
+        if (serviceId == null) {
+            serviceId = DEFAULT_SERVICE_ID;
+        }
+
+        if (!this.textEmbeddingGenerationServices.containsKey(serviceId)) {
+            throw new KernelException(
+                    KernelException.ErrorCodes.ServiceNotFound,
+                    "A embedding generation service id '" + serviceId + "' doesn't exist");
+        }
+
+        return this.textEmbeddingGenerationServices.get(serviceId);
     }
 
     public static class Builder {

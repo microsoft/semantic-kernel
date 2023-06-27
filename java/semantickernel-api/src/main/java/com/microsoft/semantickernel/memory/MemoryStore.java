@@ -146,4 +146,8 @@ public interface MemoryStore {
             @Nonnull Embedding<? extends Number> embedding,
             double minRelevanceScore,
             boolean withEmbedding);
+
+    interface Builder {
+        MemoryStore build();
+    }
 }

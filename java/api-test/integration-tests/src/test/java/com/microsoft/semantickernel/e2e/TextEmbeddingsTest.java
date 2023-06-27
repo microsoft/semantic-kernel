@@ -53,9 +53,9 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                 LOGGER.info(String.valueOf(embeddingGeneration.generateEmbeddingsAsync(data).block()));
         }
 
-        @Test
-        @EnabledIf("isAzureTestEnabled")
-        public void testMemory() throws IOException {
+    @Test
+    @EnabledIf("isAzureTestEnabled")
+    public void testMemory() throws IOException {
 
                 Kernel kernel = buildTextCompletionKernel();
                 kernel.importSkill(new TextMemorySkill(), "aboutMe");
@@ -96,8 +96,8 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                                 kernel.getSkills());
 
                 context.getSemanticMemory()
-                                .saveInformationAsync("aboutMe", "My name is Andrea", "fact1", null, null)
-                                .block();
+                        .saveInformationAsync("aboutMe", "My name is Andrea", "fact1", null, null)
+                        .block();
 
                 context.getSemanticMemory()
                                 .saveInformationAsync(

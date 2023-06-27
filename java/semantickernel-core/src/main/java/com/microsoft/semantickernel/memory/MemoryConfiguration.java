@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
+import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 
@@ -31,7 +32,7 @@ public class MemoryConfiguration {
      *     embedding generation service
      */
     public static void useMemory(
-            @Nonnull Kernel kernel,
+            @Nonnull DefaultKernel kernel,
             @Nonnull MemoryStore storage,
             @Nullable String embeddingsServiceId) {
         Objects.requireNonNull(kernel);
@@ -61,7 +62,7 @@ public class MemoryConfiguration {
      *     storage} is {@code null}
      */
     public static void useMemory(
-            @Nonnull Kernel kernel,
+            @Nonnull DefaultKernel kernel,
             EmbeddingGeneration<String, Float> embeddingGenerator,
             MemoryStore storage) {
         Objects.requireNonNull(kernel);

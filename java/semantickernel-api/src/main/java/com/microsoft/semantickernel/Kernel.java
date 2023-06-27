@@ -32,23 +32,16 @@ public interface Kernel {
     /**
      * Reference to the engine rendering prompt templates
      *
-     * @return
+     * @return Reference to the engine rendering prompt templates
      */
     PromptTemplateEngine getPromptTemplateEngine();
 
     /**
-     * Return the memory store used by the kernel.
+     * Get the SemanticTextMemory in use.
      *
-     * @return the MemoryStore instance
+     * @return the SemanticTextMemory in use
      */
-    MemoryStore getMemoryStore();
-
-    /**
-     * Set the SemanticTextMemory to use.
-     *
-     * @param memory {@link SemanticTextMemory} instance
-     */
-    void registerMemory(SemanticTextMemory memory);
+    SemanticTextMemory getMemory();
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -129,6 +122,7 @@ public interface Kernel {
         @Nullable private KernelConfig kernelConfig = null;
         @Nullable private PromptTemplateEngine promptTemplateEngine = null;
         @Nullable private MemoryStore memoryStore = null;
+        @Nullable private SemanticTextMemory memory = null;
 
         public Builder setKernelConfig(KernelConfig kernelConfig) {
             this.kernelConfig = kernelConfig;
@@ -145,6 +139,11 @@ public interface Kernel {
             return this;
         }
 
+        public Builder withMemory(SemanticTextMemory memory) {
+            this.memory = memory;
+            return this;
+        }
+
         public Kernel build() {
             if (kernelConfig == null) {
                 throw new IllegalStateException("Must provide a kernel configuration");
@@ -152,7 +151,7 @@ public interface Kernel {
 
             return BuildersSingleton.INST
                     .getKernelBuilder()
-                    .build(kernelConfig, promptTemplateEngine, memoryStore);
+                    .build(kernelConfig, promptTemplateEngine, memory, memoryStore);
         }
     }
 
@@ -160,6 +159,7 @@ public interface Kernel {
         Kernel build(
                 KernelConfig kernelConfig,
                 @Nullable PromptTemplateEngine promptTemplateEngine,
+                @Nullable SemanticTextMemory memory,
                 @Nullable MemoryStore memoryStore);
     }
 }
