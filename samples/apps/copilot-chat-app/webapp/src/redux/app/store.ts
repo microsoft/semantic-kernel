@@ -17,7 +17,7 @@ export const store = configureStore<
     RootState,
     AnyAction,
     MiddlewareArray<
-        [ThunkMiddleware<RootState, AnyAction>, (store: StoreMiddlewareAPI) => (next: Dispatch) => (action: any) => any]
+        [ThunkMiddleware<RootState>, (store: StoreMiddlewareAPI) => (next: Dispatch) => (action: any) => any]
     >
 >({
     reducer: resetStateReducer,

@@ -8,6 +8,7 @@ module.exports = {
         'plugin:react-hooks/recommended',
         'plugin:@typescript-eslint/recommended',
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
+        'plugin:@typescript-eslint/strict',
     ],
     ignorePatterns: ['build', '.*.js', 'node_modules'],
     parserOptions: {
@@ -16,7 +17,9 @@ module.exports = {
         sourceType: 'module',
     },
     rules: {
+        '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
         '@typescript-eslint/triple-slash-reference': ['error', { types: 'prefer-import' }],
+        '@typescript-eslint/non-nullable-type-assertion-style': 'off',
         '@typescript-eslint/strict-boolean-expressions': 'off',
         '@typescript-eslint/explicit-function-return-type': 'off',
         '@typescript-eslint/consistent-type-imports': 'off',

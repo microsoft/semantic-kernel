@@ -5,7 +5,7 @@ export const useFile = () => {
         return await new Promise((resolve, reject) => {
             const fileReader = new FileReader();
             fileReader.onload = async (event: ProgressEvent<FileReader>) => {
-                const content = event?.target?.result as string;
+                const content = event.target?.result as string;
                 try {
                     const parsedData = JSON.parse(content) as T;
                     await loadCallBack(parsedData);

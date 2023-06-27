@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .handleRedirectPromise()
                 .then((response) => {
                     if (response) {
-                        msalInstance?.setActiveAccount(response?.account);
+                        msalInstance?.setActiveAccount(response.account);
                     }
                 })
                 .catch(() => {});

@@ -88,15 +88,17 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
         event.preventDefault();
         try {
             if (msalRequired) {
-                TokenHelper.getAccessTokenUsingMsal(inProgress, instance, authRequirements.scopes ?? []).then(token => {
-                    dispatch(
-                        connectPlugin({
-                            plugin: name,
-                            accessToken: token,
-                            apiProperties: apiPropertiesInput,
-                        }),
-                    );
-                }).catch(() => { });
+                TokenHelper.getAccessTokenUsingMsal(inProgress, instance, authRequirements.scopes ?? [])
+                    .then((token) => {
+                        dispatch(
+                            connectPlugin({
+                                plugin: name,
+                                accessToken: token,
+                                apiProperties: apiPropertiesInput,
+                            }),
+                        );
+                    })
+                    .catch(() => {});
             } else if (oauthRequired) {
                 // TODO: implement OAuth Flow
             } else {
@@ -162,7 +164,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                 <>
                                     To continue, you will authorize the following:{' '}
                                     <div className={classes.scopes}>
-                                        {authRequirements.scopes?.map((scope) => {
+                                        {authRequirements.scopes.map((scope) => {
                                             return <Text key={scope}>{scope}</Text>;
                                         })}
                                     </div>

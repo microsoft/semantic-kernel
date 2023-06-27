@@ -164,7 +164,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
 
     const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
         onDragLeave(e);
-        handleImport(e.dataTransfer?.files[0]);
+        handleImport(e.dataTransfer.files[0]);
     };
 
     return (
@@ -186,9 +186,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                     onDrop={handleDrop}
                     onFocus={() => {
                         // update the locally stored value to the current value
-                        const chatInput = document.getElementById('chat-input') as HTMLTextAreaElement;
+                        const chatInput = document.getElementById('chat-input');
                         if (chatInput) {
-                            setValue(chatInput.value);
+                            setValue((chatInput as HTMLTextAreaElement).value);
                         }
                         // User is considered typing if the input is in focus
                         dispatch(

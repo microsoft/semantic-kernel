@@ -35,7 +35,7 @@ interface SignalRAction extends AnyAction {
 
 // Set up a SignalR connection to the messageRelayHub on the server
 const setupSignalRConnectionToChatHub = () => {
-    const connectionHubUrl = new URL('/messageRelayHub', process.env.REACT_APP_BACKEND_URI as string);
+    const connectionHubUrl = new URL('/messageRelayHub', process.env.REACT_APP_BACKEND_URI);
     const signalRConnectionOptions = {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
@@ -154,8 +154,7 @@ export const registerSignalREvents = (store: Store) => {
         const loggedInUserId: string = store.getState().conversations.loggedInUserId;
         const originalMessageUserId: string | undefined = askResult.variables.find((v) => v.key === 'userId')?.value;
         const isPlanForLoggedInUser = loggedInUserId === originalMessageUserId;
-        const messageType =
-            Number(askResult.variables.find((v) => v.key === 'messageType')?.value) ?? ChatMessageType.Message;
+        const messageType = Number(askResult.variables.find((v) => v.key === 'messageType')?.value) as ChatMessageType;
 
         const message = {
             type: messageType,

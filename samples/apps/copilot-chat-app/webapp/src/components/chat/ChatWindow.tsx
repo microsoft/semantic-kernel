@@ -86,7 +86,7 @@ export const ChatWindow: React.FC = () => {
     const dispatch = useAppDispatch();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
-    const [title = '', setTitle] = useState<string | undefined>(selectedId ?? undefined);
+    const [title = '', setTitle] = useState<string | undefined>(selectedId);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const { instance, inProgress } = useMsal();
 
@@ -101,7 +101,7 @@ export const ChatWindow: React.FC = () => {
                     await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 );
 
-                dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title }));
+                dispatch(editConversationTitle({ id: selectedId, newTitle: title }));
             } catch (e: any) {
                 const errorMessage = `Unable to retrieve chat to change title. Details: ${
                     e instanceof Error ? e.message : String(e)
@@ -158,7 +158,7 @@ export const ChatWindow: React.FC = () => {
                                     icon={isEditing ? <Edit24Filled /> : <EditRegular />}
                                     appearance="transparent"
                                     onClick={onClose}
-                                    disabled={title === undefined || !title}
+                                    disabled={!title}
                                     aria-label="Edit conversation name"
                                 />
                             </Tooltip>
