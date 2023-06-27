@@ -27,13 +27,12 @@ public class WaitSkill {
      */
     @DefineSKFunction(name = "seconds", description = "Wait a given amount of seconds")
     public Mono<Void> wait(String seconds) {
-        double sec;
         try {
-            sec = Math.max(Double.parseDouble(seconds), 0);
+            double sec = Math.max(Double.parseDouble(seconds), 0);
+            long milliseconds = (long) (sec * 1000);
+            return Mono.delay(Duration.ofMillis(milliseconds)).then();
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("seconds text must be a number", e);
+            return Mono.error(new IllegalArgumentException("seconds text must be a number", e));
         }
-        long milliseconds = (long) (sec * 1000);
-        return Mono.delay(Duration.ofMillis(milliseconds)).then();
     }
 }
