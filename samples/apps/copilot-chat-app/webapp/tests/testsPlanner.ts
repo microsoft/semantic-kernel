@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect } from '@playwright/test';
 import * as util from './utils'
 
 /*
@@ -42,8 +42,8 @@ export async function jiraTest(page) {
     await util.openPluginPopUp(page, 'JiraAtlassianEnableAuthorize');
     
     // Enter Auth Credentials and server url
-    await page.getByPlaceholder('Enter your Jira email').fill(process.env.REACT_APP_TEST_JIRA_EMAIL as string);
-    await page.getByPlaceholder('Enter your Jira Personal Access Token').fill(process.env.REACT_APP_TEST_JIRA_ACCESS_TOKEN as string);
+    await page.locator('#plugin-email-input').fill(process.env.REACT_APP_TEST_JIRA_EMAIL as string);
+    await page.locator('#plugin-pat-input').fill(process.env.REACT_APP_TEST_JIRA_ACCESS_TOKEN as string);
     await page.getByPlaceholder('Enter the server url').fill(process.env.REACT_APP_TEST_JIRA_SERVER_URL as string);
     
     await util.enablePluginAndClosePopUp(page);
@@ -75,7 +75,7 @@ export async function githubTest(page) {
     await util.openPluginPopUp(page, 'GitHubMicrosoftEnableIntegrate');
     
     // Enter Auth Credentials and server url
-    await page.getByPlaceholder('Enter your GitHub Personal Access Token').fill(process.env.REACT_APP_TEST_GITHUB_ACCESS_TOKEN as string);
+    await page.locator('#plugin-pat-input').fill(process.env.REACT_APP_TEST_GITHUB_ACCESS_TOKEN as string);
     await page.getByPlaceholder('Enter the account owner of repository').fill(process.env.REACT_APP_TEST_GITHUB_ACCOUNT_OWNER as string);
     await page.getByPlaceholder('Enter the name of repository').fill(process.env.REACT_APP_TEST_GITHUB_REPOSITORY_NAME as string);
     

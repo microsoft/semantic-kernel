@@ -58,6 +58,7 @@ export const NewBotMenu: FC = () => {
                 <MenuTrigger disableButtonEnhancement>
                     <Tooltip content="Create new conversation" relationship="label">
                         <Button
+                            data-testid="createNewConversationButton"
                             icon={<BotAdd20Regular />}
                             appearance="transparent"
                             onClick={() => setIsNewBotMenuOpen(!isNewBotMenuOpen)}
@@ -66,10 +67,11 @@ export const NewBotMenu: FC = () => {
                 </MenuTrigger>
                 <MenuPopover>
                     <MenuList>
-                        <MenuItem icon={<BotAdd20Regular />} onClick={onAddChat}>
+                        <MenuItem data-testid="addNewBotMenuItem" icon={<BotAdd20Regular />} onClick={onAddChat}>
                             Add a new Bot
                         </MenuItem>
                         <MenuItem
+                            data-testid="uploadABotMenuItem"
                             icon={<ArrowUploadRegular />}
                             onClick={() => fileUploaderRef.current?.click()}
                         >
@@ -80,7 +82,7 @@ export const NewBotMenu: FC = () => {
                                 onSelectedFile={onUpload}
                             />
                         </MenuItem>
-                        <MenuItem icon={<PeopleTeamAddRegular />} onClick={onJoinClick}>
+                        <MenuItem data-testid="joinABotMenuItem" icon={<PeopleTeamAddRegular />} onClick={onJoinClick}>
                             Join a Bot
                         </MenuItem>
                     </MenuList>

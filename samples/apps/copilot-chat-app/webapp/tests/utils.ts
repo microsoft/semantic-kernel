@@ -49,8 +49,8 @@ export async function loginHelperAnotherUser(page, useraccount, password) {
     await expect(page).toHaveTitle('Copilot Chat');
 }
 export async function createNewChat(page) {
-    await page.getByRole('button', { name: 'Create new conversation' }).click();
-    await page.getByRole('menuitem', { name: 'Add a new Bot' }).click();
+    await page.getByTestId('createNewConversationButton').click();
+    await page.getByTestId('addNewBotMenuItem').click();
 }
 export async function loginAndCreateNewChat(page)
 {
@@ -83,20 +83,20 @@ export async function sendChatMessageAndWaitForResponse(page, message)
 export async function openPluginPopUp(page, pluginIdentifierText)
 {
     await page.locator('div').filter({ hasText: /^DB$/ }).getByRole('button').click();
-    await page.getByRole('group').filter({ hasText: pluginIdentifierText }).getByRole('button', { name: 'Enable plugin' }).click();
+    await page.getByRole('group').filter({ hasText: pluginIdentifierText }).getByTestId('openPluginDialogButton').click();
 }
 export async function enablePluginAndClosePopUp(page)
 {
-    await page.getByRole('button', { name: 'Enable', exact: true }).click();
-    await page.locator('.fui-DialogTitle__action > .fui-Button').click();
+    await page.getByTestId('enablePluginButton').click();
+    await page.getByTestId('closeEnableCCPluginsPopUp').click();
     await page.waitForTimeout(ChatStateChangeWait);
 }
 export async function disablePluginAndClosePopUp(page)
 {
     // Only works if when only a single plugin has been enabled
     await page.locator('div').filter({ hasText: /^DB$/ }).getByRole('button').click();
-    await page.getByRole('button', { name: 'Disconnect plugin' }).click();
-    await page.getByRole('button', { name: 'close' }).click();
+    await page.getByTestId('disconnectPluginButton').click();
+    await page.getByTestId('closeEnableCCPluginsPopUp').click();
     await page.waitForTimeout(ChatStateChangeWait);
 }
 export async function executePlanAndWaitForResponse(page)
@@ -104,7 +104,7 @@ export async function executePlanAndWaitForResponse(page)
     await page.waitForTimeout(ChatStateChangeWait);
 
     // Try executing the plan that is returned
-    var buttonLocator = page.getByRole('button', { name: 'Yes, proceed' });
+    var buttonLocator = page.getByTestId('proceedWithPlanButton');
     buttonLocator.click();
     
     // Wait for LLM to respond to request by executing the plan

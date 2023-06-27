@@ -69,7 +69,7 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
                         />
                     </MenuItem>
                     <MenuDivider />
-                    <MenuItem onClick={onLogout}>Log Out</MenuItem>
+                    <MenuItem data-testid="logOutMenuButton" onClick={onLogout}>Log Out</MenuItem>
                 </MenuList>
             </MenuPopover>
         </Menu>

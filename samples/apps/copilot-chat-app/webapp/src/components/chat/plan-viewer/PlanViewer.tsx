@@ -91,13 +91,13 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
         contextVariables.push(
             planState === PlanState.PlanApproved
                 ? {
-                      key: 'planUserIntent',
-                      value: description,
-                  }
+                    key: 'planUserIntent',
+                    value: description,
+                }
                 : {
-                      key: 'userCancelledPlan',
-                      value: 'true',
-                  },
+                    key: 'userCancelledPlan',
+                    value: 'true',
+                },
         );
 
         // Invoke plan
@@ -135,10 +135,10 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 <>
                     Would you like to proceed with the plan?
                     <div className={classes.buttons}>
-                        <Button appearance="secondary" onClick={() => onPlanAction(PlanState.PlanRejected)}>
+                        <Button data-testid="cancelPlanButton" appearance="secondary" onClick={() => onPlanAction(PlanState.PlanRejected)}>
                             No, cancel plan
                         </Button>
-                        <Button type="submit" appearance="primary" onClick={() => onPlanAction(PlanState.PlanApproved)}>
+                        <Button data-testid="proceedWithPlanButton" type="submit" appearance="primary" onClick={() => onPlanAction(PlanState.PlanApproved)}>
                             Yes, proceed
                         </Button>
                     </div>

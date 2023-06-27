@@ -52,10 +52,10 @@ export const InvitationCreateDialog: React.FC<InvitationCreateDialogProps> = ({ 
                         <Label data-testid='copyIDLabel' data-chatid={copyId} weight="semibold">{chatId}</Label>
                     </DialogContent>
                     <DialogActions>
-                        <Button appearance="secondary" onClick={onCancel}>
+                        <Button data-testid='chatIDCloseButton' appearance="secondary" onClick={onCancel}>
                             Close
                         </Button>
-                        <Button appearance="primary" onClick={copyId} icon={isIdCopied ? <Checkmark20Filled /> : null}>
+                        <Button data-testid='chatIDCopyButton' appearance="primary" onClick={copyId} icon={isIdCopied ? <Checkmark20Filled /> : null}>
                             {isIdCopied ? 'Copied' : 'Copy'}
                         </Button>
                     </DialogActions>

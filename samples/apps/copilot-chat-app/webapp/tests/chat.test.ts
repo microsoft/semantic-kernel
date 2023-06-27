@@ -1,9 +1,9 @@
 /* eslint-disable testing-library/prefer-screen-queries */
-import { expect, test } from '@playwright/test';
+import { test } from '@playwright/test';
 import * as util from './utils'
-import * as simpletests from './basictests'
-import * as plannertests from './plannertests'
-import { multiUserTest } from './multiuserchattests'
+import * as simpletests from './testsBasic'
+import * as plannertests from './testsPlanner'
+import { multiUserTest } from './testsMultiuser'
 
 test.describe('Copilot Chat App Test Suite', () => {
     // Note: A new chat session is opened for each test so that 

@@ -27,7 +27,7 @@ export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = ({ onCl
 
     const classes = useStyles();
 
-    const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => { 
+    const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
         ev.preventDefault();
         setErrorOccurred(false);
 
@@ -46,18 +46,18 @@ export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = ({ onCl
     return (
         <div>
             <DialogSurface>
-                <form onSubmit={ handleSubmit }>
+                <form onSubmit={handleSubmit}>
                     <DialogBody>
                         <DialogTitle>Join a Bot</DialogTitle>
                         <DialogContent className={classes.content}>
-                            <Label required htmlFor="chat-id-input">
+                            <Label data-testid="enterChatIDLabel" required htmlFor="chat-id-input">
                                 Please enter the chat ID of the chat you would like to join
                             </Label>
                             <Input required type="text" id="chat-id-input" />
                         </DialogContent>
                         <DialogActions>
                             <Button appearance="secondary" onClick={onCloseDialog}>Cancel</Button>
-                            <Button type="submit" appearance="primary">Join</Button>
+                            <Button data-testid="joinChatButton" type="submit" appearance="primary">Join</Button>
                         </DialogActions>
                     </DialogBody>
                 </form>

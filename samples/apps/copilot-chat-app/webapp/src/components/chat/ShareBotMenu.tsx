@@ -17,7 +17,7 @@ interface ShareBotMenuProps {
 export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
     const chat = useChat();
     const { downloadFile } = useFile();
-    const [ isGettingInvitationId, setIsGettingInvitationId ] = React.useState(false);
+    const [isGettingInvitationId, setIsGettingInvitationId] = React.useState(false);
 
     const onDownloadBotClick = useCallback(async () => {
         // TODO: Add a loading indicator
@@ -34,15 +34,15 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
             <Menu>
                 <MenuTrigger disableButtonEnhancement>
                     <Tooltip content="Share" relationship="label">
-                        <Button icon={<ShareRegular />} appearance="transparent" />
+                        <Button data-testid="shareButton" icon={<ShareRegular />} appearance="transparent" />
                     </Tooltip>
                 </MenuTrigger>
                 <MenuPopover>
                     <MenuList>
-                        <MenuItem icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
+                        <MenuItem data-testid="downloadBotMenuItem" icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
                             Download your Bot
                         </MenuItem>
-                        <MenuItem icon={<PeopleTeamAddRegular />} onClick={() => setIsGettingInvitationId(true)}>
+                        <MenuItem data-testid="inviteOthersMenuItem" icon={<PeopleTeamAddRegular />} onClick={() => setIsGettingInvitationId(true)}>
                             Invite others to your Bot
                         </MenuItem>
                     </MenuList>

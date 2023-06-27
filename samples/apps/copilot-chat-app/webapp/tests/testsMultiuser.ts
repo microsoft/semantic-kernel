@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect } from '@playwright/test';
 import * as util from './utils'
 
 /*
@@ -12,28 +12,28 @@ export async function multiUserTest(page) {
     await util.loginHelper(page, useraccount1, password);
     await util.createNewChat(page);
 
-    await page.getByRole('button', { name: 'Share' }).click();
-    await page.getByRole('menuitem', { name: 'Invite others to your Bot' }).click();
+    await page.getByTestId('shareButton').click();
+    await page.getByTestId('inviteOthersMenuItem').click();
 
     const labelByID = await page.getByTestId('copyIDLabel');
     const chatId = await labelByID.textContent();
+    
+    await page.getByTestId('chatIDCopyButton').click();
+    await page.getByTestId('chatIDCloseButton').click();
 
-    await page.getByRole('button', { name: 'Copied' }).click();
-    await page.getByRole('button', { name: 'Close' }).click();
-
-    await page.getByText('DB').click();
-    await page.getByText('Log Out').click();
+    await page.getByText('DB').click();    
+    await page.getByTestId('logOutMenuButton').click();
 
     const usernameToLowerCase = useraccount1.toLowerCase();
     const locatorVal = ('[data-test-id="' + usernameToLowerCase + '"]') as string;
     await page.locator(locatorVal).click();
 
     await util.loginHelperAnotherUser(page, useraccount2, password);
-    await page.getByRole('button', { name: 'Create new conversation' }).click();
-    await page.getByRole('menuitem', { name: 'Join a Bot' }).click();
-    await page.getByLabel('Please enter the chat ID of the chat').fill(chatId as string);
+    await page.getByTestId('createNewConversationButton').click();
+    await page.getByTestId('joinABotMenuItem').click();
+    await page.getByTestId('enterChatIDLabel').fill(chatId as string);
 
-    await page.getByRole('button', { name: 'Join' }).click();
+    await page.getByTestId('joinChatButton').click();
 
     await page.waitForTimeout(util.ChatStateChangeWait);
     await page.getByRole('button', { name: 'View more people.' }).click();

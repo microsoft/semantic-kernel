@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect } from '@playwright/test';
 import * as util from './utils'
 
 /*
@@ -44,7 +44,7 @@ Summary: Tests if the title for the current chat can be changed
 export async function chatTitleChange(page) {
     await util.loginAndCreateNewChat(page);
     
-    await page.getByRole('button', { name: 'Edit conversation name' }).click();
+    await page.getByTestId('editChatTitleButton').click();
     await page.locator('input[type="text"]').fill('Copilot Unit Tests');
     await page.locator('input[type="text"]').press('Enter');
 
@@ -60,9 +60,11 @@ export async function documentUpload(page) {
     const testFilename = 'Lorem_ipsum.pdf';
     const testFilepath = './../importdocument/sample-docs/' + testFilename;    
     await page.setInputFiles("input[type='file']", testFilepath)
-    await page.getByRole('tab', { name: 'Files' }).click(); // Go to the file page
-    await page.getByRole('cell', { name: testFilename }).locator('path') // Check if corresponding cell for the file exists after upload
-    await page.getByRole('tab', { name: 'Chat' }).click(); // Go back to the chat page
+    
+    await page.getByTestId('filesTab').click();// Go to the file page
+    // Check if corresponding cell for the file exists after upload
+    await page.getByRole('cell', { name: testFilename }).locator('path');
+    await page.getByTestId('chatTab').click(); // Go back to the chat page
 
     await util.postUnitTest(page);
 }
