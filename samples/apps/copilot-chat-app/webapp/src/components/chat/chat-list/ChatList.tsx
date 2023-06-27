@@ -11,15 +11,21 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import { bundleIcon, Dismiss20Filled, Dismiss20Regular, Filter20Filled, Filter20Regular } from '@fluentui/react-icons';
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { ChatMessageType } from '../../../libs/models/ChatMessage';
 import { isPlan } from '../../../libs/utils/PlanUtils';
-import { useAppSelector } from '../../../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { Conversations } from '../../../redux/features/conversations/ConversationsState';
 import { Breakpoints } from '../../../styles';
 import { ChatListItem } from './ChatListItem';
 import { NewBotMenu } from './NewBotMenu';
+import { useFile } from '../../../libs/useFile';
+import { Bot } from '../../../libs/models/Bot';
+import { addAlert } from '../../../redux/features/app/appSlice';
+import { useChat } from '../../../libs/useChat';
+import { AlertType } from '../../../libs/models/AlertType';
+import { FileUploader } from '../../FileUploader';
 
 const useClasses = makeStyles({
     root: {
@@ -94,6 +100,10 @@ export const ChatList: FC = () => {
     const [filterText, setFilterText] = useState('');
     const [conversationsView, setConversationsView] = useState(conversations);
 
+    const chat = useChat();
+    const fileHandler = useFile();
+    const dispatch = useAppDispatch();
+
     const Dismiss20 = bundleIcon(Dismiss20Filled, Dismiss20Regular);
     const Filter20 = bundleIcon(Filter20Filled, Filter20Regular);
 
@@ -129,6 +139,21 @@ export const ChatList: FC = () => {
         setFilterText(data.value);
     };
 
+    const fileUploaderRef = useRef<HTMLInputElement>(null);
+    const onUpload = useCallback(
+        (file: File) => {
+            console.log("asdf")
+            fileHandler
+                .loadFile<Bot>(file, chat.uploadBot)
+                .catch((error) =>
+                    dispatch(
+                        addAlert({ message: `Failed to parse uploaded file. ${error.message}`, type: AlertType.Error }),
+                    ),
+                );
+        },
+        [fileHandler, chat, dispatch],
+    );
+
     return (
         <div className={classes.root}>
             <div className={classes.header}>
@@ -139,7 +164,13 @@ export const ChatList: FC = () => {
                         </Text>
 
                         <Button icon={<Filter20 />} appearance="transparent" onClick={onFilterClick} />
-                        <NewBotMenu />
+                        <NewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
+
+                        <FileUploader
+                                ref={fileUploaderRef}
+                                acceptedExtensions={['.txt', '.json']}
+                                onSelectedFile={onUpload}
+                            />
                     </>
                 )}
                 {isFiltering && (
@@ -165,6 +196,7 @@ export const ChatList: FC = () => {
                     return (
                         <ChatListItem
                             id={id}
+                            key={id}
                             isSelected={isSelected}
                             header={convo.title}
                             timestamp={convo.lastUpdatedTimestamp ?? lastMessage.timestamp}
