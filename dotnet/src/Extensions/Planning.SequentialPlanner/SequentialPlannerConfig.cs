@@ -69,5 +69,5 @@ public sealed class SequentialPlannerConfig
     /// <summary>
     /// Optional function to get a function by name.
     /// </summary>
-    public Func<string, string, ISKFunction?>? GetFunction { get; set; }
+    public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
 }

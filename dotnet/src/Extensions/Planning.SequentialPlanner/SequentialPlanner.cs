@@ -78,8 +78,8 @@ public sealed class SequentialPlanner
 
         try
         {
-            var GetFunction = this.Config.GetFunction ?? SequentialPlanParser.GetFunction(this._context);
-            var plan = planResultString.ToPlanFromXml(goal, GetFunction, this.Config.AllowMissingFunctions);
+            var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
+            var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
 
             if (plan.Steps.Count == 0)
             {

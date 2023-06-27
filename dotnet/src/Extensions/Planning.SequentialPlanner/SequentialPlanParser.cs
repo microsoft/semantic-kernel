@@ -40,7 +40,7 @@ internal static class SequentialPlanParser
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
 
-    internal static Func<string, string, ISKFunction?> GetFunction(SKContext context)
+    internal static Func<string, string, ISKFunction?> GetSkillFunction(SKContext context)
     {
         return (skillName, functionName) =>
         {
@@ -58,11 +58,11 @@ internal static class SequentialPlanParser
     /// </summary>
     /// <param name="xmlString">The plan xml string.</param>
     /// <param name="goal">The goal for the plan.</param>
-    /// <param name="GetFunction">The function to get a skill function.</param>
+    /// <param name="getSkillFunction">The function to get a skill function.</param>
     /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
-    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> GetFunction, bool allowMissingFunctions = false)
+    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getSkillFunction, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
         try
@@ -126,7 +126,7 @@ internal static class SequentialPlanParser
 
                     if (!string.IsNullOrEmpty(functionName))
                     {
-                        var skillFunction = GetFunction(skillName, functionName);
+                        var skillFunction = getSkillFunction(skillName, functionName);
 
                         if (skillFunction is not null)
                         {
