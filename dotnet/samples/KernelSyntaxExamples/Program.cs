@@ -151,5 +151,14 @@ public static class Program
 
         await Example48_GroundednessChecks.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example49_LogitBias.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example50_Chroma.RunAsync();
+        Console.WriteLine("== DONE ==");
+
+        await Example51_StepwisePlanner.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
