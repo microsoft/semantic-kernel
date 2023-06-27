@@ -73,7 +73,7 @@ BEGIN
         -- Create Table (Modify vector size on demand)
         EXECUTE format('CREATE TABLE public.%I (
             key TEXT NOT NULL,
-            metadata TEXT,
+            metadata JSONB,
             embedding vector(1536),
             timestamp BIGINT,
             PRIMARY KEY (key)
@@ -93,7 +93,7 @@ DECLARE
 BEGIN
     FOR r IN SELECT DISTINCT collection FROM sk_memory_table LOOP
         EXECUTE format('INSERT INTO public.%I (key, metadata, embedding, timestamp)
-            SELECT key, metadata, embedding, timestamp
+            SELECT key, metadata::JSONB, embedding, timestamp
             FROM sk_memory_table WHERE collection = %L AND key <> '''';', r.collection, r.collection);
     END LOOP;
 END $$;
