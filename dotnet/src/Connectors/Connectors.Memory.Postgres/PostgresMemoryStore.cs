@@ -10,34 +10,29 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Pgvector;
-using Pgvector.Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Postgres database with pgvector extension.
 /// </summary>
-public class PostgresMemoryStore : IMemoryStore, IDisposable
+/// <remarks>The embedded data is saved to the Postgres database specified in the constructor.
+/// Similarity search capability is provided through the pgvector extension. Use Postgres's "Table" to implement "Collection".
+/// </remarks>
+public sealed class PostgresMemoryStore : IMemoryStore
 {
-    /// <summary>
-    /// Connect a Postgres database
-    /// </summary>
-    /// <param name="connectionString">Database connection string. If table does not exist, it will be created.</param>
-    /// <param name="vectorSize">Embedding vector size</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public static async Task<PostgresMemoryStore> ConnectAsync(string connectionString, int vectorSize,
-        CancellationToken cancellationToken = default)
-    {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
-        // Use pgvector
-        dataSourceBuilder.UseVector();
+    internal const string DefaultSchema = "public";
 
-        var memoryStore = new PostgresMemoryStore(dataSourceBuilder.Build());
-        using NpgsqlConnection dbConnection = await memoryStore._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await memoryStore._dbConnector.CreatePgVectorExtensionAsync(dbConnection, cancellationToken).ConfigureAwait(false);
-        await memoryStore._dbConnector.CreateTableAsync(dbConnection, vectorSize, cancellationToken).ConfigureAwait(false);
-        await memoryStore._dbConnector.CreateIndexAsync(dbConnection, cancellationToken).ConfigureAwait(false);
-        return memoryStore;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
+    /// </summary>
+    /// <param name="dataSource">Postgres data source.</param>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="schema">Database schema of collection tables. The default value is "public".</param>
+    public PostgresMemoryStore(NpgsqlDataSource dataSource, int vectorSize, string schema = DefaultSchema)
+    {
+        this._dataSource = dataSource;
+        this._dbConnector = new Database(schema, vectorSize);
     }
 
     /// <inheritdoc/>
@@ -108,10 +103,6 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
             {
                 yield return result;
             }
-            else
-            {
-                yield break;
-            }
         }
     }
 
@@ -161,7 +152,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         {
             MemoryRecord record = MemoryRecord.FromJsonMetadata(
                 json: entry.MetadataString,
-                withEmbeddings && entry.Embedding != null ? new Embedding<float>(entry.Embedding!.ToArray()) : Embedding<float>.Empty,
+                this.GetEmbeddingForEntry(entry),
                 entry.Key,
                 ParseTimestamp(entry.Timestamp));
             yield return (record, cosineSimilarity);
@@ -181,46 +172,10 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    #region protected ================================================================================
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this._disposedValue)
-        {
-            if (disposing)
-            {
-                this._dataSource.Dispose();
-            }
-
-            this._disposedValue = true;
-        }
-    }
-
-    #endregion
-
     #region private ================================================================================
 
     private readonly Database _dbConnector;
     private readonly NpgsqlDataSource _dataSource;
-    private bool _disposedValue;
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="dataSource">Postgres data source.</param>
-    private PostgresMemoryStore(NpgsqlDataSource dataSource)
-    {
-        this._dataSource = dataSource;
-        this._dbConnector = new Database();
-        this._disposedValue = false;
-    }
 
     private static long? ToTimestampLong(DateTimeOffset? timestamp)
     {
@@ -259,20 +214,16 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
 
         if (!entry.HasValue) { return null; }
 
-        if (withEmbedding)
-        {
-            return MemoryRecord.FromJsonMetadata(
-                json: entry.Value.MetadataString,
-                embedding: entry.Value.Embedding != null ? new Embedding<float>(entry.Value.Embedding.ToArray()) : Embedding<float>.Empty,
-                entry.Value.Key,
-                ParseTimestamp(entry.Value.Timestamp));
-        }
-
         return MemoryRecord.FromJsonMetadata(
             json: entry.Value.MetadataString,
-            Embedding<float>.Empty,
+            embedding: this.GetEmbeddingForEntry(entry.Value),
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
+    }
+
+    private Embedding<float> GetEmbeddingForEntry(DatabaseEntry entry)
+    {
+        return entry.Embedding != null ? new Embedding<float>(entry.Embedding!.ToArray()) : Embedding<float>.Empty;
     }
 
     #endregion

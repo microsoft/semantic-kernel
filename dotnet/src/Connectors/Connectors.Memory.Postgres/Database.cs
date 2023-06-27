@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,90 +11,48 @@ using Pgvector;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 
 /// <summary>
-/// A postgres memory entry.
-/// </summary>
-internal struct DatabaseEntry
-{
-    /// <summary>
-    /// Unique identifier of the memory entry.
-    /// </summary>
-    public string Key { get; set; }
-
-    /// <summary>
-    /// Metadata as a string.
-    /// </summary>
-    public string MetadataString { get; set; }
-
-    /// <summary>
-    /// The embedding data as a <see cref="Vector"/>.
-    /// </summary>
-    public Vector? Embedding { get; set; }
-
-    /// <summary>
-    /// Optional timestamp.
-    /// </summary>
-    public long? Timestamp { get; set; }
-}
-
-/// <summary>
 /// The class for managing postgres database operations.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>")]
 internal sealed class Database
 {
-    private const string TableName = "sk_memory_table";
-
     /// <summary>
-    /// Create pgvector extensions.
+    /// Initializes a new instance of the <see cref="Database"/> class.
     /// </summary>
-    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public async Task CreatePgVectorExtensionAsync(NpgsqlConnection conn, CancellationToken cancellationToken = default)
+    /// <param name="schema">Schema of collection tables.</param>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    internal Database(string schema, int vectorSize)
     {
-        using NpgsqlCommand cmd = conn.CreateCommand();
-        cmd.CommandText = "CREATE EXTENSION IF NOT EXISTS vector";
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        await conn.ReloadTypesAsync().ConfigureAwait(false);
+        this._schema = schema;
+        this._vectorSize = vectorSize;
     }
 
     /// <summary>
-    /// Create memory table.
+    /// Check if a collection exists.
     /// </summary>
     /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
-    /// <param name="vectorSize">Vector size of embedding column</param>
+    /// <param name="collectionName">The name assigned to a collection of entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
-    public async Task CreateTableAsync(NpgsqlConnection conn, int vectorSize, CancellationToken cancellationToken = default)
-    {
-        await this.CreatePgVectorExtensionAsync(conn, cancellationToken).ConfigureAwait(false);
-
-        using NpgsqlCommand cmd = conn.CreateCommand();
-#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
-        cmd.CommandText = $@"
-            CREATE TABLE IF NOT EXISTS {TableName} (
-                collection TEXT,
-                key TEXT,
-                metadata TEXT,
-                embedding vector({vectorSize}),
-                timestamp BIGINT,
-                PRIMARY KEY(collection, key))";
-#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Create index for memory table.
-    /// </summary>
-    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public async Task CreateIndexAsync(NpgsqlConnection conn, CancellationToken cancellationToken = default)
+    public async Task<bool> DoesCollectionExistsAsync(NpgsqlConnection conn,
+        string collectionName,
+        CancellationToken cancellationToken = default)
     {
         using NpgsqlCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-            CREATE INDEX IF NOT EXISTS {TableName}_ivfflat_embedding_vector_cosine_ops_idx
-            ON {TableName} USING ivfflat (embedding vector_cosine_ops) WITH (lists = 1000)";
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = '{this._schema}'
+                AND table_type = 'BASE TABLE'
+                AND table_name = '{collectionName}'";
+
+        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return dataReader.GetString(dataReader.GetOrdinal("table_name")) == collectionName;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -107,17 +64,44 @@ internal sealed class Database
     /// <returns></returns>
     public async Task CreateCollectionAsync(NpgsqlConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
-        if (await this.DoesCollectionExistsAsync(conn, collectionName, cancellationToken).ConfigureAwait(false))
-        {
-            // Collection already exists
-            return;
-        }
+        await this.CreateTableAsync(conn, collectionName, cancellationToken).ConfigureAwait(false);
 
+        await this.CreateIndexAsync(conn, collectionName, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Get all collections.
+    /// </summary>
+    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    public async IAsyncEnumerable<string> GetCollectionsAsync(NpgsqlConnection conn, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
         using NpgsqlCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-            INSERT INTO {TableName} (collection, key)
-            VALUES(@collection, '')";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = '{this._schema}'
+                AND table_type = 'BASE TABLE'";
+
+        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return dataReader.GetString(dataReader.GetOrdinal("table_name"));
+        }
+    }
+
+    /// <summary>
+    /// Delete a collection.
+    /// </summary>
+    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
+    /// <param name="collectionName">The name assigned to a collection of entries.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    public async Task DeleteCollectionAsync(NpgsqlConnection conn, string collectionName, CancellationToken cancellationToken = default)
+    {
+        using NpgsqlCommand cmd = conn.CreateCommand();
+        cmd.CommandText = $@"DROP TABLE IF EXISTS {this._schema}.""{collectionName}""";
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -137,52 +121,15 @@ internal sealed class Database
     {
         using NpgsqlCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-            INSERT INTO {TableName} (collection, key, metadata, embedding, timestamp)
-            VALUES(@collection, @key, @metadata, @embedding, @timestamp)
-            ON CONFLICT (collection, key)
+            INSERT INTO {this._schema}.""{collectionName}"" (key, metadata, embedding, timestamp)
+            VALUES(@key, @metadata, @embedding, @timestamp)
+            ON CONFLICT (key)
             DO UPDATE SET metadata=@metadata, embedding=@embedding, timestamp=@timestamp";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
         cmd.Parameters.AddWithValue("@key", key);
-        cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
+        cmd.Parameters.AddWithValue("@metadata", NpgsqlTypes.NpgsqlDbType.Jsonb, metadata ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@embedding", embedding ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@timestamp", timestamp ?? (object)DBNull.Value);
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Check if a collection exists.
-    /// </summary>
-    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
-    /// <param name="collectionName">The name assigned to a collection of entries.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public async Task<bool> DoesCollectionExistsAsync(NpgsqlConnection conn,
-        string collectionName,
-        CancellationToken cancellationToken = default)
-    {
-        var collections = await this.GetCollectionsAsync(conn, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
-        return collections.Contains(collectionName);
-    }
-
-    /// <summary>
-    /// Get all collections.
-    /// </summary>
-    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public async IAsyncEnumerable<string> GetCollectionsAsync(NpgsqlConnection conn,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        using NpgsqlCommand cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-            SELECT DISTINCT(collection)
-            FROM {TableName}";
-
-        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
-            yield return dataReader.GetString(dataReader.GetOrdinal("collection"));
-        }
     }
 
     /// <summary>
@@ -200,7 +147,7 @@ internal sealed class Database
         string collectionName, Vector embeddingFilter, int limit, double minRelevanceScore = 0, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var queryColumns = "collection, key, metadata, timestamp";
+        var queryColumns = "key, metadata, timestamp";
         if (withEmbeddings)
         {
             queryColumns = "*";
@@ -208,8 +155,7 @@ internal sealed class Database
 
         using NpgsqlCommand cmd = conn.CreateCommand();
         cmd.CommandText = @$"
-            SELECT * FROM (SELECT {queryColumns}, 1 - (embedding <=> @embedding) AS cosine_similarity FROM {TableName}
-                WHERE collection = @collection
+            SELECT * FROM (SELECT {queryColumns}, 1 - (embedding <=> @embedding) AS cosine_similarity FROM {this._schema}.""{collectionName}""
             ) AS sk_memory_cosine_similarity_table
             WHERE cosine_similarity >= @min_relevance_score
             ORDER BY cosine_similarity DESC
@@ -229,37 +175,6 @@ internal sealed class Database
     }
 
     /// <summary>
-    /// Read all entries from a collection
-    /// </summary>
-    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
-    /// <param name="collectionName">The name assigned to a collection of entries.</param>
-    /// <param name="withEmbeddings">If true, the embeddings will be returned in the entries.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public async IAsyncEnumerable<DatabaseEntry> ReadAllAsync(NpgsqlConnection conn,
-        string collectionName, bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var queryColumns = "collection, key, metadata, timestamp";
-        if (withEmbeddings)
-        {
-            queryColumns = "*";
-        }
-
-        using NpgsqlCommand cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-            SELECT {queryColumns} FROM {TableName}
-            WHERE collection=@collection";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
-
-        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
-            yield return await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
     /// Read a entry by its key.
     /// </summary>
     /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
@@ -272,17 +187,14 @@ internal sealed class Database
         string collectionName, string key, bool withEmbeddings = false,
         CancellationToken cancellationToken = default)
     {
-        var queryColumns = "collection, key, metadata, timestamp";
+        var queryColumns = "key, metadata, timestamp";
         if (withEmbeddings)
         {
             queryColumns = "*";
         }
 
         using NpgsqlCommand cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-            SELECT {queryColumns} FROM {TableName}
-            WHERE collection=@collection AND key=@key";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
+        cmd.CommandText = $@"SELECT {queryColumns} FROM {this._schema}.""{collectionName}"" WHERE key=@key";
         cmd.Parameters.AddWithValue("@key", key);
 
         using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -295,23 +207,6 @@ internal sealed class Database
     }
 
     /// <summary>
-    /// Delete a collection.
-    /// </summary>
-    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
-    /// <param name="collectionName">The name assigned to a collection of entries.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    public Task DeleteCollectionAsync(NpgsqlConnection conn, string collectionName, CancellationToken cancellationToken = default)
-    {
-        using NpgsqlCommand cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-            DELETE FROM {TableName}
-            WHERE collection=@collection";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
-        return cmd.ExecuteNonQueryAsync(cancellationToken);
-    }
-
-    /// <summary>
     /// Delete a entry by its key.
     /// </summary>
     /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
@@ -319,16 +214,18 @@ internal sealed class Database
     /// <param name="key">The key of the entry to delete.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
-    public Task DeleteAsync(NpgsqlConnection conn, string collectionName, string key, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(NpgsqlConnection conn, string collectionName, string key, CancellationToken cancellationToken = default)
     {
         using NpgsqlCommand cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-            DELETE FROM {TableName}
-            WHERE collection=@collection AND key=@key ";
-        cmd.Parameters.AddWithValue("@collection", collectionName);
+        cmd.CommandText = $@"DELETE FROM {this._schema}.""{collectionName}"" WHERE key=@key";
         cmd.Parameters.AddWithValue("@key", key);
-        return cmd.ExecuteNonQueryAsync(cancellationToken);
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    #region private ================================================================================
+
+    private readonly int _vectorSize;
+    private readonly string _schema;
 
     /// <summary>
     /// Read a entry.
@@ -345,4 +242,42 @@ internal sealed class Database
         long? timestamp = await dataReader.GetFieldValueAsync<long?>(dataReader.GetOrdinal("timestamp"), cancellationToken).ConfigureAwait(false);
         return new DatabaseEntry() { Key = key, MetadataString = metadata, Embedding = embedding, Timestamp = timestamp };
     }
+
+    /// <summary>
+    /// Create a collection as table.
+    /// </summary>
+    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
+    /// <param name="collectionName">The name assigned to a collection of entries.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    public async Task CreateTableAsync(NpgsqlConnection conn, string collectionName, CancellationToken cancellationToken = default)
+    {
+        using NpgsqlCommand cmd = conn.CreateCommand();
+        cmd.CommandText = $@"
+            CREATE TABLE IF NOT EXISTS {this._schema}.""{collectionName}"" (
+                key TEXT NOT NULL,
+                metadata JSONB,
+                embedding vector({this._vectorSize}),
+                timestamp BIGINT,
+                PRIMARY KEY (key))";
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Create index for collection table.
+    /// </summary>
+    /// <param name="conn">An opened <see cref="NpgsqlConnection"/> instance.</param>
+    /// <param name="collectionName">The name assigned to a collection of entries.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns></returns>
+    private async Task CreateIndexAsync(NpgsqlConnection conn, string collectionName, CancellationToken cancellationToken = default)
+    {
+        using NpgsqlCommand cmd = conn.CreateCommand();
+        cmd.CommandText = $@"
+            CREATE INDEX IF NOT EXISTS {collectionName}_ix
+            ON {this._schema}.""{collectionName}"" USING ivfflat (embedding vector_cosine_ops) WITH (lists = 1000)";
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    #endregion
 }
