@@ -21,16 +21,6 @@ public class SKBuilders {
     private SKBuilders() {}
 
     /**
-     * A CompletionSKFunction builder, the created function will not be registered on any kernel and
-     * will need to be registered manually
-     *
-     * @return a function builder
-     */
-    public static CompletionSKFunction.Builder completionFunctions() {
-        return FunctionBuilders.getCompletionBuilder(null);
-    }
-
-    /**
      * A CompletionSKFunction builder, the created function will be registered on the kernel
      * provided
      *

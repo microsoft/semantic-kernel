@@ -14,6 +14,7 @@ import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,7 +101,9 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         options.setTopP(requestSettings.getTopP());
         options.setFrequencyPenalty(requestSettings.getFrequencyPenalty());
         options.setPresencePenalty(requestSettings.getPresencePenalty());
-        options.setN(1);
+        options.setLogitBias(new HashMap<>());
+        options.setN(requestSettings.getBestOf());
+        options.setUser(requestSettings.getUser());
 
         return options;
     }

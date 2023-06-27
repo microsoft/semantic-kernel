@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.textcompletion;
 
-import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -24,10 +23,6 @@ public interface CompletionSKFunction extends SKFunction<CompletionRequestSettin
      */
     Mono<SKContext> aggregatePartitionedResultsAsync(
             List<String> partitionedInput, @Nullable SKContext context);
-
-    static CompletionSKFunction.Builder builder() {
-        return BuildersSingleton.INST.getFunctionBuilders().completionBuilders(null);
-    }
 
     abstract class Builder {
 

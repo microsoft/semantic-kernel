@@ -23,9 +23,9 @@ public class Example12_SequentialPlanner {
     private static final Logger LOGGER = LoggerFactory.getLogger(Example12_SequentialPlanner.class);
 
     public static void main(String[] args) throws IOException {
-        //poetrySamplesAsync();
+        poetrySamplesAsync();
         emailSamplesAsync();
-        //bookSamplesAsync();
+        bookSamplesAsync();
         //MemorySampleAsync();
     }
 
@@ -173,7 +173,7 @@ public class Example12_SequentialPlanner {
      */
 
     private static Kernel initializeKernel() throws IOException {
-        OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
+        OpenAIAsyncClient client = Config.getClient();
         var kernel = SKBuilders.kernel()
                 .setKernelConfig(SKBuilders
                         .kernelConfig()

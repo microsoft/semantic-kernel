@@ -11,7 +11,6 @@ import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import org.junit.jupiter.api.Assertions;
@@ -31,7 +30,7 @@ public class Example06TemplateLanguageTest {
                 SKBuilders.kernelConfig()
                         .addTextCompletionService(
                                 "text-davinci-003",
-                                kernel ->
+                                kernel1 ->
                                         SKBuilders.textCompletionService()
                                                 .build(client, "text-davinci-003"))
                         .build();
@@ -58,12 +57,11 @@ public class Example06TemplateLanguageTest {
 
         PromptTemplate promptRenderer =
                 SKBuilders.promptTemplate()
+                        .withPromptTemplateConfig(new PromptTemplateConfig())
                         .withPromptTemplate(functionDefinition)
                         .build(kernel.getPromptTemplateEngine());
 
         SKContext skContext = SKBuilders.context().build(kernel.getSkills());
-
-        PromptTemplateEngine promptTemplateEngine = SKBuilders.promptTemplateEngine().build();
 
         Mono<String> renderedPrompt = promptRenderer.renderAsync(skContext);
 

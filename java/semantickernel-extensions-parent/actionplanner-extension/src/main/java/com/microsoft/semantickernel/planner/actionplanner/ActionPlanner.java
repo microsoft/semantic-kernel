@@ -76,7 +76,7 @@ public class ActionPlanner {
         kernel.importSkill(this, SkillName);
 
         this.kernel = kernel;
-        this.context = SKBuilders.context().build();
+        this.context = SKBuilders.context().with(kernel.getSkills()).build();
     }
 
     public static String read(String file) {

@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class Example28_ActionPlanner {
     public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.ClientType.OPEN_AI.getClient();
+        OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
 
         System.out.println("======== Action Planner ========");
 

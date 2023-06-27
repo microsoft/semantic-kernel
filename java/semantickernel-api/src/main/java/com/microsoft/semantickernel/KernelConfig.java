@@ -3,7 +3,6 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
-import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import java.util.*;
@@ -19,28 +18,21 @@ public final class KernelConfig {
 
     private final Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
             textEmbeddingGenerationServices;
-    private final ArrayList<SKFunction<?>> skills;
 
     public KernelConfig(
             Map<String, Function<Kernel, TextCompletion>> textCompletionServices,
             Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
                     textEmbeddingGenerationServices,
-            Map<String, Function<Kernel, ChatCompletion>> chatCompletionServices,
-            List<SKFunction<?>> skills) {
+            Map<String, Function<Kernel, ChatCompletion>> chatCompletionServices) {
         this.textCompletionServices = new HashMap<>();
         this.textCompletionServices.putAll(textCompletionServices);
         this.textEmbeddingGenerationServices = new HashMap<>(textEmbeddingGenerationServices);
         this.chatCompletionServices = new HashMap<>(chatCompletionServices);
-        this.skills = new ArrayList<>(skills);
     }
 
     @Nullable
     public Function<Kernel, TextCompletion> getTextCompletionService(String serviceId) {
         return textCompletionServices.get(serviceId);
-    }
-
-    public List<SKFunction<?>> getSkills() {
-        return Collections.unmodifiableList(skills);
     }
 
     public Function<Kernel, TextCompletion> getTextCompletionServiceOrDefault(
@@ -93,17 +85,10 @@ public final class KernelConfig {
         private Map<String, Function<Kernel, TextCompletion>> textCompletionServices =
                 new HashMap<>();
 
-        private List<SKFunction<?>> skillBuilders = new ArrayList<>();
-
         private Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
                 textEmbeddingGenerationServices = new HashMap<>();
         private final Map<String, Function<Kernel, ChatCompletion>> chatCompletionServices =
                 new HashMap<>();
-
-        public Builder addSkill(SKFunction<?> functionDefinition) {
-            skillBuilders.add(functionDefinition);
-            return this;
-        }
 
         // TODO, is there a need for this to be a factory?
         public Builder addTextCompletionService(
@@ -183,8 +168,7 @@ public final class KernelConfig {
             return new KernelConfig(
                     Collections.unmodifiableMap(textCompletionServices),
                     textEmbeddingGenerationServices,
-                    chatCompletionServices,
-                    skillBuilders);
+                    chatCompletionServices);
         }
     }
 }

@@ -200,11 +200,11 @@ public class PromptTemplateConfig {
         }
 
         public CompletionConfig(
-                @JsonProperty("temperature") double temperature,
-                @JsonProperty("top_p") double topP,
-                @JsonProperty("presence_penalty") double presencePenalty,
-                @JsonProperty("frequency_penalty") double frequencyPenalty,
-                @JsonProperty("max_tokens") int maxTokens) {
+                double temperature,
+                double topP,
+                double presencePenalty,
+                double frequencyPenalty,
+                int maxTokens) {
             this(
                     temperature,
                     topP,
@@ -231,7 +231,13 @@ public class PromptTemplateConfig {
             this.presencePenalty = presencePenalty;
             this.frequencyPenalty = frequencyPenalty;
             this.maxTokens = maxTokens;
-            this.bestOf = bestOf;
+
+            // bestOf must be at least 1
+            this.bestOf = Math.max(1, bestOf);
+
+            if (user == null) {
+                user = "";
+            }
             this.user = user;
             if (stopSequences == null) {
                 stopSequences = new ArrayList<>();
@@ -341,6 +347,10 @@ public class PromptTemplateConfig {
 
     private final String type; // { get; set; } = "completion";
     private final String description;
+
+    public PromptTemplateConfig() {
+        this("", "", null);
+    }
 
     public PromptTemplateConfig(
             String description, String type, @Nullable CompletionConfig completionConfig) {

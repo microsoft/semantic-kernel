@@ -103,25 +103,21 @@ public class InlineFunctionWithPreBuiltSkillExample {
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, MODEL);
         String prompt = "{{$input}}\nSummarize the content above.";
 
-        CompletionSKFunction summarizeFunc =
-                SKBuilders.completionFunctions()
+        KernelConfig kernelConfig =
+                new KernelConfig.Builder()
+                        .addTextCompletionService(MODEL, kernel -> textCompletion)
+                        .build();
+
+        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+
+        CompletionSKFunction summarize =
+                SKBuilders.completionFunctions(kernel)
                         .createFunction(
                                 prompt,
                                 "summarize",
                                 null,
                                 null,
                                 new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000));
-
-        KernelConfig kernelConfig =
-                new KernelConfig.Builder()
-                        .addTextCompletionService(MODEL, kernel -> textCompletion)
-                        .addSkill(summarizeFunc)
-                        .build();
-
-        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
-
-        CompletionSKFunction summarize =
-                kernel.getSkills().getFunction("summarize", CompletionSKFunction.class);
 
         if (summarize == null) {
             LOGGER.error("Null function");

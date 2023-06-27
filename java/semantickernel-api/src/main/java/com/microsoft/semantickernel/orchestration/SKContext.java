@@ -7,6 +7,8 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
 import reactor.util.annotation.Nullable;
 
+import java.util.function.Supplier;
+
 import javax.annotation.CheckReturnValue;
 
 /** Semantic Kernel context. */
@@ -82,6 +84,8 @@ public interface SKContext {
     SKContext update(ContextVariables newData);
 
     SKContext copy();
+
+    interface BuilderSupplier extends Supplier<Builder> {}
 
     interface Builder {
         SKContext build(ReadOnlySkillCollection skills);

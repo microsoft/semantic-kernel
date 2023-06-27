@@ -127,7 +127,7 @@ public class Example13_ConversationSummarySkill {
                     """.stripIndent();
 
     public static void main(String[] args) throws IOException {
-        Config.ClientType clientType = Config.ClientType.OPEN_AI;
+        Config.ClientType clientType = Config.ClientType.AZURE_OPEN_AI;
 
         conversationSummarySkillAsync(clientType);
         getConversationActionItemsAsync(clientType);

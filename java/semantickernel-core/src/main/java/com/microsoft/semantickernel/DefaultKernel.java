@@ -61,8 +61,6 @@ public class DefaultKernel implements Kernel {
         } else {
             this.memory = new NullMemory();
         }
-
-        kernelConfig.getSkills().forEach(this::registerSemanticFunction);
     }
 
     @Override

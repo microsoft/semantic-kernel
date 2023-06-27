@@ -16,6 +16,13 @@ public class Config {
     public static final String CONF_PROPERTIES =
             System.getProperty("CONF_PROPERTIES", "java/samples/conf.properties");
 
+    public static final String OPENAI_CLIENT_TYPE =
+            System.getProperty("OPENAI_CLIENT_TYPE", "OPEN_AI");
+
+    public static OpenAIAsyncClient getClient() throws IOException {
+        return ClientType.valueOf(OPENAI_CLIENT_TYPE).getClient();
+    }
+
     public enum ClientType {
         OPEN_AI {
             @Override
