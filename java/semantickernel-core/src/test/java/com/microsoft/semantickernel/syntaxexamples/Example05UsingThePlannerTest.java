@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
-import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClientMatchers;
+import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClientMatch;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
@@ -32,7 +32,7 @@ public class Example05UsingThePlannerTest {
                 };
 
         OpenAIAsyncClient client =
-                mockCompletionOpenAIAsyncClientMatchers(Tuples.of(matcher, "A-PLAN"));
+                mockCompletionOpenAIAsyncClientMatch(Tuples.of(matcher, "A-PLAN"));
 
         KernelConfig config =
                 SKBuilders.kernelConfig()

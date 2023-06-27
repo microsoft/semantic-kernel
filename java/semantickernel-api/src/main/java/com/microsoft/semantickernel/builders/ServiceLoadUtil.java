@@ -49,10 +49,10 @@ public class ServiceLoadUtil {
         try {
             Constructor<?> constructor = impl.getClass().getConstructor();
 
-            // Test that we can construct the object
+            // Test that we can construct the builder
             if (!clazz.isInstance(constructor.newInstance())) {
                 throw new RuntimeException(
-                        "Builder requires a no args constructor: " + clazz.getName());
+                        "Builder creates instance of the wrong type: " + clazz.getName());
             }
 
             return () -> {

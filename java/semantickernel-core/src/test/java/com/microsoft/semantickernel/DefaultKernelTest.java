@@ -19,11 +19,13 @@ import org.mockito.Mockito;
 
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DefaultKernelTest {
@@ -141,27 +143,48 @@ public class DefaultKernelTest {
      * This if the client is prompted with "Tell me a joke", the mocked client would
      * respond with "This is a joke"
      */
-
     public static OpenAIAsyncClient mockCompletionOpenAIAsyncClient(
             Tuple2<String, String>... responses) {
 
-        List<Tuple2<ArgumentMatcher<String>, String>> matchers =
+        List<Tuple3<ArgumentMatcher<String>, String, Consumer<String>>> matchers =
                 Arrays.stream(responses)
                         .map(
                                 response ->
-                                        Tuples.<ArgumentMatcher<String>, String>of(
-                                                arg -> arg.contains(response.getT1()),
-                                                response.getT2()))
+                                        Tuples
+                                                .<ArgumentMatcher<String>, String, Consumer<String>>
+                                                        of(
+                                                                arg ->
+                                                                        arg.contains(
+                                                                                response.getT1()),
+                                                                response.getT2(),
+                                                                (arg) -> {}))
                         .collect(Collectors.toList());
 
-        return mockCompletionOpenAIAsyncClientMatchers(matchers.toArray(new Tuple2[0]));
+        return DefaultKernelTest.mockCompletionOpenAIAsyncClientMatchAndAssert(
+                matchers.toArray(new Tuple3[0]));
     }
 
-    public static OpenAIAsyncClient mockCompletionOpenAIAsyncClientMatchers(
+    public static OpenAIAsyncClient mockCompletionOpenAIAsyncClientMatch(
             Tuple2<ArgumentMatcher<String>, String>... responses) {
+
+        Tuple3[] withAssert =
+                Arrays.stream(responses)
+                        .map(
+                                spec ->
+                                        Tuples
+                                                .<ArgumentMatcher<String>, String, Consumer<String>>
+                                                        of(spec.getT1(), spec.getT2(), arg -> {}))
+                        .collect(Collectors.toList())
+                        .toArray(new Tuple3[0]);
+
+        return mockCompletionOpenAIAsyncClientMatchAndAssert(withAssert);
+    }
+
+    public static OpenAIAsyncClient mockCompletionOpenAIAsyncClientMatchAndAssert(
+            Tuple3<ArgumentMatcher<String>, String, Consumer<String>>... responses) {
         OpenAIAsyncClient openAIAsyncClient = Mockito.mock(OpenAIAsyncClient.class);
 
-        for (Tuple2<ArgumentMatcher<String>, String> response : responses) {
+        for (Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response : responses) {
 
             Choice choice = Mockito.mock(Choice.class);
             Mockito.when(choice.getText()).thenReturn(response.getT2());
@@ -175,12 +198,30 @@ public class DefaultKernelTest {
                                     Mockito.any(String.class),
                                     Mockito.<CompletionsOptions>argThat(
                                             it -> response.getT1().matches(it.getPrompt().get(0)))))
+                    .then(
+                            (arg) -> {
+                                response.getT3()
+                                        .accept(
+                                                ((CompletionsOptions) arg.getArgument(1))
+                                                        .getPrompt()
+                                                        .get(0));
+                                return Mono.just(completions);
+                            })
                     .thenReturn(Mono.just(completions));
 
             Mockito.when(
                             openAIAsyncClient.getCompletions(
                                     Mockito.any(String.class),
                                     Mockito.<String>argThat(it -> response.getT1().matches(it))))
+                    .then(
+                            (arg) -> {
+                                response.getT3()
+                                        .accept(
+                                                ((CompletionsOptions) arg.getArgument(1))
+                                                        .getPrompt()
+                                                        .get(0));
+                                return Mono.just(completions);
+                            })
                     .thenReturn(Mono.just(completions));
         }
         return openAIAsyncClient;
