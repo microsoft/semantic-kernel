@@ -67,12 +67,6 @@ public interface SemanticTextMemory {
     public Mono<MemoryQueryResult> getAsync(
             @Nonnull String collection, @Nonnull String key, boolean withEmbedding);
 
-    @Deprecated
-    /**
-     * @deprecated No longer appears in the C# ISemanticTextMemory interface.
-     */
-    SemanticTextMemory merge(MemoryQueryResult b);
-
     /**
      * Remove a memory by key. For local memories the key is the "id" used when saving the record.
      * For external reference, the key is the "URI" used when saving the record.
