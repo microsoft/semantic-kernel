@@ -64,11 +64,9 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
     const [resources, setResources] = React.useState<ChatMemorySource[]>([]);
 
     React.useEffect(() => {
-        chat.getChatMemorySources(chatId)
-            .then((sources) => {
-                setResources(sources);
-            })
-            .catch(() => {});
+        void chat.getChatMemorySources(chatId).then((sources) => {
+            setResources(sources);
+        });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [chatId]);
 
@@ -141,7 +139,9 @@ function useTable(resources: ChatMemorySource[]) {
                     Access
                 </TableHeaderCell>
             ),
-            renderCell: (item) => <TableCell key={`${item.id} ${item.name.label}`}>{getAccessString(item.chatId)}</TableCell>,
+            renderCell: (item) => (
+                <TableCell key={`${item.id} ${item.name.label}`}>{getAccessString(item.chatId)}</TableCell>
+            ),
             compare: (a, b) => {
                 const aAccess = getAccessString(a.chatId);
                 const bAccess = getAccessString(b.chatId);

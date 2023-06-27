@@ -34,14 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (validEnvFile) {
             msalInstance = new PublicClientApplication(AuthHelper.msalConfig);
 
-            msalInstance
-                .handleRedirectPromise()
-                .then((response) => {
-                    if (response) {
-                        msalInstance?.setActiveAccount(response.account);
-                    }
-                })
-                .catch(() => {});
+            void msalInstance.handleRedirectPromise().then((response) => {
+                if (response) {
+                    msalInstance?.setActiveAccount(response.account);
+                }
+            });
         }
 
         root.render(

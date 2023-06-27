@@ -152,7 +152,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                         <Button
                             appearance="secondary"
                             onClick={() => {
-                                onPlanAction(PlanState.PlanRejected).catch(() => {});
+                                void onPlanAction(PlanState.PlanRejected);
                             }}
                         >
                             No, cancel plan
@@ -161,7 +161,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                             type="submit"
                             appearance="primary"
                             onClick={() => {
-                                onPlanAction(PlanState.PlanApproved).catch(() => {});
+                                void onPlanAction(PlanState.PlanApproved);
                             }}
                         >
                             Yes, proceed

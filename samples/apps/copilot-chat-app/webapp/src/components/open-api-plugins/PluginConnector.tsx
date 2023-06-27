@@ -86,39 +86,37 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
 
     const handleSubmit = (event: FormEvent) => {
         event.preventDefault();
-        try {
-            if (msalRequired) {
-                TokenHelper.getAccessTokenUsingMsal(inProgress, instance, authRequirements.scopes ?? [])
-                    .then((token) => {
-                        dispatch(
-                            connectPlugin({
-                                plugin: name,
-                                accessToken: token,
-                                apiProperties: apiPropertiesInput,
-                            }),
-                        );
-                    })
-                    .catch(() => {});
-            } else if (oauthRequired) {
-                // TODO: implement OAuth Flow
-            } else {
-                // Basic Auth or PAT
-                dispatch(
-                    connectPlugin({
-                        plugin: name,
-                        username,
-                        email,
-                        password,
-                        accessToken,
-                        apiProperties: apiPropertiesInput,
-                    }),
-                );
-            }
-
-            setOpen(false);
-        } catch (_e) {
-            setErrorMessage(`Could not authenticate to ${name}. Check your permissions and try again.`);
+        if (msalRequired) {
+            TokenHelper.getAccessTokenUsingMsal(inProgress, instance, authRequirements.scopes ?? [])
+                .then((token) => {
+                    dispatch(
+                        connectPlugin({
+                            plugin: name,
+                            accessToken: token,
+                            apiProperties: apiPropertiesInput,
+                        }),
+                    );
+                })
+                .catch(() => {
+                    setErrorMessage(`Could not authenticate to ${name}. Check your permissions and try again.`);
+                });
+        } else if (oauthRequired) {
+            // TODO: implement OAuth Flow
+        } else {
+            // Basic Auth or PAT
+            dispatch(
+                connectPlugin({
+                    plugin: name,
+                    username,
+                    email,
+                    password,
+                    accessToken,
+                    apiProperties: apiPropertiesInput,
+                }),
+            );
         }
+
+        setOpen(false);
     };
 
     return (

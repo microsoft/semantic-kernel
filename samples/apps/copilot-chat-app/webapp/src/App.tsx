@@ -75,13 +75,11 @@ const App: FC = () => {
 
             if (appState === AppState.LoadingChats) {
                 // Load all chats from memory
-                chat.loadChats()
-                    .then((succeeded) => {
-                        if (succeeded) {
-                            setAppState(AppState.Chat);
-                        }
-                    })
-                    .catch(() => {});
+                void chat.loadChats().then((succeeded) => {
+                    if (succeeded) {
+                        setAppState(AppState.Chat);
+                    }
+                });
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

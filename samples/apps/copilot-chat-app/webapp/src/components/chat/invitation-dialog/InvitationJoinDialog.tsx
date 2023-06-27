@@ -1,6 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Button, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Divider, Input, Label, makeStyles, tokens } from '@fluentui/react-components';
+import {
+    Button,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
+    Divider,
+    Input,
+    Label,
+    makeStyles,
+    tokens,
+} from '@fluentui/react-components';
 import React from 'react';
 import { useChat } from '../../../libs/useChat';
 
@@ -33,14 +45,14 @@ export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = ({ onCl
 
         const chatId = ev.currentTarget.elements.namedItem('chat-id-input') as HTMLInputElement;
 
-        chat.joinChat(chatId.value).then(({ success, message }) => {
+        void chat.joinChat(chatId.value).then(({ success, message }) => {
             if (success) {
                 onCloseDialog();
             } else {
                 setErrorOccurred(true);
                 setErrorMessage(message);
             }
-        }).catch(() => { });
+        });
     };
 
     return (
@@ -56,15 +68,21 @@ export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = ({ onCl
                             <Input required type="text" id="chat-id-input" />
                         </DialogContent>
                         <DialogActions>
-                            <Button appearance="secondary" onClick={onCloseDialog}>Cancel</Button>
-                            <Button type="submit" appearance="primary">Join</Button>
+                            <Button appearance="secondary" onClick={onCloseDialog}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" appearance="primary">
+                                Join
+                            </Button>
                         </DialogActions>
                     </DialogBody>
                 </form>
-                {errorOccurred && <div>
-                    <Divider className={classes.divider} />
-                    <Label size="large">{errorMessage}</Label>
-                </div>}
+                {errorOccurred && (
+                    <div>
+                        <Divider className={classes.divider} />
+                        <Label size="large">{errorMessage}</Label>
+                    </div>
+                )}
             </DialogSurface>
         </div>
     );

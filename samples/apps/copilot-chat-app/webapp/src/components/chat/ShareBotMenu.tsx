@@ -20,13 +20,13 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
 
     const onDownloadBotClick = useCallback(() => {
         // TODO: Add a loading indicator
-        chat.downloadBot(chatId).then(content => {
+        void chat.downloadBot(chatId).then((content) => {
             downloadFile(
                 `chat-history-${chatTitle}-${new Date().toISOString()}.json`,
                 JSON.stringify(content),
                 'text/json',
             );
-        }).catch(() => { });
+        });
     }, [chat, chatId, chatTitle, downloadFile]);
 
     return (
@@ -42,16 +42,25 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
                         <MenuItem icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
                             Download your Bot
                         </MenuItem>
-                        <MenuItem icon={<PeopleTeamAddRegular />} onClick={() => { setIsGettingInvitationId(true); }}>
+                        <MenuItem
+                            icon={<PeopleTeamAddRegular />}
+                            onClick={() => {
+                                setIsGettingInvitationId(true);
+                            }}
+                        >
                             Invite others to your Bot
                         </MenuItem>
                     </MenuList>
                 </MenuPopover>
             </Menu>
-            {isGettingInvitationId &&
+            {isGettingInvitationId && (
                 <InvitationCreateDialog
-                    onCancel={() => { setIsGettingInvitationId(false); }}
-                    chatId={chatId} />}
+                    onCancel={() => {
+                        setIsGettingInvitationId(false);
+                    }}
+                    chatId={chatId}
+                />
+            )}
         </div>
     );
 };
