@@ -126,7 +126,7 @@ public class SequentialPlanParserTests
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetFunction(kernel.CreateNewContext()));
+        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()));
 
         // Assert
         Assert.NotNull(plan);
@@ -173,7 +173,7 @@ public class SequentialPlanParserTests
         var planString = "<someTag>";
 
         // Act
-        Assert.Throws<PlanningException>(() => planString.ToPlanFromXml(GoalText, SequentialPlanParser.GetFunction(kernel.CreateNewContext())));
+        Assert.Throws<PlanningException>(() => planString.ToPlanFromXml(GoalText, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext())));
     }
 
     // Test that contains a #text node in the plan
@@ -193,7 +193,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetFunction(kernel.CreateNewContext()));
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()));
 
         // Assert
         Assert.NotNull(plan);
@@ -228,7 +228,7 @@ public class SequentialPlanParserTests
         if (allowMissingFunctions)
         {
             // it should not throw
-            var plan = planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetFunction(kernel.CreateNewContext()), allowMissingFunctions);
+            var plan = planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()), allowMissingFunctions);
 
             // Assert
             Assert.NotNull(plan);
@@ -244,7 +244,7 @@ public class SequentialPlanParserTests
         }
         else
         {
-            Assert.Throws<PlanningException>(() => planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetFunction(kernel.CreateNewContext()), allowMissingFunctions));
+            Assert.Throws<PlanningException>(() => planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()), allowMissingFunctions));
         }
     }
 
@@ -278,7 +278,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetFunction(kernel.CreateNewContext()));
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()));
 
         // Assert
         Assert.NotNull(plan);
@@ -302,7 +302,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetFunction(kernel.CreateNewContext()));
+        var plan = planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()));
 
         // Assert
         Assert.NotNull(plan);
@@ -328,7 +328,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetFunction(kernel.CreateNewContext()));
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()));
 
         // Assert
         Assert.NotNull(plan);
