@@ -54,7 +54,7 @@ export async function createNewChat(page) {
 }
 export async function loginAndCreateNewChat(page)
 {
-    var useraccount = process.env.REACT_APP_TEST_USER_ACCOUNT as string;
+    var useraccount = process.env.REACT_APP_TEST_USER_ACCOUNT1 as string;
     var password = process.env.REACT_APP_TEST_USER_PASSWORD as string;
     await loginHelper(page, useraccount, password);
     await createNewChat(page);
@@ -82,7 +82,7 @@ export async function sendChatMessageAndWaitForResponse(page, message)
 
 export async function openPluginPopUp(page, pluginIdentifierText)
 {
-    const regex = new RegExp('^' + process.env.REACT_APP_TEST_USER_ACCOUNT_INITIALS as string + '$');
+    const regex = new RegExp('^' + process.env.REACT_APP_TEST_USER_ACCOUNT1_INITIALS as string + '$');
     await page.locator('div').filter({ hasText: regex }).getByRole('button').click();
     await page.getByRole('group').filter({ hasText: pluginIdentifierText }).getByTestId('openPluginDialogButton').click();
 }
@@ -95,7 +95,7 @@ export async function enablePluginAndClosePopUp(page)
 export async function disablePluginAndClosePopUp(page)
 {
     // Only works if when only a single plugin has been enabled
-    const regex = new RegExp('^' + process.env.REACT_APP_TEST_USER_ACCOUNT_INITIALS as string + '$');
+    const regex = new RegExp('^' + process.env.REACT_APP_TEST_USER_ACCOUNT1_INITIALS as string + '$');
     await page.locator('div').filter({ hasText: regex }).getByRole('button').click();
     await page.getByTestId('disconnectPluginButton').click();
     await page.getByTestId('closeEnableCCPluginsPopUp').click();
