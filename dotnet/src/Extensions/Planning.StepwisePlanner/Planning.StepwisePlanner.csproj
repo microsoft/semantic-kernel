@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Planning.StepwisePlanner</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Planning.Stepwise</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Stepwise Planner</Title>
+    <Description>Semantic Kernel Stepwise Planner</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Skills/**/*" />
+    <EmbeddedResource Include="Skills/**/*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
