@@ -128,11 +128,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         const file = dragAndDropFile ?? documentFileRef.current?.files?.[0];
         if (file) {
             setDocumentImporting(true);
-            chat.importDocument(selectedId, file)
-                .catch(() => {})
-                .finally(() => {
-                    setDocumentImporting(false);
-                });
+            chat.importDocument(selectedId, file).finally(() => {
+                setDocumentImporting(false);
+            });
         }
 
         // Reset the file input so that the onChange event will

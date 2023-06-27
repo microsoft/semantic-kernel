@@ -94,20 +94,13 @@ export const ChatWindow: React.FC = () => {
 
     const onSave = async () => {
         if (chatName !== title) {
-            try {
-                await chatService.editChatAsync(
-                    conversations[selectedId].id,
-                    title,
-                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
-                );
+            await chatService.editChatAsync(
+                conversations[selectedId].id,
+                title,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
 
-                dispatch(editConversationTitle({ id: selectedId, newTitle: title }));
-            } catch (e: any) {
-                const errorMessage = `Unable to retrieve chat to change title. Details: ${
-                    e instanceof Error ? e.message : String(e)
-                }`;
-                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
-            }
+            dispatch(editConversationTitle({ id: selectedId, newTitle: title }));
         }
         setIsEditing(!isEditing);
     };
@@ -128,7 +121,12 @@ export const ChatWindow: React.FC = () => {
 
     const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
         if (event.key === 'Enter') {
-            onSave().catch(() => {});
+            onSave().catch((e: any) => {
+                const errorMessage = `Unable to retrieve chat to change title. Details: ${
+                    e instanceof Error ? e.message : String(e)
+                }`;
+                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            });
         }
     };
 
