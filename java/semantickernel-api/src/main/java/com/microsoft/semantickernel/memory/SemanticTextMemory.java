@@ -65,6 +65,10 @@ public interface SemanticTextMemory {
      */
     public Mono<MemoryQueryResult> getAsync(String collection, String key, boolean withEmbedding);
 
+    @Deprecated
+    /**
+     * @deprecated No longer appears in the C# ISemanticTextMemory interface.
+     */
     SemanticTextMemory merge(MemoryQueryResult b);
 
     /**

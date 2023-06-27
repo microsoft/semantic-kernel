@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class InlineFunctionTest extends AbstractKernelTest {
 
@@ -33,8 +32,7 @@ public class InlineFunctionTest extends AbstractKernelTest {
                                 "summarize",
                                 null,
                                 null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
+                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000));
 
         String text =
                 """

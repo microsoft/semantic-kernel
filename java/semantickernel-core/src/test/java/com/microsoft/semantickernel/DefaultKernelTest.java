@@ -21,7 +21,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -48,8 +47,7 @@ public class DefaultKernelTest {
                                 "ChatBot",
                                 null,
                                 null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0.7, 0.5, 0, 0, 2000, new ArrayList<>()));
+                                new PromptTemplateConfig.CompletionConfig(0.7, 0.5, 0, 0, 2000));
 
         SKContext readOnlySkContext =
                 SKBuilders.context()
@@ -210,8 +208,7 @@ public class DefaultKernelTest {
                                 "summarize",
                                 null,
                                 null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
+                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000));
 
         Mono<SKContext> mono = summarize.invokeAsync(text);
         SKContext result = mono.block();

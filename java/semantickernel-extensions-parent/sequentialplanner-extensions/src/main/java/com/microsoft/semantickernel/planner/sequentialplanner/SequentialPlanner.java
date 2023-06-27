@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-
 import javax.annotation.Nullable;
 
 /** A planner that uses semantic function to create a sequential plan. */
@@ -64,12 +62,7 @@ public class SequentialPlanner {
                                     + " fulfill the request using functions. This ability is also"
                                     + " known as decision making and function flow",
                                 new PromptTemplateConfig.CompletionConfig(
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        this.config.getMaxTokens(),
-                                        new ArrayList<>()));
+                                        0.0, 0.0, 0.0, 0.0, this.config.getMaxTokens()));
 
         this.context = SKBuilders.context().build(kernel);
     }

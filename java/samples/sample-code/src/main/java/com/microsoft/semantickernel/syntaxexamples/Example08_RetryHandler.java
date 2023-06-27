@@ -79,7 +79,7 @@ public class Example08_RetryHandler {
                                                 null,
                                                 null,
                                                 new PromptTemplateConfig.CompletionConfig(
-                                                                0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
+                                                                0.2, 0.5, 0, 0, 2000));
 
                 KernelConfig kernelConfig = new KernelConfig.Builder()
                                 .addTextCompletionService("text-davinci-003", kernel -> textCompletion)

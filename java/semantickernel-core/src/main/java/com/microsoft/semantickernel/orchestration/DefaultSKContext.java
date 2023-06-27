@@ -91,7 +91,7 @@ public class DefaultSKContext extends AbstractSKContext {
         @Override
         public SKContext build(Kernel kernel) {
             if (memory == null) {
-                memory = kernel.getMemoryStore();
+                memory = kernel.getMemory();
             }
             if (skills == null) {
                 skills = kernel.getSkills();

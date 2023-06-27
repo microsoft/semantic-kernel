@@ -20,8 +20,6 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
-import java.util.ArrayList;
-
 public class Example06TemplateLanguageTest {
 
     @Test
@@ -80,8 +78,7 @@ public class Example06TemplateLanguageTest {
                                 null,
                                 null,
                                 null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0, 0, 0, 0, 256, new ArrayList<>()));
+                                new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256));
 
         Assertions.assertEquals("A-RESULT", kindOfDay.invokeAsync("").block().getResult());
     }

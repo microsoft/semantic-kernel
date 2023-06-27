@@ -201,7 +201,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                 SKBuilders.context()
                         .with(variables)
                         .with(kernel.getSkills())
-                        .with(kernel.getMemoryStore())
+                        .with(kernel.getMemory())
                         .build();
         return this.invokeNextStepAsync(context, null);
     }

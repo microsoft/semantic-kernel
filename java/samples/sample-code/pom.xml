@@ -26,7 +26,8 @@
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
             <artifactId>semantickernel-core</artifactId>
-            <scope>runtime</scope>
+            <!-- TODO: scope should be runtime, but VolatileMemoryStore is an issue -->
+            <!-- <scope>runtime</scope> -->
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
@@ -54,5 +55,17 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

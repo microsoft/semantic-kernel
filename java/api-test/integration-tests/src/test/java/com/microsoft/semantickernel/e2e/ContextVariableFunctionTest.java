@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
@@ -51,8 +50,7 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
                                 "ChatBot",
                                 null,
                                 null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0.7, 0.5, 0, 0, 2000, new ArrayList<>()));
+                                new PromptTemplateConfig.CompletionConfig(0.7, 0.5, 0, 0, 2000));
 
         SKContext readOnlySkContext = SKBuilders.context().build(kernel);
 

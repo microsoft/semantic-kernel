@@ -43,8 +43,7 @@ public class Example04_ContextVariablesChat {
                 0.5,
                 0,
                 0,
-                2000,
-                new ArrayList<>()));
+                2000));
 
       SKContext readOnlySkContext = SKBuilders.context().build(kernel);
 

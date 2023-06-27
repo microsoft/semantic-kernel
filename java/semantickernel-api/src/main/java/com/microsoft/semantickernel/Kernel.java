@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -25,23 +26,16 @@ public interface Kernel extends SkillExecutor {
     /**
      * Reference to the engine rendering prompt templates
      *
-     * @return
+     * @return Reference to the engine rendering prompt templates
      */
     PromptTemplateEngine getPromptTemplateEngine();
 
     /**
-     * Return the memory store used by the kernel.
+     * Get the SemanticTextMemory in use.
      *
-     * @return the MemoryStore instance
+     * @return the SemanticTextMemory in use
      */
-    SemanticTextMemory getMemoryStore();
-
-    /**
-     * Set the SemanticTextMemory to use.
-     *
-     * @param memory {@link SemanticTextMemory} instance
-     */
-    void registerMemory(SemanticTextMemory memory);
+    SemanticTextMemory getMemory();
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -83,7 +77,8 @@ public interface Kernel extends SkillExecutor {
     class Builder {
         @Nullable private KernelConfig kernelConfig = null;
         @Nullable private PromptTemplateEngine promptTemplateEngine = null;
-        @Nullable private SemanticTextMemory memoryStore = null;
+        @Nullable private MemoryStore memoryStore = null;
+        @Nullable private SemanticTextMemory memory = null;
 
         public Builder setKernelConfig(KernelConfig kernelConfig) {
             this.kernelConfig = kernelConfig;
@@ -95,8 +90,13 @@ public interface Kernel extends SkillExecutor {
             return this;
         }
 
-        public Builder withMemoryStore(SemanticTextMemory memoryStore) {
+        public Builder withMemoryStore(MemoryStore memoryStore) {
             this.memoryStore = memoryStore;
+            return this;
+        }
+
+        public Builder withMemory(SemanticTextMemory memory) {
+            this.memory = memory;
             return this;
         }
 
@@ -107,7 +107,7 @@ public interface Kernel extends SkillExecutor {
 
             return BuildersSingleton.INST
                     .getKernelBuilder()
-                    .build(kernelConfig, promptTemplateEngine, memoryStore);
+                    .build(kernelConfig, promptTemplateEngine, memory, memoryStore);
         }
     }
 
@@ -115,6 +115,7 @@ public interface Kernel extends SkillExecutor {
         Kernel build(
                 KernelConfig kernelConfig,
                 @Nullable PromptTemplateEngine promptTemplateEngine,
-                @Nullable SemanticTextMemory memoryStore);
+                @Nullable SemanticTextMemory memory,
+                @Nullable MemoryStore memoryStore);
     }
 }

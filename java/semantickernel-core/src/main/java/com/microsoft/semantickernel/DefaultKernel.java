@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.ai.AIException;
+import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
@@ -9,6 +10,8 @@ import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
+import com.microsoft.semantickernel.memory.MemoryConfiguration;
+import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.*;
@@ -77,6 +80,16 @@ public class DefaultKernel implements Kernel {
         } else if (ChatCompletion.class.isAssignableFrom(clazz)) {
             Function<Kernel, ChatCompletion> factory =
                     kernelConfig.getChatCompletionServiceOrDefault(serviceId);
+            if (factory == null) {
+                throw new KernelException(
+                        KernelException.ErrorCodes.ServiceNotFound,
+                        "No chat completion service available");
+            }
+
+            return (T) factory.apply(this);
+        } else if (EmbeddingGeneration.class.isAssignableFrom(clazz)) {
+            Function<Kernel, EmbeddingGeneration<String, Float>> factory =
+                    kernelConfig.getTextEmbeddingGenerationServiceOrDefault(serviceId);
             if (factory == null) {
                 throw new KernelException(
                         KernelException.ErrorCodes.ServiceNotFound,
@@ -233,13 +246,12 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public SemanticTextMemory getMemoryStore() {
+    public SemanticTextMemory getMemory() {
         return memory;
     }
 
-    @Override
     public void registerMemory(@Nonnull SemanticTextMemory memory) {
-        throw new NotSupportedException("Not implemented");
+        this.memory = memory;
     }
 
     @Override
@@ -285,7 +297,8 @@ public class DefaultKernel implements Kernel {
         public Kernel build(
                 KernelConfig kernelConfig,
                 @Nullable PromptTemplateEngine promptTemplateEngine,
-                @Nullable SemanticTextMemory memoryStore) {
+                @Nullable SemanticTextMemory memory,
+                @Nullable MemoryStore memoryStore) {
             if (promptTemplateEngine == null) {
                 promptTemplateEngine = new DefaultPromptTemplateEngine();
             }
@@ -296,7 +309,13 @@ public class DefaultKernel implements Kernel {
                         "It is required to set a kernelConfig to build a kernel");
             }
 
-            return new DefaultKernel(kernelConfig, promptTemplateEngine, memoryStore);
+            DefaultKernel kernel = new DefaultKernel(kernelConfig, promptTemplateEngine, memory);
+
+            if (memoryStore != null) {
+                MemoryConfiguration.useMemory(kernel, memoryStore, null);
+            }
+
+            return kernel;
         }
     }
 }

@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TextSkill;
+import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlannerRequestSettings;
@@ -22,9 +23,9 @@ public class Example12_SequentialPlanner {
     private static final Logger LOGGER = LoggerFactory.getLogger(Example12_SequentialPlanner.class);
 
     public static void main(String[] args) throws IOException {
-        poetrySamplesAsync();
+        //poetrySamplesAsync();
         emailSamplesAsync();
-        bookSamplesAsync();
+        //bookSamplesAsync();
         //MemorySampleAsync();
     }
 
@@ -179,14 +180,13 @@ public class Example12_SequentialPlanner {
                         .addTextCompletionService("text-davinci-003", kernel1 -> SKBuilders.textCompletionService()
                                 .build(client, "text-davinci-003"))
                         .build())
-                .withMemoryStore(SKBuilders
+                .withMemory(SKBuilders
                         .semanticTextMemory()
                         .setEmbeddingGenerator(
                                 SKBuilders.textEmbeddingGenerationService().build(client, "text-davinci-003")
                         )
-                        .setStorage(
-                                SKBuilders.memoryStore().buildVolatileMemoryStore()
-                        ).build())
+                        .setStorage(new VolatileMemoryStore())
+                        .build())
                 .build();
 
 

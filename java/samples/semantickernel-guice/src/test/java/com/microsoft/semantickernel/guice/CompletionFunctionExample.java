@@ -67,7 +67,7 @@ public class CompletionFunctionExample {
                                 prompt,
                                 "summarize",
                                 new PromptTemplateConfig.CompletionConfig(
-                                        0.2, 0.5, 0, 0, 2000, new ArrayList<>()))
+                                        0.2, 0.5, 0, 0, 2000))
                         .invokeAsync(text)
                         .block();
 

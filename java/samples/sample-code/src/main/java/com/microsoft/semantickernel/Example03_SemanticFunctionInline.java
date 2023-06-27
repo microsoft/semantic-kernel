@@ -34,8 +34,7 @@ public class Example03_SemanticFunctionInline {
                                 0.5,
                                 0,
                                 0,
-                                2000,
-                                new ArrayList<>()));
+                                2000));
 
         Mono<SKContext> result = summarize.invokeAsync(text);
 

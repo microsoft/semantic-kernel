@@ -62,7 +62,7 @@ public class Example06_TemplateLanguage {
                                                 null,
                                                 null,
                                                 new PromptTemplateConfig.CompletionConfig(
-                                                                0, 0, 0, 0, 256, new ArrayList<>()));
+                                                                0, 0, 0, 0, 256));
 
                 // Show the result
                 System.out.println("--- Semantic Function result");

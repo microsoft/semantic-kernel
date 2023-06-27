@@ -98,10 +98,7 @@ public class ConversationSummarySkill {
 
         if (context == null) {
             context =
-                    SKBuilders.context()
-                            .with(kernel.getSkills())
-                            .with(kernel.getMemoryStore())
-                            .build();
+                    SKBuilders.context().with(kernel.getSkills()).with(kernel.getMemory()).build();
         }
 
         SKContext completionContext = context.copy();

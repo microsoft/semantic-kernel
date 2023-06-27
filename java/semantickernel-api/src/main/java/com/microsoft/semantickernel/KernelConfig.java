@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -15,14 +16,20 @@ public final class KernelConfig {
     private static final String DEFAULT_SERVICE_ID = "__SK_DEFAULT";
     private final Map<String, Function<Kernel, TextCompletion>> textCompletionServices;
     private final Map<String, Function<Kernel, ChatCompletion>> chatCompletionServices;
+
+    private final Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
+            textEmbeddingGenerationServices;
     private final ArrayList<SKFunction<?>> skills;
 
     public KernelConfig(
             Map<String, Function<Kernel, TextCompletion>> textCompletionServices,
+            Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
+                    textEmbeddingGenerationServices,
             Map<String, Function<Kernel, ChatCompletion>> chatCompletionServices,
             List<SKFunction<?>> skills) {
         this.textCompletionServices = new HashMap<>();
         this.textCompletionServices.putAll(textCompletionServices);
+        this.textEmbeddingGenerationServices = new HashMap<>(textEmbeddingGenerationServices);
         this.chatCompletionServices = new HashMap<>(chatCompletionServices);
         this.skills = new ArrayList<>(skills);
     }
@@ -66,12 +73,30 @@ public final class KernelConfig {
         return this.chatCompletionServices.get(serviceId);
     }
 
+    public Function<Kernel, EmbeddingGeneration<String, Float>>
+            getTextEmbeddingGenerationServiceOrDefault(@Nullable String serviceId) {
+
+        if (serviceId == null) {
+            serviceId = DEFAULT_SERVICE_ID;
+        }
+
+        if (!this.textEmbeddingGenerationServices.containsKey(serviceId)) {
+            throw new KernelException(
+                    KernelException.ErrorCodes.ServiceNotFound,
+                    "A embedding generation service id '" + serviceId + "' doesn't exist");
+        }
+
+        return this.textEmbeddingGenerationServices.get(serviceId);
+    }
+
     public static class Builder {
         private Map<String, Function<Kernel, TextCompletion>> textCompletionServices =
                 new HashMap<>();
 
         private List<SKFunction<?>> skillBuilders = new ArrayList<>();
 
+        private Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
+                textEmbeddingGenerationServices = new HashMap<>();
         private final Map<String, Function<Kernel, ChatCompletion>> chatCompletionServices =
                 new HashMap<>();
 
@@ -91,6 +116,21 @@ public final class KernelConfig {
 
             if (textCompletionServices.size() == 1) {
                 textCompletionServices.put(DEFAULT_SERVICE_ID, serviceFactory);
+            }
+            return this;
+        }
+
+        public Builder addTextEmbeddingsGenerationService(
+                String serviceId,
+                Function<Kernel, EmbeddingGeneration<String, Float>> serviceFactory) {
+            if (serviceId == null || serviceId.isEmpty()) {
+                throw new IllegalArgumentException("Null or empty serviceId");
+            }
+
+            textEmbeddingGenerationServices.put(serviceId, serviceFactory);
+
+            if (textEmbeddingGenerationServices.size() == 1) {
+                textEmbeddingGenerationServices.put(DEFAULT_SERVICE_ID, serviceFactory);
             }
             return this;
         }
@@ -142,6 +182,7 @@ public final class KernelConfig {
         public KernelConfig build() {
             return new KernelConfig(
                     Collections.unmodifiableMap(textCompletionServices),
+                    textEmbeddingGenerationServices,
                     chatCompletionServices,
                     skillBuilders);
         }

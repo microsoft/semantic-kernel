@@ -45,6 +45,8 @@ public class PromptTemplateConfig {
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
                             completionConfig.maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             completionConfig.stopSequences));
         }
 
@@ -56,6 +58,8 @@ public class PromptTemplateConfig {
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
                             completionConfig.maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             completionConfig.stopSequences));
         }
 
@@ -67,6 +71,8 @@ public class PromptTemplateConfig {
                             presencePenalty,
                             completionConfig.frequencyPenalty,
                             completionConfig.maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             completionConfig.stopSequences));
         }
 
@@ -78,6 +84,8 @@ public class PromptTemplateConfig {
                             completionConfig.presencePenalty,
                             frequencyPenalty,
                             completionConfig.maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             completionConfig.stopSequences));
         }
 
@@ -89,6 +97,8 @@ public class PromptTemplateConfig {
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
                             maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             completionConfig.stopSequences));
         }
 
@@ -100,6 +110,8 @@ public class PromptTemplateConfig {
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
                             completionConfig.maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             stopSequences));
         }
 
@@ -171,8 +183,37 @@ public class PromptTemplateConfig {
         */
         public final List<String> stopSequences; // { get; set; } = new();
 
+        /**
+         * The maximum number of completions to generate for each prompt. This is used by the
+         * CompletionService to generate multiple completions for a single prompt.
+         */
+        private final Integer bestOf;
+
+        /**
+         * A unique identifier representing your end-user, which can help OpenAI to monitor and
+         * detect abuse
+         */
+        private final String user;
+
         public CompletionConfig() {
-            this(0.0, 0.0, 0.0, 0.0, 256, new ArrayList<>());
+            this(0.0, 0.0, 0.0, 0.0, 256, 1, "", new ArrayList<>());
+        }
+
+        public CompletionConfig(
+                @JsonProperty("temperature") double temperature,
+                @JsonProperty("top_p") double topP,
+                @JsonProperty("presence_penalty") double presencePenalty,
+                @JsonProperty("frequency_penalty") double frequencyPenalty,
+                @JsonProperty("max_tokens") int maxTokens) {
+            this(
+                    temperature,
+                    topP,
+                    presencePenalty,
+                    frequencyPenalty,
+                    maxTokens,
+                    1,
+                    "",
+                    new ArrayList<>());
         }
 
         @JsonCreator
@@ -182,12 +223,16 @@ public class PromptTemplateConfig {
                 @JsonProperty("presence_penalty") double presencePenalty,
                 @JsonProperty("frequency_penalty") double frequencyPenalty,
                 @JsonProperty("max_tokens") int maxTokens,
+                @JsonProperty("best_of") int bestOf,
+                @JsonProperty("user") String user,
                 @JsonProperty(value = "stop_sequences") List<String> stopSequences) {
             this.temperature = temperature;
             this.topP = topP;
             this.presencePenalty = presencePenalty;
             this.frequencyPenalty = frequencyPenalty;
             this.maxTokens = maxTokens;
+            this.bestOf = bestOf;
+            this.user = user;
             if (stopSequences == null) {
                 stopSequences = new ArrayList<>();
             }
@@ -212,6 +257,22 @@ public class PromptTemplateConfig {
 
         public int getMaxTokens() {
             return maxTokens;
+        }
+
+        /**
+         * The maximum number of completions to generate for each prompt. This is used by the
+         * CompletionService to generate multiple completions for a single prompt.
+         */
+        public int getBestOf() {
+            return bestOf;
+        }
+
+        /**
+         * A unique identifier representing your end-user, which can help OpenAI to monitor and
+         * detect abuse
+         */
+        public String getUser() {
+            return user;
         }
     }
 
@@ -276,31 +337,9 @@ public class PromptTemplateConfig {
         }
     }
 
-    /*
-    /// <summary>
-    /// Schema - Not currently used.
-    /// </summary>
-    [JsonPropertyName("schema")]
-    [JsonPropertyOrder(1)]
-    public int Schema { get; set; } = 1;
-
-    /// <summary>
-    /// Type, such as "completion", "embeddings", etc.
-    /// </summary>
-    /// <remarks>TODO: use enum</remarks>
-    [JsonPropertyName("type")]
-    [JsonPropertyOrder(2)]
-    */
     private final int schema;
 
     private final String type; // { get; set; } = "completion";
-    /*
-        /// <summary>
-        /// Description
-        /// </summary>
-        [JsonPropertyName("description")]
-        [JsonPropertyOrder(3)]
-    */
     private final String description;
 
     public PromptTemplateConfig(
@@ -330,6 +369,7 @@ public class PromptTemplateConfig {
 
     /**
      * Description
+     *
      * @return Description
      */
     public String getDescription() {

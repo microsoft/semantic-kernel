@@ -21,7 +21,6 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
@@ -72,7 +71,7 @@ public class ActionPlanner {
                                 SkillName,
                                 null,
                                 new PromptTemplateConfig.CompletionConfig(
-                                        0.0, 0.0, 0.0, 0.0, 1024, new ArrayList<>()));
+                                        0.0, 0.0, 0.0, 0.0, 1024));
 
         kernel.importSkill(this, SkillName);
 
@@ -99,9 +98,7 @@ public class ActionPlanner {
         context = this.context.update(goal);
 
         return this.plannerFunction
-                .invokeAsync(
-                        this.context,
-                        new CompletionRequestSettings(0, 0, 0, 0, 2048, new ArrayList<>()))
+                .invokeAsync(this.context, new CompletionRequestSettings(0, 0, 0, 0, 2048))
                 .handle(
                         (result, sink) -> {
                             try {

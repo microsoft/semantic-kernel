@@ -49,7 +49,7 @@ public enum BuildersSingleton {
     private static final String FALLBACK_CHAT_COMPLETION_BUILDER_CLASS =
             "com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatCompletion$Builder";
     private static final String FALLBACK_MEMORY_STORE_BUILDER_CLASS =
-            "com.microsoft.semantickernel.memory.MemoryStoreBuilder";
+            "com.microsoft.semantickernel.memory.VolatileMemoryStore$Builder";
 
     private final FunctionBuilders functionBuilders;
     private final Kernel.InternalBuilder kernelBuilder;
@@ -61,9 +61,8 @@ public enum BuildersSingleton {
     private final SKContext.Builder context;
     private final PromptTemplateEngine.Builder promptTemplateEngine;
     private final ChatCompletion.Builder chatCompletion;
-
     private final SemanticTextMemory.Builder semanticTextMemoryBuilder;
-    private final MemoryStore.Builder memoryStore;
+    private final MemoryStore.Builder memoryStoreBuilder;
 
     BuildersSingleton() {
         try {
@@ -113,7 +112,7 @@ public enum BuildersSingleton {
                     ServiceLoadUtil.findServiceLoader(
                             ChatCompletion.Builder.class, FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
 
-            memoryStore =
+            memoryStoreBuilder =
                     ServiceLoadUtil.findServiceLoader(
                             MemoryStore.Builder.class, FALLBACK_MEMORY_STORE_BUILDER_CLASS);
 
@@ -186,7 +185,7 @@ public enum BuildersSingleton {
         return chatCompletion;
     }
 
-    public MemoryStore.Builder memoryStoreBuilder() {
-        return memoryStore;
+    public MemoryStore.Builder getMemoryStoreBuilder() {
+        return memoryStoreBuilder;
     }
 }

@@ -27,19 +27,22 @@ public class AbstractKernelTest {
 
     public static Kernel buildTextCompletionKernel() throws IOException {
         String model = "text-davinci-003";
-        TextCompletion textCompletion = new OpenAITextCompletion(getAzureOpenAIClient(), model);
+        final OpenAIAsyncClient openAIClient = getAzureOpenAIClient();
+        TextCompletion textCompletion = new OpenAITextCompletion(openAIClient, model);
 
         KernelConfig kernelConfig =
                 SKBuilders.kernelConfig()
                         .addTextCompletionService(model, kernel -> textCompletion)
+                        .addTextEmbeddingsGenerationService(
+                                model,
+                                kernel ->
+                                        SKBuilders.textEmbeddingGenerationService()
+                                                .build(openAIClient, model))
                         .build();
 
         return SKBuilders.kernel()
                 .setKernelConfig(kernelConfig)
-                .withMemoryStore(
-                        SKBuilders.semanticTextMemory()
-                                .setStorage(new VolatileMemoryStore())
-                                .build())
+                .withMemoryStore(new VolatileMemoryStore())
                 .build();
     }
 

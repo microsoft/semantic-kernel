@@ -61,10 +61,6 @@ public class SKBuilders {
         return BuildersSingleton.INST.getSemanticTextMemoryBuilder();
     }
 
-    public static MemoryStore.Builder memoryStore() {
-        return BuildersSingleton.INST.memoryStoreBuilder();
-    }
-
     public static ReadOnlySkillCollection.Builder skillCollection() {
         return BuildersSingleton.INST.getReadOnlySkillCollection();
     }
@@ -91,5 +87,9 @@ public class SKBuilders {
 
     public static ChatCompletion.Builder chatCompletion() {
         return BuildersSingleton.INST.getChatCompletion();
+    }
+
+    public static MemoryStore.Builder memoryStore() {
+        return BuildersSingleton.INST.getMemoryStoreBuilder();
     }
 }

@@ -148,6 +148,6 @@ public interface MemoryStore {
             boolean withEmbedding);
 
     interface Builder {
-        MemoryStore buildVolatileMemoryStore();
+        MemoryStore build();
     }
 }

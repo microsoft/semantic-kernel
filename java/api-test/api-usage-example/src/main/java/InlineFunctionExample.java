@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
@@ -117,8 +116,7 @@ public class InlineFunctionExample {
                                 "summarize",
                                 null,
                                 null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
+                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000));
 
         if (summarize == null) {
             LOGGER.error("Null function");

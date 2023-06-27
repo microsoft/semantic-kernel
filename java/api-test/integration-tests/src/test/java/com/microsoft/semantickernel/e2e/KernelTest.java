@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class KernelTest extends AbstractKernelTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelTest.class);
@@ -35,8 +34,7 @@ public class KernelTest extends AbstractKernelTest {
                                 null,
                                 "",
                                 null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0, 0, 0, 0, 256, new ArrayList<>()));
+                                new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256));
 
         String text1 =
                 """

@@ -8,7 +8,14 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
@@ -237,6 +244,16 @@ public class VolatileMemoryStore implements MemoryStore {
                     collectionName);
         }
         return collection;
+    }
+
+    public static class Builder implements MemoryStore.Builder {
+
+        public Builder() {}
+
+        @Override
+        public MemoryStore build() {
+            return new VolatileMemoryStore();
+        }
     }
 
     /*
