@@ -239,7 +239,7 @@ public class DefaultSequentialPlannerSKContext {
                                                             newKey,
                                                             true));
                         })
-                .last()
+                .ignoreElements()
                 .map(
                         newMemory -> {
                             delegate.setVariable(PlanSKFunctionsAreRemembered, "true");

@@ -150,11 +150,6 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     }
 
     @Override
-    public SemanticTextMemory merge(MemoryQueryResult b) {
-        throw new NotSupportedException("Deprecated");
-    }
-
-    @Override
     public Mono<Void> removeAsync(@Nonnull String collection, @Nonnull String key) {
 
         SearchAsyncClient client = this.getSearchClient(normalizeIndexName(collection));
