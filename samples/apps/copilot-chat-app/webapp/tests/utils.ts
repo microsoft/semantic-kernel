@@ -82,7 +82,8 @@ export async function sendChatMessageAndWaitForResponse(page, message)
 
 export async function openPluginPopUp(page, pluginIdentifierText)
 {
-    await page.locator('div').filter({ hasText: /^DB$/ }).getByRole('button').click();
+    const regex = new RegExp('^' + process.env.REACT_APP_TEST_USER_ACCOUNT_INITIALS as string + '$');
+    await page.locator('div').filter({ hasText: regex }).getByRole('button').click();
     await page.getByRole('group').filter({ hasText: pluginIdentifierText }).getByTestId('openPluginDialogButton').click();
 }
 export async function enablePluginAndClosePopUp(page)
@@ -94,7 +95,8 @@ export async function enablePluginAndClosePopUp(page)
 export async function disablePluginAndClosePopUp(page)
 {
     // Only works if when only a single plugin has been enabled
-    await page.locator('div').filter({ hasText: /^DB$/ }).getByRole('button').click();
+    const regex = new RegExp('^' + process.env.REACT_APP_TEST_USER_ACCOUNT_INITIALS as string + '$');
+    await page.locator('div').filter({ hasText: regex }).getByRole('button').click();
     await page.getByTestId('disconnectPluginButton').click();
     await page.getByTestId('closeEnableCCPluginsPopUp').click();
     await page.waitForTimeout(ChatStateChangeWait);
