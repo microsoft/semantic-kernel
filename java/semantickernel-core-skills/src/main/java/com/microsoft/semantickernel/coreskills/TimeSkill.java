@@ -3,226 +3,298 @@ package com.microsoft.semantickernel.coreskills;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.time.format.TextStyle;
+import java.util.Locale;
 
+/**
+ * Description: TimeSkill provides a set of functions to get the current time and date.
+ *
+ * <p>Usage: kernel.importSkill(new TimeSkill(), "time");
+ *
+ * <p>Examples:
+ *
+ * <p>{{time.date}} => Sunday, 12 January, 2031
+ *
+ * <p>{{time.today}} => Sunday, 12 January, 2031
+ *
+ * <p>{{time.now}} => Sunday, January 12, 2031 9:15 PM
+ *
+ * <p>{{time.utcNow}} => Sunday, January 13, 2031 5:15 AM
+ *
+ * <p>{{time.time}} => 09:15:07 PM
+ *
+ * <p>{{time.year}} => 2031
+ *
+ * <p>{{time.month}} => January
+ *
+ * <p>{{time.monthNumber}} => 01
+ *
+ * <p>{{time.day}} => 12
+ *
+ * <p>{{time.dayOfWeek}} => Sunday
+ *
+ * <p>{{time.hour}} => 9 PM
+ *
+ * <p>{{time.hourNumber}} => 21
+ *
+ * <p>{{time.days_ago $days}} => Sunday, 7 May, 2023
+ *
+ * <p>{{time.last_matching_day $dayName}} => Sunday, 7 May, 2023
+ *
+ * <p>{{time.minute}} => 15
+ *
+ * <p>{{time.second}} => 7
+ *
+ * <p>{{time.timeZoneOffset}} => -08:00
+ *
+ * <p>{{time.timeZoneName}} => Pacific Time
+ */
 public class TimeSkill {
+    /**
+     * Get the current date.
+     *
+     * <p>Example: {{time.date}} => Sunday, January 12, 2025
+     *
+     * @return The current date.
+     */
     @DefineSKFunction(name = "date", description = "Get the current date")
     public String date() {
-        // Example: Sunday, 12 January, 2025
         return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(ZonedDateTime.now());
     }
 
-    /*
-        /// <summary>
-        /// Get the current date
-        /// </summary>
-        /// <example>
-        /// {{time.today}} => Sunday, 12 January, 2031
-        /// </example>
-        /// <returns> The current date </returns>
-        [SKFunction("Get the current date")]
-        public string Today() => this.Date();
-
-        /// <summary>
-        /// Get the current date and time in the local time zone"
-        /// </summary>
-        /// <example>
-        /// {{time.now}} => Sunday, January 12, 2025 9:15 PM
-        /// </example>
-        /// <returns> The current date and time in the local time zone </returns>
-        [SKFunction("Get the current date and time in the local time zone")]
-        public string Now()
-        {
-            // Sunday, January 12, 2025 9:15 PM
-            return DateTimeOffset.Now.ToString("f", CultureInfo.CurrentCulture);
-        }
-
-        /// <summary>
-        /// Get the current UTC date and time
-        /// </summary>
-        /// <example>
-        /// {{time.utcNow}} => Sunday, January 13, 2025 5:15 AM
-        /// </example>
-        /// <returns> The current UTC date and time </returns>
-        [SKFunction("Get the current UTC date and time")]
-        public string UtcNow()
-        {
-            // Sunday, January 13, 2025 5:15 AM
-            return DateTimeOffset.UtcNow.ToString("f", CultureInfo.CurrentCulture);
-        }
-    */
-    /// <summary>
-    /// Get the current time
-    /// </summary>
-    /// <example>
-    /// {{time.time}} => 09:15:07 PM
-    /// </example>
-    /// <returns> The current time </returns>
+    /**
+     * Get the current time.
+     *
+     * <p>Example: {{time.time}} => 9:15:00 AM
+     *
+     * @return The current time.
+     */
     @DefineSKFunction(name = "time", description = "Get the current time")
     public String time() {
-        // Example: 09:15:07 PM
         return DateTimeFormatter.ofPattern("hh:mm:ss a").format(ZonedDateTime.now());
     }
-    /*
-       /// <summary>
-       /// Get the current year
-       /// </summary>
-       /// <example>
-       /// {{time.year}} => 2025
-       /// </example>
-       /// <returns> The current year </returns>
-       [SKFunction("Get the current year")]
-       public string Year()
-       {
-           // Example: 2025
-           return DateTimeOffset.Now.ToString("yyyy", CultureInfo.CurrentCulture);
-       }
 
-       /// <summary>
-       /// Get the current month name
-       /// </summary>
-       /// <example>
-       /// {time.month}} => January
-       /// </example>
-       /// <returns> The current month name </returns>
-       [SKFunction("Get the current month name")]
-       public string Month()
-       {
-           // Example: January
-           return DateTimeOffset.Now.ToString("MMMM", CultureInfo.CurrentCulture);
-       }
+    /**
+     * Get the current UTC date and time.
+     *
+     * <p>Example: {{time.utcNow}} => Sunday, January 13, 2025 5:15 AM
+     *
+     * @return The current UTC date and time.
+     */
+    @DefineSKFunction(name = "utcNow", description = "Get the current UTC date and time")
+    public String utcNow() {
+        return DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy h:mm a")
+                .format(ZonedDateTime.now().withZoneSameInstant(ZoneOffset.UTC));
+    }
 
-       /// <summary>
-       /// Get the current month number
-       /// </summary>
-       /// <example>
-       /// {{time.monthNumber}} => 01
-       /// </example>
-       /// <returns> The current month number </returns>
-       [SKFunction("Get the current month number")]
-       public string MonthNumber()
-       {
-           // Example: 01
-           return DateTimeOffset.Now.ToString("MM", CultureInfo.CurrentCulture);
-       }
+    /**
+     * Get the current date (alias for date() method).
+     *
+     * <p>Example: {{time.today}} => Sunday, January 12, 2025
+     *
+     * @return The current date.
+     */
+    @DefineSKFunction(name = "today", description = "Get the current date")
+    public String today() {
+        return date();
+    }
 
-       /// <summary>
-       /// Get the current day of the month
-       /// </summary>
-       /// <example>
-       /// {{time.day}} => 12
-       /// </example>
-       /// <returns> The current day of the month </returns>
-       [SKFunction("Get the current day of the month")]
-       public string Day()
-       {
-           // Example: 12
-           return DateTimeOffset.Now.ToString("DD", CultureInfo.CurrentCulture);
-       }
+    /**
+     * Get the current date and time in the local time zone.
+     *
+     * <p>Example: {{time.now}} => Sunday, January 12, 2025 9:15 AM
+     *
+     * @return The current date and time in the local time zone.
+     */
+    @DefineSKFunction(
+            name = "now",
+            description = "Get the current date and time in the local time zone")
+    public String now() {
+        return DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy h:mm a")
+                .format(ZonedDateTime.now());
+    }
 
-       /// <summary>
-       /// Get the current day of the week
-       /// </summary>
-       /// <example>
-       /// {{time.dayOfWeek}} => Sunday
-       /// </example>
-       /// <returns> The current day of the week </returns>
-       [SKFunction("Get the current day of the week")]
-       public string DayOfWeek()
-       {
-           // Example: Sunday
-           return DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture);
-       }
+    /**
+     * Get the current year.
+     *
+     * <p>Example: {{time.year}} => 2025
+     *
+     * @return The current year.
+     */
+    @DefineSKFunction(name = "year", description = "Get the current year")
+    public String year() {
+        return DateTimeFormatter.ofPattern("yyyy").format(ZonedDateTime.now());
+    }
 
-       /// <summary>
-       /// Get the current clock hour
-       /// </summary>
-       /// <example>
-       /// {{time.hour}} => 9 PM
-       /// </example>
-       /// <returns> The current clock hour </returns>
-       [SKFunction("Get the current clock hour")]
-       public string Hour()
-       {
-           // Example: 9 PM
-           return DateTimeOffset.Now.ToString("h tt", CultureInfo.CurrentCulture);
-       }
+    /**
+     * Get the current month name.
+     *
+     * <p>Example: {{time.month}} => January
+     *
+     * @return The current month name.
+     */
+    @DefineSKFunction(name = "month", description = "Get the current month name")
+    public String month() {
+        return DateTimeFormatter.ofPattern("MMMM").format(ZonedDateTime.now());
+    }
 
-       /// <summary>
-       /// Get the current clock 24-hour number
-       /// </summary>
-       /// <example>
-       /// {{time.hourNumber}} => 21
-       /// </example>
-       /// <returns> The current clock 24-hour number </returns>
-       [SKFunction("Get the current clock 24-hour number")]
-       public string HourNumber()
-       {
-           // Example: 21
-           return DateTimeOffset.Now.ToString("HH", CultureInfo.CurrentCulture);
-       }
+    /**
+     * Get the current month number.
+     *
+     * <p>Example: {{time.monthNumber}} => 01
+     *
+     * @return The current month number.
+     */
+    @DefineSKFunction(name = "monthNumber", description = "Get the current month number")
+    public String monthNumber() {
+        return DateTimeFormatter.ofPattern("MM").format(ZonedDateTime.now());
+    }
 
-       /// <summary>
-       /// Get the minutes on the current hour
-       /// </summary>
-       /// <example>
-       /// {{time.minute}} => 15
-       /// </example>
-       /// <returns> The minutes on the current hour </returns>
-       [SKFunction("Get the minutes on the current hour")]
-       public string Minute()
-       {
-           // Example: 15
-           return DateTimeOffset.Now.ToString("mm", CultureInfo.CurrentCulture);
-       }
+    /**
+     * Get the current day of the month.
+     *
+     * <p>Example: {{time.day}} => 12
+     *
+     * @return The current day of the month.
+     */
+    @DefineSKFunction(name = "day", description = "Get the current day of the month")
+    public String day() {
+        return DateTimeFormatter.ofPattern("dd").format(ZonedDateTime.now());
+    }
 
-       /// <summary>
-       /// Get the seconds on the current minute
-       /// </summary>
-       /// <example>
-       /// {{time.second}} => 7
-       /// </example>
-       /// <returns> The seconds on the current minute </returns>
-       [SKFunction("Get the seconds on the current minute")]
-       public string Second()
-       {
-           // Example: 7
-           return DateTimeOffset.Now.ToString("ss", CultureInfo.CurrentCulture);
-       }
+    /**
+     * Get the current day of the week.
+     *
+     * <p>Example: {{time.dayOfWeek}} => Sunday
+     *
+     * @return The current day of the week.
+     */
+    @DefineSKFunction(name = "dayOfWeek", description = "Get the current day of the week")
+    public String dayOfWeek() {
+        return DateTimeFormatter.ofPattern("EEEE").format(ZonedDateTime.now());
+    }
 
-       /// <summary>
-       /// Get the local time zone offset from UTC
-       /// </summary>
-       /// <example>
-       /// {{time.timeZoneOffset}} => -08:00
-       /// </example>
-       /// <returns> The local time zone offset from UTC </returns>
-       [SKFunction("Get the local time zone offset from UTC")]
-       public string TimeZoneOffset()
-       {
-           // Example: -08:00
-           return DateTimeOffset.Now.ToString("%K", CultureInfo.CurrentCulture);
-       }
+    /**
+     * Get the current clock hour.
+     *
+     * <p>Example: {{time.hour}} => 9 AM
+     *
+     * @return The current clock hour.
+     */
+    @DefineSKFunction(name = "hour", description = "Get the current clock hour")
+    public String hour() {
+        return DateTimeFormatter.ofPattern("h a").format(ZonedDateTime.now());
+    }
 
-       /// <summary>
-       /// Get the local time zone name
-       /// </summary>
-       /// <example>
-       /// {{time.timeZoneName}} => PST
-       /// </example>
-       /// <remark>
-       /// Note: this is the "current" timezone and it can change over the year, e.g. from PST to PDT
-       /// </remark>
-       /// <returns> The local time zone name </returns>
-       [SKFunction("Get the local time zone name")]
-       public string TimeZoneName()
-       {
-           // Example: PST
-           // Note: this is the "current" timezone and it can change over the year, e.g. from PST to PDT
-           return TimeZoneInfo.Local.DisplayName;
-       }
+    /**
+     * Get the current clock 24-hour number.
+     *
+     * <p>Example: {{time.hourNumber}} => 09
+     *
+     * @return The current clock 24-hour number.
+     */
+    @DefineSKFunction(name = "hourNumber", description = "Get the current clock 24-hour number")
+    public String hourNumber() {
+        return DateTimeFormatter.ofPattern("HH").format(ZonedDateTime.now());
+    }
 
-    */
+    /**
+     * Get the date of offset from today by a provided number of days
+     *
+     * <p>Example: SKContext context = SKBuilders.context().build(); context.setVariable("input",
+     * "3"); {{time.daysAgo $input}} => Saturday, January 11, 2031
+     *
+     * @param days Number of days to subtract from the current day
+     * @return The date of offset from today by a provided number of days
+     */
+    @DefineSKFunction(
+            name = "daysAgo",
+            description = "Get the date of offset from today by a provided number of days")
+    public static String daysAgo(String days) {
+        int offsetDays = Integer.parseInt(days);
+        return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
+                .format(ZonedDateTime.now().minusDays(offsetDays));
+    }
+
+    /**
+     * Get the date of the last day matching the supplied week day name
+     *
+     * <p>Example: {{time.dateMatchingLastDayName "Monday"}} => Monday, January 6, 2031
+     *
+     * @param dayName Name of the day to match
+     * @return The date of the last day matching the supplied week day name
+     */
+    @DefineSKFunction(
+            name = "dateMatchingLastDayName",
+            description = "Get the date of the last day matching the supplied week day name")
+    public static String dateMatchingLastDayName(String dayName) {
+        ZonedDateTime currentDate = ZonedDateTime.now();
+        Locale systemLocale = Locale.getDefault();
+        for (int i = 1; i <= 7; i++) {
+            currentDate = currentDate.minusDays(1);
+            String currentDayName =
+                    currentDate.getDayOfWeek().getDisplayName(TextStyle.FULL, systemLocale);
+
+            if (currentDayName.equalsIgnoreCase(dayName)) {
+                return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(currentDate);
+            }
+        }
+        throw new IllegalArgumentException("dayName is not recognized");
+    }
+
+    /**
+     * Get the minutes on the current hour.
+     *
+     * <p>Example: {{time.minute}} => 15
+     *
+     * @return The minutes on the current hour.
+     */
+    @DefineSKFunction(name = "minute", description = "Get the minutes on the current hour")
+    public String minute() {
+        return DateTimeFormatter.ofPattern("mm").format(ZonedDateTime.now());
+    }
+
+    /**
+     * Get the seconds on the current minute.
+     *
+     * <p>Example: {{time.second}} => 00
+     *
+     * @return The seconds on the current minute.
+     */
+    @DefineSKFunction(name = "second", description = "Get the seconds on the current minute")
+    public String second() {
+        return DateTimeFormatter.ofPattern("ss").format(ZonedDateTime.now());
+    }
+
+    /**
+     * Get the local time zone offset from UTC.
+     *
+     * <p>Example: {{time.timeZoneOffset}} => +03:00
+     *
+     * @return The local time zone offset from UTC.
+     */
+    @DefineSKFunction(
+            name = "timeZoneOffset",
+            description = "Get the local time zone offset from UTC")
+    public String timeZoneOffset() {
+        return DateTimeFormatter.ofPattern("XXX").format(ZonedDateTime.now());
+    }
+
+    /**
+     * Get the local time zone name.
+     *
+     * <p>Example: {{time.timeZoneName}} => Pacific Time
+     *
+     * @return The local time zone name.
+     */
+    @DefineSKFunction(name = "timeZoneName", description = "Get the local time zone name")
+    public String timeZoneName() {
+        ZoneId zoneId = ZoneId.systemDefault();
+        return zoneId.getDisplayName(TextStyle.FULL, Locale.getDefault());
+    }
 }
