@@ -58,8 +58,8 @@ internal static class SequentialPlanParser
     /// </summary>
     /// <param name="xmlString">The plan xml string.</param>
     /// <param name="goal">The goal for the plan.</param>
-    /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <param name="GetFunction">The function to get a skill function.</param>
+    /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
     internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> GetFunction, bool allowMissingFunctions = false)
