@@ -11,6 +11,8 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 /// </summary>
 public class OpenApiSkillExecutionParameters
 {
+    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
+
     /// <summary>
     /// HttpClient to use for sending HTTP requests.
     /// </summary>
@@ -34,11 +36,17 @@ public class OpenApiSkillExecutionParameters
     public bool IgnoreNonCompliantErrors { get; set; }
 
     /// <summary>
+    /// Optional user agent header value.
+    /// </summary>
+    public string? UserAgent { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiSkillExecutionParameters"/> class.
     /// </summary>
     /// <param name="httpClient">The HttpClient to use for sending HTTP requests.</param>
     /// <param name="authCallback">The callback for adding authentication data to HTTP requests.</param>
     /// <param name="serverUrlOverride">The override for the RESP API operation server URL.</param>
+    /// <param name="userAgent">Optional user agent header value.</param>
     /// <param name="ignoreNonCompliantErrors">A flag indicating whether to ignore non-compliant errors or not
     /// If set to true, the operation execution will not throw exceptions for non-compliant documents.
     /// Please note that enabling this option may result in incomplete or inaccurate execution results.</param>
@@ -46,11 +54,13 @@ public class OpenApiSkillExecutionParameters
         HttpClient? httpClient = null,
         AuthenticateRequestAsyncCallback? authCallback = null,
         Uri? serverUrlOverride = null,
+        string? userAgent = HttpUserAgent,
         bool ignoreNonCompliantErrors = false)
     {
         this.HttpClient = httpClient;
         this.AuthCallback = authCallback;
         this.ServerUrlOverride = serverUrlOverride;
+        this.UserAgent = userAgent;
         this.IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
     }
 }
