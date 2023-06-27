@@ -156,11 +156,6 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                 .flatMap(record -> this._storage.upsertAsync(collection, record));
     }
 
-    @Override
-    public SemanticTextMemory merge(MemoryQueryResult b) {
-        throw new NotSupportedException("Pending implementation");
-    }
-
     public static class Builder implements SemanticTextMemory.Builder {
 
         @Nullable MemoryStore storage = null;
