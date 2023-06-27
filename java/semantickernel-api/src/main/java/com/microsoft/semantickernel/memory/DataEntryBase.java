@@ -41,12 +41,4 @@ public class DataEntryBase {
         return timestamp;
     }
 
-    /**
-     * Checks if the data has a timestamp.
-     *
-     * @return {@code true} if the data has a timestamp; otherwise, {@code false}.
-     */
-    public boolean hasTimestamp() {
-        return timestamp != null;
-    }
 }

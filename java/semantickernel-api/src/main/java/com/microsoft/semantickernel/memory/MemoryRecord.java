@@ -109,7 +109,7 @@ public class MemoryRecord extends DataEntryBase {
             @Nullable String key,
             @Nullable ZonedDateTime timestamp) {
 
-        boolean isReference = true;
+        boolean isReference = false;
         String emptyString = "";
         MemoryRecordMetadata metadata =
                 new MemoryRecordMetadata(
