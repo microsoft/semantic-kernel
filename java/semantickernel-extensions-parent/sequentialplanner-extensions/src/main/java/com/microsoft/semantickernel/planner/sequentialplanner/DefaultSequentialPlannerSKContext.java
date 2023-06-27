@@ -239,7 +239,7 @@ public class DefaultSequentialPlannerSKContext {
                                                             newKey,
                                                             true));
                         })
-                .reduce(memory, SemanticTextMemory::merge)
+                .last()
                 .map(
                         newMemory -> {
                             delegate.setVariable(PlanSKFunctionsAreRemembered, "true");
