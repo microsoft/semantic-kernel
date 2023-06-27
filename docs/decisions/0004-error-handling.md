@@ -35,7 +35,7 @@ To address the identified issues, the following steps can be taken:
 
 - **Exception hierarchy inconsistency**: Refactor SK custom exceptions that are not derived from SKException to derive from SKException. This ensures consistency in the SK exception hierarchy.
 
-- **Missing original exception details**: Identify all cases where the original exception or failure is not preserved either as an inner exception or as a property/message of the rethrown exception, and address them. For example, AI service connectors that use HttClient should preserve the original status code by either setting it as an inner exception or including it as part of the rethrown exception's property.
+- **Missing original exception details**: Identify all cases where the original exception or failure is not preserved either as an inner exception or as a property/message of the rethrown exception, and address them. For example, AI service connectors that use HttpClient should preserve the original status code by either setting it as an inner exception or including it as part of the rethrown exception's property.
 
 - **No consolidated way for exception handling**:
   - [Memory connectors]: Introduce a new exception called VectorDbStorageException, along with derived exceptions like UpsertRecordException and RemoveRecordException, if additional details need to be captured and propagated to SK client code. Refactor all SK memory component implementations to use these exceptions instead of implementation-specific memory storage exceptions.
