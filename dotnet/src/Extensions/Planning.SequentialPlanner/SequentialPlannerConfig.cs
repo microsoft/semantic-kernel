@@ -62,12 +62,12 @@ public sealed class SequentialPlannerConfig
     public bool AllowMissingFunctions { get; set; } = false;
 
     /// <summary>
-    /// Optional function to get the available functions for planning.
+    /// Optional callback to get the available functions for planning.
     /// </summary>
     public Func<SequentialPlannerConfig, string?, Task<IOrderedEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
 
     /// <summary>
-    /// Optional function to get a function by name.
+    /// Optional callback to get a function by name.
     /// </summary>
     public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
 }

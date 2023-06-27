@@ -34,6 +34,7 @@ public static class SKContextSequentialPlannerExtensions
     {
         config ??= new SequentialPlannerConfig();
 
+        // Use configured function provider if available, otherwise use the default SKContext function provider.
         IOrderedEnumerable<FunctionView> functions = config.GetAvailableFunctionsAsync is null ?
             await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false) :
             await config.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false);

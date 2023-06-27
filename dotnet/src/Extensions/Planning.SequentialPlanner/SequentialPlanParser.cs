@@ -44,7 +44,14 @@ internal static class SequentialPlanParser
     {
         return (skillName, functionName) =>
         {
-            if (context.Skills!.TryGetFunction(skillName, functionName, out var skillFunction))
+            if (string.IsNullOrEmpty(skillName))
+            {
+                if (context.Skills!.TryGetFunction(functionName, out var skillFunction))
+                {
+                    return skillFunction;
+                }
+            }
+            else if (context.Skills!.TryGetFunction(skillName, functionName, out var skillFunction))
             {
                 return skillFunction;
             }
@@ -58,7 +65,7 @@ internal static class SequentialPlanParser
     /// </summary>
     /// <param name="xmlString">The plan xml string.</param>
     /// <param name="goal">The goal for the plan.</param>
-    /// <param name="getSkillFunction">The function to get a skill function.</param>
+    /// <param name="getSkillFunction">The callback to get a skill function.</param>
     /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
