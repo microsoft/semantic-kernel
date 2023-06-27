@@ -1,17 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Planning.Sequential;
+namespace Microsoft.SemanticKernel.Planning.Stepwise;
 
 /// <summary>
-/// Common configuration for planner instances.
+/// Configuration for Stepwise planner instances.
 /// </summary>
-public sealed class SequentialPlannerConfig
+public sealed class StepwisePlannerConfig
 {
     /// <summary>
     /// The minimum relevancy score for a function to be considered
@@ -55,19 +51,12 @@ public sealed class SequentialPlannerConfig
     public int MaxTokens { get; set; } = 1024;
 
     /// <summary>
-    /// Whether to allow missing functions in the plan on creation.
-    /// If set to true, the plan will be created with missing functions as no-op steps.
-    /// If set to false (default), the plan creation will fail if any functions are missing.
+    /// The maximum number of iterations to allow in a plan.
     /// </summary>
-    public bool AllowMissingFunctions { get; set; } = false;
+    public int MaxIterations { get; set; } = 100;
 
     /// <summary>
-    /// Optional callback to get the available functions for planning.
+    /// The minimum time to wait between iterations in milliseconds.
     /// </summary>
-    public Func<SequentialPlannerConfig, string?, Task<IOrderedEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
-
-    /// <summary>
-    /// Optional callback to get a function by name.
-    /// </summary>
-    public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
+    public int MinIterationTimeMs { get; set; } = 0;
 }
