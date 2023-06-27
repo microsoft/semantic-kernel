@@ -114,6 +114,15 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+echo "Updating AAD App registration..."
+az ad app update --id $ApplicationClientId --web-redirect-uris "https://$webappUrl"
+if [ $? -ne 0 ]; then
+    echo "update the AAD App registration failed"
+    exit 1
+fi
+
+
+
 ORIGIN="https://$WEB_APP_URL"
 echo "Ensuring CORS origin '$ORIGIN' to webapi '$WEB_API_NAME'..."
 CORS_RESULT=$(az webapp cors show --name $WEB_API_NAME --resource-group $RESOURCE_GROUP --subscription $SUBSCRIPTION | jq '.allowedOrigins | index("$ORIGIN")')
