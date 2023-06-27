@@ -85,9 +85,9 @@ public static class TextChunker
         var adjustedMaxTokensPerParagraph = maxTokensPerParagraph - overlapTokens;
 
         // Split long lines first
-        var truncatedLines = lines.SelectMany((line) => longLinesSplitter(line, adjustedMaxTokensPerParagraph)).ToList();
+        IEnumerable<string> truncatedLines = lines.SelectMany(line => longLinesSplitter(line, adjustedMaxTokensPerParagraph));
 
-        var paragraphs = BuildParagraph(truncatedLines, new StringBuilder(), new List<string>(), adjustedMaxTokensPerParagraph, longLinesSplitter);
+        var paragraphs = BuildParagraph(truncatedLines, adjustedMaxTokensPerParagraph, longLinesSplitter);
         // distribute text more evenly in the last paragraphs when the last paragraph is too short.
         if (paragraphs.Count > 1)
         {
@@ -129,36 +129,30 @@ public static class TextChunker
         return paragraphs;
     }
 
-    private static List<string> BuildParagraph(List<string> truncatedLines, StringBuilder paragraphBuilder, List<string> paragraphs, int maxTokensPerParagraph, Func<string, int, List<string>> longLinesSplitter)
+    private static List<string> BuildParagraph(IEnumerable<string> truncatedLines, int maxTokensPerParagraph, Func<string, int, List<string>> longLinesSplitter)
     {
-        while (true)
+        StringBuilder paragraphBuilder = new();
+        List<string> paragraphs = new();
+
+        foreach (string line in truncatedLines)
         {
-            if (truncatedLines.Count == 0)
-            {
-                // Adding any remaining paragraph
-                if (paragraphBuilder.Length > 0)
-                {
-                    paragraphs.Add(paragraphBuilder.ToString().Trim());
-                }
-                return paragraphs;
-            }
-
-            string line = truncatedLines[0];
-
             if (paragraphBuilder.Length > 0 && TokenCount(paragraphBuilder.Length) + TokenCount(line.Length) + 1 >= maxTokensPerParagraph)
             {
+                // Complete the paragraph and prepare for the next
                 paragraphs.Add(paragraphBuilder.ToString().Trim());
-
-                // next paragraph
                 paragraphBuilder.Clear();
             }
-            else
-            {
-                paragraphBuilder.AppendLine(line);
 
-                truncatedLines.RemoveAt(0);
-            }
+            paragraphBuilder.AppendLine(line);
         }
+
+        if (paragraphBuilder.Length > 0)
+        {
+            // Add the final paragraph if there's anything remaining
+            paragraphs.Add(paragraphBuilder.ToString().Trim());
+        }
+
+        return paragraphs;
     }
 
     private static List<string> InternalSplitLines(string text, int maxTokensPerLine, bool trim, string?[] splitOptions)
