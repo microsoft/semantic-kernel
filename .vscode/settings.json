@@ -14,7 +14,7 @@
   },
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": "active",
-  "python.formatting.provider": "autopep8",
+  "python.formatting.provider": "none",
   "python.formatting.autopep8Args": [
     "--max-line-length=120"
   ],
@@ -90,5 +90,8 @@
     ],
   },
   "java.debug.settings.onBuildFailureProceed": true,
-  "java.compile.nullAnalysis.mode": "disabled"
+  "java.compile.nullAnalysis.mode": "disabled",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  }
 }
