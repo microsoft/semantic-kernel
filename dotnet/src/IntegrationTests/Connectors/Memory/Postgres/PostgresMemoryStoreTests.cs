@@ -88,18 +88,13 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         PostgresMemoryStore memoryStore = this.CreateMemoryStore();
         string collection = "test_collection";
         await memoryStore.CreateCollectionAsync(collection);
-        var collections = await memoryStore.GetCollectionsAsync().ToListAsync();
-        Assert.True(collections.Count > 0);
+        Assert.True(await memoryStore.DoesCollectionExistAsync(collection));
 
         // Act
-        foreach (var c in collections)
-        {
-            await memoryStore.DeleteCollectionAsync(c);
-        }
+        await memoryStore.DeleteCollectionAsync(collection);
 
         // Assert
-        var collections2 = memoryStore.GetCollectionsAsync();
-        Assert.True(await collections2.CountAsync() == 0);
+        Assert.False(await memoryStore.DoesCollectionExistAsync(collection));
     }
 
     [Fact(Skip = SkipReason)]
@@ -170,7 +165,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
             description: "description",
             embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
             key: null,
-            timestamp: DateTimeOffset.UtcNow);
+            timestamp: DateTimeOffset.FromUnixTimeMilliseconds(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
         string collection = "test_collection";
 
         // Act
@@ -187,6 +182,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.Equal(testRecord.Metadata.Description, actual.Metadata.Description);
         Assert.Equal(testRecord.Metadata.ExternalSourceName, actual.Metadata.ExternalSourceName);
         Assert.Equal(testRecord.Metadata.Id, actual.Metadata.Id);
+        Assert.Equal(testRecord.Timestamp, actual.Timestamp);
     }
 
     [Fact(Skip = SkipReason)]
@@ -238,10 +234,12 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         // Act
         await memoryStore.CreateCollectionAsync(collection);
         var key = await memoryStore.UpsertAsync(collection, testRecord);
+        var upsertedRecord = await memoryStore.GetAsync(collection, key);
         await memoryStore.RemoveAsync(collection, key);
         var actual = await memoryStore.GetAsync(collection, key);
 
         // Assert
+        Assert.NotNull(upsertedRecord);
         Assert.Null(actual);
     }
 
@@ -613,7 +611,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     private string _databaseName = null!;
     private NpgsqlDataSource _dataSource = null!;
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "The database name is generated randomly, it does not support parameterized passing.")]
     private async Task CreateDatabaseAsync()
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(string.Format(CultureInfo.CurrentCulture, ConnectionString, "postgres"));
@@ -635,7 +633,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "The database name is generated randomly, it does not support parameterized passing.")]
     private async Task DropDatabaseAsync()
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(string.Format(CultureInfo.CurrentCulture, ConnectionString, "postgres"));
