@@ -67,8 +67,8 @@ DECLARE
 BEGIN
     FOR r IN SELECT DISTINCT collection FROM sk_memory_table LOOP
 
-        -- Drop Table
-        EXECUTE format('DROP TABLE IF EXISTS %I;', r.collection);
+        -- Drop Table (This will delete the table that already exists. Please consider carefully if you think you need to cancel this comment!)
+        -- EXECUTE format('DROP TABLE IF EXISTS %I;', r.collection);
 
         -- Create Table (Modify vector size on demand)
         EXECUTE format('CREATE TABLE public.%I (
@@ -79,7 +79,7 @@ BEGIN
             PRIMARY KEY (key)
         );', r.collection);
         
-        -- Create Index
+        -- Create Index (You can modify the size of lists according to your data needs. Its default value is 1000.)
         EXECUTE format('CREATE INDEX %I
             ON public.%I USING ivfflat (embedding vector_cosine_ops) WITH (lists = 1000);',
             r.collection || '_ix', r.collection);
