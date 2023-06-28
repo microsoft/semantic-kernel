@@ -32,8 +32,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
     private HttpMessageHandlerStub _messageHandlerStub;
     private HttpClient _httpClient;
-    //private Func<ClientWebSocket> _webSocketFactory;
-    //private List<ClientWebSocket> _webSockets = new();
     private Uri _endPointUri;
     private string _streamCompletionResponseStub;
 
@@ -44,12 +42,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         this._streamCompletionResponseStub = OobaboogaTestHelper.GetTestResponse("completion_test_streaming_response.json");
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
-        //this._webSocketFactory = () =>
-        //{
-        //    var toReturn = new ClientWebSocket();
-        //    this._webSockets.Add(toReturn);
-        //    return toReturn;
-        //};
         this._endPointUri = new Uri(EndPoint);
     }
 
@@ -177,7 +169,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             "Response 5"
         };
 
-        using var server = new WebSocketTestServer(serverUrl, request =>
+        await using var server = new WebSocketTestServer(serverUrl, request =>
         {
             // Simulate different responses for each request
             var responseIndex = int.Parse(Encoding.UTF8.GetString(request.ToArray()), CultureInfo.InvariantCulture);
@@ -204,7 +196,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
                 // Receive the response from the server
                 var responseBytes = new byte[1024];
                 var responseResult = await client.ReceiveAsync(new ArraySegment<byte>(responseBytes), CancellationToken.None);
-                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Close connection after message received", CancellationToken.None).ConfigureAwait(false);
+                await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close connection after message received", CancellationToken.None).ConfigureAwait(false);
 
                 var response = Encoding.UTF8.GetString(responseBytes, 0, responseResult.Count);
 
@@ -391,8 +383,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         {
             Assert.InRange(clientCount, 1, maxExpectedNbClients);
         }
-
-        //await this.DisposeClientsGracefullyAsync(webSockets).ConfigureAwait(false);
     }
 
     public void Dispose()
@@ -401,16 +391,4 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         this._messageHandlerStub.Dispose();
     }
 
-    //private async Task DisposeClientsGracefullyAsync(List<ClientWebSocket> webSockets)
-    //{
-    //    foreach (ClientWebSocket clientWebSocket in webSockets)
-    //    {
-    //        if (clientWebSocket.State != WebSocketState.Closed)
-    //        {
-    //            await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing client before disposal", CancellationToken.None).ConfigureAwait(false);
-    //        }
-
-    //        clientWebSocket.Dispose();
-    //    }
-    //}
 }

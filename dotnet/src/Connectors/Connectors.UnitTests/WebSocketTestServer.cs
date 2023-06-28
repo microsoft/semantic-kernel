@@ -86,6 +86,10 @@ internal class WebSocketTestServer : IDisposable
             if (result.MessageType == WebSocketMessageType.Close)
             {
                 closeRequested = true;
+
+                // Send back a close frame
+                await socketContext.WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing with close frame", this._cts.Token).ConfigureAwait(false);
+
                 break;
             }
 
@@ -105,7 +109,14 @@ internal class WebSocketTestServer : IDisposable
 
         if (!this._cts.IsCancellationRequested && closeRequested)
         {
-            await socketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing", this._cts.Token).ConfigureAwait(false);
+            try
+            {
+                await socketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing without close frame", this._cts.Token).ConfigureAwait(false);
+            }
+            finally
+            {
+                socketContext.WebSocket.Dispose();
+            }
         }
     }
 
