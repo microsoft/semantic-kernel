@@ -127,6 +127,7 @@ public static class SKFunctionExtensions
 
         if (mutableContext)
         {
+            context.Variables.Update(input);
             return function.InvokeAsync(context, settings);
         }
 
