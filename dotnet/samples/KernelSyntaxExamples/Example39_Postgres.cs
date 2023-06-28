@@ -20,7 +20,7 @@ public static class Example39_Postgres
         dataSourceBuilder.UseVector();
         using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 
-        PostgresMemoryStore memoryStore = new(dataSource, vectorSize: 1536, schema: "public");
+        PostgresMemoryStore memoryStore = new(dataSource, vectorSize: 1536, schema: "public", numberOfLists: 100);
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)

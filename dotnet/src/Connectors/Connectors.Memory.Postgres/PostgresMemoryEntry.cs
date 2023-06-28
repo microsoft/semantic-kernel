@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 /// <summary>
 /// A postgres memory entry.
 /// </summary>
-internal struct DatabaseEntry
+public record struct PostgresMemoryEntry
 {
     /// <summary>
     /// Unique identifier of the memory entry.
