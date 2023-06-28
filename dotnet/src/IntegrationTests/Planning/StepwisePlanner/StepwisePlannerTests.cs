@@ -1,23 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning.Sequential;
+using Microsoft.SemanticKernel.Planning.Stepwise;
+using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Skills.Web;
+using Microsoft.SemanticKernel.Skills.Web.Bing;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planning.SequentialPlanner;
+namespace SemanticKernel.IntegrationTests.Planning.StepwisePlanner;
 
-public sealed class SequentialPlannerTests : IDisposable
+public sealed class StepwisePlannerTests : IDisposable
 {
-    public SequentialPlannerTests(ITestOutputHelper output)
+    private readonly string _bingApiKey;
+
+    public StepwisePlannerTests(ITestOutputHelper output)
     {
         this._logger = NullLogger.Instance; //new XunitLogger<object>(output);
         this._testOutputHelper = new RedirectOutput(output);
@@ -27,80 +33,68 @@ public sealed class SequentialPlannerTests : IDisposable
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<SequentialPlannerTests>()
+            .AddUserSecrets<StepwisePlannerTests>()
             .Build();
+
+        string? bingApiKeyCandidate = this._configuration["Bing:ApiKey"];
+        Assert.NotNull(bingApiKeyCandidate);
+        this._bingApiKey = bingApiKeyCandidate;
     }
 
     [Theory]
-    [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
-    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
-    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedSkill)
+    [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
+    [InlineData(true, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
+    public void CanCreateStepwisePlan(bool useChatModel, string prompt, string expectedFunction, string expectedSkill)
     {
         // Arrange
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        _ = kernel.ImportSkill(new EmailSkillFake());
-        TestHelpers.GetSkills(kernel, "FunSkill");
+        using var bingConnector = new BingConnector(this._bingApiKey);
+        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
+        kernel.ImportSkill(new TimeSkill(), "time");
 
-        var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
+        var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = planner.CreatePlan(prompt);
 
         // Assert
         Assert.Contains(
             plan.Steps,
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
+                step.SkillName.Contains(expectedSkill, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
-    [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterSkill", "<!--===ENDPART===-->")]
-    public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedSkill, string expectedDefault)
+    [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2")]
+    // [InlineData(true, "Who is the current president of the United States? What is his current age divided by 2")] // Chat tests take long
+    public async void CanExecuteStepwisePlan(bool useChatModel, string prompt)
     {
         // Arrange
-        IKernel kernel = this.InitializeKernel();
-        TestHelpers.GetSkills(kernel, "WriterSkill");
+        bool useEmbeddings = false;
+        IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        using var bingConnector = new BingConnector(this._bingApiKey);
+        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
+        kernel.ImportSkill(new TimeSkill(), "time");
 
-        var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
-
-        // Act
-        var plan = await planner.CreatePlanAsync(prompt);
-
-        // Assert
-        Assert.Contains(
-            plan.Steps,
-            step =>
-                step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase) &&
-                step.Parameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
-    }
-
-    [Theory]
-    [InlineData("Write a poem or joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
-    public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedSkill)
-    {
-        // Arrange
-        bool useEmbeddings = true;
-        IKernel kernel = this.InitializeKernel(useEmbeddings);
-        _ = kernel.ImportSkill(new EmailSkillFake());
-
-        // Import all sample skills available for demonstration purposes.
-        TestHelpers.ImportSampleSkills(kernel);
-
-        var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel,
-            new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30 });
+        var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
         // Act
-        var plan = await planner.CreatePlanAsync(prompt);
+        var plan = planner.CreatePlan(prompt);
+        var result = await plan.InvokeAsync();
 
         // Assert
-        Assert.Contains(
-            plan.Steps,
-            step =>
-                step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
+        // Loose assertion -- we just want to make sure that the plan was executed and that the result contains the name of the current president.
+        // Calculations often wrong.
+        Assert.Contains("Biden", result.Result, StringComparison.InvariantCultureIgnoreCase);
+
+        Assert.True(result.Variables.TryGetValue("stepsTaken", out string? stepsTakenString));
+        var stepsTaken = JsonSerializer.Deserialize<List<SystemStep>>(stepsTakenString!);
+        Assert.NotNull(stepsTaken);
+        Assert.True(stepsTaken.Count >= 3 && stepsTaken.Count <= 10, $"Actual: {stepsTaken.Count}. Expected at least 3 steps and at most 10 steps to be taken.");
     }
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
@@ -139,6 +133,8 @@ public sealed class SequentialPlannerTests : IDisposable
 
         var kernel = builder.Build();
 
+        _ = kernel.ImportSkill(new EmailSkillFake());
+
         return kernel;
     }
 
@@ -152,7 +148,7 @@ public sealed class SequentialPlannerTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    ~SequentialPlannerTests()
+    ~StepwisePlannerTests()
     {
         this.Dispose(false);
     }
