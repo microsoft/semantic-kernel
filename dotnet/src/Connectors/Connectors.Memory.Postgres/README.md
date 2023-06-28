@@ -20,7 +20,7 @@ This extension is also available for **Azure Database for PostgreSQL - Flexible 
 docker run -d --name postgres-pgvector -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword ankane/pgvector
 ```
 
-2. Create database and enable pgvector extension on database
+2. Create a database and enable pgvector extension on this database
 
 ```bash
 docker exec -it pgvector psql -U postgres
@@ -39,13 +39,13 @@ NpgsqlDataSourceBuilder dataSourceBuilder = new NpgsqlDataSourceBuilder("Host=lo
 dataSourceBuilder.UseVector();
 NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 
-PostgresMemoryStore memoryStore = new PostgresMemoryStore(dataSource, vectorSize: 1536/*, schema: "public" */);
+PostgresMemoryStore memoryStore = new PostgresMemoryStore(dataSource, vectorSize: 1536/*, schema: "public", numberOfLists: 1000 */);
 
 IKernel kernel = Kernel.Builder
     .WithLogger(ConsoleLogger.Log)
     .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
     .WithMemoryStorage(memoryStore)
-    //.WithPostgresMemoryStore(dataSource, vectorSize: 1536) // This method offers an alternative approach to registering Postgres memory store.
+    //.WithPostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public", numberOfLists: 1000) // This method offers an alternative approach to registering Postgres memory store.
     .Build();
 ```
 
