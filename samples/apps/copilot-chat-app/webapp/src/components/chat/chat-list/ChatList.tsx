@@ -107,6 +107,27 @@ export const ChatList: FC = () => {
     const Dismiss20 = bundleIcon(Dismiss20Filled, Dismiss20Regular);
     const Filter20 = bundleIcon(Filter20Filled, Filter20Regular);
 
+    const sortConversations = (conversations: Conversations): Conversations => {
+        // sort conversations by last activity
+        var sortedIds =  Object.keys(conversations)
+            .sort((a, b) => {
+                if (conversations[a].lastUpdatedTimestamp === undefined) {
+                    return 1;
+                }
+                if (conversations[b].lastUpdatedTimestamp === undefined) {
+                    return -1;
+                }
+                return conversations[a].lastUpdatedTimestamp! - conversations[b].lastUpdatedTimestamp!;
+            });
+
+        // Add conversations to sortedConversations in the order of sortedIds.
+        const sortedConversations: Conversations = {};
+        sortedIds.forEach((id) => {
+            sortedConversations[id] = conversations[id];
+        });
+        return sortedConversations;
+    };
+
     useEffect(() => {
         // Ensure local component state is in line with app state.
         if (filterText !== '') {
@@ -121,7 +142,7 @@ export const ChatList: FC = () => {
         }
         else {
             // If no search string, show full conversations list.
-            setConversationsView(conversations);
+            setConversationsView(sortConversations(conversations));
         }
     }, [conversations, filterText]);
 
