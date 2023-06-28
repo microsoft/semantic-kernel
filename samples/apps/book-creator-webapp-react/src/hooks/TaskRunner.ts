@@ -40,6 +40,7 @@ export class TaskRunner {
         var executePlanAsk = {
             inputs: inputs,
             value: createPlanResult.value,
+            skills: skills,
         };
 
         var executePlanResult = await this.sk.executePlanAsync(this.keyConfig, executePlanAsk, this.maxSteps); //the maximum number of steps that the planner will attempt while the problem remains unsolved
