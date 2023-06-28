@@ -41,27 +41,28 @@ public class Example09_FunctionTypes {
                 .build();
 
         // The kernel takes care of wiring the input appropriately
-        kernel.runAsync(
-                "",
-                test.getFunction("type01"),
-                test.getFunction("type02"),
-                test.getFunction("type03"),
-                test.getFunction("type04"),
-                test.getFunction("type05"),
-                test.getFunction("type06"),
-                test.getFunction("type07"),
-                test.getFunction("type08"),
-                test.getFunction("type09"),
-                test.getFunction("type10"),
-                test.getFunction("type11"),
-                test.getFunction("type12"),
-                test.getFunction("type13"),
-                test.getFunction("type14"),
-                test.getFunction("type15"),
-                test.getFunction("type16"),
-                test.getFunction("type17"),
-                test.getFunction("type18")
-        );
+        SKContext result = kernel.runAsync(
+                        "",
+                        test.getFunction("type01"),
+                        test.getFunction("type02"),
+                        test.getFunction("type03"),
+                        test.getFunction("type04"),
+                        test.getFunction("type05"),
+                        test.getFunction("type06"),
+                        test.getFunction("type07"),
+                        test.getFunction("type08"),
+                        test.getFunction("type09"),
+                        test.getFunction("type10"),
+                        test.getFunction("type11"),
+                        test.getFunction("type12"),
+                        test.getFunction("type13"),
+                        test.getFunction("type14"),
+                        test.getFunction("type15"),
+                        test.getFunction("type16"),
+                        test.getFunction("type17"),
+                        test.getFunction("type18")
+                )
+                .block();
 
         kernel.getFunction("test", "type01").invokeAsync().block();
         test.getFunction("type01").invokeAsync().block();
@@ -116,19 +117,6 @@ public class Example09_FunctionTypes {
 
         kernel.getFunction("test", "type18").invokeAsync("").block();
         test.getFunction("type18").invokeAsync("").block();
-
-/*
-
-        await kernel.Func("test", "type11").InvokeAsync("");
-        await test[ "type11"].InvokeAsync("");
-
-        await kernel.Func("test", "type12").InvokeAsync(fakeContext);
-        await test[ "type12"].InvokeAsync(fakeContext);
-
-        await kernel.Func("test", "type18").InvokeAsync();
-        await test[ "type18"].InvokeAsync();
-
- */
     }
 
 

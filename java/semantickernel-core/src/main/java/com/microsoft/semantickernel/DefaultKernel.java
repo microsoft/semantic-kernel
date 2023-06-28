@@ -279,16 +279,26 @@ public class DefaultKernel implements Kernel {
 
         for (SKFunction f : Arrays.asList(pipeline)) {
             pipelineBuilder =
-                    pipelineBuilder.flatMap(
-                            newContext -> {
-                                SKContext context =
-                                        SKBuilders.context()
-                                                .with(newContext.getVariables())
-                                                .with(newContext.getSemanticMemory())
-                                                .with(newContext.getSkills())
-                                                .build();
-                                return f.invokeAsync(context, null);
-                            });
+                    pipelineBuilder
+                            .switchIfEmpty(
+                                    Mono.fromCallable(
+                                            () -> {
+                                                // Previous pipeline did not produce a result
+                                                return SKBuilders.context()
+                                                        .with(variables)
+                                                        .with(getSkills())
+                                                        .build();
+                                            }))
+                            .flatMap(
+                                    newContext -> {
+                                        SKContext context =
+                                                SKBuilders.context()
+                                                        .with(newContext.getVariables())
+                                                        .with(newContext.getSemanticMemory())
+                                                        .with(newContext.getSkills())
+                                                        .build();
+                                        return f.invokeAsync(context, null);
+                                    });
         }
 
         return pipelineBuilder;
