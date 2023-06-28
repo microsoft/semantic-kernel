@@ -54,6 +54,8 @@ public static class TextCompletionExtensions
             {
                 yield return word;
             }
+
+            yield break;
         }
     }
 }

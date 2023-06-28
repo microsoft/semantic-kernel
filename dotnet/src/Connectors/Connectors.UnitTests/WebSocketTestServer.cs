@@ -137,7 +137,6 @@ internal class WebSocketTestServer : IDisposable
 
     public void Dispose()
     {
-        // Do not change this code. Put cleanup code in 'DisposeAsync' method.
         this.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 }

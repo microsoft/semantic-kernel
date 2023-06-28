@@ -27,8 +27,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     public const string HttpUserAgent = "Microsoft-Semantic-Kernel";
     public const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
-    private const string ResponseObjectTextStreamEvent = "text_stream";
-    private const string ResponseObjectStreamEndEvent = "stream_end";
 
     private readonly Uri _endpoint;
     private readonly int _blockingPort;
@@ -40,11 +38,11 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private readonly bool _useWebSocketsPooling;
 
     private readonly SemaphoreSlim? _concurrentCallSemaphore;
-    private readonly ConcurrentStack<bool>? _activeConnections;
-    private readonly ConcurrentStack<ClientWebSocket> _webSocketPool = new();
+    private readonly ConcurrentBag<bool>? _activeConnections;
+    private readonly ConcurrentBag<ClientWebSocket> _webSocketPool = new();
     private readonly int _keepAliveWebSocketsDuration;
     private long _lastCallTicks = long.MaxValue;
-    private CancellationTokenSource _cleanupTaskCts;
+    private CancellationTokenSource? _cleanupTaskCts;
 
     /// <summary>
     /// Controls the size of the buffer used to received websocket packets
@@ -135,7 +133,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         // Making sure that in case of cancellation, the cleanup task is restarted
         if (this._useWebSocketsPooling && cancellationToken.IsCancellationRequested)
         {
-            this._cleanupTaskCts.Cancel();
+            this._cleanupTaskCts!.Cancel();
             // Dispose the CancellationTokenSource and create a new one for future use.
             this._cleanupTaskCts.Dispose();
             this._cleanupTaskCts = new CancellationTokenSource();
@@ -155,7 +153,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         ClientWebSocket? clientWebSocket = null;
         try
         {
-            if (!this._useWebSocketsPooling || !this._webSocketPool.TryPop(out clientWebSocket))
+            if (!this._useWebSocketsPooling || !this._webSocketPool.TryTake(out clientWebSocket))
             {
                 clientWebSocket = this._webSocketFactory();
             }
@@ -167,6 +165,8 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
             var sendSegment = new ArraySegment<byte>(requestBytes);
             await clientWebSocket.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
+
+            TextCompletionStreamingResult streamingResult = new();
 
             var buffer = new byte[this.WebSocketBufferSize];
             var finishedProcessing = false;
@@ -185,8 +185,12 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    using var reader = new StreamReader(messageStream, Encoding.UTF8);
-                    var messageText = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    string messageText;
+                    using (var reader = new StreamReader(messageStream, Encoding.UTF8))
+                    {
+                        messageText = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    }
+
                     var responseObject = JsonSerializer.Deserialize<TextCompletionStreamingResponse>(messageText);
 
                     if (responseObject is null)
@@ -196,10 +200,17 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
                     switch (responseObject.Event)
                     {
-                        case ResponseObjectTextStreamEvent:
-                            yield return new TextCompletionStreamingResult(responseObject);
+                        case TextCompletionStreamingResponse.ResponseObjectTextStreamEvent:
+                            streamingResult.AppendResponse(responseObject);
+                            //if (responseObject.MessageNum == 0)
+                            //{
+                            //    yield return streamingResult;
+                            //}
+
                             break;
-                        case ResponseObjectStreamEndEvent:
+                        case TextCompletionStreamingResponse.ResponseObjectStreamEndEvent:
+                            streamingResult.SignalStreamEnd();
+                            yield return streamingResult;
                             if (!this._useWebSocketsPooling)
                             {
                                 await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge stream-end oobabooga message", CancellationToken.None).ConfigureAwait(false);
@@ -229,7 +240,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             {
                 if (this._useWebSocketsPooling && clientWebSocket.State == WebSocketState.Open)
                 {
-                    this._webSocketPool.Push(clientWebSocket);
+                    this._webSocketPool.Add(clientWebSocket);
                 }
                 else
                 {
@@ -253,7 +264,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         }
         else
         {
-            this._activeConnections!.Push(true);
+            this._activeConnections!.Add(true);
         }
     }
 
@@ -282,7 +293,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         }
         else
         {
-            this._activeConnections!.TryPop(out _);
+            this._activeConnections!.TryTake(out _);
         }
 
         Interlocked.Exchange(ref this._lastCallTicks, DateTime.UtcNow.Ticks);
@@ -323,7 +334,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                     return;
                 }
 
-                while (this.GetCurrentConcurrentCallsNb() == 0 && this._webSocketPool.TryPop(out ClientWebSocket clientToDispose))
+                while (this.GetCurrentConcurrentCallsNb() == 0 && this._webSocketPool.TryTake(out ClientWebSocket clientToDispose))
                 {
                     await DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
                 }
@@ -331,7 +342,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         }
         catch (OperationCanceledException)
         {
-            while (this._webSocketPool.TryPop(out ClientWebSocket clientToDispose))
+            while (this._webSocketPool.TryTake(out ClientWebSocket clientToDispose))
             {
                 await DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
             }

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -139,7 +138,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
                 httpClient: this._httpClient,
                 webSocketFactory: () => webSocketClient);
 
-            this.ShouldHandleStreamingServiceResponseAsync(sut);
+            await this.ShouldHandleStreamingServiceResponseAsync(sut).ConfigureAwait(false);
         }
     }
 
@@ -152,7 +151,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             StreamingPort,
             httpClient: this._httpClient);
 
-        this.ShouldHandleStreamingServiceResponseAsync(sut);
+        await this.ShouldHandleStreamingServiceResponseAsync(sut).ConfigureAwait(false);
     }
 
     [Fact]
@@ -266,7 +265,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             maxExpectedNbClients: 20).ConfigureAwait(false);
     }
 
-    private void ShouldHandleStreamingServiceResponseAsync(OobaboogaTextCompletion sut)
+    private async Task ShouldHandleStreamingServiceResponseAsync(OobaboogaTextCompletion sut)
     {
         var requestMessage = CompletionText;
         var expectedResponse = this._streamCompletionResponseStub;
@@ -283,7 +282,15 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         });
 
         //TODO: use AggregateAsync when System.Linq.Async Nuget package is installed
-        var completion = localResponse.ToEnumerable().Aggregate((s, s1) => s + s1);
+        var toReturn = new List<string>();
+        await foreach (var item in localResponse.ConfigureAwait(false))
+        {
+            toReturn.Add(item);
+        }
+
+        var completion = toReturn.Aggregate((s, s1) => s + s1);
+
+        //var completion = localResponse.ToEnumerable().Aggregate((s, s1) => s + s1);
 
         // Get the first request content
         var firstRequestContent = server.RequestContents.First().Value;
@@ -308,29 +315,28 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         // Counter to track the number of WebSocket clients created
         int clientCount = 0;
         var delayTimeSpan = new TimeSpan(concurrentCallsTicksDelay);
-        List<ClientWebSocket> webSockets = new();
-
         if (isPersistent)
         {
-            var externalWebSocketFactory = () =>
+            ClientWebSocket ExternalWebSocketFactory()
             {
                 var toReturn = new ClientWebSocket();
-                webSockets.Add(toReturn);
                 return toReturn;
-            };
+            }
+
             if (maxExpectedNbClients > 0)
             {
-                Func<ClientWebSocket> incrementFactory = () =>
+                ClientWebSocket IncrementFactory()
                 {
-                    var toReturn = externalWebSocketFactory();
+                    var toReturn = ExternalWebSocketFactory();
                     Interlocked.Increment(ref clientCount);
                     return toReturn;
-                };
-                webSocketFactory = incrementFactory;
+                }
+
+                webSocketFactory = IncrementFactory;
             }
             else
             {
-                webSocketFactory = externalWebSocketFactory;
+                webSocketFactory = ExternalWebSocketFactory;
             }
         }
 
@@ -361,7 +367,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             }));
 
             // Introduce a delay between creating each WebSocket client
-            //Thread.Sleep(concurrentCallsDelay);
             await Task.Delay(delayTimeSpan).ConfigureAwait(false);
         }
 
@@ -390,5 +395,4 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
     }
-
 }

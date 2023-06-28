@@ -9,6 +9,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// </summary>
 public sealed class TextCompletionStreamingResponse
 {
+    public const string ResponseObjectTextStreamEvent = "text_stream";
+    public const string ResponseObjectStreamEndEvent = "stream_end";
+
     /// <summary>
     /// A field used by Oobabooga to signal the type of websocket message sent, e.g. "text_stream" or "stream_end".
     /// </summary>

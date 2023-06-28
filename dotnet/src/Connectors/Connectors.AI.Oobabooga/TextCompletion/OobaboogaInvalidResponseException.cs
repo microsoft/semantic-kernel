@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
+#pragma warning disable RCS1194 // Implement exception constructors.
 internal sealed class OobaboogaInvalidResponseException<T> : AIException
 {
     public T? ResponseData { get; }
