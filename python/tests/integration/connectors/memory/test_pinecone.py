@@ -245,7 +245,7 @@ async def test_get_nearest_matches_async(
         min_relevance_score=0.0,
         with_embeddings=True,
     )
-    
+
     assert len(result) == 2
     assert result[0][0]._id in [memory_record3._id, memory_record2._id]
     assert result[1][0]._id in [memory_record3._id, memory_record2._id]
