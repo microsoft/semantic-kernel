@@ -43,6 +43,8 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private readonly ConcurrentStack<bool>? _activeConnections;
     private readonly ConcurrentStack<ClientWebSocket> _webSocketPool = new();
     private readonly int _keepAliveWebSocketsDuration;
+    private long _lastCallTicks = long.MaxValue;
+    private CancellationTokenSource _cleanupTaskCts;
 
     /// <summary>
     /// Controls the size of the buffer used to received websocket packets
@@ -116,6 +118,12 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         {
             this._activeConnections = new();
         }
+
+        if (this._useWebSocketsPooling)
+        {
+            this._cleanupTaskCts = new();
+            this.StartCleanupTask(this._cleanupTaskCts.Token);
+        }
     }
 
     /// <inheritdoc/>
@@ -124,7 +132,18 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.StartConcurrentCall(cancellationToken);
+        if (this._useWebSocketsPooling && cancellationToken.IsCancellationRequested)
+        {
+            this._cleanupTaskCts.Cancel();
+            // Dispose the CancellationTokenSource and create a new one for future use.
+            this._cleanupTaskCts.Dispose();
+            this._cleanupTaskCts = new CancellationTokenSource();
+
+            // Restart the cleanup task.
+            this.StartCleanupTask(this._cleanupTaskCts.Token);
+        }
+
+        await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
 
         var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
 
@@ -150,7 +169,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
             var buffer = new byte[this.WebSocketBufferSize];
             var finishedProcessing = false;
-            while (!finishedProcessing)
+            while (!finishedProcessing && !cancellationToken.IsCancellationRequested)
             {
                 MemoryStream messageStream = new();
                 WebSocketReceiveResult result;
@@ -210,7 +229,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         {
             if (clientWebSocket != null)
             {
-                if (this._useWebSocketsPooling)
+                if (this._useWebSocketsPooling && !cancellationToken.IsCancellationRequested)
                 {
                     this._webSocketPool.Push(clientWebSocket);
                 }
@@ -222,7 +241,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
             this.EndConcurrentCall();
 
-            Task.Run(this.FlushWebSocketClientsAsync, cancellationToken);
+            //Task.Run(this.FlushWebSocketClientsAsync, cancellationToken);
         }
     }
 
@@ -230,11 +249,11 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// Starts a concurrent call, either by taking a semaphore slot or by pushing a value on the active connections stack
     /// </summary>
     /// <param name="cancellationToken"></param>
-    private void StartConcurrentCall(CancellationToken cancellationToken)
+    private async Task StartConcurrentCallAsync(CancellationToken cancellationToken)
     {
         if (this._maxNbConcurrentWebSockets > 0)
         {
-            this._concurrentCallSemaphore!.Wait(cancellationToken);
+            await this._concurrentCallSemaphore!.WaitAsync(cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -269,29 +288,57 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         {
             this._activeConnections!.TryPop(out _);
         }
+
+        Interlocked.Exchange(ref this._lastCallTicks, DateTime.UtcNow.Ticks);
     }
 
-    private long _lastCallTicks;
+    private void StartCleanupTask(CancellationToken cancellationToken)
+    {
+        Task.Factory.StartNew(
+            async () =>
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    await this.FlushWebSocketClientsAsync(cancellationToken).ConfigureAwait(false);
+                }
+            },
+            cancellationToken,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
+    }
 
     /// <summary>
     /// Flushes the web socket clients that have been idle for too long
     /// </summary>
     /// <returns></returns>
-    private async Task FlushWebSocketClientsAsync()
+    private async Task FlushWebSocketClientsAsync(CancellationToken cancellationToken)
     {
-        Interlocked.Exchange(ref this._lastCallTicks, DateTime.UtcNow.Ticks);
-
-        await Task.Delay(this._keepAliveWebSocketsDuration).ConfigureAwait(false);
-
-        // If another call was made during the delay, do not proceed with flushing
-        if (DateTime.UtcNow.Ticks - Interlocked.Read(ref this._lastCallTicks) < TimeSpan.FromMilliseconds(this._keepAliveWebSocketsDuration).Ticks)
+        // In the cleanup task, make sure you handle OperationCanceledException appropriately
+        // and make frequent checks on whether cancellation is requested.
+        try
         {
-            return;
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(this._keepAliveWebSocketsDuration, cancellationToken).ConfigureAwait(false);
+
+                // If another call was made during the delay, do not proceed with flushing
+                if (DateTime.UtcNow.Ticks - Interlocked.Read(ref this._lastCallTicks) < TimeSpan.FromMilliseconds(this._keepAliveWebSocketsDuration).Ticks)
+                {
+                    return;
+                }
+
+                while (this.GetCurrentConcurrentCallsNb() == 0 && this._webSocketPool.TryPop(out ClientWebSocket clientToDispose))
+                {
+                    await DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
+                }
+            }
         }
-
-        while (this.GetCurrentConcurrentCallsNb() == 0 && this._webSocketPool.TryPop(out ClientWebSocket clientToDispose))
+        catch (OperationCanceledException)
         {
-            await DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
+            while (this._webSocketPool.TryPop(out ClientWebSocket clientToDispose))
+            {
+                await DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
+            }
         }
     }
 

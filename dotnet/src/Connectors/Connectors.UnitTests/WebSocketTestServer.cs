@@ -17,7 +17,7 @@ internal class WebSocketTestServer : IDisposable
     private Func<ArraySegment<byte>, List<ArraySegment<byte>>> _arraySegmentHandler;
     private readonly CancellationTokenSource _cts;
     private readonly ConcurrentDictionary<Guid, ConcurrentQueue<byte[]>> _requestContentQueues;
-    private List<Task> _requestTasks = new();
+    private readonly ConcurrentBag<Task> _runningTasks = new();
 
     public ConcurrentDictionary<Guid, byte[]> RequestContents
     {
@@ -42,19 +42,17 @@ internal class WebSocketTestServer : IDisposable
 
     private async Task HandleRequestsAsync()
     {
-        this._requestTasks = new List<Task>();
-
         while (!this._cts.IsCancellationRequested)
         {
             var context = await this._httpListener.GetContextAsync().ConfigureAwait(false);
 
             if (context.Request.IsWebSocketRequest)
             {
-                this._requestTasks.Add(this.HandleSingleWebSocketRequestAsync(context));
+                this._runningTasks.Add(this.HandleSingleWebSocketRequestAsync(context));
             }
         }
 
-        await Task.WhenAll(this._requestTasks).ConfigureAwait(false);
+        await Task.WhenAll(this._runningTasks).ConfigureAwait(false);
     }
 
     private async Task HandleSingleWebSocketRequestAsync(HttpListenerContext context)
@@ -111,17 +109,24 @@ internal class WebSocketTestServer : IDisposable
         }
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         this._cts.Cancel();
-        await Task.WhenAll(this._requestTasks).ConfigureAwait(false);
-        this._httpListener.Stop();
-        this._httpListener.Close();
+        try
+        {
+            await Task.WhenAll(this._runningTasks).ConfigureAwait(false);
+        }
+        finally
+        {
+            this._httpListener.Stop();
+            this._httpListener.Close();
+            this._cts.Dispose();
+        }
     }
 
     public void Dispose()
     {
-        ((IDisposable)this._httpListener).Dispose();
-        this._cts.Dispose();
+        // Do not change this code. Put cleanup code in 'DisposeAsync' method.
+        this.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 }

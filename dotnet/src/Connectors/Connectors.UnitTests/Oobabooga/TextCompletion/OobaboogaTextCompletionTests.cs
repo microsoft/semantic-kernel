@@ -252,10 +252,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync()
     {
         await this.RunWebSocketMultiPacketStreamingTestAsync(
-            nbConcurrentCalls: 500,
+            nbConcurrentCalls: 1000,
             isPersistent: true,
             keepAliveWebSocketsDuration: 100,
-            concurrentCallsTicksDelay: 50000,
+            concurrentCallsTicksDelay: 10000,
             maxExpectedNbClients: 50).ConfigureAwait(false);
     }
 
@@ -266,7 +266,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync()
     {
         await this.RunWebSocketMultiPacketStreamingTestAsync(
-            nbConcurrentCalls: 50,
+            nbConcurrentCalls: 10000,
             isPersistent: true,
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 0,
