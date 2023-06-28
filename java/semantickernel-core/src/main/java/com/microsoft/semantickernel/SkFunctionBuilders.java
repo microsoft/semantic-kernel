@@ -44,10 +44,8 @@ public class SkFunctionBuilders implements FunctionBuilders {
 
         @Override
         public CompletionSKFunction createFunction(
-                String functionName, SemanticFunctionConfig functionConfig) {
-            return register(
-                    DefaultCompletionSKFunction.createFunction(
-                            functionName, functionConfig, kernel.getPromptTemplateEngine()));
+                String prompt, PromptTemplateConfig.CompletionConfig functionConfig) {
+            return createFunction(prompt, null, null, null, functionConfig);
         }
 
         @Override

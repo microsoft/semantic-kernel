@@ -352,6 +352,10 @@ public class PromptTemplateConfig {
         this("", "", null);
     }
 
+    public PromptTemplateConfig(CompletionConfig completionConfig) {
+        this(1, "", "", completionConfig, new InputConfig(new ArrayList<>()));
+    }
+
     public PromptTemplateConfig(
             String description, String type, @Nullable CompletionConfig completionConfig) {
         this(1, description, type, completionConfig, new InputConfig(new ArrayList<>()));

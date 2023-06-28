@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.syntaxexamples;
 
+import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.DefaultKernelTest;
 import com.microsoft.semantickernel.Kernel;
@@ -8,11 +10,11 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.ActionPlanner;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import reactor.util.function.Tuples;
 
-import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenAIAsyncClient;
+import reactor.util.function.Tuples;
 
 public class Example28ActionPlanner {
 

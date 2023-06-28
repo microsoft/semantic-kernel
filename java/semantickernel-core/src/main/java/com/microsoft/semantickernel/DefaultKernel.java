@@ -118,6 +118,11 @@ public class DefaultKernel implements Kernel {
         return func;
     }
 
+    @Override
+    public SKFunction<?> getFunction(String skill, String function) {
+        return defaultSkillCollection.getFunction(skill, function, null);
+    }
+
     /*
     /// <inheritdoc/>
     public SKFunction registerSemanticFunction(

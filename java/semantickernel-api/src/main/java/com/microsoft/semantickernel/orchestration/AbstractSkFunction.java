@@ -88,9 +88,8 @@ public abstract class AbstractSkFunction<RequestConfiguration>
     }
 
     @Override
-    public Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings) {
-        // return new FutureTask<SKContext>(() -> function.run(null, settings, context));
-
+    public Mono<SKContext> invokeAsync(
+            @Nullable SKContext context, @Nullable RequestConfiguration settings) {
         if (context == null) {
             context =
                     SKBuilders.context()
@@ -234,5 +233,10 @@ public abstract class AbstractSkFunction<RequestConfiguration>
     @Override
     public Mono<SKContext> invokeAsync() {
         return invokeAsync(null, null, null);
+    }
+
+    @Override
+    public Mono<SKContext> invokeAsync(SKContext context) {
+        return invokeAsync(context, null);
     }
 }

@@ -72,6 +72,8 @@ public interface Kernel extends SkillExecutor {
     <RequestConfiguration, FunctionType extends SKFunction<RequestConfiguration>>
             FunctionType registerSemanticFunction(FunctionType semanticFunctionDefinition);
 
+    SKFunction getFunction(String skill, String function);
+
     // <T extends ReadOnlySKContext<T>> T createNewContext();
 
     class Builder {

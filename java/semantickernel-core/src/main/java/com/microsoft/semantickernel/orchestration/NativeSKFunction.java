@@ -292,12 +292,12 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
             // If this is bound to input get the input value
             if (inputArgs.contains(parameter)) {
                 String input = context.getVariables().get(ContextVariables.MAIN_KEY);
-                if (input != null && !input.isEmpty()) {
+                if (input != null) {
                     arg = input;
                 }
             }
 
-            if (arg == null || arg.isEmpty()) {
+            if (arg == null) {
                 SKFunctionParameters annotation =
                         parameter.getAnnotation(SKFunctionParameters.class);
                 if (annotation != null) {
@@ -306,7 +306,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
             }
         }
 
-        if ((arg == null || arg.isEmpty()) && variableName.matches("arg\\d")) {
+        if (arg == null && variableName.matches("arg\\d")) {
             LOGGER.warn(
                     "For the function "
                             + method.getDeclaringClass().getName()

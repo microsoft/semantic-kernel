@@ -54,6 +54,15 @@ public interface SKFunction<RequestConfiguration> {
      * Invokes the function with the given context and settings
      *
      * @param context Request context
+     * @return an updated context with the result of the request
+     */
+    @CheckReturnValue
+    Mono<SKContext> invokeAsync(SKContext context);
+
+    /**
+     * Invokes the function with the given context and settings
+     *
+     * @param context Request context
      * @param settings Configuration of the request
      * @return an updated context with the result of the request
      */

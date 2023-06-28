@@ -44,7 +44,10 @@ public final class KernelConfig {
         if (!this.textCompletionServices.containsKey(serviceId)) {
             throw new KernelException(
                     KernelException.ErrorCodes.ServiceNotFound,
-                    "A text completion service id '" + serviceId + "' doesn't exist");
+                    "A text completion service id '"
+                            + serviceId
+                            + "' doesn't exist. This likely means a text completion service was not"
+                            + " registered on this kernel.");
         }
 
         return this.textCompletionServices.get(serviceId);

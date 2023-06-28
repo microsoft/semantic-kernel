@@ -35,7 +35,7 @@ public interface CompletionSKFunction extends SKFunction<CompletionRequestSettin
                 @Nullable String skillName);
 
         public abstract CompletionSKFunction createFunction(
-                String functionName, SemanticFunctionConfig functionConfig);
+                String prompt, PromptTemplateConfig.CompletionConfig functionConfig);
 
         public abstract CompletionSKFunction createFunction(
                 @Nullable String skillNameFinal,
