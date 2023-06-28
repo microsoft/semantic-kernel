@@ -107,16 +107,16 @@ internal class WebSocketTestServer : IDisposable
             }
         }
 
-        if (!this._cts.IsCancellationRequested && closeRequested)
+        try
         {
-            try
+            if (socketContext.WebSocket.State == WebSocketState.Open || socketContext.WebSocket.State == WebSocketState.CloseReceived)
             {
-                await socketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing without close frame", this._cts.Token).ConfigureAwait(false);
+                await socketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing without close frame", CancellationToken.None).ConfigureAwait(false);
             }
-            finally
-            {
-                socketContext.WebSocket.Dispose();
-            }
+        }
+        finally
+        {
+            socketContext.WebSocket.Dispose();
         }
     }
 
