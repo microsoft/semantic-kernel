@@ -93,9 +93,7 @@ class PineconeMemoryStore(MemoryStoreBase):
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
-        if collection_name in pinecone.list_indexes():
-            pass
-        else:
+        if collection_name not in pinecone.list_indexes():
             pinecone.create_index(
                 name=collection_name,
                 dimension=dimension_num,

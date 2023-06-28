@@ -99,7 +99,7 @@ async def test_get_collections_async(get_pinecone_config):
 
     await memory.create_collection_async("test-collection", 2)
     result = await memory.get_collections_async()
-    assert len(result) == 1
+    assert "test-collection" in result
 
 
 @pytest.mark.asyncio
@@ -110,7 +110,7 @@ async def test_delete_collection_async(get_pinecone_config):
     await memory.create_collection_async("test-collection")
     await memory.delete_collection_async("test-collection")
     result = await memory.get_collections_async()
-    assert len(result) == 0
+    assert "test-collection" not in result
 
 
 @pytest.mark.asyncio
@@ -130,11 +130,13 @@ async def test_upsert_async_and_get_async(get_pinecone_config, memory_record1):
 
     await memory.create_collection_async("test-collection")
     await memory.upsert_async("test-collection", memory_record1)
+
     result = await memory.get_async(
         "test-collection",
         memory_record1._id,
         with_embedding=True,
     )
+
     assert result is not None
     assert result._id == memory_record1._id
     assert result._description == memory_record1._description
@@ -171,6 +173,7 @@ async def test_remove_async(get_pinecone_config, memory_record1):
     await memory.create_collection_async("test-collection")
     await memory.upsert_async("test-collection", memory_record1)
     await memory.remove_async("test-collection", memory_record1._id)
+
     with pytest.raises(KeyError):
         _ = await memory.get_async(
             "test-collection", memory_record1._id, with_embedding=True
@@ -187,6 +190,7 @@ async def test_remove_batch_async(get_pinecone_config, memory_record1, memory_re
     await memory.remove_batch_async(
         "test-collection", [memory_record1._id, memory_record2._id]
     )
+
     with pytest.raises(KeyError):
         _ = await memory.get_async(
             "test-collection", memory_record1._id, with_embedding=True
@@ -207,12 +211,14 @@ async def test_get_nearest_match_async(
 
     await memory.create_collection_async("test-collection")
     await memory.upsert_batch_async("test-collection", [memory_record1, memory_record2])
+
     test_embedding = memory_record1.embedding
     test_embedding[0] = test_embedding[0] + 0.01
 
     result = await memory.get_nearest_match_async(
         "test-collection", test_embedding, min_relevance_score=0.0, with_embedding=True
     )
+
     assert result is not None
     assert result[0]._id == memory_record1._id
 
@@ -228,6 +234,7 @@ async def test_get_nearest_matches_async(
     await memory.upsert_batch_async(
         "test-collection", [memory_record1, memory_record2, memory_record3]
     )
+
     test_embedding = memory_record2.embedding
     test_embedding[0] = test_embedding[0] + 0.025
 
@@ -238,6 +245,7 @@ async def test_get_nearest_matches_async(
         min_relevance_score=0.0,
         with_embeddings=True,
     )
+    
     assert len(result) == 2
     assert result[0][0]._id in [memory_record3._id, memory_record2._id]
     assert result[1][0]._id in [memory_record3._id, memory_record2._id]
