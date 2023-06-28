@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import numpy
 
 from pinecone import Vector
