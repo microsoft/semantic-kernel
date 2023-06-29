@@ -264,8 +264,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (this.IsSemantic)
         {
+            var addedVariables = this.AddDefaultValues(context.Variables);
+
             var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context).ConfigureAwait(false);
             context.Variables.Update(resultContext.Variables);
+
+            this.RemoveDefaultValues(context.Variables, addedVariables);
         }
         else
         {
@@ -298,8 +302,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
+        ContextVariables variables = new(input);
+        this.AddDefaultValues(variables);
+
         SKContext context = new(
-            new ContextVariables(input),
+            variables: variables,
             memory: memory,
             skills: this._skillCollection,
             logger: logger,
@@ -1032,6 +1039,30 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
+
+    /// <summary>Add default values to the context variables if the variable is not defined</summary>
+    private IList<string> AddDefaultValues(ContextVariables variables)
+    {
+        var addedVariables = new List<string>();
+        foreach (var parameter in this.Parameters)
+        {
+            if (!variables.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
+            {
+                variables[parameter.Name] = parameter.DefaultValue;
+                addedVariables.Add(parameter.Name);
+            }
+        }
+        return addedVariables;
+    }
+
+    /// <summary>Remove added vriables from the context variables</summary>
+    private void RemoveDefaultValues(ContextVariables variables, IList<string> addedVariables)
+    {
+        foreach (var variable in addedVariables)
+        {
+            variables.Set(variable, null);
+        }
+    }
 
     #endregion
 }
