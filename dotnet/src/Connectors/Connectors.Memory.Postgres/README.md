@@ -23,7 +23,7 @@ docker run -d --name postgres-pgvector -p 5432:5432 -e POSTGRES_PASSWORD=mysecre
 2. Create a database and enable pgvector extension on this database
 
 ```bash
-docker exec -it pgvector psql -U postgres
+docker exec -it postgres-pgvector psql -U postgres
 
 postgres=# CREATE DATABASE sk_demo;
 postgres=# \c sk_demo
