@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Microsoft.SemanticKernel.Memory;
@@ -25,9 +25,28 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        // Load configuration
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables()
+            .AddUserSecrets<PostgresMemoryStoreTests>()
+            .Build();
+
+        var connectionString = configuration["Postgres:ConnectionString"];
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new ArgumentNullException("Postgres memory connection string is not configured");
+        }
+
+        this._connectionString = connectionString;
         this._databaseName = $"sk_it_{Guid.NewGuid():N}";
 
-        NpgsqlDataSourceBuilder dataSourceBuilder = new(string.Format(CultureInfo.CurrentCulture, ConnectionString, this._databaseName));
+        NpgsqlConnectionStringBuilder connectionStringBuilder = new(this._connectionString);
+        connectionStringBuilder.Database = this._databaseName;
+
+        NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionStringBuilder.ToString());
         dataSourceBuilder.UseVector();
 
         this._dataSource = dataSourceBuilder.Build();
@@ -607,14 +626,14 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
 
     #region private ================================================================================
 
-    private const string ConnectionString = "Host=localhost;Database={0};User Id=postgres";
+    private string _connectionString = null!;
     private string _databaseName = null!;
     private NpgsqlDataSource _dataSource = null!;
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "The database name is generated randomly, it does not support parameterized passing.")]
     private async Task CreateDatabaseAsync()
     {
-        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(string.Format(CultureInfo.CurrentCulture, ConnectionString, "postgres"));
+        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
         await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
         {
             await using (NpgsqlCommand command = new($"CREATE DATABASE \"{this._databaseName}\"", conn))
@@ -636,7 +655,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "The database name is generated randomly, it does not support parameterized passing.")]
     private async Task DropDatabaseAsync()
     {
-        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(string.Format(CultureInfo.CurrentCulture, ConnectionString, "postgres"));
+        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
         await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
         {
             await using (NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn))
