@@ -34,6 +34,9 @@ chromadb = "^0.3.23"
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = "^3.18.0"
 
+[tool.poetry.group.pinecone.dependencies]
+pinecone-client = "^2.2.2"
+
 [tool.isort]
 profile = "black"
 
