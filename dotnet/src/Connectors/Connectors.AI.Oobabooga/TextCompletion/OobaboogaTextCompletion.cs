@@ -73,7 +73,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
         this._endpoint = endpoint;
         this._blockingPort = blockingPort;
-        this._streamingPort = streamingPort;
+        //this._streamingPort = streamingPort;
         this._maxNbConcurrentWebSockets = maxNbConcurrentWebSockets;
         this._streamingUri = new(this._endpoint)
         {
