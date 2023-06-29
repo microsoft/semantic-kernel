@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -265,6 +266,24 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             maxExpectedNbClients: 20).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// In this test, we are looking at a realistic processing time of 1s per request. 50 calls are made simultaneously with pooling enabled and 20 concurrent websockets enforced.
+    /// No more than 5 seconds should suffice processing all 50 requests of 1 second duration each.
+    /// </summary>
+    [Fact]
+    public async Task ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingServiceWithSemaphoreAsync()
+    {
+        await this.RunWebSocketMultiPacketStreamingTestAsync(
+            nbConcurrentCalls: 50,
+            isPersistent: true,
+            requestProcessingDuration: 1000,
+            keepAliveWebSocketsDuration: 100,
+            concurrentCallsTicksDelay: 0,
+            maxNbConcurrentSockets: 20,
+            maxExpectedNbClients: 20,
+            maxTestDuration: 5000).ConfigureAwait(false);
+    }
+
     private async Task ShouldHandleStreamingServiceResponseAsync(OobaboogaTextCompletion sut)
     {
         var requestMessage = CompletionText;
@@ -304,11 +323,14 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private async Task RunWebSocketMultiPacketStreamingTestAsync(
         int nbConcurrentCalls = 1,
         bool isPersistent = false,
+        int requestProcessingDuration = 0,
         int keepAliveWebSocketsDuration = 100,
         int concurrentCallsTicksDelay = 0,
         int maxNbConcurrentSockets = 0,
-        int maxExpectedNbClients = 0)
+        int maxExpectedNbClients = 0,
+        int maxTestDuration = 0)
     {
+        var sw = Stopwatch.StartNew();
         var requestMessage = CompletionMultiText;
         var expectedResponse = new List<string> { " John", ". I", "'m a", " writer" };
         Func<ClientWebSocket>? webSocketFactory = null;
@@ -349,7 +371,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
             maxNbConcurrentWebSockets: maxNbConcurrentSockets);
 
-        await using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse);
+        await using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse)
+        {
+            RequestProcessingDelay = TimeSpan.FromMilliseconds(requestProcessingDuration)
+        };
 
         var tasks = new List<Task<List<string>>>();
 
@@ -387,6 +412,11 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         if (maxExpectedNbClients > 0)
         {
             Assert.InRange(clientCount, 1, maxExpectedNbClients);
+        }
+
+        if (maxTestDuration > 0)
+        {
+            Assert.InRange(sw.ElapsedMilliseconds, 0, maxTestDuration);
         }
     }
 

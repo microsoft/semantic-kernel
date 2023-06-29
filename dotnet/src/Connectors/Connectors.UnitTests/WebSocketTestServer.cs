@@ -19,6 +19,8 @@ internal class WebSocketTestServer : IDisposable
     private readonly ConcurrentDictionary<Guid, ConcurrentQueue<byte[]>> _requestContentQueues;
     private readonly ConcurrentBag<Task> _runningTasks = new();
 
+    public TimeSpan RequestProcessingDelay { get; set; } = TimeSpan.Zero;
+
     public ConcurrentDictionary<Guid, byte[]> RequestContents
     {
         get
@@ -99,6 +101,11 @@ internal class WebSocketTestServer : IDisposable
             if (result.EndOfMessage)
             {
                 var responseSegments = this._arraySegmentHandler(new ArraySegment<byte>(buffer, 0, result.Count));
+
+                if (this.RequestProcessingDelay.Ticks > 0)
+                {
+                    await Task.Delay(this.RequestProcessingDelay).ConfigureAwait(false);
+                }
 
                 foreach (var segment in responseSegments)
                 {
