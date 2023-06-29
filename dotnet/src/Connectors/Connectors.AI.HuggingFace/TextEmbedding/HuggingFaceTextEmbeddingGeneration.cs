@@ -110,6 +110,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public void Dispose()
     {
         if (this._disposeHttpClient)
@@ -136,12 +137,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
                 Input = data
             };
 
-            using var httpRequestMessage = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Post,
-                RequestUri = this.GetRequestUri(),
-                Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
-            };
+            using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
 
             httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
 

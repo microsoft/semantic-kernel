@@ -1,7 +1,0 @@
-{
-    "sdk": {
-        // TODO: Pinning to 6.0.408 until a dotnet servicing release is deployed: https://github.com/dotnet/format/issues/1546#issuecomment-1572744247
-        "version": "6.0.408",
-        "rollForward": "major"
-    }
-}
