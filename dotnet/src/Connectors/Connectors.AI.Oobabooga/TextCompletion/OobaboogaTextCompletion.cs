@@ -168,71 +168,12 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
             TextCompletionStreamingResult streamingResult = new();
 
-            var buffer = new byte[this.WebSocketBufferSize];
-            var finishedProcessing = false;
-            while (!finishedProcessing && !cancellationToken.IsCancellationRequested)
-            {
-                MemoryStream messageStream = new();
-                WebSocketReceiveResult result;
-                do
-                {
-                    var segment = new ArraySegment<byte>(buffer);
-                    result = await clientWebSocket.ReceiveAsync(segment, cancellationToken).ConfigureAwait(false);
-                    await messageStream.WriteAsync(buffer, 0, result.Count, cancellationToken).ConfigureAwait(false);
-                } while (!result.EndOfMessage);
+            var processingTask = this.ProcessWebSocketMessagesAsync(clientWebSocket, streamingResult, cancellationToken);
 
-                messageStream.Seek(0, SeekOrigin.Begin);
+            yield return streamingResult;
 
-                if (result.MessageType == WebSocketMessageType.Text)
-                {
-                    string messageText;
-                    using (var reader = new StreamReader(messageStream, Encoding.UTF8))
-                    {
-                        messageText = await reader.ReadToEndAsync().ConfigureAwait(false);
-                    }
-
-                    var responseObject = JsonSerializer.Deserialize<TextCompletionStreamingResponse>(messageText);
-
-                    if (responseObject is null)
-                    {
-                        throw new OobaboogaInvalidResponseException<string>(messageText, "Unexpected response from Oobabooga API");
-                    }
-
-                    switch (responseObject.Event)
-                    {
-                        case TextCompletionStreamingResponse.ResponseObjectTextStreamEvent:
-                            streamingResult.AppendResponse(responseObject);
-                            //if (responseObject.MessageNum == 0)
-                            //{
-                            //    yield return streamingResult;
-                            //}
-
-                            break;
-                        case TextCompletionStreamingResponse.ResponseObjectStreamEndEvent:
-                            streamingResult.SignalStreamEnd();
-                            yield return streamingResult;
-                            if (!this._useWebSocketsPooling)
-                            {
-                                await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge stream-end oobabooga message", CancellationToken.None).ConfigureAwait(false);
-                            }
-
-                            finishedProcessing = true;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else if (result.MessageType == WebSocketMessageType.Close)
-                {
-                    await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge Close frame", CancellationToken.None).ConfigureAwait(false);
-                    finishedProcessing = true;
-                }
-
-                if (clientWebSocket.State != WebSocketState.Open)
-                {
-                    finishedProcessing = true;
-                }
-            }
+            // Await the processing task to make sure it's finished before continuing
+            await processingTask.ConfigureAwait(false);
         }
         finally
         {
@@ -249,6 +190,69 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             }
 
             this.FinishConcurrentCall();
+        }
+    }
+
+    private async Task ProcessWebSocketMessagesAsync(ClientWebSocket clientWebSocket, TextCompletionStreamingResult streamingResult, CancellationToken cancellationToken)
+    {
+        var buffer = new byte[this.WebSocketBufferSize];
+        var finishedProcessing = false;
+        while (!finishedProcessing && !cancellationToken.IsCancellationRequested)
+        {
+            MemoryStream messageStream = new();
+            WebSocketReceiveResult result;
+            do
+            {
+                var segment = new ArraySegment<byte>(buffer);
+                result = await clientWebSocket.ReceiveAsync(segment, cancellationToken).ConfigureAwait(false);
+                await messageStream.WriteAsync(buffer, 0, result.Count, cancellationToken).ConfigureAwait(false);
+            } while (!result.EndOfMessage);
+
+            messageStream.Seek(0, SeekOrigin.Begin);
+
+            if (result.MessageType == WebSocketMessageType.Text)
+            {
+                string messageText;
+                using (var reader = new StreamReader(messageStream, Encoding.UTF8))
+                {
+                    messageText = await reader.ReadToEndAsync().ConfigureAwait(false);
+                }
+
+                var responseObject = JsonSerializer.Deserialize<TextCompletionStreamingResponse>(messageText);
+
+                if (responseObject is null)
+                {
+                    throw new OobaboogaInvalidResponseException<string>(messageText, "Unexpected response from Oobabooga API");
+                }
+
+                switch (responseObject.Event)
+                {
+                    case TextCompletionStreamingResponse.ResponseObjectTextStreamEvent:
+                        streamingResult.AppendResponse(responseObject);
+                        break;
+                    case TextCompletionStreamingResponse.ResponseObjectStreamEndEvent:
+                        streamingResult.SignalStreamEnd();
+                        if (!this._useWebSocketsPooling)
+                        {
+                            await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge stream-end oobabooga message", CancellationToken.None).ConfigureAwait(false);
+                        }
+
+                        finishedProcessing = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else if (result.MessageType == WebSocketMessageType.Close)
+            {
+                await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge Close frame", CancellationToken.None).ConfigureAwait(false);
+                finishedProcessing = true;
+            }
+
+            if (clientWebSocket.State != WebSocketState.Open)
+            {
+                finishedProcessing = true;
+            }
         }
     }
 
