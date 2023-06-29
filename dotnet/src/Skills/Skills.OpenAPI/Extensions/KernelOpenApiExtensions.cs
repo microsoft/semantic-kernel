@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Resources;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -53,7 +54,14 @@ public static class KernelOpenApiExtensions
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
-        using HttpResponseMessage response = await internalHttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+
+        if (!string.IsNullOrEmpty(executionParameters?.UserAgent))
+        {
+            requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
+        }
+
+        using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -186,7 +194,7 @@ public static class KernelOpenApiExtensions
 
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
 
-        var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback);
+        var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
 
         var skill = new Dictionary<string, ISKFunction>();
 
