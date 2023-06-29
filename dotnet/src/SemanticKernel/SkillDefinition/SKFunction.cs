@@ -264,12 +264,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (this.IsSemantic)
         {
-            var addedVariables = this.AddDefaultValues(context.Variables);
+            this.AddDefaultValues(context.Variables);
 
             var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context).ConfigureAwait(false);
             context.Variables.Update(resultContext.Variables);
-
-            this.RemoveDefaultValues(context.Variables, addedVariables);
         }
         else
         {
@@ -302,11 +300,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        ContextVariables variables = new(input);
-        this.AddDefaultValues(variables);
-
         SKContext context = new(
-            variables: variables,
+            new ContextVariables(input),
             memory: memory,
             skills: this._skillCollection,
             logger: logger,
@@ -1041,26 +1036,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
 
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
-    private List<string> AddDefaultValues(ContextVariables variables)
+    private void AddDefaultValues(ContextVariables variables)
     {
-        var addedVariables = new List<string>();
         foreach (var parameter in this.Parameters)
         {
             if (!variables.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
             {
                 variables[parameter.Name] = parameter.DefaultValue;
-                addedVariables.Add(parameter.Name);
             }
-        }
-        return addedVariables;
-    }
-
-    /// <summary>Remove added variables from the context variables</summary>
-    private void RemoveDefaultValues(ContextVariables variables, IList<string> addedVariables)
-    {
-        foreach (var variable in addedVariables)
-        {
-            variables.Set(variable, null);
         }
     }
 
