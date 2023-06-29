@@ -157,12 +157,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion, IDisposable
                 Input = text
             };
 
-            using var httpRequestMessage = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Post,
-                RequestUri = this.GetRequestUri(),
-                Content = new StringContent(JsonSerializer.Serialize(completionRequest)),
-            };
+            using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
 
             httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
             if (!string.IsNullOrEmpty(this._apiKey))
