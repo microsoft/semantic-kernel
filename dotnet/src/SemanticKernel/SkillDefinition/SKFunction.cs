@@ -264,6 +264,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (this.IsSemantic)
         {
+            this.AddDefaultValues(context.Variables);
+
             var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context).ConfigureAwait(false);
             context.Variables.Update(resultContext.Variables);
         }
@@ -1032,6 +1034,18 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
+
+    /// <summary>Add default values to the context variables if the variable is not defined</summary>
+    private void AddDefaultValues(ContextVariables variables)
+    {
+        foreach (var parameter in this.Parameters)
+        {
+            if (!variables.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
+            {
+                variables[parameter.Name] = parameter.DefaultValue;
+            }
+        }
+    }
 
     #endregion
 }
