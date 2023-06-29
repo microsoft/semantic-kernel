@@ -5,7 +5,6 @@ import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
 
 import reactor.core.publisher.Mono;
 
@@ -31,7 +30,7 @@ public class HttpSkill {
     private final HttpClient httpClient;
 
     public HttpSkill() {
-        this.httpClient = new NettyAsyncHttpClientBuilder().build();
+        this.httpClient = HttpClient.createDefault();
     }
 
     public HttpSkill(HttpClient httpClient) {
