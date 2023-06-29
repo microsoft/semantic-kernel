@@ -25,7 +25,7 @@ pytest-asyncio = "0.21.0"
 [tool.poetry.group.hugging_face.dependencies]
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
-torch = "2.0.1"
+torch = "2.0.0"
 
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.3.23"
