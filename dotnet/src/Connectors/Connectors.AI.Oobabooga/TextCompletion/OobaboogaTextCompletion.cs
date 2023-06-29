@@ -193,6 +193,106 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         }
     }
 
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var blockingUri = new UriBuilder(this._endpoint)
+            {
+                Port = this._blockingPort,
+                Path = BlockingUriPath
+            };
+
+            var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
+
+            using var stringContent = new StringContent(
+                JsonSerializer.Serialize(completionRequest),
+                Encoding.UTF8,
+                "application/json");
+
+            using var httpRequestMessage = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Post,
+                RequestUri = blockingUri.Uri,
+                Content = stringContent
+            };
+            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
+
+            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            TextCompletionResponse? completionResponse = JsonSerializer.Deserialize<TextCompletionResponse>(body);
+
+            if (completionResponse is null)
+            {
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
+                {
+                    Data = { { "ModelResponse", body } },
+                };
+            }
+
+            return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
+        }
+        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        {
+            throw new AIException(
+                AIException.ErrorCodes.UnknownError,
+                $"Something went wrong: {e.Message}", e);
+        }
+    }
+
+    #region private ================================================================================
+
+    /// <summary>
+    /// Creates an Oobabooga request, mapping CompleteRequestSettings fields to their Oobabooga API counter parts
+    /// </summary>
+    /// <param name="text">The text to complete.</param>
+    /// <param name="requestSettings">The request settings.</param>
+    /// <returns>An Oobabooga TextCompletionRequest object with the text and completion parameters.</returns>
+    private TextCompletionRequest CreateOobaboogaRequest(string text, CompleteRequestSettings requestSettings)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            throw new ArgumentNullException(nameof(text));
+        }
+
+        // Prepare the request using the provided parameters.
+        return new TextCompletionRequest()
+        {
+            Prompt = text,
+            MaxNewTokens = requestSettings.MaxTokens,
+            Temperature = requestSettings.Temperature,
+            TopP = requestSettings.TopP,
+            RepetitionPenalty = GetRepetitionPenalty(requestSettings),
+            StoppingStrings = requestSettings.StopSequences.ToList()
+        };
+    }
+
+    /// <summary>
+    /// Sets the options for the <paramref name="clientWebSocket"/>, either persistent and provided by the ctor, or transient if none provided.
+    /// </summary>
+    private void SetWebSocketOptions(ClientWebSocket clientWebSocket)
+    {
+        clientWebSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
+    }
+
+    /// <summary>
+    /// Converts the semantic-kernel presence penalty, scaled -2:+2 with default 0 for no penalty to the Oobabooga repetition penalty, strictly positive with default 1 for no penalty. See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/>  and subsequent links for more details.
+    /// </summary>
+    private static double GetRepetitionPenalty(CompleteRequestSettings requestSettings)
+    {
+        return 1 + requestSettings.PresencePenalty / 2;
+    }
+
+    /// <summary>
+    /// That method is responsible for processing the websocket messages that build a streaming response object. It is crucial that it is run asynchronously to prevent a deadlock with results iteration
+    /// </summary>
     private async Task ProcessWebSocketMessagesAsync(ClientWebSocket clientWebSocket, TextCompletionStreamingResult streamingResult, CancellationToken cancellationToken)
     {
         var buffer = new byte[this.WebSocketBufferSize];
@@ -364,103 +464,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         }
 
         clientWebSocket.Dispose();
-    }
-
-    /// <inheritdoc/>
-    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
-        string text,
-        CompleteRequestSettings requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var blockingUri = new UriBuilder(this._endpoint)
-            {
-                Port = this._blockingPort,
-                Path = BlockingUriPath
-            };
-
-            var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
-
-            using var stringContent = new StringContent(
-                JsonSerializer.Serialize(completionRequest),
-                Encoding.UTF8,
-                "application/json");
-
-            using var httpRequestMessage = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Post,
-                RequestUri = blockingUri.Uri,
-                Content = stringContent
-            };
-            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
-
-            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            TextCompletionResponse? completionResponse = JsonSerializer.Deserialize<TextCompletionResponse>(body);
-
-            if (completionResponse is null)
-            {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
-                {
-                    Data = { { "ModelResponse", body } },
-                };
-            }
-
-            return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
-        }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
-        }
-    }
-
-    #region private ================================================================================
-
-    /// <summary>
-    /// Creates an Oobabooga request, mapping CompleteRequestSettings fields to their Oobabooga API counter parts
-    /// </summary>
-    /// <param name="text">The text to complete.</param>
-    /// <param name="requestSettings">The request settings.</param>
-    /// <returns>An Oobabooga TextCompletionRequest object with the text and completion parameters.</returns>
-    private TextCompletionRequest CreateOobaboogaRequest(string text, CompleteRequestSettings requestSettings)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        // Prepare the request using the provided parameters.
-        return new TextCompletionRequest()
-        {
-            Prompt = text,
-            MaxNewTokens = requestSettings.MaxTokens,
-            Temperature = requestSettings.Temperature,
-            TopP = requestSettings.TopP,
-            RepetitionPenalty = GetRepetitionPenalty(requestSettings),
-            StoppingStrings = requestSettings.StopSequences.ToList()
-        };
-    }
-
-    /// <summary>
-    /// Sets the options for the <paramref name="clientWebSocket"/>, either persistent and provided by the ctor, or transient if none provided.
-    /// </summary>
-    private void SetWebSocketOptions(ClientWebSocket clientWebSocket)
-    {
-        clientWebSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
-    }
-
-    /// <summary>
-    /// Converts the semantic-kernel presence penalty, scaled -2:+2 with default 0 for no penalty to the Oobabooga repetition penalty, strictly positive with default 1 for no penalty. See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/>  and subsequent links for more details.
-    /// </summary>
-    private static double GetRepetitionPenalty(CompleteRequestSettings requestSettings)
-    {
-        return 1 + requestSettings.PresencePenalty / 2;
     }
 
     #endregion
