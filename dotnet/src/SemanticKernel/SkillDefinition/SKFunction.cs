@@ -168,7 +168,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
         Task<SKContext> LocalFuncTmp(
             ITextCompletion? client,
             CompleteRequestSettings? requestSettings,
-            SKContext context)
+            SKContext context,
+            Func<SKContext, string, SKContext>? preExecutionHook,
+            Func<SKContext, SKContext>? postExecutionHook
+            )
         {
             return Task.FromResult(context);
         }
@@ -191,7 +194,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
         async Task<SKContext> LocalFunc(
             ITextCompletion? client,
             CompleteRequestSettings? requestSettings,
-            SKContext context)
+            SKContext context, Func<SKContext, string, SKContext>? preExecutionHook,
+            Func<SKContext, SKContext>? postExecutionHook)
         {
             Verify.NotNull(client);
             Verify.NotNull(requestSettings);
@@ -199,6 +203,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
             try
             {
                 string renderedPrompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
+                if (preExecutionHook is not null)
+                {
+                    context = preExecutionHook(context, renderedPrompt);
+                }
 
                 // Validates the rendered prompt before executing the completion
                 // The prompt template might have function calls that could result in the context becoming untrusted,
@@ -230,6 +238,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}";
                 log?.LogError(ex, Message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
+            }
+
+            if (postExecutionHook is not null)
+            {
+                context = postExecutionHook(context);
             }
 
             return context;
@@ -264,14 +277,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (this.IsSemantic)
         {
-            var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context).ConfigureAwait(false);
+            var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context, this._preExecutionHook, this._postExecutionHook).ConfigureAwait(false);
             context.Variables.Update(resultContext.Variables);
         }
         else
         {
             try
             {
-                context = await this._function(null, settings, context).ConfigureAwait(false);
+                context = await this._function(null, settings, context, this._preExecutionHook, this._postExecutionHook).ConfigureAwait(false);
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
@@ -360,7 +373,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> _function;
+    private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Func<SKContext, string, SKContext>?, Func<SKContext, SKContext>?, Task<SKContext>> _function;
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
@@ -369,7 +382,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private struct MethodDetails
     {
-        public Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> Function { get; set; }
+        public Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Func<SKContext, string, SKContext>?, Func<SKContext, SKContext>?, Task<SKContext>> Function { get; set; }
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
@@ -383,7 +396,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     internal SKFunction(
-        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> delegateFunction,
+        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Func<SKContext, string, SKContext>?, Func<SKContext, SKContext>?, Task<SKContext>> delegateFunction,
         IList<ParameterView> parameters,
         string skillName,
         string functionName,
@@ -495,7 +508,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     // Inspect a method and returns the corresponding delegate and related info
-    private static (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> function, List<ParameterView>) GetDelegateInfo(object? instance, MethodInfo method)
+    private static (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Func<SKContext, string, SKContext>?, Func<SKContext, SKContext>?, Task<SKContext>> function, List<ParameterView>) GetDelegateInfo(object? instance, MethodInfo method)
     {
         ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
 
@@ -520,7 +533,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         Func<object?, SKContext, Task<SKContext>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> function = (_, _, context) =>
+        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Func<SKContext, string, SKContext>?, Func<SKContext, SKContext>?, Task<SKContext>> function = (_, _, context, _, _) =>
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
@@ -841,6 +854,30 @@ public sealed class SKFunction : ISKFunction, IDisposable
             throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError, "Function returned null unexpectedly.");
     }
 
+    public ISKFunction SetPreExecutionHook(Func<SKContext, string, SKContext>? preHook)
+    {
+        if (this._preExecutionHook is not null)
+        {
+            this._log?.LogWarning("A pre-execution hook has already been set and was overriden [Skill: {0}, Function: '{1}']", this.SkillName, this.Name);
+        }
+
+        this._preExecutionHook = preHook;
+
+        return this;
+    }
+
+    public ISKFunction SetPostExecutionHook(Func<SKContext, SKContext>? postHook)
+    {
+        if (this._postExecutionHook is not null)
+        {
+            this._log?.LogWarning("A post-execution hook has already been set and was overriden [Skill: {0}, Function: '{1}']", this.SkillName, this.Name);
+        }
+
+        this._postExecutionHook = postHook;
+
+        return this;
+    }
+
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
     [DoesNotReturn]
     private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason) =>
@@ -1014,6 +1051,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         return null;
     }
+
+    private Func<SKContext, string, SKContext>? _preExecutionHook;
+    private Func<SKContext, SKContext>? _postExecutionHook;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{this.Name} ({this.Description})";

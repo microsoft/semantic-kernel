@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -391,6 +392,37 @@ public sealed class Plan : ISKFunction
             : this.Function.SetAIConfiguration(settings);
     }
 
+    public ISKFunction SetPreExecutionHook(Func<SKContext, string, SKContext>? preHook)
+    {
+        this._preExecutionHook = preHook;
+
+        return this;
+    }
+
+    public ISKFunction SetPostExecutionHook(Func<SKContext, SKContext>? postHook)
+    {
+        if (this.Function is not null)
+        {
+            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
+
+            if (result.ErrorOccurred)
+            {
+                result.Log.LogError(
+                    result.LastException,
+                    "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
+                return result;
+            }
+
+            context.Variables.Update(result.Result);
+        }
+        else
+        {
+            this._postExecutionHook = postHook;
+        }
+
+        return this;
+    }
+
     #endregion ISKFunction implementation
 
     /// <summary>
@@ -615,6 +647,9 @@ public sealed class Plan : ISKFunction
     private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
 
     private const string DefaultResultKey = "PLAN.RESULT";
+
+    private Func<SKContext, string, SKContext>? _preExecutionHook;
+    private Func<SKContext, SKContext>? _postExecutionHook;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay

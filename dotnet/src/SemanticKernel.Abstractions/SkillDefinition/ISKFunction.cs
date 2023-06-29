@@ -110,4 +110,8 @@ public interface ISKFunction
     /// <param name="settings">LLM completion settings</param>
     /// <returns>Self instance</returns>
     ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
+
+    ISKFunction SetPreExecutionHook(Func<SKContext, string, SKContext> preHook);
+
+    ISKFunction SetPostExecutionHook(Func<SKContext, SKContext> postHook);
 }
