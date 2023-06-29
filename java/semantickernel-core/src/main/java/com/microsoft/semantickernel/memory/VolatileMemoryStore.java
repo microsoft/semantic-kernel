@@ -44,8 +44,9 @@ public class VolatileMemoryStore implements MemoryStore {
     }
 
     @Override
-    public Mono<Collection<String>> getCollectionsAsync() {
-        return Mono.just(Collections.unmodifiableCollection(this._store.keySet()));
+    public Mono<List<String>> getCollectionsAsync() {
+        List<String> keys = new ArrayList<>(this._store.keySet());
+        return Mono.just(Collections.unmodifiableList(keys));
     }
 
     @Override
