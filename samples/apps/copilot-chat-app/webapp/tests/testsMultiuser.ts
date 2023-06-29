@@ -5,7 +5,7 @@ import * as util from './utils'
 Summary: Tests the Multiuser feature of Copilot Chat. Specifically if a user can 
 generate a chatid for their chat session and then if another user can join that same chat session.
 */
-export async function multiUserTest(page) {
+export async function shareAndJoinChatSessionTest(page) {
     const userAccount1 = process.env.REACT_APP_TEST_USER_ACCOUNT1 as string;
     const userAccount1Initials = process.env.REACT_APP_TEST_USER_ACCOUNT1_INITIALS as string;
     const userAccount2 = process.env.REACT_APP_TEST_USER_ACCOUNT2 as string;

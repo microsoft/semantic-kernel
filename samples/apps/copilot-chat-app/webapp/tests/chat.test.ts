@@ -3,7 +3,7 @@ import { test } from '@playwright/test';
 import * as util from './utils'
 import * as simpletests from './testsBasic'
 import * as plannertests from './testsPlanner'
-import { multiUserTest } from './testsMultiuser'
+import * as mutests from './testsMultiuser'
 
 test.describe('Copilot Chat App Test Suite', () => {
     // Note: A new chat session is opened for each test so that 
@@ -11,8 +11,11 @@ test.describe('Copilot Chat App Test Suite', () => {
 
     test.describe('A, runs in parallel with B', () => {
         test.describe.configure({ mode: 'parallel' });
+        
         // Server Tests
-        test('Server Health', async ({ page }) => { await simpletests.serverHealth(page) });
+        test('Server Health', async ({ page }) => { 
+            await simpletests.serverHealth(page) });
+
         // Basic Operations
         test('Basic Bot Responses', async ({ page }) => { 
             test.setTimeout(util.TestTimeout);
@@ -45,6 +48,6 @@ test.describe('Copilot Chat App Test Suite', () => {
         // Multi-User Chat
         test('Multi-user chat', async ({ page }) => { 
             test.setTimeout(util.TestTimeout);
-            await multiUserTest(page) });
+            await mutests.shareAndJoinChatSessionTest(page) });
     });
 });
