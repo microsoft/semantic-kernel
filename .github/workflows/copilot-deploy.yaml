@@ -6,6 +6,7 @@ on:
     branches: ["main"]
     paths:
       - "samples/apps/copilot-chat-app/**"
+  pull_request:
 
 permissions:
   contents: read
