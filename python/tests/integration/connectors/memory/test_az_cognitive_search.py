@@ -36,8 +36,6 @@ def memory_record1():
     )
 
 
-    
 def test_constructor(test_endpoint, credential):
-
     memory = CognitiveSearchMemoryStore(test_endpoint, acs_credential=credential)
     assert memory is not None

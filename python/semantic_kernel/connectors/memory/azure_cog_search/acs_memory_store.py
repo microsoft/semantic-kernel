@@ -99,7 +99,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         vector_size: int,
-        vector_config: Optional[VectorSearchAlgorithmConfiguration],
+        vector_config: Optional[VectorSearchAlgorithmConfiguration] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
@@ -141,7 +141,10 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             vector_search=vector_search,
         )
 
-        await self._cogsearch_indexclient.create_index(index)
+        try:
+            await self._cogsearch_indexclient.create_or_update_index(index=index)
+        except HttpResponseError:
+            raise ValueError("Error: Unable to create ACS search index for collection.")
 
     async def get_collections_async(
         self,
