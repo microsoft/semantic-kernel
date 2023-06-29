@@ -145,21 +145,18 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             return; // only submit if value is not empty
         }
 
-        onSubmit({ value, messageType, chatId: selectedId })
-            .then(() => {
-                setValue('');
-                dispatch(editConversationInput({ id: selectedId, newInput: '' }));
-            })
-            .catch((error) => {
-                const message = `Error submitting chat input: ${(error as Error).message}`;
-                log(message);
-                dispatch(
-                    addAlert({
-                        type: AlertType.Error,
-                        message,
-                    }),
-                );
-            });
+        setValue('');
+        dispatch(editConversationInput({ id: selectedId, newInput: '' }));
+        onSubmit({ value, messageType, chatId: selectedId }).catch((error) => {
+            const message = `Error submitting chat input: ${(error as Error).message}`;
+            log(message);
+            dispatch(
+                addAlert({
+                    type: AlertType.Error,
+                    message,
+                }),
+            );
+        });
     };
 
     const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
