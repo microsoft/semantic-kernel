@@ -30,9 +30,8 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
     private readonly Uri _endpoint;
     private readonly int _blockingPort;
-    private readonly int _streamingPort;
     private readonly int _maxNbConcurrentWebSockets;
-    private UriBuilder _streamingUri;
+    private readonly UriBuilder _streamingUri;
     private readonly HttpClient _httpClient;
     private readonly Func<ClientWebSocket> _webSocketFactory;
     private readonly bool _useWebSocketsPooling;
@@ -73,11 +72,10 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
         this._endpoint = endpoint;
         this._blockingPort = blockingPort;
-        //this._streamingPort = streamingPort;
         this._maxNbConcurrentWebSockets = maxNbConcurrentWebSockets;
         this._streamingUri = new(this._endpoint)
         {
-            Port = this._streamingPort,
+            Port = streamingPort,
             Path = StreamingUriPath
         };
         if (this._streamingUri.Uri.Scheme.StartsWith("http", StringComparison.OrdinalIgnoreCase))
