@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import atexit
 import json
 import os

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import os
 from datetime import datetime
 
@@ -106,8 +108,6 @@ async def test_get_collections_async(get_postgres_config):
     memory = PostgresMemoryStore(connection_string, 1, 5)
 
     await memory.create_collection_async("test_collection", 2)
-    # await memory.create_collection_async("test_collection-b")
-    # await memory.create_collection_async("test_collection-c")
     result = await memory.get_collections_async()
     assert len(result) > 1
 
