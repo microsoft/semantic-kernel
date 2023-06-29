@@ -89,6 +89,13 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
+Write-Host "Updating AAD App registration..."
+az ad app update --id $ApplicationClientId --web-redirect-uris "https://$webappUrl"
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
+
+
 $origin = "https://$webappUrl"
 Write-Host "Ensuring CORS origin '$origin' to webapi '$webapiName'..."
 if (-not ((az webapp cors show --name $webapiName --resource-group $ResourceGroupName --subscription $Subscription | ConvertFrom-Json).allowedOrigins -contains $origin)) {
