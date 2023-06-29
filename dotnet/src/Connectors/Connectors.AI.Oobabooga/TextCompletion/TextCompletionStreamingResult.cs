@@ -19,7 +19,7 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
     private readonly ConcurrentQueue<string> _responseChunks;
 
     private readonly List<TextCompletionStreamingResponse> _modelResponses;
-    //private readonly SemaphoreSlim _semaphore;
+    private readonly SemaphoreSlim _semaphore;
 
     public ModelResult ModelResult { get; }
     private bool _streamEndSignaled;
@@ -29,20 +29,20 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
         this._responseChunks = new();
         this._modelResponses = new();
         this.ModelResult = new ModelResult(this._modelResponses);
-        //this._semaphore = new SemaphoreSlim(0);
+        this._semaphore = new SemaphoreSlim(0);
     }
 
     public void AppendResponse(TextCompletionStreamingResponse response)
     {
         this._responseChunks.Enqueue(response.Text);
         this._modelResponses.Add(response);
-        //this._semaphore.Release();
+        this._semaphore.Release();
     }
 
     public void SignalStreamEnd()
     {
         this._streamEndSignaled = true;
-        //this._semaphore.Release();
+        this._semaphore.Release();
     }
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
@@ -78,10 +78,10 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
             {
                 yield break;
             }
-            //else
-            //{
-            //    await this._semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-            //}
+            else
+            {
+                await this._semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 }

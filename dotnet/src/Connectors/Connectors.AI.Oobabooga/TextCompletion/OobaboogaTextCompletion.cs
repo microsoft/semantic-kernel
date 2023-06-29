@@ -202,15 +202,15 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                     {
                         case TextCompletionStreamingResponse.ResponseObjectTextStreamEvent:
                             streamingResult.AppendResponse(responseObject);
-                            //if (responseObject.MessageNum == 0)
-                            //{
-                            //    yield return streamingResult;
-                            //}
+                            if (responseObject.MessageNum == 0)
+                            {
+                                yield return streamingResult;
+                            }
 
                             break;
                         case TextCompletionStreamingResponse.ResponseObjectStreamEndEvent:
                             streamingResult.SignalStreamEnd();
-                            yield return streamingResult;
+                            //yield return streamingResult;
                             if (!this._useWebSocketsPooling)
                             {
                                 await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge stream-end oobabooga message", CancellationToken.None).ConfigureAwait(false);
