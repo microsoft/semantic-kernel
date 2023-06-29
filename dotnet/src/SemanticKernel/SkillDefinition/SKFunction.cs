@@ -264,6 +264,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (this.IsSemantic)
         {
+            this.AddDefaultValues(context.Variables);
+
             var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context).ConfigureAwait(false);
             context.Variables.Update(resultContext.Variables);
         }
@@ -504,12 +506,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         // Get marshaling funcs for parameters and build up the parameter views.
         var parameterFuncs = new Func<SKContext, object?>[parameters.Length];
-        bool sawFirstParameter = false, hasSKContextParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false;
+        bool sawFirstParameter = false, hasSKContextParam = false, hasCancellationTokenParam = false, hasLoggerParam = false, hasMemoryParam = false, hasCultureParam = false;
         for (int i = 0; i < parameters.Length; i++)
         {
             (parameterFuncs[i], ParameterView? parameterView) = GetParameterMarshalerDelegate(
                 method, parameters[i],
-                ref sawFirstParameter, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam);
+                ref sawFirstParameter, ref hasSKContextParam, ref hasCancellationTokenParam, ref hasLoggerParam, ref hasMemoryParam, ref hasCultureParam);
             if (parameterView is not null)
             {
                 stringParameterViews.Add(parameterView);
@@ -556,7 +558,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// </summary>
     private static (Func<SKContext, object?>, ParameterView?) GetParameterMarshalerDelegate(
         MethodInfo method, ParameterInfo parameter,
-        ref bool sawFirstParameter, ref bool hasSKContextParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasMemoryParam)
+        ref bool sawFirstParameter, ref bool hasSKContextParam, ref bool hasCancellationTokenParam, ref bool hasLoggerParam, ref bool hasMemoryParam, ref bool hasCultureParam)
     {
         Type type = parameter.ParameterType;
 
@@ -582,6 +584,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
             return (static (SKContext ctx) => ctx.Log, null);
         }
 
+        if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
+        {
+            TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
+            return (static (SKContext ctx) => ctx.Culture, null);
+        }
+
         if (type == typeof(CancellationToken))
         {
             TrackUniqueParameterType(ref hasCancellationTokenParam, method, $"At most one {nameof(CancellationToken)} parameter is permitted.");
@@ -590,7 +598,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         // Handle context variables. These are supplied from the SKContext's Variables dictionary.
 
-        if (!type.IsByRef && GetParser(type) is Func<string, CultureInfo?, object> parser)
+        if (!type.IsByRef && GetParser(type) is Func<string, CultureInfo, object> parser)
         {
             // Use either the parameter's name or an override from an applied SKName attribute.
             SKNameAttribute? nameAttr = parameter.GetCustomAttribute<SKNameAttribute>(inherit: true);
@@ -676,7 +684,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
                     try
                     {
-                        return parser(value, /*culture*/null);
+                        return parser(value, ctx.Culture);
                     }
                     catch (Exception e) when (!e.IsCriticalException())
                     {
@@ -782,14 +790,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         if (!returnType.IsGenericType || returnType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            if (GetFormatter(returnType) is not Func<object?, CultureInfo?, string> formatter)
+            if (GetFormatter(returnType) is not Func<object?, CultureInfo, string> formatter)
             {
                 throw GetExceptionForInvalidSignature(method, $"Unknown return type {returnType}");
             }
 
             return (result, context) =>
             {
-                context.Variables.UpdateKeepingTrustState(formatter(result, /*culture*/null));
+                context.Variables.UpdateKeepingTrustState(formatter(result, context.Culture));
                 return Task.FromResult(context);
             };
         }
@@ -800,12 +808,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
         if (returnType.GetGenericTypeDefinition() is Type genericTask &&
             genericTask == typeof(Task<>) &&
             returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter &&
-            GetFormatter(taskResultGetter.ReturnType) is Func<object?, CultureInfo?, string> taskResultFormatter)
+            GetFormatter(taskResultGetter.ReturnType) is Func<object?, CultureInfo, string> taskResultFormatter)
         {
             return async (result, context) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                context.Variables.UpdateKeepingTrustState(taskResultFormatter(taskResultGetter.Invoke(result!, Array.Empty<object>()), /*culture*/null));
+                context.Variables.UpdateKeepingTrustState(taskResultFormatter(taskResultGetter.Invoke(result!, Array.Empty<object>()), context.Culture));
                 return context;
             };
         }
@@ -815,13 +823,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
             genericValueTask == typeof(ValueTask<>) &&
             returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
             valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter &&
-            GetFormatter(asTaskResultGetter.ReturnType) is Func<object?, CultureInfo?, string> asTaskResultFormatter)
+            GetFormatter(asTaskResultGetter.ReturnType) is Func<object?, CultureInfo, string> asTaskResultFormatter)
         {
             return async (result, context) =>
             {
                 Task task = (Task)valueTaskAsTask.Invoke(ThrowIfNullResult(result), Array.Empty<object>());
                 await task.ConfigureAwait(false);
-                context.Variables.Update(asTaskResultFormatter(asTaskResultGetter.Invoke(task!, Array.Empty<object>()), /*culture*/null));
+                context.Variables.Update(asTaskResultFormatter(asTaskResultGetter.Invoke(task!, Array.Empty<object>()), context.Culture));
                 return context;
             };
         }
@@ -868,7 +876,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// Parsing is first attempted using the current culture, and if that fails, it tries again
     /// with the invariant culture. If both fail, an exception is thrown.
     /// </remarks>
-    private static Func<string, CultureInfo?, object?>? GetParser(Type targetType) =>
+    private static Func<string, CultureInfo, object?>? GetParser(Type targetType) =>
         s_parsers.GetOrAdd(targetType, static targetType =>
         {
             // Strings just parse to themselves.
@@ -933,7 +941,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <remarks>
     /// Formatting is performed in the invariant culture whenever possible.
     /// </remarks>
-    private static Func<object?, CultureInfo?, string?>? GetFormatter(Type targetType) =>
+    private static Func<object?, CultureInfo, string?>? GetFormatter(Type targetType) =>
         s_formatters.GetOrAdd(targetType, static targetType =>
         {
             // For nullables, render as the underlying type.
@@ -1022,10 +1030,22 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]");
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<string, CultureInfo?, object>?> s_parsers = new();
+    private static readonly ConcurrentDictionary<Type, Func<string, CultureInfo, object>?> s_parsers = new();
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
-    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo?, string>?> s_formatters = new();
+    private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
+
+    /// <summary>Add default values to the context variables if the variable is not defined</summary>
+    private void AddDefaultValues(ContextVariables variables)
+    {
+        foreach (var parameter in this.Parameters)
+        {
+            if (!variables.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
+            {
+                variables[parameter.Name] = parameter.DefaultValue;
+            }
+        }
+    }
 
     #endregion
 }

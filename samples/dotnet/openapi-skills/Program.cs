@@ -113,7 +113,7 @@ internal sealed class Program
             int tokenCount = GPT3Tokenizer.Encode(JsonSerializer.Serialize(chatHistory)).Count;
             while (tokenCount > aiOptions.TokenLimit)
             {
-                chatHistory.Messages.RemoveAt(0);
+                chatHistory.Messages.RemoveAt(1);
                 tokenCount = GPT3Tokenizer.Encode(JsonSerializer.Serialize(chatHistory)).Count;
             }
             Console.WriteLine($"(tokens: {tokenCount})");

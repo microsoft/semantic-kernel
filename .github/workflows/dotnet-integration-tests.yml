@@ -7,7 +7,7 @@ name: dotnet-integration-tests
 on:
   workflow_dispatch:
   push:
-    branches: ["main", "feature*"]
+    branches: ["feature*"]
     paths: 
       - 'dotnet/**'
       - 'samples/dotnet/**'
