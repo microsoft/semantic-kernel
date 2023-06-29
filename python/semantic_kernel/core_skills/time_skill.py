@@ -9,7 +9,7 @@ class TimeSkill:
                  to get the current time and date.
 
     Usage:
-        kernel.import_skill("time", TimeSkill())
+        kernel.import_skill(TimeSkill(), skill_name="time")
 
     Examples:
         {{time.date}}            => Sunday, 12 January, 2031
