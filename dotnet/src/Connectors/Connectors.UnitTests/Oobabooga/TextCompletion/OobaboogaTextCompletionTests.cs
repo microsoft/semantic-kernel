@@ -17,8 +17,6 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Oobabooga.TextCompletion;
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously. System.Linq.Async Nuget package should be used globally eventually
-
 /// <summary>
 /// Unit tests for <see cref="OobaboogaTextCompletion"/> class.
 /// </summary>

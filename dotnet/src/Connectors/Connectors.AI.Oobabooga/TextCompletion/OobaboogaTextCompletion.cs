@@ -231,10 +231,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
             if (completionResponse is null)
             {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
-                {
-                    Data = { { "ModelResponse", body } },
-                };
+                throw new OobaboogaInvalidResponseException<string>(body, "Unexpected response from Oobabooga API");
             }
 
             return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
