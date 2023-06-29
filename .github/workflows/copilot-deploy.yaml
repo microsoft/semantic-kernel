@@ -1,0 +1,81 @@
+name: copilot-deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "samples/apps/copilot-chat-app/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { dotnet: "6.0", configuration: Release, os: ubuntu-latest }
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      NUGET_CERT_REVOCATION_MODE: offline
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          clean: true
+
+      - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
+        run: docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+
+      - name: Package Copilot Chat WebAPI
+        run: |
+          chmod +x $(pwd)/samples/apps/copilot-chat-app/deploy/package-webapi.sh;
+          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "/app/samples/apps/copilot-chat-app/deploy/package-webapi.sh --no-zip";
+
+      - name: Set version tag
+        id: versiontag
+        run: |
+          VERSION_TAG="$(date +'%Y%m%d').${{ github.run_number }}.${{ github.run_attempt }}"
+          echo $VERSION_TAG
+          echo "versiontag=$VERSION_TAG" >> $GITHUB_OUTPUT
+
+      - name: Upload package to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: copilotchat-webapi-${{ steps.versiontag.outputs.versiontag }}
+          path: ./samples/apps/copilot-chat-app/deploy/publish
+
+  int:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { dotnet: "6.0", configuration: Release, os: ubuntu-latest }
+
+    runs-on: ${{ matrix.os }}
+    environment: int
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          clean: true
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          client-id: ${{secrets.AZURE_CLIENT_ID}}
+          tenant-id: ${{secrets.AZURE_TENANT_ID}}
+          subscription-id: ${{secrets.AZURE_SUBSCRIPTION_ID}}
+
+      - name: deploy-infra
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.30.0
+          inlineScript: |
+            SUBSCRIPTION_ID=$(az account show --output json | jq -r '.id')
+            AI_SERVICE_KEY=$(az cognitiveservices account keys list --name ${{vars.AZUREOPENAI__NAME}} --resource-group ${{vars.AZUREOPENAI_DEPLOYMENT_GROUP_NAME}} | jq -r '.key1')
+            samples/apps/copilot-chat-app/deploy/deploy-azure.sh --subscription $SUBSCRIPTION_ID --resource-group ${{vars.CC_DEPLOYMENT_GROUP_NAME}} --deployment-name ${{vars.CC_DEPLOYMENT_NAME}} --region ${{vars.CC_DEPLOYMENT_REGION}} --ai-service AzureOpenAI --ai-endpoint ${{vars.AZUREOPENAI_ENDPOINT}} --ai-service-key $AI_SERVICE_KEY --app-service-sku ${{vars.WEBAPP_API_SKU}} --debug-deployment
