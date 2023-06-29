@@ -70,7 +70,7 @@ public class PostgresMemoryStoreTests
     }
 
     [Fact]
-    public async Task ItReturnsFalseWhenCollectionExistsAsync()
+    public async Task ItReturnsFalseWhenCollectionDoesNotExistAsync()
     {
         // Arrange
         const string collectionName = "non-existent-collection";
