@@ -67,10 +67,6 @@ jobs:
         with:
           clean: true
 
-      - name: Find solutions
-        shell: bash
-        run: az account show
-
       - name: Azure login
         uses: azure/login@v1
         with:
