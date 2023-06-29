@@ -3,11 +3,11 @@ package com.microsoft.semantickernel.memory;
 
 import com.microsoft.semantickernel.ai.EmbeddingVector;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,8 +19,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
 
 /** A simple volatile memory embeddings store. */
 public class VolatileMemoryStore implements MemoryStore {
@@ -243,6 +241,15 @@ public class VolatileMemoryStore implements MemoryStore {
                     collectionName);
         }
         return collection;
+    }
+
+    public static class Builder implements MemoryStore.Builder {
+
+        public Builder() {}
+        @Override
+        public MemoryStore build() {
+            return new VolatileMemoryStore();
+        }
     }
 
     /*

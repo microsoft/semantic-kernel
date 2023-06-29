@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.builders;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
+import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -47,6 +48,9 @@ public enum BuildersSingleton {
     private static final String FALLBACK_CHAT_COMPLETION_BUILDER_CLASS =
             "com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatCompletion$Builder";
 
+    private static final String FALLBACK_MEMORY_STORE_BUILDER_CLASS =
+            "com.microsoft.semantickernel.memory.VolatileMemoryStore$Builder";
+
     private final FunctionBuilders functionBuilders;
     private final Kernel.InternalBuilder kernelBuilder;
     private final TextCompletion.Builder textCompletionBuilder;
@@ -57,8 +61,8 @@ public enum BuildersSingleton {
     private final SKContext.Builder context;
     private final PromptTemplateEngine.Builder promptTemplateEngine;
     private final ChatCompletion.Builder chatCompletion;
-
     private final SemanticTextMemory.Builder semanticTextMemoryBuilder;
+    private final MemoryStore.Builder memoryStoreBuilder;
 
     BuildersSingleton() {
         try {
@@ -107,6 +111,10 @@ public enum BuildersSingleton {
             chatCompletion =
                     ServiceLoadUtil.findServiceLoader(
                             ChatCompletion.Builder.class, FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
+
+            memoryStoreBuilder =
+                    ServiceLoadUtil.findServiceLoader(
+                            MemoryStore.Builder.class, FALLBACK_MEMORY_STORE_BUILDER_CLASS);
 
         } catch (Throwable e) {
             Logger LOGGER = LoggerFactory.getLogger(BuildersSingleton.class);
@@ -175,5 +183,9 @@ public enum BuildersSingleton {
 
     public ChatCompletion.Builder getChatCompletion() {
         return chatCompletion;
+    }
+
+    public MemoryStore.Builder getMemoryStoreBuilder() {
+        return memoryStoreBuilder;
     }
 }
