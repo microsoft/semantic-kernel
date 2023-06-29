@@ -9,7 +9,6 @@ on:
   pull_request:
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -52,6 +51,9 @@ jobs:
           path: ./samples/apps/copilot-chat-app/deploy/publish
 
   int:
+    environment: int
+    permissions:
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -59,7 +61,6 @@ jobs:
           - { dotnet: "6.0", configuration: Release, os: ubuntu-latest }
 
     runs-on: ${{ matrix.os }}
-    environment: int
     needs: build
     steps:
       - uses: actions/checkout@v3
