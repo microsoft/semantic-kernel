@@ -51,7 +51,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
     /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
     /// <param name="streamingPort">The port used for handling streaming requests. Default value is 5005</param>
-    /// /// <param name="concurrentSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the streaming completion method by providing a <see cref="SemaphoreSlim"/> instance that will be used to control concurrent access. Calls in excess will wait for existing consumers to release the semaphore</param>
+    /// <param name="concurrentSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the either of the completion methods by providing a <see cref="SemaphoreSlim"/>. Calls in excess will wait for existing consumers to release the semaphore</param>
     /// <param name="httpClient">Optional. The HTTP client used for making blocking API requests. If not specified, a default client will be used.</param>
     /// <param name="useWebSocketsPooling">If true, websocket clients will be recycled in a reusable pool as long as concurrent calls are detected</param>
     /// <param name="webSocketsCleanUpCancellationToken">if websocket pooling is enabled, you can provide an optional CancellationToken to properly dispose of the clean up tasks when disposing of the connector</param>
