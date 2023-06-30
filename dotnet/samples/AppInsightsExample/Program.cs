@@ -19,10 +19,7 @@ public sealed class Program
 
         var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
 
-        using (telemetryClient.StartOperation<RequestTelemetry>("app-insights-demo"))
-        {
-            logger.LogInformation("Test information message in Application Insights.");
-        }
+        logger.LogInformation("This is test information message.");
 
         // Explicitly call Flush() followed by sleep is required in console apps.
         // This is to ensure that even if application terminates, telemetry is sent to the back-end.
