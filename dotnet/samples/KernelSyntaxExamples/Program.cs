@@ -160,5 +160,8 @@ public static class Program
 
         await Example51_StepwisePlanner.RunAsync();
         Console.WriteLine("== DONE ==");
+
+        await Example52_ReturnLinksToSource.RunAsync();
+        Console.WriteLine("== DONE ==");
     }
 }
