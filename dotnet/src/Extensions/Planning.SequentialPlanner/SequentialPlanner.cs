@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// </summary>
 public sealed class SequentialPlanner
 {
-    private const string StopSequence = "<!--";
+    private const string StopSequence = "<!-- END -->";
 
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
@@ -78,7 +78,8 @@ public sealed class SequentialPlanner
 
         try
         {
-            var plan = planResultString.ToPlanFromXml(goal, this._context, this.Config.AllowMissingFunctions);
+            var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
+            var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
 
             if (plan.Steps.Count == 0)
             {
