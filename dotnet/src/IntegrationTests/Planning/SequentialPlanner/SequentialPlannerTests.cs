@@ -39,6 +39,7 @@ public sealed class SequentialPlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        _ = kernel.ImportSkill(new EmailSkillFake());
         TestHelpers.GetSkills(kernel, "FunSkill");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
@@ -83,6 +84,7 @@ public sealed class SequentialPlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = true;
         IKernel kernel = this.InitializeKernel(useEmbeddings);
+        _ = kernel.ImportSkill(new EmailSkillFake());
 
         // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(kernel);
@@ -137,7 +139,6 @@ public sealed class SequentialPlannerTests : IDisposable
 
         var kernel = builder.Build();
 
-        _ = kernel.ImportSkill(new EmailSkillFake());
         return kernel;
     }
 
