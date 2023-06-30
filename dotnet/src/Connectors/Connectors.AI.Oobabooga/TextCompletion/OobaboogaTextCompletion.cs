@@ -34,7 +34,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private readonly Func<ClientWebSocket> _webSocketFactory;
     private readonly bool _useWebSocketsPooling;
     private readonly int _maxNbConcurrentWebSockets;
-    private readonly SemaphoreSlim? _concurrentCallSemaphore;
+    private readonly SemaphoreSlim? _concurrentSemaphore;
     private readonly ConcurrentBag<bool>? _activeConnections;
     private readonly ConcurrentBag<ClientWebSocket> _webSocketPool = new();
     private readonly int _keepAliveWebSocketsDuration;
@@ -52,19 +52,19 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
     /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
     /// <param name="streamingPort">The port used for handling streaming requests. Default value is 5005</param>
+    /// /// <param name="concurrentSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the streaming completion method by providing a <see cref="SemaphoreSlim"/> instance that will be used to control concurrent access. Calls in excess will wait for existing consumers to release the semaphore</param>
     /// <param name="httpClient">Optional. The HTTP client used for making blocking API requests. If not specified, a default client will be used.</param>
     /// <param name="useWebSocketsPooling">If true, websocket clients will be recycled in a reusable pool as long as concurrent calls are detected</param>
     /// <param name="keepAliveWebSocketsDuration">When pooling is enabled, pooled websockets are flushed on a regular basis when no more connections are made. This is the time to keep them in pool before flushing</param>
     /// <param name="webSocketFactory">Optional. The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
-    /// <param name="enforcedConcurrentCallSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the streaming completion method by providing a <see cref="SemaphoreSlim"/> instance that will be used to control concurrent access. Calls in excess will wait for existing consumers to release the semaphore</param>
     public OobaboogaTextCompletion(Uri endpoint,
         int blockingPort = 5000,
         int streamingPort = 5005,
+        SemaphoreSlim? concurrentSemaphore = null,
         HttpClient? httpClient = null,
         bool useWebSocketsPooling = true,
         int keepAliveWebSocketsDuration = 100,
-        Func<ClientWebSocket>? webSocketFactory = null,
-        SemaphoreSlim? enforcedConcurrentCallSemaphore = null)
+        Func<ClientWebSocket>? webSocketFactory = null)
     {
         Verify.NotNull(endpoint);
         this._blockingUri = new UriBuilder(endpoint)
@@ -105,10 +105,10 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         }
 
         // if a hard limit is defined, we use a semaphore to limit the number of concurrent calls, otherwise, we use a stack to track active connections
-        if (enforcedConcurrentCallSemaphore != null)
+        if (concurrentSemaphore != null)
         {
-            this._concurrentCallSemaphore = enforcedConcurrentCallSemaphore;
-            this._maxNbConcurrentWebSockets = enforcedConcurrentCallSemaphore.CurrentCount;
+            this._concurrentSemaphore = concurrentSemaphore;
+            this._maxNbConcurrentWebSockets = concurrentSemaphore.CurrentCount;
         }
         else
         {
@@ -358,9 +358,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <param name="cancellationToken"></param>
     private async Task StartConcurrentCallAsync(CancellationToken cancellationToken)
     {
-        if (this._concurrentCallSemaphore != null)
+        if (this._concurrentSemaphore != null)
         {
-            await this._concurrentCallSemaphore!.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await this._concurrentSemaphore!.WaitAsync(cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -374,9 +374,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <returns></returns>
     private int GetCurrentConcurrentCallsNb()
     {
-        if (this._concurrentCallSemaphore != null)
+        if (this._concurrentSemaphore != null)
         {
-            return this._maxNbConcurrentWebSockets - this._concurrentCallSemaphore!.CurrentCount;
+            return this._maxNbConcurrentWebSockets - this._concurrentSemaphore!.CurrentCount;
         }
 
         return this._activeConnections!.Count;
@@ -387,9 +387,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// </summary>
     private void FinishConcurrentCall()
     {
-        if (this._concurrentCallSemaphore != null)
+        if (this._concurrentSemaphore != null)
         {
-            this._concurrentCallSemaphore!.Release();
+            this._concurrentSemaphore!.Release();
         }
         else
         {

@@ -369,7 +369,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             httpClient: this._httpClient,
             webSocketFactory: webSocketFactory,
             keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
-            enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore);
+            concurrentSemaphore: enforcedConcurrentCallSemaphore);
 
         await using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse)
         {
