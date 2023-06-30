@@ -65,61 +65,60 @@ internal class WebSocketTestServer : IDisposable
 
         Guid requestId = Guid.NewGuid();
         this._requestContentQueues[requestId] = new ConcurrentQueue<byte[]>();
-
-        while (!this._cts.IsCancellationRequested && !closeRequested)
-        {
-            if (socketContext.WebSocket.State != WebSocketState.Open)
-            {
-                break;
-            }
-
-            WebSocketReceiveResult result;
-
-            try
-            {
-                result = await socketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), this._cts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                // Exit the loop if task was cancelled
-                break;
-            }
-
-            if (result.MessageType == WebSocketMessageType.Close)
-            {
-                closeRequested = true;
-
-                // Send back a close frame
-                await socketContext.WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing with close frame", this._cts.Token).ConfigureAwait(false);
-
-                break;
-            }
-
-            var receivedBytes = new ArraySegment<byte>(buffer, 0, result.Count).ToArray();
-            this._requestContentQueues[requestId].Enqueue(receivedBytes);
-
-            if (result.EndOfMessage)
-            {
-                var responseSegments = this._arraySegmentHandler(new ArraySegment<byte>(buffer, 0, result.Count));
-
-                if (this.RequestProcessingDelay.Ticks > 0)
-                {
-                    await Task.Delay(this.RequestProcessingDelay).ConfigureAwait(false);
-                }
-
-                foreach (var segment in responseSegments)
-                {
-                    await socketContext.WebSocket.SendAsync(segment, WebSocketMessageType.Text, true, this._cts.Token).ConfigureAwait(false);
-                }
-            }
-        }
-
         try
         {
-            if (socketContext.WebSocket.State == WebSocketState.Open || socketContext.WebSocket.State == WebSocketState.CloseReceived)
+            while (!this._cts.IsCancellationRequested && !closeRequested)
             {
-                await socketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing without close frame", CancellationToken.None).ConfigureAwait(false);
+                if (socketContext.WebSocket.State != WebSocketState.Open)
+                {
+                    break;
+                }
+
+                WebSocketReceiveResult result;
+
+                result = await socketContext.WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), this._cts.Token).ConfigureAwait(false);
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    closeRequested = true;
+                    // Send back a close frame
+                    await socketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing without waiting for acknowledgment", this._cts.Token).ConfigureAwait(false);
+
+                    break;
+                }
+
+                var receivedBytes = new ArraySegment<byte>(buffer, 0, result.Count).ToArray();
+                this._requestContentQueues[requestId].Enqueue(receivedBytes);
+
+                if (result.EndOfMessage)
+                {
+                    var responseSegments = this._arraySegmentHandler(new ArraySegment<byte>(buffer, 0, result.Count));
+
+                    if (this.RequestProcessingDelay.Ticks > 0)
+                    {
+                        await Task.Delay(this.RequestProcessingDelay).ConfigureAwait(false);
+                    }
+
+                    foreach (var segment in responseSegments)
+                    {
+                        await socketContext.WebSocket.SendAsync(segment, WebSocketMessageType.Text, true, this._cts.Token).ConfigureAwait(false);
+                    }
+                }
             }
+
+            if (socketContext.WebSocket.State == WebSocketState.Open)
+            {
+                await socketContext.WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing waiting for acknowledgement", CancellationToken.None).ConfigureAwait(false);
+            }
+            else if (socketContext.WebSocket.State == WebSocketState.CloseReceived)
+            {
+                await socketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing without waiting for acknowledgment", CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (WebSocketException)
+        {
         }
         finally
         {

@@ -18,6 +18,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Threading.Channels" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 
