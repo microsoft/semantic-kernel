@@ -255,12 +255,13 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact]
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync()
     {
+        using SemaphoreSlim enforcedConcurrentCallSemaphore = new(20);
         await this.RunWebSocketMultiPacketStreamingTestAsync(
             nbConcurrentCalls: 10000,
             isPersistent: true,
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 0,
-            maxNbConcurrentSockets: 20,
+            enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
             maxExpectedNbClients: 20).ConfigureAwait(false);
     }
 
@@ -271,13 +272,14 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact]
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingServiceWithSemaphoreAsync()
     {
+        using SemaphoreSlim enforcedConcurrentCallSemaphore = new(20);
         await this.RunWebSocketMultiPacketStreamingTestAsync(
             nbConcurrentCalls: 50,
             isPersistent: true,
             requestProcessingDuration: 1000,
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 0,
-            maxNbConcurrentSockets: 20,
+            enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
             maxExpectedNbClients: 20,
             maxTestDuration: 5000).ConfigureAwait(false);
     }
@@ -324,7 +326,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         int requestProcessingDuration = 0,
         int keepAliveWebSocketsDuration = 100,
         int concurrentCallsTicksDelay = 0,
-        int maxNbConcurrentSockets = 0,
+        SemaphoreSlim? enforcedConcurrentCallSemaphore = null,
         int maxExpectedNbClients = 0,
         int maxTestDuration = 0)
     {
@@ -367,7 +369,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             httpClient: this._httpClient,
             webSocketFactory: webSocketFactory,
             keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
-            maxNbConcurrentWebSockets: maxNbConcurrentSockets);
+            enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore);
 
         await using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse)
         {

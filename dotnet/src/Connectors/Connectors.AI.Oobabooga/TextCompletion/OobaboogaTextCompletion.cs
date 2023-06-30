@@ -28,14 +28,12 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     public const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
 
-    private readonly Uri _endpoint;
-    private readonly int _blockingPort;
-    private readonly int _maxNbConcurrentWebSockets;
+    private readonly UriBuilder _blockingUri;
     private readonly UriBuilder _streamingUri;
     private readonly HttpClient _httpClient;
     private readonly Func<ClientWebSocket> _webSocketFactory;
     private readonly bool _useWebSocketsPooling;
-
+    private readonly int _maxNbConcurrentWebSockets;
     private readonly SemaphoreSlim? _concurrentCallSemaphore;
     private readonly ConcurrentBag<bool>? _activeConnections;
     private readonly ConcurrentBag<ClientWebSocket> _webSocketPool = new();
@@ -58,7 +56,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <param name="useWebSocketsPooling">If true, websocket clients will be recycled in a reusable pool as long as concurrent calls are detected</param>
     /// <param name="keepAliveWebSocketsDuration">When pooling is enabled, pooled websockets are flushed on a regular basis when no more connections are made. This is the time to keep them in pool before flushing</param>
     /// <param name="webSocketFactory">Optional. The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
-    /// <param name="maxNbConcurrentWebSockets">the max number of concurrent calls to this method. Additional calls wait for existing consumers to release a semaphore</param>
+    /// <param name="enforcedConcurrentCallSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the streaming completion method by providing a <see cref="SemaphoreSlim"/> instance that will be used to control concurrent access. Calls in excess will wait for existing consumers to release the semaphore</param>
     public OobaboogaTextCompletion(Uri endpoint,
         int blockingPort,
         int streamingPort,
@@ -66,14 +64,15 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         bool useWebSocketsPooling = true,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null,
-        int maxNbConcurrentWebSockets = 0)
+        SemaphoreSlim? enforcedConcurrentCallSemaphore = null)
     {
         Verify.NotNull(endpoint);
-
-        this._endpoint = endpoint;
-        this._blockingPort = blockingPort;
-        this._maxNbConcurrentWebSockets = maxNbConcurrentWebSockets;
-        this._streamingUri = new(this._endpoint)
+        this._blockingUri = new UriBuilder(endpoint)
+        {
+            Port = blockingPort,
+            Path = BlockingUriPath
+        };
+        this._streamingUri = new(endpoint)
         {
             Port = streamingPort,
             Path = StreamingUriPath
@@ -106,13 +105,15 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         }
 
         // if a hard limit is defined, we use a semaphore to limit the number of concurrent calls, otherwise, we use a stack to track active connections
-        if (this._maxNbConcurrentWebSockets > 0)
+        if (enforcedConcurrentCallSemaphore != null)
         {
-            this._concurrentCallSemaphore = new(maxNbConcurrentWebSockets);
+            this._concurrentCallSemaphore = enforcedConcurrentCallSemaphore;
+            this._maxNbConcurrentWebSockets = enforcedConcurrentCallSemaphore.CurrentCount;
         }
         else
         {
             this._activeConnections = new();
+            this._maxNbConcurrentWebSockets = 0;
         }
 
         if (this._useWebSocketsPooling)
@@ -199,11 +200,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     {
         try
         {
-            var blockingUri = new UriBuilder(this._endpoint)
-            {
-                Port = this._blockingPort,
-                Path = BlockingUriPath
-            };
+            await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
 
             var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
 
@@ -215,7 +212,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             using var httpRequestMessage = new HttpRequestMessage()
             {
                 Method = HttpMethod.Post,
-                RequestUri = blockingUri.Uri,
+                RequestUri = this._blockingUri.Uri,
                 Content = stringContent
             };
             httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
@@ -239,6 +236,10 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
                 $"Something went wrong: {e.Message}", e);
+        }
+        finally
+        {
+            this.FinishConcurrentCall();
         }
     }
 
@@ -357,7 +358,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <param name="cancellationToken"></param>
     private async Task StartConcurrentCallAsync(CancellationToken cancellationToken)
     {
-        if (this._maxNbConcurrentWebSockets > 0)
+        if (this._concurrentCallSemaphore != null)
         {
             await this._concurrentCallSemaphore!.WaitAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -373,7 +374,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <returns></returns>
     private int GetCurrentConcurrentCallsNb()
     {
-        if (this._maxNbConcurrentWebSockets > 0)
+        if (this._concurrentCallSemaphore != null)
         {
             return this._maxNbConcurrentWebSockets - this._concurrentCallSemaphore!.CurrentCount;
         }
@@ -386,7 +387,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// </summary>
     private void FinishConcurrentCall()
     {
-        if (this._maxNbConcurrentWebSockets > 0)
+        if (this._concurrentCallSemaphore != null)
         {
             this._concurrentCallSemaphore!.Release();
         }
