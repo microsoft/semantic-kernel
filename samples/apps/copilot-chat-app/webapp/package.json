@@ -8,6 +8,7 @@
     "auth:mac": "better-vsts-npm-auth -config .npmrc",
     "depcheck": "depcheck --ignores=\"@types/*,typescript\" --ignore-dirs=\".vscode,.vs,.git,node_modules\" --skip-missing",
     "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "prettify": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,scss,css,html,svg}\"",
     "serve": "serve -s build",
     "start": "react-scripts start",
@@ -44,9 +45,16 @@
     "http-server": "^14.1.1",
     "prettier": "^2.8.1",
     "serve": "^14.2.0",
-    "typescript": "*",
+    "typescript": "5.0.4",
     "vsts-npm-auth": "^0.42.1",
     "workbox-window": "^6.5.4"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest",
+      "../../.eslintrc.js"
+    ]
   },
   "browserslist": {
     "production": [

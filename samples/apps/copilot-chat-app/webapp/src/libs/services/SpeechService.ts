@@ -13,7 +13,7 @@ export class SpeechService extends BaseService {
     getSpeechTokenAsync = async (accessToken: string): Promise<TokenResponse> => {
         const result = await this.getResponseAsync<TokenResponse>(
             {
-                commandPath: `speechToken`,
+                commandPath: 'speechToken',
                 method: 'GET',
             },
             accessToken,
@@ -22,17 +22,17 @@ export class SpeechService extends BaseService {
         return result;
     };
 
-    getSpeechRecognizerAsyncWithValidKey = async (response: TokenResponse) => {
+    getSpeechRecognizerAsyncWithValidKey = (response: TokenResponse) => {
         const { token, region, isSuccess } = response;
-        
-        if(isSuccess) {
+
+        if (isSuccess) {
             return this.generateSpeechRecognizer(token, region);
         }
 
-        return;
+        return undefined;
     };
 
-    private generateSpeechRecognizer ( token: string, region: string) {
+    private generateSpeechRecognizer(token: string, region: string) {
         const speechConfig = speechSdk.SpeechConfig.fromAuthorizationToken(token, region);
         speechConfig.speechRecognitionLanguage = 'en-US';
         const audioConfig = speechSdk.AudioConfig.fromDefaultMicrophoneInput();
