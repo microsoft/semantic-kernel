@@ -212,7 +212,7 @@ public class ChromaMemoryStore : IMemoryStore
             metadatas[i] = recordsArray[i].Metadata;
         }
 
-        await this._chromaClient.AddEmbeddingsAsync(collection.Id, ids, embeddings, metadatas, cancellationToken).ConfigureAwait(false);
+        await this._chromaClient.UpsertEmbeddingsAsync(collection.Id, ids, embeddings, metadatas, cancellationToken).ConfigureAwait(false);
 
         foreach (var record in recordsArray)
         {
