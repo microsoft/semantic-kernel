@@ -123,7 +123,7 @@ class AzureCognitiveSearchMemoryTests
         // HttpResponse is based on this api-version
         assertTrue(request.getUrl().getQuery().contains("api-version=2021-04-30-Preview"));
 
-        System.err.println(request.getHttpMethod() + " " + request.getUrl() + "\n\t" + request.getHeaders());
+//        System.err.println(request.getHttpMethod() + " " + request.getUrl() + "\n\t" + request.getHeaders());
         byte[] body = responseBody.apply(request).getBytes(StandardCharsets.UTF_8);
         int statusCode = responseStatusCode.apply(request);
         HttpHeaders httpHeaders = new HttpHeaders().add("Content-Type", "application/json; charset=utf-8");
@@ -269,7 +269,7 @@ class AzureCognitiveSearchMemoryTests
 
         //Assert
     }
-    
+
     @Test
     void azureCognitiveSearchMemoryStoreSearchAsync() {
         //Arrange
