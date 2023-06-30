@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -83,21 +84,38 @@ public sealed class ActionPlanner
         SKContext result = await this._plannerFunction.InvokeAsync(this._context).ConfigureAwait(false);
 
         ActionPlanResponse? planData;
-        try
+
+        /* Filter out good JSON from the result in case additional text is present:
+        * Follows the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions 
+        */
+        Regex planRegex = new(@"^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline);
+        Match match = planRegex.Match(result.ToString());
+
+        if (match.Success && match.Groups["Close"].Length > 0)
         {
-            planData = JsonSerializer.Deserialize<ActionPlanResponse?>(result.ToString(), new JsonSerializerOptions
+            string planJson = $"{{{match.Groups["Close"].Value}}}";
+            try
             {
-                AllowTrailingCommas = true,
-                DictionaryKeyPolicy = null,
-                DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-                PropertyNameCaseInsensitive = true,
-            });
+                planData = JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, new JsonSerializerOptions
+                {
+                    AllowTrailingCommas = true,
+                    DictionaryKeyPolicy = null,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+                    PropertyNameCaseInsensitive = true,
+                });
+            }
+            catch (Exception e)
+            {
+                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
+                    "Plan parsing error, invalid JSON", e);
+            }
         }
-        catch (Exception e)
+        else
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
-                "Plan parsing error, invalid JSON", e);
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan json string: '{result.ToString()}'");
         }
+
+
 
         if (planData == null)
         {
