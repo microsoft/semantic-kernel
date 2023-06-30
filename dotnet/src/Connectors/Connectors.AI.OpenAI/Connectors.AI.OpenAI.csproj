@@ -28,16 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Tokenizers\Settings\encoder.json" />
-    <Content Include="Tokenizers\Settings\encoder.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <None Remove="Tokenizers\Settings\vocab.bpe" />
-    <Content Include="Tokenizers\Settings\vocab.bpe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
+    <EmbeddedResource Include="Tokenizers\Settings\encoder.json" LogicalName="encoder.json" />
+    <EmbeddedResource Include="Tokenizers\Settings\vocab.bpe" LogicalName="vocab.bpe" />
   </ItemGroup>
 
 </Project>
