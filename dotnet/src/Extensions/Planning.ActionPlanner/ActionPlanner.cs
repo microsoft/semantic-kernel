@@ -112,7 +112,7 @@ public sealed class ActionPlanner
         }
         else
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan json string: '{result.ToString()}'");
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to extract valid json string from planner result: '{result.ToString()}'");
         }
 
 
