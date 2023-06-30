@@ -91,8 +91,6 @@ class AzureCognitiveSearchMemoryTests
     @BeforeEach
     void setUp() {
 
-        setupHttpHeaders();
-
         HttpPipeline pipeline = setUpHttpPipeline();
 
         SearchIndexAsyncClient searchIndexAsyncClient = new SearchIndexClientBuilder()
@@ -108,12 +106,7 @@ class AzureCognitiveSearchMemoryTests
                 .build();
 
     }
-
-    private void setupHttpHeaders() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Content-Type", "application/json");
-    }
-
+    
     private HttpPipeline setUpHttpPipeline() {
 
         HttpPipeline pipeline = Mockito.mock(HttpPipeline.class);
