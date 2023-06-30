@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion.TextCompletionResults;
@@ -40,6 +41,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private readonly ConcurrentBag<bool>? _activeConnections;
     private readonly ConcurrentBag<ClientWebSocket> _webSocketPool = new();
     private readonly int _keepAliveWebSocketsDuration;
+    private readonly ILogger? _logger;
     private long _lastCallTicks = long.MaxValue;
 
     /// <summary>
@@ -60,6 +62,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <param name="keepAliveWebSocketsDuration">When pooling is enabled, pooled websockets are flushed on a regular basis when no more connections are made. This is the time to keep them in pool before flushing</param>
     /// <param name="webSocketFactory">The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
     /// <param name="streamingResultType">Several implementations of asynchronous completion streaming results are available depending on use cases: default Channel based implementation is very efficient but only support a single enumeration of results by a single consumer. This is generally sufficient, but if you need multiple consumers broadcast of streaming result chunks, your should look for alternatives</param>
+    /// <param name="logger">Application logger</param>
     public OobaboogaTextCompletion(Uri endpoint,
         int blockingPort = 5000,
         int streamingPort = 5005,
@@ -69,7 +72,8 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         CancellationToken? webSocketsCleanUpCancellationToken = default,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null,
-        TextCompletionStreamingResultType streamingResultType = TextCompletionStreamingResultType.ChannelBased)
+        TextCompletionStreamingResultType streamingResultType = TextCompletionStreamingResultType.ChannelBased,
+        ILogger? logger = null)
     {
         Verify.NotNull(endpoint);
         this._blockingUri = new UriBuilder(endpoint)
@@ -90,6 +94,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._useWebSocketsPooling = useWebSocketsPooling;
         this._keepAliveWebSocketsDuration = keepAliveWebSocketsDuration;
+        this._logger = logger;
         if (webSocketFactory != null)
         {
             this._webSocketFactory = () =>
@@ -194,7 +199,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 }
                 else
                 {
-                    await DisposeClientGracefullyAsync(clientWebSocket).ConfigureAwait(false);
+                    await this.DisposeClientGracefullyAsync(clientWebSocket).ConfigureAwait(false);
                 }
             }
 
@@ -446,18 +451,19 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
                 while (this.GetCurrentConcurrentCallsNb() == 0 && this._webSocketPool.TryTake(out ClientWebSocket clientToDispose))
                 {
-                    await DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
+                    await this.DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
                 }
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException oce)
         {
+            this._logger?.LogWarning(message: "FlushWebSocketClientsAsync cleaning task was cancelled", exception: oce);
         }
         finally
         {
             while (this._webSocketPool.TryTake(out ClientWebSocket clientToDispose))
             {
-                await DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
+                await this.DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
             }
         }
     }
@@ -465,7 +471,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <summary>
     /// Closes and disposes of a client web socket after use
     /// </summary>
-    private static async Task DisposeClientGracefullyAsync(ClientWebSocket clientWebSocket)
+    private async Task DisposeClientGracefullyAsync(ClientWebSocket clientWebSocket)
     {
         try
         {
@@ -474,11 +480,13 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing client before disposal", CancellationToken.None).ConfigureAwait(false);
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException oce)
         {
+            this._logger?.LogWarning(message: "Closing client web socket before disposal was cancelled", exception: oce);
         }
-        catch (WebSocketException)
+        catch (WebSocketException wse)
         {
+            this._logger?.LogWarning(message: "Closing client web socket before disposal raised web socket exception", exception: wse);
         }
         finally
         {

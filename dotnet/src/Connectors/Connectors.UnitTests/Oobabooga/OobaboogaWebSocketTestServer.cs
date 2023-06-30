@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
 namespace SemanticKernel.Connectors.UnitTests.Oobabooga;
@@ -16,8 +17,8 @@ namespace SemanticKernel.Connectors.UnitTests.Oobabooga;
 /// </summary>
 internal sealed class OobaboogaWebSocketTestServer : WebSocketTestServer
 {
-    public OobaboogaWebSocketTestServer(string url, Func<string, List<string>> stringHandler)
-        : base(url, bytes => HandleRequest(bytes, stringHandler))
+    public OobaboogaWebSocketTestServer(string url, Func<string, List<string>> stringHandler, ILogger? logger = null)
+        : base(url, bytes => HandleRequest(bytes, stringHandler), logger: logger)
     {
     }
 

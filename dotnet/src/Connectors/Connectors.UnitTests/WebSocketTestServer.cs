@@ -8,11 +8,13 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace SemanticKernel.Connectors.UnitTests;
 
 internal class WebSocketTestServer : IDisposable
 {
+    private readonly ILogger? _logger;
     private readonly HttpListener _httpListener;
     private Func<ArraySegment<byte>, List<ArraySegment<byte>>> _arraySegmentHandler;
     private readonly CancellationTokenSource _cts;
@@ -31,8 +33,9 @@ internal class WebSocketTestServer : IDisposable
         }
     }
 
-    public WebSocketTestServer(string url, Func<ArraySegment<byte>, List<ArraySegment<byte>>> arraySegmentHandler)
+    public WebSocketTestServer(string url, Func<ArraySegment<byte>, List<ArraySegment<byte>>> arraySegmentHandler, ILogger? logger = null)
     {
+        this._logger = logger;
         this._httpListener = new HttpListener();
         this._httpListener.Prefixes.Add(url);
         this._httpListener.Start();
@@ -114,11 +117,13 @@ internal class WebSocketTestServer : IDisposable
                 await socketContext.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing without waiting for acknowledgment", CancellationToken.None).ConfigureAwait(false);
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException oce)
         {
+            this._logger?.LogWarning(message: "Closing server web socket before disposal was cancelled", exception: oce);
         }
-        catch (WebSocketException)
+        catch (WebSocketException wse)
         {
+            this._logger?.LogWarning(message: "Closing server web socket before disposal raised web socket exception", exception: wse);
         }
         finally
         {
@@ -132,6 +137,11 @@ internal class WebSocketTestServer : IDisposable
         try
         {
             await Task.WhenAll(this._runningTasks).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            this._logger?.LogWarning(message: "Disposing web socket test server raised exception", exception: ex);
+            throw;
         }
         finally
         {

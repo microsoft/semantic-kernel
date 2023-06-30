@@ -15,6 +15,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion.TextCompletionResults;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SemanticKernel.Connectors.UnitTests.Oobabooga.TextCompletion;
 
@@ -23,6 +24,7 @@ namespace SemanticKernel.Connectors.UnitTests.Oobabooga.TextCompletion;
 /// </summary>
 public sealed class OobaboogaTextCompletionTests : IDisposable
 {
+    private readonly XunitLogger<OobaboogaTextCompletion> _logger;
     private const string EndPoint = "https://fake-random-test-host";
     private const int BlockingPort = 1234;
     private const int StreamingPort = 2345;
@@ -34,8 +36,9 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private Uri _endPointUri;
     private string _streamCompletionResponseStub;
 
-    public OobaboogaTextCompletionTests()
+    public OobaboogaTextCompletionTests(ITestOutputHelper output)
     {
+        this._logger = new XunitLogger<OobaboogaTextCompletion>(output);
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OobaboogaTestHelper.GetTestResponse("completion_test_response.json"));
         this._streamCompletionResponseStub = OobaboogaTestHelper.GetTestResponse("completion_test_streaming_response.json");
@@ -48,7 +51,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
+        var sut = new OobaboogaTextCompletion(endpoint: this._endPointUri,
+            blockingPort: BlockingPort,
+            httpClient: this._httpClient,
+            logger: this._logger);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -66,7 +72,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
+        var sut = new OobaboogaTextCompletion(endpoint: this._endPointUri,
+            blockingPort: BlockingPort,
+            httpClient: this._httpClient,
+            logger: this._logger);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -79,13 +88,18 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task BlockingUrlShouldBeBuiltSuccessfullyAsync()
     {
         //Arrange
-        var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
+        var sut = new OobaboogaTextCompletion(endpoint: this._endPointUri,
+            blockingPort: BlockingPort,
+            httpClient: this._httpClient,
+            logger: this._logger);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
-        var expectedUri = new UriBuilder(this._endPointUri);
-        expectedUri.Path = OobaboogaTextCompletion.BlockingUriPath;
-        expectedUri.Port = BlockingPort;
+        var expectedUri = new UriBuilder(this._endPointUri)
+        {
+            Path = OobaboogaTextCompletion.BlockingUriPath,
+            Port = BlockingPort
+        };
 
         //Assert
         Assert.Equal(expectedUri.Uri, this._messageHandlerStub.RequestUri);
@@ -95,7 +109,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
-        var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
+        var sut = new OobaboogaTextCompletion(endpoint: this._endPointUri,
+            blockingPort: BlockingPort,
+            httpClient: this._httpClient,
+            logger: this._logger);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -111,7 +128,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ShouldHandleServiceResponseAsync()
     {
         //Arrange
-        var sut = new OobaboogaTextCompletion(this._endPointUri, BlockingPort, StreamingPort, httpClient: this._httpClient);
+        var sut = new OobaboogaTextCompletion(endpoint: this._endPointUri,
+            blockingPort: BlockingPort,
+            httpClient: this._httpClient,
+            logger: this._logger);
 
         //Act
         var result = await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -135,7 +155,8 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             endpoint: new Uri("http://localhost/"),
             streamingPort: StreamingPort,
             useWebSocketsPooling: false,
-            webSocketFactory: () => webSocketClient);
+            webSocketFactory: () => webSocketClient,
+            logger: this._logger);
 
         await this.ShouldHandleStreamingServiceResponseAsync(sut).ConfigureAwait(false);
     }
@@ -146,7 +167,8 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var sut = new OobaboogaTextCompletion(
             endpoint: new Uri("http://localhost/"),
             streamingPort: StreamingPort,
-            useWebSocketsPooling: false);
+            useWebSocketsPooling: false,
+            logger: this._logger);
 
         await this.ShouldHandleStreamingServiceResponseAsync(sut).ConfigureAwait(false);
     }
@@ -217,19 +239,19 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact]
     public async Task ShouldHandleMultiPacketStreamingServicePersistentWebSocketResponseAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync( isPersistent: true).ConfigureAwait(false);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(isPersistent: true).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task ShouldHandleConcurrentMultiPacketStreamingServiceTransientWebSocketResponseAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync( nbConcurrentCalls: 10).ConfigureAwait(false);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task ShouldHandleConcurrentMultiPacketStreamingServicePersistentWebSocketResponseAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync( nbConcurrentCalls: 10, isPersistent: true).ConfigureAwait(false);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10, isPersistent: true).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -239,7 +261,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact]
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync( nbConcurrentCalls: 1000,
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 1000,
             isPersistent: true,
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 10000,
@@ -253,7 +275,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync()
     {
         using SemaphoreSlim enforcedConcurrentCallSemaphore = new(20);
-        await this.RunWebSocketMultiPacketStreamingTestAsync( nbConcurrentCalls: 10000,
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10000,
             isPersistent: true,
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 0,
@@ -302,8 +324,8 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var requestMessage = CompletionMultiText;
         var expectedResponse = new List<string> { " John", ". I", "'m a", " writer" };
 
-        using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse);
-        var sut = new OobaboogaTextCompletion(endpoint: new Uri("http://localhost/"), streamingPort: StreamingPort, httpClient: this._httpClient, streamingResultType:TextCompletionStreamingResultType.BroadcastBlockBased);
+        using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse, logger: this._logger);
+        var sut = new OobaboogaTextCompletion(endpoint: new Uri("http://localhost/"), streamingPort: StreamingPort, httpClient: this._httpClient, streamingResultType: TextCompletionStreamingResultType.BroadcastBlockBased);
 
         var completionStream = sut.CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
         {
@@ -347,7 +369,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var requestMessage = CompletionMultiText;
         var expectedResponse = new List<string> { " John", ". I", "'m a", " writer" };
 
-        using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse);
+        using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse, logger: this._logger);
         var sut = new OobaboogaTextCompletion(endpoint: new Uri("http://localhost/"), streamingPort: StreamingPort, httpClient: this._httpClient, streamingResultType: TextCompletionStreamingResultType.MonitorBased);
 
         var completionStream = sut.CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
@@ -391,7 +413,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingServiceWithSemaphoreAsync()
     {
         using SemaphoreSlim enforcedConcurrentCallSemaphore = new(20);
-        await this.RunWebSocketMultiPacketStreamingTestAsync( nbConcurrentCalls: 50,
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 50,
             isPersistent: true,
             requestProcessingDuration: 1000,
             keepAliveWebSocketsDuration: 100,
@@ -408,7 +430,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => new List<string>(new[]
         {
             expectedResponse
-        }));
+        }), logger: this._logger);
 
         var localResponse = sut.CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
         {
@@ -489,9 +511,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             webSocketFactory: webSocketFactory,
             keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
             concurrentSemaphore: enforcedConcurrentCallSemaphore,
-            streamingResultType: streamingResultType);
+            streamingResultType: streamingResultType,
+            logger: this._logger);
 
-        await using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse)
+        await using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse, logger: this._logger)
         {
             RequestProcessingDelay = TimeSpan.FromMilliseconds(requestProcessingDuration)
         };
@@ -507,7 +530,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
                     Temperature = 0.01,
                     MaxTokens = 7,
                     TopP = 0.1,
-                }).ToListAsync().ConfigureAwait(false);
+                }, cancellationToken: cleanupToken.Token).ToListAsync(cancellationToken: cleanupToken.Token).ConfigureAwait(false);
                 return localResponse;
             }));
 
@@ -544,5 +567,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
+        this._logger.Dispose();
     }
 }
