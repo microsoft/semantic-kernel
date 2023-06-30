@@ -128,27 +128,24 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact]
     public async Task ShouldHandleStreamingServicePersistentWebSocketResponseAsync()
     {
-        using (var webSocketClient = new ClientWebSocket())
-        {
-            var sut = new OobaboogaTextCompletion(
-                new Uri("http://localhost/"),
-                BlockingPort,
-                StreamingPort,
-                httpClient: this._httpClient,
-                webSocketFactory: () => webSocketClient);
+        using var webSocketClient = new ClientWebSocket();
 
-            await this.ShouldHandleStreamingServiceResponseAsync(sut).ConfigureAwait(false);
-        }
+        var sut = new OobaboogaTextCompletion(
+            endpoint: new Uri("http://localhost/"),
+            streamingPort: StreamingPort,
+            useWebSocketsPooling: false,
+            webSocketFactory: () => webSocketClient);
+
+        await this.ShouldHandleStreamingServiceResponseAsync(sut).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task ShouldHandleStreamingServiceTransientWebSocketResponseAsync()
     {
         var sut = new OobaboogaTextCompletion(
-            new Uri("http://localhost/"),
-            BlockingPort,
-            StreamingPort,
-            httpClient: this._httpClient);
+            endpoint: new Uri("http://localhost/"),
+            streamingPort: StreamingPort,
+            useWebSocketsPooling: false);
 
         await this.ShouldHandleStreamingServiceResponseAsync(sut).ConfigureAwait(false);
     }
@@ -362,11 +359,13 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             }
         }
 
+        using var cleanupToken = new CancellationTokenSource();
+
         var sut = new OobaboogaTextCompletion(
-            new Uri("http://localhost/"),
-            BlockingPort,
-            StreamingPort,
+            endpoint: new Uri("http://localhost/"),
+            streamingPort: StreamingPort,
             httpClient: this._httpClient,
+            webSocketsCleanUpCancellationToken: cleanupToken.Token,
             webSocketFactory: webSocketFactory,
             keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
             concurrentSemaphore: enforcedConcurrentCallSemaphore);

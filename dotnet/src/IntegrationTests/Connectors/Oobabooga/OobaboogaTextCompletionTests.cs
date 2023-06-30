@@ -47,7 +47,9 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionAsync()
     {
-        var oobaboogaLocal = new OobaboogaTextCompletion(new Uri(Endpoint), BlockingPort, StreamingPort);
+        var oobaboogaLocal = new OobaboogaTextCompletion(
+            endpoint: new Uri(Endpoint),
+            blockingPort: BlockingPort);
 
         // Act
         var localResponse = await oobaboogaLocal.CompleteAsync(Input, new CompleteRequestSettings()
@@ -63,7 +65,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionStreamingAsync()
     {
-        var oobaboogaLocal = new OobaboogaTextCompletion(new Uri(Endpoint), BlockingPort, StreamingPort, webSocketFactory: this._webSocketFactory);
+        var oobaboogaLocal = new OobaboogaTextCompletion(
+            endpoint: new Uri(Endpoint),
+            streamingPort: StreamingPort,
+            webSocketFactory: this._webSocketFactory);
 
         // Act
         var localResponse = oobaboogaLocal.CompleteStreamAsync(Input, new CompleteRequestSettings()
