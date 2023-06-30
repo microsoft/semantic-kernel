@@ -88,12 +88,12 @@ public sealed class ActionPlanner
         /* Filter out good JSON from the result in case additional text is present:
         * Follows the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions 
         */
-        Regex planRegex = new(@"^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline);
+        Regex planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline);
         Match match = planRegex.Match(result.ToString());
 
         if (match.Success && match.Groups["Close"].Length > 0)
         {
-            string planJson = $"{{{match.Groups["Close"].Value}}}";
+            string planJson = $"{{{match.Groups["Close"]}}}";
             try
             {
                 planData = JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, new JsonSerializerOptions
@@ -112,10 +112,8 @@ public sealed class ActionPlanner
         }
         else
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to extract valid json string from planner result: '{result.ToString()}'");
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to extract valid json string from planner result: '{result}'");
         }
-
-
 
         if (planData == null)
         {
