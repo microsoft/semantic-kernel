@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.connectors.memory.azurecognitivesearch;
 
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.HttpHeaders;
-import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
@@ -20,14 +19,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import reactor.core.publisher.Mono;
 
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -106,7 +102,7 @@ class AzureCognitiveSearchMemoryTests
                 .build();
 
     }
-    
+
     private HttpPipeline setUpHttpPipeline() {
 
         HttpPipeline pipeline = Mockito.mock(HttpPipeline.class);
@@ -274,63 +270,6 @@ class AzureCognitiveSearchMemoryTests
         //Assert
     }
     
-    //{
-    //    "@odata.count": # (if $count=true was provided in the query),
-    //    "@search.coverage": # (if minimumCoverage was provided in the query),
-    //    "@search.facets": { (if faceting was specified in the query)
-    //      "facet_field": [
-    //        {
-    //          "value": facet_entry_value (for non-range facets),
-    //          "from": facet_entry_value (for range facets),
-    //          "to": facet_entry_value (for range facets),
-    //          "count": number_of_documents
-    //        }
-    //      ],
-    //      ...
-    //    },
-    //    "@search.nextPageParameters": { (request body to fetch the next page of results if not all results could be returned in this response and Search was called with POST)
-    //      "count": ... (value from request body if present),
-    //      "facets": ... (value from request body if present),
-    //      "filter": ... (value from request body if present),
-    //      "highlight": ... (value from request body if present),
-    //      "highlightPreTag": ... (value from request body if present),
-    //      "highlightPostTag": ... (value from request body if present),
-    //      "minimumCoverage": ... (value from request body if present),
-    //      "orderby": ... (value from request body if present),
-    //      "scoringParameters": ... (value from request body if present),
-    //      "scoringProfile": ... (value from request body if present),
-    //      "scoringStatistics": ... (value from request body if present),
-    //      "search": ... (value from request body if present),
-    //      "searchFields": ... (value from request body if present),
-    //      "searchMode": ... (value from request body if present),
-    //      "select": ... (value from request body if present),
-    //      "sessionId" : ... (value from request body if present),
-    //      "skip": ... (page size plus value from request body if present),
-    //      "top": ... (value from request body if present minus page size),
-    //    },
-    //    "value": [
-    //      {
-    //        "@search.score": document_score (if a text query was provided),
-    //        "@search.highlights": {
-    //          field_name: [ subset of text, ... ],
-    //          ...
-    //        },
-    //        "@search.features": {
-    //          "field_name": {
-    //            "uniqueTokenMatches": feature_score,
-    //            "similarityScore": feature_score,
-    //            "termFrequency": feature_score,
-    //          },
-    //          ...
-    //        },
-    //        key_field_name: document_key,
-    //        field_name: field_value (retrievable fields or specified projection),
-    //        ...
-    //      },
-    //      ...
-    //    ],
-    //    "@odata.nextLink": (URL to fetch the next page of results if not all results could be returned in this response; Applies to both GET and POST)
-    //  }
     @Test
     void azureCognitiveSearchMemoryStoreSearchAsync() {
         //Arrange
