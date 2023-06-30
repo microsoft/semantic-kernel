@@ -17,6 +17,7 @@ using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
+using SemanticKernel.Service.Services;
 using Tesseract;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
@@ -63,14 +64,14 @@ public class DocumentImportController : ControllerBase
 
     private readonly ILogger<DocumentImportController> _logger;
     private readonly DocumentMemoryOptions _options;
-    private readonly TesseractOptions _tesseractOptions;
     private readonly ChatSessionRepository _sessionRepository;
     private readonly ChatMemorySourceRepository _sourceRepository;
     private readonly ChatMessageRepository _messageRepository;
     private readonly ChatParticipantRepository _participantRepository;
     private const string GlobalDocumentUploadedClientCall = "GlobalDocumentUploaded";
     private const string ChatDocumentUploadedClientCall = "ChatDocumentUploaded";
-    private readonly string _tesseractDataPath;
+    private readonly ITesseractEngine _tesseractEngine;
+    
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -78,20 +79,19 @@ public class DocumentImportController : ControllerBase
     public DocumentImportController(
         ILogger<DocumentImportController> logger,
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
-        IOptions<TesseractOptions> tesseractOptions,
         ChatSessionRepository sessionRepository,
         ChatMemorySourceRepository sourceRepository,
         ChatMessageRepository messageRepository,
-        ChatParticipantRepository participantRepository)
+        ChatParticipantRepository participantRepository,
+        ITesseractEngine tesseractEngine)
     {
         this._logger = logger;
         this._options = documentMemoryOptions.Value;
-        this._tesseractOptions = tesseractOptions.Value;
         this._sessionRepository = sessionRepository;
         this._sourceRepository = sourceRepository;
         this._messageRepository = messageRepository;
         this._participantRepository = participantRepository;
-        this._tesseractDataPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "tessdata");
+        this._tesseractEngine = tesseractEngine;
     }
 
     /// <summary>
@@ -314,10 +314,9 @@ public class DocumentImportController : ControllerBase
             var fileBytes = ms.ToArray();
             await using var imgStream = new MemoryStream(fileBytes);
 
-            using var engine = new TesseractEngine(_tesseractDataPath, _tesseractOptions.Language, EngineMode.Default); // use the appropriate language model
             using var img = Pix.LoadFromMemory(imgStream.ToArray());
 
-            using var page = engine.Process(img);
+            using var page = _tesseractEngine.Process(img);
             return page.GetText();
         }
     }

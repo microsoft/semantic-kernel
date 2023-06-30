@@ -68,12 +68,6 @@ public static class CopilotChatServiceExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-        // Tesseract options
-        services.AddOptions<TesseractOptions>()
-            .Bind(configuration.GetSection(TesseractOptions.PropertyName))
-            .ValidateOnStart()
-            .PostConfigure(TrimStringProperties);
-
         return services;
     }
 
