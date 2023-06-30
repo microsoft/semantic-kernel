@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Extract audience list from chat",
+  "description": "Extract list of participants from the conversation history. Note that only those who have spoken will be included.",
   "type": "completion",
   "completion": {
     "max_tokens": 4096,

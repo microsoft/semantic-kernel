@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Extract the intent of the user from their past input",
+  "description": "Extract the intent of the user from the conversation history",
   "type": "completion",
   "completion": {
     "max_tokens": 4096,

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -64,6 +65,11 @@ public class ChatSkill
     private readonly ExternalInformationSkill _externalInformationSkill;
 
     /// <summary>
+    /// A dictionary of all the semantic chat skill functions
+    /// </summary>
+    private readonly IDictionary<string, ISKFunction> _chatSkillPlugin;
+
+    /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
     /// </summary>
     public ChatSkill(
@@ -88,95 +94,9 @@ public class ChatSkill
         this._externalInformationSkill = new ExternalInformationSkill(
             promptOptions,
             planner);
-    }
 
-    /// <summary>
-    /// Extract user intent from the conversation history.
-    /// </summary>
-    /// <param name="context">The SKContext.</param>
-    [SKFunction, Description("Extract user intent")]
-    [SKParameter("chatId", "Chat ID to extract history from")]
-    [SKParameter("audience", "The audience the chat bot is interacting with.")]
-    public async Task<string> ExtractUserIntentAsync(SKContext context)
-    {
-        var tokenLimit = this._promptOptions.CompletionTokenLimit;
-        var historyTokenBudget =
-            tokenLimit -
-            this._promptOptions.ResponseTokenLimit -
-            Utilities.TokenCount(string.Join("\n", new string[]
-                {
-                    this._promptOptions.SystemDescription,
-                    this._promptOptions.SystemIntent,
-                    this._promptOptions.SystemIntentContinuation
-                })
-            );
-
-        // Clone the context to avoid modifying the original context variables.
-        var intentExtractionContext = Utilities.CopyContextWithVariablesClone(context);
-        intentExtractionContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
-        intentExtractionContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
-
-        var completionFunction = this._kernel.CreateSemanticFunction(
-            this._promptOptions.SystemIntentExtraction,
-            skillName: nameof(ChatSkill),
-            description: "Complete the prompt.");
-
-        var result = await completionFunction.InvokeAsync(
-            intentExtractionContext,
-            settings: this.CreateIntentCompletionSettings()
-        );
-
-        if (result.ErrorOccurred)
-        {
-            context.Log.LogError("{0}: {1}", result.LastErrorDescription, result.LastException);
-            context.Fail(result.LastErrorDescription);
-            return string.Empty;
-        }
-
-        return $"User intent: {result}";
-    }
-
-    /// <summary>
-    /// Extract the list of participants from the conversation history.
-    /// Note that only those who have spoken will be included.
-    /// </summary>
-    [SKFunction, Description("Extract audience list")]
-    [SKParameter("chatId", "Chat ID to extract history from")]
-    public async Task<string> ExtractAudienceAsync(SKContext context)
-    {
-        var tokenLimit = this._promptOptions.CompletionTokenLimit;
-        var historyTokenBudget =
-            tokenLimit -
-            this._promptOptions.ResponseTokenLimit -
-            Utilities.TokenCount(string.Join("\n", new string[]
-                {
-                    this._promptOptions.SystemAudience,
-                    this._promptOptions.SystemAudienceContinuation,
-                })
-            );
-
-        // Clone the context to avoid modifying the original context variables.
-        var audienceExtractionContext = Utilities.CopyContextWithVariablesClone(context);
-        audienceExtractionContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
-
-        var completionFunction = this._kernel.CreateSemanticFunction(
-            this._promptOptions.SystemAudienceExtraction,
-            skillName: nameof(ChatSkill),
-            description: "Complete the prompt.");
-
-        var result = await completionFunction.InvokeAsync(
-            audienceExtractionContext,
-            settings: this.CreateIntentCompletionSettings()
-        );
-
-        if (result.ErrorOccurred)
-        {
-            context.Log.LogError("{0}: {1}", result.LastErrorDescription, result.LastException);
-            context.Fail(result.LastErrorDescription);
-            return string.Empty;
-        }
-
-        return $"List of participants: {result}";
+        var parentDir = System.IO.Directory.GetCurrentDirectory() + "\\..";
+        this._chatSkillPlugin = this._kernel.ImportSemanticSkillFromDirectory(parentDir, "SemanticChatSkills");
     }
 
     /// <summary>
@@ -398,59 +318,79 @@ public class ChatSkill
     }
 
     /// <summary>
-    /// Helper function create the correct context variables to
-    /// extract audience from the conversation history.
+    /// Helper function that creates the correct context variables to
+    /// retrieve a list of participants from the conversation history.
+    /// Calls the ExtractAudience semantic function
+    /// Note that only those who have spoken will be included
     /// </summary>
     private async Task<string> GetAudienceAsync(SKContext context)
     {
+        var historyTokenBudget =
+            this._promptOptions.CompletionTokenLimit -
+            this._promptOptions.ResponseTokenLimit -
+            Utilities.TokenCount(string.Join("\n", new string[]
+                {
+                    this._promptOptions.SystemAudience,
+                    this._promptOptions.SystemAudienceContinuation,
+                })
+            );
+
         var contextVariables = new ContextVariables();
         contextVariables.Set("chatId", context["chatId"]);
+        contextVariables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
 
-        var audienceContext = new SKContext(
-            contextVariables,
-            context.Memory,
-            context.Skills,
-            context.Log,
-            context.CancellationToken
-        );
+        var audienceContext =
+            new SKContext(contextVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
+        var result = await this._chatSkillPlugin["ExtractAudience"].InvokeAsync(audienceContext);
 
-        var audience = await this.ExtractAudienceAsync(audienceContext);
-
-        // Propagate the error
-        if (audienceContext.ErrorOccurred)
+        if (result.ErrorOccurred)
         {
-            context.Fail(audienceContext.LastErrorDescription);
+            context.Log.LogError("{0}: {1}", result.LastErrorDescription, result.LastException);
+            context.Fail(result.LastErrorDescription);
+            return string.Empty;
         }
 
-        return audience;
+        return $"List of participants: {result}";
     }
 
     /// <summary>
-    /// Helper function create the correct context variables to
+    /// Helper function that creates the correct context variables to
     /// extract user intent from the conversation history.
+    /// Calls the ExtractUserIntent semantic function
     /// </summary>
     private async Task<string> GetUserIntentAsync(SKContext context)
     {
         // TODO: Regenerate user intent if plan was modified
         if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
+            var historyTokenBudget =
+                this._promptOptions.CompletionTokenLimit -
+                this._promptOptions.ResponseTokenLimit -
+                Utilities.TokenCount(string.Join("\n", new string[]
+                    {
+                        this._promptOptions.SystemDescription,
+                        this._promptOptions.SystemIntent,
+                        this._promptOptions.SystemIntentContinuation
+                    })
+                );
+
             var contextVariables = new ContextVariables();
             contextVariables.Set("chatId", context["chatId"]);
             contextVariables.Set("audience", context["userName"]);
+            contextVariables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
+            contextVariables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
 
-            var intentContext = new SKContext(
-                contextVariables,
-                context.Memory,
-                context.Skills,
-                context.Log,
-                context.CancellationToken
-            );
+            var intentContext =
+                new SKContext(contextVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
+            var result = await this._chatSkillPlugin["ExtractUserIntent"].InvokeAsync(intentContext);
 
-            userIntent = await this.ExtractUserIntentAsync(intentContext);
-            // Propagate the error
-            if (intentContext.ErrorOccurred)
+            userIntent = $"User intent: {result}";
+
+            if (result.ErrorOccurred)
             {
-                context.Fail(intentContext.LastErrorDescription);
+                context.Log.LogError("{0}: {1}", result.LastErrorDescription, result.LastException);
+                context.Fail(result.LastErrorDescription);
+                return string.Empty;
             }
         }
 
