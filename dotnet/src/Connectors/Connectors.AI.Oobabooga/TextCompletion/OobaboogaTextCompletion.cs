@@ -39,7 +39,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private readonly ConcurrentBag<ClientWebSocket> _webSocketPool = new();
     private readonly int _keepAliveWebSocketsDuration;
     private long _lastCallTicks = long.MaxValue;
-    private CancellationTokenSource? _cleanupTaskCts;
 
     /// <summary>
     /// Controls the size of the buffer used to received websocket packets
@@ -55,6 +54,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// /// <param name="concurrentSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the streaming completion method by providing a <see cref="SemaphoreSlim"/> instance that will be used to control concurrent access. Calls in excess will wait for existing consumers to release the semaphore</param>
     /// <param name="httpClient">Optional. The HTTP client used for making blocking API requests. If not specified, a default client will be used.</param>
     /// <param name="useWebSocketsPooling">If true, websocket clients will be recycled in a reusable pool as long as concurrent calls are detected</param>
+    /// <param name="webSocketsCleanUpCancellationToken">if websocket pooling is enabled, you can provide an optional CancellationToken to properly dispose of the clean up tasks when disposing of the connector</param>
     /// <param name="keepAliveWebSocketsDuration">When pooling is enabled, pooled websockets are flushed on a regular basis when no more connections are made. This is the time to keep them in pool before flushing</param>
     /// <param name="webSocketFactory">Optional. The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
     public OobaboogaTextCompletion(Uri endpoint,
@@ -63,6 +63,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         SemaphoreSlim? concurrentSemaphore = null,
         HttpClient? httpClient = null,
         bool useWebSocketsPooling = true,
+        CancellationToken? webSocketsCleanUpCancellationToken = default,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null)
     {
@@ -118,8 +119,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
         if (this._useWebSocketsPooling)
         {
-            this._cleanupTaskCts = new();
-            this.StartCleanupTask(this._cleanupTaskCts.Token);
+            this.StartCleanupTask(webSocketsCleanUpCancellationToken ?? CancellationToken.None);
         }
     }
 
@@ -129,18 +129,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // Making sure that in case of cancellation, the cleanup task is restarted
-        if (this._useWebSocketsPooling && cancellationToken.IsCancellationRequested)
-        {
-            this._cleanupTaskCts!.Cancel();
-            // Dispose the CancellationTokenSource and create a new one for future use.
-            this._cleanupTaskCts.Dispose();
-            this._cleanupTaskCts = new CancellationTokenSource();
-
-            // Restart the cleanup task.
-            this.StartCleanupTask(this._cleanupTaskCts.Token);
-        }
-
         await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
 
         var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
