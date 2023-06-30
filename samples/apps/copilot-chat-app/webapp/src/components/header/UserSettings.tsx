@@ -40,9 +40,9 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
 
     const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
-    const onLogout = useCallback(async () => {
+    const onLogout = useCallback(() => {
         setLoadingState();
-        await AuthHelper.logoutAsync(instance);
+        AuthHelper.logoutAsync(instance);
         resetState();
     }, [instance, setLoadingState]);
 

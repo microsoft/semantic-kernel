@@ -62,7 +62,7 @@ export const PlanStepInput: React.FC<PlanStepInputProps> = ({ input, onEdit, ena
                             style={{ width: input.Value.length * 6, minWidth: '75px' }}
                             placeholder={input.Value}
                             value={inputValue}
-                            onChange={(event: any) => {
+                            onChange={(event) => {
                                 setInputValue(event.target.value);
                             }}
                             onKeyDown={(event) => {

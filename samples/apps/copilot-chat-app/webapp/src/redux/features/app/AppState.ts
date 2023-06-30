@@ -1,8 +1,9 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 import { AlertType } from '../../../libs/models/AlertType';
 
-// Copyright (c) Microsoft. All rights reserved.
 export interface AppState {
-    alerts?: Alerts;
+    alerts: Alert[];
     activeUserInfo?: ActiveUserInfo;
 }
 
@@ -12,9 +13,7 @@ export interface ActiveUserInfo {
     username: string;
 }
 
-export type Alert = {
+export interface Alert {
     message: string;
     type: AlertType;
-};
-
-export type Alerts = { [key: string]: Alert };
+}

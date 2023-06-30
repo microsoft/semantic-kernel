@@ -79,7 +79,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
 
     const avatar = isBot
         ? { image: { src: conversations[selectedId].botProfilePicture } }
-        : { name: fullName, color: 'colorful' as 'colorful' };
+        : { name: fullName, color: 'colorful' as const };
 
     let content: JSX.Element;
     if (isBot && message.type === ChatMessageType.Plan) {
