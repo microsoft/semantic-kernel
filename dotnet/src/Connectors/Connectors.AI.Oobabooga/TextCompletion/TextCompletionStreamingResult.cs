@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
@@ -16,32 +15,34 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// </summary>
 internal sealed class TextCompletionStreamingResult : ITextStreamingResult
 {
-    private readonly Channel<string> _responseChannel;
-
     private readonly List<TextCompletionStreamingResponse> _modelResponses;
+    private bool _streamEndSignaled = false;
+    private readonly object _syncLock = new();
+
     public ModelResult ModelResult { get; }
 
     public TextCompletionStreamingResult()
     {
-        this._responseChannel = Channel.CreateUnbounded<string>(new UnboundedChannelOptions()
-        {
-            SingleReader = true,
-            SingleWriter = true,
-            AllowSynchronousContinuations = true
-        });
-        this._modelResponses = new();
+        this._modelResponses = new List<TextCompletionStreamingResponse>();
         this.ModelResult = new ModelResult(this._modelResponses);
     }
 
     public void AppendResponse(TextCompletionStreamingResponse response)
     {
-        this._responseChannel.Writer.TryWrite(response.Text);
-        this._modelResponses.Add(response);
+        lock (this._syncLock)
+        {
+            this._modelResponses.Add(response);
+            Monitor.PulseAll(this._syncLock);
+        }
     }
 
     public void SignalStreamEnd()
     {
-        this._responseChannel.Writer.Complete();
+        lock (this._syncLock)
+        {
+            this._streamEndSignaled = true;
+            Monitor.PulseAll(this._syncLock);
+        }
     }
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
@@ -58,11 +59,25 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        while (await this._responseChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+        var index = 0;
+
+        while (true)
         {
-            while (this._responseChannel.Reader.TryRead(out string? chunk))
+            lock (this._syncLock)
             {
-                yield return chunk;
+                while (!this._streamEndSignaled && index >= this._modelResponses.Count)
+                {
+                    Monitor.Wait(this._syncLock);
+                }
+
+                if (index < this._modelResponses.Count)
+                {
+                    yield return this._modelResponses[index++].Text;
+                }
+                else
+                {
+                    yield break;
+                }
             }
         }
     }
