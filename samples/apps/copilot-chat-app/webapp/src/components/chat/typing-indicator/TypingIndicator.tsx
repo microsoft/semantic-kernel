@@ -23,7 +23,7 @@ const useStyles = makeStyles({
     },
 });
 
-export const TypingIndicator: React.FC<{}> = () => {
+export const TypingIndicator: React.FC = () => {
     const classes = useStyles();
 
     return (
