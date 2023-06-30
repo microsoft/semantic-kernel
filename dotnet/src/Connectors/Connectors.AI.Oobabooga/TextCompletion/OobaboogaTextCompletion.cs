@@ -140,11 +140,13 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         ClientWebSocket? clientWebSocket = null;
         try
         {
+            // if pooling is enabled, web socket is going to be recycled for reuse, if not it will be properly disposed of after the call
+#pragma warning disable CA2000 // Dispose objects before losing scope
             if (!this._useWebSocketsPooling || !this._webSocketPool.TryTake(out clientWebSocket))
             {
                 clientWebSocket = this._webSocketFactory();
             }
-
+#pragma warning restore CA2000 // Dispose objects before losing scope
             if (clientWebSocket.State == WebSocketState.None)
             {
                 await clientWebSocket.ConnectAsync(this._streamingUri.Uri, cancellationToken).ConfigureAwait(false);
