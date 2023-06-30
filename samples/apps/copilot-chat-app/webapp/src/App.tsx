@@ -114,10 +114,10 @@ const App: FC = () => {
                             />
                         </div>
                     </div>
-                    {alerts.map((alert, index) => {
+                    {alerts.map(({ type, message }, index) => {
                         return (
                             <Alert
-                                intent={alert.type}
+                                intent={type}
                                 action={{
                                     icon: (
                                         <Dismiss16Regular
@@ -129,9 +129,9 @@ const App: FC = () => {
                                         />
                                     ),
                                 }}
-                                key={index}
+                                key={`${index}-${type}`}
                             >
-                                {alert.message}
+                                {message}
                             </Alert>
                         );
                     })}
