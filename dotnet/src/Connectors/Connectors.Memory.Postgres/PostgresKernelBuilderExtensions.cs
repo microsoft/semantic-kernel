@@ -18,7 +18,7 @@ public static class PostgresKernelBuilderExtensions
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="dataSource">Postgres data source.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
-    /// <param name="schema">Schema of collection tables.</param>
+    /// <param name="schema">Schema of collection tables. The default value is "public".</param>
     /// <param name="numberOfLists">Specifies the number of lists for indexing. Higher values can improve recall but may impact performance. The default value is 1000. More info <see href="https://github.com/pgvector/pgvector#indexing"/></param>
     /// <returns>Self instance</returns>
     public static KernelBuilder WithPostgresMemoryStore(this KernelBuilder builder,
