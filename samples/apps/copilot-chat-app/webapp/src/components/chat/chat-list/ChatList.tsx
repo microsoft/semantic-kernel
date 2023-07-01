@@ -89,14 +89,13 @@ export const ChatList: FC = () => {
         if (filterText !== '') {
             // Reapply search string to the updated conversations list.
             const filteredConversations: Conversations = {};
-            for (var key in conversations) {
+            for (const key in conversations) {
                 if (conversations[key].title.toLowerCase().includes(filterText.toLowerCase())) {
                     filteredConversations[key] = conversations[key];
                 }
             }
             setConversationsView(filteredConversations);
-        }
-        else {
+        } else {
             // If no search string, show full conversations list.
             setConversationsView(conversations);
         }
@@ -111,7 +110,7 @@ export const ChatList: FC = () => {
         setIsFiltering(false);
     };
 
-    const onSearch = (ev: any, data: InputOnChangeData) => {
+    const onSearch = (ev: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
         ev.preventDefault();
         setFilterText(data.value);
     };
@@ -154,7 +153,7 @@ export const ChatList: FC = () => {
                     return (
                         <TreeItem
                             key={id}
-                            leaf
+                            itemType="leaf"
                             style={isSelected ? { background: tokens.colorNeutralBackground1 } : undefined}
                         >
                             <ChatListItem
@@ -168,7 +167,7 @@ export const ChatList: FC = () => {
                                             ? 'Sent a file'
                                             : isPlan(lastMessage.content)
                                             ? 'Click to view proposed plan'
-                                            : (lastMessage.content as string)
+                                            : lastMessage.content
                                         : 'Click to start the chat'
                                 }
                                 botProfilePicture={convo.botProfilePicture}

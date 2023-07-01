@@ -8,8 +8,8 @@ export const pluginsState = createSlice({
     initialState,
     reducers: {
         connectPlugin: (state: PluginsState, action: PayloadAction<EnablePluginPayload>) => {
-            var plugin: Plugin;
-            var authData = action.payload.accessToken;
+            let plugin: Plugin;
+            let authData = action.payload.accessToken;
 
             switch (action.payload.plugin) {
                 case Plugins.MsGraph:
@@ -17,7 +17,7 @@ export const pluginsState = createSlice({
                     break;
                 case Plugins.Jira:
                     plugin = state.Jira;
-                    authData = `${action.payload.email}:${action.payload.accessToken}`;
+                    authData = `${action.payload.email as string}:${action.payload.accessToken as string}`;
                     break;
                 case Plugins.GitHub:
                     plugin = state.GitHub;

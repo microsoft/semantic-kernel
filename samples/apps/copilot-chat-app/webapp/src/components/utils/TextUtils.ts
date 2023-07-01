@@ -5,9 +5,9 @@
 export function convertToAnchorTags(htmlString: string) {
     // Regular expression to match links, excluding any HTML tags at the end
     // Since response from bot is plain text, sometimes line breaks and other html tags are included in the response for readability.
-    var linkRegex = /(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-/]))?(?=(<br|<p|<div|<span)\s*\/>|$)/g;
+    const linkRegex = /(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-/]))?(?=(<br|<p|<div|<span)\s*\/>|$)/g;
 
-    var result = htmlString.replace(linkRegex, function (link) {
+    const result = htmlString.replace(linkRegex, function (link) {
         // Parse URL first -- URL class handles cybersecurity concerns related to URL parsing and manipulation
         const safeHref = new URL(link).toString();
 

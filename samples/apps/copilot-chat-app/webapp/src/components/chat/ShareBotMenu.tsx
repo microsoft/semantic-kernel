@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { FC, useCallback } from 'react';
+import React, { FC, useCallback } from 'react';
 
 import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tooltip } from '@fluentui/react-components';
 import { ArrowDownloadRegular, PeopleTeamAddRegular, ShareRegular } from '@fluentui/react-icons';
-import React from 'react';
 import { useChat } from '../../libs/useChat';
 import { useFile } from '../../libs/useFile';
 import { InvitationCreateDialog } from './invitation-dialog/InvitationCreateDialog';
@@ -17,16 +16,17 @@ interface ShareBotMenuProps {
 export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
     const chat = useChat();
     const { downloadFile } = useFile();
-    const [ isGettingInvitationId, setIsGettingInvitationId ] = React.useState(false);
+    const [isGettingInvitationId, setIsGettingInvitationId] = React.useState(false);
 
-    const onDownloadBotClick = useCallback(async () => {
+    const onDownloadBotClick = useCallback(() => {
         // TODO: Add a loading indicator
-        const content = await chat.downloadBot(chatId);
-        downloadFile(
-            `chat-history-${chatTitle}-${new Date().toISOString()}.json`,
-            JSON.stringify(content),
-            'text/json',
-        );
+        void chat.downloadBot(chatId).then((content) => {
+            downloadFile(
+                `chat-history-${chatTitle}-${new Date().toISOString()}.json`,
+                JSON.stringify(content),
+                'text/json',
+            );
+        });
     }, [chat, chatId, chatTitle, downloadFile]);
 
     return (
@@ -42,16 +42,25 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
                         <MenuItem icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
                             Download your Bot
                         </MenuItem>
-                        <MenuItem icon={<PeopleTeamAddRegular />} onClick={() => setIsGettingInvitationId(true)}>
+                        <MenuItem
+                            icon={<PeopleTeamAddRegular />}
+                            onClick={() => {
+                                setIsGettingInvitationId(true);
+                            }}
+                        >
                             Invite others to your Bot
                         </MenuItem>
                     </MenuList>
                 </MenuPopover>
             </Menu>
-            {isGettingInvitationId &&
+            {isGettingInvitationId && (
                 <InvitationCreateDialog
-                    onCancel={() => setIsGettingInvitationId(false)}
-                    chatId={chatId} />}
+                    onCancel={() => {
+                        setIsGettingInvitationId(false);
+                    }}
+                    chatId={chatId}
+                />
+            )}
         </div>
     );
 };
