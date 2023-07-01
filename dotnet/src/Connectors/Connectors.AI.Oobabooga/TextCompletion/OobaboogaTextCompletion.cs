@@ -168,6 +168,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 #pragma warning disable CA2000 // Dispose objects before losing scope
             if (!this._useWebSocketsPooling || !this._webSocketPool.TryTake(out clientWebSocket))
             {
+                this._logger?.LogInformation(message: "Creating new client web socket");
                 clientWebSocket = this._webSocketFactory();
             }
 #pragma warning restore CA2000 // Dispose objects before losing scope
@@ -195,10 +196,12 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             {
                 if (this._useWebSocketsPooling && clientWebSocket.State == WebSocketState.Open)
                 {
+                    //this._logger?.LogInformation(message: "Recycling client web socket");
                     this._webSocketPool.Add(clientWebSocket);
                 }
                 else
                 {
+                    this._logger?.LogInformation(message: "Disposing client web socket instead of recycling because of state");
                     await this.DisposeClientGracefullyAsync(clientWebSocket).ConfigureAwait(false);
                 }
             }
@@ -345,6 +348,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                         streamingResult.SignalStreamEnd();
                         if (!this._useWebSocketsPooling)
                         {
+                            this._logger?.LogTrace(message: "Closing web socket client after signal stream end because no web pool");
                             await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge stream-end oobabooga message", CancellationToken.None).ConfigureAwait(false);
                         }
 
@@ -356,6 +360,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             }
             else if (result.MessageType == WebSocketMessageType.Close)
             {
+                this._logger?.LogTrace(message: "Closing web socket client because close message received");
                 await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge Close frame", CancellationToken.None).ConfigureAwait(false);
                 finishedProcessing = true;
             }
@@ -451,18 +456,17 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
                 while (this.GetCurrentConcurrentCallsNb() == 0 && this._webSocketPool.TryTake(out ClientWebSocket clientToDispose))
                 {
+                    this._logger?.LogTrace(message: "Calling DisposeClientGracefullyAsync as part of regular cleanup");
                     await this.DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
                 }
             }
         }
         catch (OperationCanceledException oce)
         {
-            this._logger?.LogWarning(message: "FlushWebSocketClientsAsync cleaning task was cancelled", exception: oce);
-        }
-        finally
-        {
+            this._logger?.LogTrace(message: "FlushWebSocketClientsAsync cleaning task was cancelled", exception: oce);
             while (this._webSocketPool.TryTake(out ClientWebSocket clientToDispose))
             {
+                this._logger?.LogTrace(message: "Calling DisposeClientGracefullyAsync as part of canceled cleanup");
                 await this.DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
             }
         }
@@ -477,16 +481,17 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         {
             if (clientWebSocket.State == WebSocketState.Open)
             {
+                this._logger?.LogTrace(message: "Closing web socket client gracefully");
                 await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing client before disposal", CancellationToken.None).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException oce)
         {
-            this._logger?.LogWarning(message: "Closing client web socket before disposal was cancelled", exception: oce);
+            this._logger?.LogTrace(message: "Closing client web socket before disposal was cancelled", exception: oce);
         }
         catch (WebSocketException wse)
         {
-            this._logger?.LogWarning(message: "Closing client web socket before disposal raised web socket exception", exception: wse);
+            this._logger?.LogTrace(message: "Closing client web socket before disposal raised web socket exception", exception: wse);
         }
         finally
         {

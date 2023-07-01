@@ -125,8 +125,7 @@ internal class WebSocketTestServer : IDisposable
                 {
                     if (connectedClient.Socket.State == WebSocketState.CloseReceived && result.MessageType == WebSocketMessageType.Close)
                     {
-                        var message = $"Socket {requestId}: Acknowledging Close frame received from client";
-                        this._logger?.LogTrace(message: message);
+                        this._logger?.LogTrace(message: $"Socket {requestId}: Acknowledging Close frame received from client");
                         await connectedClient.Socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge Close frame", CancellationToken.None);
 
                         break;
@@ -169,11 +168,11 @@ internal class WebSocketTestServer : IDisposable
         }
         catch (OperationCanceledException oce)
         {
-            this._logger?.LogWarning(message: "Closing server web socket before disposal was cancelled", exception: oce);
+            this._logger?.LogTrace(message: "Closing server web socket before disposal was cancelled", exception: oce);
         }
         catch (WebSocketException wse)
         {
-            this._logger?.LogWarning(message: "Closing server web socket before disposal raised web socket exception", exception: wse);
+            this._logger?.LogTrace(message: "Closing server web socket before disposal raised web socket exception", exception: wse);
         }
         finally
         {
@@ -213,7 +212,7 @@ internal class WebSocketTestServer : IDisposable
         }
         catch (OperationCanceledException oce)
         {
-            this._logger?.LogWarning(message: "\"Disposing web socket test server raised operation cancel exception", exception: oce);
+            this._logger?.LogTrace(message: "\"Disposing web socket test server raised operation cancel exception", exception: oce);
         }
         finally
         {
