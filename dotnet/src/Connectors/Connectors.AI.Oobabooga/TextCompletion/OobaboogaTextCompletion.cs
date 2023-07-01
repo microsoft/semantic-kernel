@@ -356,7 +356,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             }
             else if (result.MessageType == WebSocketMessageType.Close)
             {
-                await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge Close frame", CancellationToken.None).ConfigureAwait(false);
+                await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge Close frame", CancellationToken.None).ConfigureAwait(false);
                 finishedProcessing = true;
             }
 
@@ -477,7 +477,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         {
             if (clientWebSocket.State == WebSocketState.Open)
             {
-                await clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing client before disposal", CancellationToken.None).ConfigureAwait(false);
+                await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing client before disposal", CancellationToken.None).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException oce)
