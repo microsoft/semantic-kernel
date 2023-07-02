@@ -258,7 +258,7 @@ class PostgresMemoryStore(MemoryStoreBase):
             with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            List[MemoryRecord] -- The records that were found from list of keys, can be empty.
         """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
@@ -274,10 +274,6 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (list(keys),),
                 )
                 results = cur.fetchall()
-                if len(results) == 0:
-                    raise KeyError("Keys not found")
-                if len(results) != len(keys):
-                    raise KeyError("Some keys not found")
                 return [
                     MemoryRecord(
                         id=result[0],
