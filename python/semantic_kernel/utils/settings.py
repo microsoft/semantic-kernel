@@ -51,6 +51,11 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
 
 
 def postgres_settings_from_dot_env() -> str:
+    """Reads the Postgres connection string from the .env file.
+
+    Returns:
+        str: The Postgres connection string
+    """
     connection_string = None
     with open(".env", "r") as f:
         lines = f.readlines()
@@ -69,8 +74,8 @@ def postgres_settings_from_dot_env() -> str:
 
 
 def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
-    """
-    Reads the Pinecone API key and Environment from the .env file.
+    """Reads the Pinecone API key and Environment from the .env file.
+
     Returns:
         Tuple[str, str]: The Pinecone API key, the Pinecone Environment
     """
