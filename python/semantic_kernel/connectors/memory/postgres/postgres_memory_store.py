@@ -2,8 +2,8 @@
 
 import atexit
 import json
-import os
-from typing import List, Tuple
+from logging import Logger
+from typing import List, Optional, Tuple
 
 import numpy as np
 from numpy import ndarray
@@ -13,53 +13,91 @@ from psycopg_pool import ConnectionPool
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-
-# On Windows, Psycopg is not compatible with the default ProactorEventLoop.
-# Please use a different loop, for instance the SelectorEventLoop.
-# https://www.psycopg.org/psycopg3/docs/advanced/async.html
-if os.name == "nt":
-    import asyncio
-
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+from semantic_kernel.utils.null_logger import NullLogger
 
 
 class PostgresMemoryStore(MemoryStoreBase):
     _connection_string: str
     _connection_pool: ConnectionPool
+    _default_dimensionality: int
 
-    def __init__(self, connection_string: str, min_pool: int, max_pool: int) -> None:
+    def __init__(
+        self,
+        connection_string: str,
+        default_dimensionality: int,
+        min_pool: int,
+        max_pool: int,
+        logger: Optional[Logger] = None,
+    ) -> None:
+        """Initializes a new instance of the PostgresMemoryStore class.
+
+        Arguments:
+            connection_string {str} -- The connection string to the Postgres database.
+            default_dimensionality {int} -- The default dimensionality of the embeddings.
+            min_pool {int} -- The minimum number of connections in the connection pool.
+            max_pool {int} -- The maximum number of connections in the connection pool.
+            logger {Optional[Logger]} -- The logger to use. (default: {None})
+        """
         self._connection_string = connection_string
+        self._default_dimensionality = default_dimensionality
         self._connection_pool = ConnectionPool(
             self._connection_string, min_size=min_pool, max_size=max_pool
         )
         atexit.register(self._connection_pool.close)
+        self._logger = logger or NullLogger()
 
     async def create_collection_async(
-        self, collection_name: str, dimension_num: int
+        self,
+        collection_name: str,
+        dimension_num: Optional[int] = None,
     ) -> None:
+        """Creates a new collection.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to create.
+            dimension_num {Optional[int]} -- The dimensionality of the embeddings. (default: {None})
+            Uses the default dimensionality when not provided
+
+        Returns:
+            None
+        """
+        if dimension_num is None:
+            dimension_num = self._default_dimensionality
         with self._connection_pool.connection() as conn:
             conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
             with conn.cursor() as cur:
-                # cur.execute(f"CREATE SCHEMA IF NOT EXISTS {collection_name}")
                 cur.execute(
                     SQL(
                         """
-                    CREATE TABLE IF NOT EXISTS {tbl} (
-                        key TEXT PRIMARY KEY,
-                        embedding vector({dim}),
-                        metadata JSONB,
-                        timestamp TIMESTAMP
-                    )"""
+                        CREATE TABLE IF NOT EXISTS {tbl} (
+                            key TEXT PRIMARY KEY,
+                            embedding vector({dim}),
+                            metadata JSONB,
+                            timestamp TIMESTAMP
+                        )"""
                     ).format(tbl=Identifier(collection_name), dim=dimension_num),
                     (),
                 )
 
     async def get_collections_async(self) -> List[str]:
+        """Gets the list of collections.
+
+        Returns:
+            List[str] -- The list of collections.
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 return await self.__get_collections_async(cur)
 
     async def delete_collection_async(self, collection_name: str) -> None:
+        """Deletes a collection.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to delete.
+
+        Returns:
+            None
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -69,11 +107,28 @@ class PostgresMemoryStore(MemoryStoreBase):
                 )
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
+        """Checks if a collection exists.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to check.
+
+        Returns:
+            bool -- True if the collection exists; otherwise, False.
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 return await self.__does_collection_exist_async(cur, collection_name)
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+        """Upserts a record.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to upsert the record into.
+            record {MemoryRecord} -- The record to upsert.
+
+        Returns:
+            str -- The unique database key of the record. In Pinecone, this is the record ID.
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist_async(cur, collection_name):
@@ -81,13 +136,14 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    INSERT INTO {tbl} (key, embedding, metadata, timestamp)
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (key) DO UPDATE
-                    SET embedding = EXCLUDED.embedding,
-                        metadata = EXCLUDED.metadata,
-                        timestamp = EXCLUDED.timestamp
-                    RETURNING key"""
+                        INSERT INTO {tbl} (key, embedding, metadata, timestamp)
+                        VALUES (%s, %s, %s, %s)
+                        ON CONFLICT (key) DO UPDATE
+                        SET embedding = EXCLUDED.embedding,
+                            metadata = EXCLUDED.metadata,
+                            timestamp = EXCLUDED.timestamp
+                        RETURNING key
+                        """
                     ).format(tbl=Identifier(collection_name)),
                     (
                         record._id,
@@ -104,6 +160,15 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
     ) -> List[str]:
+        """Upserts a batch of records.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to upsert the records into.
+            records {List[MemoryRecord]} -- The records to upsert.
+
+        Returns:
+            List[str] -- The unique database keys of the records.
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist_async(cur, collection_name):
@@ -112,13 +177,14 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.executemany(
                     SQL(
                         """
-                    INSERT INTO {tbl} (key, embedding, metadata, timestamp)
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (key) DO UPDATE
-                    SET embedding = EXCLUDED.embedding,
-                        metadata = EXCLUDED.metadata,
-                        timestamp = EXCLUDED.timestamp
-                    RETURNING key"""
+                        INSERT INTO {tbl} (key, embedding, metadata, timestamp)
+                        VALUES (%s, %s, %s, %s)
+                        ON CONFLICT (key) DO UPDATE
+                        SET embedding = EXCLUDED.embedding,
+                            metadata = EXCLUDED.metadata,
+                            timestamp = EXCLUDED.timestamp
+                        RETURNING key
+                        """
                     ).format(tbl=Identifier(collection_name)),
                     [
                         (
@@ -141,8 +207,18 @@ class PostgresMemoryStore(MemoryStoreBase):
                 return [result[0] for result in results if result is not None]
 
     async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
+        self, collection_name: str, key: str, with_embedding: bool = False
     ) -> MemoryRecord:
+        """Gets a record.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the record from.
+            key {str} -- The unique database key of the record.
+            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+
+        Returns:
+            MemoryRecord -- The record.
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist_async(cur, collection_name):
@@ -172,8 +248,18 @@ class PostgresMemoryStore(MemoryStoreBase):
                 )
 
     async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
+        self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
+        """Gets a batch of records.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the records from.
+            keys {List[str]} -- The unique database keys of the records.
+            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+
+        Returns:
+            List[MemoryRecord] -- The records.
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist_async(cur, collection_name):
@@ -210,6 +296,15 @@ class PostgresMemoryStore(MemoryStoreBase):
                 ]
 
     async def remove_async(self, collection_name: str, key: str) -> None:
+        """Removes a record.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to remove the record from.
+            key {str} -- The unique database key of the record to remove.
+
+        Returns:
+            None
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist_async(cur, collection_name):
@@ -224,6 +319,15 @@ class PostgresMemoryStore(MemoryStoreBase):
                 )
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+        """Removes a batch of records.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to remove the records from.
+            keys {List[str]} -- The unique database keys of the records to remove.
+
+        Returns:
+            None
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist_async(cur, collection_name):
@@ -242,9 +346,21 @@ class PostgresMemoryStore(MemoryStoreBase):
         collection_name: str,
         embedding: ndarray,
         limit: int,
-        min_relevance_score: float,
-        with_embeddings: bool,
+        min_relevance_score: float = 0.0,
+        with_embeddings: bool = False,
     ) -> List[Tuple[MemoryRecord, float]]:
+        """Gets the nearest matches to an embedding using cosine similarity.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the nearest matches from.
+            embedding {ndarray} -- The embedding to find the nearest matches to.
+            limit {int} -- The maximum number of matches to return.
+            min_relevance_score {float} -- The minimum relevance score of the matches. (default: {0.0})
+            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+
+        Returns:
+            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist_async(cur, collection_name):
@@ -293,9 +409,20 @@ class PostgresMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         embedding: ndarray,
-        min_relevance_score: float,
-        with_embedding: bool,
+        min_relevance_score: float = 0.0,
+        with_embedding: bool = False,
     ) -> Tuple[MemoryRecord, float]:
+        """Gets the nearest match to an embedding using cosine similarity.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the nearest match from.
+            embedding {ndarray} -- The embedding to find the nearest match to.
+            min_relevance_score {float} -- The minimum relevance score of the match. (default: {0.0})
+            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+
+        Returns:
+            Tuple[MemoryRecord, float] -- The record and the relevance score.
+        """
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist_async(cur, collection_name):

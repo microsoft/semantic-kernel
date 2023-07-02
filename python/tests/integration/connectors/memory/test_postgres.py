@@ -88,16 +88,16 @@ def memory_record3():
 
 def test_constructor(get_postgres_config):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
     assert memory._connection_pool is not None
 
 
 @pytest.mark.asyncio
 async def test_create_and_does_collection_exist_async(get_postgres_config):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection", 2)
+    await memory.create_collection_async("test_collection")
     result = await memory.does_collection_exist_async("test_collection")
     assert result is not None
 
@@ -105,9 +105,9 @@ async def test_create_and_does_collection_exist_async(get_postgres_config):
 @pytest.mark.asyncio
 async def test_get_collections_async(get_postgres_config):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection", 2)
+    await memory.create_collection_async("test_collection")
     result = await memory.get_collections_async()
     assert "test_collection" in result
 
@@ -115,9 +115,9 @@ async def test_get_collections_async(get_postgres_config):
 @pytest.mark.asyncio
 async def test_delete_collection_async(get_postgres_config):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection", 2)
+    await memory.create_collection_async("test_collection")
 
     result = await memory.get_collections_async()
     assert "test_collection" in result
@@ -130,9 +130,9 @@ async def test_delete_collection_async(get_postgres_config):
 @pytest.mark.asyncio
 async def test_does_collection_exist_async(get_postgres_config):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection", 2)
+    await memory.create_collection_async("test_collection")
     result = await memory.does_collection_exist_async("test_collection")
     assert result is True
 
@@ -140,9 +140,9 @@ async def test_does_collection_exist_async(get_postgres_config):
 @pytest.mark.asyncio
 async def test_upsert_async_and_get_async(get_postgres_config, memory_record1):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection", 2)
+    await memory.create_collection_async("test_collection")
     await memory.upsert_async("test_collection", memory_record1)
     result = await memory.get_async(
         "test_collection", memory_record1._id, with_embedding=True
@@ -159,9 +159,9 @@ async def test_upsert_batch_async_and_get_batch_async(
     get_postgres_config, memory_record1, memory_record2
 ):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection", 2)
+    await memory.create_collection_async("test_collection")
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
 
     results = await memory.get_batch_async(
@@ -178,16 +178,16 @@ async def test_upsert_batch_async_and_get_batch_async(
 @pytest.mark.asyncio
 async def test_remove_async(get_postgres_config, memory_record1):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection", 2)
+    await memory.create_collection_async("test_collection")
     await memory.upsert_async("test_collection", memory_record1)
-    
+
     result = await memory.get_async(
         "test_collection", memory_record1._id, with_embedding=True
     )
     assert result is not None
-    
+
     await memory.remove_async("test_collection", memory_record1._id)
     with pytest.raises(KeyError):
         _ = await memory.get_async(
@@ -198,9 +198,9 @@ async def test_remove_async(get_postgres_config, memory_record1):
 @pytest.mark.asyncio
 async def test_remove_batch_async(get_postgres_config, memory_record1, memory_record2):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection", 2)
+    await memory.create_collection_async("test_collection")
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
     await memory.remove_batch_async(
         "test_collection", [memory_record1._id, memory_record2._id]
@@ -221,9 +221,9 @@ async def test_get_nearest_match_async(
     get_postgres_config, memory_record1, memory_record2
 ):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection", 2)
+    await memory.create_collection_async("test_collection")
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
     test_embedding = memory_record1.embedding
     test_embedding[0] = test_embedding[0] + 0.01
@@ -240,9 +240,9 @@ async def test_get_nearest_matches_async(
     get_postgres_config, memory_record1, memory_record2, memory_record3
 ):
     connection_string = get_postgres_config
-    memory = PostgresMemoryStore(connection_string, 1, 5)
+    memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
-    await memory.create_collection_async("test_collection", 2)
+    await memory.create_collection_async("test_collection")
     await memory.upsert_batch_async(
         "test_collection", [memory_record1, memory_record2, memory_record3]
     )
