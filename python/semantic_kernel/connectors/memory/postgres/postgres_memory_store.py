@@ -91,7 +91,6 @@ class PostgresMemoryStore(MemoryStoreBase):
             raise ValueError("Dimensionality must be a positive integer. ")
 
         with self._connection_pool.connection() as conn:
-            conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
             with conn.cursor() as cur:
                 cur.execute(
                     SQL(
