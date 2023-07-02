@@ -57,14 +57,8 @@ def postgres_settings_from_dot_env() -> str:
         str: The Postgres connection string
     """
     connection_string = None
-    with open(".env", "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
-            if line.startswith("POSTGRES_CONNECTION_STRING"):
-                parts = line.split("=")[1:]
-                connection_string = "=".join(parts).strip().strip('"')
-                continue
+    config = dotenv_values(".env")
+    connection_string = config.get("POSTGRES_CONNECTION_STRING", None)
 
     assert (
         connection_string is not None
@@ -73,7 +67,7 @@ def postgres_settings_from_dot_env() -> str:
     return connection_string
 
 
-def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+def pinecone_settings_from_dot_env() -> Tuple[str, str]:
     """Reads the Pinecone API key and Environment from the .env file.
 
     Returns:
@@ -81,19 +75,9 @@ def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     """
 
     api_key, environment = None, None
-    with open(".env", "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
-            if line.startswith("PINECONE_API_KEY"):
-                parts = line.split("=")[1:]
-                api_key = "=".join(parts).strip().strip('"')
-                continue
-
-            if line.startswith("PINECONE_ENVIRONMENT"):
-                parts = line.split("=")[1:]
-                environment = "=".join(parts).strip().strip('"')
-                continue
+    config = dotenv_values(".env")
+    api_key = config.get("PINECONE_API_KEY", None)
+    environment = config.get("PINECONE_ENVIRONMENT", None)
 
     assert api_key is not None, "Pinecone API key not found in .env file"
     assert environment is not None, "Pinecone environment not found in .env file"
