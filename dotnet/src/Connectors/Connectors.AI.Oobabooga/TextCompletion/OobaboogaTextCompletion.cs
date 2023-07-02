@@ -72,7 +72,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         CancellationToken? webSocketsCleanUpCancellationToken = default,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null,
-        TextCompletionStreamingResultType streamingResultType = TextCompletionStreamingResultType.ChannelBased,
+        TextCompletionStreamingResultType streamingResultType = TextCompletionStreamingResultType.BroadcastBlockBased,
         ILogger? logger = null)
     {
         Verify.NotNull(endpoint);

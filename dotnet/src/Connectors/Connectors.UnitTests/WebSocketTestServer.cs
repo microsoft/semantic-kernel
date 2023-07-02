@@ -5,10 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Net.WebSockets;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -31,6 +28,7 @@ internal class WebSocketTestServer : IDisposable
     private readonly ConcurrentDictionary<Guid, ConnectedClient> _clients = new();
 
     public TimeSpan RequestProcessingDelay { get; set; } = TimeSpan.Zero;
+    public TimeSpan SegmentMessageDelay { get; set; } = TimeSpan.Zero;
 
     public ConcurrentDictionary<Guid, byte[]> RequestContents
     {
@@ -150,6 +148,11 @@ internal class WebSocketTestServer : IDisposable
                                 break;
                             }
 
+                            if (this.SegmentMessageDelay.Ticks > 0)
+                            {
+                                await Task.Delay(this.SegmentMessageDelay).ConfigureAwait(false);
+                            }
+
                             ArraySegment<byte> segment = responseSegments[index];
                             await connectedClient.Socket.SendAsync(segment, WebSocketMessageType.Text, true, this._socketCancellationTokenSource.Token).ConfigureAwait(false);
                         }
@@ -187,6 +190,8 @@ internal class WebSocketTestServer : IDisposable
             this._clients.TryRemove(requestId, out _);
         }
     }
+
+
 
     private async Task CloseAllSocketsAsync()
     {

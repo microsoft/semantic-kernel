@@ -20,7 +20,7 @@ internal sealed class ChannelBasedTextCompletionStreamingResult : TextCompletion
         {
             SingleReader = true,
             SingleWriter = true,
-            AllowSynchronousContinuations = true
+            AllowSynchronousContinuations = false
         });
     }
 
