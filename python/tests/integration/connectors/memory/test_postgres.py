@@ -182,6 +182,12 @@ async def test_remove_async(get_postgres_config, memory_record1):
 
     await memory.create_collection_async("test_collection", 2)
     await memory.upsert_async("test_collection", memory_record1)
+    
+    result = await memory.get_async(
+        "test_collection", memory_record1._id, with_embedding=True
+    )
+    assert result is not None
+    
     await memory.remove_async("test_collection", memory_record1._id)
     with pytest.raises(KeyError):
         _ = await memory.get_async(
