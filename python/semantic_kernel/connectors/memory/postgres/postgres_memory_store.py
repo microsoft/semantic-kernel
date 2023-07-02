@@ -15,6 +15,9 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
 
+# Limitation based on pgvector documentation https://github.com/pgvector/pgvector#what-if-i-want-to-index-vectors-with-more-than-2000-dimensions
+MAX_DIMENSIONALITY = 2000
+
 
 class PostgresMemoryStore(MemoryStoreBase):
     _connection_string: str
@@ -38,6 +41,16 @@ class PostgresMemoryStore(MemoryStoreBase):
             max_pool {int} -- The maximum number of connections in the connection pool.
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
+        if default_dimensionality > MAX_DIMENSIONALITY:
+            raise ValueError(
+                f"Dimensionality of {default_dimensionality} exceeds "
+                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+            )
+        if default_dimensionality <= 0:
+            raise ValueError(
+                "Dimensionality must be a positive integer. "
+            )
+
         self._connection_string = connection_string
         self._default_dimensionality = default_dimensionality
         self._connection_pool = ConnectionPool(
@@ -63,6 +76,16 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         if dimension_num is None:
             dimension_num = self._default_dimensionality
+        if dimension_num > MAX_DIMENSIONALITY:
+            raise ValueError(
+                f"Dimensionality of {dimension_num} exceeds "
+                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+            )
+        if dimension_num <= 0:
+            raise ValueError(
+                "Dimensionality must be a positive integer. "
+            )
+
         with self._connection_pool.connection() as conn:
             conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
             with conn.cursor() as cur:
