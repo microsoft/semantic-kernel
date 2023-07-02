@@ -47,9 +47,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         if default_dimensionality <= 0:
-            raise ValueError(
-                "Dimensionality must be a positive integer. "
-            )
+            raise ValueError("Dimensionality must be a positive integer. ")
 
         self._connection_string = connection_string
         self._default_dimensionality = default_dimensionality
@@ -82,9 +80,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         if dimension_num <= 0:
-            raise ValueError(
-                "Dimensionality must be a positive integer. "
-            )
+            raise ValueError("Dimensionality must be a positive integer. ")
 
         with self._connection_pool.connection() as conn:
             conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
