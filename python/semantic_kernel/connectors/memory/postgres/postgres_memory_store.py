@@ -2,13 +2,14 @@
 
 import atexit
 import json
+import time
 from logging import Logger
 from typing import List, Optional, Tuple
 
 import numpy as np
 from numpy import ndarray
 from psycopg import Cursor
-from psycopg.sql import SQL, Identifier
+from psycopg.sql import SQL, Identifier, Literal
 from psycopg_pool import ConnectionPool
 
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -27,6 +28,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     _connection_pool: ConnectionPool
     _default_dimensionality: int
     _schema: str
+    _timezone_offset: str
     _logger: Logger
 
     def __init__(
@@ -36,16 +38,19 @@ class PostgresMemoryStore(MemoryStoreBase):
         min_pool: int,
         max_pool: int,
         schema: str = DEFAULT_SCHEMA,
+        timezone_offset: Optional[str] = None,
         logger: Optional[Logger] = None,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
 
         Arguments:
-            connection_string {str} -- The connection string to the Postgres database.
-            default_dimensionality {int} -- The default dimensionality of the embeddings.
-            min_pool {int} -- The minimum number of connections in the connection pool.
-            max_pool {int} -- The maximum number of connections in the connection pool.
-            schema {str} -- The schema to use. (default: {"public"})
+            connection_string {str} -- The connection string to the Postgres database.\n
+            default_dimensionality {int} -- The default dimensionality of the embeddings.\n
+            min_pool {int} -- The minimum number of connections in the connection pool.\n
+            max_pool {int} -- The maximum number of connections in the connection pool.\n
+            schema {str} -- The schema to use. (default: {"public"})\n
+            timezone_offset {Optional[str]} -- The timezone offset to use. (default: {None})
+            Expected format '-7:00'. Uses the local timezone offset when not provided.\n
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
@@ -55,6 +60,20 @@ class PostgresMemoryStore(MemoryStoreBase):
             )
         if default_dimensionality <= 0:
             raise ValueError("Dimensionality must be a positive integer. ")
+
+        if timezone_offset is None:
+            t = time.time()
+
+            if time.localtime(t).tm_isdst and time.daylight:
+                float_offset = -time.altzone / 60 / 60
+            else:
+                float_offset = -time.timezone / 60 / 60
+
+            self._timezone_offset = (
+                str(float_offset).replace(".", ":")[:5]
+                if float_offset < 0
+                else str(float_offset).replace(".", ":")[:4]
+            )
 
         self._connection_string = connection_string
         self._default_dimensionality = default_dimensionality
@@ -73,7 +92,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         """Creates a new collection.
 
         Arguments:
-            collection_name {str} -- The name of the collection to create.
+            collection_name {str} -- The name of the collection to create.\n
             dimension_num {Optional[int]} -- The dimensionality of the embeddings. (default: {None})
             Uses the default dimensionality when not provided
 
@@ -99,7 +118,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                             key TEXT PRIMARY KEY,
                             embedding vector({dim}),
                             metadata JSONB,
-                            timestamp TIMESTAMP
+                            timestamp TIMESTAMP WITH TIME ZONE
                         )"""
                     ).format(
                         scm=Identifier(self._schema),
@@ -153,7 +172,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         """Upserts a record.
 
         Arguments:
-            collection_name {str} -- The name of the collection to upsert the record into.
+            collection_name {str} -- The name of the collection to upsert the record into.\n
             record {MemoryRecord} -- The record to upsert.
 
         Returns:
@@ -167,7 +186,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     SQL(
                         """
                         INSERT INTO {scm}.{tbl} (key, embedding, metadata, timestamp)
-                        VALUES (%s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s AT TIME ZONE INTERVAL {tz})
                         ON CONFLICT (key) DO UPDATE
                         SET embedding = EXCLUDED.embedding,
                             metadata = EXCLUDED.metadata,
@@ -175,7 +194,9 @@ class PostgresMemoryStore(MemoryStoreBase):
                         RETURNING key
                         """
                     ).format(
-                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
+                        scm=Identifier(self._schema),
+                        tbl=Identifier(collection_name),
+                        tz=Literal(self._timezone_offset),
                     ),
                     (
                         record._id,
@@ -210,7 +231,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     SQL(
                         """
                         INSERT INTO {scm}.{tbl} (key, embedding, metadata, timestamp)
-                        VALUES (%s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s AT TIME ZONE INTERVAL {tz})
                         ON CONFLICT (key) DO UPDATE
                         SET embedding = EXCLUDED.embedding,
                             metadata = EXCLUDED.metadata,
@@ -218,7 +239,9 @@ class PostgresMemoryStore(MemoryStoreBase):
                         RETURNING key
                         """
                     ).format(
-                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
+                        scm=Identifier(self._schema),
+                        tbl=Identifier(collection_name),
+                        tz=Literal(self._timezone_offset),
                     ),
                     [
                         (
