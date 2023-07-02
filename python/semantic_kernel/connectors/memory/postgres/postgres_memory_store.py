@@ -235,7 +235,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 result = cur.fetchone()
                 if result is None:
                     raise KeyError("Key not found")
-                return MemoryRecord(
+                return MemoryRecord.local_record(
                     id=result[0],
                     embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
                     if with_embedding
@@ -243,8 +243,6 @@ class PostgresMemoryStore(MemoryStoreBase):
                     text=result[2]["text"],
                     description=result[2]["description"],
                     additional_metadata=result[2]["additional_metadata"],
-                    is_reference=False,
-                    external_source_name=PostgresMemoryStore.__name__,
                 )
 
     async def get_batch_async(
@@ -275,7 +273,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 )
                 results = cur.fetchall()
                 return [
-                    MemoryRecord(
+                    MemoryRecord.local_record(
                         id=result[0],
                         embedding=np.fromstring(
                             result[1].strip("[]"), dtype=float, sep=","
@@ -285,8 +283,6 @@ class PostgresMemoryStore(MemoryStoreBase):
                         text=result[2]["text"],
                         description=result[2]["description"],
                         additional_metadata=result[2]["additional_metadata"],
-                        is_reference=False,
-                        external_source_name=PostgresMemoryStore.__name__,
                     )
                     for result in results
                 ]
@@ -383,7 +379,7 @@ class PostgresMemoryStore(MemoryStoreBase):
 
                 return [
                     (
-                        MemoryRecord(
+                        MemoryRecord.local_record(
                             id=result[0],
                             embedding=np.fromstring(
                                 result[1].strip("[]"), dtype=float, sep=","
@@ -393,8 +389,6 @@ class PostgresMemoryStore(MemoryStoreBase):
                             text=result[2]["text"],
                             description=result[2]["description"],
                             additional_metadata=result[2]["additional_metadata"],
-                            is_reference=False,
-                            external_source_name=PostgresMemoryStore.__name__,
                         ),
                         result[3],
                     )
@@ -444,7 +438,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 if result is None:
                     raise Exception("No match found")
                 return (
-                    MemoryRecord(
+                    MemoryRecord.local_record(
                         id=result[0],
                         embedding=np.fromstring(
                             result[1].strip("[]"), dtype=float, sep=","
@@ -454,8 +448,6 @@ class PostgresMemoryStore(MemoryStoreBase):
                         text=result[2]["text"],
                         description=result[2]["description"],
                         additional_metadata=result[2]["additional_metadata"],
-                        is_reference=False,
-                        external_source_name=PostgresMemoryStore.__name__,
                     ),
                     result[3],
                 )
