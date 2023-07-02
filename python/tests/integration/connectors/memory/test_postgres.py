@@ -109,7 +109,7 @@ async def test_get_collections_async(get_postgres_config):
 
     await memory.create_collection_async("test_collection", 2)
     result = await memory.get_collections_async()
-    assert len(result) > 1
+    assert "test_collection" in result
 
 
 @pytest.mark.asyncio
@@ -118,6 +118,10 @@ async def test_delete_collection_async(get_postgres_config):
     memory = PostgresMemoryStore(connection_string, 1, 5)
 
     await memory.create_collection_async("test_collection", 2)
+
+    result = await memory.get_collections_async()
+    assert "test_collection" in result
+
     await memory.delete_collection_async("test_collection")
     result = await memory.get_collections_async()
     assert "test_collection" not in result
@@ -146,7 +150,8 @@ async def test_upsert_async_and_get_async(get_postgres_config, memory_record1):
     assert result is not None
     assert result._id == memory_record1._id
     assert result._text == memory_record1._text
-    assert result.embedding is not None
+    for i in range(len(result._embedding)):
+        assert result._embedding[i] == memory_record1._embedding[i]
 
 
 @pytest.mark.asyncio
@@ -165,7 +170,7 @@ async def test_upsert_batch_async_and_get_batch_async(
         with_embeddings=True,
     )
 
-    assert len(results) >= 2
+    assert len(results) == 2
     assert results[0]._id in [memory_record1._id, memory_record2._id]
     assert results[1]._id in [memory_record1._id, memory_record2._id]
 

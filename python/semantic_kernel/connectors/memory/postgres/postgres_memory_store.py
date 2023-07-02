@@ -5,7 +5,7 @@ import json
 import os
 from typing import List, Tuple
 
-import numpy
+import numpy as np
 from numpy import ndarray
 from psycopg import Cursor
 from psycopg.sql import SQL, Identifier
@@ -161,7 +161,9 @@ class PostgresMemoryStore(MemoryStoreBase):
                     raise KeyError("Key not found")
                 return MemoryRecord(
                     id=result[0],
-                    embedding=result[1] if with_embedding else numpy.array([]),
+                    embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
+                    if with_embedding
+                    else np.array([]),
                     text=result[2]["text"],
                     description=result[2]["description"],
                     additional_metadata=result[2]["additional_metadata"],
@@ -193,7 +195,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                 return [
                     MemoryRecord(
                         id=result[0],
-                        embedding=result[1] if with_embeddings else numpy.array([]),
+                        embedding=np.fromstring(
+                            result[1].strip("[]"), dtype=float, sep=","
+                        )
+                        if with_embeddings
+                        else np.array([]),
                         text=result[2]["text"],
                         description=result[2]["description"],
                         additional_metadata=result[2]["additional_metadata"],
@@ -267,7 +273,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (
                         MemoryRecord(
                             id=result[0],
-                            embedding=result[1] if with_embeddings else numpy.array([]),
+                            embedding=np.fromstring(
+                                result[1].strip("[]"), dtype=float, sep=","
+                            )
+                            if with_embeddings
+                            else np.array([]),
                             text=result[2]["text"],
                             description=result[2]["description"],
                             additional_metadata=result[2]["additional_metadata"],
@@ -313,7 +323,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                 return (
                     MemoryRecord(
                         id=result[0],
-                        embedding=result[1] if with_embedding else numpy.array([]),
+                        embedding=np.fromstring(
+                            result[1].strip("[]"), dtype=float, sep=","
+                        )
+                        if with_embedding
+                        else np.array([]),
                         text=result[2]["text"],
                         description=result[2]["description"],
                         additional_metadata=result[2]["additional_metadata"],
@@ -341,12 +355,3 @@ class PostgresMemoryStore(MemoryStoreBase):
                 "additional_metadata": record._additional_metadata,
             }
         )
-
-    def __deserialize_metadata(
-        self, record: MemoryRecord, metadata: str
-    ) -> MemoryRecord:
-        metadata_dict: dict[str, str] = json.loads(metadata)
-        record._text = metadata_dict["text"]
-        record._description = metadata_dict["description"]
-        record._additional_metadata = metadata_dict["additional_metadata"]
-        return record
