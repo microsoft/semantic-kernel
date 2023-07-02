@@ -26,6 +26,7 @@ MAX_DELETE_BATCH_SIZE = 1000
 
 class PineconeMemoryStore(MemoryStoreBase):
     """A memory store that uses Pinecone as the backend."""
+
     _logger: Logger
     _pinecone_api_key: str
     _pinecone_environment: str

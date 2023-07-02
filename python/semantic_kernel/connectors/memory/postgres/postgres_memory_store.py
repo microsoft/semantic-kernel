@@ -22,6 +22,7 @@ DEFAULT_SCHEMA = "public"
 
 class PostgresMemoryStore(MemoryStoreBase):
     """A memory store that uses Postgres with pgvector as the backend."""
+
     _connection_string: str
     _connection_pool: ConnectionPool
     _default_dimensionality: int
