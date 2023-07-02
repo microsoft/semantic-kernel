@@ -8,6 +8,7 @@ from typing import List, Tuple
 import numpy
 from numpy import ndarray
 from psycopg import Cursor
+from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
 
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -20,8 +21,6 @@ if os.name == "nt":
     import asyncio
 
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-MEMORY_TABLE_NAME = "sk_memory_table"
 
 
 class PostgresMemoryStore(MemoryStoreBase):
@@ -41,15 +40,18 @@ class PostgresMemoryStore(MemoryStoreBase):
         with self._connection_pool.connection() as conn:
             conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
             with conn.cursor() as cur:
-                cur.execute(f"CREATE SCHEMA IF NOT EXISTS {collection_name}")
+                # cur.execute(f"CREATE SCHEMA IF NOT EXISTS {collection_name}")
                 cur.execute(
-                    f"""
-                    CREATE TABLE IF NOT EXISTS {collection_name}.{MEMORY_TABLE_NAME} (
+                    SQL(
+                        """
+                    CREATE TABLE IF NOT EXISTS {tbl} (
                         key TEXT PRIMARY KEY,
-                        embedding vector({dimension_num}),
-                        metadata TEXT,
+                        embedding vector({dim}),
+                        metadata JSONB,
                         timestamp TIMESTAMP
-                    )""",
+                    )"""
+                    ).format(tbl=Identifier(collection_name), dim=dimension_num),
+                    (),
                 )
 
     async def get_collections_async(self) -> List[str]:
@@ -61,7 +63,9 @@ class PostgresMemoryStore(MemoryStoreBase):
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    f"DROP SCHEMA IF EXISTS {collection_name} CASCADE",
+                    SQL("DROP TABLE IF EXISTS {tbl} CASCADE").format(
+                        tbl=Identifier(collection_name)
+                    ),
                 )
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
@@ -72,17 +76,19 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist_async(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
-                    f"""
-                    INSERT INTO {collection_name}.{MEMORY_TABLE_NAME} (key, embedding, metadata, timestamp)
+                    SQL(
+                        """
+                    INSERT INTO {tbl} (key, embedding, metadata, timestamp)
                     VALUES (%s, %s, %s, %s)
                     ON CONFLICT (key) DO UPDATE
                     SET embedding = EXCLUDED.embedding,
                         metadata = EXCLUDED.metadata,
                         timestamp = EXCLUDED.timestamp
-                    RETURNING key""",
+                    RETURNING key"""
+                    ).format(tbl=Identifier(collection_name)),
                     (
                         record._id,
                         record.embedding.tolist(),
@@ -100,18 +106,20 @@ class PostgresMemoryStore(MemoryStoreBase):
     ) -> List[str]:
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist_async(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.nextset()
                 cur.executemany(
-                    f"""
-                    INSERT INTO {collection_name}.{MEMORY_TABLE_NAME} (key, embedding, metadata, timestamp)
+                    SQL(
+                        """
+                    INSERT INTO {tbl} (key, embedding, metadata, timestamp)
                     VALUES (%s, %s, %s, %s)
                     ON CONFLICT (key) DO UPDATE
                     SET embedding = EXCLUDED.embedding,
                         metadata = EXCLUDED.metadata,
                         timestamp = EXCLUDED.timestamp
-                    RETURNING key""",
+                    RETURNING key"""
+                    ).format(tbl=Identifier(collection_name)),
                     [
                         (
                             record._id,
@@ -137,29 +145,28 @@ class PostgresMemoryStore(MemoryStoreBase):
     ) -> MemoryRecord:
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist_async(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
-                    f"""
+                    SQL(
+                        """
                     SELECT key, embedding, metadata
-                    FROM {collection_name}.{MEMORY_TABLE_NAME}
-                    WHERE key = %s""",
+                    FROM {tbl}
+                    WHERE key = %s"""
+                    ).format(tbl=Identifier(collection_name)),
                     (key,),
                 )
                 result = cur.fetchone()
                 if result is None:
                     raise KeyError("Key not found")
-                return self.__deserialize_metadata(
-                    MemoryRecord(
-                        id=result[0],
-                        embedding=result[1] if with_embedding else numpy.array([]),
-                        text=None,
-                        description=None,
-                        additional_metadata=None,
-                        is_reference=False,
-                        external_source_name=PostgresMemoryStore.__name__,
-                    ),
-                    result[2],
+                return MemoryRecord(
+                    id=result[0],
+                    embedding=result[1] if with_embedding else numpy.array([]),
+                    text=result[2]["text"],
+                    description=result[2]["description"],
+                    additional_metadata=result[2]["additional_metadata"],
+                    is_reference=False,
+                    external_source_name=PostgresMemoryStore.__name__,
                 )
 
     async def get_batch_async(
@@ -167,13 +174,15 @@ class PostgresMemoryStore(MemoryStoreBase):
     ) -> List[MemoryRecord]:
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist_async(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
-                    f"""
+                    SQL(
+                        """
                     SELECT key, embedding, metadata
-                    FROM {collection_name}.{MEMORY_TABLE_NAME}
-                    WHERE key = ANY(%s)""",
+                    FROM {tbl}
+                    WHERE key = ANY(%s)"""
+                    ).format(tbl=Identifier(collection_name)),
                     (list(keys),),
                 )
                 results = cur.fetchall()
@@ -182,17 +191,14 @@ class PostgresMemoryStore(MemoryStoreBase):
                 if len(results) != len(keys):
                     raise KeyError("Some keys not found")
                 return [
-                    self.__deserialize_metadata(
-                        MemoryRecord(
-                            id=result[0],
-                            embedding=result[1] if with_embeddings else numpy.array([]),
-                            text=None,
-                            description=None,
-                            additional_metadata=None,
-                            is_reference=False,
-                            external_source_name=PostgresMemoryStore.__name__,
-                        ),
-                        result[2],
+                    MemoryRecord(
+                        id=result[0],
+                        embedding=result[1] if with_embeddings else numpy.array([]),
+                        text=result[2]["text"],
+                        description=result[2]["description"],
+                        additional_metadata=result[2]["additional_metadata"],
+                        is_reference=False,
+                        external_source_name=PostgresMemoryStore.__name__,
                     )
                     for result in results
                 ]
@@ -200,24 +206,28 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def remove_async(self, collection_name: str, key: str) -> None:
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist_async(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
-                    f"""
-                    DELETE FROM {collection_name}.{MEMORY_TABLE_NAME}
-                    WHERE key = %s""",
+                    SQL(
+                        """
+                    DELETE FROM {tbl}
+                    WHERE key = %s"""
+                    ).format(tbl=Identifier(collection_name)),
                     (key,),
                 )
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist_async(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
-                    f"""
-                    DELETE FROM {collection_name}.{MEMORY_TABLE_NAME}
-                    WHERE key = ANY(%s)""",
+                    SQL(
+                        """
+                    DELETE FROM {tbl}
+                    WHERE key = ANY(%s)"""
+                    ).format(tbl=Identifier(collection_name)),
                     (list(keys),),
                 )
 
@@ -231,36 +241,38 @@ class PostgresMemoryStore(MemoryStoreBase):
     ) -> List[Tuple[MemoryRecord, float]]:
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist_async(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
-                    f"""
+                    SQL(
+                        """
                     SELECT key, embedding, metadata, cosine_similarity
                     FROM (
-                        SELECT key, embedding, metadata, 1 - (embedding <=> '{embedding.tolist()}') AS cosine_similarity
-                        FROM {collection_name}.{MEMORY_TABLE_NAME}
+                        SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity
+                        FROM {tbl}
                     ) AS subquery
-                    WHERE cosine_similarity >= {min_relevance_score}
+                    WHERE cosine_similarity >= {mrs}
                     ORDER BY cosine_similarity DESC
-                    LIMIT {limit}""",
+                    LIMIT {limit}"""
+                    ).format(
+                        tbl=Identifier(collection_name),
+                        mrs=min_relevance_score,
+                        limit=limit,
+                        emb=SQL(",").join(embedding.tolist()),
+                    )
                 )
                 results = cur.fetchall()
 
                 return [
                     (
-                        self.__deserialize_metadata(
-                            MemoryRecord(
-                                id=result[0],
-                                embedding=result[1]
-                                if with_embeddings
-                                else numpy.array([]),
-                                text=None,
-                                description=None,
-                                additional_metadata=None,
-                                is_reference=False,
-                                external_source_name=PostgresMemoryStore.__name__,
-                            ),
-                            result[2],
+                        MemoryRecord(
+                            id=result[0],
+                            embedding=result[1] if with_embeddings else numpy.array([]),
+                            text=result[2]["text"],
+                            description=result[2]["description"],
+                            additional_metadata=result[2]["additional_metadata"],
+                            is_reference=False,
+                            external_source_name=PostgresMemoryStore.__name__,
                         ),
                         result[3],
                     )
@@ -276,34 +288,37 @@ class PostgresMemoryStore(MemoryStoreBase):
     ) -> Tuple[MemoryRecord, float]:
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
-                if not self.__does_collection_exist_async(cur, collection_name):
+                if not await self.__does_collection_exist_async(cur, collection_name):
                     raise Exception(f"Collection '{collection_name}' does not exist")
                 cur.execute(
-                    f"""
+                    SQL(
+                        """
                     SELECT key, embedding, metadata, cosine_similarity
                     FROM (
-                        SELECT key, embedding, metadata, 1 - (embedding <=> '{embedding.tolist()}') AS cosine_similarity
-                        FROM {collection_name}.{MEMORY_TABLE_NAME}
+                        SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity
+                        FROM {tbl}
                     ) AS subquery
-                    WHERE cosine_similarity >= {min_relevance_score}
+                    WHERE cosine_similarity >= {mrs}
                     ORDER BY cosine_similarity DESC
-                    LIMIT 1""",
+                    LIMIT 1"""
+                    ).format(
+                        tbl=Identifier(collection_name),
+                        mrs=min_relevance_score,
+                        emb=SQL(",").join(embedding.tolist()),
+                    )
                 )
                 result = cur.fetchone()
                 if result is None:
                     raise Exception("No match found")
                 return (
-                    self.__deserialize_metadata(
-                        MemoryRecord(
-                            id=result[0],
-                            embedding=result[1] if with_embedding else numpy.array([]),
-                            text=None,
-                            description=None,
-                            additional_metadata=None,
-                            is_reference=False,
-                            external_source_name=PostgresMemoryStore.__name__,
-                        ),
-                        result[2],
+                    MemoryRecord(
+                        id=result[0],
+                        embedding=result[1] if with_embedding else numpy.array([]),
+                        text=result[2]["text"],
+                        description=result[2]["description"],
+                        additional_metadata=result[2]["additional_metadata"],
+                        is_reference=False,
+                        external_source_name=PostgresMemoryStore.__name__,
                     ),
                     result[3],
                 )
@@ -315,7 +330,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         return collection_name in results
 
     async def __get_collections_async(self, cur: Cursor) -> List[str]:
-        cur.execute("SELECT schema_name FROM information_schema.schemata")
+        cur.execute("SELECT table_name FROM information_schema.tables")
         return [row[0] for row in cur.fetchall()]
 
     def __serialize_metadata(self, record: MemoryRecord) -> str:
