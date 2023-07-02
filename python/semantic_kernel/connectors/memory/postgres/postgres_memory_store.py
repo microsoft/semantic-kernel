@@ -17,12 +17,15 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 # Limitation based on pgvector documentation https://github.com/pgvector/pgvector#what-if-i-want-to-index-vectors-with-more-than-2000-dimensions
 MAX_DIMENSIONALITY = 2000
+DEFAULT_SCHEMA = "public"
 
 
 class PostgresMemoryStore(MemoryStoreBase):
     _connection_string: str
     _connection_pool: ConnectionPool
     _default_dimensionality: int
+    _schema: str
+    _logger: Logger
 
     def __init__(
         self,
@@ -30,6 +33,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         default_dimensionality: int,
         min_pool: int,
         max_pool: int,
+        schema: str = DEFAULT_SCHEMA,
         logger: Optional[Logger] = None,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
@@ -39,6 +43,7 @@ class PostgresMemoryStore(MemoryStoreBase):
             default_dimensionality {int} -- The default dimensionality of the embeddings.
             min_pool {int} -- The minimum number of connections in the connection pool.
             max_pool {int} -- The maximum number of connections in the connection pool.
+            schema {str} -- The schema to use. (default: {"public"})
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
@@ -54,6 +59,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         self._connection_pool = ConnectionPool(
             self._connection_string, min_size=min_pool, max_size=max_pool
         )
+        self._schema = schema
         atexit.register(self._connection_pool.close)
         self._logger = logger or NullLogger()
 
@@ -88,13 +94,17 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                        CREATE TABLE IF NOT EXISTS {tbl} (
+                        CREATE TABLE IF NOT EXISTS {scm}.{tbl} (
                             key TEXT PRIMARY KEY,
                             embedding vector({dim}),
                             metadata JSONB,
                             timestamp TIMESTAMP
                         )"""
-                    ).format(tbl=Identifier(collection_name), dim=dimension_num),
+                    ).format(
+                        scm=Identifier(self._schema),
+                        tbl=Identifier(collection_name),
+                        dim=dimension_num,
+                    ),
                     (),
                 )
 
@@ -120,8 +130,8 @@ class PostgresMemoryStore(MemoryStoreBase):
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    SQL("DROP TABLE IF EXISTS {tbl} CASCADE").format(
-                        tbl=Identifier(collection_name)
+                    SQL("DROP TABLE IF EXISTS {scm}.{tbl} CASCADE").format(
+                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
                     ),
                 )
 
@@ -155,7 +165,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                        INSERT INTO {tbl} (key, embedding, metadata, timestamp)
+                        INSERT INTO {scm}.{tbl} (key, embedding, metadata, timestamp)
                         VALUES (%s, %s, %s, %s)
                         ON CONFLICT (key) DO UPDATE
                         SET embedding = EXCLUDED.embedding,
@@ -163,7 +173,9 @@ class PostgresMemoryStore(MemoryStoreBase):
                             timestamp = EXCLUDED.timestamp
                         RETURNING key
                         """
-                    ).format(tbl=Identifier(collection_name)),
+                    ).format(
+                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
+                    ),
                     (
                         record._id,
                         record.embedding.tolist(),
@@ -196,7 +208,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.executemany(
                     SQL(
                         """
-                        INSERT INTO {tbl} (key, embedding, metadata, timestamp)
+                        INSERT INTO {scm}.{tbl} (key, embedding, metadata, timestamp)
                         VALUES (%s, %s, %s, %s)
                         ON CONFLICT (key) DO UPDATE
                         SET embedding = EXCLUDED.embedding,
@@ -204,7 +216,9 @@ class PostgresMemoryStore(MemoryStoreBase):
                             timestamp = EXCLUDED.timestamp
                         RETURNING key
                         """
-                    ).format(tbl=Identifier(collection_name)),
+                    ).format(
+                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
+                    ),
                     [
                         (
                             record._id,
@@ -246,9 +260,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                     SQL(
                         """
                     SELECT key, embedding, metadata
-                    FROM {tbl}
+                    FROM {scm}.{tbl}
                     WHERE key = %s"""
-                    ).format(tbl=Identifier(collection_name)),
+                    ).format(
+                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
+                    ),
                     (key,),
                 )
                 result = cur.fetchone()
@@ -285,9 +301,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                     SQL(
                         """
                     SELECT key, embedding, metadata
-                    FROM {tbl}
+                    FROM {scm}.{tbl}
                     WHERE key = ANY(%s)"""
-                    ).format(tbl=Identifier(collection_name)),
+                    ).format(
+                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
+                    ),
                     (list(keys),),
                 )
                 results = cur.fetchall()
@@ -323,9 +341,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    DELETE FROM {tbl}
+                    DELETE FROM {scm}.{tbl}
                     WHERE key = %s"""
-                    ).format(tbl=Identifier(collection_name)),
+                    ).format(
+                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
+                    ),
                     (key,),
                 )
 
@@ -346,9 +366,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    DELETE FROM {tbl}
+                    DELETE FROM {scm}.{tbl}
                     WHERE key = ANY(%s)"""
-                    ).format(tbl=Identifier(collection_name)),
+                    ).format(
+                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
+                    ),
                     (list(keys),),
                 )
 
@@ -382,12 +404,13 @@ class PostgresMemoryStore(MemoryStoreBase):
                     SELECT key, embedding, metadata, cosine_similarity
                     FROM (
                         SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity
-                        FROM {tbl}
+                        FROM {scm}.{tbl}
                     ) AS subquery
                     WHERE cosine_similarity >= {mrs}
                     ORDER BY cosine_similarity DESC
                     LIMIT {limit}"""
                     ).format(
+                        scm=Identifier(self._schema),
                         tbl=Identifier(collection_name),
                         mrs=min_relevance_score,
                         limit=limit,
@@ -442,12 +465,13 @@ class PostgresMemoryStore(MemoryStoreBase):
                     SELECT key, embedding, metadata, cosine_similarity
                     FROM (
                         SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity
-                        FROM {tbl}
+                        FROM {scm}.{tbl}
                     ) AS subquery
                     WHERE cosine_similarity >= {mrs}
                     ORDER BY cosine_similarity DESC
                     LIMIT 1"""
                     ).format(
+                        scm=Identifier(self._schema),
                         tbl=Identifier(collection_name),
                         mrs=min_relevance_score,
                         emb=SQL(",").join(embedding.tolist()),
@@ -478,7 +502,14 @@ class PostgresMemoryStore(MemoryStoreBase):
         return collection_name in results
 
     async def __get_collections_async(self, cur: Cursor) -> List[str]:
-        cur.execute("SELECT table_name FROM information_schema.tables")
+        cur.execute(
+            """
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = %s
+            """,
+            (self._schema,),
+        )
         return [row[0] for row in cur.fetchall()]
 
     def __serialize_metadata(self, record: MemoryRecord) -> str:
