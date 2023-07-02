@@ -18,6 +18,7 @@ from semantic_kernel.utils.settings import (
     azure_openai_settings_from_dot_env,
     openai_settings_from_dot_env,
     postgres_settings_from_dot_env,
+    pinecone_settings_from_dot_env,
 )
 
 __all__ = [
@@ -26,6 +27,7 @@ __all__ = [
     "openai_settings_from_dot_env",
     "azure_openai_settings_from_dot_env",
     "postgres_settings_from_dot_env",
+    "pinecone_settings_from_dot_env",
     "PromptTemplateConfig",
     "PromptTemplate",
     "ChatPromptTemplate",
