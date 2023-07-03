@@ -54,7 +54,7 @@ def memory_record1():
         description="description",
         additional_metadata="additional metadata",
         external_source_name="external source",
-        timestamp=str(datetime.now()),
+        timestamp=datetime.now(),
     )
 
 
@@ -68,7 +68,7 @@ def memory_record2():
         description="description",
         additional_metadata="additional metadata",
         external_source_name="external source",
-        timestamp=str(datetime.now()),
+        timestamp=datetime.now(),
     )
 
 
@@ -82,7 +82,7 @@ def memory_record3():
         description="description",
         additional_metadata="additional metadata",
         external_source_name="external source",
-        timestamp=str(datetime.now()),
+        timestamp=datetime.now(),
     )
 
 
@@ -150,6 +150,7 @@ async def test_upsert_async_and_get_async(get_postgres_config, memory_record1):
     assert result is not None
     assert result._id == memory_record1._id
     assert result._text == memory_record1._text
+    assert result._timestamp == memory_record1._timestamp
     for i in range(len(result._embedding)):
         assert result._embedding[i] == memory_record1._embedding[i]
 
@@ -225,7 +226,7 @@ async def test_get_nearest_match_async(
 
     await memory.create_collection_async("test_collection")
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
-    test_embedding = memory_record1.embedding
+    test_embedding = memory_record1.embedding.copy()
     test_embedding[0] = test_embedding[0] + 0.01
 
     result = await memory.get_nearest_match_async(
@@ -233,6 +234,10 @@ async def test_get_nearest_match_async(
     )
     assert result is not None
     assert result[0]._id == memory_record1._id
+    assert result[0]._text == memory_record1._text
+    assert result[0]._timestamp == memory_record1._timestamp
+    for i in range(len(result[0]._embedding)):
+        assert result[0]._embedding[i] == memory_record1._embedding[i]
 
 
 @pytest.mark.asyncio

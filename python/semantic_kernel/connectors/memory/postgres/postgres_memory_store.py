@@ -283,11 +283,13 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    SELECT key, embedding, metadata
+                    SELECT key, embedding, metadata, timestamp AT TIME ZONE INTERVAL {tz} AS timestamp
                     FROM {scm}.{tbl}
                     WHERE key = %s"""
                     ).format(
-                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
+                        scm=Identifier(self._schema),
+                        tbl=Identifier(collection_name),
+                        tz=Literal(self._timezone_offset),
                     ),
                     (key,),
                 )
@@ -302,6 +304,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     text=result[2]["text"],
                     description=result[2]["description"],
                     additional_metadata=result[2]["additional_metadata"],
+                    timestamp=result[3],
                 )
 
     async def get_batch_async(
@@ -324,11 +327,13 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    SELECT key, embedding, metadata
+                    SELECT key, embedding, metadata, timestamp AT TIME ZONE INTERVAL {tz} AS timestamp
                     FROM {scm}.{tbl}
                     WHERE key = ANY(%s)"""
                     ).format(
-                        scm=Identifier(self._schema), tbl=Identifier(collection_name)
+                        scm=Identifier(self._schema),
+                        tbl=Identifier(collection_name),
+                        tz=Literal(self._timezone_offset),
                     ),
                     (list(keys),),
                 )
@@ -344,6 +349,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                         text=result[2]["text"],
                         description=result[2]["description"],
                         additional_metadata=result[2]["additional_metadata"],
+                        timestamp=result[3],
                     )
                     for result in results
                 ]
@@ -425,9 +431,13 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    SELECT key, embedding, metadata, cosine_similarity
+                    SELECT key,
+                        embedding,
+                        metadata,
+                        cosine_similarity,
+                        timestamp AT TIME ZONE INTERVAL {tz} AS timestamp
                     FROM (
-                        SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity
+                        SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity, timestamp
                         FROM {scm}.{tbl}
                     ) AS subquery
                     WHERE cosine_similarity >= {mrs}
@@ -436,6 +446,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     ).format(
                         scm=Identifier(self._schema),
                         tbl=Identifier(collection_name),
+                        tz=Literal(self._timezone_offset),
                         mrs=min_relevance_score,
                         limit=limit,
                         emb=SQL(",").join(embedding.tolist()),
@@ -455,6 +466,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                             text=result[2]["text"],
                             description=result[2]["description"],
                             additional_metadata=result[2]["additional_metadata"],
+                            timestamp=result[4],
                         ),
                         result[3],
                     )
@@ -486,9 +498,13 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    SELECT key, embedding, metadata, cosine_similarity
+                    SELECT key,
+                        embedding,
+                        metadata,
+                        cosine_similarity,
+                        timestamp AT TIME ZONE INTERVAL {tz} AS timestamp
                     FROM (
-                        SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity
+                        SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity, timestamp
                         FROM {scm}.{tbl}
                     ) AS subquery
                     WHERE cosine_similarity >= {mrs}
@@ -497,6 +513,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     ).format(
                         scm=Identifier(self._schema),
                         tbl=Identifier(collection_name),
+                        tz=Literal(self._timezone_offset),
                         mrs=min_relevance_score,
                         emb=SQL(",").join(embedding.tolist()),
                     )
@@ -515,6 +532,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                         text=result[2]["text"],
                         description=result[2]["description"],
                         additional_metadata=result[2]["additional_metadata"],
+                        timestamp=result[4],
                     ),
                     result[3],
                 )
