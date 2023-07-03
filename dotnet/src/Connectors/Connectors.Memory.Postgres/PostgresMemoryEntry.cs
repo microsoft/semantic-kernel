@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
@@ -25,7 +26,7 @@ public record struct PostgresMemoryEntry
     public Vector? Embedding { get; set; }
 
     /// <summary>
-    /// Optional timestamp.
+    /// Optional timestamp. Its 'DateTimeKind' is <see cref="DateTimeKind.Utc"/>
     /// </summary>
-    public long? Timestamp { get; set; }
+    public DateTime? Timestamp { get; set; }
 }
