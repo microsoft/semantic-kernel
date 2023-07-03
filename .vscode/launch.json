@@ -23,9 +23,9 @@
       "request": "launch",
       "preLaunchTask": "build (KernelSyntaxExamples)",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/samples/dotnet/kernel-syntax-examples/bin/Debug/net6.0/KernelSyntaxExamples.dll",
+      "program": "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/bin/Debug/net6.0/KernelSyntaxExamples.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/samples/dotnet/kernel-syntax-examples",
+      "cwd": "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "console": "internalConsole",
       "stopAtEntry": false
