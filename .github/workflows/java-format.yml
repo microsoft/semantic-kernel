@@ -19,6 +19,14 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Check for command
+        id: command
+        uses: xt0rted/slash-command-action@v2
+        continue-on-error: true
+        with:
+          command: spotless
+          reaction-type: "eyes"
+    
       - name: Get command
         env:
           BODY: ${{ github.event.comment.body }}
@@ -43,12 +51,6 @@ jobs:
           java-version: 17
           distribution: microsoft
           cache: maven
-        if: env.COMMAND == 'spotless'
-
-      - name: Set git user
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email github-action[bot]@users.noreply.github.com
         if: env.COMMAND == 'spotless'
 
       - name: Run command
