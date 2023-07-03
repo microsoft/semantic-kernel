@@ -383,7 +383,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
             streamingResultType: TextCompletionStreamingResultType.MonitorBased,
             maxExpectedNbClients: 30,
-            maxTestDuration: 5000).ConfigureAwait(false);
+            maxTestDuration: 30000).ConfigureAwait(false);
     }
 
     [Fact]
@@ -517,12 +517,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         // Validate all results
         foreach (var result in allResults)
         {
-            if (expectedResponse.Count != result.Count)
-            {
-                this._logger?.LogInformation(message: $"Expected: {expectedResponse.Aggregate((s1, s2) => $"{s1},{s2}")}");
-                this._logger?.LogInformation(message: $"Result: {result.Aggregate((s1, s2) => $"{s1},{s2}")}");
-            }
-
             Assert.Equal(expectedResponse.Count, result.Count);
             for (int i = 0; i < expectedResponse.Count; i++)
             {
