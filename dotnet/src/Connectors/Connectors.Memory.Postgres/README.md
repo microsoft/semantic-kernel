@@ -35,7 +35,7 @@ sk_demo=# CREATE EXTENSION vector;
 3. To use Postgres as a semantic memory store:
 
 ```csharp
-NpgsqlDataSourceBuilder dataSourceBuilder = new NpgsqlDataSourceBuilder("Host=localhost;Port=5432;Database=sk_memory;User Id=postgres;Password=mysecretpassword");
+NpgsqlDataSourceBuilder dataSourceBuilder = new NpgsqlDataSourceBuilder("Host=localhost;Port=5432;Database=sk_demo;User Id=postgres;Password=mysecretpassword");
 dataSourceBuilder.UseVector();
 NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 
