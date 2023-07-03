@@ -168,7 +168,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 #pragma warning disable CA2000 // Dispose objects before losing scope
             if (!this._useWebSocketsPooling || !this._webSocketPool.TryTake(out clientWebSocket))
             {
-                this._logger?.LogInformation(message: "Creating new client web socket");
                 clientWebSocket = this._webSocketFactory();
             }
 #pragma warning restore CA2000 // Dispose objects before losing scope

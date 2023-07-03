@@ -6,7 +6,7 @@ using System.Net.WebSockets;
 
 namespace SemanticKernel.Connectors.UnitTests;
 
-internal class ConnectedClient
+internal sealed class ConnectedClient
 {
     public Guid Id { get; }
     public HttpListenerContext Context { get; }

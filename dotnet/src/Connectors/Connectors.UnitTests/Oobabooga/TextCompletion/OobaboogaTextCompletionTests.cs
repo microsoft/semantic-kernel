@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion.TextCompletionResults;
@@ -431,6 +432,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         {
             ClientWebSocket ExternalWebSocketFactory()
             {
+                this._logger?.LogInformation(message: "Creating new client web socket");
                 var toReturn = new ClientWebSocket();
                 return toReturn;
             }
