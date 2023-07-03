@@ -47,7 +47,7 @@ public class SemanticChatMemorySkill
 
         // Search for relevant memories.
         List<MemoryQueryResult> relevantMemories = new();
-        foreach (var memoryName in this._promptOptions.MemoryMap.Keys)
+        foreach (var memoryName in this._promptOptions.MemoryTypes)
         {
             var results = textMemory.SearchAsync(
                 SemanticChatMemoryExtractor.MemoryCollectionName(chatId, memoryName),

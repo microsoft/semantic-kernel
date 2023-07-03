@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -70,6 +69,10 @@ public class ChatSkill
     private readonly IDictionary<string, ISKFunction> _chatSkillPlugin;
 
     /// <summary>
+    /// A dictionary mapping all of the semantic chat skill functions to the token counts of their prompts
+    /// </summary>
+    private readonly IDictionary<string, int> _chatSkillTokenCounts;
+    /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
     /// </summary>
     public ChatSkill(
@@ -97,6 +100,9 @@ public class ChatSkill
 
         var parentDir = System.IO.Directory.GetCurrentDirectory() + "\\..";
         this._chatSkillPlugin = this._kernel.ImportSemanticSkillFromDirectory(parentDir, "SemanticChatSkills");
+
+        var skillDir = Path.Combine(parentDir, "SemanticChatSkills");
+        this._chatSkillTokenCounts = this.calcPromptTokens(this._chatSkillPlugin, skillDir);
     }
 
     /// <summary>
@@ -173,6 +179,7 @@ public class ChatSkill
 
         // Clone the context to avoid modifying the original context variables.
         var chatContext = Utilities.CopyContextWithVariablesClone(context);
+        chatContext.Variables.Set("chatId", context["chatId"]);
         chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
 
         // Check if plan exists in ask's context variables.
@@ -208,9 +215,10 @@ public class ChatSkill
         // Extract semantic chat memory
         await SemanticChatMemoryExtractor.ExtractSemanticChatMemoryAsync(
             chatId,
-            this._kernel,
             chatContext,
-            this._promptOptions);
+            this._promptOptions,
+            this._chatSkillPlugin,
+            this._chatSkillTokenCounts);
 
         context.Variables.Update(response);
         return context;
@@ -286,15 +294,18 @@ public class ChatSkill
             chatContextText = $"{chatContextText}\n{chatHistory}";
         }
 
+        //Get the prompt.txt text
+        var parentDir = System.IO.Directory.GetCurrentDirectory() + "\\..";
+        var skillDir = Path.Combine(parentDir, "SemanticChatSkills");
+        var promptText = this.GetPromptTemplateText(this._chatSkillPlugin, skillDir, "Chat");
+
         // Invoke the model
         chatContext.Variables.Set("audience", audience);
         chatContext.Variables.Set("UserIntent", userIntent);
         chatContext.Variables.Set("ChatContext", chatContextText);
 
         var promptRenderer = new PromptTemplateEngine();
-        var renderedPrompt = await promptRenderer.RenderAsync(
-            this._promptOptions.SystemChatPrompt,
-            chatContext);
+        var renderedPrompt = await promptRenderer.RenderAsync(promptText, chatContext);
 
         var result = await this._chatSkillPlugin["Chat"].InvokeAsync(chatContext);
 
@@ -317,19 +328,8 @@ public class ChatSkill
     /// </summary>
     private async Task<string> GetAudienceAsync(SKContext context)
     {
-        var historyTokenBudget =
-            this._promptOptions.CompletionTokenLimit -
-            this._promptOptions.ResponseTokenLimit -
-            Utilities.TokenCount(string.Join("\n", new string[]
-                {
-                    this._promptOptions.SystemAudience,
-                    this._promptOptions.SystemAudienceContinuation,
-                })
-            );
-
         var audienceContext = Utilities.CopyContextWithEmptyVariables(context);
-        audienceContext.Variables.Set("chatId", context["chatId"]);
-        audienceContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
+        audienceContext.Variables.Set("tokenLimit", this.GetHistoryTokenBudgetForFunc("ExtractAudience"));
 
         var result = await this._chatSkillPlugin["ExtractAudience"].InvokeAsync(audienceContext);
 
@@ -353,22 +353,9 @@ public class ChatSkill
         // TODO: Regenerate user intent if plan was modified
         if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
-            var historyTokenBudget =
-                this._promptOptions.CompletionTokenLimit -
-                this._promptOptions.ResponseTokenLimit -
-                Utilities.TokenCount(string.Join("\n", new string[]
-                    {
-                        this._promptOptions.SystemDescription,
-                        this._promptOptions.SystemIntent,
-                        this._promptOptions.SystemIntentContinuation
-                    })
-                );
-
             var intentContext = Utilities.CopyContextWithEmptyVariables(context);
-            intentContext.Variables.Set("chatId", context["chatId"]);
             intentContext.Variables.Set("audience", context["userName"]);
-            intentContext.Variables.Set("tokenLimit", historyTokenBudget.ToString(new NumberFormatInfo()));
-            intentContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
+            intentContext.Variables.Set("tokenLimit", this.GetHistoryTokenBudgetForFunc("ExtractUserIntent"));
 
             var result = await this._chatSkillPlugin["ExtractUserIntent"].InvokeAsync(intentContext);
             userIntent = $"User intent: {result}";
@@ -497,38 +484,40 @@ public class ChatSkill
     }
 
     /// <summary>
-    /// Create a completion settings object for chat response. Parameters are read from the PromptSettings class.
+    /// Create a dictionary mapping semantic functions for a skill to the number of tokens their prompts use/
     /// </summary>
-    private CompleteRequestSettings CreateChatResponseCompletionSettings()
+    private Dictionary<string, int> calcPromptTokens(IDictionary<string, ISKFunction> skillPlugin, string skillDir)
     {
-        var completionSettings = new CompleteRequestSettings
-        {
-            MaxTokens = this._promptOptions.ResponseTokenLimit,
-            Temperature = this._promptOptions.ResponseTemperature,
-            TopP = this._promptOptions.ResponseTopP,
-            FrequencyPenalty = this._promptOptions.ResponseFrequencyPenalty,
-            PresencePenalty = this._promptOptions.ResponsePresencePenalty
-        };
+        var funcTokenCounts = new Dictionary<string, int>(); ;
+        const string PromptFile = "skprompt.txt";
 
-        return completionSettings;
+        foreach (KeyValuePair<string, ISKFunction> funcEntry in skillPlugin)
+        {
+            var promptPath = Path.Combine(skillDir, funcEntry.Key, PromptFile);
+            if (!File.Exists(promptPath)) { continue; }
+
+            var promptText = File.ReadAllText(promptPath);
+            funcTokenCounts.Add(funcEntry.Key, Utilities.TokenCount(promptText));
+        }
+
+        return funcTokenCounts;
     }
 
     /// <summary>
-    /// Create a completion settings object for intent response. Parameters are read from the PromptSettings class.
+    /// Get prompt template text from prompt.txt file
     /// </summary>
-    private CompleteRequestSettings CreateIntentCompletionSettings()
+    private string GetPromptTemplateText(IDictionary<string, ISKFunction> skillPlugin, string skillDir, string funcName)
     {
-        var completionSettings = new CompleteRequestSettings
-        {
-            MaxTokens = this._promptOptions.ResponseTokenLimit,
-            Temperature = this._promptOptions.IntentTemperature,
-            TopP = this._promptOptions.IntentTopP,
-            FrequencyPenalty = this._promptOptions.IntentFrequencyPenalty,
-            PresencePenalty = this._promptOptions.IntentPresencePenalty,
-            StopSequences = new string[] { "] bot:" }
-        };
+        var promptText = "";
+        const string PromptFile = "skprompt.txt";
+        var promptPath = Path.Combine(skillDir, funcName, PromptFile);
 
-        return completionSettings;
+        if (skillPlugin.ContainsKey("Chat") && File.Exists(promptPath))
+        {
+            promptText = File.ReadAllText(promptPath);
+        }
+
+        return promptText;
     }
 
     /// <summary>
@@ -539,20 +528,26 @@ public class ChatSkill
     /// <returns>The remaining token limit.</returns>
     private int GetChatContextTokenLimit(string userIntent)
     {
-        var tokenLimit = this._promptOptions.CompletionTokenLimit;
         var remainingToken =
-            tokenLimit -
-            Utilities.TokenCount(userIntent) -
+            this._promptOptions.CompletionTokenLimit -
             this._promptOptions.ResponseTokenLimit -
-            Utilities.TokenCount(string.Join("\n", new string[]
-                {
-                            this._promptOptions.SystemDescription,
-                            this._promptOptions.SystemResponse,
-                            this._promptOptions.SystemChatContinuation
-                })
-            );
+            Utilities.TokenCount(userIntent) -
+            this._chatSkillTokenCounts["Chat"];
 
         return remainingToken;
+    }
+
+    /// <summary>
+    /// Calculate the remaining token budget for the chat response that can be used by the ExtractChatHistory function
+    /// </summary>
+    private string GetHistoryTokenBudgetForFunc(string funcName)
+    {
+        var historyTokenBudget =
+                this._promptOptions.CompletionTokenLimit -
+                this._promptOptions.ResponseTokenLimit -
+                this._chatSkillTokenCounts[funcName];
+
+        return historyTokenBudget.ToString(new NumberFormatInfo());
     }
 
     # endregion

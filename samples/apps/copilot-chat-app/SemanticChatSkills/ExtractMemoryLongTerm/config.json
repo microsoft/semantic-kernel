@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Extract messages and their metadata from the chat in a chronological order",
+  "description": "Extract list of participants from the conversation history. Note that only those who have spoken will be included.",
   "type": "completion",
   "completion": {
     "max_tokens": 4096,
@@ -19,6 +19,11 @@
       {
         "name": "tokenLimit",
         "description": "Maximum number of tokens",
+        "defaultValue": ""
+      },
+      {
+        "name": "knowledgeCutoff",
+        "description": "LLM knowledge stops at this date",
         "defaultValue": ""
       }
     ]

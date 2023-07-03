@@ -8,4 +8,5 @@ Either return [silence] or provide a response to the last message. If you provid
 
 {{$chatContext}}
 
-SINGLE RESPONSE FROM BOT TO USER:\n[{{TimeSkill.Now}} {{timeSkill.Second}}] bot:
+SINGLE RESPONSE FROM BOT TO USER:
+[{{TimeSkill.Now}} {{timeSkill.Second}}] bot:
