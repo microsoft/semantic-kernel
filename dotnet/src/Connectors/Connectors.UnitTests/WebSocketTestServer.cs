@@ -76,13 +76,13 @@ internal class WebSocketTestServer : IDisposable
                         connectedClient.SetSocket(socketContext.WebSocket);
                         this._runningTasks.Add(this.HandleSingleWebSocketRequestAsync(connectedClient));
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         // server error if upgrade from HTTP to WebSocket fails
                         context.Response.StatusCode = 500;
                         context.Response.StatusDescription = "WebSocket upgrade failed";
                         context.Response.Close();
-                        return;
+                        throw;
                     }
                 }
             }
@@ -102,34 +102,25 @@ internal class WebSocketTestServer : IDisposable
     private async Task HandleSingleWebSocketRequestAsync(ConnectedClient connectedClient)
     {
         var buffer = WebSocket.CreateServerBuffer(4096);
-        //var closeRequested = false;
 
         Guid requestId = connectedClient.Id;
         this._requestContentQueues[requestId] = new ConcurrentQueue<byte[]>();
 
         try
         {
-            while (!this._socketCancellationTokenSource.IsCancellationRequested && connectedClient.Socket.State != WebSocketState.Closed && connectedClient.Socket.State != WebSocketState.Aborted)
+            while (!this._socketCancellationTokenSource.IsCancellationRequested && connectedClient.Socket != null && connectedClient.Socket.State != WebSocketState.Closed && connectedClient.Socket.State != WebSocketState.Aborted)
             {
-                //if (connectedClient.Socket.State != WebSocketState.Open)
-                //{
-                //    break;
-                //}
-
-                WebSocketReceiveResult result;
-
-                result = await connectedClient.Socket.ReceiveAsync(buffer, this._socketCancellationTokenSource.Token).ConfigureAwait(false);
-                if (!this._socketCancellationTokenSource.IsCancellationRequested)
+                WebSocketReceiveResult result = await connectedClient.Socket.ReceiveAsync(buffer, this._socketCancellationTokenSource.Token).ConfigureAwait(false);
+                if (!this._socketCancellationTokenSource.IsCancellationRequested && connectedClient.Socket.State != WebSocketState.Closed && connectedClient.Socket.State != WebSocketState.Aborted)
                 {
                     if (connectedClient.Socket.State == WebSocketState.CloseReceived && result.MessageType == WebSocketMessageType.Close)
                     {
-                        this._logger?.LogTrace(message: $"Socket {requestId}: Acknowledging Close frame received from client");
                         await connectedClient.Socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Acknowledge Close frame", CancellationToken.None);
 
                         break;
                     }
 
-                    var receivedBytes = new ArraySegment<byte>(buffer.Array, 0, result.Count);
+                    var receivedBytes = buffer.Slice(0, result.Count);
                     this._requestContentQueues[requestId].Enqueue(receivedBytes.ToArray());
 
                     if (result.EndOfMessage)
@@ -141,7 +132,7 @@ internal class WebSocketTestServer : IDisposable
                             await Task.Delay(this.RequestProcessingDelay).ConfigureAwait(false);
                         }
 
-                        for (int index = 0; index < responseSegments.Count; index++)
+                        foreach (var responseSegment in responseSegments)
                         {
                             if (connectedClient.Socket.State != WebSocketState.Open)
                             {
@@ -153,18 +144,17 @@ internal class WebSocketTestServer : IDisposable
                                 await Task.Delay(this.SegmentMessageDelay).ConfigureAwait(false);
                             }
 
-                            ArraySegment<byte> segment = responseSegments[index];
-                            await connectedClient.Socket.SendAsync(segment, WebSocketMessageType.Text, true, this._socketCancellationTokenSource.Token).ConfigureAwait(false);
+                            await connectedClient.Socket.SendAsync(responseSegment, WebSocketMessageType.Text, true, this._socketCancellationTokenSource.Token).ConfigureAwait(false);
                         }
                     }
                 }
             }
 
-            if (connectedClient.Socket.State == WebSocketState.Open)
+            if (connectedClient.Socket?.State == WebSocketState.Open)
             {
                 await connectedClient.Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing waiting for acknowledgement", CancellationToken.None).ConfigureAwait(false);
             }
-            else if (connectedClient.Socket.State == WebSocketState.CloseReceived)
+            else if (connectedClient.Socket?.State == WebSocketState.CloseReceived)
             {
                 await connectedClient.Socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing without waiting for acknowledgment", CancellationToken.None).ConfigureAwait(false);
             }
@@ -179,19 +169,17 @@ internal class WebSocketTestServer : IDisposable
         }
         finally
         {
-            if (connectedClient.Socket.State != WebSocketState.Closed)
+            if (connectedClient.Socket?.State != WebSocketState.Closed)
             {
-                connectedClient.Socket.Abort();
+                connectedClient.Socket?.Abort();
             }
 
-            connectedClient.Socket.Dispose();
+            connectedClient.Socket?.Dispose();
 
             // Remove client from dictionary when done
             this._clients.TryRemove(requestId, out _);
         }
     }
-
-
 
     private async Task CloseAllSocketsAsync()
     {
@@ -207,12 +195,12 @@ internal class WebSocketTestServer : IDisposable
 
     public async ValueTask DisposeAsync()
     {
-        this._mainCancellationTokenSource.Cancel();
         try
         {
             this._serverIsRunning = false;
             await this.CloseAllSocketsAsync(); // Close all sockets before finishing the tasks
             await Task.WhenAll(this._runningTasks).ConfigureAwait(false);
+            this._socketCancellationTokenSource.Cancel();
             this._mainCancellationTokenSource.Cancel();
         }
         catch (OperationCanceledException oce)
@@ -223,6 +211,7 @@ internal class WebSocketTestServer : IDisposable
         {
             this._httpListener.Stop();
             this._httpListener.Close();
+            this._socketCancellationTokenSource.Dispose();
             this._mainCancellationTokenSource.Dispose();
         }
     }
