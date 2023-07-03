@@ -478,7 +478,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
         for (int i = 0; i < nbConcurrentCalls; i++)
         {
-            tasks.Add(Task.Run( () =>
+            tasks.Add(Task.Run(() =>
             {
                 var localResponse = sut.CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
                 {
@@ -495,7 +495,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
         foreach (var callTask in tasks)
         {
-            List<Task<List<string>>> enumerationTasks;
             callEnumerationTasks.AddRange(Enumerable.Range(0, nbConcurrentEnumeration).Select(_ => Task.Run(async () =>
             {
                 var completion = await callTask.ConfigureAwait(false);
@@ -519,6 +518,12 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         // Validate all results
         foreach (var result in allResults)
         {
+            if (expectedResponse.Count != result.Count)
+            {
+                this._logger?.LogInformation(message: $"Expected: {expectedResponse.Aggregate((s1, s2) => $"{s1},{s2}")}");
+                this._logger?.LogInformation(message: $"Result: {result.Aggregate((s1, s2) => $"{s1},{s2}")}");
+            }
+
             Assert.Equal(expectedResponse.Count, result.Count);
             for (int i = 0; i < expectedResponse.Count; i++)
             {
