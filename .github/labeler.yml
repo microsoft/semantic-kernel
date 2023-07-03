@@ -36,4 +36,4 @@ copilot chat:
 # Add 'documentation' label to any change within the 'docs' directory, or any '.md' files
 documentation:
   - docs/**/*
-  - **/*.md
+  - '**/*.md'
