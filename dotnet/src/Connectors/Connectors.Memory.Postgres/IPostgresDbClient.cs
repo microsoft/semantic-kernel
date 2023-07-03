@@ -30,14 +30,6 @@ public interface IPostgresDbClient
     Task CreateTableAsync(string tableName, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Create a index for collection table.
-    /// </summary>
-    /// <param name="tableName">The name assigned to a collection table of entries.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns></returns>
-    Task CreateIndexAsync(string tableName, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Get all collection tables.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>

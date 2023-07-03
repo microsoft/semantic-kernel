@@ -41,7 +41,6 @@ public class PostgresMemoryStoreTests
 
         // Assert
         this._postgresDbClientMock.Verify(client => client.CreateTableAsync(CollectionName, CancellationToken.None), Times.Once());
-        this._postgresDbClientMock.Verify(client => client.CreateIndexAsync(CollectionName, CancellationToken.None), Times.Once());
     }
 
     [Fact]

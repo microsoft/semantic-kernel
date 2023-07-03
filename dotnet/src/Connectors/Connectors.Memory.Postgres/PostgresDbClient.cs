@@ -24,13 +24,11 @@ public class PostgresDbClient : IPostgresDbClient
     /// <param name="dataSource">Postgres data source.</param>
     /// <param name="schema">Schema of collection tables.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
-    /// <param name="numberOfLists">Specifies the number of lists for indexing. Higher values can improve recall but may impact performance. More info <see href="https://github.com/pgvector/pgvector#indexing"/></param>
-    public PostgresDbClient(NpgsqlDataSource dataSource, string schema, int vectorSize, int numberOfLists)
+    public PostgresDbClient(NpgsqlDataSource dataSource, string schema, int vectorSize)
     {
         this._dataSource = dataSource;
         this._schema = schema;
         this._vectorSize = vectorSize;
-        this._numberOfLists = numberOfLists;
     }
 
     /// <inheritdoc />
@@ -104,21 +102,6 @@ public class PostgresDbClient : IPostgresDbClient
                     embedding vector({this._vectorSize}),
                     timestamp TIMESTAMP WITH TIME ZONE,
                     PRIMARY KEY (key))";
-            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task CreateIndexAsync(string tableName, CancellationToken cancellationToken = default)
-    {
-        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-
-        await using (connection)
-        {
-            using NpgsqlCommand cmd = connection.CreateCommand();
-            cmd.CommandText = $@"
-                CREATE INDEX IF NOT EXISTS ""{tableName}_ix""
-                ON {this.GetFullTableName(tableName)} USING ivfflat (embedding vector_cosine_ops) WITH (lists = {this._numberOfLists})";
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
     }
@@ -321,7 +304,6 @@ public class PostgresDbClient : IPostgresDbClient
     private readonly NpgsqlDataSource _dataSource;
     private readonly int _vectorSize;
     private readonly string _schema;
-    private readonly int _numberOfLists;
 
     /// <summary>
     /// Read a entry.

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -23,7 +22,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 public class PostgresMemoryStore : IMemoryStore
 {
     internal const string DefaultSchema = "public";
-    internal const int DefaultNumberOfLists = 1000;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
@@ -31,9 +29,8 @@ public class PostgresMemoryStore : IMemoryStore
     /// <param name="dataSource">Postgres data source.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
     /// <param name="schema">Database schema of collection tables. The default value is "public".</param>
-    /// <param name="numberOfLists">Specifies the number of lists for indexing. Higher values can improve recall but may impact performance. The default value is 1000. More info <see href="https://github.com/pgvector/pgvector#indexing"/></param>
-    public PostgresMemoryStore(NpgsqlDataSource dataSource, int vectorSize, string schema = DefaultSchema, int numberOfLists = DefaultNumberOfLists)
-        : this(new PostgresDbClient(dataSource, schema, vectorSize, numberOfLists))
+    public PostgresMemoryStore(NpgsqlDataSource dataSource, int vectorSize, string schema = DefaultSchema)
+        : this(new PostgresDbClient(dataSource, schema, vectorSize))
     {
     }
 
@@ -48,8 +45,6 @@ public class PostgresMemoryStore : IMemoryStore
         Verify.NotNullOrWhiteSpace(collectionName);
 
         await this._postgresDbClient.CreateTableAsync(collectionName, cancellationToken).ConfigureAwait(false);
-
-        await this._postgresDbClient.CreateIndexAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
