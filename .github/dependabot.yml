@@ -10,6 +10,12 @@ updates:
     directory: "dotnet/"
     schedule:
       interval: "weekly"
+    ignore:
+      # For all System.* and Microsoft.Extensions.* packages, ignore all major version updates
+      - dependency-name: "System.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: ["version-update:semver-major"]
       
   # Maintain dependencies for nuget
   - package-ecosystem: "nuget"
