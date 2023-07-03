@@ -17,7 +17,7 @@ jobs:
           - {label: 'python', prefix: 'Python: '}
           - {label: 'java', prefix: 'Java: '}
 
-    if: contains(matrix.label, context.payload.label.name)
+    if: ${{ github.event.label.name == matrix.label }}
     runs-on: ubuntu-latest
     permissions:
       issues: write
