@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion.TextCompletionResults;
@@ -16,16 +17,18 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion.TextCo
 /// </summary>
 internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : ITextAsyncStreamingResult
 {
+    private readonly ILogger? _logger;
     private readonly BroadcastBlock<string> _broadcastBlock;
     private readonly object _syncLock;
-    private bool _isConsuming;
+    private bool _isProducing;
     private readonly List<TextCompletionStreamingResponse> _modelResponses;
 
     public ModelResult ModelResult { get; }
 
-    public BroadcastBlockBasedTextCompletionStreamingResult() : base()
+    public BroadcastBlockBasedTextCompletionStreamingResult(ILogger? logger = null) : base()
     {
-        this._isConsuming = false;
+        this._logger = logger;
+        this._isProducing = false;
         this._syncLock = new();
         this._modelResponses = new();
         this.ModelResult = new ModelResult(this._modelResponses);
@@ -36,6 +39,13 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : ITextAs
     {
         lock (this._syncLock)
         {
+            if (!this._isProducing)
+            {
+                this._logger?.LogTrace(message: $"First producer");
+                this._isProducing = true;
+            }
+
+            this._logger?.LogTrace(message: $"Adding item {response.Text}");
             this._modelResponses.Add(response);
             this._broadcastBlock.Post(response.Text);
         }
@@ -43,6 +53,7 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : ITextAs
 
     public void SignalStreamEnd()
     {
+        this._logger?.LogTrace(message: $"Completing");
         this._broadcastBlock.Complete();
     }
 
@@ -68,13 +79,15 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : ITextAs
         // Catching up with existing data.
         lock (this._syncLock)
         {
-            if (!this._isConsuming)
+            if (!this._isProducing)
             {
+                this._logger?.LogTrace(message: $"First consumer");
                 // First consumer doesn't need to catch up, so set the flag
-                this._isConsuming = true;
+                this._isProducing = true;
             }
             else
             {
+                this._logger?.LogTrace(message: $"Catching up");
                 // Later consumers need to catch up
                 tempList = this._modelResponses.Select(response => response.Text).ToList();
             }
@@ -87,6 +100,7 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : ITextAs
             // Yield the data outside the lock.
             foreach (var item in tempList)
             {
+                this._logger?.LogTrace(message: $"yielding catchup item {item}");
                 yield return item;
             }
         }
@@ -96,6 +110,7 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : ITextAs
         {
             while (targetBlock.TryReceive(out string? chunk))
             {
+                this._logger?.LogTrace(message: $"yielding broadcast item {chunk}");
                 yield return chunk;
             }
         }

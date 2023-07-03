@@ -132,7 +132,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 this._steamingResultFactory = () => new ChannelBasedTextCompletionStreamingResult();
                 break;
             case TextCompletionStreamingResultType.BroadcastBlockBased:
-                this._steamingResultFactory = () => new BroadcastBlockBasedTextCompletionStreamingResult();
+                this._steamingResultFactory = () => new BroadcastBlockBasedTextCompletionStreamingResult(this._logger);
                 break;
             case TextCompletionStreamingResultType.MonitorBased:
                 this._steamingResultFactory = () => new MonitorBasedTextCompletionStreamingResult();

@@ -336,6 +336,24 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     }
 
     /// <summary>
+    /// This test will assess concurrent enumeration of the same result
+    /// </summary>
+    [Fact]
+    public async Task ShouldHandleConcurrentEnumerationOfSameStreamingServiceResponseChannelsAsync()
+    {
+        using SemaphoreSlim enforcedConcurrentCallSemaphore = new(20);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(
+            nbConcurrentCalls: 1000,
+            nbConcurrentEnumeration: 100,
+            isPersistent: true,
+            keepAliveWebSocketsDuration: 100,
+            concurrentCallsTicksDelay: 0,
+            enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
+            streamingResultType: TextCompletionStreamingResultType.ChannelBased,
+            maxExpectedNbClients: 20).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// In this test, we are looking at a realistic processing time of 1s per request. 50 calls are made simultaneously with pooling enabled and 20 concurrent websockets enforced.
     /// No more than 5 seconds should suffice processing all 50 requests of 1 second duration each.
     /// </summary>
@@ -414,7 +432,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         int keepAliveWebSocketsDuration = 100,
         int concurrentCallsTicksDelay = 0,
         SemaphoreSlim? enforcedConcurrentCallSemaphore = null,
-        TextCompletionStreamingResultType streamingResultType = TextCompletionStreamingResultType.ChannelBased,
+        TextCompletionStreamingResultType streamingResultType = TextCompletionStreamingResultType.BroadcastBlockBased,
         int maxExpectedNbClients = 0,
         int maxTestDuration = 0)
     {
@@ -517,6 +535,12 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         // Validate all results
         foreach (var result in allResults)
         {
+            if (expectedResponse.Count != result.Count)
+            {
+                this._logger?.LogInformation(message: $"Expected: {expectedResponse.Aggregate((s1, s2) => $"{s1},{s2}")}");
+                this._logger?.LogInformation(message: $"Result: {result.Aggregate((s1, s2) => $"{s1},{s2}")}");
+            }
+
             Assert.Equal(expectedResponse.Count, result.Count);
             for (int i = 0; i < expectedResponse.Count; i++)
             {
