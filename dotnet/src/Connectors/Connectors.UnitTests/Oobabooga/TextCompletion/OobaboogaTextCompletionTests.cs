@@ -271,19 +271,19 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact]
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreBroadcastBlockAsync()
     {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync(TextCompletionStreamingResultType.BroadcastBlockBased).ConfigureAwait(false);
+        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync(TextCompletionStreamingResultType.BroadcastBlockBased).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreChannelAsync()
     {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync(TextCompletionStreamingResultType.ChannelBased).ConfigureAwait(false);
+        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync(TextCompletionStreamingResultType.ChannelBased).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreMonitorAsync()
     {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync(TextCompletionStreamingResultType.MonitorBased).ConfigureAwait(false);
+        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync(TextCompletionStreamingResultType.MonitorBased).ConfigureAwait(false);
     }
 
     private async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync(TextCompletionStreamingResultType streamingResultType)
@@ -535,9 +535,13 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             await Task.Delay(delayTimeSpan).ConfigureAwait(false);
         }
 
-        //var completions = await callEnumerationTasks.ConfigureAwait(false);
-
         var allResults = await Task.WhenAll(callEnumerationTasks).ConfigureAwait(false);
+
+        var elapsed = sw.ElapsedMilliseconds;
+        if (maxExpectedNbClients > 0)
+        {
+            Assert.InRange(clientCount, 1, maxExpectedNbClients);
+        }
 
         // Validate all results
         foreach (var result in allResults)
@@ -553,12 +557,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             {
                 Assert.Equal(expectedResponse[i], result[i]);
             }
-        }
-
-        var elapsed = sw.ElapsedMilliseconds;
-        if (maxExpectedNbClients > 0)
-        {
-            Assert.InRange(clientCount, 1, maxExpectedNbClients);
         }
 
         if (maxTestDuration > 0)
