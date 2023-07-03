@@ -322,13 +322,13 @@ public class PostgresDbClient : IPostgresDbClient
     }
 
     /// <summary>
-    /// Get table name from collection name.
+    /// Get full table name with schema from collection table name.
     /// </summary>
-    /// <param name="collectionName"></param>
+    /// <param name="tableName"></param>
     /// <returns></returns>
-    private string GetFullTableName(string collectionName)
+    private string GetFullTableName(string tableName)
     {
-        return $"{this._schema}.\"{collectionName}\"";
+        return $"{this._schema}.\"{tableName}\"";
     }
     #endregion
 }
