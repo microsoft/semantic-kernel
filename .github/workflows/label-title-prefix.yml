@@ -26,10 +26,10 @@ jobs:
         with:
           script: |
             // Get the label and prefix from the matrix
-            const label = ${{ matrix.label }}
-            const prefix = ${{ matrix.prefix }}
+            const label = '${{ matrix.label }}'
+            const prefix = '${{ matrix.prefix }}'
             
-            labelAdded = ${{ github.event.label.name }}
+            labelAdded = '${{ github.event.label.name }}'
           
             // Get the event name, title and labels
             let title
