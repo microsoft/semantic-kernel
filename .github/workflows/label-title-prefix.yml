@@ -1,11 +1,9 @@
 name: Add title prefix
 on:
   issues:
-    types:
-      - labeled
+    types: [ labeled ]
   pull_request:
-    types:
-      - labeled
+    types: [ labeled ]
 
 jobs:
   add_title_prefix:
@@ -17,7 +15,6 @@ jobs:
           - {label: 'python', prefix: 'Python: '}
           - {label: 'java', prefix: 'Java: '}
 
-    if: ${{ github.event.label.name == matrix.label }}
     runs-on: ubuntu-latest
     permissions:
       issues: write
