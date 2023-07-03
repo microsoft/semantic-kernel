@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,10 +59,10 @@ public interface IPostgresDbClient
     /// <param name="key">The key of the entry to upsert.</param>
     /// <param name="metadata">The metadata of the entry.</param>
     /// <param name="embedding">The embedding of the entry.</param>
-    /// <param name="timestamp">The timestamp of the entry.</param>
+    /// <param name="timestamp">The timestamp of the entry. Its 'DateTimeKind' must be <see cref="DateTimeKind.Utc"/></param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
-    Task UpsertAsync(string tableName, string key, string? metadata, Vector? embedding, long? timestamp, CancellationToken cancellationToken = default);
+    Task UpsertAsync(string tableName, string key, string? metadata, Vector? embedding, DateTime? timestamp, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the nearest matches to the <see cref="Vector"/>.

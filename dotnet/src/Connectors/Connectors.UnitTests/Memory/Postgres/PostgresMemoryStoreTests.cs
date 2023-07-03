@@ -293,7 +293,8 @@ public class PostgresMemoryStoreTests
             description: "description-" + Guid.NewGuid().ToString(),
             embedding: memoryEmbedding,
             additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
-            key: id);
+            key: id,
+            timestamp: DateTimeOffset.Now);
     }
 
     private PostgresMemoryEntry GetPostgresMemoryEntryFromMemoryRecord(MemoryRecord memoryRecord)
@@ -303,7 +304,7 @@ public class PostgresMemoryStoreTests
             Key = memoryRecord.Key,
             Embedding = new Pgvector.Vector(memoryRecord.Embedding.Vector.ToArray()),
             MetadataString = memoryRecord.GetSerializedMetadata(),
-            Timestamp = memoryRecord.Timestamp?.ToUnixTimeMilliseconds()
+            Timestamp = memoryRecord.Timestamp?.UtcDateTime
         };
     }
 

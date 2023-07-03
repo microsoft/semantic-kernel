@@ -102,7 +102,7 @@ public class PostgresDbClient : IPostgresDbClient
                     key TEXT NOT NULL,
                     metadata JSONB,
                     embedding vector({this._vectorSize}),
-                    timestamp BIGINT,
+                    timestamp TIMESTAMP WITH TIME ZONE,
                     PRIMARY KEY (key))";
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -162,7 +162,7 @@ public class PostgresDbClient : IPostgresDbClient
 
     /// <inheritdoc />
     public async Task UpsertAsync(string tableName, string key,
-        string? metadata, Vector? embedding, long? timestamp, CancellationToken cancellationToken = default)
+        string? metadata, Vector? embedding, DateTime? timestamp, CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -177,7 +177,7 @@ public class PostgresDbClient : IPostgresDbClient
             cmd.Parameters.AddWithValue("@key", key);
             cmd.Parameters.AddWithValue("@metadata", NpgsqlTypes.NpgsqlDbType.Jsonb, metadata ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@embedding", embedding ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@timestamp", timestamp ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@timestamp", NpgsqlTypes.NpgsqlDbType.TimestampTz, timestamp ?? (object)DBNull.Value);
 
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -335,7 +335,7 @@ public class PostgresDbClient : IPostgresDbClient
         string key = dataReader.GetString(dataReader.GetOrdinal("key"));
         string metadata = dataReader.GetString(dataReader.GetOrdinal("metadata"));
         Vector? embedding = withEmbeddings ? await dataReader.GetFieldValueAsync<Vector>(dataReader.GetOrdinal("embedding"), cancellationToken).ConfigureAwait(false) : null;
-        long? timestamp = await dataReader.GetFieldValueAsync<long?>(dataReader.GetOrdinal("timestamp"), cancellationToken).ConfigureAwait(false);
+        DateTime? timestamp = await dataReader.GetFieldValueAsync<DateTime?>(dataReader.GetOrdinal("timestamp"), cancellationToken).ConfigureAwait(false);
         return new PostgresMemoryEntry() { Key = key, MetadataString = metadata, Embedding = embedding, Timestamp = timestamp };
     }
 

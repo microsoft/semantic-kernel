@@ -75,10 +75,10 @@ BEGIN
             key TEXT NOT NULL,
             metadata JSONB,
             embedding vector(1536),
-            timestamp BIGINT,
+            timestamp TIMESTAMP WITH TIME ZONE,
             PRIMARY KEY (key)
         );', r.collection);
-        
+
         -- Create Index (You can modify the size of lists according to your data needs. Its default value is 1000.)
         EXECUTE format('CREATE INDEX %I
             ON public.%I USING ivfflat (embedding vector_cosine_ops) WITH (lists = 1000);',
@@ -93,7 +93,7 @@ DECLARE
 BEGIN
     FOR r IN SELECT DISTINCT collection FROM sk_memory_table LOOP
         EXECUTE format('INSERT INTO public.%I (key, metadata, embedding, timestamp)
-            SELECT key, metadata::JSONB, embedding, timestamp
+            SELECT key, metadata::JSONB, embedding, to_timestamp(timestamp / 1000.0) AT TIME ZONE ''UTC'' 
             FROM sk_memory_table WHERE collection = %L AND key <> '''';', r.collection, r.collection);
     END LOOP;
 END $$;

@@ -184,21 +184,6 @@ public class PostgresMemoryStore : IMemoryStore
 
     private readonly IPostgresDbClient _postgresDbClient;
 
-    private static long? ToTimestampLong(DateTimeOffset? timestamp)
-    {
-        return timestamp?.ToUnixTimeMilliseconds();
-    }
-
-    private static DateTimeOffset? ParseTimestamp(long? timestamp)
-    {
-        if (timestamp.HasValue)
-        {
-            return DateTimeOffset.FromUnixTimeMilliseconds(timestamp.Value);
-        }
-
-        return null;
-    }
-
     private async Task<string> InternalUpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken)
     {
         record.Key = record.Metadata.Id;
@@ -208,7 +193,7 @@ public class PostgresMemoryStore : IMemoryStore
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
             embedding: new Vector(record.Embedding.Vector.ToArray()),
-            timestamp: ToTimestampLong(record.Timestamp),
+            timestamp: record.Timestamp?.UtcDateTime,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return record.Key;
@@ -220,7 +205,7 @@ public class PostgresMemoryStore : IMemoryStore
             json: entry.MetadataString,
             embedding: entry.Embedding != null ? new Embedding<float>(entry.Embedding!.ToArray()) : Embedding<float>.Empty,
             key: entry.Key,
-            timestamp: ParseTimestamp(entry.Timestamp));
+            timestamp: entry.Timestamp?.ToLocalTime());
     }
 
     #endregion
