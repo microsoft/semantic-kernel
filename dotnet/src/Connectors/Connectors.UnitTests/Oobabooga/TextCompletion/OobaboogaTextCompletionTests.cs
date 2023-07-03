@@ -285,7 +285,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             maxExpectedNbClients: 50).ConfigureAwait(false);
     }
 
-
     /// <summary>
     /// When a hard limit is placed on concurrent calls, no warm up is needed since incoming calls in excess will wait for semaphore release, thus for pooling to recycle initial clients. Accordingly, the connector can be instantly hammered with 10000 concurrent calls, and the semaphore limit of 20 will dictate how many websocket clients will be initially created and then recycled to process all the subsequent calls.
     /// </summary>

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
@@ -14,7 +15,6 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : TextCom
 {
     private readonly BroadcastBlock<string> _broadcastBlock;
     private readonly object _syncLock = new();
-    private int _lastConsumedPosition = -1;
 
     public BroadcastBlockBasedTextCompletionStreamingResult() : base()
     {
@@ -35,20 +35,39 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : TextCom
         this._broadcastBlock.Complete();
     }
 
+    private bool _isConsuming = false;
+
     public override async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var targetBlock = new BufferBlock<string>();
-        this._broadcastBlock.LinkTo(targetBlock, new DataflowLinkOptions { PropagateCompletion = true });
+
+        // Temporary list to hold data to be sent to the consumers.
+        List<string>? tempList = null;
 
         // Catching up with existing data.
         lock (this._syncLock)
         {
-            for (int i = this._lastConsumedPosition + 1; i < this.ModelResponses.Count; i++)
+            if (!this._isConsuming)
             {
-                yield return this.ModelResponses[i].Text;
+                // First consumer doesn't need to catch up, so set the flag
+                this._isConsuming = true;
+            }
+            else
+            {
+                // Later consumers need to catch up
+                tempList = this.ModelResponses.Select(response => response.Text).ToList();
             }
 
-            this._lastConsumedPosition = this.ModelResponses.Count - 1;
+            this._broadcastBlock.LinkTo(targetBlock, new DataflowLinkOptions { PropagateCompletion = true });
+        }
+
+        if (tempList != null)
+        {
+            // Yield the data outside the lock.
+            foreach (var item in tempList)
+            {
+                yield return item;
+            }
         }
 
         // Listening for new data.
