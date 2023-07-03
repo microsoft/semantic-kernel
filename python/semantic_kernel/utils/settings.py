@@ -48,3 +48,31 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
     assert endpoint is not None, "Azure OpenAI endpoint not found in .env file"
 
     return deployment or "", api_key, endpoint
+
+
+def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+    """
+    Reads the Pinecone API key and Environment from the .env file.
+    Returns:
+        Tuple[str, str]: The Pinecone API key, the Pinecone Environment
+    """
+
+    api_key, environment = None, None
+    with open(".env", "r") as f:
+        lines = f.readlines()
+
+        for line in lines:
+            if line.startswith("PINECONE_API_KEY"):
+                parts = line.split("=")[1:]
+                api_key = "=".join(parts).strip().strip('"')
+                continue
+
+            if line.startswith("PINECONE_ENVIRONMENT"):
+                parts = line.split("=")[1:]
+                environment = "=".join(parts).strip().strip('"')
+                continue
+
+    assert api_key is not None, "Pinecone API key not found in .env file"
+    assert environment is not None, "Pinecone environment not found in .env file"
+
+    return api_key, environment

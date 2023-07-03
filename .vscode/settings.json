@@ -57,9 +57,8 @@
     }
   ],
   "eslint.options": {
-    "overrideConfigFile": ".eslintrc.js"
+    "overrideConfigFile": "./package.json"
   },
-  "eslint.packageManager": "yarn",
   "files.associations": {
     "*.json": "jsonc"
   },

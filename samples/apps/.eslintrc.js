@@ -1,46 +1,33 @@
 module.exports = {
     env: {
-        browser: true,
         es2021: true,
     },
-    extends: ['plugin:react/recommended', 'standard-with-typescript'],
-    ignorePatterns: ['build', '.*.js', '*.config.js', 'node_modules'],
-    overrides: [],
+    extends: [
+        'eslint:recommended',
+        'plugin:react/recommended',
+        'plugin:react-hooks/recommended',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/recommended-requiring-type-checking',
+        'plugin:@typescript-eslint/strict',
+    ],
+    ignorePatterns: ['build', '.*.js', 'node_modules'],
     parserOptions: {
         project: './tsconfig.json',
         ecmaVersion: 'latest',
         sourceType: 'module',
     },
-    plugins: ['react', '@typescript-eslint', 'import', 'react-hooks', 'react-security'],
     rules: {
-        '@typescript-eslint/brace-style': ['off'],
-        '@typescript-eslint/space-before-function-paren': [
-            'error',
-            { anonymous: 'always', named: 'never', asyncArrow: 'always' },
-        ],
-        '@typescript-eslint/semi': ['error', 'always'],
+        '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
         '@typescript-eslint/triple-slash-reference': ['error', { types: 'prefer-import' }],
-        '@typescript-eslint/indent': ['off'],
-        '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],
+        '@typescript-eslint/non-nullable-type-assertion-style': 'off',
         '@typescript-eslint/strict-boolean-expressions': 'off',
-        '@typescript-eslint/member-delimiter-style': [
-            'error',
-            {
-                multiline: {
-                    delimiter: 'semi',
-                    requireLast: true,
-                },
-                singleline: {
-                    delimiter: 'semi',
-                    requireLast: false,
-                },
-            },
-        ],
         '@typescript-eslint/explicit-function-return-type': 'off',
-        'react/jsx-props-no-spreading': 'warn',
-        'react-hooks/rules-of-hooks': 'error',
-        'react-hooks/exhaustive-deps': 'warn',
+        '@typescript-eslint/consistent-type-imports': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
         'react/react-in-jsx-scope': 'off',
+        'react/prop-types': 'off',
+        'react/jsx-props-no-spreading': 'off',
     },
     settings: {
         react: {
