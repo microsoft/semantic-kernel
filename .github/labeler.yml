@@ -26,8 +26,7 @@ samples:
 
 # Add '.NET' label to any change within samples or kernel 'dotnet' directories.
 .NET:
-  - dotnet/src/**/*
-  - samples/**/dotnet/**/*
+  - dotnet/**/*
 
 # Add 'copilot chat' label to any change within the 'samples/apps/copilot-chat-app' directory
 copilot chat:
@@ -37,3 +36,8 @@ copilot chat:
 documentation:
   - docs/**/*
   - '**/*.md'
+
+# Add 'memory' label to any memory connectors in dotnet/ or python/
+memory:
+  - dotnet/src/Connectors/Connectors.Memory.*/**/*
+  - python/semantic_kernel/connectors/memory/**/*
