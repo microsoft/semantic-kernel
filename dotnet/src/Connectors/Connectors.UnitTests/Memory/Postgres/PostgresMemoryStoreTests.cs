@@ -26,7 +26,7 @@ public class PostgresMemoryStoreTests
     {
         this._postgresDbClientMock = new Mock<IPostgresDbClient>();
         this._postgresDbClientMock
-            .Setup(client => client.DoesCollectionExistsAsync(CollectionName, CancellationToken.None))
+            .Setup(client => client.DoesTableExistsAsync(CollectionName, CancellationToken.None))
             .ReturnsAsync(true);
     }
 
@@ -40,7 +40,7 @@ public class PostgresMemoryStoreTests
         await store.CreateCollectionAsync(CollectionName);
 
         // Assert
-        this._postgresDbClientMock.Verify(client => client.CreateCollectionAsync(CollectionName, CancellationToken.None), Times.Once());
+        this._postgresDbClientMock.Verify(client => client.CreateTableAsync(CollectionName, CancellationToken.None), Times.Once());
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class PostgresMemoryStoreTests
         await store.DeleteCollectionAsync(CollectionName);
 
         // Assert
-        this._postgresDbClientMock.Verify(client => client.DeleteCollectionAsync(CollectionName, CancellationToken.None), Times.Once());
+        this._postgresDbClientMock.Verify(client => client.DeleteTableAsync(CollectionName, CancellationToken.None), Times.Once());
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class PostgresMemoryStoreTests
         const string collectionName = "non-existent-collection";
 
         this._postgresDbClientMock
-            .Setup(client => client.DoesCollectionExistsAsync(collectionName, CancellationToken.None))
+            .Setup(client => client.DoesTableExistsAsync(collectionName, CancellationToken.None))
             .ReturnsAsync(false);
 
         var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
@@ -192,12 +192,13 @@ public class PostgresMemoryStoreTests
                 .ReturnsAsync(this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord));
         }
 
-        var doesNotExistMemoryKey = "fake-record-key";
-        this._postgresDbClientMock
-                .Setup(client => client.ReadAsync(CollectionName, doesNotExistMemoryKey, true, CancellationToken.None))
-                .ReturnsAsync((PostgresMemoryEntry?)null);
+        memoryRecordKeys.Insert(0, "non-existent-record-key-1");
+        memoryRecordKeys.Insert(2, "non-existent-record-key-2");
+        memoryRecordKeys.Add("non-existent-record-key-3");
 
-        memoryRecordKeys.Add(doesNotExistMemoryKey);
+        this._postgresDbClientMock
+                .Setup(client => client.ReadBatchAsync(CollectionName, memoryRecordKeys, true, CancellationToken.None))
+                .Returns(expectedMemoryRecords.Select(memoryRecord => this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord)).ToAsyncEnumerable());
 
         var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
@@ -205,6 +206,7 @@ public class PostgresMemoryStoreTests
         var actualMemoryRecords = await store.GetBatchAsync(CollectionName, memoryRecordKeys, withEmbeddings: true).ToListAsync();
 
         // Assert
+        this._postgresDbClientMock.Verify(client => client.ReadBatchAsync(CollectionName, memoryRecordKeys, true, CancellationToken.None), Times.Once());
         Assert.Equal(expectedMemoryRecords.Length, actualMemoryRecords.Count);
 
         for (var i = 0; i < expectedMemoryRecords.Length; i++)
@@ -220,7 +222,7 @@ public class PostgresMemoryStoreTests
         var expectedCollections = new List<string> { "fake-collection-1", "fake-collection-2", "fake-collection-3" };
 
         this._postgresDbClientMock
-            .Setup(client => client.GetCollectionsAsync(CancellationToken.None))
+            .Setup(client => client.GetTablesAsync(CancellationToken.None))
             .Returns(expectedCollections.ToAsyncEnumerable());
 
         var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
@@ -262,10 +264,7 @@ public class PostgresMemoryStoreTests
         await store.RemoveBatchAsync(CollectionName, memoryRecordKeys);
 
         // Assert
-        foreach (var memoryRecordKey in memoryRecordKeys)
-        {
-            this._postgresDbClientMock.Verify(client => client.DeleteAsync(CollectionName, memoryRecordKey, CancellationToken.None), Times.Once());
-        }
+        this._postgresDbClientMock.Verify(client => client.DeleteBatchAsync(CollectionName, memoryRecordKeys, CancellationToken.None), Times.Once());
     }
 
     #region private ================================================================================
@@ -293,7 +292,8 @@ public class PostgresMemoryStoreTests
             description: "description-" + Guid.NewGuid().ToString(),
             embedding: memoryEmbedding,
             additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
-            key: id);
+            key: id,
+            timestamp: DateTimeOffset.Now);
     }
 
     private PostgresMemoryEntry GetPostgresMemoryEntryFromMemoryRecord(MemoryRecord memoryRecord)
@@ -303,7 +303,7 @@ public class PostgresMemoryStoreTests
             Key = memoryRecord.Key,
             Embedding = new Pgvector.Vector(memoryRecord.Embedding.Vector.ToArray()),
             MetadataString = memoryRecord.GetSerializedMetadata(),
-            Timestamp = memoryRecord.Timestamp?.ToUnixTimeMilliseconds()
+            Timestamp = memoryRecord.Timestamp?.UtcDateTime
         };
     }
 
