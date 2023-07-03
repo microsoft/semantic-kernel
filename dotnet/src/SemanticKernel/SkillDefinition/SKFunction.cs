@@ -922,7 +922,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
                     // If that fails, try with the invariant culture and allow any exception to propagate.
                     try
                     {
-                        return converter.ConvertFromString(context: null, cultureInfo ?? CultureInfo.CurrentCulture, input);
+                        return converter.ConvertFromString(context: null, cultureInfo, input);
                     }
                     catch (Exception e) when (!e.IsCriticalException() && cultureInfo != CultureInfo.InvariantCulture)
                     {
@@ -974,7 +974,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
                         return null!;
                     }
 
-                    return converter.ConvertToString(context: null, cultureInfo ?? CultureInfo.InvariantCulture, input);
+                    return converter.ConvertToString(context: null, cultureInfo, input);
                 };
             }
 
