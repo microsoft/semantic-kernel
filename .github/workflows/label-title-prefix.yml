@@ -12,8 +12,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - {label: 'python', prefix: 'Python: '}
-          - {label: 'java', prefix: 'Java: '}
+          - {label: 'python', prefix: 'Python'}
+          - {label: 'java', prefix: 'Java'}
 
     runs-on: ubuntu-latest
     permissions:
@@ -45,14 +45,14 @@ jobs:
             // Check if the issue or PR has the label
             if (labelAdded == label) {
               // Check if the title starts with the prefix (case-sensitive)
-              if (!title.startsWith(prefix)) {
+              if (!title.startsWith(prefix + ": ")) {
                 // If not, check if the first word is the label (case-insensitive)
-                if (title.match(new RegExp(`^${label}`, 'i'))) {
+                if (title.match(new RegExp(`^${prefix}`, 'i'))) {
                   // If yes, replace it with the prefix (case-sensitive)
-                  title = title.replace(new RegExp(`^${label}`, 'i'), prefix)
+                  title = title.replace(new RegExp(`^${prefix}`, 'i'), prefix)
                 } else {
                   // If not, prepend the prefix to the title
-                  title = prefix + title
+                  title = prefix + ": " + title
                 }
               }
             }
