@@ -26,11 +26,20 @@ jobs:
         with:
           script: |
             // Get the event name, title and labels
-            const eventName = context.event_name
-            let title = eventName == 'issues' ? context.payload.issue.title : context.payload.pull_request.title
+            let title
+            const labels
+            if (eventName == 'issues') {
+              title = context.payload.issue.title
+              labels = context.payload.issue.labels.map(label => label.name)
+            } else {
+              title = context.payload.pull_request.title
+              labels = context.payload.pull_request.labels.map(label => label.name)
+            }
+            
+            labelAdded = ${{ github.event.label.name }}
+            
             let originalTitle = title
-            const labels = eventName == 'issues' ? context.payload.issue.labels.map(label => label.name) : context.payload.pull_request.labels.map(label => label.name)
-
+            
             // Get the label and prefix from the matrix
             const label = ${{ matrix.label }}
             const prefix = ${{ matrix.prefix }}
@@ -48,12 +57,6 @@ jobs:
                   // If not, prepend the prefix to the title
                   title = prefix + title
                 }
-              }
-            } else {
-              // Check if the title starts with the prefix (case-sensitive)
-              if (title.startsWith(prefix)) {
-                // If yes, remove it from the title
-                title = title.replace(new RegExp(`^${prefix}`), "")
               }
             }
             
