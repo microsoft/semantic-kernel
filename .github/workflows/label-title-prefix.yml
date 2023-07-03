@@ -25,28 +25,25 @@ jobs:
         name: "Issue/PR: update title"
         with:
           script: |
-            // Get the event name, title and labels
-            let title
-            const labels
-            if (eventName == 'issues') {
-              title = context.payload.issue.title
-              labels = context.payload.issue.labels.map(label => label.name)
-            } else {
-              title = context.payload.pull_request.title
-              labels = context.payload.pull_request.labels.map(label => label.name)
-            }
-            
-            labelAdded = ${{ github.event.label.name }}
-            
-            let originalTitle = title
-            
             // Get the label and prefix from the matrix
             const label = ${{ matrix.label }}
             const prefix = ${{ matrix.prefix }}
+            
+            labelAdded = ${{ github.event.label.name }}
+          
+            // Get the event name, title and labels
+            let title
+            if (eventName == 'issues') {
+              title = context.payload.issue.title
+            } else {
+              title = context.payload.pull_request.title
+            }
+            
+            let originalTitle = title
 
             // Update the title based on the label and prefix
             // Check if the issue or PR has the label
-            if (labels.includes(label)) {
+            if (labelAdded == label) {
               // Check if the title starts with the prefix (case-sensitive)
               if (!title.startsWith(prefix)) {
                 // If not, check if the first word is the label (case-insensitive)
