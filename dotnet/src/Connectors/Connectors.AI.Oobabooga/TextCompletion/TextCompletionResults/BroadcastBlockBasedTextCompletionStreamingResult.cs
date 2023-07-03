@@ -20,15 +20,14 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : ITextAs
     private readonly ILogger? _logger;
     private readonly BroadcastBlock<string> _broadcastBlock;
     private readonly object _syncLock;
-    private bool _isProducing;
     private readonly List<TextCompletionStreamingResponse> _modelResponses;
+    private bool _completed = false;
 
     public ModelResult ModelResult { get; }
 
     public BroadcastBlockBasedTextCompletionStreamingResult(ILogger? logger = null) : base()
     {
         this._logger = logger;
-        this._isProducing = false;
         this._syncLock = new();
         this._modelResponses = new();
         this.ModelResult = new ModelResult(this._modelResponses);
@@ -39,22 +38,20 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : ITextAs
     {
         lock (this._syncLock)
         {
-            if (!this._isProducing)
-            {
-                this._logger?.LogTrace(message: $"First producer");
-                this._isProducing = true;
-            }
-
+            this._broadcastBlock.Post(response.Text);
             this._logger?.LogTrace(message: $"Adding item {response.Text}");
             this._modelResponses.Add(response);
-            this._broadcastBlock.Post(response.Text);
         }
     }
 
     public void SignalStreamEnd()
     {
-        this._logger?.LogTrace(message: $"Completing");
-        this._broadcastBlock.Complete();
+        this._logger?.LogTrace(message: "Completing broadcast");
+        lock (this._syncLock)
+        {
+            this._broadcastBlock.Complete();
+            this._completed = true;
+        }
     }
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
@@ -71,47 +68,37 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : ITextAs
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var targetBlock = new BufferBlock<string>();
+        List<string> tempList;
+        bool completed;
 
-        // Temporary list to hold data to be sent to the consumers.
-        List<string>? tempList = null;
+        BufferBlock<string>? targetBlock = null;
 
-        // Catching up with existing data.
         lock (this._syncLock)
         {
-            if (!this._isProducing)
+            tempList = this._modelResponses.Select(response => response.Text).ToList();
+            completed = this._completed;
+            if (!completed)
             {
-                this._logger?.LogTrace(message: $"First consumer");
-                // First consumer doesn't need to catch up, so set the flag
-                this._isProducing = true;
-            }
-            else
-            {
-                this._logger?.LogTrace(message: $"Catching up");
-                // Later consumers need to catch up
-                tempList = this._modelResponses.Select(response => response.Text).ToList();
-            }
-
-            this._broadcastBlock.LinkTo(targetBlock, new DataflowLinkOptions { PropagateCompletion = true });
-        }
-
-        if (tempList != null)
-        {
-            // Yield the data outside the lock.
-            foreach (var item in tempList)
-            {
-                this._logger?.LogTrace(message: $"yielding catchup item {item}");
-                yield return item;
+                targetBlock = new();
+                this._broadcastBlock.LinkTo(targetBlock, new DataflowLinkOptions { PropagateCompletion = true });
             }
         }
 
-        // Listening for new data.
-        while (await targetBlock.OutputAvailableAsync(cancellationToken).ConfigureAwait(false))
+        foreach (var item in tempList)
         {
-            while (targetBlock.TryReceive(out string? chunk))
+            this._logger?.LogTrace(message: $"yielding catch up item {item}");
+            yield return item;
+        }
+
+        if (!completed)
+        {
+            while (await targetBlock.OutputAvailableAsync(cancellationToken).ConfigureAwait(false))
             {
-                this._logger?.LogTrace(message: $"yielding broadcast item {chunk}");
-                yield return chunk;
+                while (targetBlock.TryReceive(out string? chunk))
+                {
+                    this._logger?.LogTrace(message: $"yielding broadcast item {chunk}");
+                    yield return chunk;
+                }
             }
         }
     }
