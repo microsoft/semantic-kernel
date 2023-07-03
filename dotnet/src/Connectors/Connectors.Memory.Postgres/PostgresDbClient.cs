@@ -32,9 +32,7 @@ public class PostgresDbClient : IPostgresDbClient
     }
 
     /// <inheritdoc />
-    public async Task<bool> DoesTableExistsAsync(
-        string tableName,
-        CancellationToken cancellationToken = default)
+    public async Task<bool> DoesTableExistsAsync(string tableName, CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -177,7 +175,7 @@ public class PostgresDbClient : IPostgresDbClient
 
     /// <inheritdoc />
     public async Task<PostgresMemoryEntry?> ReadAsync(string tableName, string key,
-    bool withEmbeddings = false, CancellationToken cancellationToken = default)
+        bool withEmbeddings = false, CancellationToken cancellationToken = default)
     {
         string queryColumns = "key, metadata, timestamp";
         if (withEmbeddings)
