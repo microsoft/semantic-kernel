@@ -53,6 +53,12 @@ jobs:
           cache: maven
         if: env.COMMAND == 'spotless'
 
+      - name: Set git user
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-action[bot]@users.noreply.github.com
+        if: env.COMMAND == 'spotless'
+
       - name: Run command
         env:
           NUMBER: ${{ github.event.issue.number }}
