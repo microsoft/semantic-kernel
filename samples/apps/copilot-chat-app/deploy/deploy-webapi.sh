@@ -5,13 +5,13 @@
 set -e
 
 usage() {
-    echo "Usage: $0 -d DEPLOYMENT_NAME -s SUBSCRIPTION --ai AI_SERVICE_TYPE -aikey AI_SERVICE_KEY [OPTIONS]"
+    echo "Usage: $0 -d DEPLOYMENT_NAME -s SUBSCRIPTION -rg RESOURCE_GROUP [OPTIONS]"
     echo ""
     echo "Arguments:"
-    echo "  -s, --subscription SUBSCRIPTION        Subscription to which to make the deployment (mandatory)"
+    echo "  -d, --deployment-name DEPLOYMENT_NAME   Name of the deployment from a 'deploy-azure.sh' deployment (mandatory)"
+    echo "  -s, --subscription SUBSCRIPTION         Subscription to which to make the deployment (mandatory)"
     echo "  -rg, --resource-group RESOURCE_GROUP    Resource group name from a 'deploy-azure.sh' deployment (mandatory)"
-    echo "  -d, --deployment-name DEPLOYMENT_NAME  Name of the deployment from a 'deploy-azure.sh' deployment (mandatory)"
-    echo "  -p, --package PACKAGE_FILE_PATH        Path to the WebAPI package file from a 'package-webapi.sh' run (mandatory)"
+    echo "  -p, --package PACKAGE_FILE_PATH         Path to the WebAPI package file from a 'package-webapi.sh' run"
 }
 
 # Parse arguments
@@ -47,10 +47,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check mandatory arguments
-if [[ -z "$DEPLOYMENT_NAME" ]] || [[ -z "$SUBSCRIPTION" ]] || [[ -z "$RESOURCE_GROUP" ]] || [[ -z "$PACKAGE_FILE_PATH" ]]; then
+if [[ -z "$DEPLOYMENT_NAME" ]] || [[ -z "$SUBSCRIPTION" ]] || [[ -z "$RESOURCE_GROUP" ]]; then
     usage
     exit 1
 fi
+
+# Set defaults
+: "${PACKAGE_FILE_PATH:="$(dirname "$0")/out/webapi.zip"}"
 
 # Ensure $PACKAGE_FILE_PATH exists
 if [[ ! -f "$PACKAGE_FILE_PATH" ]]; then

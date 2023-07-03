@@ -309,7 +309,7 @@ public class ChatSkill
         {
             ChatMessage botMessage = await this.SaveNewResponseAsync(response, prompt, chatId);
             context.Variables.Set("messageId", botMessage.Id);
-            context.Variables.Set("messageType", botMessage.Type.ToString());
+            context.Variables.Set("messageType", ((int)botMessage.Type).ToString(CultureInfo.InvariantCulture));
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
