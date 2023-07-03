@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
 
-internal sealed class AddEmbeddingsRequest
+internal sealed class UpsertEmbeddingsRequest
 {
     [JsonIgnore]
     public string CollectionId { get; set; }
@@ -19,19 +19,19 @@ internal sealed class AddEmbeddingsRequest
     [JsonPropertyName("metadatas")]
     public object[]? Metadatas { get; set; }
 
-    public static AddEmbeddingsRequest Create(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null)
+    public static UpsertEmbeddingsRequest Create(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null)
     {
-        return new AddEmbeddingsRequest(collectionId, ids, embeddings, metadatas);
+        return new UpsertEmbeddingsRequest(collectionId, ids, embeddings, metadatas);
     }
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreatePostRequest($"collections/{this.CollectionId}/add", this);
+        return HttpRequest.CreatePostRequest($"collections/{this.CollectionId}/upsert", this);
     }
 
     #region private ================================================================================
 
-    private AddEmbeddingsRequest(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null)
+    private UpsertEmbeddingsRequest(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null)
     {
         this.CollectionId = collectionId;
         this.Ids = ids;
