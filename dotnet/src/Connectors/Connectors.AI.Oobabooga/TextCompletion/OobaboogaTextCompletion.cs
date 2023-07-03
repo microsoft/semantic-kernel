@@ -180,8 +180,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             var sendSegment = new ArraySegment<byte>(requestBytes);
             await clientWebSocket.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
 
-            ITextAsyncStreamingResult streamingResult = new ChannelBasedTextCompletionStreamingResult();
-            //ITextAsyncStreamingResult streamingResult = new TextCompletionStreamingResult();
+            ITextAsyncStreamingResult streamingResult = this._steamingResultFactory();
 
             var processingTask = this.ProcessWebSocketMessagesAsync(clientWebSocket, streamingResult, cancellationToken);
 
