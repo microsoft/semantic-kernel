@@ -33,7 +33,7 @@ jobs:
           
             // Get the event name, title and labels
             let title
-            if (eventName == 'issues') {
+            if (context.event_name == 'issues') {
               title = context.payload.issue.title
             } else {
               title = context.payload.pull_request.title
@@ -59,7 +59,7 @@ jobs:
             
             // Update the issue or PR title, if changed
             if (title != originalTitle ) {
-              if (eventName == 'issues') {
+              if (context.event_name == 'issues') {
                 github.rest.issues.update({
                   issue_number: context.issue.number,
                   owner: context.repo.owner,
