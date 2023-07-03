@@ -14,40 +14,40 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 public interface IPostgresDbClient
 {
     /// <summary>
-    /// Check if a collection table exists.
+    /// Check if a table exists.
     /// </summary>
-    /// <param name="tableName">The name assigned to a collection table of entries.</param>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
     Task<bool> DoesTableExistsAsync(string tableName, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Create a collection table.
+    /// Create a table.
     /// </summary>
-    /// <param name="tableName">The name assigned to a collection table of entries.</param>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
     Task CreateTableAsync(string tableName, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Get all collection tables.
+    /// Get all tables.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A group of collection tables.</returns>
+    /// <returns>A group of tables.</returns>
     IAsyncEnumerable<string> GetTablesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Delete a collection table.
+    /// Delete a table.
     /// </summary>
-    /// <param name="tableName">The name assigned to a collection table of entries.</param>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
     Task DeleteTableAsync(string tableName, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Upsert entry into a collection table.
+    /// Upsert entry into a table.
     /// </summary>
-    /// <param name="tableName">The name assigned to a collection table of entries.</param>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="key">The key of the entry to upsert.</param>
     /// <param name="metadata">The metadata of the entry.</param>
     /// <param name="embedding">The embedding of the entry.</param>
@@ -59,8 +59,8 @@ public interface IPostgresDbClient
     /// <summary>
     /// Gets the nearest matches to the <see cref="Vector"/>.
     /// </summary>
-    /// <param name="tableName">The name assigned to a collection table of entries.</param>
-    /// <param name="embedding">The <see cref="Vector"/> to compare the collection's embeddings with.</param>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
+    /// <param name="embedding">The <see cref="Vector"/> to compare the table's embeddings with.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
     /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the entries.</param>
@@ -71,7 +71,7 @@ public interface IPostgresDbClient
     /// <summary>
     /// Read a entry by its key.
     /// </summary>
-    /// <param name="tableName">The name assigned to a collection table of entries.</param>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="key">The key of the entry to read.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the entry.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -81,7 +81,7 @@ public interface IPostgresDbClient
     /// <summary>
     /// Read multiple entries by their keys.
     /// </summary>
-    /// <param name="tableName">The name assigned to a collection table of entries.</param>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="keys">The keys of the entries to read.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -91,7 +91,7 @@ public interface IPostgresDbClient
     /// <summary>
     /// Delete a entry by its key.
     /// </summary>
-    /// <param name="tableName">The name assigned to a collection table of entries.</param>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="key">The key of the entry to delete.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
@@ -100,7 +100,7 @@ public interface IPostgresDbClient
     /// <summary>
     /// Delete multiple entries by their key.
     /// </summary>
-    /// <param name="tableName">The name assigned to a collection table of entries.</param>
+    /// <param name="tableName">The name assigned to a table of entries.</param>
     /// <param name="keys">The keys of the entries to delete.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>

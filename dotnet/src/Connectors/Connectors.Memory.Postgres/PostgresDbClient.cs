@@ -32,34 +32,6 @@ public class PostgresDbClient : IPostgresDbClient
     }
 
     /// <inheritdoc />
-    public async Task<bool> DoesTableExists1Async(
-        string tableName,
-        CancellationToken cancellationToken = default)
-    {
-        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-
-        await using (connection)
-        {
-            using NpgsqlCommand cmd = connection.CreateCommand();
-            cmd.CommandText = $@"
-                SELECT table_name
-                FROM information_schema.tables
-                WHERE table_schema = @schema
-                    AND table_type = 'BASE TABLE'
-                    AND table_name = '{tableName}'";
-            cmd.Parameters.AddWithValue("@schema", this._schema);
-
-            using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-            if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
-            {
-                return dataReader.GetString(dataReader.GetOrdinal("table_name")) == tableName;
-            }
-
-            return false;
-        }
-    }
-
-    /// <inheritdoc />
     public async Task<bool> DoesTableExistsAsync(
         string tableName,
         CancellationToken cancellationToken = default)
@@ -322,7 +294,7 @@ public class PostgresDbClient : IPostgresDbClient
     }
 
     /// <summary>
-    /// Get full table name with schema from collection table name.
+    /// Get full table name with schema from table name.
     /// </summary>
     /// <param name="tableName"></param>
     /// <returns></returns>
