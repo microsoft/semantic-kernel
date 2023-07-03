@@ -3,41 +3,62 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion.TextCompletionResults;
 
 /// <summary>
 /// BroadcastBlock-based implementation of <see cref="ITextAsyncStreamingResult"/>. This implementation allows the same stream to be consumed by multiple consumers simultaneously. Response object are stored in a ModelResult instance, and completion text is simply passed forward.
 /// </summary>
-internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : TextCompletionStreamingResultBase
+internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : ITextAsyncStreamingResult
 {
     private readonly BroadcastBlock<string> _broadcastBlock;
-    private readonly object _syncLock = new();
+    private readonly object _syncLock;
+    private bool _isConsuming;
+    private readonly List<TextCompletionStreamingResponse> _modelResponses;
+
+    public ModelResult ModelResult { get; }
 
     public BroadcastBlockBasedTextCompletionStreamingResult() : base()
     {
+        this._isConsuming = false;
+        this._syncLock = new();
+        this._modelResponses = new();
+        this.ModelResult = new ModelResult(this._modelResponses);
         this._broadcastBlock = new BroadcastBlock<string>(i => i);
     }
 
-    public override void AppendResponse(TextCompletionStreamingResponse response)
+    public void AppendResponse(TextCompletionStreamingResponse response)
     {
         lock (this._syncLock)
         {
-            this.AppendModelResult(response);
+            this._modelResponses.Add(response);
             this._broadcastBlock.Post(response.Text);
         }
     }
 
-    public override void SignalStreamEnd()
+    public void SignalStreamEnd()
     {
         this._broadcastBlock.Complete();
     }
 
-    private bool _isConsuming = false;
+    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    {
+        StringBuilder resultBuilder = new();
 
-    public override async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        await foreach (var chunk in this.GetCompletionStreamingAsync(cancellationToken))
+        {
+            resultBuilder.Append(chunk);
+        }
+
+        return resultBuilder.ToString();
+    }
+
+    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var targetBlock = new BufferBlock<string>();
 
@@ -55,7 +76,7 @@ internal sealed class BroadcastBlockBasedTextCompletionStreamingResult : TextCom
             else
             {
                 // Later consumers need to catch up
-                tempList = this.ModelResponses.Select(response => response.Text).ToList();
+                tempList = this._modelResponses.Select(response => response.Text).ToList();
             }
 
             this._broadcastBlock.LinkTo(targetBlock, new DataflowLinkOptions { PropagateCompletion = true });
