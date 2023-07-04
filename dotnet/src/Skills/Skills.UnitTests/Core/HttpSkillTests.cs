@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -17,6 +18,7 @@ public class HttpSkillTests : IDisposable
 {
     private readonly string _content = "hello world";
     private readonly string _uriString = "http://www.example.com";
+    private readonly string _serializedHeaders = "[{\"Key\":\"key\",\"Value\":\"value\"}]";
 
     private readonly HttpResponseMessage _response = new()
     {
@@ -59,6 +61,22 @@ public class HttpSkillTests : IDisposable
     }
 
     [Fact]
+    public async Task ItCanGetAsyncWithHeaders()
+    {
+        // Arrange
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        using var skill = new HttpSkill(client);
+
+        // Act
+        var result = await skill.GetAsync(this._uriString, this._serializedHeaders);
+
+        // Assert
+        Assert.Equal(this._content, result);
+        this.VerifyMockWithHeaders(mockHandler, HttpMethod.Get);
+    }
+
+    [Fact]
     public async Task ItCanPostAsync()
     {
         // Arrange
@@ -72,6 +90,22 @@ public class HttpSkillTests : IDisposable
         // Assert
         Assert.Equal(this._content, result);
         this.VerifyMock(mockHandler, HttpMethod.Post);
+    }
+
+    [Fact]
+    public async Task ItCanPostAsyncWithHeaders()
+    {
+        // Arrange
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        using var skill = new HttpSkill(client);
+
+        // Act
+        var result = await skill.PostAsync(this._uriString, this._content, this._serializedHeaders);
+
+        // Assert
+        Assert.Equal(this._content, result);
+        this.VerifyMockWithHeaders(mockHandler, HttpMethod.Post);
     }
 
     [Fact]
@@ -123,6 +157,22 @@ public class HttpSkillTests : IDisposable
             ItExpr.Is<HttpRequestMessage>(req =>
                     req.Method == method // we expected a POST request
                     && req.RequestUri == new Uri(this._uriString) // to this uri
+                    && !req.Headers.Contains("key") // with no headers
+            ),
+            ItExpr.IsAny<CancellationToken>()
+        );
+    }
+
+    private void VerifyMockWithHeaders(Mock<HttpMessageHandler> mockHandler, HttpMethod method)
+    {
+        mockHandler.Protected().Verify(
+            "SendAsync",
+            Times.Exactly(1), // we expected a single external request
+            ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == method // we expected a POST request
+                    && req.RequestUri == new Uri(this._uriString) // to this uri
+                    && req.Headers.Contains("key")
+                    && req.Headers.GetValues("key").First() == "value" // with these headers
             ),
             ItExpr.IsAny<CancellationToken>()
         );
