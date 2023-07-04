@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion.TextCompletionResults;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
@@ -34,7 +33,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private readonly UriBuilder _streamingUri;
     private readonly HttpClient _httpClient;
     private readonly Func<ClientWebSocket> _webSocketFactory;
-    private readonly Func<ITextAsyncStreamingResult> _steamingResultFactory;
     private readonly bool _useWebSocketsPooling;
     private readonly int _maxNbConcurrentWebSockets;
     private readonly SemaphoreSlim? _concurrentSemaphore;
@@ -61,7 +59,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <param name="webSocketsCleanUpCancellationToken">if websocket pooling is enabled, you can provide an optional CancellationToken to properly dispose of the clean up tasks when disposing of the connector</param>
     /// <param name="keepAliveWebSocketsDuration">When pooling is enabled, pooled websockets are flushed on a regular basis when no more connections are made. This is the time to keep them in pool before flushing</param>
     /// <param name="webSocketFactory">The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
-    /// <param name="streamingResultType">Several implementations of asynchronous completion streaming results are available depending on use cases: default Channel based implementation is very efficient but only support a single enumeration of results by a single consumer. This is generally sufficient, but if you need multiple consumers broadcast of streaming result chunks, your should look for alternatives</param>
     /// <param name="logger">Application logger</param>
     public OobaboogaTextCompletion(Uri endpoint,
         int blockingPort = 5000,
@@ -72,7 +69,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         CancellationToken? webSocketsCleanUpCancellationToken = default,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null,
-        TextCompletionStreamingResultType streamingResultType = TextCompletionStreamingResultType.BroadcastBlockBased,
         ILogger? logger = null)
     {
         Verify.NotNull(endpoint);
@@ -126,21 +122,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             this._maxNbConcurrentWebSockets = 0;
         }
 
-        switch (streamingResultType)
-        {
-            case TextCompletionStreamingResultType.ChannelBased:
-                this._steamingResultFactory = () => new ChannelBasedTextCompletionStreamingResult();
-                break;
-            case TextCompletionStreamingResultType.BroadcastBlockBased:
-                this._steamingResultFactory = () => new BroadcastBlockBasedTextCompletionStreamingResult(this._logger);
-                break;
-            case TextCompletionStreamingResultType.MonitorBased:
-                this._steamingResultFactory = () => new MonitorBasedTextCompletionStreamingResult();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(streamingResultType), streamingResultType, null);
-        }
-
         if (this._useWebSocketsPooling)
         {
             this.StartCleanupTask(webSocketsCleanUpCancellationToken ?? CancellationToken.None);
@@ -179,7 +160,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             var sendSegment = new ArraySegment<byte>(requestBytes);
             await clientWebSocket.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
 
-            ITextAsyncStreamingResult streamingResult = this._steamingResultFactory();
+            TextCompletionStreamingResult streamingResult = new();
 
             var processingTask = this.ProcessWebSocketMessagesAsync(clientWebSocket, streamingResult, cancellationToken);
 
@@ -303,7 +284,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <summary>
     /// That method is responsible for processing the websocket messages that build a streaming response object. It is crucial that it is run asynchronously to prevent a deadlock with results iteration
     /// </summary>
-    private async Task ProcessWebSocketMessagesAsync(ClientWebSocket clientWebSocket, ITextAsyncStreamingResult streamingResult, CancellationToken cancellationToken)
+    private async Task ProcessWebSocketMessagesAsync(ClientWebSocket clientWebSocket, TextCompletionStreamingResult streamingResult, CancellationToken cancellationToken)
     {
         var buffer = new byte[this.WebSocketBufferSize];
         var finishedProcessing = false;

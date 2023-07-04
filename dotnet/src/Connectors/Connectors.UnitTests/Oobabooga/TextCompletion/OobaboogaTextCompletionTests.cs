@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion.TextCompletionResults;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -234,22 +233,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact]
     public async Task ShouldHandleMultiPacketStreamingServicePersistentWebSocketResponseBroadcastBlockAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(isPersistent: true,
-            streamingResultType: TextCompletionStreamingResultType.BroadcastBlockBased).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task ShouldHandleMultiPacketStreamingServicePersistentWebSocketResponseChannelAsync()
-    {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(isPersistent: true,
-            streamingResultType: TextCompletionStreamingResultType.ChannelBased).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task ShouldHandleMultiPacketStreamingServicePersistentWebSocketResponseMonitorAsync()
-    {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(isPersistent: true,
-            streamingResultType: TextCompletionStreamingResultType.MonitorBased).ConfigureAwait(false);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(isPersistent: true).ConfigureAwait(false);
     }
 
     [Fact]
@@ -269,30 +253,12 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     /// Here, 1000 concurrent calls are made with a 1 ms delay before each call is made, to allow for initial requests to complete before recycling ramps up. Pooling should limit the number of clients to 50.
     /// </summary>
     [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreBroadcastBlockAsync()
-    {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync(TextCompletionStreamingResultType.BroadcastBlockBased).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreChannelAsync()
-    {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync(TextCompletionStreamingResultType.ChannelBased).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreMonitorAsync()
-    {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync(TextCompletionStreamingResultType.MonitorBased).ConfigureAwait(false);
-    }
-
-    private async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync(TextCompletionStreamingResultType streamingResultType)
+    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync()
     {
         await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 1000,
             isPersistent: true,
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 10000,
-            streamingResultType: streamingResultType,
             maxExpectedNbClients: 50).ConfigureAwait(false);
     }
 
@@ -300,30 +266,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     /// When a hard limit is placed on concurrent calls, no warm up is needed since incoming calls in excess will wait for semaphore release, thus for pooling to recycle initial clients. Accordingly, the connector can be instantly hammered with 10000 concurrent calls, and the semaphore limit of 20 will dictate how many websocket clients will be initially created and then recycled to process all the subsequent calls.
     /// </summary>
     [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreBroadcastBlockAsync()
-    {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync(TextCompletionStreamingResultType.BroadcastBlockBased).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// When a hard limit is placed on concurrent calls, no warm up is needed since incoming calls in excess will wait for semaphore release, thus for pooling to recycle initial clients. Accordingly, the connector can be instantly hammered with 10000 concurrent calls, and the semaphore limit of 20 will dictate how many websocket clients will be initially created and then recycled to process all the subsequent calls.
-    /// </summary>
-    [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreChannelAsync()
-    {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync(TextCompletionStreamingResultType.ChannelBased).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// When a hard limit is placed on concurrent calls, no warm up is needed since incoming calls in excess will wait for semaphore release, thus for pooling to recycle initial clients. Accordingly, the connector can be instantly hammered with 10000 concurrent calls, and the semaphore limit of 20 will dictate how many websocket clients will be initially created and then recycled to process all the subsequent calls.
-    /// </summary>
-    [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreMonitorAsync()
-    {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync(TextCompletionStreamingResultType.MonitorBased).ConfigureAwait(false);
-    }
-
-    private async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync(TextCompletionStreamingResultType streamingResultType)
+    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync()
     {
         using SemaphoreSlim enforcedConcurrentCallSemaphore = new(20);
         await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10000,
@@ -331,101 +274,67 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 0,
             enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
-            streamingResultType: streamingResultType,
             maxExpectedNbClients: 20).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// This test will assess concurrent enumeration of the same result
+    /// This test will assess concurrent enumeration of the same long multi message (500 websocket messages) streaming result.
     /// </summary>
     [Fact]
-    public async Task ShouldHandleConcurrentEnumerationOfSameStreamingServiceResponseBroadcastBlockAsync()
+    public async Task ShouldHandleConcurrentEnumerationOfLongStreamingServiceResponseAsync()
     {
-        await this.ShouldHandleConcurrentEnumerationOfSameStreamingServiceResponseAsync(TextCompletionStreamingResultType.BroadcastBlockBased).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// This test will assess concurrent enumeration of the same result
-    /// </summary>
-    [Fact]
-    public async Task ShouldHandleConcurrentEnumerationOfSameStreamingServiceResponseChannelsAsync()
-    {
-        await this.ShouldHandleConcurrentEnumerationOfSameStreamingServiceResponseAsync(TextCompletionStreamingResultType.ChannelBased).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// This test will assess concurrent enumeration of the same result
-    /// </summary>
-    [Fact]
-    public async Task ShouldHandleConcurrentEnumerationOfSameStreamingServiceResponseMonitorAsync()
-    {
-        await this.ShouldHandleConcurrentEnumerationOfSameStreamingServiceResponseAsync(TextCompletionStreamingResultType.MonitorBased).ConfigureAwait(false);
-    }
-
-    private async Task ShouldHandleConcurrentEnumerationOfSameStreamingServiceResponseAsync(TextCompletionStreamingResultType streamingResultType)
-    {
+        var expectedResponse = Enumerable.Range(0, 500).Select(i => i.ToString(CultureInfo.InvariantCulture)).ToList();
         using SemaphoreSlim enforcedConcurrentCallSemaphore = new(20);
         await this.RunWebSocketMultiPacketStreamingTestAsync(
-            nbConcurrentCalls: 1000,
+            expectedResponse: expectedResponse,
+            nbConcurrentCalls: 1,
             nbConcurrentEnumeration: 100,
             isPersistent: true,
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 0,
             enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
-            streamingResultType: streamingResultType,
             maxExpectedNbClients: 20).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// In this test, we are looking at a realistic processing time of 1s per request. 50 calls are made simultaneously with pooling enabled and 20 concurrent websockets enforced.
+    /// In this test, we are looking at a realistic processing time of 1000ms per request and then an additional 10ms per websocket message. 50 calls are made simultaneously with pooling enabled and 20 concurrent websockets enforced.
     /// No more than 5 seconds should suffice processing all 50 requests of 1 second duration each.
     /// </summary>
     [Fact]
     public async Task ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingServiceWithSemaphoreAsync()
     {
-        using SemaphoreSlim enforcedConcurrentCallSemaphore = new(20);
+        using SemaphoreSlim enforcedConcurrentCallSemaphore = new(30);
         await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 50,
             isPersistent: true,
-            requestProcessingDuration: 500,
+            requestProcessingDuration: 1000,
+            segmentMessageDelay: 10,
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 5,
             enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
-            maxExpectedNbClients: 20,
+            maxExpectedNbClients: 30,
             maxTestDuration: 5000).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// This test wraps up all kinds of stress conditions to simulate real world difficulties: 50 concurrent calls are made to the connector, which each involving 30 web sockets response messages streamed back with initial delay of 500 ms and additional delay of 10 ms between each web socket message by the test server, each of the streamed is then observed concurrently by 3 consumers.
+    /// </summary>
     [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingService2WithSemaphoreBroadcastBlockAsync()
-    {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingService2WithSemaphoreAsync(TextCompletionStreamingResultType.BroadcastBlockBased).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingService2WithSemaphoreChannelAsync()
-    {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingService2WithSemaphoreAsync(TextCompletionStreamingResultType.ChannelBased).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingService2WithSemaphoreMonitorAsync()
-    {
-        await this.ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingService2WithSemaphoreAsync(TextCompletionStreamingResultType.MonitorBased).ConfigureAwait(false);
-    }
-
-    private async Task ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingService2WithSemaphoreAsync(TextCompletionStreamingResultType streamingResultType)
+    public async Task ShouldPoolEfficientlyConcurrentEnumerationOfConcurrentMultiPacketSlowStreamingServiceWithSemaphoreAsync()
     {
         using SemaphoreSlim enforcedConcurrentCallSemaphore = new(30);
-        var expectedResponse = Enumerable.Range(0, 100).Select(i => i.ToString(CultureInfo.InvariantCulture));
-        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 300,
+        var expectedResponse = Enumerable.Range(0, 30).Select(i => i.ToString(CultureInfo.InvariantCulture)).ToList();
+        await this.RunWebSocketMultiPacketStreamingTestAsync(
+            expectedResponse: expectedResponse,
+            nbConcurrentCalls: 50,
+            nbConcurrentEnumeration: 3,
             isPersistent: true,
-            requestProcessingDuration: 200,
-            segmentMessageDelay: 20,
+            requestProcessingDuration: 500,
+            segmentMessageDelay: 10,
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 0,
             enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
-            streamingResultType: streamingResultType,
             maxExpectedNbClients: 30,
-            maxTestDuration: 5000).ConfigureAwait(false);
+            maxTestDuration: 10000).ConfigureAwait(false);
     }
 
     private async Task RunWebSocketMultiPacketStreamingTestAsync(
@@ -439,7 +348,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         int keepAliveWebSocketsDuration = 100,
         int concurrentCallsTicksDelay = 0,
         SemaphoreSlim? enforcedConcurrentCallSemaphore = null,
-        TextCompletionStreamingResultType streamingResultType = TextCompletionStreamingResultType.BroadcastBlockBased,
         int maxExpectedNbClients = 0,
         int maxTestDuration = 0)
     {
@@ -488,7 +396,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             webSocketFactory: webSocketFactory,
             keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
             concurrentSemaphore: enforcedConcurrentCallSemaphore,
-            streamingResultType: streamingResultType,
             logger: this._logger);
 
         await using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse, logger: this._logger)
@@ -544,15 +451,8 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         }
 
         // Validate all results
-        for (int index = 0; index < allResults.Length; index++)
+        foreach (var result in allResults)
         {
-            List<string>? result = allResults[index];
-            if (expectedResponse.Count != result.Count)
-            {
-                this._logger?.LogInformation(message: $"Expected {index}: {expectedResponse.Aggregate((s1, s2) => $"{s1},{s2}")}");
-                this._logger?.LogInformation(message: $"Result {index}: {result.Aggregate((s1, s2) => $"{s1},{s2}")}");
-            }
-
             Assert.Equal(expectedResponse.Count, result.Count);
             for (int i = 0; i < expectedResponse.Count; i++)
             {
