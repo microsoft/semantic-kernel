@@ -16,7 +16,7 @@ public class ServiceOptions
     /// Configuration Key Vault URI
     /// </summary>
     [Url]
-    public Uri? KeyVaultUri { get; set; }
+    public string? KeyVaultUri { get; set; }
 
     /// <summary>
     /// Local directory in which to load semantic skills.
