@@ -331,7 +331,7 @@ public class SKFunctionTests4
         // Arrange
         static string Test(SKContext cx)
         {
-            s_actual = cx["someVar"];
+            s_actual = cx["someVar"]!;
             return "abc";
         }
 
@@ -360,7 +360,7 @@ public class SKFunctionTests4
         {
             // Set this variable as untrusted
             cx.Variables.Update(TrustAwareString.CreateUntrusted("some value"));
-            s_actual = cx["someVar"];
+            s_actual = cx["someVar"]!;
             return "abc";
         }
 
@@ -391,7 +391,7 @@ public class SKFunctionTests4
         // Arrange
         string? Test(SKContext cx)
         {
-            s_actual = cx["someVar"];
+            s_actual = cx["someVar"]!;
             return "abc";
         }
 

@@ -348,8 +348,9 @@ public class ContextVariablesTests
         // Act
         untrustedVar.Update(null);
 
-        // Assert
-        AssertContextVariable(untrustedVar, ContextVariables.MainKey, string.Empty, true);
+        // Assert the variable does not exist
+        var exists = untrustedVar.TryGetValue(ContextVariables.MainKey, out TrustAwareString? trustAwareValue);
+        Assert.False(exists);
     }
 
     [Fact]

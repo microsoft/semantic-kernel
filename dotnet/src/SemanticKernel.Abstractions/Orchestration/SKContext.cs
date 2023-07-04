@@ -73,7 +73,7 @@ public sealed class SKContext
     /// Shortcut into user data, access variables by name
     /// </summary>
     /// <param name="name">Variable name</param>
-    public string this[string name]
+    public string? this[string name]
     {
         get => this.Variables[name];
         set => this.Variables[name] = value;

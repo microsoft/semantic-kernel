@@ -69,7 +69,7 @@ public class SKContextTests
     public void ItCanUntrustAll()
     {
         // Arrange
-        var variables = new ContextVariables();
+        var variables = new ContextVariables("");
         var target = new SKContext(variables);
 
         // Assert

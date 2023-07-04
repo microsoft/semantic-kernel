@@ -33,8 +33,8 @@ public sealed class TrustAwareStringTest
         TrustAwareString value = TrustAwareString.Empty;
 
         // Assert
-        Assert.Empty(value.ToString());
-        Assert.Empty(value.Value);
+        Assert.Empty(value.ToString()!);
+        Assert.Empty(value.Value!);
         Assert.True(value.IsTrusted);
     }
 
@@ -63,14 +63,14 @@ public sealed class TrustAwareStringTest
         var trustedValue0Copy = TrustAwareString.CreateTrusted("some value 0");
         var untrustedValue0 = TrustAwareString.CreateUntrusted("some value 0");
         var untrustedValue0Copy = TrustAwareString.CreateUntrusted("some value 0");
-        var trustedValue1 = TrustAwareString.CreateTrusted("some value 1");
+        var trustedValue1 = TrustAwareString.CreateTrusted("some value 1")!;
         var untrustedValue1 = TrustAwareString.CreateTrusted("some value 1");
         var stringValue0 = "some value 0";
         int someObj = 10;
 
         // Act and assert
-        Assert.True(trustedValue0.Equals(trustedValue0Copy));
-        Assert.True(untrustedValue0.Equals(untrustedValue0Copy));
+        Assert.True(trustedValue0!.Equals(trustedValue0Copy));
+        Assert.True(untrustedValue0!.Equals(untrustedValue0Copy));
         Assert.True(trustedValue0 == trustedValue0Copy);
         Assert.True(untrustedValue0 == untrustedValue0Copy);
 

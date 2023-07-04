@@ -257,8 +257,8 @@ public class CalendarSkillTests : IDisposable
 
         // Assert
         Assert.True(context.ErrorOccurred);
-        ArgumentException e = Assert.IsType<ArgumentException>(context.LastException);
-        Assert.Equal("subject", e.ParamName);
+        KernelException e = Assert.IsType<KernelException>(context.LastException);
+        Assert.Equal(KernelException.ErrorCodes.FunctionInvokeError, e.ErrorCode);
     }
 
     protected virtual void Dispose(bool disposing)

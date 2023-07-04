@@ -21,14 +21,14 @@ public sealed class TrustAwareString : IEquatable<TrustAwareString>
     /// </summary>
     /// <param name="value">The raw string value</param>
     /// <returns>TrustAwareString</returns>
-    public static TrustAwareString CreateTrusted(string? value) => new(value, isTrusted: true);
+    public static TrustAwareString? CreateTrusted(string? value) => (value == null) ? null : new(value, isTrusted: true);
 
     /// <summary>
     /// Create a new untrusted string.
     /// </summary>
     /// <param name="value">The raw string value</param>
     /// <returns>TrustAwareString</returns>
-    public static TrustAwareString CreateUntrusted(string? value) => new(value, isTrusted: false);
+    public static TrustAwareString? CreateUntrusted(string? value) => (value == null) ? null : new(value, isTrusted: false);
 
     /// <summary>
     /// The raw string value.
@@ -45,13 +45,13 @@ public sealed class TrustAwareString : IEquatable<TrustAwareString>
     /// </summary>
     /// <param name="value">The raw string value</param>
     /// <param name="isTrusted">Whether the raw string value is trusted or not</param>
-    public TrustAwareString(string? value, bool isTrusted = true)
+    public TrustAwareString(string value, bool isTrusted = true)
     {
-        this.Value = value ?? string.Empty;
+        this.Value = value;
         this.IsTrusted = isTrusted;
     }
 
-    public override string ToString()
+    public override string? ToString()
     {
         return this.Value;
     }

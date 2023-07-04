@@ -31,7 +31,10 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     /// <param name="trustAwareContent">Optional value for the main variable of the context including trust information.</param>
     public ContextVariables(TrustAwareString? trustAwareContent = null)
     {
-        this._variables[MainKey] = trustAwareContent ?? TrustAwareString.Empty;
+        if (trustAwareContent != null)
+        {
+            this._variables[MainKey] = trustAwareContent;
+        }
     }
 
     /// <summary>
@@ -69,7 +72,14 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     /// <returns>The current instance</returns>
     public ContextVariables Update(TrustAwareString? trustAwareContent)
     {
-        this._variables[MainKey] = trustAwareContent ?? TrustAwareString.Empty;
+        if (trustAwareContent == null)
+        {
+            this._variables.TryRemove(MainKey, out _);
+        }
+        else
+        {
+            this._variables[MainKey] = trustAwareContent;
+        }
         return this;
     }
 
@@ -94,7 +104,7 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     /// <returns>The current instance</returns>
     public ContextVariables UpdateKeepingTrustState(string? content)
     {
-        return this.Update(new TrustAwareString(content, this.Input.IsTrusted));
+        return this.Update((content == null) ? null : new TrustAwareString(content, this.Input.IsTrusted));
     }
 
     /// <summary>
@@ -217,7 +227,7 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
         if (this._variables.TryGetValue(name, out TrustAwareString? trustAwareValue))
         {
             value = trustAwareValue.Value;
-            return true;
+            return value != null;
         }
 
         value = null;
@@ -229,7 +239,7 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     /// </summary>
     /// <param name="name">The name of the variable.</param>
     /// <returns>The value of the variable.</returns>
-    public string this[string name]
+    public string? this[string name]
     {
         get => this._variables[name].Value;
         set
@@ -238,7 +248,10 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
             // TODO: we could plan to replace string usages in the kernel
             // with TrustAwareString, so here "value" could directly be a trust aware string
             // including trust information
-            this._variables[name] = TrustAwareString.CreateTrusted(value);
+            if (value != null)
+            {
+                this._variables[name] = TrustAwareString.CreateTrusted(value)!;
+            }
         }
     }
 
@@ -276,7 +289,10 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
         foreach (var item in this._variables)
         {
             // Note: we don't use an internal setter for better multi-threading
-            this._variables[item.Key] = TrustAwareString.CreateUntrusted(item.Value.Value);
+            if (item.Value.Value != null)
+            {
+                this._variables[item.Key] = TrustAwareString.CreateUntrusted(item.Value.Value)!;
+            }
         }
     }
 

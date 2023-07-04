@@ -154,7 +154,7 @@ public sealed class SKFunctionTests2
         // Arrange
         static string Test(SKContext cx)
         {
-            s_actual = cx["someVar"];
+            s_actual = cx["someVar"]!;
             return "abc";
         }
 
@@ -181,7 +181,7 @@ public sealed class SKFunctionTests2
         string? Test(SKContext cx)
         {
             invocationCount++;
-            s_actual = cx["someVar"];
+            s_actual = cx["someVar"]!;
             return "abc";
         }
 
@@ -822,7 +822,7 @@ public sealed class SKFunctionTests2
         // Arrange
         var context = this.MockContext("1");
 
-        static async Task AssertResult(Delegate d, SKContext context, string expected)
+        static async Task AssertResult(Delegate d, SKContext context, string? expected)
         {
             context = await SKFunction.FromNativeFunction(d, functionName: "Test")!.InvokeAsync(context);
             Assert.False(context.ErrorOccurred, context.LastErrorDescription);
@@ -897,7 +897,7 @@ public sealed class SKFunctionTests2
         SKContext result = await function.InvokeAsync(context);
 
         // Assert
-        AssertExtensions.AssertIsArgumentOutOfRange(result.LastException, "g", context.Variables["g"]);
+        AssertExtensions.AssertIsArgumentOutOfRange(result.LastException, "g", context.Variables["g"]!);
     }
 
     [Obsolete("This test tests obsolete functionality and should be removed when that functionality is removed.")]
@@ -910,7 +910,7 @@ public sealed class SKFunctionTests2
         [SKFunctionContextParameter(Name = "y", Description = "Awesome additional input", DefaultValue = "42")]
         static string Add(string x, SKContext context) =>
            (int.Parse(x, CultureInfo.InvariantCulture) +
-            int.Parse(context["y"], CultureInfo.InvariantCulture)).ToString(CultureInfo.InvariantCulture);
+            int.Parse(context["y"]!, CultureInfo.InvariantCulture)).ToString(CultureInfo.InvariantCulture);
 
         // Arrange
         var context = Kernel.Builder.Build().CreateNewContext();
