@@ -14,6 +14,8 @@ jobs:
         include:
           - {label: 'python', prefix: 'Python'}
           - {label: 'java', prefix: 'Java'}
+          - {label: '.NET', prefix: '.Net'}
+          - {label: 'copilot chat', prefix: 'Copilot Chat'}
 
     runs-on: ubuntu-latest
     permissions:
