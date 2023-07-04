@@ -21,7 +21,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     <!-- Microsoft.Extensions.Configuration -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
