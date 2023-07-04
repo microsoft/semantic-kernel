@@ -28,9 +28,9 @@ public static class Example18_DallE
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             // Add your image generation service
-            .WithOpenAIImageGenerationService(Env.Var("OPENAI_API_KEY"))
+            .WithOpenAIImageGenerationService(Env.Var("OpenAI__ApiKey"))
             // Add your chat completion service 
-            .WithOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OpenAI__ApiKey"))
             .Build();
 
         IImageGeneration dallE = kernel.GetService<IImageGeneration>();
@@ -97,9 +97,9 @@ public static class Example18_DallE
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             // Add your image generation service
-            .WithAzureOpenAIImageGenerationService(Env.Var("AZURE_OPENAI_ENDPOINT"), Env.Var("AZURE_OPENAI_API_KEY"))
+            .WithAzureOpenAIImageGenerationService(Env.Var("AzureOpenAI__Endpoint"), Env.Var("AzureOpenAI__API_KEY"))
             // Add your chat completion service
-            .WithAzureChatCompletionService("gpt-35-turbo", Env.Var("AZURE_OPENAI_ENDPOINT"), Env.Var("AZURE_OPENAI_API_KEY"))
+            .WithAzureChatCompletionService("gpt-35-turbo", Env.Var("AzureOpenAI__Endpoint"), Env.Var("AzureOpenAI__API_KEY"))
             .Build();
 
         IImageGeneration dallE = kernel.GetService<IImageGeneration>();

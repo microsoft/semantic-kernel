@@ -20,7 +20,7 @@ public static class Example06_TemplateLanguage
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
             .Build();
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates

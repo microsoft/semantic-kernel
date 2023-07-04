@@ -14,13 +14,13 @@ public static class Example19_Qdrant
 
     public static async Task RunAsync()
     {
-        QdrantMemoryStore memoryStore = new(Env.Var("QDRANT_ENDPOINT"), 1536, ConsoleLogger.Log);
+        QdrantMemoryStore memoryStore = new(Env.Var("Qdrant__Endpoint"), 1536, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
-            //.WithQdrantMemoryStore(Env.Var("QDRANT_ENDPOINT"), 1536) // This method offers an alternative approach to registering Qdrant memory store.
+            //.WithQdrantMemoryStore(Env.Var("Qdrant__Endpoint"), 1536) // This method offers an alternative approach to registering Qdrant memory store.
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");

@@ -14,13 +14,13 @@ public static class Example46_Weaviate
 
     public static async Task RunAsync()
     {
-        string endpoint = Env.Var("WEAVIATE_ENDPOINT");
-        string apiKey = Env.Var("WEAVIATE_APIKEY");
+        string endpoint = Env.Var("Weaviate__Endpoint");
+        string apiKey = Env.Var("Weaviate__ApiKey");
         using WeaviateMemoryStore memoryStore = new(endpoint, apiKey, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
             //.WithWeaviateMemoryStore(endpoint, apiKey) // This method offers an alternative approach to registering Weaviate memory store.
             .Build();

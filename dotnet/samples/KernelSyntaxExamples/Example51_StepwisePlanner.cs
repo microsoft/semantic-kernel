@@ -95,18 +95,18 @@ public static class Example51_StepwisePlanner
         if (useChat)
         {
             builder.WithAzureChatCompletionService(
-                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"),
+                Env.Var("AzureOpenAI__ChatDeploymentName"),
+                Env.Var("AzureOpenAI__Endpoint"),
+                Env.Var("AzureOpenAI__ApiKey"),
                 alsoAsTextCompletion: true,
                 setAsDefault: true);
         }
         else
         {
             builder.WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"));
+                Env.Var("AzureOpenAI__DeploymentName"),
+                Env.Var("AzureOpenAI__Endpoint"),
+                Env.Var("AzureOpenAI__ApiKey"));
         }
 
         var kernel = builder

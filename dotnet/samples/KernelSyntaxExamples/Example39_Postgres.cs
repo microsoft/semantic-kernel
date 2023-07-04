@@ -16,7 +16,7 @@ public static class Example39_Postgres
 
     public static async Task RunAsync()
     {
-        NpgsqlDataSourceBuilder dataSourceBuilder = new(Env.Var("POSTGRES_CONNECTIONSTRING"));
+        NpgsqlDataSourceBuilder dataSourceBuilder = new(Env.Var("Postgres__ConnectionString"));
         dataSourceBuilder.UseVector();
         using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 
@@ -24,8 +24,12 @@ public static class Example39_Postgres
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService(
+                modelId: Env.Var("OpenAI__ModelId"),
+                apiKey: Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextEmbeddingGenerationService(
+                modelId: Env.Var("OpenAI__EmbeddingModelId"),
+                apiKey: Env.Var("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
             //.WithPostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public") // This method offers an alternative approach to registering Postgres memory store.
             .Build();

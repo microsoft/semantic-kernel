@@ -20,7 +20,7 @@ public static class Example05_InlineFunctionDefinition
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
             .Build();
 
         // Function defined using few-shot design pattern

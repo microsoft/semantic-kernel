@@ -16,12 +16,12 @@ public static class Example04_CombineLLMPromptsAndNativeCode
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-002")
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OpenAI__ApiKey"), serviceId: "text-davinci-002")
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
             .Build();
 
         // Load native skill
-        using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
+        using var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
         var bing = new WebSearchEngineSkill(bingConnector);
         var search = kernel.ImportSkill(bing, "bing");
 

@@ -61,9 +61,9 @@ after this event Caroline became his wife.""";
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_API_KEY"))
+                Env.Var("AzureOpenAI__DeploymentName"),
+                Env.Var("AzureOpenAI__Endpoint"),
+                Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -126,9 +126,9 @@ which are not grounded in the original.
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+                Env.Var("AzureOpenAI__DeploymentName"),
+                Env.Var("AzureOpenAI__Endpoint"),
+                Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();

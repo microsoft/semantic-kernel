@@ -46,7 +46,7 @@ public static class Example08_RetryHandler
         // purposes we are doing so as it's easy to trigger when using an invalid key.
         kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized));
 
-        // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
+        // OpenAI settings - you can set the OpenAI__ApiKey to an invalid value to see the retry policy in play
         kernelBuilder = kernelBuilder.WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY");
 
         var kernel = kernelBuilder.Build();
@@ -58,7 +58,7 @@ public static class Example08_RetryHandler
     {
         var kernel = Kernel.Builder
             .WithLogger(InfoLogger.Log)
-            // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
+            // OpenAI settings - you can set the OpenAI__ApiKey to an invalid value to see the retry policy in play
             .WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY")
             .Build();
 
@@ -75,7 +75,7 @@ public static class Example08_RetryHandler
     {
         var kernel = Kernel.Builder.WithLogger(InfoLogger.Log)
             .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
-            // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
+            // OpenAI settings - you can set the OpenAI__ApiKey to an invalid value to see the retry policy in play
             .WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY")
             .Build();
 
@@ -96,7 +96,7 @@ public static class Example08_RetryHandler
         var question = "How popular is Polly library?";
 
         InfoLogger.Log.LogInformation("Question: {0}", question);
-        // To see the retry policy in play, you can set the OPENAI_API_KEY to an invalid value
+        // To see the retry policy in play, you can set the OpenAI__ApiKey to an invalid value
         var answer = await kernel.RunAsync(question, qaSkill["Question"]);
         InfoLogger.Log.LogInformation("Answer: {0}", answer);
     }

@@ -22,7 +22,9 @@ public static class Example10_DescribeAllSkillsAndFunctions
         Console.WriteLine("======== Describe all skills and functions ========");
 
         var kernel = Kernel.Builder
-            .WithOpenAITextCompletionService("text-davinci-003", "none")
+            .WithOpenAITextCompletionService(
+                modelId: Env.Var("OpenAI__ModelId"),
+                apiKey: Env.Var("OpenAI__ApiKey"))
             .Build();
 
         // Import a native skill
