@@ -60,7 +60,7 @@ Event: {{$input}}
 
         // Using Chat Completion directly
         var chatCompletion = new OpenAIChatCompletion(
-            modelId: Env.Var("OpenAI__ModelId"),
+            modelId: Env.Var("OpenAI__ChatModelId"),
             apiKey: Env.Var("OpenAI__ApiKey"));
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 

@@ -21,8 +21,12 @@ public static class Example47_Redis
         RedisMemoryStore memoryStore = new(database, vectorSize: 1536);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService(
+                modelId: Env.Var("OpenAI__ModelId"),
+                apiKey: Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextEmbeddingGenerationService(
+                modelId: Env.Var("OpenAI__EmbeddingModelId"),
+                apiKey: Env.Var("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
             .Build();
 
