@@ -49,6 +49,9 @@ dotnet user-secrets set "KeyVault:TenantId" "..."
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "HuggingFace:ModelId" "..."
 
+dotnet user-secrets set "Pinecone:ApiKey" "..."
+dotnet user-secrets set "Pinecone:Environment" "..."
+
 dotnet user-secrets set "Bing:ApiKey" "..."
 dotnet user-secrets set "Github:PAT" "github_pat_..."
 dotnet user-secrets set "Postgres:ConnectionString" "..."
@@ -94,6 +97,10 @@ KeyVaule__TenantId
 # Hugging Face
 HuggingFace__ApiKey
 HuggingFace__ModelId
+
+# Pinecone
+Pinecone__ApiKey
+Pinecone__Environment
 
 # Other
 Bing__ApiKey
