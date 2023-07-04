@@ -126,13 +126,13 @@ internal static class Example31_CustomPlanner
         return new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+                Env.Var("AzureOpenAI__DeploymentName"),
+                Env.Var("AzureOpenAI__Endpoint"),
+                Env.Var("AzureOpenAI__ApiKey"))
             .WithAzureTextEmbeddingGenerationService(
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
+                Env.Var("AzureOpenAIEmbeddings__DeploymentName"),
+                Env.Var("AzureOpenAI__Endpoint"),
+                Env.Var("AzureOpenAI__ApiKey"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
     }

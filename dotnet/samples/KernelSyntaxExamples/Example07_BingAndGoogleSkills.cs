@@ -23,11 +23,11 @@ public static class Example07_BingAndGoogleSkills
     {
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
             .Build();
 
         // Load Bing skill
-        using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
+        using var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
         kernel.ImportSkill(new WebSearchEngineSkill(bingConnector), "bing");
 
         // Load Google skill

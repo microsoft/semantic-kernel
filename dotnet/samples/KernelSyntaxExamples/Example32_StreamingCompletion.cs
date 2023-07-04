@@ -23,9 +23,9 @@ public static class Example32_StreamingCompletion
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
         var textCompletion = new AzureTextCompletion(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"));
+                Env.Var("AzureOpenAI__DeploymentName"),
+                Env.Var("AzureOpenAI__Endpoint"),
+                Env.Var("AzureOpenAI__ApiKey"));
 
         await TextCompletionStreamAsync(textCompletion);
     }
@@ -34,7 +34,7 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
 
-        var textCompletion = new OpenAITextCompletion("text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        var textCompletion = new OpenAITextCompletion("text-davinci-003", Env.Var("OpenAI__ApiKey"));
 
         await TextCompletionStreamAsync(textCompletion);
     }

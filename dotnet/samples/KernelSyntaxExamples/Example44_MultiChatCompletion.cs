@@ -24,9 +24,9 @@ public static class Example44_MultiChatCompletion
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
         AzureChatCompletion azureChatCompletion = new(
-            Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
+            Env.Var("AzureOpenAI__ChatDeploymentName"),
+            Env.Var("AzureOpenAI__Endpoint"),
+            Env.Var("AzureOpenAI__ApiKey"));
 
         await RunChatAsync(azureChatCompletion);
     }
@@ -35,7 +35,7 @@ public static class Example44_MultiChatCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OpenAI__ApiKey"));
 
         await RunChatAsync(openAIChatCompletion);
     }

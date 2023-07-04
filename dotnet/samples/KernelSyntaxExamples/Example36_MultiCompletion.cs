@@ -23,9 +23,9 @@ public static class Example36_MultiCompletion
         Console.WriteLine("======== Azure OpenAI - Multiple Text Completion ========");
 
         var textCompletion = new AzureTextCompletion(
-            Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
+            Env.Var("AzureOpenAI__DeploymentName"),
+            Env.Var("AzureOpenAI__Endpoint"),
+            Env.Var("AzureOpenAI__ApiKey"));
 
         await TextCompletionAsync(textCompletion);
     }
@@ -36,7 +36,7 @@ public static class Example36_MultiCompletion
 
         ITextCompletion textCompletion = new OpenAITextCompletion(
             "text-davinci-003",
-            Env.Var("OPENAI_API_KEY"));
+            Env.Var("OpenAI__ApiKey"));
 
         await TextCompletionAsync(textCompletion);
     }

@@ -19,7 +19,9 @@ public static class Example43_GetModelResult
         Console.WriteLine("======== Inline Function Definition + Result ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService(
+                modelId: Env.Var("OpenAI__ModelId"),
+                apiKey: Env.Var("OpenAI__ApiKey"))
             .Build();
 
         // Function defined using few-shot design pattern
@@ -57,7 +59,9 @@ Event: {{$input}}
         Console.WriteLine();
 
         // Using Chat Completion directly
-        var chatCompletion = new OpenAIChatCompletion("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        var chatCompletion = new OpenAIChatCompletion(
+            modelId: Env.Var("OpenAI__ModelId"),
+            apiKey: Env.Var("OpenAI__ApiKey"));
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
         IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new CompleteRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });

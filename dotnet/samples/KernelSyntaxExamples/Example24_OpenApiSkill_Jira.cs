@@ -32,7 +32,7 @@ public static class Example24_OpenApiSkill_Jira
         IDictionary<string, ISKFunction> jiraSkills;
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
-            string s = Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("JIRA_API_KEY");
+            string s = Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("Jira__ApiKey");
             return Task.FromResult(s);
         });
 

@@ -70,9 +70,9 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+                Env.Var("AzureOpenAI__DeploymentName"),
+                Env.Var("AzureOpenAI__Endpoint"),
+                Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -180,13 +180,13 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureChatCompletionService(
-                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_CHAT_KEY"))
+                Env.Var("AzureOpenAI__CHAT_DEPLOYMENT_NAME"),
+                Env.Var("AzureOpenAI__CHAT_ENDPOINT"),
+                Env.Var("AzureOpenAI__CHAT_KEY"))
             .WithAzureTextEmbeddingGenerationService(
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
+                Env.Var("AzureOpenAIEmbeddings__DeploymentName"),
+                Env.Var("AzureOpenAI__Endpoint"),
+                Env.Var("AzureOpenAI__ApiKey"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -223,9 +223,9 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureChatCompletionService(
-                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_CHAT_KEY"))
+                Env.Var("AzureOpenAI__CHAT_DEPLOYMENT_NAME"),
+                Env.Var("AzureOpenAI__CHAT_ENDPOINT"),
+                Env.Var("AzureOpenAI__CHAT_KEY"))
             .Build();
 
         planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { MaxTokens = maxTokens });
