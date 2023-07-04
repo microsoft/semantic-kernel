@@ -19,6 +19,7 @@ cd dotnet/samples/KernelSyntaxExamples
 dotnet user-secrets init
 
 dotnet user-secrets set "OpenAI:ModelId" "..."
+dotnet user-secrets set "OpenAI:ChatModelId" "..."
 dotnet user-secrets set "OpenAI:EmbeddingModelId" "..."
 dotnet user-secrets set "OpenAI:ApiKey" "..."
 
@@ -64,6 +65,7 @@ To set your secrets with environment variables, use these names:
 ```
 # OpenAI
 OpenAI__ModelId
+OpenAI__ChatModelId
 OpenAI__EmbeddingModelId
 OpenAI__ApiKey
 

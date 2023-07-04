@@ -39,7 +39,9 @@ public static class Example45_MultiStreamingChatCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Text Completion - Raw Streaming ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OpenAI__ApiKey"));
+        OpenAIChatCompletion openAIChatCompletion = new(
+            modelId: Env.Var("OpenAI__ChatModelId"),
+            apiKey: Env.Var("OpenAI__ApiKey"));
 
         await StreamingChatCompletionAsync(openAIChatCompletion);
     }

@@ -20,8 +20,12 @@ public static class Example50_Chroma
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService(
+                modelId: Env.Var("OpenAI__ModelId"),
+                apiKey: Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextEmbeddingGenerationService(
+                modelId: Env.Var("OpenAI__EmbeddingModelId"),
+                apiKey: Env.Var("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
             //.WithChromaMemoryStore(endpoint) // This method offers an alternative approach to registering Chroma memory store.
             .Build();

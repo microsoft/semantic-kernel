@@ -35,7 +35,7 @@ public static class Example44_MultiChatCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OpenAI__ApiKey"));
+        OpenAIChatCompletion openAIChatCompletion = new(modelId: Env.Var("OpenAI__ChatModelId"), Env.Var("OpenAI__ApiKey"));
 
         await RunChatAsync(openAIChatCompletion);
     }

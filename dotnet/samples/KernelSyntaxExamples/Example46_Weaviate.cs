@@ -19,8 +19,12 @@ public static class Example46_Weaviate
         using WeaviateMemoryStore memoryStore = new(endpoint, apiKey, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService(
+                modelId: Env.Var("OpenAI__ModelId"),
+                apiKey: Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextEmbeddingGenerationService(
+                modelId: Env.Var("OpenAI__EmbeddingModelId"),
+                apiKey: Env.Var("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
             //.WithWeaviateMemoryStore(endpoint, apiKey) // This method offers an alternative approach to registering Weaviate memory store.
             .Build();
