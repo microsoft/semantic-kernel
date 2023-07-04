@@ -94,7 +94,7 @@ Weaviate__ApiKey
 # Azure Key Vault
 KeyVault__Endpoint
 KeyVault__ClientId
-KeyVaule__TenantId
+KeyVault__TenantId
 
 # Hugging Face
 HuggingFace__ApiKey
