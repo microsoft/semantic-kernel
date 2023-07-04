@@ -22,15 +22,15 @@ public static class Example38_Pinecone
 
     public static async Task RunAsync()
     {
-        string apiKey = Env.Var("PINECONE_API_KEY");
-        string pineconeEnvironment = Env.Var("PINECONE_ENVIRONMENT");
+        string apiKey = Env.Var("Pinecone__ApiKey");
+        string pineconeEnvironment = Env.Var("Pinecone__Environment");
 
         PineconeMemoryStore memoryStore = new(pineconeEnvironment, apiKey);
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService(Env.Var("OpenAI__ModelId"), Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextEmbeddingGenerationService(Env.Var("OpenAI__EmbeddingModelId"), Env.Var("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
             //.WithPineconeMemoryStore(pineconeEnvironment, apiKey) // This method offers an alternative approach to registering Pinecone memory storage.
             .Build();
