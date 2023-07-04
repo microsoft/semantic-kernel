@@ -544,12 +544,13 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         }
 
         // Validate all results
-        foreach (var result in allResults)
+        for (int index = 0; index < allResults.Length; index++)
         {
+            List<string>? result = allResults[index];
             if (expectedResponse.Count != result.Count)
             {
-                this._logger?.LogInformation(message: $"Expected: {expectedResponse.Aggregate((s1, s2) => $"{s1},{s2}")}");
-                this._logger?.LogInformation(message: $"Result: {result.Aggregate((s1, s2) => $"{s1},{s2}")}");
+                this._logger?.LogInformation(message: $"Expected {index}: {expectedResponse.Aggregate((s1, s2) => $"{s1},{s2}")}");
+                this._logger?.LogInformation(message: $"Result {index}: {result.Aggregate((s1, s2) => $"{s1},{s2}")}");
             }
 
             Assert.Equal(expectedResponse.Count, result.Count);
