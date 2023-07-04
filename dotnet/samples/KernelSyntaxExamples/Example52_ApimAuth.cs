@@ -19,8 +19,8 @@ public static class Example52_ApimAuth
     {
         // Azure API Management details
         // For more information see 'Protect your Azure OpenAI API keys with Azure API Management' here: https://learn.microsoft.com/en-us/semantic-kernel/deploy/
-        var apimUri = new Uri("https://apim...azure-api.net/");
-        var subscriptionKey = "<Add your subscription key here>";
+        var apimUri = new Uri(Env.Var("Apim__Endpoint"));
+        var subscriptionKey = Env.Var("Apim__SubscriptionKey");
 
         // Use interactive browser login
         string[] scopes = new string[] { "https://cognitiveservices.azure.com/.default" };
