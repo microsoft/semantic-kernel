@@ -85,13 +85,13 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                         .buildAsyncClient();
     }
 
-    private AzureCognitiveSearchMemory(AzureCognitiveSearchMemory other) {
-        this._adminClient = other._adminClient;
+    AzureCognitiveSearchMemory(SearchIndexAsyncClient adminClient) {
+        this._adminClient = adminClient;
     }
 
     @Override
     public AzureCognitiveSearchMemory copy() {
-        return new AzureCognitiveSearchMemory(this);
+        return new AzureCognitiveSearchMemory(this._adminClient);
     }
 
     @Override

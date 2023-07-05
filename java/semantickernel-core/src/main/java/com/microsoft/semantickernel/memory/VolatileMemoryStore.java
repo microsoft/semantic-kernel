@@ -46,8 +46,9 @@ public class VolatileMemoryStore implements MemoryStore {
     }
 
     @Override
-    public Mono<Collection<String>> getCollectionsAsync() {
-        return Mono.just(Collections.unmodifiableCollection(this._store.keySet()));
+    public Mono<List<String>> getCollectionsAsync() {
+        List<String> keys = new ArrayList<>(this._store.keySet());
+        return Mono.just(Collections.unmodifiableList(keys));
     }
 
     @Override
@@ -256,29 +257,4 @@ public class VolatileMemoryStore implements MemoryStore {
         }
     }
 
-    /*
-    protected boolean TryGetCollection(
-        String name,
-        [NotNullWhen(true)] out ConcurrentDictionary<String,
-            MemoryRecord>? collection,
-        boolean create)
-    {
-        if (this._store.TryGetValue(name, out collection))
-        {
-            return true;
-        }
-
-        if (create)
-        {
-            collection = new ConcurrentDictionary<String, MemoryRecord>();
-            return this._store.TryAdd(name, collection);
-        }
-
-        collection = null;
-        return false;
-    }
-
-    private readonly ConcurrentDictionary<String,
-        ConcurrentDictionary<String, MemoryRecord>> _store = new();
-    */
 }

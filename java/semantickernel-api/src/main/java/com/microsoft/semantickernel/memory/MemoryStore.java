@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -26,7 +27,7 @@ public interface MemoryStore {
      *
      * @return An unmodifiable group of collection names.
      */
-    Mono<Collection<String>> getCollectionsAsync();
+    Mono<List<String>> getCollectionsAsync();
 
     /**
      * Determines if a collection exists in the data store.

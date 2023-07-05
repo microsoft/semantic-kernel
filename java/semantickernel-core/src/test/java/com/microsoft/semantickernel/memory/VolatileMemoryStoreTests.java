@@ -1,19 +1,26 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VolatileMemoryStoreTests {
     private VolatileMemoryStore _db;
@@ -208,7 +215,7 @@ class VolatileMemoryStoreTests {
     }
 
     @Test
-    void UpsertReplacesExistingRecordWithSameIdAsync() {
+    void upsertReplacesExistingRecordWithSameIdAsync() {
         // Arrange
         String commonId = "test";
         MemoryRecord testRecord =
@@ -246,7 +253,7 @@ class VolatileMemoryStoreTests {
     }
 
     @Test
-    void ExistingRecordCanBeRemovedAsync() {
+    void existingRecordCanBeRemovedAsync() {
         // Arrange
         MemoryRecord testRecord =
                 MemoryRecord.localRecord(
@@ -272,7 +279,7 @@ class VolatileMemoryStoreTests {
     }
 
     @Test
-    void RemovingNonExistingRecordDoesNothingAsync() {
+    void removingNonExistingRecordDoesNothingAsync() {
         // Arrange
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -288,31 +295,31 @@ class VolatileMemoryStoreTests {
     @Test
     void itCanListAllDatabaseCollectionsAsync() {
         // Arrange
-        String[] testCollections = {"test_collection5", "test_collection6", "test_collection7"};
-        this._collectionNum += 3;
-        this._db.createCollectionAsync(testCollections[0]).block();
-        this._db.createCollectionAsync(testCollections[1]).block();
-        this._db.createCollectionAsync(testCollections[2]).block();
+        int numCollections = 3;
+        String[] testCollections =
+                IntStream.range(this._collectionNum, this._collectionNum += numCollections)
+                .mapToObj(i -> "test_collection" + i)
+                .toArray(String[]::new);
+
+        Flux.fromArray(testCollections)
+                .flatMap(collection -> this._db.createCollectionAsync(collection))
+                .blockLast();
 
         // Act
         Collection<String> collections = this._db.getCollectionsAsync().block();
 
         // Assert
         assertNotNull(collections);
-        assertEquals(3, collections.size());
-        assertTrue(
-                collections.contains(testCollections[0]),
-                "Collections does not contain the newly-created collection " + testCollections[0]);
-        assertTrue(
-                collections.contains(testCollections[1]),
-                "Collections does not contain the newly-created collection " + testCollections[1]);
-        assertTrue(
-                collections.contains(testCollections[2]),
-                "Collections does not contain the newly-created collection " + testCollections[2]);
+        assertEquals(numCollections, collections.size());
+        for(String collection : testCollections) {
+            assertTrue(
+                    collections.contains(collection),
+                    "Collections does not contain the newly-created collection " + collection);
+        }
     }
 
     @Test
-    void GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync() {
+    void getNearestMatchesReturnsAllResultsWithNoMinScoreAsync() {
         // Arrange
         Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
@@ -400,8 +407,191 @@ class VolatileMemoryStoreTests {
         }
     }
 
+
+
     @Test
-    void GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync() {
+    void getNearestMatchesReturnsLimit() {
+        // Arrange
+        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        String collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        this._db.createCollectionAsync(collection).block();
+        int i = 0;
+        MemoryRecord testRecord =
+                MemoryRecord.localRecord(
+                        "test" + i,
+                        "text" + i,
+                        "description" + i,
+                        new Embedding<Float>(Arrays.asList(1f, 1f, 1f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+        this._db.upsertAsync(collection, testRecord).block();
+
+        i++;
+        testRecord =
+                MemoryRecord.localRecord(
+                        "test" + i,
+                        "text" + i,
+                        "description" + i,
+                        new Embedding<Float>(Arrays.asList(-1f, -1f, -1f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+        this._db.upsertAsync(collection, testRecord).block();
+
+        i++;
+        testRecord =
+                MemoryRecord.localRecord(
+                        "test" + i,
+                        "text" + i,
+                        "description" + i,
+                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+        this._db.upsertAsync(collection, testRecord).block();
+
+        i++;
+        testRecord =
+                MemoryRecord.localRecord(
+                        "test" + i,
+                        "text" + i,
+                        "description" + i,
+                        new Embedding<Float>(Arrays.asList(-1f, -2f, -3f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+        this._db.upsertAsync(collection, testRecord).block();
+
+        i++;
+        testRecord =
+                MemoryRecord.localRecord(
+                        "test" + i,
+                        "text" + i,
+                        "description" + i,
+                        new Embedding<Float>(Arrays.asList(1f, -1f, -2f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+        this._db.upsertAsync(collection, testRecord).block();
+
+        // Act
+        double threshold = -1;
+        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+                this._db
+                        .getNearestMatchesAsync(
+                                collection, compareEmbedding, i/2, threshold, false)
+                        .block();
+
+        // Assert
+        assertNotNull(topNResults);
+        assertEquals(i/2, topNResults.size());
+    }
+
+    @Test
+    void getNearestMatchesReturnsEmptyIfLimitZero() {
+        // Arrange
+        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        String collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        this._db.createCollectionAsync(collection).block();
+        int i = 0;
+        MemoryRecord testRecord =
+                MemoryRecord.localRecord(
+                        "test" + i,
+                        "text" + i,
+                        "description" + i,
+                        new Embedding<Float>(Arrays.asList(1f, 1f, 1f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+        this._db.upsertAsync(collection, testRecord).block();
+
+        i++;
+        testRecord =
+                MemoryRecord.localRecord(
+                        "test" + i,
+                        "text" + i,
+                        "description" + i,
+                        new Embedding<Float>(Arrays.asList(-1f, -1f, -1f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+        this._db.upsertAsync(collection, testRecord).block();
+
+        i++;
+        testRecord =
+                MemoryRecord.localRecord(
+                        "test" + i,
+                        "text" + i,
+                        "description" + i,
+                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+        this._db.upsertAsync(collection, testRecord).block();
+
+        i++;
+        testRecord =
+                MemoryRecord.localRecord(
+                        "test" + i,
+                        "text" + i,
+                        "description" + i,
+                        new Embedding<Float>(Arrays.asList(-1f, -2f, -3f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+        this._db.upsertAsync(collection, testRecord).block();
+
+        i++;
+        testRecord =
+                MemoryRecord.localRecord(
+                        "test" + i,
+                        "text" + i,
+                        "description" + i,
+                        new Embedding<Float>(Arrays.asList(1f, -1f, -2f)),
+                        NULL_ADDITIONAL_METADATA,
+                        NULL_KEY,
+                        NULL_TIMESTAMP);
+        this._db.upsertAsync(collection, testRecord).block();
+
+        // Act
+        double threshold = -1;
+        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+                this._db
+                        .getNearestMatchesAsync(
+                                collection, compareEmbedding, 0, threshold, false)
+                        .block();
+
+        // Assert
+        assertNotNull(topNResults);
+        assertTrue(topNResults.isEmpty());
+    }
+
+    @Test
+    void getNearestMatchesReturnsEmptyIfCollectionEmpty() {
+        // Arrange
+        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        String collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        this._db.createCollectionAsync(collection).block();
+
+        // Act
+        double threshold = -1;
+        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+                this._db
+                        .getNearestMatchesAsync(
+                                collection, compareEmbedding, Integer.MAX_VALUE, threshold, false)
+                        .block();
+
+        // Assert
+        assertNotNull(topNResults);
+        assertTrue(topNResults.isEmpty());
+    }
+
+    @Test
+    void getNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync() {
         // Arrange
         Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
@@ -491,7 +681,7 @@ class VolatileMemoryStoreTests {
     }
 
     @Test
-    void GetNearestMatchAsyncReturnsExpectedAsync() {
+    void getNearestMatchAsyncReturnsExpectedAsync() {
         // Arrange
         Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
@@ -569,6 +759,27 @@ class VolatileMemoryStoreTests {
         assertNotNull(topNResult);
         assertEquals("test0", topNResult.getT1().getMetadata().getId());
         assertTrue(topNResult.getT2().doubleValue() >= threshold);
+    }
+
+    @Test
+    void getNearestMatcheReturnsEmptyIfCollectionEmpty() {
+        // Arrange
+        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        int topN = 4;
+        String collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        this._db.createCollectionAsync(collection).block();
+
+        // Act
+        double threshold = -1;
+        Tuple2<MemoryRecord, ? extends Number> topNResults =
+                this._db
+                        .getNearestMatchAsync(
+                                collection, compareEmbedding, threshold, false)
+                        .block();
+
+        // Assert
+        assertNull(topNResults);
     }
 
     @Test
@@ -673,28 +884,38 @@ class VolatileMemoryStoreTests {
         this._db.removeBatchAsync(collection, keys);
 
         // Assert
-        for (MemoryRecord result : this._db.getBatchAsync(collection, keys, false).block()) {
+        for (MemoryRecord result : this._db.getBatchAsync(collection, keys, true).block()) {
             assertNull(result);
         }
     }
 
     @Test
-    void CollectionsCanBeDeletedAsync() {
+    void collectionsCanBeDeletedAsync() {
         // Arrange
+        int numCollections = 3;
+        String[] testCollections =
+                IntStream.range(this._collectionNum, this._collectionNum += numCollections)
+                        .mapToObj(i -> "test_collection" + i)
+                        .toArray(String[]::new);
+
+        Flux.fromArray(testCollections)
+                .flatMap(collection -> this._db.createCollectionAsync(collection))
+                .blockLast();
+
+        // Act
         Collection<String> collections = this._db.getCollectionsAsync().block();
-        int numCollections = collections.size();
-        assertEquals(this._collectionNum, numCollections);
+        assertNotNull(collections);
+        assertEquals(numCollections, collections.size());
 
         // Act
         for (String collection : collections) {
-            this._db.deleteCollectionAsync(collection);
+            this._db.deleteCollectionAsync(collection).block();
         }
 
         // Assert
         collections = this._db.getCollectionsAsync().block();
-        numCollections = collections.size();
-        assertEquals(0, numCollections);
-        this._collectionNum = 0;
+        assertNotNull(collections);
+        assertEquals(0, collections.size());
     }
 
     @Test
@@ -707,4 +928,26 @@ class VolatileMemoryStoreTests {
         assertThrows(
                 MemoryException.class, () -> this._db.deleteCollectionAsync(collection).block());
     }
+
+    @Test
+    void doesCollectionExistAsyncReturnTrueForExistingCollection() {
+        // Arrange
+        String collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+        this._db.createCollectionAsync(collection).block();
+
+        // Act
+        assertTrue(this._db.doesCollectionExistAsync(collection).block());
+    }
+
+    @Test
+    void doesCollectionExistAsyncReturnFalseForNonExistentCollection() {
+        // Arrange
+        String collection = "test_collection" + this._collectionNum;
+        this._collectionNum++;
+
+        // Act
+        assertFalse(this._db.doesCollectionExistAsync(collection).block());
+    }
+
 }

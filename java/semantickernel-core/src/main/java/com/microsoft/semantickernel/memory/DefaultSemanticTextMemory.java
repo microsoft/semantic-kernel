@@ -126,7 +126,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
 
     @Override
     public Mono<List<String>> getCollectionsAsync() {
-        return Mono.error(new NotSupportedException("Pending implementation"));
+        return _storage.getCollectionsAsync();
     }
 
     @Override
