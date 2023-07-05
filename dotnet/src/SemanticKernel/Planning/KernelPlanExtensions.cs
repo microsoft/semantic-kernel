@@ -16,6 +16,28 @@ namespace Microsoft.SemanticKernel;
 public static class KernelPlanExtensions
 {
     /// <summary>
+    /// Import a plan into the kernel
+    /// </summary>
+    /// <param name="kernel">Kernel instance to use</param>
+    /// <param name="plan">Plan to import</param>
+    /// <returns>Function definition for the plan</returns>
+    public static SkillDefinition.ISKFunction ImportPlan(this IKernel kernel, Plan plan)
+    {
+        return kernel.RegisterCustomFunction(plan);
+    }
+
+    /// <summary>
+    /// Import a plan into the kernel
+    /// </summary>
+    /// <param name="kernel">Kernel instance to use</param>
+    /// <param name="json">Json representation of the plan</param>
+    /// <returns>Function definition for the plan</returns>
+    public static SkillDefinition.ISKFunction ImportPlanFromJson(this IKernel kernel, string json)
+    {
+        return kernel.RegisterCustomFunction(Plan.FromJson(json, kernel.CreateNewContext()));
+    }
+
+    /// <summary>
     /// Run the next step in a plan asynchronously
     /// </summary>
     /// <param name="kernel">Kernel instance to use</param>
