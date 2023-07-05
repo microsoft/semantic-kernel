@@ -22,48 +22,49 @@ internal static class SemanticChatMemoryExtractor
     /// Returns the name of the semantic text memory collection that stores chat semantic memory.
     /// </summary>
     /// <param name="chatId">Chat ID that is persistent and unique for the chat session.</param>
-    /// <param name="memoryName">Name of the memory category</param>
-    internal static string MemoryCollectionName(string chatId, string memoryName) => $"{chatId}-{memoryName}";
+    /// <param name="memoryType">Name of the memory category</param>
+    internal static string MemoryCollectionType(string chatId, string memoryType) => $"{chatId}-{memoryType}";
 
     /// <summary>
     /// Extract and save semantic memory.
     /// </summary>
     /// <param name="chatId">The Chat ID.</param>
-    /// <param name="kernel">The semantic kernel.</param>
-    /// <param name="context">The context containing the memory.</param>
+    /// <param name="context">The SKContext</param>
     /// <param name="options">The prompts options.</param>
+    /// <param name="chatPlugin">The plugin containing chat specific semantic functions as prompt templates.</param>
+    /// <param name="chatPromptOptions">The token counts of the prompt text templates in the chatPlugin.</param>
     internal static async Task ExtractSemanticChatMemoryAsync(
         string chatId,
         SKContext context,
         PromptsOptions options,
-        IDictionary<string, ISKFunction> chatSkillPlugin,
-        IDictionary<string, int> chatSkillTokenCounts)
+        IDictionary<string, ISKFunction> chatPlugin,
+        IDictionary<string, PromptPluginOptions> chatPluginPromptOptions)
     {
         var memoryExtractionContext = Utilities.CopyContextWithVariablesClone(context);
-        memoryExtractionContext.Variables.Set("format", options.MemoryFormat);
+        memoryExtractionContext.Variables.Set("MemoryFormat", options.MemoryFormat);
 
-        foreach (var memoryName in options.MemoryTypes)
+        foreach (var memoryType in options.MemoryTypes)
         {
             try
             {
-                var memSkillName = "ExtractMemory" + memoryName;
+                var memSkillName = "ExtractMemory" + memoryType;
                 var semanticMemory = await ExtractCognitiveMemoryAsync(
-                                            memoryName,
+                                            memoryType,
                                             memoryExtractionContext,
                                             options,
-                                            chatSkillPlugin[memSkillName],
-                                            chatSkillTokenCounts[memSkillName]);
+                                            chatPlugin[memSkillName],
+                                            chatPluginPromptOptions[memSkillName]);
 
                 foreach (var item in semanticMemory.Items)
                 {
-                    await CreateMemoryAsync(item, chatId, context, memoryName, options);
+                    await CreateMemoryAsync(item, chatId, context, memoryType, options);
                 }
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 // Skip semantic memory extraction for this item if it fails.
                 // We cannot rely on the model to response with perfect Json each time.
-                context.Log.LogInformation("Unable to extract semantic memory for {0}: {1}. Continuing...", memoryName, ex.Message);
+                context.Log.LogInformation("Unable to extract semantic memory for {0}: {1}. Continuing...", memoryType, ex.Message);
                 continue;
             }
         }
@@ -72,31 +73,33 @@ internal static class SemanticChatMemoryExtractor
     /// <summary>
     /// Extracts the semantic chat memory from the chat session.
     /// </summary>
-    /// <param name="memoryName">Name of the memory category</param>
-    /// <param name="context">The SKContext</param>
+    /// <param name="memoryType">Name of the memory category</param>
+    /// <param name="memoryExtractionContext">The SKContext</param>
     /// <param name="options">The prompts options.</param>
+    /// <param name="extractMemoryFunc">The Semantic Function for memory extraction.</param>
+    /// <param name="memoryPromptTokenCount">The token count used by the memory extraction prompt.txt template.</param>
     /// <returns>A SemanticChatMemory object.</returns>
     internal static async Task<SemanticChatMemory> ExtractCognitiveMemoryAsync(
-        string memoryName,
+        string memoryType,
         SKContext memoryExtractionContext,
         PromptsOptions options,
-        ISKFunction extractMemorySKFunc,
-        int memoryPromptTokenCount)
+        ISKFunction extractMemoryFunc,
+        PromptPluginOptions skillPromptOptions)
     {
-        if (!options.MemoryTypes.Contains(memoryName))
+        if (!options.MemoryTypes.Contains(memoryType))
         {
-            throw new ArgumentException($"Memory name {memoryName} is not supported.");
+            throw new ArgumentException($"Memory type {memoryType} is not supported.");
         }
 
         // Token limit for chat history
         var remainingToken =
             options.CompletionTokenLimit -
-            options.ResponseTokenLimit -
-            memoryPromptTokenCount;
+            skillPromptOptions.CompletionSettings.MaxTokens -
+            skillPromptOptions.PromptTokenCount;
 
         memoryExtractionContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
 
-        var result = await extractMemorySKFunc.InvokeAsync(memoryExtractionContext);
+        var result = await extractMemoryFunc.InvokeAsync(memoryExtractionContext, skillPromptOptions.CompletionSettings);
 
         SemanticChatMemory memory = SemanticChatMemory.FromJson(result.ToString());
         return memory;
@@ -109,16 +112,16 @@ internal static class SemanticChatMemoryExtractor
     /// <param name="item">A SemanticChatMemoryItem instance</param>
     /// <param name="chatId">The ID of the chat the memories belong to</param>
     /// <param name="context">The context that contains the memory</param>
-    /// <param name="memoryName">Name of the memory</param>
+    /// <param name="memoryType">Name of the memory</param>
     /// <param name="options">The prompts options.</param>
     internal static async Task CreateMemoryAsync(
         SemanticChatMemoryItem item,
         string chatId,
         SKContext context,
-        string memoryName,
+        string memoryType,
         PromptsOptions options)
     {
-        var memoryCollectionName = SemanticChatMemoryExtractor.MemoryCollectionName(chatId, memoryName);
+        var memoryCollectionName = SemanticChatMemoryExtractor.MemoryCollectionType(chatId, memoryType);
 
         var memories = await context.Memory.SearchAsync(
                 collection: memoryCollectionName,
@@ -136,7 +139,7 @@ internal static class SemanticChatMemoryExtractor
                 collection: memoryCollectionName,
                 text: item.ToFormattedString(),
                 id: Guid.NewGuid().ToString(),
-                description: memoryName,
+                description: memoryType,
                 cancellationToken: context.CancellationToken
             );
         }

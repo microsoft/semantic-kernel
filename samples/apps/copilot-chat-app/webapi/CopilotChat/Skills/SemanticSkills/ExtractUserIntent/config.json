@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "description": "Extract list of participants from the conversation history. Note that only those who have spoken will be included.",
+  "description": "Extract the intent of the user from the conversation history",
   "type": "completion",
   "completion": {
-    "max_tokens": 4096,
+    "max_tokens": 1024,
     "temperature": 0.7,
     "top_p": 1.0,
     "presence_penalty": 0.5,
@@ -19,6 +19,11 @@
       {
         "name": "tokenLimit",
         "description": "Maximum number of tokens",
+        "defaultValue": ""
+      },
+      {
+        "name": "audience",
+        "description": "The audience the chat bot is interacting with.",
         "defaultValue": ""
       },
       {

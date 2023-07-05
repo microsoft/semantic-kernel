@@ -20,11 +20,6 @@ public class PromptsOptions
     [Required, Range(0, int.MaxValue)] public int CompletionTokenLimit { get; set; }
 
     /// <summary>
-    /// The token count left for the model to generate text after the prompt.
-    /// </summary>
-    [Required, Range(0, int.MaxValue)] public int ResponseTokenLimit { get; set; }
-
-    /// <summary>
     /// Weight of memories in the contextual part of the final prompt.
     /// Contextual prompt excludes all the system commands and user intent.
     /// </summary>

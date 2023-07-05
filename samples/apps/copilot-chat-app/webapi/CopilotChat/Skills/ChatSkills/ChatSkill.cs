@@ -66,12 +66,13 @@ public class ChatSkill
     /// <summary>
     /// A dictionary of all the semantic chat skill functions
     /// </summary>
-    private readonly IDictionary<string, ISKFunction> _chatSkillPlugin;
+    private readonly IDictionary<string, ISKFunction> _chatPlugin;
 
     /// <summary>
     /// A dictionary mapping all of the semantic chat skill functions to the token counts of their prompts
     /// </summary>
-    private readonly IDictionary<string, int> _chatSkillTokenCounts;
+    private readonly IDictionary<string, PromptPluginOptions> _chatPluginPromptOptions;
+
     /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
     /// </summary>
@@ -98,11 +99,12 @@ public class ChatSkill
             promptOptions,
             planner);
 
-        var parentDir = System.IO.Directory.GetCurrentDirectory() + "\\..";
-        this._chatSkillPlugin = this._kernel.ImportSemanticSkillFromDirectory(parentDir, "SemanticChatSkills");
+        var parentDir = System.IO.Directory.GetCurrentDirectory() + "\\..\\..\\..";
+        parentDir = Path.GetFullPath(Path.Combine(parentDir, "CopilotChat", "Skills"));
+        this._chatPlugin = this._kernel.ImportSemanticSkillFromDirectory(parentDir, "SemanticSkills");
 
-        var skillDir = Path.Combine(parentDir, "SemanticChatSkills");
-        this._chatSkillTokenCounts = this.calcPromptTokens(this._chatSkillPlugin, skillDir);
+        var skillDir = Path.Combine(parentDir, "SemanticSkills");
+        this._chatPluginPromptOptions = this.calcChatPluginTokens(this._chatPlugin, skillDir);
     }
 
     /// <summary>
@@ -217,8 +219,8 @@ public class ChatSkill
             chatId,
             chatContext,
             this._promptOptions,
-            this._chatSkillPlugin,
-            this._chatSkillTokenCounts);
+            this._chatPlugin,
+            this._chatPluginPromptOptions);
 
         context.Variables.Update(response);
         return context;
@@ -295,19 +297,19 @@ public class ChatSkill
         }
 
         //Get the prompt.txt text
-        var parentDir = System.IO.Directory.GetCurrentDirectory() + "\\..";
-        var skillDir = Path.Combine(parentDir, "SemanticChatSkills");
-        var promptText = this.GetPromptTemplateText(this._chatSkillPlugin, skillDir, "Chat");
+        var parentDir = System.IO.Directory.GetCurrentDirectory() + "\\..\\..\\..";
+        var skillDir = Path.GetFullPath(Path.Combine(parentDir, "CopilotChat", "Skills", "SemanticSkills"));
+        var chatPromptText = this.GetPromptTemplateText(this._chatPlugin, skillDir, "Chat");
 
         // Invoke the model
-        chatContext.Variables.Set("audience", audience);
+        chatContext.Variables.Set("Audience", audience);
         chatContext.Variables.Set("UserIntent", userIntent);
         chatContext.Variables.Set("ChatContext", chatContextText);
 
         var promptRenderer = new PromptTemplateEngine();
-        var renderedPrompt = await promptRenderer.RenderAsync(promptText, chatContext);
+        var renderedPrompt = await promptRenderer.RenderAsync(chatPromptText, chatContext);
 
-        var result = await this._chatSkillPlugin["Chat"].InvokeAsync(chatContext);
+        var result = await this._chatPlugin["Chat"].InvokeAsync(chatContext, this._chatPluginPromptOptions["Chat"].CompletionSettings);
 
         // Allow the caller to view the prompt used to generate the response
         chatContext.Variables.Set("prompt", renderedPrompt);
@@ -328,10 +330,10 @@ public class ChatSkill
     /// </summary>
     private async Task<string> GetAudienceAsync(SKContext context)
     {
-        var audienceContext = Utilities.CopyContextWithEmptyVariables(context);
+        var audienceContext = Utilities.CopyContextWithVariablesClone(context);
         audienceContext.Variables.Set("tokenLimit", this.GetHistoryTokenBudgetForFunc("ExtractAudience"));
 
-        var result = await this._chatSkillPlugin["ExtractAudience"].InvokeAsync(audienceContext);
+        var result = await this._chatPlugin["ExtractAudience"].InvokeAsync(audienceContext, this._chatPluginPromptOptions["ExtractAudience"].CompletionSettings);
 
         if (result.ErrorOccurred)
         {
@@ -353,11 +355,11 @@ public class ChatSkill
         // TODO: Regenerate user intent if plan was modified
         if (!context.Variables.TryGetValue("planUserIntent", out string? userIntent))
         {
-            var intentContext = Utilities.CopyContextWithEmptyVariables(context);
+            var intentContext = Utilities.CopyContextWithVariablesClone(context);
             intentContext.Variables.Set("audience", context["userName"]);
             intentContext.Variables.Set("tokenLimit", this.GetHistoryTokenBudgetForFunc("ExtractUserIntent"));
 
-            var result = await this._chatSkillPlugin["ExtractUserIntent"].InvokeAsync(intentContext);
+            var result = await this._chatPlugin["ExtractUserIntent"].InvokeAsync(intentContext, this._chatPluginPromptOptions["ExtractUserIntent"].CompletionSettings);
             userIntent = $"User intent: {result}";
 
             if (result.ErrorOccurred)
@@ -486,18 +488,19 @@ public class ChatSkill
     /// <summary>
     /// Create a dictionary mapping semantic functions for a skill to the number of tokens their prompts use/
     /// </summary>
-    private Dictionary<string, int> calcPromptTokens(IDictionary<string, ISKFunction> skillPlugin, string skillDir)
+    private Dictionary<string, PromptPluginOptions> calcChatPluginTokens(IDictionary<string, ISKFunction> skillPlugin, string skillDir)
     {
-        var funcTokenCounts = new Dictionary<string, int>(); ;
+        var funcTokenCounts = new Dictionary<string, PromptPluginOptions>(); ;
         const string PromptFile = "skprompt.txt";
+        const string ConfigFile = "config.json";
 
         foreach (KeyValuePair<string, ISKFunction> funcEntry in skillPlugin)
         {
             var promptPath = Path.Combine(skillDir, funcEntry.Key, PromptFile);
             if (!File.Exists(promptPath)) { continue; }
 
-            var promptText = File.ReadAllText(promptPath);
-            funcTokenCounts.Add(funcEntry.Key, Utilities.TokenCount(promptText));
+            var configPath = Path.Combine(skillDir, funcEntry.Key, ConfigFile);
+            funcTokenCounts.Add(funcEntry.Key, new PromptPluginOptions(promptPath, ConfigFile));
         }
 
         return funcTokenCounts;
@@ -530,9 +533,9 @@ public class ChatSkill
     {
         var remainingToken =
             this._promptOptions.CompletionTokenLimit -
-            this._promptOptions.ResponseTokenLimit -
+            this._chatPluginPromptOptions["Chat"].CompletionSettings.MaxTokens -
             Utilities.TokenCount(userIntent) -
-            this._chatSkillTokenCounts["Chat"];
+            this._chatPluginPromptOptions["Chat"].PromptTokenCount;
 
         return remainingToken;
     }
@@ -544,8 +547,8 @@ public class ChatSkill
     {
         var historyTokenBudget =
                 this._promptOptions.CompletionTokenLimit -
-                this._promptOptions.ResponseTokenLimit -
-                this._chatSkillTokenCounts[funcName];
+                this._chatPluginPromptOptions[funcName].CompletionSettings.MaxTokens -
+                this._chatPluginPromptOptions[funcName].PromptTokenCount;
 
         return historyTokenBudget.ToString(new NumberFormatInfo());
     }

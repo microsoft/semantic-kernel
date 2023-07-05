@@ -3,7 +3,7 @@
   "description": "Generate a chat response from the underlying LLM",
   "type": "completion",
   "completion": {
-    "max_tokens": 4096,
+    "max_tokens": 2048,
     "temperature": 0.7,
     "top_p": 1.0,
     "presence_penalty": 0.5,

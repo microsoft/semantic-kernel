@@ -34,7 +34,7 @@ internal static class Utilities
     /// <returns>A new context with a clone of the variables.</returns>
     internal static SKContext CopyContextWithEmptyVariables(SKContext context)
     => new(
-        context.Variables.Clone(),
+        new ContextVariables(),
         context.Memory,
         context.Skills,
         context.Log,
