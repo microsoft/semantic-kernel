@@ -95,6 +95,14 @@ if (-not ((az webapp cors show --name $webapiName --resource-group $ResourceGrou
     az webapp cors add --name $webapiName --resource-group $ResourceGroupName --subscription $Subscription --allowed-origins $origin
 }
 
+Write-Host "Updating redirect URI in AAD app registration to '$webappUrl'..."
+$objectId = (az ad app show --id $ApplicationClientId | ConvertFrom-Json).id
+az rest `
+    --method PATCH `
+    --uri "https://graph.microsoft.com/v1.0/applications/$objectId" `
+    --headers 'Content-Type=application/json' `
+    --body "{spa:{redirectUris:['$origin']}}"
+
 Pop-Location
 
 Write-Host "To verify your deployment, go to 'https://$webappUrl' in your browser."

@@ -122,6 +122,14 @@ if [[ "$CORS_RESULT" == "null" ]]; then
     az webapp cors add --name $WEB_API_NAME --resource-group $RESOURCE_GROUP --subscription $SUBSCRIPTION --allowed-origins $origin
 fi
 
+echo "Updating redirect URI in AAD app registration to '$ORIGIN'..."
+eval OBJECT_ID=$(az ad app show --id $APPLICATION_ID | jq '.id')
+az rest \
+    --method PATCH \
+    --uri "https://graph.microsoft.com/v1.0/applications/$OBJECT_ID" \
+    --headers 'Content-Type=application/json' \
+    --body "{spa:{redirectUris:['$ORIGIN']}}"
+
 popd
 
 echo "To verify your deployment, go to 'https://$WEB_APP_URL' in your browser."
