@@ -19,6 +19,7 @@ class CompleteRequestSettings:
     stop_sequences: List[str] = field(default_factory=list)
     number_of_responses: int = 1
     logprobs: int = 0
+    token_selection_biases: dict[int, int] = dict()
 
     def update_from_completion_config(
         self, completion_config: "PromptTemplateConfig.CompletionConfig"
