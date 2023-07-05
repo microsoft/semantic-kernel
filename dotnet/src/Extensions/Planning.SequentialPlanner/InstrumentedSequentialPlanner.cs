@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics.Metering;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
@@ -18,17 +19,21 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     /// </summary>
     /// <param name="planner">Instance of <see cref="ISequentialPlanner"/> to decorate.</param>
     /// <param name="logger">Optional logger.</param>
-    public InstrumentedSequentialPlanner(ISequentialPlanner planner, ILogger? logger = null)
+    /// <param name="meter">Optional meter.</param>
+    public InstrumentedSequentialPlanner(
+        ISequentialPlanner planner,
+        ILogger? logger = null,
+        IMeter? meter = null)
     {
         this._planner = planner;
         this._logger = logger ?? NullLogger.Instance;
+        this._meter = meter ?? NullMeter.Instance;
     }
 
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal)
     {
         this._logger.LogInformation("Plan creation started.");
-
         this._logger.LogTrace("Plan Goal: {Goal}", goal);
 
         var stopwatch = Stopwatch.StartNew();
@@ -38,16 +43,20 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         stopwatch.Stop();
 
         this._logger.LogTrace("Created plan: \n {Plan}", plan.ToPlanString());
-
         this._logger.LogInformation("Plan creation finished in {ElapsedMilliseconds}ms.", stopwatch.ElapsedMilliseconds);
+
+        this._meter.TrackMetric(CreatePlanExecutionTimeMetricName, stopwatch.ElapsedMilliseconds);
 
         return plan;
     }
 
     #region private ================================================================================
 
+    private const string CreatePlanExecutionTimeMetricName = "sk.sequential_planner.create_plan.ms";
+
     private readonly ISequentialPlanner _planner;
     private readonly ILogger _logger;
+    private readonly IMeter _meter;
 
     #endregion
 }
