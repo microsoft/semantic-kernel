@@ -32,9 +32,10 @@ export const InvitationCreateDialog: React.FC<InvitationCreateDialogProps> = ({ 
 
     const classes = useStyles();
 
-    const copyId = useCallback(async () => {
-        navigator.clipboard.writeText(chatId);
-        setIsIdCopied(true);
+    const copyId = useCallback(() => {
+        void navigator.clipboard.writeText(chatId).then(() => {
+            setIsIdCopied(true);
+        });
     }, [chatId]);
 
     // Copy the chatId to clipboard by default when component mounts.

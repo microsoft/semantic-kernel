@@ -25,19 +25,21 @@ export const NewBotMenu: FC = () => {
     const fileUploaderRef = useRef<HTMLInputElement>(null);
 
     const onAddChat = () => {
-        chat.createChat();
-        setIsNewBotMenuOpen(false);
+        void chat.createChat().then(() => {
+            setIsNewBotMenuOpen(false);
+        });
     };
 
     const onUpload = useCallback(
         (file: File) => {
-            fileHandler
-                .loadFile<Bot>(file, chat.uploadBot)
-                .catch((error) =>
-                    dispatch(
-                        addAlert({ message: `Failed to parse uploaded file. ${error.message}`, type: AlertType.Error }),
-                    ),
-                );
+            fileHandler.loadFile<Bot>(file, chat.uploadBot).catch((error) =>
+                dispatch(
+                    addAlert({
+                        message: `Failed to parse uploaded file. ${error instanceof Error ? error.message : ''}`,
+                        type: AlertType.Error,
+                    }),
+                ),
+            );
             setIsNewBotMenuOpen(false);
         },
         [fileHandler, chat, dispatch],
@@ -61,7 +63,9 @@ export const NewBotMenu: FC = () => {
                             data-testid="createNewConversationButton"
                             icon={<BotAdd20Regular />}
                             appearance="transparent"
-                            onClick={() => setIsNewBotMenuOpen(!isNewBotMenuOpen)}
+                            onClick={() => {
+                                setIsNewBotMenuOpen(!isNewBotMenuOpen);
+                            }}
                         />
                     </Tooltip>
                 </MenuTrigger>

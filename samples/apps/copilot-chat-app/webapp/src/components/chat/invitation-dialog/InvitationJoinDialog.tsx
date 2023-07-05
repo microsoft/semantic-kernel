@@ -1,13 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Button, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Divider, Input, Label, makeStyles, tokens } from "@fluentui/react-components";
-import React from "react";
-import { useChat } from "../../../libs/useChat";
+import {
+    Button,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
+    Divider,
+    Input,
+    Label,
+    makeStyles,
+    tokens,
+} from '@fluentui/react-components';
+import React from 'react';
+import { useChat } from '../../../libs/useChat';
 
 const useStyles = makeStyles({
     content: {
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
         rowGap: tokens.spacingVerticalMNudge,
     },
     divider: {
@@ -23,24 +35,24 @@ interface InvitationJoinDialogProps {
 export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = ({ onCloseDialog }) => {
     const chat = useChat();
     const [errorOccurred, setErrorOccurred] = React.useState<boolean>(false);
-    const [errorMessage, setErrorMessage] = React.useState<string>("");
+    const [errorMessage, setErrorMessage] = React.useState<string>('');
 
     const classes = useStyles();
 
-    const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (ev: React.FormEvent<HTMLFormElement>) => {
         ev.preventDefault();
         setErrorOccurred(false);
 
-        const chatId = ev.currentTarget.elements.namedItem("chat-id-input") as HTMLInputElement;
+        const chatId = ev.currentTarget.elements.namedItem('chat-id-input') as HTMLInputElement;
 
-        const { success, message } = await chat.joinChat(chatId.value);
-
-        if (success) {
-            onCloseDialog();
-        } else {
-            setErrorOccurred(true);
-            setErrorMessage(message);
-        }
+        void chat.joinChat(chatId.value).then(({ success, message }) => {
+            if (success) {
+                onCloseDialog();
+            } else {
+                setErrorOccurred(true);
+                setErrorMessage(message);
+            }
+        });
     };
 
     return (
@@ -61,10 +73,12 @@ export const InvitationJoinDialog: React.FC<InvitationJoinDialogProps> = ({ onCl
                         </DialogActions>
                     </DialogBody>
                 </form>
-                {errorOccurred && <div>
-                    <Divider className={classes.divider} />
-                    <Label size="large">{errorMessage}</Label>
-                </div>}
+                {errorOccurred && (
+                    <div>
+                        <Divider className={classes.divider} />
+                        <Label size="large">{errorMessage}</Label>
+                    </div>
+                )}
             </DialogSurface>
         </div>
     );
