@@ -27,11 +27,16 @@ jobs:
         name: "Issue/PR: update title"
         with:
           script: |
+            // Import the core module
+            const core = require('@actions/core');
             // Get the label and prefix from the matrix
             const label = '${{ matrix.label }}'
             const prefix = '${{ matrix.prefix }}'
             
             labelAdded = '${{ github.event.label.name }}'
+            
+            // Write the contents of context to console
+            core.info(JSON.stringify(context, null, 2));}}'
           
             // Get the event name, title and labels
             let title
