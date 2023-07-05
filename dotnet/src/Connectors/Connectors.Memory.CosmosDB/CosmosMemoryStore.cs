@@ -52,11 +52,11 @@ public sealed class CosmosMemoryStore : IMemoryStore
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
-            newStore._log.LogInformation("Created database {0}", newStore._databaseName);
+            newStore._log.LogDebug("Created database {0}", newStore._databaseName);
         }
         else if (response.StatusCode == HttpStatusCode.OK)
         {
-            newStore._log.LogInformation("Database {0}", newStore._databaseName);
+            newStore._log.LogDebug("Database {0}", newStore._databaseName);
         }
         else
         {
@@ -84,11 +84,11 @@ public sealed class CosmosMemoryStore : IMemoryStore
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
-            this._log.LogInformation("Created collection {0}", collectionName);
+            this._log.LogDebug("Created collection {0}", collectionName);
         }
         else if (response.StatusCode == HttpStatusCode.OK)
         {
-            this._log.LogInformation("Collection {0} already exists", collectionName);
+            this._log.LogDebug("Collection {0} already exists", collectionName);
         }
         else
         {
@@ -191,7 +191,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
 
         if (response.StatusCode is HttpStatusCode.OK or HttpStatusCode.Created)
         {
-            this._log.LogInformation("Upserted item to collection {0}", collectionName);
+            this._log.LogDebug("Upserted item to collection {0}", collectionName);
         }
         else
         {
@@ -221,7 +221,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
 
         if (response.StatusCode == HttpStatusCode.OK)
         {
-            this._log.LogInformation("Record deleted from {0}", collectionName);
+            this._log.LogDebug("Record deleted from {0}", collectionName);
         }
         else
         {

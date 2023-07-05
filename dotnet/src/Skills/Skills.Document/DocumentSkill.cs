@@ -75,7 +75,7 @@ public sealed class DocumentSkill
         [Description("Path to the file to read")] string filePath,
         CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Reading text from {0}", filePath);
+        this._logger.LogDebug("Reading text from {0}", filePath);
         using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
         return this._documentConnector.ReadText(stream);
     }
@@ -97,17 +97,17 @@ public sealed class DocumentSkill
         // If the document already exists, open it. If not, create it.
         if (await this._fileSystemConnector.FileExistsAsync(filePath, cancellationToken).ConfigureAwait(false))
         {
-            this._logger.LogInformation("Writing text to file {0}", filePath);
+            this._logger.LogDebug("Writing text to file {0}", filePath);
             using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
             this._documentConnector.AppendText(stream, text);
         }
         else
         {
-            this._logger.LogInformation("File does not exist. Creating file at {0}", filePath);
+            this._logger.LogDebug("File does not exist. Creating file at {0}", filePath);
             using Stream stream = await this._fileSystemConnector.CreateFileAsync(filePath, cancellationToken).ConfigureAwait(false);
             this._documentConnector.Initialize(stream);
 
-            this._logger.LogInformation("Writing text to {0}", filePath);
+            this._logger.LogDebug("Writing text to {0}", filePath);
             this._documentConnector.AppendText(stream, text);
         }
     }

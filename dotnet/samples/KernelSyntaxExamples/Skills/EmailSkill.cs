@@ -20,7 +20,7 @@ internal sealed class EmailSkill
         [Description("The name of the person whose email address needs to be found.")] string input,
         ILogger? logger = null)
     {
-        logger?.LogDebug("Returning hard coded email for {0}", input);
+        logger?.LogTrace("Returning hard coded email for {0}", input);
         return "johndoe1234@example.com";
     }
 }

@@ -69,6 +69,7 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
         string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
         this._logger.LogTrace("Response content received: {0}", json);
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);

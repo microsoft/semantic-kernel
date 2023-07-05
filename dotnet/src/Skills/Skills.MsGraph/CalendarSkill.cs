@@ -111,7 +111,7 @@ public sealed class CalendarSkill
             Attendees = attendees is not null ? attendees.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) : Enumerable.Empty<string>(),
         };
 
-        this._logger.LogInformation("Adding calendar event '{0}'", calendarEvent.Subject);
+        this._logger.LogTrace("Adding calendar event '{0}'", calendarEvent.Subject);
         await this._connector.AddEventAsync(calendarEvent).ConfigureAwait(false);
     }
 
@@ -124,7 +124,7 @@ public sealed class CalendarSkill
         [Description("Optional number of events to skip before retrieving results.")] int? skip = 0,
         CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Getting calendar events with query options top: '{0}', skip:'{1}'.", maxResults, skip);
+        this._logger.LogDebug("Getting calendar events with query options top: '{0}', skip:'{1}'.", maxResults, skip);
 
         const string SelectString = "start,subject,organizer,location";
 
