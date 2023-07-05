@@ -24,6 +24,7 @@
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Polly" />
     <PackageReference Include="System.Linq.Async" />
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
