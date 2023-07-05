@@ -17,7 +17,8 @@ import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationInput } from '../../redux/features/conversations/conversationsSlice';
 import { CopilotChatTokens } from '../../styles';
 import { SpeechService } from './../../libs/services/SpeechService';
-import { TypingIndicatorRenderer } from './typing-indicator/TypingIndicatorRenderer';
+import { updateUserIsTyping } from './../../redux/features/conversations/conversationsSlice';
+import { ChatStatus } from './ChatStatus';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -67,17 +68,15 @@ const useClasses = makeStyles({
 });
 
 interface ChatInputProps {
-    // Hardcode to single user typing. For multi-users, it should be a list of ChatUser who are typing.
-    isTyping?: boolean;
     isDraggingOver?: boolean;
     onDragLeave: React.DragEventHandler<HTMLDivElement | HTMLTextAreaElement>;
-    onSubmit: (options: GetResponseOptions) => void;
+    onSubmit: (options: GetResponseOptions) => Promise<void>;
 }
 
-export const ChatInput: React.FC<ChatInputProps> = (props) => {
-    const { isTyping, isDraggingOver, onDragLeave, onSubmit } = props;
+export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeave, onSubmit }) => {
     const classes = useClasses();
     const { instance, inProgress } = useMsal();
+    const account = instance.getActiveAccount();
     const chat = useChat();
     const dispatch = useAppDispatch();
     const [value, setValue] = React.useState('');
@@ -90,17 +89,21 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
     React.useEffect(() => {
         async function initSpeechRecognizer() {
             const speechService = new SpeechService(process.env.REACT_APP_BACKEND_URI as string);
-            var response = await speechService.getSpeechTokenAsync(
+            const response = await speechService.getSpeechTokenAsync(
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
             if (response.isSuccess) {
-                const recognizer = await speechService.getSpeechRecognizerAsyncWithValidKey(response);
+                const recognizer = speechService.getSpeechRecognizerAsyncWithValidKey(response);
                 setRecognizer(recognizer);
             }
         }
 
-        initSpeechRecognizer();
-    }, [instance, inProgress]);
+        initSpeechRecognizer().catch((e) => {
+            const errorDetails = e instanceof Error ? e.message : String(e);
+            const errorMessage = `Unable to initialize speech recognizer. Details: ${errorDetails}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        });
+    }, [dispatch, instance, inProgress]);
 
     React.useEffect(() => {
         const chatState = conversations[selectedId];
@@ -121,29 +124,30 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
         }
     };
 
-    const handleImport = async (dragAndDropFile?: File) => {
-        setDocumentImporting(true);
-
+    const handleImport = (dragAndDropFile?: File) => {
         const file = dragAndDropFile ?? documentFileRef.current?.files?.[0];
         if (file) {
-            await chat.importDocument(selectedId, file);
+            setDocumentImporting(true);
+            chat.importDocument(selectedId, file).finally(() => {
+                setDocumentImporting(false);
+            });
         }
-        setDocumentImporting(false);
 
         // Reset the file input so that the onChange event will
         // be triggered even if the same file is selected again.
-        documentFileRef.current!.value = '';
+        if (documentFileRef.current?.value) {
+            documentFileRef.current.value = '';
+        }
     };
 
     const handleSubmit = (value: string, messageType: ChatMessageType = ChatMessageType.Message) => {
-        try {
-            if (value.trim() === '') {
-                return; // only submit if value is not empty
-            }
-            onSubmit({ value, messageType, chatId: selectedId });
-            setValue('');
-            dispatch(editConversationInput({ id: selectedId, newInput: '' }));
-        } catch (error) {
+        if (value.trim() === '') {
+            return; // only submit if value is not empty
+        }
+
+        setValue('');
+        dispatch(editConversationInput({ id: selectedId, newInput: '' }));
+        onSubmit({ value, messageType, chatId: selectedId }).catch((error) => {
             const message = `Error submitting chat input: ${(error as Error).message}`;
             log(message);
             dispatch(
@@ -152,17 +156,19 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                     message,
                 }),
             );
-        }
+        });
     };
 
-    const handleDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
+    const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
         onDragLeave(e);
-        await handleImport(e.dataTransfer?.files[0]);
+        handleImport(e.dataTransfer.files[0]);
     };
 
     return (
         <div className={classes.root}>
-            <div className={classes.typingIndicator}>{isTyping ? <TypingIndicatorRenderer /> : null}</div>
+            <div className={classes.typingIndicator}>
+                <ChatStatus />
+            </div>
             <div className={classes.content}>
                 <Textarea
                     id="chat-input"
@@ -177,10 +183,14 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                     onDrop={handleDrop}
                     onFocus={() => {
                         // update the locally stored value to the current value
-                        const chatInput = document.getElementById('chat-input') as HTMLTextAreaElement;
+                        const chatInput = document.getElementById('chat-input');
                         if (chatInput) {
-                            setValue(chatInput.value);
+                            setValue((chatInput as HTMLTextAreaElement).value);
                         }
+                        // User is considered typing if the input is in focus
+                        dispatch(
+                            updateUserIsTyping({ userId: account?.homeAccountId, chatId: selectedId, isTyping: true }),
+                        );
                     }}
                     onChange={(_event, data) => {
                         if (isDraggingOver) {
@@ -196,6 +206,12 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                             handleSubmit(value);
                         }
                     }}
+                    onBlur={() => {
+                        // User is considered not typing if the input is not  in focus
+                        dispatch(
+                            updateUserIsTyping({ userId: account?.homeAccountId, chatId: selectedId, isTyping: false }),
+                        );
+                    }}
                 />
             </div>
             <div className={classes.controls}>
@@ -207,7 +223,9 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                         style={{ display: 'none' }}
                         accept=".txt,.pdf"
                         multiple={false}
-                        onChange={() => handleImport()}
+                        onChange={() => {
+                            handleImport();
+                        }}
                     />
                     <Button
                         disabled={documentImporting}
@@ -226,7 +244,13 @@ export const ChatInput: React.FC<ChatInputProps> = (props) => {
                             onClick={handleSpeech}
                         />
                     )}
-                    <Button appearance="transparent" icon={<SendRegular />} onClick={() => handleSubmit(value)} />
+                    <Button
+                        appearance="transparent"
+                        icon={<SendRegular />}
+                        onClick={() => {
+                            handleSubmit(value);
+                        }}
+                    />
                 </div>
             </div>
         </div>

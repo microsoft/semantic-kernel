@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.18.4.5664",
-      "templateHash": "14624489804868742601"
+      "version": "0.16.2.56959",
+      "templateHash": "18037485528098010448"
     }
   },
   "parameters": {
@@ -307,6 +307,14 @@
           {
             "name": "ChatStore:Cosmos:ChatMessagesContainer",
             "value": "chatmessages"
+          },
+          {
+            "name": "ChatStore:Cosmos:ChatMemorySourcesContainer",
+            "value": "chatmemorysources"
+          },
+          {
+            "name": "ChatStore:Cosmos:ChatParticipantsContainer",
+            "value": "chatparticipants"
           },
           {
             "name": "ChatStore:Cosmos:ConnectionString",
@@ -765,6 +773,41 @@
       "properties": {
         "resource": {
           "id": "chatparticipants",
+          "indexingPolicy": {
+            "indexingMode": "consistent",
+            "automatic": true,
+            "includedPaths": [
+              {
+                "path": "/*"
+              }
+            ],
+            "excludedPaths": [
+              {
+                "path": "/\"_etag\"/?"
+              }
+            ]
+          },
+          "partitionKey": {
+            "paths": [
+              "/id"
+            ],
+            "kind": "Hash",
+            "version": 2
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat')]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployCosmosDB')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2023-04-15",
+      "name": "[format('{0}/{1}/{2}', toLower(format('cosmos-{0}', variables('uniqueName'))), 'CopilotChat', 'chatmemorysources')]",
+      "properties": {
+        "resource": {
+          "id": "chatmemorysources",
           "indexingPolicy": {
             "indexingMode": "consistent",
             "automatic": true,
