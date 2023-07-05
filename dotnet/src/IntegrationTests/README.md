@@ -8,6 +8,7 @@
 3. **HuggingFace API key**: see https://huggingface.co/docs/huggingface_hub/guides/inference for details.
 4. **Azure Bing Web Search API**: go to [Bing Web Search API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
    and select `Try Now` to get started.
+5. **Postgres**: start a postgres with the [pgvector](https://github.com/pgvector/pgvector) extension installed. You can easily do it using the docker image [ankane/pgvector](https://hub.docker.com/r/ankane/pgvector).
 
 ## Setup
 
@@ -44,6 +45,7 @@ dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
 
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "Bing:ApiKey" "..."
+dotnet user-secrets set "Postgres:ConnectionString" "..."
 ```
 
 ### Option 2: Use Configuration File
@@ -86,6 +88,9 @@ For example:
   },
   "Bing": {
     "ApiKey": "...."
+  },
+  "Postgres": {
+    "ConnectionString": "Host=localhost;Database=postgres;User Id=postgres;Password=mysecretpassword"
   }
 }
 ```
@@ -106,6 +111,7 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
   export AzureOpenAI__Endpoint="https://contoso.openai.azure.com/"
   export HuggingFace__ApiKey="...."
   export Bing__ApiKey="...."
+  export Postgres__ConnectionString="...."
   ```
 
 - PowerShell:
@@ -119,4 +125,5 @@ When setting environment variables, use a double underscore (i.e. "\_\_") to del
   $env:AzureOpenAI__Endpoint = "https://contoso.openai.azure.com/"
   $env:HuggingFace__ApiKey = "...."
   $env:Bing__ApiKey = "...."
+  $env:Postgres__ConnectionString = "...."
   ```
