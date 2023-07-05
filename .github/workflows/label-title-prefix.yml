@@ -31,17 +31,22 @@ jobs:
             const label = '${{ matrix.label }}'
             const prefix = '${{ matrix.prefix }}'
             
-            labelAdded = '${{ github.event.label.name }}'
+            labelAdded = context.payload.label.name
             
             // Write the contents of context to console
             core.info(JSON.stringify(context, null, 2))
           
             // Get the event name, title and labels
             let title
-            if (context.event_name == 'issues') {
-              title = context.payload.issue.title
-            } else {
-              title = context.payload.pull_request.title
+            switch(context.eventName) {
+              case 'issues':
+                title = context.payload.issue.title
+                break              
+              case 'pull_request':
+                title = context.payload.pull_request.title
+                break
+              default:
+                core.setFailed('Unrecognited eventName: ' + context.eventName)
             }
             
             let originalTitle = title
@@ -64,19 +69,24 @@ jobs:
             
             // Update the issue or PR title, if changed
             if (title != originalTitle ) {
-              if (context.event_name == 'issues') {
-                github.rest.issues.update({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: title
-                });
-              } else {
-                github.rest.pulls.update({
-                  pull_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: title
-                });
+              switch(context.eventName) {
+                case 'issues':
+                  github.rest.issues.update({
+                    issue_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: title
+                  });
+                  break              
+                case 'pull_request':
+                  github.rest.pulls.update({
+                    pull_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: title
+                  });
+                  break
+                default:
+                  core.setFailed('Unrecognited eventName: ' + context.eventName)
               }
             }
