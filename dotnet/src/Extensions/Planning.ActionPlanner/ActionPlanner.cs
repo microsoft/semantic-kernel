@@ -82,38 +82,7 @@ public sealed class ActionPlanner
         this._context.Variables.Update(goal);
 
         SKContext result = await this._plannerFunction.InvokeAsync(this._context).ConfigureAwait(false);
-
-        ActionPlanResponse? planData;
-
-        /* Filter out good JSON from the result in case additional text is present:
-        * Follows the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions 
-        */
-        Regex planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline);
-        Match match = planRegex.Match(result.ToString());
-
-        if (match.Success && match.Groups["Close"].Length > 0)
-        {
-            string planJson = $"{{{match.Groups["Close"]}}}";
-            try
-            {
-                planData = JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, new JsonSerializerOptions
-                {
-                    AllowTrailingCommas = true,
-                    DictionaryKeyPolicy = null,
-                    DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-                    PropertyNameCaseInsensitive = true,
-                });
-            }
-            catch (Exception e)
-            {
-                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
-                    "Plan parsing error, invalid JSON", e);
-            }
-        }
-        else
-        {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to extract valid json string from planner result: '{result}'");
-        }
+        ActionPlanResponse? planData = this.ParsePlannerResult(result);
 
         if (planData == null)
         {
@@ -242,6 +211,44 @@ Goal: tell me a joke.
 ";
     }
 
+    #region Private
+
+    /// <summary>
+    /// Native function that filters out good JSON from planner result in case additional text is present
+    /// using a similiar regex to the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions
+    /// </summary>
+    /// <param name="plannerResult">Result context of planner function.</param>
+    /// <returns>An ActionPlanResponse object deserialized from extracted JSON.</returns>
+    private ActionPlanResponse? ParsePlannerResult(SKContext plannerResult)
+    {
+        Regex planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline);
+        Match match = planRegex.Match(plannerResult.ToString());
+
+        if (match.Success && match.Groups["Close"].Length > 0)
+        {
+            string planJson = $"{{{match.Groups["Close"]}}}";
+            try
+            {
+                return JsonSerializer.Deserialize<ActionPlanResponse?>(planJson, new JsonSerializerOptions
+                {
+                    AllowTrailingCommas = true,
+                    DictionaryKeyPolicy = null,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+                    PropertyNameCaseInsensitive = true,
+                });
+            }
+            catch (Exception e)
+            {
+                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
+                    "Plan parsing error, invalid JSON", e);
+            }
+        }
+        else
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to extract valid json string from planner result: '{plannerResult}'");
+        }
+    }
+
     private void PopulateList(StringBuilder list, IDictionary<string, List<FunctionView>> functions)
     {
         foreach (KeyValuePair<string, List<FunctionView>> skill in functions)
@@ -280,4 +287,6 @@ Goal: tell me a joke.
     {
         return x.EndsWith(".", StringComparison.Ordinal) ? x : $"{x}.";
     }
+
+    #endregion
 }
