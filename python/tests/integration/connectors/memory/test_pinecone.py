@@ -25,12 +25,12 @@ pytestmark = pytest.mark.skipif(
 def get_pinecone_config():
     if "Python_Integration_Tests" in os.environ:
         api_key = os.environ["Pinecone__ApiKey"]
-        org_id = None
+        environment = os.environ["Pinecone__Environment"]
     else:
         # Load credentials from .env file
-        api_key, org_id = sk.pinecone_settings_from_dot_env()
+        api_key, environment = sk.pinecone_settings_from_dot_env()
 
-    return api_key, org_id
+    return api_key, environment
 
 
 @pytest.fixture
