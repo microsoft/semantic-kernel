@@ -1,18 +1,20 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
-import reactor.util.annotation.NonNull;
 import reactor.util.annotation.Nullable;
+
+import java.util.function.Supplier;
 
 import javax.annotation.CheckReturnValue;
 
 /** Semantic Kernel context. */
-public interface SKContext<Type extends SKContext<Type>> {
+public interface SKContext {
 
-    Type build(
+    SKContext build(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable ReadOnlySkillCollection skills);
@@ -42,7 +44,6 @@ public interface SKContext<Type extends SKContext<Type>> {
      *
      * @return
      */
-    @Nullable
     ReadOnlySkillCollection getSkills();
 
     /**
@@ -52,7 +53,7 @@ public interface SKContext<Type extends SKContext<Type>> {
      * @param content
      * @return Context for fluent calls
      */
-    Type setVariable(@NonNull String key, @NonNull String content);
+    SKContext setVariable(String key, String content);
 
     /**
      * Appends data to the given key
@@ -61,7 +62,7 @@ public interface SKContext<Type extends SKContext<Type>> {
      * @param content
      * @return Context for fluent calls
      */
-    Type appendToVariable(@NonNull String key, @NonNull String content);
+    SKContext appendToVariable(String key, String content);
 
     /**
      * Updates the input entry with the given data
@@ -70,7 +71,7 @@ public interface SKContext<Type extends SKContext<Type>> {
      * @return Context for fluent calls
      */
     @CheckReturnValue
-    Type update(@NonNull String content);
+    SKContext update(String content);
 
     /**
      * Merges in the given variables. Duplicate keys provided by newData will overwrite existing
@@ -80,11 +81,46 @@ public interface SKContext<Type extends SKContext<Type>> {
      * @return Context for fluent calls
      */
     @CheckReturnValue
-    Type update(@NonNull ContextVariables newData);
+    SKContext update(ContextVariables newData);
 
-    Type copy();
+    SKContext copy();
+
+    interface BuilderSupplier extends Supplier<Builder> {}
 
     interface Builder {
         SKContext build(ReadOnlySkillCollection skills);
+
+        SKContext build();
+
+        SKContext build(Class<? extends SKContext> clazz);
+
+        Builder with(ContextVariables variables);
+
+        /**
+         * Sets the skills
+         *
+         * @param skills null argument will be ignored
+         * @return Context for fluent calls
+         */
+        Builder with(@Nullable ReadOnlySkillCollection skills);
+
+        /**
+         * Sets the memory
+         *
+         * @param memory null argument will be ignored
+         * @return Context for fluent calls
+         */
+        Builder with(@Nullable SemanticTextMemory memory);
+
+        Builder clone(SKContext context);
+
+        /**
+         * Builds a context from the given kernel. If not explicitly set, the skills and memory will
+         * be used from the kernel.
+         *
+         * @param kernel
+         * @return
+         */
+        SKContext build(Kernel kernel);
     }
 }

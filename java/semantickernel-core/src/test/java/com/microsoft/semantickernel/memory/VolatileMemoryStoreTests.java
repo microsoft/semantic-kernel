@@ -10,12 +10,9 @@ import org.junit.jupiter.api.Test;
 
 import reactor.util.function.Tuple2;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class VolatileMemoryStoreTests {
@@ -196,7 +193,7 @@ class VolatileMemoryStoreTests {
                         new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
-                        ZonedDateTime.now());
+                        ZonedDateTime.now(ZoneId.of("UTC")));
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 

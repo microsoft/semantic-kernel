@@ -12,7 +12,7 @@
     <url>https://www.github.com/microsoft/semantic-kernel</url>
 
     <properties>
-        <azure-ai-openai.version>1.0.0-beta.1</azure-ai-openai.version>
+        <azure-ai-openai.version>1.0.0-beta.2</azure-ai-openai.version>
         <checkstyle.version>10.11.0</checkstyle.version>
         <com.uber.nullaway.version>0.10.10</com.uber.nullaway.version>
         <google.errorprone.core.version>2.19.1</google.errorprone.core.version>
@@ -129,6 +129,11 @@
             <dependency>
                 <groupId>com.microsoft.semantickernel.extensions</groupId>
                 <artifactId>sequentialplanner-extensions</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantickernel.extensions</groupId>
+                <artifactId>actionplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

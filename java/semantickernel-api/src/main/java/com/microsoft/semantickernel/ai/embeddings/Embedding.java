@@ -19,14 +19,6 @@ public class Embedding<EmbeddingType extends Number> {
 
     private final List<EmbeddingType> vector;
 
-    //    /// <summary>
-    //    /// An empty <see cref="Embedding{TEmbedding}"/> instance.
-    //    /// </summary>
-    //    [SuppressMessage("Design", "CA1000:Do not declare static members on generic types",
-    // Justification = "Static empty struct instance.")]
-    //    public static Embedding<TEmbedding> Empty { get; } = new
-    // Embedding<TEmbedding>(Array.Empty<TEmbedding>());
-
     private static final Embedding<Number> EMPTY =
             new Embedding(Collections.unmodifiableList(new ArrayList<>()));
 
@@ -43,6 +35,7 @@ public class Embedding<EmbeddingType extends Number> {
     //    /// <exception cref="ArgumentException">Type <typeparamref name="TEmbedding"/> is
     // unsupported.</exception>
     //    /// <exception cref="ArgumentNullException">A <c>null</c> vector is passed in.</exception>
+
     public Embedding() {
         this.vector = Collections.emptyList();
     }
@@ -62,7 +55,7 @@ public class Embedding<EmbeddingType extends Number> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Embedding)) return false;
 
         Embedding<?> embedding = (Embedding<?>) o;
 

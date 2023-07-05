@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.skilldefinition;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -22,7 +23,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.computeIfAbsent(null, mappingFunction);
         }
-        return super.computeIfAbsent(key.toLowerCase(), mappingFunction);
+        return super.computeIfAbsent(key.toLowerCase(Locale.ROOT), mappingFunction);
     }
 
     @Override
@@ -31,7 +32,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.computeIfPresent(null, remappingFunction);
         }
-        return super.computeIfPresent(key.toLowerCase(), remappingFunction);
+        return super.computeIfPresent(key.toLowerCase(Locale.ROOT), remappingFunction);
     }
 
     @Override
@@ -40,7 +41,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.compute(null, remappingFunction);
         }
-        return super.compute(key.toLowerCase(), remappingFunction);
+        return super.compute(key.toLowerCase(Locale.ROOT), remappingFunction);
     }
 
     @Override
@@ -48,7 +49,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.containsKey(null);
         }
-        return super.containsKey(((String) key).toLowerCase());
+        return super.containsKey(((String) key).toLowerCase(Locale.ROOT));
     }
 
     @Override
@@ -56,7 +57,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.get(null);
         }
-        return super.get(((String) key).toLowerCase());
+        return super.get(((String) key).toLowerCase(Locale.ROOT));
     }
 
     @Override
@@ -64,7 +65,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.getOrDefault(null, defaultValue);
         }
-        return super.getOrDefault(((String) key).toLowerCase(), defaultValue);
+        return super.getOrDefault(((String) key).toLowerCase(Locale.ROOT), defaultValue);
     }
 
     @Override
@@ -73,7 +74,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.merge(null, value, remappingFunction);
         }
-        return super.merge(key.toLowerCase(), value, remappingFunction);
+        return super.merge(key.toLowerCase(Locale.ROOT), value, remappingFunction);
     }
 
     @Override
@@ -81,7 +82,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.put(null, value);
         }
-        return super.put(key.toLowerCase(), value);
+        return super.put(key.toLowerCase(Locale.ROOT), value);
     }
 
     @Override
@@ -90,7 +91,8 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
                 m.entrySet().stream()
                         .collect(
                                 Collectors.toMap(
-                                        key -> key.getKey().toLowerCase(), Entry::getValue)));
+                                        key -> key.getKey().toLowerCase(Locale.ROOT),
+                                        Entry::getValue)));
     }
 
     @Override
@@ -98,7 +100,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.putIfAbsent(null, value);
         }
-        return super.putIfAbsent(key.toLowerCase(), value);
+        return super.putIfAbsent(key.toLowerCase(Locale.ROOT), value);
     }
 
     @Override
@@ -106,7 +108,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.remove(null, value);
         }
-        return super.remove(((String) key).toLowerCase(), value);
+        return super.remove(((String) key).toLowerCase(Locale.ROOT), value);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.remove(null);
         }
-        return super.remove(((String) key).toLowerCase());
+        return super.remove(((String) key).toLowerCase(Locale.ROOT));
     }
 
     @Override
@@ -123,7 +125,7 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.replace(null, oldValue, newValue);
         }
-        return super.replace(key.toLowerCase(), oldValue, newValue);
+        return super.replace(key.toLowerCase(Locale.ROOT), oldValue, newValue);
     }
 
     @Override
@@ -131,6 +133,6 @@ public class CaseInsensitiveMap<T> extends HashMap<String, T> {
         if (key == null) {
             return super.replace(null, value);
         }
-        return super.replace(key.toLowerCase(), value);
+        return super.replace(key.toLowerCase(Locale.ROOT), value);
     }
 }

@@ -4,16 +4,18 @@ package com.microsoft.semantickernel.memory;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
+
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /// <summary>
 /// Implementation of <see cref="ISemanticTextMemory"/>./>.
@@ -136,23 +138,28 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
             @Nullable String description,
             @Nullable String additionalMetadata) {
 
-        return this._storage.doesCollectionExistAsync(collection)
-                .map(exists -> {
-                    if (!exists) {
-                        return this._storage.createCollectionAsync(collection);
-                    }
-                    return Mono.empty();
-                })
-                .then(this._embeddingGenerator.generateEmbeddingsAsync(Collections.singletonList(text)))
-                .map(embeddings -> MemoryRecord.referenceRecord(
-                        externalId,
-                        externalSourceName,
-                        description,
-                        (Embedding<Float>) embeddings.iterator().next(),
-                        additionalMetadata,
-                        null,
-                        null)
-                )
+        return this._storage
+                .doesCollectionExistAsync(collection)
+                .map(
+                        exists -> {
+                            if (!exists) {
+                                return this._storage.createCollectionAsync(collection);
+                            }
+                            return Mono.empty();
+                        })
+                .then(
+                        this._embeddingGenerator.generateEmbeddingsAsync(
+                                Collections.singletonList(text)))
+                .map(
+                        embeddings ->
+                                MemoryRecord.referenceRecord(
+                                        externalId,
+                                        externalSourceName,
+                                        description,
+                                        (Embedding<Float>) embeddings.iterator().next(),
+                                        additionalMetadata,
+                                        null,
+                                        null))
                 .flatMap(record -> this._storage.upsertAsync(collection, record));
     }
 

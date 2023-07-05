@@ -2,18 +2,21 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.semanticfunctions.DefaultPromptTemplate;
+import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
+import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,10 +35,12 @@ import javax.annotation.Nullable;
 /// with additional methods required by the kernel.
 /// </summary>
 public class DefaultCompletionSKFunction
-        extends DefaultSemanticSKFunction<CompletionRequestSettings, CompletionSKContext>
+        extends DefaultSemanticSKFunction<CompletionRequestSettings>
         implements CompletionSKFunction {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompletionSKFunction.class);
+
     private final SemanticFunctionConfig functionConfig;
-    private SKSemanticAsyncTask<CompletionSKContext> function;
+    private SKSemanticAsyncTask<SKContext> function;
     private final CompletionRequestSettings requestSettings;
 
     @Nullable private DefaultTextCompletionSupplier aiService;
@@ -107,10 +112,10 @@ public class DefaultCompletionSKFunction
      * @return Aggregated results
      */
     @Override
-    public Mono<CompletionSKContext> aggregatePartitionedResultsAsync(
-            List<String> partitionedInput, @Nullable CompletionSKContext contextIn) {
+    public Mono<SKContext> aggregatePartitionedResultsAsync(
+            List<String> partitionedInput, @Nullable SKContext contextIn) {
 
-        CompletionSKContext context;
+        SKContext context;
         if (contextIn == null) {
             context = buildContext();
         } else {
@@ -119,15 +124,15 @@ public class DefaultCompletionSKFunction
 
         // Function that takes the current context, updates it with the latest input and invokes the
         // function
-        BiFunction<Flux<CompletionSKContext>, String, Flux<CompletionSKContext>> executeNextChunk =
+        BiFunction<Flux<SKContext>, String, Flux<SKContext>> executeNextChunk =
                 (contextInput, input) ->
                         contextInput.flatMap(
                                 newContext -> {
-                                    CompletionSKContext updated = newContext.update(input);
+                                    SKContext updated = newContext.update(input);
                                     return invokeAsync(updated, null);
                                 });
 
-        Mono<List<CompletionSKContext>> results =
+        Mono<List<SKContext>> results =
                 Flux.fromIterable(partitionedInput)
                         .reduceWith(() -> Flux.just(context), executeNextChunk)
                         .flatMap(Flux::collectList);
@@ -140,24 +145,10 @@ public class DefaultCompletionSKFunction
                 .map(context::update);
     }
 
-    @Override
-    public CompletionSKContext buildContext(
-            ContextVariables variables,
-            @Nullable SemanticTextMemory memory,
-            @Nullable ReadOnlySkillCollection skills) {
-        return new DefaultCompletionSKContext(variables, memory, skills);
-    }
-
-    @Override
-    public CompletionSKContext buildContext(SKContext toClone) {
-        return new DefaultCompletionSKContext(
-                toClone.getVariables(), toClone.getSemanticMemory(), toClone.getSkills());
-    }
-
     // Run the semantic function
     @Override
-    protected Mono<CompletionSKContext> invokeAsyncInternal(
-            CompletionSKContext context, @Nullable CompletionRequestSettings settings) {
+    protected Mono<SKContext> invokeAsyncInternal(
+            SKContext context, @Nullable CompletionRequestSettings settings) {
         // TODO
         // this.VerifyIsSemantic();
         // this.ensureContextHasSkills(context);
@@ -188,15 +179,17 @@ public class DefaultCompletionSKFunction
         this.function =
                 (TextCompletion client,
                         CompletionRequestSettings requestSettings,
-                        CompletionSKContext contextInput) -> {
-                    CompletionSKContext context = contextInput.copy();
+                        SKContext contextInput) -> {
+                    SKContext context = contextInput.copy();
                     // TODO
                     // Verify.NotNull(client, "AI LLM backed is empty");
-                    return functionConfig
-                            .getTemplate()
-                            .renderAsync(context, kernel.getPromptTemplateEngine())
+
+                    PromptTemplate func = functionConfig.getTemplate();
+
+                    return func.renderAsync(context)
                             .flatMapMany(
                                     prompt -> {
+                                        LOGGER.debug("RENDERED PROMPT: \n" + prompt);
                                         return client.completeAsync(prompt, requestSettings);
                                     })
                             .single()
@@ -206,15 +199,13 @@ public class DefaultCompletionSKFunction
                                     })
                             .doOnError(
                                     ex -> {
-                                        System.err.println(ex.getMessage());
-                                        ex.printStackTrace();
-                                        // TODO
-                                        /*
-                                        log ?.LogWarning(ex,
-                                            "Something went wrong while rendering the semantic function or while executing the text completion. Function: {0}.{1}. Error: {2}",
-                                            skillName, functionName, ex.Message);
-                                        context.Fail(ex.Message, ex);
-                                         */
+                                        LOGGER.warn(
+                                                "Something went wrong while rendering the semantic"
+                                                        + " function or while executing the text"
+                                                        + " completion. Function: {}.{}. Error: {}",
+                                                getSkillName(),
+                                                getName(),
+                                                ex.getMessage());
                                     });
                 };
 
@@ -236,7 +227,8 @@ public class DefaultCompletionSKFunction
             @Nullable String functionName,
             @Nullable String skillName,
             @Nullable String description,
-            PromptTemplateConfig.CompletionConfig completion) {
+            PromptTemplateConfig.CompletionConfig completion,
+            PromptTemplateEngine promptTemplateEngine) {
 
         if (functionName == null) {
             functionName = randomFunctionName();
@@ -249,14 +241,16 @@ public class DefaultCompletionSKFunction
         PromptTemplateConfig config =
                 new PromptTemplateConfig(description, "completion", completion);
 
-        return createFunction(promptTemplate, config, functionName, skillName);
+        return createFunction(
+                promptTemplate, config, functionName, skillName, promptTemplateEngine);
     }
 
     public static DefaultCompletionSKFunction createFunction(
             String promptTemplate,
             PromptTemplateConfig config,
             String functionName,
-            @Nullable String skillName) {
+            @Nullable String skillName,
+            PromptTemplateEngine promptTemplateEngine) {
         if (functionName == null) {
             functionName = randomFunctionName();
         }
@@ -267,17 +261,23 @@ public class DefaultCompletionSKFunction
         //    Verify.ValidSkillName(skillName);
         // }
 
-        PromptTemplate template = new DefaultPromptTemplate(promptTemplate, config);
+        PromptTemplate template =
+                SKBuilders.promptTemplate()
+                        .withPromptTemplateConfig(config)
+                        .withPromptTemplate(promptTemplate)
+                        .build(promptTemplateEngine);
 
         // Prepare lambda wrapping AI logic
         SemanticFunctionConfig functionConfig = new SemanticFunctionConfig(config, template);
 
-        return createFunction(skillName, functionName, functionConfig);
+        return createFunction(skillName, functionName, functionConfig, promptTemplateEngine);
     }
 
     public static DefaultCompletionSKFunction createFunction(
-            String functionName, SemanticFunctionConfig functionConfig) {
-        return createFunction(null, functionName, functionConfig);
+            String functionName,
+            SemanticFunctionConfig functionConfig,
+            PromptTemplateEngine promptTemplateEngine) {
+        return createFunction(null, functionName, functionConfig, promptTemplateEngine);
     }
 
     /// <summary>
@@ -291,7 +291,8 @@ public class DefaultCompletionSKFunction
     public static DefaultCompletionSKFunction createFunction(
             @Nullable String skillNameFinal,
             String functionName,
-            SemanticFunctionConfig functionConfig) {
+            SemanticFunctionConfig functionConfig,
+            PromptTemplateEngine promptTemplateEngine) {
         String skillName = skillNameFinal;
         // Verify.NotNull(functionConfig, "Function configuration is empty");
         if (skillName == null) {
@@ -302,14 +303,27 @@ public class DefaultCompletionSKFunction
                 CompletionRequestSettings.fromCompletionConfig(
                         functionConfig.getConfig().getCompletionConfig());
 
+        PromptTemplate promptTemplate = functionConfig.getTemplate();
+
         return new DefaultCompletionSKFunction(
                 DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
-                functionConfig.getTemplate().getParameters(),
+                promptTemplate.getParameters(),
                 skillName,
                 functionName,
                 functionConfig.getConfig().getDescription(),
                 requestSettings,
                 functionConfig,
                 null);
+    }
+
+    @Override
+    public FunctionView describe() {
+        return new FunctionView(
+                super.getName(),
+                super.getSkillName(),
+                super.getDescription(),
+                super.getParameters(),
+                true,
+                false);
     }
 }

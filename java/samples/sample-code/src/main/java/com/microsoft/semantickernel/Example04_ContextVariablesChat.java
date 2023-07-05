@@ -1,16 +1,16 @@
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import reactor.core.publisher.Mono;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
-
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
-import reactor.core.publisher.Mono;
 
 /**
  * Chatbot using context variables
@@ -43,10 +43,9 @@ public class Example04_ContextVariablesChat {
                 0.5,
                 0,
                 0,
-                2000,
-                new ArrayList<>()));
+                2000));
 
-    CompletionSKContext readOnlySkContext = chat.buildContext();
+      SKContext readOnlySkContext = SKBuilders.context().build(kernel);
 
     chat("Hi, I'm looking for book suggestions?", chat, readOnlySkContext)
         .flatMap(
@@ -65,14 +64,14 @@ public class Example04_ContextVariablesChat {
         .block();
   }
 
-  private static Mono<CompletionSKContext> chat(
-      String input, CompletionSKFunction chat, CompletionSKContext context)
+  private static Mono<SKContext> chat(
+      String input, CompletionSKFunction chat, SKContext context)
       throws ExecutionException, InterruptedException, TimeoutException {
     context = context.setVariable("user_input", input);
 
     System.out.println("User: " + input);
 
-    CompletionSKContext finalContext = context;
+      SKContext finalContext = context;
     return chat.invokeAsync(context, null)
         .map(
             result -> {
@@ -87,7 +86,7 @@ public class Example04_ContextVariablesChat {
             });
   }
 
-  private static Function<CompletionSKContext, Mono<CompletionSKContext>> chat(
+  private static Function<SKContext, Mono<SKContext>> chat(
       String input, CompletionSKFunction chat) {
     return (context) -> {
       try {

@@ -11,14 +11,32 @@ public class AIException extends SKException {
 
     @Nonnull private final ErrorCodes errorCode;
 
+    /**
+     * Initializes a new instance of the {@link AIException} class.
+     *
+     * @param error The error code.
+     */
     public AIException(@Nonnull ErrorCodes error) {
         this(error, null, null);
     }
 
+    /**
+     * Initializes a new instance of the {@link AIException} class.
+     *
+     * @param errorCode The error code.
+     * @param message The message.
+     */
     public AIException(@Nonnull ErrorCodes errorCode, @Nullable String message) {
         this(errorCode, message, null);
     }
 
+    /**
+     * Initializes a new instance of the {@link AIException} class.
+     *
+     * @param errorCode The error code.
+     * @param message The message.
+     * @param innerException The cause of the exception.
+     */
     public AIException(
             @Nonnull ErrorCodes errorCode,
             @Nullable String message,
@@ -27,19 +45,21 @@ public class AIException extends SKException {
         this.errorCode = errorCode;
     }
 
+    /**
+     * Gets the error code.
+     *
+     * @return The error code.
+     */
     public ErrorCodes getErrorCode() {
         return errorCode;
     }
 
-    /* Translate the error code into a default message */
+    /** Translate the error code into a default message */
     private static String getDefaultMessage(
             @Nonnull ErrorCodes errorCode, @Nullable String message) {
         return String.format("%s: %s", errorCode.getMessage(), message);
     }
 
-    /// <summary>
-    /// Possible error codes for exceptions
-    /// </summary>
     public enum ErrorCodes {
         UnknownError("Unknown error"),
 

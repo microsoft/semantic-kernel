@@ -4,21 +4,26 @@ package com.microsoft.semantickernel.builders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.function.Supplier;
 
 public class ServiceLoadUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceLoadUtil.class);
 
     private ServiceLoadUtil() {}
 
-    public static <T> T findServiceLoader(Class<T> clazz, String alternativeClassName) {
+    public static <T> Supplier<T> findServiceLoader(Class<T> clazz, String alternativeClassName) {
         List<T> services = findAllServiceLoaders(clazz);
+
+        T impl = null;
+
         if (services.size() > 0) {
-            return services.get(0);
+            impl = services.get(0);
         }
 
         try {
@@ -26,7 +31,7 @@ public class ServiceLoadUtil {
             Object instance =
                     Class.forName(alternativeClassName).getDeclaredConstructor().newInstance();
             if (clazz.isInstance(instance)) {
-                return (T) instance;
+                impl = (T) instance;
             }
         } catch (ClassNotFoundException
                 | InvocationTargetException
@@ -37,7 +42,34 @@ public class ServiceLoadUtil {
             LOGGER.error("Unable to load service " + clazz.getName() + " ", e);
         }
 
-        throw new RuntimeException("Service not found: " + clazz.getName());
+        if (impl == null) {
+            throw new RuntimeException("Service not found: " + clazz.getName());
+        }
+
+        try {
+            Constructor<?> constructor = impl.getClass().getConstructor();
+
+            // Test that we can construct the builder
+            if (!clazz.isInstance(constructor.newInstance())) {
+                throw new RuntimeException(
+                        "Builder creates instance of the wrong type: " + clazz.getName());
+            }
+
+            return () -> {
+                try {
+                    return (T) constructor.newInstance();
+                } catch (InstantiationException
+                        | IllegalAccessException
+                        | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(
+                    "Builder requires a no args constructor: " + clazz.getName());
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException("Builder is of wrong type: " + clazz.getName());
+        }
     }
 
     static <T> List<T> findAllServiceLoaders(Class<T> clazz) {

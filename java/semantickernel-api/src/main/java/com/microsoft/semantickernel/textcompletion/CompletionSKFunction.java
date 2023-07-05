@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.textcompletion;
 
-import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
@@ -12,8 +12,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-public interface CompletionSKFunction
-        extends SKFunction<CompletionRequestSettings, CompletionSKContext> {
+public interface CompletionSKFunction extends SKFunction<CompletionRequestSettings> {
 
     /**
      * Method to aggregate partitioned results of a semantic function.
@@ -22,12 +21,8 @@ public interface CompletionSKFunction
      * @param context Semantic Kernel context
      * @return Aggregated results
      */
-    Mono<CompletionSKContext> aggregatePartitionedResultsAsync(
-            List<String> partitionedInput, @Nullable CompletionSKContext context);
-
-    static CompletionSKFunction.Builder builder() {
-        return BuildersSingleton.INST.getFunctionBuilders().completionBuilders(null);
-    }
+    Mono<SKContext> aggregatePartitionedResultsAsync(
+            List<String> partitionedInput, @Nullable SKContext context);
 
     abstract class Builder {
 
@@ -40,7 +35,7 @@ public interface CompletionSKFunction
                 @Nullable String skillName);
 
         public abstract CompletionSKFunction createFunction(
-                String functionName, SemanticFunctionConfig functionConfig);
+                String prompt, PromptTemplateConfig.CompletionConfig functionConfig);
 
         public abstract CompletionSKFunction createFunction(
                 @Nullable String skillNameFinal,

@@ -1,11 +1,9 @@
 package com.microsoft.semantickernel;
 
-import java.io.IOException;
-
-import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+
+import java.io.IOException;
 
 /**
  * Using Semantic Functions stored on disk
@@ -22,30 +20,29 @@ import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
  */
 public class Example02_RunnningPromptsFromFile {
 
-  /**
+    /**
    * Imports skill 'FunSkill' stored in the samples folder and then returns the
    * semantic function 'Joke' within it.
-   *
-   * @param kernel Kernel with Text Completion
-   * @return Joke function
-   */
-  public static CompletionSKFunction getJokeFunction(Kernel kernel) {
-    ReadOnlyFunctionCollection skill = kernel
-        .importSkill("FunSkill", KernelExtensions.importSemanticSkillFromDirectory(
-            "samples/skills", "FunSkill"));
+     *
+     * @param kernel Kernel with Text Completion
+     * @return Joke function
+     */
+    public static CompletionSKFunction getJokeFunction(Kernel kernel) {
+        ReadOnlyFunctionCollection skill = kernel
+                .importSkillFromDirectory("FunSkill", "samples/skills", "FunSkill");
 
-    return skill.getFunction("Joke", CompletionSKFunction.class);
-  }
+        return skill.getFunction("Joke", CompletionSKFunction.class);
+    }
 
-  public static void run(Config.ClientType clientType) throws IOException {
-    Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
-    CompletionSKFunction jokeFunction = getJokeFunction(kernel);
+    public static void run(Config.ClientType clientType) throws IOException {
+        Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
+        CompletionSKFunction jokeFunction = getJokeFunction(kernel);
 
-    System.out.println(jokeFunction.invokeAsync("time travel to dinosaur age").block().getResult());
-  }
+        System.out.println(jokeFunction.invokeAsync("time travel to dinosaur age").block().getResult());
+    }
 
-  public static void main(String args[]) throws IOException {
-    // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
-    run(Config.ClientType.OPEN_AI);
-  }
+    public static void main(String args[]) throws IOException {
+        // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
+        run(Config.ClientType.OPEN_AI);
+    }
 }

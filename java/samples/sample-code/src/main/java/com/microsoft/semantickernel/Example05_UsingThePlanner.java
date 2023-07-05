@@ -1,7 +1,5 @@
 package com.microsoft.semantickernel;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 
 import java.io.IOException;
@@ -9,21 +7,19 @@ import java.io.IOException;
 public class Example05_UsingThePlanner {
 
     public static SequentialPlanner getPlanner(Kernel kernel) {
-        kernel.importSkill("SummarizeSkill", KernelExtensions.importSemanticSkillFromDirectory(
-                "samples/skills", "SummarizeSkill"));
-        kernel.importSkill("WriterSkill", KernelExtensions.importSemanticSkillFromDirectory(
-                "samples/skills", "WriterSkill"));
+        kernel.importSkillFromDirectory("SummarizeSkill", "samples/skills", "SummarizeSkill");
+        kernel.importSkillFromDirectory("WriterSkill", "samples/skills", "WriterSkill");
 
         return new SequentialPlanner(kernel, null, null);
     }
 
-    public static void run (Config.ClientType clientType) throws IOException {
+    public static void run(Config.ClientType clientType) throws IOException {
         Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
 
         SequentialPlanner planner = getPlanner(kernel);
         System.out.println(planner.createPlanAsync(
                 "Write a poem about John Doe, then translate it into Italian.")
-                .block().getResult());
+                .block().invokeAsync().block());
 
         // TODO: execute the plan
     }

@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** An interface for semantic memory that creates and recalls memories associated with text. */
@@ -28,9 +27,9 @@ public interface SemanticTextMemory {
      * @return Unique identifier of the saved memory record.
      */
     public Mono<String> saveInformationAsync(
-            @Nonnull String collection,
-            @Nonnull String text,
-            @Nonnull String externalId,
+            String collection,
+            String text,
+            String externalId,
             @Nullable String description,
             @Nullable String additionalMetadata);
 
@@ -48,10 +47,10 @@ public interface SemanticTextMemory {
      * @return Unique identifier of the saved memory record.
      */
     public Mono<String> saveReferenceAsync(
-            @Nonnull String collection,
-            @Nonnull String text,
-            @Nonnull String externalId,
-            @Nonnull String externalSourceName,
+            String collection,
+            String text,
+            String externalId,
+            String externalSourceName,
             @Nullable String description,
             @Nullable String additionalMetadata);
 
@@ -64,8 +63,7 @@ public interface SemanticTextMemory {
      * @param withEmbedding Whether to return the embedding of the memory found.
      * @return Memory record, or null when nothing is found
      */
-    public Mono<MemoryQueryResult> getAsync(
-            @Nonnull String collection, @Nonnull String key, boolean withEmbedding);
+    public Mono<MemoryQueryResult> getAsync(String collection, String key, boolean withEmbedding);
 
     /**
      * Remove a memory by key. For local memories the key is the "id" used when saving the record.
@@ -75,7 +73,7 @@ public interface SemanticTextMemory {
      * @param key Unique memory record identifier.
      * @return Mono completion.
      */
-    public Mono<Void> removeAsync(@Nonnull String collection, @Nonnull String key);
+    public Mono<Void> removeAsync(String collection, String key);
 
     /**
      * Find some information in memory
@@ -88,8 +86,8 @@ public interface SemanticTextMemory {
      * @return Memories found
      */
     public Mono<List<MemoryQueryResult>> searchAsync(
-            @Nonnull String collection,
-            @Nonnull String query,
+            String collection,
+            String query,
             int limit,
             double minRelevanceScore,
             boolean withEmbeddings);
@@ -102,10 +100,10 @@ public interface SemanticTextMemory {
     public Mono<List<String>> getCollectionsAsync();
 
     interface Builder {
-        Builder setStorage(@Nonnull MemoryStore storage);
+        Builder setStorage(MemoryStore storage);
 
         Builder setEmbeddingGenerator(
-                @Nonnull EmbeddingGeneration<String, ? extends Number> embeddingGenerator);
+                EmbeddingGeneration<String, ? extends Number> embeddingGenerator);
 
         SemanticTextMemory build();
     }

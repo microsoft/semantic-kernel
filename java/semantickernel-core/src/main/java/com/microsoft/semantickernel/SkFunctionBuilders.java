@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -12,13 +13,10 @@ import javax.annotation.Nullable;
 public class SkFunctionBuilders implements FunctionBuilders {
     public SkFunctionBuilders() {}
 
-    public static final CompletionSKFunction.Builder COMPLETION_BUILDERS =
-            new InternalCompletionBuilder(null);
-
     private static class InternalCompletionBuilder extends CompletionSKFunction.Builder {
-        private final @Nullable Kernel kernel;
+        private final Kernel kernel;
 
-        private InternalCompletionBuilder(@Nullable Kernel kernel) {
+        private InternalCompletionBuilder(Kernel kernel) {
             this.kernel = kernel;
         }
 
@@ -37,14 +35,17 @@ public class SkFunctionBuilders implements FunctionBuilders {
                 @Nullable String skillName) {
             return register(
                     DefaultCompletionSKFunction.createFunction(
-                            promptTemplate, config, functionName, skillName));
+                            promptTemplate,
+                            config,
+                            functionName,
+                            skillName,
+                            kernel.getPromptTemplateEngine()));
         }
 
         @Override
         public CompletionSKFunction createFunction(
-                String functionName, SemanticFunctionConfig functionConfig) {
-            return register(
-                    DefaultCompletionSKFunction.createFunction(functionName, functionConfig));
+                String prompt, PromptTemplateConfig.CompletionConfig functionConfig) {
+            return createFunction(prompt, null, null, null, functionConfig);
         }
 
         @Override
@@ -54,7 +55,10 @@ public class SkFunctionBuilders implements FunctionBuilders {
                 SemanticFunctionConfig functionConfig) {
             return register(
                     DefaultCompletionSKFunction.createFunction(
-                            skillNameFinal, functionName, functionConfig));
+                            skillNameFinal,
+                            functionName,
+                            functionConfig,
+                            kernel.getPromptTemplateEngine()));
         }
 
         @Override
@@ -78,19 +82,25 @@ public class SkFunctionBuilders implements FunctionBuilders {
                 @Nullable String skillName,
                 @Nullable String description,
                 PromptTemplateConfig.CompletionConfig completionConfig) {
+            if (kernel == null) {
+                throw new AIException(
+                        AIException.ErrorCodes.InvalidConfiguration,
+                        "Called builder to create a function that");
+            }
 
             return register(
                     DefaultCompletionSKFunction.createFunction(
-                            prompt, functionName, skillName, description, completionConfig));
+                            prompt,
+                            functionName,
+                            skillName,
+                            description,
+                            completionConfig,
+                            kernel.getPromptTemplateEngine()));
         }
     }
 
     @Override
-    public CompletionSKFunction.Builder completionBuilders(@Nullable Kernel kernel) {
-        if (kernel == null) {
-            return COMPLETION_BUILDERS;
-        } else {
-            return new InternalCompletionBuilder(kernel);
-        }
+    public CompletionSKFunction.Builder completionBuilders(Kernel kernel) {
+        return new InternalCompletionBuilder(kernel);
     }
 }

@@ -16,7 +16,12 @@ import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+
 /** Enum singleton that service loads builder implementations */
+@SuppressWarnings("ImmutableEnumChecker")
 public enum BuildersSingleton {
     INST;
 
@@ -27,94 +32,46 @@ public enum BuildersSingleton {
             "com.microsoft.semantickernel.DefaultKernel$Builder";
     private static final String FALLBACK_TEXT_COMPLETION_BUILDER_CLASS =
             "com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion$Builder";
-
     private static final String FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS =
             "com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration$Builder";
     private static final String FALLBACK_SKILL_COLLECTION_BUILDER_CLASS =
-            "com.microsoft.semantickernel.skilldefinition.DefaultCollection$Builder";
-
+            "com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection$Builder";
     private static final String FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS =
             "com.microsoft.semantickernel.semanticfunctions.DefaultPromptTemplate$Builder";
-
     private static final String FALLBACK_VARIABLE_BUILDER_CLASS =
             "com.microsoft.semantickernel.orchestration.DefaultContextVariables$Builder";
-
     private static final String FALLBACK_CONTEXT_BUILDER_CLASS =
-            "com.microsoft.semantickernel.orchestration.DefaultSemanticSKContext$Builder";
+            "com.microsoft.semantickernel.orchestration.DefaultSKContext$Builder";
     private static final String FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS =
             "com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine$Builder";
     private static final String FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS =
             "com.microsoft.semantickernel.memory.DefaultSemanticTextMemory$Builder";
     private static final String FALLBACK_CHAT_COMPLETION_BUILDER_CLASS =
             "com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatCompletion$Builder";
-
     private static final String FALLBACK_MEMORY_STORE_BUILDER_CLASS =
             "com.microsoft.semantickernel.memory.VolatileMemoryStore$Builder";
 
-    private final FunctionBuilders functionBuilders;
-    private final Kernel.InternalBuilder kernelBuilder;
-    private final TextCompletion.Builder textCompletionBuilder;
-    private final EmbeddingGeneration.Builder<String, Float> textEmbeddingGenerationBuilder;
-    private final ReadOnlySkillCollection.Builder readOnlySkillCollection;
-    private final PromptTemplate.Builder promptTemplate;
-    private final ContextVariables.Builder variables;
-    private final SKContext.Builder context;
-    private final PromptTemplateEngine.Builder promptTemplateEngine;
-    private final ChatCompletion.Builder chatCompletion;
-    private final SemanticTextMemory.Builder semanticTextMemoryBuilder;
-    private final MemoryStore.Builder memoryStoreBuilder;
+    private final Map<Class, Supplier> builders = new HashMap<>();
 
     BuildersSingleton() {
         try {
-            functionBuilders =
-                    ServiceLoadUtil.findServiceLoader(
-                            FunctionBuilders.class, FALLBACK_FUNCTION_BUILDER_CLASS);
-
-            kernelBuilder =
-                    ServiceLoadUtil.findServiceLoader(
-                            Kernel.InternalBuilder.class, FALLBACK_KERNEL_BUILDER_CLASS);
-
-            textCompletionBuilder =
-                    ServiceLoadUtil.findServiceLoader(
-                            TextCompletion.Builder.class, FALLBACK_TEXT_COMPLETION_BUILDER_CLASS);
-
-            textEmbeddingGenerationBuilder =
-                    ServiceLoadUtil.findServiceLoader(
-                            EmbeddingGeneration.Builder.class,
-                            FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS);
-
-            readOnlySkillCollection =
-                    ServiceLoadUtil.findServiceLoader(
-                            ReadOnlySkillCollection.Builder.class,
-                            FALLBACK_SKILL_COLLECTION_BUILDER_CLASS);
-
-            promptTemplate =
-                    ServiceLoadUtil.findServiceLoader(
-                            PromptTemplate.Builder.class, FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS);
-
-            variables =
-                    ServiceLoadUtil.findServiceLoader(
-                            ContextVariables.Builder.class, FALLBACK_VARIABLE_BUILDER_CLASS);
-            semanticTextMemoryBuilder =
-                    ServiceLoadUtil.findServiceLoader(
-                            SemanticTextMemory.Builder.class, FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS);
-
-            context =
-                    ServiceLoadUtil.findServiceLoader(
-                            SKContext.Builder.class, FALLBACK_CONTEXT_BUILDER_CLASS);
-
-            promptTemplateEngine =
-                    ServiceLoadUtil.findServiceLoader(
-                            PromptTemplateEngine.Builder.class,
-                            FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS);
-
-            chatCompletion =
-                    ServiceLoadUtil.findServiceLoader(
-                            ChatCompletion.Builder.class, FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
-
-            memoryStoreBuilder =
-                    ServiceLoadUtil.findServiceLoader(
-                            MemoryStore.Builder.class, FALLBACK_MEMORY_STORE_BUILDER_CLASS);
+            registerBuilder(FunctionBuilders.class, FALLBACK_FUNCTION_BUILDER_CLASS);
+            registerBuilder(Kernel.InternalBuilder.class, FALLBACK_KERNEL_BUILDER_CLASS);
+            registerBuilder(TextCompletion.Builder.class, FALLBACK_TEXT_COMPLETION_BUILDER_CLASS);
+            registerBuilder(
+                    EmbeddingGeneration.Builder.class,
+                    FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS);
+            registerBuilder(
+                    ReadOnlySkillCollection.Builder.class, FALLBACK_SKILL_COLLECTION_BUILDER_CLASS);
+            registerBuilder(PromptTemplate.Builder.class, FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS);
+            registerBuilder(ContextVariables.Builder.class, FALLBACK_VARIABLE_BUILDER_CLASS);
+            registerBuilder(SemanticTextMemory.Builder.class, FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS);
+            registerBuilder(SKContext.Builder.class, FALLBACK_CONTEXT_BUILDER_CLASS);
+            registerBuilder(
+                    PromptTemplateEngine.Builder.class,
+                    FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS);
+            registerBuilder(ChatCompletion.Builder.class, FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
+            registerBuilder(MemoryStore.Builder.class, FALLBACK_MEMORY_STORE_BUILDER_CLASS);
 
         } catch (Throwable e) {
             Logger LOGGER = LoggerFactory.getLogger(BuildersSingleton.class);
@@ -141,51 +98,59 @@ public enum BuildersSingleton {
         }
     }
 
+    private void registerBuilder(Class<?> clazz, String fallbackClassName) {
+        builders.put(clazz, ServiceLoadUtil.findServiceLoader(clazz, fallbackClassName));
+    }
+
+    private <T> T getInstance(Class<T> clazz) {
+        return (T) builders.get(clazz).get();
+    }
+
     public FunctionBuilders getFunctionBuilders() {
-        return functionBuilders;
+        return getInstance(FunctionBuilders.class);
     }
 
     public Kernel.InternalBuilder getKernelBuilder() {
-        return kernelBuilder;
+        return getInstance(Kernel.InternalBuilder.class);
     }
 
     public TextCompletion.Builder getTextCompletionBuilder() {
-        return textCompletionBuilder;
+        return getInstance(TextCompletion.Builder.class);
     }
 
     public EmbeddingGeneration.Builder<String, Float> getTextEmbeddingGenerationBuilder() {
-        return textEmbeddingGenerationBuilder;
+        return getInstance(EmbeddingGeneration.Builder.class);
     }
 
     public ReadOnlySkillCollection.Builder getReadOnlySkillCollection() {
-        return readOnlySkillCollection;
+        return getInstance(ReadOnlySkillCollection.Builder.class);
     }
 
     public PromptTemplate.Builder getPromptTemplateBuilder() {
-        return promptTemplate;
+        return getInstance(PromptTemplate.Builder.class);
     }
 
     public PromptTemplateEngine.Builder getPromptTemplateEngineBuilder() {
-        return promptTemplateEngine;
+        return getInstance(PromptTemplateEngine.Builder.class);
     }
 
     public ContextVariables.Builder variables() {
-        return variables;
+        return getInstance(ContextVariables.Builder.class);
     }
 
     public SKContext.Builder context() {
-        return context;
+        return getInstance(SKContext.Builder.class);
     }
 
     public SemanticTextMemory.Builder getSemanticTextMemoryBuilder() {
-        return semanticTextMemoryBuilder;
+        return getInstance(SemanticTextMemory.Builder.class);
     }
 
     public ChatCompletion.Builder getChatCompletion() {
-        return chatCompletion;
+        return getInstance(ChatCompletion.Builder.class);
     }
 
     public MemoryStore.Builder getMemoryStoreBuilder() {
-        return memoryStoreBuilder;
+        return getInstance(MemoryStore.Builder.class);
     }
 }

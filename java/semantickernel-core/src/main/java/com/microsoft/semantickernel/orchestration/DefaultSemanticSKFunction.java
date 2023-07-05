@@ -18,10 +18,9 @@ import javax.annotation.Nullable;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
-public abstract class DefaultSemanticSKFunction<
-                RequestConfiguration, ContextType extends SKContext<ContextType>>
-        extends AbstractSkFunction<RequestConfiguration, ContextType>
-        implements SKFunction<RequestConfiguration, ContextType> {
+public abstract class DefaultSemanticSKFunction<RequestConfiguration>
+        extends AbstractSkFunction<RequestConfiguration>
+        implements SKFunction<RequestConfiguration> {
 
     public DefaultSemanticSKFunction(
             DelegateTypes delegateType,
@@ -34,20 +33,25 @@ public abstract class DefaultSemanticSKFunction<
     }
 
     @Override
-    public Mono<ContextType> invokeAsync(
-            String input, @Nullable ContextType context, @Nullable RequestConfiguration settings) {
+    public Mono<SKContext> invokeAsync(
+            @Nullable String input,
+            @Nullable SKContext context,
+            @Nullable RequestConfiguration settings) {
         if (context == null) {
             assertSkillSupplierRegistered();
             context =
-                    buildContext(
-                            SKBuilders.variables().build(),
-                            NullMemory.getInstance(),
-                            super.getSkillsSupplier().get());
+                    SKBuilders.context()
+                            .with(SKBuilders.variables().build())
+                            .with(NullMemory.getInstance())
+                            .with(super.getSkillsSupplier().get())
+                            .build();
         } else {
             context = context.copy();
         }
 
-        context = context.update(input);
+        if (input != null) {
+            context = context.update(input);
+        }
 
         return this.invokeAsync(context, settings);
     }

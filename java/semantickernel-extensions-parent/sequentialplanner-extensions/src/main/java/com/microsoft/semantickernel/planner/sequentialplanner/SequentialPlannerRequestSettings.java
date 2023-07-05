@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.planner;
+package com.microsoft.semantickernel.planner.sequentialplanner;
 
 import java.util.Collections;
 import java.util.HashSet;

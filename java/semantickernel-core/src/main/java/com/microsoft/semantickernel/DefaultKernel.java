@@ -9,14 +9,12 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
+import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.memory.MemoryConfiguration;
 import com.microsoft.semantickernel.memory.MemoryStore;
+import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
-import com.microsoft.semantickernel.orchestration.RegistrableSkFunction;
-import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.*;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
@@ -26,14 +24,17 @@ import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
 import jakarta.inject.Inject;
+
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class DefaultKernel implements Kernel {
 
@@ -46,7 +47,7 @@ public class DefaultKernel implements Kernel {
     public DefaultKernel(
             KernelConfig kernelConfig,
             PromptTemplateEngine promptTemplateEngine,
-            SemanticTextMemory memory) {
+            @Nullable SemanticTextMemory memoryStore) {
         if (kernelConfig == null) {
             throw new IllegalArgumentException();
         }
@@ -54,13 +55,16 @@ public class DefaultKernel implements Kernel {
         this.kernelConfig = kernelConfig;
         this.promptTemplateEngine = promptTemplateEngine;
         this.defaultSkillCollection = new DefaultSkillCollection();
-        this.memory = memory;
 
-        kernelConfig.getSkills().forEach(this::registerSemanticFunction);
+        if (memoryStore != null) {
+            this.memory = memoryStore.copy();
+        } else {
+            this.memory = new NullMemory();
+        }
     }
 
     @Override
-    public <T> T getService(String serviceId, Class<T> clazz) {
+    public <T> T getService(@Nullable String serviceId, Class<T> clazz) {
         if (TextCompletion.class.isAssignableFrom(clazz)) {
             Function<Kernel, TextCompletion> factory =
                     kernelConfig.getTextCompletionServiceOrDefault(serviceId);
@@ -82,7 +86,7 @@ public class DefaultKernel implements Kernel {
 
             return (T) factory.apply(this);
         } else if (EmbeddingGeneration.class.isAssignableFrom(clazz)) {
-            Function<Kernel, EmbeddingGeneration<String,Float>> factory =
+            Function<Kernel, EmbeddingGeneration<String, Float>> factory =
                     kernelConfig.getTextEmbeddingGenerationServiceOrDefault(serviceId);
             if (factory == null) {
                 throw new KernelException(
@@ -91,7 +95,7 @@ public class DefaultKernel implements Kernel {
             }
 
             return (T) factory.apply(this);
-        }else {
+        } else {
             // TODO correct exception
             throw new NotSupportedException(
                     "The kernel service collection doesn't support the type " + clazz.getName());
@@ -104,10 +108,7 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public <
-                    RequestConfiguration,
-                    ContextType extends SKContext<ContextType>,
-                    FunctionType extends SKFunction<RequestConfiguration, ContextType>>
+    public <RequestConfiguration, FunctionType extends SKFunction<RequestConfiguration>>
             FunctionType registerSemanticFunction(FunctionType func) {
         if (!(func instanceof RegistrableSkFunction)) {
             throw new RuntimeException("This function does not implement RegistrableSkFunction");
@@ -115,6 +116,11 @@ public class DefaultKernel implements Kernel {
         ((RegistrableSkFunction) func).registerOnKernel(this);
         defaultSkillCollection.addSemanticFunction(func);
         return func;
+    }
+
+    @Override
+    public SKFunction<?> getFunction(String skill, String function) {
+        return defaultSkillCollection.getFunction(skill, function, null);
     }
 
     /*
@@ -149,7 +155,10 @@ public class DefaultKernel implements Kernel {
                 .map(
                         (entry) -> {
                             return DefaultCompletionSKFunction.createFunction(
-                                    skillName, entry.getKey(), entry.getValue());
+                                    skillName,
+                                    entry.getKey(),
+                                    entry.getValue(),
+                                    promptTemplateEngine);
                         })
                 .forEach(this::registerSemanticFunction);
 
@@ -163,6 +172,13 @@ public class DefaultKernel implements Kernel {
     @Override
     public ReadOnlyFunctionCollection importSkill(
             Object skillInstance, @Nullable String skillName) {
+        if (skillInstance instanceof String) {
+            throw new KernelException(
+                    KernelException.ErrorCodes.FunctionNotAvailable,
+                    "Called importSkill with a string argument, it is likely the intention was to"
+                            + " call importSkillFromDirectory");
+        }
+
         if (skillName == null || skillName.isEmpty()) {
             skillName = ReadOnlySkillCollection.GlobalSkill;
         }
@@ -204,6 +220,30 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
+    public ReadOnlyFunctionCollection importSkillFromDirectory(
+            String skillName, String parentDirectory, String skillDirectoryName) {
+        Map<String, SemanticFunctionConfig> skills =
+                KernelExtensions.importSemanticSkillFromDirectory(
+                        parentDirectory, skillDirectoryName, promptTemplateEngine);
+        return importSkill(skillName, skills);
+    }
+
+    @Override
+    public void importSkillsFromDirectory(String parentDirectory, String... skillNames) {
+        Arrays.stream(skillNames)
+                .forEach(
+                        skill -> {
+                            importSkillFromDirectory(skill, parentDirectory, skill);
+                        });
+    }
+
+    @Override
+    public ReadOnlyFunctionCollection importSkillFromDirectory(
+            String skillName, String parentDirectory) {
+        return importSkillFromDirectory(skillName, parentDirectory, skillName);
+    }
+
+    @Override
     public PromptTemplateEngine getPromptTemplateEngine() {
         return promptTemplateEngine;
     }
@@ -218,36 +258,47 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public Mono<SKContext<?>> runAsync(SKFunction<?, ?>... pipeline) {
+    public Mono<SKContext> runAsync(SKFunction<?>... pipeline) {
         return runAsync(SKBuilders.variables().build(), pipeline);
     }
 
     @Override
-    public Mono<SKContext<?>> runAsync(String input, SKFunction<?, ?>... pipeline) {
+    public Mono<SKContext> runAsync(String input, SKFunction<?>... pipeline) {
         return runAsync(SKBuilders.variables().build(input), pipeline);
     }
 
     @Override
-    public Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction<?, ?>... pipeline) {
+    public Mono<SKContext> runAsync(ContextVariables variables, SKFunction<?>... pipeline) {
         if (pipeline == null || pipeline.length == 0) {
             throw new SKException("No parameters provided to pipeline");
         }
         // TODO: The SemanticTextMemory can be null, but there should be a way to provide it.
         //       Not sure registerMemory is the right way.
-        Mono<SKContext<?>> pipelineBuilder =
-                Mono.just(pipeline[0].buildContext(variables, null, getSkills()));
+        Mono<SKContext> pipelineBuilder =
+                Mono.just(SKBuilders.context().with(variables).with(getSkills()).build());
 
         for (SKFunction f : Arrays.asList(pipeline)) {
             pipelineBuilder =
-                    pipelineBuilder.flatMap(
-                            newContext -> {
-                                SKContext context =
-                                        f.buildContext(
-                                                newContext.getVariables(),
-                                                newContext.getSemanticMemory(),
-                                                newContext.getSkills());
-                                return f.invokeAsync(context, null);
-                            });
+                    pipelineBuilder
+                            .switchIfEmpty(
+                                    Mono.fromCallable(
+                                            () -> {
+                                                // Previous pipeline did not produce a result
+                                                return SKBuilders.context()
+                                                        .with(variables)
+                                                        .with(getSkills())
+                                                        .build();
+                                            }))
+                            .flatMap(
+                                    newContext -> {
+                                        SKContext context =
+                                                SKBuilders.context()
+                                                        .with(newContext.getVariables())
+                                                        .with(newContext.getSemanticMemory())
+                                                        .with(newContext.getSkills())
+                                                        .build();
+                                        return f.invokeAsync(context, null);
+                                    });
         }
 
         return pipelineBuilder;

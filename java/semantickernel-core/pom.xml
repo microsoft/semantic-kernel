@@ -87,6 +87,11 @@
             <artifactId>sequentialplanner-extensions</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantickernel.extensions</groupId>
+            <artifactId>actionplanner-extension</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>jakarta.inject</groupId>
