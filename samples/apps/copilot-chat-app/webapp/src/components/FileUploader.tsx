@@ -18,7 +18,7 @@ export const FileUploader: React.FC<FileUploaderProps> = forwardRef<HTMLInputEle
         const classes = useClasses();
 
         const onChange = React.useCallback(
-            (event: React.SyntheticEvent<Element>) => {
+            (event: React.SyntheticEvent) => {
                 const target = event.target as HTMLInputElement;
                 const selectedFiles = target.files;
                 event.stopPropagation();
@@ -50,3 +50,5 @@ export const FileUploader: React.FC<FileUploaderProps> = forwardRef<HTMLInputEle
         );
     },
 );
+
+FileUploader.displayName = 'FileUploader';
