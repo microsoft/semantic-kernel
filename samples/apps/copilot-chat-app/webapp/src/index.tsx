@@ -14,15 +14,13 @@ import React from 'react';
 import { getMissingEnvVariables } from './checkEnv';
 import { semanticKernelLightTheme } from './styles';
 
-
 if (!localStorage.getItem('debug')) {
     localStorage.setItem('debug', `${Constants.debug.root}:*`);
 }
 
 let container: HTMLElement | null = null;
 
-
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     if (!container) {
         container = document.getElementById('root');
         if (!container) {
@@ -33,13 +31,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const missingEnvVariables = getMissingEnvVariables();
         const validEnvFile = missingEnvVariables.length === 0;
 
-        var msalInstance: IPublicClientApplication | null = null;
+        let msalInstance: IPublicClientApplication | null = null;
         if (validEnvFile) {
             msalInstance = new PublicClientApplication(AuthHelper.msalConfig);
 
-            msalInstance.handleRedirectPromise().then((response) => {
+            void msalInstance.handleRedirectPromise().then((response) => {
                 if (response) {
-                    msalInstance?.setActiveAccount(response?.account);
+                    msalInstance?.setActiveAccount(response.account);
                 }
             });
         }
@@ -49,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 {!validEnvFile && <MissingEnvVariablesError missingVariables={missingEnvVariables} />}
                 {validEnvFile && (
                     <ReduxProvider store={store}>
+                        {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
                         <MsalProvider instance={msalInstance!}>
                             <FluentProvider className="app-container" theme={semanticKernelLightTheme}>
                                 <App />

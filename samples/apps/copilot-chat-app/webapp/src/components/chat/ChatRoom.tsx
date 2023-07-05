@@ -97,8 +97,8 @@ export const ChatRoom: React.FC = () => {
 
         const chatInput: IChatMessage = {
             timestamp: new Date().getTime(),
-            userId: account?.homeAccountId,
-            userName: (account?.name ?? account?.username) as string,
+            userId: account.homeAccountId,
+            userName: account.name ?? account.username,
             content: options.value,
             type: options.messageType,
             authorRole: AuthorRoles.User,

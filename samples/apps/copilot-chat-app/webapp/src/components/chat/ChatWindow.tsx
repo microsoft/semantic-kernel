@@ -14,8 +14,7 @@ import {
     Popover,
     PopoverSurface,
     PopoverTrigger,
-    SelectTabData,
-    SelectTabEvent,
+    SelectTabEventHandler,
     shorthands,
     Tab,
     TabList,
@@ -23,20 +22,19 @@ import {
     tokens,
     Tooltip,
 } from '@fluentui/react-components';
-import { Edit24Filled, EditRegular, Dismiss16Regular } from '@fluentui/react-icons';
+import { Alert } from '@fluentui/react-components/unstable';
+import { Dismiss16Regular, Edit24Filled, EditRegular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
 import { ChatService } from '../../libs/services/ChatService';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { addAlert } from '../../redux/features/app/appSlice';
-import { removeAlert } from '../../redux/features/app/appSlice';
+import { addAlert, removeAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
 import { ShareBotMenu } from './ShareBotMenu';
-import { Alert } from '@fluentui/react-components/unstable';
 
 const useClasses = makeStyles({
     root: {
@@ -94,7 +92,7 @@ const useClasses = makeStyles({
         fontSize: tokens.fontSizeBase200,
         lineHeight: tokens.lineHeightBase200,
         ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
-    }
+    },
 });
 
 export const ChatWindow: React.FC = () => {
@@ -102,7 +100,7 @@ export const ChatWindow: React.FC = () => {
     const dispatch = useAppDispatch();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
-    const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
+    const [title = '', setTitle] = useState<string | undefined>(selectedId);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const { instance, inProgress } = useMsal();
     const { alerts } = useAppSelector((state: RootState) => state.app);
@@ -111,28 +109,27 @@ export const ChatWindow: React.FC = () => {
 
     const onSave = async () => {
         if (chatName !== title) {
-            try {
-                await chatService.editChatAsync(
-                    conversations[selectedId].id,
-                    title!,
-                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
-                );
+            await chatService.editChatAsync(
+                conversations[selectedId].id,
+                title,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
 
-                dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
-            } catch (e: any) {
-                const errorMessage = `Unable to retrieve chat to change title. Details: ${e.message ?? e}`;
-                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
-            }
+            dispatch(editConversationTitle({ id: selectedId, newTitle: title }));
         }
         setIsEditing(!isEditing);
     };
 
     const [selectedTab, setSelectedTab] = React.useState<TabValue>('chat');
-    const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
+    const onTabSelect: SelectTabEventHandler = (_event, data) => {
         setSelectedTab(data.value);
     };
 
-    const onClose = async () => {
+    const onDismissAlert = (index: number) => {
+        dispatch(removeAlert(index));
+    };
+
+    const onClose = () => {
         setTitle(chatName);
         setIsEditing(!isEditing);
     };
@@ -141,9 +138,14 @@ export const ChatWindow: React.FC = () => {
         setTitle(data.value);
     };
 
-    const handleKeyDown = (event: any) => {
+    const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
         if (event.key === 'Enter') {
-            onSave();
+            onSave().catch((e: any) => {
+                const errorMessage = `Unable to retrieve chat to change title. Details: ${
+                    e instanceof Error ? e.message : String(e)
+                }`;
+                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            });
         }
     };
 
@@ -153,34 +155,30 @@ export const ChatWindow: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedId]);
 
-    const onDismissAlert = (key: string) => {
-        dispatch(removeAlert(key));
-    };
-
     return (
         <div className={classes.root}>
-            {alerts &&
-                Object.keys(alerts).map((key) => {
-                    const alert = alerts[key];
-                    return (
-                        <Alert
-                            intent={alert.type}
-                            action={{
-                                icon: (
-                                    <Dismiss16Regular
-                                        aria-label="dismiss message"
-                                        onClick={() => onDismissAlert(key)}
-                                        color="black"
-                                    />
-                                ),
-                            }}
-                            key={key}
-                            className={mergeClasses(classes.alert, classes.infoAlert)}
-                        >
-                            {alert.message}
-                        </Alert>
-                    );
-                })}
+            {alerts.map(({ type, message }, index) => {
+                return (
+                    <Alert
+                        intent={type}
+                        action={{
+                            icon: (
+                                <Dismiss16Regular
+                                    aria-label="dismiss message"
+                                    onClick={() => {
+                                        onDismissAlert(index);
+                                    }}
+                                    color="black"
+                                />
+                            ),
+                        }}
+                        key={`${index}-${type}`}
+                        className={mergeClasses(classes.alert, classes.infoAlert)}
+                    >
+                        {message}
+                    </Alert>
+                );
+            })}
             <div className={classes.header}>
                 <div className={classes.title}>
                     <Persona
@@ -199,7 +197,7 @@ export const ChatWindow: React.FC = () => {
                                     icon={isEditing ? <Edit24Filled /> : <EditRegular />}
                                     appearance="transparent"
                                     onClick={onClose}
-                                    disabled={title === undefined || !title}
+                                    disabled={!title}
                                     aria-label="Edit conversation name"
                                 />
                             </Tooltip>
@@ -230,7 +228,7 @@ export const ChatWindow: React.FC = () => {
                             <AvatarGroupItem name={user.id} key={user.id} />
                         ))}
                     </AvatarGroupPopover>
-                    <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
+                    <ShareBotMenu chatId={selectedId} chatTitle={title} />
                 </div>
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
