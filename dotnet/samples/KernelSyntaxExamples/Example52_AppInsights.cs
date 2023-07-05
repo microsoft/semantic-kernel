@@ -9,14 +9,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public sealed class Example52_AppInsights
 {
-    private static LogLevel LogLevel = LogLevel.Information;
+    private static LogLevel LogLevel = LogLevel.Trace;
 
     public static async Task RunAsync()
     {
@@ -25,7 +24,7 @@ public sealed class Example52_AppInsights
         var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
 
         var kernel = GetKernel(logger);
-        var planner = GetPlanner(kernel);
+        var planner = GetPlanner(kernel, logger);
 
         using var operation = telemetryClient.StartOperation<DependencyTelemetry>("Planning");
 
@@ -35,7 +34,7 @@ public sealed class Example52_AppInsights
         var plan = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(plan.ToPlanString());
+        Console.WriteLine(plan.ToPlanWithGoalString());
 
         var result = await kernel.RunAsync(plan);
 
@@ -90,8 +89,12 @@ public sealed class Example52_AppInsights
         return kernel;
     }
 
-    private static SequentialPlanner GetPlanner(IKernel kernel, int maxTokens = 1024)
+    private static ISequentialPlanner GetPlanner(IKernel kernel, ILogger logger, int maxTokens = 1024)
     {
-        return new SequentialPlanner(kernel, new SequentialPlannerConfig { MaxTokens = maxTokens });
+        var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
+
+        return SequentialPlannerFactory
+            .GetPlanner(kernel, plannerConfig)
+            .WithInstrumentation(logger);
     }
 }
