@@ -3,9 +3,7 @@
 import { IChatMessage } from '../../../libs/models/ChatMessage';
 import { ChatState } from './ChatState';
 
-export type Conversations = {
-    [key: string]: ChatState;
-};
+export type Conversations = Record<string, ChatState>;
 
 export interface ConversationsState {
     conversations: Conversations;
@@ -19,10 +17,10 @@ export const initialState: ConversationsState = {
     loggedInUserId: '',
 };
 
-export type UpdateConversationPayload = {
+export interface UpdateConversationPayload {
     id: string;
     messages: IChatMessage[];
-};
+}
 
 export interface ConversationTitleChange {
     id: string;

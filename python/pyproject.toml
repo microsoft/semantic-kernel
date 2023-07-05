@@ -18,14 +18,14 @@ regex = "^2023.6.3"
 pre-commit = "3.3.3"
 black = {version = "23.3.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
-pytest = "7.3.2"
-ruff = "0.0.273"
+pytest = "7.4.0"
+ruff = "0.0.275"
 pytest-asyncio = "0.21.0"
 
 [tool.poetry.group.hugging_face.dependencies]
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
-torch = "2.0.1"
+torch = "2.0.0"
 
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.3.23"
@@ -33,6 +33,9 @@ chromadb = "^0.3.23"
 
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = "^3.18.0"
+
+[tool.poetry.group.pinecone.dependencies]
+pinecone-client = "^2.2.2"
 
 [tool.isort]
 profile = "black"

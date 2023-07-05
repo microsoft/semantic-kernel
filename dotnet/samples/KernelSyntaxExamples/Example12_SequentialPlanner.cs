@@ -20,6 +20,48 @@ internal static class Example12_SequentialPlanner
         await EmailSamplesAsync();
         await BookSamplesAsync();
         await MemorySampleAsync();
+        await PlanNotPossibleSampleAsync();
+    }
+
+    private static async Task PlanNotPossibleSampleAsync()
+    {
+        Console.WriteLine("======== Sequential Planner - Plan Not Possible ========");
+        var kernel = InitializeKernelAndPlanner(out var planner);
+
+        // Load additional skills to enable planner but not enough for the given goal.
+        string folder = RepoFiles.SampleSkillsPath();
+        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+
+        try
+        {
+            await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
+        }
+        catch (PlanningException e)
+        {
+            Console.WriteLine(e.Message);
+            // Create plan error: Not possible to create plan for goal with available functions.
+            // Goal:Write a poem about John Doe, then translate it into Italian.
+            // Functions:
+            // SummarizeSkill.MakeAbstractReadable:
+            //   description: Given a scientific white paper abstract, rewrite it to make it more readable
+            //   inputs:
+            //     - input:
+
+            // SummarizeSkill.Notegen:
+            //   description: Automatically generate compact notes for any text or text document.
+            //   inputs:
+            //     - input:
+
+            // SummarizeSkill.Summarize:
+            //   description: Summarize given text or any text document
+            //   inputs:
+            //     - input: Text to summarize
+
+            // SummarizeSkill.Topics:
+            //   description: Analyze given text or document and extract key topics worth remembering
+            //   inputs:
+            //     - input:
+        }
     }
 
     private static async Task PoetrySamplesAsync()
@@ -137,14 +179,14 @@ internal static class Example12_SequentialPlanner
 
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithAzureTextCompletionService(
-                        Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                        Env.Var("AZURE_OPENAI_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_KEY"))
+            .WithAzureChatCompletionService(
+                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_CHAT_KEY"))
             .WithAzureTextEmbeddingGenerationService(
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                        Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -164,11 +206,11 @@ internal static class Example12_SequentialPlanner
 
         kernel.ImportSkill(new EmailSkill(), "email");
         kernel.ImportSkill(new StaticTextSkill(), "statictext");
-        kernel.ImportSkill(new Microsoft.SemanticKernel.CoreSkills.TextSkill(), "coretext");
+        kernel.ImportSkill(new Microsoft.SemanticKernel.Skills.Core.TextSkill(), "coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
-        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.78 });
+        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.5 });
 
         var plan = await planner.CreatePlanAsync(goal);
 
@@ -180,10 +222,10 @@ internal static class Example12_SequentialPlanner
     {
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+            .WithAzureChatCompletionService(
+                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+                Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
+                Env.Var("AZURE_OPENAI_CHAT_KEY"))
             .Build();
 
         planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { MaxTokens = maxTokens });
