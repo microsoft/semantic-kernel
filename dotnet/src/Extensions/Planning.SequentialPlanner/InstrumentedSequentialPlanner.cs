@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -38,16 +39,29 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 
         var stopwatch = Stopwatch.StartNew();
 
-        var plan = await this._planner.CreatePlanAsync(goal).ConfigureAwait(false);
+        try
+        {
+            var plan = await this._planner.CreatePlanAsync(goal).ConfigureAwait(false);
 
-        stopwatch.Stop();
+            this._logger.LogInformation("Plan creation status: {Status}", "Success");
+            this._logger.LogTrace("Created plan: \n {Plan}", plan.ToPlanString());
 
-        this._logger.LogTrace("Created plan: \n {Plan}", plan.ToPlanString());
-        this._logger.LogInformation("Plan creation finished in {ElapsedMilliseconds}ms.", stopwatch.ElapsedMilliseconds);
+            return plan;
+        }
+        catch (Exception ex)
+        {
+            this._logger.LogInformation("Plan creation status: {Status}", "Failed");
+            this._logger.LogError(ex, "Plan creation exception details: {Message}", ex.Message);
+            throw;
+        }
+        finally
+        {
+            stopwatch.Stop();
 
-        this._meter.TrackMetric(CreatePlanExecutionTimeMetricName, stopwatch.ElapsedMilliseconds);
+            this._logger.LogInformation("Plan creation finished in {ElapsedMilliseconds}ms.", stopwatch.ElapsedMilliseconds);
 
-        return plan;
+            this._meter.TrackMetric(CreatePlanExecutionTimeMetricName, stopwatch.ElapsedMilliseconds);
+        }
     }
 
     #region private ================================================================================
