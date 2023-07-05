@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.microsoft.semantickernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.0-beta-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>https://www.github.com/microsoft/semantic-kernel</url>
 
@@ -602,7 +602,7 @@
                                 <licenseHeader>
                                     <content>// Copyright (c) Microsoft. All rights reserved.</content>
                                 </licenseHeader>
-                                <toggleOffOn />
+                                <toggleOffOn/>
                             </java>
                         </configuration>
                     </plugin>
@@ -628,5 +628,87 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>release</id>
+            <properties>
+                <maven.compiler.source>1.8</maven.compiler.source>
+                <maven.compiler.target>1.8</maven.compiler.target>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <javadoc>true</javadoc>
+                            <sources>true</sources>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <configuration>
+                            <tagNameFormat>java-@{project.version}</tagNameFormat>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </reporting>
+
+            <repositories>
+                <repository>
+                    <id>${releaseRepoId}</id>
+                    <url>${releaseRepoUrl}</url>
+                    <name>${releaseRepoName}</name>
+                </repository>
+            </repositories>
+            <distributionManagement>
+                <repository>
+                    <id>${releaseRepoId}</id>
+                    <url>${releaseRepoUrl}</url>
+                    <name>${releaseRepoName}</name>
+                </repository>
+            </distributionManagement>
+
+        </profile>
     </profiles>
+
+    <scm>
+        <url>https://github.com/microsoft/semantic-kernel</url>
+        <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
+        <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
+    </scm>
 </project>
