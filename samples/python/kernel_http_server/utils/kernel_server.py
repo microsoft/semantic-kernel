@@ -57,9 +57,9 @@ class KernelServer:
         result = await sk_func.invoke_async(variables=context_var)
 
         if result.error_occurred:
-            logging.error("Error occurred: %s", result.error)
+            logging.error("Error occurred: %s", result.last_error_description)
             return func.HttpResponse(
-                body=json.dumps({"error": result.error}),
+                body=json.dumps({"error": result.last_error_description}),
                 mimetype="application/json",
                 status_code=500,
             )

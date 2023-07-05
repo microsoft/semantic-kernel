@@ -22,7 +22,7 @@ async def create_plan(req: func.HttpRequest) -> func.HttpResponse:
     kernel_server = KernelServer()
     return await kernel_server.create_plan(req)
 
-@app.route(route="planner/executeplan/{maxSteps}", methods=["POST"])
+@app.route(route="planner/execute/{maxSteps}", methods=["POST"])
 async def execute_plan(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Execute Plan Request")
     kernel_server = KernelServer()
