@@ -17,6 +17,7 @@ class ChatRequestSettings:
     frequency_penalty: float = 0.0
     number_of_responses: int = 1
     max_tokens: int = 256
+    token_selection_biases: dict[int, int] = dict()
 
     def update_from_completion_config(
         self, completion_config: "PromptTemplateConfig.CompletionConfig"
