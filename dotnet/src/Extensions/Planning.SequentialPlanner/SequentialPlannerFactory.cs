@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics.Metering;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
@@ -29,9 +30,13 @@ public static class SequentialPlannerFactory
     /// </summary>
     /// <param name="planner">Instance of <see cref="ISequentialPlanner"/> to decorate.</param>
     /// <param name="logger">Optional logger.</param>
+    /// <param name="meter">Optional meter.</param>
     /// <returns>Instance of <see cref="ISequentialPlanner"/>.</returns>
-    public static ISequentialPlanner WithInstrumentation(this ISequentialPlanner planner, ILogger? logger = null)
+    public static ISequentialPlanner WithInstrumentation(
+        this ISequentialPlanner planner,
+        ILogger? logger = null,
+        IMeter? meter = null)
     {
-        return new InstrumentedSequentialPlanner(planner, logger);
+        return new InstrumentedSequentialPlanner(planner, logger, meter);
     }
 }

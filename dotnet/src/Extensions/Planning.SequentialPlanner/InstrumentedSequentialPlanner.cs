@@ -52,7 +52,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 
     #region private ================================================================================
 
-    private const string CreatePlanExecutionTimeMetricName = "sk.sequential_planner.create_plan.ms";
+    private const string CreatePlanExecutionTimeMetricName = "sk.sequentialPlanner.createPlan.ms";
 
     private readonly ISequentialPlanner _planner;
     private readonly ILogger _logger;
