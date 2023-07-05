@@ -41,6 +41,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        this.Logger.LogInformation("OpenAI Model ID: {ModelId}", this.ModelId);
         return this.InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
     }
 
@@ -50,6 +51,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        this.Logger.LogInformation("OpenAI Model ID: {ModelId}", this.ModelId);
         return this.InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
     }
 
@@ -65,6 +67,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        this.Logger.LogInformation("OpenAI Model ID: {ModelId}", this.ModelId);
         return this.InternalGetChatStreamingResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 
@@ -74,6 +77,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        this.Logger.LogInformation("OpenAI Model ID: {ModelId}", this.ModelId);
         return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 }

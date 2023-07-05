@@ -31,7 +31,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         string endpoint,
         string apiKey,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -56,13 +56,13 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="logger">Application logger</param>
     private protected AzureOpenAIClientBase(
         string modelId,
         string endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null,
-        ILogger? log = null)
+        ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(endpoint);

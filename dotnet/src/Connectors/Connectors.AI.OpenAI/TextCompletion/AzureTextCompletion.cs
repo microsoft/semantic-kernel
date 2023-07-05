@@ -57,6 +57,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
+        this.Logger.LogInformation("Azure OpenAI Deployment Name: {DeploymentName}", this.ModelId);
         return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
     }
 
@@ -66,6 +67,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
+        this.Logger.LogInformation("Azure OpenAI Deployment Name: {DeploymentName}", this.ModelId);
         return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
     }
 }
