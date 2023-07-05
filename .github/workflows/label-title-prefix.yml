@@ -34,7 +34,7 @@ jobs:
             labelAdded = '${{ github.event.label.name }}'
             
             // Write the contents of context to console
-            core.info(JSON.stringify(context, null, 2));}}'
+            core.info(JSON.stringify(context, null, 2))
           
             // Get the event name, title and labels
             let title
