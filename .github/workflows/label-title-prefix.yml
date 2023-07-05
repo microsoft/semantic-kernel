@@ -1,4 +1,4 @@
-name: Add title prefix
+name: Label title prefix
 on:
   issues:
     types: [ labeled ]
@@ -79,12 +79,17 @@ jobs:
                   });
                   break              
                 case 'pull_request':
-                  github.rest.pulls.update({
-                    pull_number: context.issue.number,
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    title: title
-                  });
+                  try {
+                    github.rest.pulls.update({
+                      pull_number: context.issue.number,
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      title: title
+                    });
+                  }
+                  catch (err) {
+                    core.info("Update PR title failed: " + err.message)
+                  }
                   break
                 default:
                   core.setFailed('Unrecognited eventName: ' + context.eventName)
