@@ -149,10 +149,23 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 <>
                     Would you like to proceed with the plan?
                     <div className={classes.buttons}>
-                        <Button data-testid="cancelPlanButton" appearance="secondary" onClick={() => onPlanAction(PlanState.PlanRejected)}>
+                        <Button
+                            data-testid="cancelPlanButton"
+                            appearance="secondary"
+                            onClick={() => {
+                                void onPlanAction(PlanState.PlanRejected);
+                            }}
+                        >
                             No, cancel plan
                         </Button>
-                        <Button data-testid="proceedWithPlanButton" type="submit" appearance="primary" onClick={() => onPlanAction(PlanState.PlanApproved)}>
+                        <Button
+                            data-testid="proceedWithPlanButton"
+                            type="submit"
+                            appearance="primary"
+                            onClick={() => {
+                                void onPlanAction(PlanState.PlanApproved);
+                            }}
+                        >
                             Yes, proceed
                         </Button>
                     </div>

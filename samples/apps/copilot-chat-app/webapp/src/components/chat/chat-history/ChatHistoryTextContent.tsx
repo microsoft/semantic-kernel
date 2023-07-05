@@ -19,7 +19,7 @@ interface ChatHistoryTextContentProps {
 export const ChatHistoryTextContent: React.FC<ChatHistoryTextContentProps> = ({ message }) => {
     const classes = useClasses();
 
-    var content = message.content.trim()
+    let content = message.content.trim()
         .replace(/[\u00A0-\u9999<>&]/g, function (i: string) {
             return `&#${i.charCodeAt(0)};`;
         });
