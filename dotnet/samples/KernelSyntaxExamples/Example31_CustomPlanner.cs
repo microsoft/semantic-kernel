@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 internal static class Example31_CustomPlanner
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         Console.WriteLine("======== Custom Planner - Create and Execute Markup Plan ========");
         IKernel kernel = InitializeKernel();
@@ -114,7 +115,7 @@ internal static class Example31_CustomPlanner
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSkill(new TimeSkill(), "time");
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        var bing = new WebSearchEngineSkill(new BingConnector(Env.Var("BING_API_KEY")));
+        var bing = new WebSearchEngineSkill(new BingConnector(config.GetValue<string>("BING_API_KEY")));
 #pragma warning restore CA2000 // Dispose objects before losing scope
         var search = kernel.ImportSkill(bing, "bing");
 
@@ -126,13 +127,13 @@ internal static class Example31_CustomPlanner
         return new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AzureOpenAI__DeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"))
+                config.GetValue<string>("AzureOpenAI__DeploymentName"),
+                config.GetValue<string>("AzureOpenAI__Endpoint"),
+                config.GetValue<string>("AzureOpenAI__ApiKey"))
             .WithAzureTextEmbeddingGenerationService(
-                Env.Var("AzureOpenAIEmbeddings__DeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"))
+                config.GetValue<string>("AzureOpenAIEmbeddings__DeploymentName"),
+                config.GetValue<string>("AzureOpenAI__Endpoint"),
+                config.GetValue<string>("AzureOpenAI__ApiKey"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
     }

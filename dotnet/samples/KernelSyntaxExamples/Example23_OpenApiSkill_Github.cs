@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -21,9 +22,9 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example23_OpenApiSkill_GitHub
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
-        var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(Env.Var("Github__PAT")); });
+        var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(config.GetValue<string>("Github__PAT")); });
         Console.WriteLine("== Example22_c_OpenApiSkill_GitHub ==");
         var firstPRNumber = await ListPullRequestsFromGitHubAsync(authenticationProvider);
         await GetPullRequestFromGitHubAsync(authenticationProvider, firstPRNumber);

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
@@ -14,9 +15,9 @@ public static class Example39_Postgres
 {
     private const string MemoryCollectionName = "postgres_test";
 
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
-        NpgsqlDataSourceBuilder dataSourceBuilder = new(Env.Var("Postgres__ConnectionString"));
+        NpgsqlDataSourceBuilder dataSourceBuilder = new(config.GetValue<string>("Postgres__ConnectionString"));
         dataSourceBuilder.UseVector();
         using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 
@@ -25,11 +26,11 @@ public static class Example39_Postgres
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService(
-                modelId: Env.Var("OpenAI__ModelId"),
-                apiKey: Env.Var("OpenAI__ApiKey"))
+                modelId: config.GetValue<string>("OpenAI__ModelId"),
+                apiKey: config.GetValue<string>("OpenAI__ApiKey"))
             .WithOpenAITextEmbeddingGenerationService(
-                modelId: Env.Var("OpenAI__EmbeddingModelId"),
-                apiKey: Env.Var("OpenAI__ApiKey"))
+                modelId: config.GetValue<string>("OpenAI__EmbeddingModelId"),
+                apiKey: config.GetValue<string>("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
             //.WithPostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public") // This method offers an alternative approach to registering Postgres memory store.
             .Build();

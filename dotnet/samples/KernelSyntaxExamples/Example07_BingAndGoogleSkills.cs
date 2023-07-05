@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -19,39 +20,70 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example07_BingAndGoogleSkills
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
+        string? openAIModelId = config.GetValue<string>("OpenAI__ModelId");
+        string? openAIApiKey = config.GetValue<string>("OpenAI__ApiKey");
+
+        if (openAIModelId == null || openAIApiKey == null)
+        {
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            return;
+        }
+
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService(
+                modelId: openAIModelId,
+                apiKey: openAIApiKey)
             .Build();
 
         // Load Bing skill
-        using var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
-        kernel.ImportSkill(new WebSearchEngineSkill(bingConnector), "bing");
+        string? bingApiKey = config.GetValue<string>("Bing__ApiKey");
+
+        if (bingApiKey == null)
+        {
+            Console.WriteLine("Bing credentials not found. Skipping example.");
+        }
+        else
+        {
+            using var bingConnector = new BingConnector(bingApiKey);
+            var bing = new WebSearchEngineSkill(bingConnector);
+            var search = kernel.ImportSkill(bing, "bing");
+            await Example1Async(kernel, "bing");
+            await Example2Async(kernel);
+        }
 
         // Load Google skill
-        using var googleConnector = new GoogleConnector(Env.Var("GOOGLE_API_KEY"), Env.Var("GOOGLE_SEARCH_ENGINE_ID"));
-        kernel.ImportSkill(new WebSearchEngineSkill(googleConnector), "google");
+        string? googleApiKey = config.GetValue<string>("GOOGLE_API_KEY");
+        string? googleSearchEngineId = config.GetValue<string>("GOOGLE_SEARCH_ENGINE_ID");
 
-        await Example1Async(kernel);
-        await Example2Async(kernel);
+        if (googleApiKey == null || googleSearchEngineId == null)
+        {
+            Console.WriteLine("Google credentials not found. Skipping example.");
+        }
+        else
+        {
+            using var googleConnector = new GoogleConnector(
+                apiKey: googleApiKey,
+                searchEngineId: googleSearchEngineId);
+            var google = new WebSearchEngineSkill(googleConnector);
+            var search = kernel.ImportSkill(new WebSearchEngineSkill(googleConnector), "google");
+            await Example1Async(kernel, "google");
+        }
     }
 
-    private static async Task Example1Async(IKernel kernel)
+    private static async Task Example1Async(IKernel kernel, string searchSkillId)
     {
         Console.WriteLine("======== Bing and Google Search Skill ========");
 
         // Run
         var question = "What's the largest building in the world?";
-        var bingResult = await kernel.Func("bing", "search").InvokeAsync(question);
-        var googleResult = await kernel.Func("google", "search").InvokeAsync(question);
+        var result = await kernel.Func(searchSkillId, "search").InvokeAsync(question);
 
         Console.WriteLine(question);
-        Console.WriteLine("----");
-        Console.WriteLine(bingResult);
-        Console.WriteLine("----");
-        Console.WriteLine(googleResult);
+        Console.WriteLine($"----{searchSkillId}----");
+        Console.WriteLine(result);
 
         /* OUTPUT:
 

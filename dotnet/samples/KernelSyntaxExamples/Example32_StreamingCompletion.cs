@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
@@ -12,7 +13,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example32_StreamingCompletion
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         await AzureOpenAITextCompletionStreamAsync();
         await OpenAITextCompletionStreamAsync();
@@ -23,9 +24,9 @@ public static class Example32_StreamingCompletion
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
         var textCompletion = new AzureTextCompletion(
-                Env.Var("AzureOpenAI__DeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"));
+                config.GetValue<string>("AzureOpenAI__DeploymentName"),
+                config.GetValue<string>("AzureOpenAI__Endpoint"),
+                config.GetValue<string>("AzureOpenAI__ApiKey"));
 
         await TextCompletionStreamAsync(textCompletion);
     }
@@ -34,7 +35,7 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
 
-        var textCompletion = new OpenAITextCompletion("text-davinci-003", Env.Var("OpenAI__ApiKey"));
+        var textCompletion = new OpenAITextCompletion("text-davinci-003", config.GetValue<string>("OpenAI__ApiKey"));
 
         await TextCompletionStreamAsync(textCompletion);
     }

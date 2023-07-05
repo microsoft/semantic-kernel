@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Redis;
@@ -13,20 +14,20 @@ public static class Example47_Redis
 {
     private const string MemoryCollectionName = "redis-test";
 
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
-        string configuration = Env.Var("Redis__Configuration");
+        string configuration = config.GetValue<string>("Redis__Configuration");
         using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configuration);
         IDatabase database = connectionMultiplexer.GetDatabase();
         RedisMemoryStore memoryStore = new(database, vectorSize: 1536);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService(
-                modelId: Env.Var("OpenAI__ModelId"),
-                apiKey: Env.Var("OpenAI__ApiKey"))
+                modelId: config.GetValue<string>("OpenAI__ModelId"),
+                apiKey: config.GetValue<string>("OpenAI__ApiKey"))
             .WithOpenAITextEmbeddingGenerationService(
-                modelId: Env.Var("OpenAI__EmbeddingModelId"),
-                apiKey: Env.Var("OpenAI__ApiKey"))
+                modelId: config.GetValue<string>("OpenAI__EmbeddingModelId"),
+                apiKey: config.GetValue<string>("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
             .Build();
 

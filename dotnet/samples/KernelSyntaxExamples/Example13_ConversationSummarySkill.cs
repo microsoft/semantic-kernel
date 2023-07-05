@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -121,7 +122,7 @@ John: You're welcome. I'm glad we could help. Goodbye!
 Jane: Goodbye!
 ";
 
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         await ConversationSummarySkillAsync();
         await GetConversationActionItemsAsync();
@@ -181,9 +182,9 @@ Jane: Goodbye!
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AzureOpenAI__DeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"))
+                config.GetValue<string>("AzureOpenAI__DeploymentName"),
+                config.GetValue<string>("AzureOpenAI__Endpoint"),
+                config.GetValue<string>("AzureOpenAI__ApiKey"))
         .Build();
 
         return kernel;

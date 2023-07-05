@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
@@ -49,7 +50,7 @@ the chamber. He came like a protecting spirit to the poor girl, who committed he
 interment of his friend he conducted her to Geneva and placed her under the protection of a relation.Two years
 after this event Caroline became his wife.""";
 
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         await GroundednessCheckingSkill();
         await PlanningWithGroundedness();
@@ -61,9 +62,9 @@ after this event Caroline became his wife.""";
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AzureOpenAI__DeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"))
+                config.GetValue<string>("AzureOpenAI__DeploymentName"),
+                config.GetValue<string>("AzureOpenAI__Endpoint"),
+                config.GetValue<string>("AzureOpenAI__ApiKey"))
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -126,9 +127,9 @@ which are not grounded in the original.
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AzureOpenAI__DeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"))
+                config.GetValue<string>("AzureOpenAI__DeploymentName"),
+                config.GetValue<string>("AzureOpenAI__Endpoint"),
+                config.GetValue<string>("AzureOpenAI__ApiKey"))
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();

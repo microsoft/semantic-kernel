@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Skills.Core;
@@ -14,13 +15,24 @@ public static class Example06_TemplateLanguage
     /// Show how to invoke a Native Function written in C#
     /// from a Semantic Function written in natural language
     /// </summary>
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         Console.WriteLine("======== TemplateLanguage ========");
 
+        string? openAIModelId = config.GetValue<string>("OpenAI__ModelId");
+        string? openAIApiKey = config.GetValue<string>("OpenAI__ApiKey");
+
+        if (openAIModelId == null || openAIApiKey == null)
+        {
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            return;
+        }
+
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService(
+                modelId: openAIModelId,
+                apiKey: openAIApiKey)
             .Build();
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates

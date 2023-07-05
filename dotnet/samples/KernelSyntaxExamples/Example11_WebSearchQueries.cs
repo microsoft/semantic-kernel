@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -9,7 +10,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example11_WebSearchQueries
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         Console.WriteLine("======== WebSearchQueries ========");
 

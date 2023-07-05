@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -19,7 +20,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example51_StepwisePlanner
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         string[] questions = new string[]
         {
@@ -52,7 +53,7 @@ public static class Example51_StepwisePlanner
 
     public static async Task RunWithQuestion(IKernel kernel, string question)
     {
-        using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
+        using var bingConnector = new BingConnector(config.GetValue<string>("BING_API_KEY"));
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
@@ -95,18 +96,18 @@ public static class Example51_StepwisePlanner
         if (useChat)
         {
             builder.WithAzureChatCompletionService(
-                Env.Var("AzureOpenAI__ChatDeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"),
+                config.GetValue<string>("AzureOpenAI__ChatDeploymentName"),
+                config.GetValue<string>("AzureOpenAI__Endpoint"),
+                config.GetValue<string>("AzureOpenAI__ApiKey"),
                 alsoAsTextCompletion: true,
                 setAsDefault: true);
         }
         else
         {
             builder.WithAzureTextCompletionService(
-                Env.Var("AzureOpenAI__DeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"));
+                config.GetValue<string>("AzureOpenAI__DeploymentName"),
+                config.GetValue<string>("AzureOpenAI__Endpoint"),
+                config.GetValue<string>("AzureOpenAI__ApiKey"));
         }
 
         var kernel = builder

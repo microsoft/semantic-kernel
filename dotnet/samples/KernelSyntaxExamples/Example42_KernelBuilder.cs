@@ -7,6 +7,7 @@
 #pragma warning disable CA1852
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,12 +30,12 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
 {
-    public static void Run()
+    public static void Run(IConfigurationRoot config)
     {
-        string azureOpenAIKey = Env.Var("AzureOpenAI__ApiKey");
-        string azureOpenAIEndpoint = Env.Var("AzureOpenAI__Endpoint");
-        string azureOpenAITextCompletionDeployment = Env.Var("AzureOpenAI__DeploymentName");
-        string azureOpenAIEmbeddingDeployment = Env.Var("AzureOpenAIEmbeddings__DeploymentName");
+        string azureOpenAIKey = config.GetValue<string>("AzureOpenAI__ApiKey");
+        string azureOpenAIEndpoint = config.GetValue<string>("AzureOpenAI__Endpoint");
+        string azureOpenAITextCompletionDeployment = config.GetValue<string>("AzureOpenAI__DeploymentName");
+        string azureOpenAIEmbeddingDeployment = config.GetValue<string>("AzureOpenAIEmbeddings__DeploymentName");
 
 #pragma warning disable CA1852 // Seal internal types
         IKernel kernel1 = Kernel.Builder.Build();

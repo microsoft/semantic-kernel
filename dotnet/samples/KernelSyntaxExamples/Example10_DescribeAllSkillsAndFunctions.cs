@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
@@ -17,14 +18,14 @@ public static class Example10_DescribeAllSkillsAndFunctions
     /// list of parameters, parameters descriptions, etc.
     /// See the end of the file for a sample of what the output looks like.
     /// </summary>
-    public static void Run()
+    public static void Run(IConfigurationRoot config)
     {
         Console.WriteLine("======== Describe all skills and functions ========");
 
         var kernel = Kernel.Builder
             .WithOpenAITextCompletionService(
-                modelId: Env.Var("OpenAI__ModelId"),
-                apiKey: Env.Var("OpenAI__ApiKey"))
+                modelId: config.GetValue<string>("OpenAI__ModelId"),
+                apiKey: config.GetValue<string>("OpenAI__ApiKey"))
             .Build();
 
         // Import a native skill

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -11,7 +12,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example21_ChatGptPlugins
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         await RunChatGptPluginAsync();
     }

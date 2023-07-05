@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
@@ -23,7 +24,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example26_AADAuth
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         Console.WriteLine("======== SK with AAD Auth ========");
 

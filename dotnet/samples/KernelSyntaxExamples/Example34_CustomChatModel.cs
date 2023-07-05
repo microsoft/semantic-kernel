@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -99,7 +100,7 @@ public enum MyRoles
 // ReSharper disable once InconsistentNaming
 public static class Example34_CustomChatModel
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         await CustomChatStreamSampleAsync();
         await CustomChatSampleAsync();

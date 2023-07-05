@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -13,7 +14,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example17_ChatGPT
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         await AzureOpenAIChatSampleAsync();
         await OpenAIChatSampleAsync();
@@ -51,7 +52,7 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== Open AI - ChatGPT ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OpenAI__ApiKey"));
+        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", config.GetValue<string>("OpenAI__ApiKey"));
 
         await StartChatAsync(openAIChatCompletion);
     }
@@ -61,9 +62,9 @@ public static class Example17_ChatGPT
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
         AzureChatCompletion azureChatCompletion = new(
-            Env.Var("AzureOpenAI__ChatDeploymentName"),
-            Env.Var("AzureOpenAI__Endpoint"),
-            Env.Var("AzureOpenAI__ApiKey"));
+            config.GetValue<string>("AzureOpenAI__ChatDeploymentName"),
+            config.GetValue<string>("AzureOpenAI__Endpoint"),
+            config.GetValue<string>("AzureOpenAI__ApiKey"));
 
         await StartChatAsync(azureChatCompletion);
     }

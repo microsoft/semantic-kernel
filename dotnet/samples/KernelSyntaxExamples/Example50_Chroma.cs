@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
@@ -12,20 +13,20 @@ public static class Example50_Chroma
 {
     private const string MemoryCollectionName = "chroma-test";
 
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
-        string endpoint = Env.Var("CHROMA_ENDPOINT");
+        string endpoint = config.GetValue<string>("CHROMA_ENDPOINT");
 
         var memoryStore = new ChromaMemoryStore(endpoint);
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService(
-                modelId: Env.Var("OpenAI__ModelId"),
-                apiKey: Env.Var("OpenAI__ApiKey"))
+                modelId: config.GetValue<string>("OpenAI__ModelId"),
+                apiKey: config.GetValue<string>("OpenAI__ApiKey"))
             .WithOpenAITextEmbeddingGenerationService(
-                modelId: Env.Var("OpenAI__EmbeddingModelId"),
-                apiKey: Env.Var("OpenAI__ApiKey"))
+                modelId: config.GetValue<string>("OpenAI__EmbeddingModelId"),
+                apiKey: config.GetValue<string>("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
             //.WithChromaMemoryStore(endpoint) // This method offers an alternative approach to registering Chroma memory store.
             .Build();

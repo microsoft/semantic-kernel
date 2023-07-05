@@ -3,6 +3,7 @@
 // ReSharper disable once InconsistentNaming
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -12,7 +13,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example09_FunctionTypes
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         Console.WriteLine("======== Native function types ========");
 
@@ -20,7 +21,7 @@ public static class Example09_FunctionTypes
 
         var kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService(Env.Var("OpenAI__ModelId"), Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService(config.GetValue<string>("OpenAI__ModelId"), config.GetValue<string>("OpenAI__ApiKey"))
             .Build();
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates

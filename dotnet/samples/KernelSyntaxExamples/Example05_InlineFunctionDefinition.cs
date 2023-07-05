@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
@@ -8,9 +9,18 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example05_InlineFunctionDefinition
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         Console.WriteLine("======== Inline Function Definition ========");
+
+        string? openAIModelId = config.GetValue<string>("OpenAI__ModelId");
+        string? openAIApiKey = config.GetValue<string>("OpenAI__ApiKey");
+
+        if (openAIModelId == null || openAIApiKey == null)
+        {
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            return;
+        }
 
         /*
          * Example: normally you would place prompt templates in a folder to separate
@@ -20,7 +30,9 @@ public static class Example05_InlineFunctionDefinition
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService(
+                modelId: openAIModelId,
+                apiKey: openAIApiKey)
             .Build();
 
         // Function defined using few-shot design pattern

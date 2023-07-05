@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -10,12 +11,12 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example28_ActionPlanner
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         Console.WriteLine("======== Action Planner ========");
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OpenAI__ApiKey"))// Note: Action Planner works with old models like text-davinci-002
+            .WithOpenAITextCompletionService("text-davinci-002", config.GetValue<string>("OpenAI__ApiKey"))// Note: Action Planner works with old models like text-davinci-002
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();

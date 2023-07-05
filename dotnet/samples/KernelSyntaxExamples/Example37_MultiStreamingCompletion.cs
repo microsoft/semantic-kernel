@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -15,7 +16,7 @@ public static class Example37_MultiStreamingCompletion
 {
     private static readonly object s_lockObject = new();
 
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         await AzureOpenAIMultiTextCompletionStreamAsync();
         await OpenAITextCompletionStreamAsync();
@@ -26,9 +27,9 @@ public static class Example37_MultiStreamingCompletion
         Console.WriteLine("======== Azure OpenAI - Multiple Text Completion - Raw Streaming ========");
 
         var textCompletion = new AzureTextCompletion(
-            Env.Var("AzureOpenAI__DeploymentName"),
-            Env.Var("AzureOpenAI__Endpoint"),
-            Env.Var("AzureOpenAI__ApiKey"));
+            config.GetValue<string>("AzureOpenAI__DeploymentName"),
+            config.GetValue<string>("AzureOpenAI__Endpoint"),
+            config.GetValue<string>("AzureOpenAI__ApiKey"));
 
         await TextCompletionStreamAsync(textCompletion);
     }
@@ -39,7 +40,7 @@ public static class Example37_MultiStreamingCompletion
 
         ITextCompletion textCompletion = new OpenAITextCompletion(
             "text-davinci-003",
-            Env.Var("OpenAI__ApiKey"));
+            config.GetValue<string>("OpenAI__ApiKey"));
 
         await TextCompletionStreamAsync(textCompletion);
     }

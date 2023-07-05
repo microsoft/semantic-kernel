@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -48,7 +49,7 @@ using Resources;
 // ReSharper disable once InconsistentNaming
 public static class Example30_ChatWithPrompts
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         Console.WriteLine("======== Chat with prompts ========");
 
@@ -65,7 +66,7 @@ public static class Example30_ChatWithPrompts
         // Usual kernel initialization, with GPT 3.5 Turbo
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OpenAI__ApiKey"), serviceId: "chat")
+            .WithOpenAIChatCompletionService("gpt-3.5-turbo", config.GetValue<string>("OpenAI__ApiKey"), serviceId: "chat")
             .Build();
 
         // As an example, we import the time skill, which is used in system prompt to read the current date.

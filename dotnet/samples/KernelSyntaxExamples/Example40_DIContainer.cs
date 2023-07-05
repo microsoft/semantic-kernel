@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -17,7 +18,7 @@ using RepoUtils;
  */
 public static class Example40_DIContainer
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         await UseKernelInDIPowerAppAsync();
 
@@ -43,7 +44,7 @@ public static class Example40_DIContainer
         {
             return Kernel.Builder
             .WithLogger(serviceProvider.GetRequiredService<ILogger>())
-            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService("text-davinci-002", config.GetValue<string>("OpenAI__ApiKey"))
             .Build();
         });
 
@@ -72,7 +73,7 @@ public static class Example40_DIContainer
 
         //Registering AI services Kernel is going to use
         var aiServicesCollection = new AIServiceCollection();
-        aiServicesCollection.SetService<ITextCompletion>(() => new OpenAITextCompletion("text-davinci-002", Env.Var("OpenAI__ApiKey")));
+        aiServicesCollection.SetService<ITextCompletion>(() => new OpenAITextCompletion("text-davinci-002", config.GetValue<string>("OpenAI__ApiKey")));
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();

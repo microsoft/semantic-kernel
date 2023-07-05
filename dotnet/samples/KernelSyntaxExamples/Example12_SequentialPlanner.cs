@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -14,7 +15,7 @@ using Skills;
 // ReSharper disable once InconsistentNaming
 internal static class Example12_SequentialPlanner
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         await PoetrySamplesAsync();
         await EmailSamplesAsync();
@@ -70,9 +71,9 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AzureOpenAI__DeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"))
+                config.GetValue<string>("AzureOpenAI__DeploymentName"),
+                config.GetValue<string>("AzureOpenAI__Endpoint"),
+                config.GetValue<string>("AzureOpenAI__ApiKey"))
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -180,13 +181,13 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureChatCompletionService(
-                Env.Var("AzureOpenAI__CHAT_DEPLOYMENT_NAME"),
-                Env.Var("AzureOpenAI__CHAT_ENDPOINT"),
-                Env.Var("AzureOpenAI__CHAT_KEY"))
+                config.GetValue<string>("AzureOpenAI__CHAT_DEPLOYMENT_NAME"),
+                config.GetValue<string>("AzureOpenAI__CHAT_ENDPOINT"),
+                config.GetValue<string>("AzureOpenAI__CHAT_KEY"))
             .WithAzureTextEmbeddingGenerationService(
-                Env.Var("AzureOpenAIEmbeddings__DeploymentName"),
-                Env.Var("AzureOpenAI__Endpoint"),
-                Env.Var("AzureOpenAI__ApiKey"))
+                config.GetValue<string>("AzureOpenAIEmbeddings__DeploymentName"),
+                config.GetValue<string>("AzureOpenAI__Endpoint"),
+                config.GetValue<string>("AzureOpenAI__ApiKey"))
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -223,9 +224,9 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureChatCompletionService(
-                Env.Var("AzureOpenAI__CHAT_DEPLOYMENT_NAME"),
-                Env.Var("AzureOpenAI__CHAT_ENDPOINT"),
-                Env.Var("AzureOpenAI__CHAT_KEY"))
+                config.GetValue<string>("AzureOpenAI__CHAT_DEPLOYMENT_NAME"),
+                config.GetValue<string>("AzureOpenAI__CHAT_ENDPOINT"),
+                config.GetValue<string>("AzureOpenAI__CHAT_KEY"))
             .Build();
 
         planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { MaxTokens = maxTokens });

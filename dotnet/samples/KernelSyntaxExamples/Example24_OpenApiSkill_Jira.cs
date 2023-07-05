@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example24_OpenApiSkill_Jira
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         var contextVariables = new ContextVariables();
@@ -32,7 +33,7 @@ public static class Example24_OpenApiSkill_Jira
         IDictionary<string, ISKFunction> jiraSkills;
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
-            string s = Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("Jira__ApiKey");
+            string s = config.GetValue<string>("MY_EMAIL_ADDRESS") + ":" + config.GetValue<string>("Jira__ApiKey");
             return Task.FromResult(s);
         });
 

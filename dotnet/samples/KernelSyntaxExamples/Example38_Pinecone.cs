@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -20,17 +21,17 @@ public static class Example38_Pinecone
 {
     private const string MemoryCollectionName = "pinecone-test";
 
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
-        string apiKey = Env.Var("Pinecone__ApiKey");
-        string pineconeEnvironment = Env.Var("Pinecone__Environment");
+        string apiKey = config.GetValue<string>("Pinecone__ApiKey");
+        string pineconeEnvironment = config.GetValue<string>("Pinecone__Environment");
 
         PineconeMemoryStore memoryStore = new(pineconeEnvironment, apiKey);
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService(Env.Var("OpenAI__ModelId"), Env.Var("OpenAI__ApiKey"))
-            .WithOpenAITextEmbeddingGenerationService(Env.Var("OpenAI__EmbeddingModelId"), Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService(config.GetValue<string>("OpenAI__ModelId"), config.GetValue<string>("OpenAI__ApiKey"))
+            .WithOpenAITextEmbeddingGenerationService(config.GetValue<string>("OpenAI__EmbeddingModelId"), config.GetValue<string>("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
             //.WithPineconeMemoryStore(pineconeEnvironment, apiKey) // This method offers an alternative approach to registering Pinecone memory storage.
             .Build();

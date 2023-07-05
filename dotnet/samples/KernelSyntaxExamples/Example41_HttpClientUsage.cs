@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -12,10 +13,10 @@ using RepoUtils;
 
 public static class Example41_HttpClientUsage
 {
-    private static string openAIApiKey = Env.Var("OpenAI__ApiKey");
-    private static string openAIModelId = Env.Var("OpenAI__ModelId");
+    private static string openAIApiKey = config.GetValue<string>("OpenAI__ApiKey");
+    private static string openAIModelId = config.GetValue<string>("OpenAI__ModelId");
 
-    public static void Run()
+    public static void Run(IConfigurationRoot config)
     {
         //Examples showing how to use HttpClient.
         UseDefaultHttpClientAsync();

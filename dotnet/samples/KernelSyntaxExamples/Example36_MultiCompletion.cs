@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
@@ -12,7 +13,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example36_MultiCompletion
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         await AzureOpenAIMultiTextCompletionAsync();
         await OpenAIMultiTextCompletionAsync();
@@ -23,9 +24,9 @@ public static class Example36_MultiCompletion
         Console.WriteLine("======== Azure OpenAI - Multiple Text Completion ========");
 
         var textCompletion = new AzureTextCompletion(
-            Env.Var("AzureOpenAI__DeploymentName"),
-            Env.Var("AzureOpenAI__Endpoint"),
-            Env.Var("AzureOpenAI__ApiKey"));
+            config.GetValue<string>("AzureOpenAI__DeploymentName"),
+            config.GetValue<string>("AzureOpenAI__Endpoint"),
+            config.GetValue<string>("AzureOpenAI__ApiKey"));
 
         await TextCompletionAsync(textCompletion);
     }
@@ -36,7 +37,7 @@ public static class Example36_MultiCompletion
 
         ITextCompletion textCompletion = new OpenAITextCompletion(
             "text-davinci-003",
-            Env.Var("OpenAI__ApiKey"));
+            config.GetValue<string>("OpenAI__ApiKey"));
 
         await TextCompletionAsync(textCompletion);
     }

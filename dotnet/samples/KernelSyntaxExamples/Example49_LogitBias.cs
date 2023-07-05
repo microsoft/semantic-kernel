@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -14,9 +15,9 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example49_LogitBias
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
-        OpenAIChatCompletion chatCompletion = new("gpt-3.5-turbo", Env.Var("OpenAI__ApiKey"));
+        OpenAIChatCompletion chatCompletion = new("gpt-3.5-turbo", config.GetValue<string>("OpenAI__ApiKey"));
 
         // To use Logit Bias you will need to know the token ids of the words you want to use.
         // Getting the token ids using the GPT Tokenizer: https://platform.openai.com/tokenizer

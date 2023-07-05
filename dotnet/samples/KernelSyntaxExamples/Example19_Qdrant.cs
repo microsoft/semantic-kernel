@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -12,15 +13,15 @@ public static class Example19_Qdrant
 {
     private const string MemoryCollectionName = "qdrant-test";
 
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
-        QdrantMemoryStore memoryStore = new(Env.Var("Qdrant__Endpoint"), 1536, ConsoleLogger.Log);
+        QdrantMemoryStore memoryStore = new(config.GetValue<string>("Qdrant__Endpoint"), 1536, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService("text-davinci-003", config.GetValue<string>("OpenAI__ApiKey"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", config.GetValue<string>("OpenAI__ApiKey"))
             .WithMemoryStorage(memoryStore)
-            //.WithQdrantMemoryStore(Env.Var("Qdrant__Endpoint"), 1536) // This method offers an alternative approach to registering Qdrant memory store.
+            //.WithQdrantMemoryStore(config.GetValue<string>("Qdrant__Endpoint"), 1536) // This method offers an alternative approach to registering Qdrant memory store.
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");

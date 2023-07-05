@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -10,18 +11,34 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example04_CombineLLMPromptsAndNativeCode
 {
-    public static async Task RunAsync()
+    public static async Task RunAsync(IConfigurationRoot config)
     {
         Console.WriteLine("======== LLMPrompts ========");
 
+        string? openAIApiKey = config.GetValue<string>("OpenAI__ApiKey");
+
+        if (openAIApiKey == null)
+        {
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            return;
+        }
+
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OpenAI__ApiKey"), serviceId: "text-davinci-002")
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OpenAI__ApiKey"))
+            .WithOpenAITextCompletionService("text-davinci-002", openAIApiKey, serviceId: "text-davinci-002")
+            .WithOpenAITextCompletionService("text-davinci-003", openAIApiKey)
             .Build();
 
         // Load native skill
-        using var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
+        string? bingApiKey = config.GetValue<string>("Bing__ApiKey");
+
+        if (bingApiKey == null)
+        {
+            Console.WriteLine("Bing credentials not found. Skipping example.");
+            return;
+        }
+
+        using var bingConnector = new BingConnector(bingApiKey);
         var bing = new WebSearchEngineSkill(bingConnector);
         var search = kernel.ImportSkill(bing, "bing");
 
