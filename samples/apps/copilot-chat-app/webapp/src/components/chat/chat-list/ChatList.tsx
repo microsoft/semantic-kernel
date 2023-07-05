@@ -12,31 +12,31 @@ import {
 } from '@fluentui/react-components';
 import { bundleIcon, Dismiss20Filled, Dismiss20Regular, Filter20Filled, Filter20Regular } from '@fluentui/react-icons';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { AlertType } from '../../../libs/models/AlertType';
+import { Bot } from '../../../libs/models/Bot';
 import { ChatMessageType } from '../../../libs/models/ChatMessage';
+import { useChat } from '../../../libs/useChat';
+import { useFile } from '../../../libs/useFile';
 import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { addAlert } from '../../../redux/features/app/appSlice';
 import { Conversations } from '../../../redux/features/conversations/ConversationsState';
 import { Breakpoints } from '../../../styles';
+import { FileUploader } from '../../FileUploader';
 import { ChatListItem } from './ChatListItem';
 import { NewBotMenu } from './NewBotMenu';
-import { useFile } from '../../../libs/useFile';
-import { Bot } from '../../../libs/models/Bot';
-import { addAlert } from '../../../redux/features/app/appSlice';
-import { useChat } from '../../../libs/useChat';
-import { AlertType } from '../../../libs/models/AlertType';
-import { FileUploader } from '../../FileUploader';
 
 const useClasses = makeStyles({
     root: {
         display: 'flex',
-        flexShrink:0,
+        flexShrink: 0,
         width: '320px',
         backgroundColor: tokens.colorNeutralBackground4,
         flexDirection: 'column',
         ...shorthands.overflow('hidden'),
         ...Breakpoints.small({
-            width: "64px"
+            width: '64px',
         }),
     },
     list: {
@@ -72,8 +72,8 @@ const useClasses = makeStyles({
         }),
     },
     botsHeader: {
-        marginTop:0,
-        marginBottom:tokens.spacingVerticalSNudge,
+        marginTop: 0,
+        marginBottom: tokens.spacingVerticalSNudge,
         marginLeft: tokens.spacingHorizontalXL,
         marginRight: tokens.spacingHorizontalXL,
         fontWeight: tokens.fontWeightRegular,
@@ -109,16 +109,15 @@ export const ChatList: FC = () => {
 
     const sortConversations = (conversations: Conversations): Conversations => {
         // sort conversations by last activity
-        var sortedIds =  Object.keys(conversations)
-            .sort((a, b) => {
-                if (conversations[a].lastUpdatedTimestamp === undefined) {
-                    return 1;
-                }
-                if (conversations[b].lastUpdatedTimestamp === undefined) {
-                    return -1;
-                }
-                return conversations[a].lastUpdatedTimestamp! - conversations[b].lastUpdatedTimestamp!;
-            });
+        const sortedIds = Object.keys(conversations).sort((a, b) => {
+            if (conversations[a].lastUpdatedTimestamp === undefined) {
+                return 1;
+            }
+            if (conversations[b].lastUpdatedTimestamp === undefined) {
+                return -1;
+            }
+            return conversations[a].lastUpdatedTimestamp! - conversations[b].lastUpdatedTimestamp!;
+        });
 
         // Add conversations to sortedConversations in the order of sortedIds.
         const sortedConversations: Conversations = {};
@@ -133,14 +132,13 @@ export const ChatList: FC = () => {
         if (filterText !== '') {
             // Reapply search string to the updated conversations list.
             const filteredConversations: Conversations = {};
-            for (var key in conversations) {
+            for (const key in conversations) {
                 if (conversations[key].title.toLowerCase().includes(filterText.toLowerCase())) {
                     filteredConversations[key] = conversations[key];
                 }
             }
             setConversationsView(filteredConversations);
-        }
-        else {
+        } else {
             // If no search string, show full conversations list.
             setConversationsView(sortConversations(conversations));
         }
@@ -155,7 +153,7 @@ export const ChatList: FC = () => {
         setIsFiltering(false);
     };
 
-    const onSearch = (ev: any, data: InputOnChangeData) => {
+    const onSearch = (ev: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
         ev.preventDefault();
         setFilterText(data.value);
     };
@@ -163,14 +161,15 @@ export const ChatList: FC = () => {
     const fileUploaderRef = useRef<HTMLInputElement>(null);
     const onUpload = useCallback(
         (file: File) => {
-            console.log("asdf")
-            fileHandler
-                .loadFile<Bot>(file, chat.uploadBot)
-                .catch((error) =>
-                    dispatch(
-                        addAlert({ message: `Failed to parse uploaded file. ${error.message}`, type: AlertType.Error }),
-                    ),
-                );
+            console.log('asdf');
+            fileHandler.loadFile<Bot>(file, chat.uploadBot).catch((error) =>
+                dispatch(
+                    addAlert({
+                        message: `Failed to parse uploaded file. ${error instanceof Error ? error.message : ''}`,
+                        type: AlertType.Error,
+                    }),
+                ),
+            );
         },
         [fileHandler, chat, dispatch],
     );
@@ -188,10 +187,10 @@ export const ChatList: FC = () => {
                         <NewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
 
                         <FileUploader
-                                ref={fileUploaderRef}
-                                acceptedExtensions={['.txt', '.json']}
-                                onSelectedFile={onUpload}
-                            />
+                            ref={fileUploaderRef}
+                            acceptedExtensions={['.txt', '.json']}
+                            onSelectedFile={onUpload}
+                        />
                     </>
                 )}
                 {isFiltering && (
@@ -206,7 +205,9 @@ export const ChatList: FC = () => {
                     </>
                 )}
             </div>
-            <Text as="h3" className={classes.botsHeader}>Your bots</Text>
+            <Text as="h3" className={classes.botsHeader}>
+                Your bots
+            </Text>
             <div aria-label={'chat list'} className={classes.list}>
                 {Object.keys(conversationsView).map((id) => {
                     const convo = conversationsView[id];
@@ -227,7 +228,7 @@ export const ChatList: FC = () => {
                                         ? 'Sent a file'
                                         : isPlan(lastMessage.content)
                                         ? 'Click to view proposed plan'
-                                        : (lastMessage.content as string)
+                                        : lastMessage.content
                                     : 'Click to start the chat'
                             }
                             botProfilePicture={convo.botProfilePicture}

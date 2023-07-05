@@ -27,5 +27,8 @@
   },
   "Bing": {
     "ApiKey": ""
+  },
+  "Postgres": {
+    "ConnectionString": ""
   }
 }

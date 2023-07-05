@@ -2,7 +2,7 @@
 # This workflow will build and run all unit tests.
 #
 
-name: dotnet-ci
+name: dotnet-ci-windows
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ jobs:
   dotnet-build-and-test:
     strategy:
         matrix:
-          os: [ubuntu-latest, windows-latest]
+          os: [windows-latest]
           configuration: [Release, Debug]
           dotnet-version: ['6.0.x']
     runs-on: ${{ matrix.os }}

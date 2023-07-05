@@ -3,7 +3,13 @@
 import { FC, useState } from 'react';
 
 import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tooltip } from '@fluentui/react-components';
-import { ArrowUploadRegular, BotAdd20Filled, BotAdd20Regular, PeopleTeamAddRegular, bundleIcon } from '@fluentui/react-icons';
+import {
+    ArrowUploadRegular,
+    BotAdd20Filled,
+    BotAdd20Regular,
+    PeopleTeamAddRegular,
+    bundleIcon,
+} from '@fluentui/react-icons';
 import { useChat } from '../../../libs/useChat';
 import { InvitationJoinDialog } from '../invitation-dialog/InvitationJoinDialog';
 
@@ -11,20 +17,17 @@ interface NewBotMenuProps {
     onFileUpload: () => void;
 }
 
-export const NewBotMenu: FC<NewBotMenuProps> = ({
-    onFileUpload
-}) => {
+export const NewBotMenu: FC<NewBotMenuProps> = ({ onFileUpload }) => {
     const chat = useChat();
     // It needs to keep the menu open to keep the FileUploader reference
     // when the file uploader is clicked.
     const [isJoiningBot, setIsJoiningBot] = useState(false);
 
-    const BotAdd20 = bundleIcon(BotAdd20Filled, BotAdd20Regular)
+    const BotAdd20 = bundleIcon(BotAdd20Filled, BotAdd20Regular);
 
     const onAddChat = () => {
-        chat.createChat();
+        void chat.createChat();
     };
-
     const onJoinClick = () => {
         setIsJoiningBot(true);
     };
@@ -35,13 +38,10 @@ export const NewBotMenu: FC<NewBotMenuProps> = ({
 
     return (
         <div>
-            <Menu >
+            <Menu>
                 <MenuTrigger disableButtonEnhancement>
                     <Tooltip content="Create new conversation" relationship="label">
-                        <Button
-                            icon={<BotAdd20 />}
-                            appearance="transparent"
-                        />
+                        <Button icon={<BotAdd20 />} appearance="transparent" />
                     </Tooltip>
                 </MenuTrigger>
                 <MenuPopover>
@@ -49,10 +49,7 @@ export const NewBotMenu: FC<NewBotMenuProps> = ({
                         <MenuItem icon={<BotAdd20Regular />} onClick={onAddChat}>
                             Add a new Bot
                         </MenuItem>
-                        <MenuItem
-                            icon={<ArrowUploadRegular />}
-                            onClick={onFileUpload}
-                        >
+                        <MenuItem icon={<ArrowUploadRegular />} onClick={onFileUpload}>
                             <div>Upload a Bot</div>
                         </MenuItem>
                         <MenuItem icon={<PeopleTeamAddRegular />} onClick={onJoinClick}>
