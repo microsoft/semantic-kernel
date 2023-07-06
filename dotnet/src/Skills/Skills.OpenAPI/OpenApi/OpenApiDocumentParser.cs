@@ -11,6 +11,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
@@ -24,8 +26,17 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 /// </summary>
 internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenApiDocumentParser"/> class.
+    /// </summary>
+    /// <param name="logger">Optional logger instance.</param>
+    public OpenApiDocumentParser(ILogger? logger = null)
+    {
+        this._logger = logger ?? NullLogger.Instance;
+    }
+
     /// <inheritdoc/>
-    public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, CancellationToken cancellationToken = default)
+    public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, bool ignoreNonCompliantErrors = false, CancellationToken cancellationToken = default)
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
@@ -33,10 +44,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
-        if (result.OpenApiDiagnostic.Errors.Any())
-        {
-            throw new OpenApiDocumentParsingException($"Parsing of '{result.OpenApiDocument.Info?.Title}' OpenAPI document failed. Details: {string.Join(";", result.OpenApiDiagnostic.Errors)}");
-        }
+        this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
         return ExtractRestApiOperations(result.OpenApiDocument);
     }
@@ -67,10 +75,8 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         "text/plain"
     };
 
-    /// <summary>
-    /// An instance of the OpenApiStreamReader class.
-    /// </summary>
     private readonly OpenApiStreamReader _openApiReader = new();
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
@@ -370,6 +376,29 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
             default:
                 throw new OpenApiDocumentParsingException($"The value type - {value.PrimitiveType} is not supported.");
+        }
+    }
+
+    /// <summary>
+    /// Asserts the successful reading of OpenAPI document.
+    /// </summary>
+    /// <param name="readResult">The reading results to be checked.</param>
+    /// <param name="ignoreNonCompliantErrors">Flag indicating whether to ignore non-compliant errors.
+    /// If set to true, the parser will not throw exceptions for non-compliant documents.
+    /// Please note that enabling this option may result in incomplete or inaccurate parsing results.
+    /// </param>
+    private void AssertReadingSuccessful(ReadResult readResult, bool ignoreNonCompliantErrors)
+    {
+        if (readResult.OpenApiDiagnostic.Errors.Any())
+        {
+            var message = $"Parsing of '{readResult.OpenApiDocument.Info?.Title}' OpenAPI document complete with the following errors: {string.Join(";", readResult.OpenApiDiagnostic.Errors)}";
+
+            this._logger.LogWarning("{Message}", message);
+
+            if (!ignoreNonCompliantErrors)
+            {
+                throw new OpenApiDocumentParsingException(message);
+            }
         }
     }
 

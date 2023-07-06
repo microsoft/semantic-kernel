@@ -2,6 +2,8 @@
 
 import { useMsal } from '@azure/msal-react';
 import {
+    AvatarGroupItem,
+    AvatarGroupPopover,
     Button,
     Input,
     InputOnChangeData,
@@ -11,8 +13,7 @@ import {
     Popover,
     PopoverSurface,
     PopoverTrigger,
-    SelectTabData,
-    SelectTabEvent,
+    SelectTabEventHandler,
     shorthands,
     Tab,
     TabList,
@@ -85,7 +86,7 @@ export const ChatWindow: React.FC = () => {
     const dispatch = useAppDispatch();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
-    const [title, setTitle] = useState<string | undefined>(selectedId ?? undefined);
+    const [title = '', setTitle] = useState<string | undefined>(selectedId);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const { instance, inProgress } = useMsal();
 
@@ -93,28 +94,23 @@ export const ChatWindow: React.FC = () => {
 
     const onSave = async () => {
         if (chatName !== title) {
-            try {
-                await chatService.editChatAsync(
-                    conversations[selectedId].id,
-                    title!,
-                    await AuthHelper.getSKaaSAccessToken(instance, inProgress),
-                );
+            await chatService.editChatAsync(
+                conversations[selectedId].id,
+                title,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
 
-                dispatch(editConversationTitle({ id: selectedId ?? '', newTitle: title ?? '' }));
-            } catch (e: any) {
-                const errorMessage = `Unable to retrieve chat to change title. Details: ${e.message ?? e}`;
-                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
-            }
+            dispatch(editConversationTitle({ id: selectedId, newTitle: title }));
         }
         setIsEditing(!isEditing);
     };
 
     const [selectedTab, setSelectedTab] = React.useState<TabValue>('chat');
-    const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
+    const onTabSelect: SelectTabEventHandler = (_event, data) => {
         setSelectedTab(data.value);
     };
 
-    const onClose = async () => {
+    const onClose = () => {
         setTitle(chatName);
         setIsEditing(!isEditing);
     };
@@ -123,9 +119,14 @@ export const ChatWindow: React.FC = () => {
         setTitle(data.value);
     };
 
-    const handleKeyDown = (event: any) => {
+    const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
         if (event.key === 'Enter') {
-            onSave();
+            onSave().catch((e: any) => {
+                const errorMessage = `Unable to retrieve chat to change title. Details: ${
+                    e instanceof Error ? e.message : String(e)
+                }`;
+                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            });
         }
     };
 
@@ -155,7 +156,7 @@ export const ChatWindow: React.FC = () => {
                                     icon={isEditing ? <Edit24Filled /> : <EditRegular />}
                                     appearance="transparent"
                                     onClick={onClose}
-                                    disabled={title === undefined || !title}
+                                    disabled={!title}
                                     aria-label="Edit conversation name"
                                 />
                             </Tooltip>
@@ -181,7 +182,12 @@ export const ChatWindow: React.FC = () => {
                     </TabList>
                 </div>
                 <div className={classes.controls}>
-                    <ShareBotMenu chatId={selectedId} chatTitle={title || ''} />
+                    <AvatarGroupPopover>
+                        {conversations[selectedId].users.map((user) => (
+                            <AvatarGroupItem name={user.id} key={user.id} />
+                        ))}
+                    </AvatarGroupPopover>
+                    <ShareBotMenu chatId={selectedId} chatTitle={title} />
                 </div>
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
