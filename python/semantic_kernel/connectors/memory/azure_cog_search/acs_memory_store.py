@@ -1,37 +1,35 @@
 # Import required libraries
 
-import os
 import json
+import os
 import uuid
-
-from typing import List, Optional, Tuple
 from datetime import datetime
-from dotenv import load_dotenv
 from logging import Logger, NullLogger
-from numpy import ndarray
+from typing import List, Optional, Tuple
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
-from azure.search.documents.models import Vector
 from azure.search.documents.indexes.models import (
+    PrioritizedFields,
     SearchIndex,
     SemanticConfiguration,
-    PrioritizedFields,
     SemanticField,
     SemanticSettings,
     VectorSearch,
     VectorSearchAlgorithmConfiguration,
 )
-
-from python.semantic_kernel.memory.memory_record import MemoryRecord
-from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from azure.search.documents.models import Vector
+from dotenv import load_dotenv
+from numpy import ndarray
 from python.semantic_kernel.connectors.memory.azure_cog_search.acs_utils import (
     acs_field_selection,
+    acs_schema,
     convert_to_memory_record,
     create_credentials,
-    acs_schema,
 )
+from python.semantic_kernel.memory.memory_record import MemoryRecord
+from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 
 class CognitiveSearchMemoryStore(MemoryStoreBase):
@@ -393,6 +391,11 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
 
+        ## Look up Search client class to see if exists or create
+        acs_search_client = self._cogsearch_indexclient.get_search_client(
+            collection_name
+        )
+
         ## If no Search client exists, create one
         if not acs_search_client:
             if self._cogsearch_creds:
@@ -407,7 +410,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         }
 
         acs_search_client.delete_documents(documents=[acs_data])
-        
+
         ## TODO make key list
         await self.remove_batch_async(self, collection_name, key)
 
@@ -422,10 +425,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
 
-    ## TODO: call delete_documents API pass list of dicts
+        ## TODO: call delete_documents API pass list of dicts
         for acs_key in keys:
             self.remove_async(collection_name=collection_name, key=acs_key)
-
 
     async def get_nearest_match_async(
         self,
@@ -472,7 +474,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         # Convert to MemoryRecord
         vector_result = convert_to_memory_record(acs_result)
 
-        return tuple(vector_result, acs_result["score"]) ## How do I get score? Do I need to manually calculate?
+        return tuple(
+            vector_result, acs_result["score"]
+        )  ## How do I get score? Do I need to manually calculate?
 
     async def get_nearest_matches_async(
         self,
@@ -525,8 +529,10 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         # Convert the results to MemoryRecords
         ## TODO: Update call if withembeddings is false
         for acs_result in results:
-           vector_result = convert_to_memory_record(acs_result)
-           
-           nearest_results.append(tuple(vector_result, acs_result["score"])) ## How do I get score? Do I need to manually calculate?
+            vector_result = convert_to_memory_record(acs_result)
+
+            nearest_results.append(
+                tuple(vector_result, acs_result["score"])
+            )  ## How do I get score? Do I need to manually calculate?
 
         return nearest_results
