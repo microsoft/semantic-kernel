@@ -48,17 +48,13 @@ Semantic Kernel is available to explore AI and build apps with C# and Python:
   <tbody>
     <tr>
       <td>
-        <picture>
-           <img align="left" width=52px src="https://user-images.githubusercontent.com/371009/230673036-fad1e8e6-5d48-49b1-a9c1-6f9834e0d165.png">
-        </picture>
+        <img align="left" width=52px src="https://user-images.githubusercontent.com/371009/230673036-fad1e8e6-5d48-49b1-a9c1-6f9834e0d165.png">
         <div>
           <a href="dotnet/README.md">Using Semantic Kernel in C#</a> &nbsp
         </div>
       </td>
       <td>
-        <picture>
-           <img align="left" width=52px src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg">
-        </picture>
+        <img align="left" width=52px src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg">
         <div>
           <a href="python/README.md">Using Semantic Kernel in Python</a>
         </div>
