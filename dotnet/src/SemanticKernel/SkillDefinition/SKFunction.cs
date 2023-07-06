@@ -98,7 +98,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="skillName">SK skill name</param>
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
-    /// <param name="parameters">SK function parameters</param>=
+    /// <param name="parameters">SK function parameters</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
