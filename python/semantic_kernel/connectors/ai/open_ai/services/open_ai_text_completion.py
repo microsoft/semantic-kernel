@@ -143,6 +143,8 @@ class OpenAITextCompletion(TextCompletionClientBase):
                     else None
                 ),
             )
+            for key, value in request_settings.token_selection_biases.items():
+                response.token_selection_biases[key] = value
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
