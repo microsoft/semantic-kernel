@@ -10,6 +10,29 @@ namespace Microsoft.SemanticKernel.Planning;
 public static class PlanExtensions
 {
     /// <summary>
+    /// Constructs string representation of <see cref="Plan"/> without sensitive data.
+    /// </summary>
+    /// <param name="plan">Instance of <see cref="Plan"/> for string construction.</param>
+    /// <param name="indent">Optional indentation.</param>
+    public static string ToSafePlanString(this Plan plan, string indent = " ")
+    {
+        string planString = string.Join("\n", plan.Steps.Select(step =>
+        {
+            if (step.Steps.Count == 0)
+            {
+                string skillName = step.SkillName;
+                string stepName = step.Name;
+
+                return $"{indent}{indent}- {string.Join(".", skillName, stepName)}";
+            }
+
+            return step.ToSafePlanString(indent + indent);
+        }));
+
+        return planString;
+    }
+
+    /// <summary>
     /// Constructs string representation of <see cref="Plan"/>.
     /// </summary>
     /// <param name="plan">Instance of <see cref="Plan"/> for string construction.</param>

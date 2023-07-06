@@ -44,7 +44,9 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
             var plan = await this._planner.CreatePlanAsync(goal).ConfigureAwait(false);
 
             this._logger.LogInformation("Plan creation status: {Status}", "Success");
-            this._logger.LogTrace("Created plan: \n {Plan}", plan.ToPlanString());
+
+            this._logger.LogInformation("Created plan: \n {Plan}", plan.ToSafePlanString());
+            this._logger.LogTrace("Created plan with details: \n {Plan}", plan.ToPlanString());
 
             return plan;
         }
