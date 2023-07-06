@@ -44,6 +44,10 @@
     <ProjectReference Include="..\..\src\Skills\Skills.Web\Skills.Web.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel\SemanticKernel.csproj" />
     <ProjectReference Include="..\NCalcSkills\NCalcSkills.csproj" />
+
+    <!-- Because some of the referenced projects have dependencies that themselves have System.Text.Json set with a minimum of 7.0. -->
+    <PackageReference Include="System.Text.Json" />
+    <PackageVersion Update="System.Text.Json" Version="7.0.3" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\30-user-prompt.txt" />
