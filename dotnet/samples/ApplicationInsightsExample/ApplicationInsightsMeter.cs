@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Diagnostics.Metering;
 /// <summary>
 /// Example of <see cref="IMeter"/> implementation to be used with Application Insights.
 /// </summary>
-internal class ApplicationInsightsMeter : IMeter
+internal sealed class ApplicationInsightsMeter : IMeter
 {
     private readonly TelemetryClient _telemetryClient;
 
