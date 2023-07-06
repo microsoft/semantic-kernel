@@ -40,7 +40,7 @@ public class TimeSkillTest {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
             String result = timeSkill.time();
-            assertEqualsIgnoreCase("09:15:07 AM", result);
+            assertEqualsIgnoreCase("09:15:07 A.M.", result);
         }
     }
 
@@ -64,7 +64,7 @@ public class TimeSkillTest {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
             String result = timeSkill.now();
-            assertEqualsIgnoreCase("Sunday, January 12, 2025 9:15 AM", result);
+            assertEqualsIgnoreCase("Sunday, January 12, 2025 9:15 A.M.", result);
         }
     }
 
@@ -140,7 +140,7 @@ public class TimeSkillTest {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
             String result = timeSkill.hour();
-            assertEqualsIgnoreCase("9 AM", result);
+            assertEqualsIgnoreCase("9 A.M.", result);
         }
     }
 
