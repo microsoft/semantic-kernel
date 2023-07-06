@@ -9,9 +9,6 @@ from semantic_kernel.connectors.memory.azure_cog_search.acs_memory_store import 
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    from azure.search.documents import SearchClient
-    from azure.search.documents.indexes import SearchIndexClient
-
     az_cog_search_installed = True
 except ImportError:
     az_cog_search_installed = False

@@ -1,23 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
 import datetime
+import os
 from typing import List, Optional, Union
-from dotenv import load_dotenv
-from numpy import linalg
+
 from azure.core.credentials import AzureKeyCredential
 from azure.identity import DefaultAzureCredential as DefaultAzureCredentialSync
 from azure.identity.aio import DefaultAzureCredential
-from python.semantic_kernel.memory.memory_record import MemoryRecord
-
-from numpy import array, ndarray
-
 from azure.search.documents.indexes.models import (
+    SearchableField,
     SearchField,
     SearchFieldDataType,
     SimpleField,
-    SearchableField,
 )
+from dotenv import load_dotenv
+from numpy import array, linalg, ndarray
+from python.semantic_kernel.memory.memory_record import MemoryRecord
 
 
 def create_credentials(
@@ -127,8 +125,9 @@ def convert_to_memory_record(acs_data: dict, include_embedding: bool) -> MemoryR
         is_reference=False,
         external_source_name="azure-cognitive-search",
         key=None,
-        timestamp=acs_data["timestamp"] if not acs_data["timestamp"] 
-            else datetime.datetime.now().timestamp(),
+        timestamp=acs_data["timestamp"]
+        if not acs_data["timestamp"]
+        else datetime.datetime.now().timestamp(),
         id=acs_data["vector_id"],
         embedding=acs_data["vector"] if include_embedding else None,
         text=acs_data["payload"],
