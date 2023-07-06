@@ -44,7 +44,7 @@ in the history of computing.
 
 Semantic Kernel is available to explore AI and build apps with C# and Python:
 
-<table width=25%>
+<table width=100%>
   <tbody>
     <tr>
       <td>
