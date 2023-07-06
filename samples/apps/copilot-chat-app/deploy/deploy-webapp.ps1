@@ -95,13 +95,27 @@ if (-not ((az webapp cors show --name $webapiName --resource-group $ResourceGrou
     az webapp cors add --name $webapiName --resource-group $ResourceGroupName --subscription $Subscription --allowed-origins $origin
 }
 
-Write-Host "Updating redirect URI in AAD app registration to '$webappUrl'..."
+Write-Host "Ensuring '$origin' is included in AAD app registration's redirect URIs..."
 $objectId = (az ad app show --id $ApplicationClientId | ConvertFrom-Json).id
-az rest `
-    --method PATCH `
-    --uri "https://graph.microsoft.com/v1.0/applications/$objectId" `
-    --headers 'Content-Type=application/json' `
-    --body "{spa:{redirectUris:['$origin']}}"
+$redirectUris = (az rest --method GET --uri "https://graph.microsoft.com/v1.0/applications/$objectId" --headers 'Content-Type=application/json' | ConvertFrom-Json).spa.redirectUris
+if ($redirectUris -notcontains "$origin") {
+    $redirectUris += "$origin"
+
+    $body = "{spa:{redirectUris:["
+    foreach ($uri in $redirectUris) {
+        $body += "'$uri',"
+    }
+    $body += "]}}"
+
+    az rest `
+        --method PATCH `
+        --uri "https://graph.microsoft.com/v1.0/applications/$objectId" `
+        --headers 'Content-Type=application/json' `
+        --body $body
+}
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
 
 Pop-Location
 
