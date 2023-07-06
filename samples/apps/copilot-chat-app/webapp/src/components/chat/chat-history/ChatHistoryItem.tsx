@@ -75,14 +75,14 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     const chat = useChat();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
-    const isMe = message.authorRole === AuthorRoles.User && message.userId === account?.homeAccountId!;
+    const isMe = message.authorRole === AuthorRoles.User && message.userId === account?.homeAccountId;
     const isBot = message.authorRole === AuthorRoles.Bot;
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
     const fullName = user?.fullName ?? message.userName;
 
     const avatar = isBot
         ? { image: { src: conversations[selectedId].botProfilePicture } }
-        : { name: fullName, color: 'colorful' as 'colorful' };
+        : { name: fullName, color: 'colorful' as const };
 
     let content: JSX.Element;
     if (isBot && message.type === ChatMessageType.Plan) {

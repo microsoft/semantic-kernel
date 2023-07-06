@@ -59,11 +59,11 @@
 
 |               | C#  | Python | Java | Notes |
 |---------------|:---:|:------:|:----:|-------|
-| Azure Search  | ✅  | 🔄     | ❌   | Azure Cognitive Search under development, currently in private preview          |
+| Azure Search  | ✅  | 🔄     | ❌   | Azure Cognitive Search coming soon                                              |
+| Weaviate      | ✅  | ✅     | ❌   | Currently supported on Python 3.9+, 3.8 coming soon                             |
+| Chroma        | ✅  | ✅     | ❌   |                                                                                 |
 | Qdrant        | ✅  | ❌     | ❌   |                                                                                 |
 | Pinecone      | ✅  | ❌     | ❌   |                                                                                 |
-| Weaviate      | ✅  | ✅     | ❌   | Currently supported on Python 3.9-3.11, 3.8 coming soon                         |
-| ChromaDb      | ❌  | ✅     | ❌   |                                                                                 |
 | Milvus        | ❌  | ❌     | ❌   | Coming soon                                                                     |
 | Sqlite        | ✅  | ❌     | ❌   | Vector optimization requires [sqlite-vss](https://github.com/asg017/sqlite-vss) |
 | Postgres      | ✅  | ❌     | ❌   | Vector optimization requires [pgvector](https://github.com/pgvector/pgvector)   |

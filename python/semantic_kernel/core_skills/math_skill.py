@@ -9,7 +9,7 @@ class MathSkill:
     Description: MathSkill provides a set of functions to make Math calculations.
 
     Usage:
-        kernel.import_skill("math", new MathSkill())
+        kernel.import_skill(MathSkill(), skill_name="math")
 
     Examples:
         {{math.Add}}         => Returns the sum of initial_value_text and Amount (provided in the SKContext)

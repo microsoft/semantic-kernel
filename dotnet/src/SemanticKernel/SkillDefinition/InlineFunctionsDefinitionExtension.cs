@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -110,6 +112,55 @@ public static class InlineFunctionsDefinitionExtension
         return string.IsNullOrEmpty(skillName)
             ? kernel.RegisterSemanticFunction(functionName, functionConfig, trustService)
             : kernel.RegisterSemanticFunction(skillName!, functionName, functionConfig, trustService);
+    }
+
+    /// <summary>
+    /// Invoke a semantic function using the provided prompt template.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
+    /// <param name="skillName">Optional skill name, for namespacing and avoid collisions</param>
+    /// <param name="description">Optional description, useful for the planner</param>
+    /// <param name="maxTokens">Max number of tokens to generate</param>
+    /// <param name="temperature">Temperature parameter passed to LLM</param>
+    /// <param name="topP">Top P parameter passed to LLM</param>
+    /// <param name="presencePenalty">Presence Penalty parameter passed to LLM</param>
+    /// <param name="frequencyPenalty">Frequency Penalty parameter passed to LLM</param>
+    /// <param name="isSensitive">Whether the function is set to be sensitive or not (default false)</param>
+    /// <param name="trustService">Service used for trust checks (if null will use the default registered in the kernel)</param>
+    /// <param name="stopSequences">Strings the LLM will detect to stop generating (before reaching max tokens)</param>
+    /// <returns>A function ready to use</returns>
+    public static Task<SKContext> InvokeSemanticFunctionAsync(
+        this IKernel kernel,
+        string promptTemplate,
+        string? functionName = null,
+        string? skillName = null,
+        string? description = null,
+        int maxTokens = 256,
+        double temperature = 0,
+        double topP = 0,
+        double presencePenalty = 0,
+        double frequencyPenalty = 0,
+        bool isSensitive = false,
+        ITrustService? trustService = null,
+        IEnumerable<string>? stopSequences = null)
+    {
+        var skfunction = kernel.CreateSemanticFunction(
+            promptTemplate,
+            functionName,
+            skillName,
+            description,
+            maxTokens,
+            temperature,
+            topP,
+            presencePenalty,
+            frequencyPenalty,
+            isSensitive,
+            trustService,
+            stopSequences);
+
+        return skfunction.InvokeAsync();
     }
 
     private static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");
