@@ -209,6 +209,9 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 n=request_settings.number_of_responses,
                 stream=stream,
             )
+            for key, value in request_settings.token_selection_biases.items():
+                response.token_selection_biases[key]=value
+                
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
