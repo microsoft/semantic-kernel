@@ -116,6 +116,7 @@ export const ChatList: FC = () => {
             if (conversations[b].lastUpdatedTimestamp === undefined) {
                 return -1;
             }
+            // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
             return conversations[a].lastUpdatedTimestamp! - conversations[b].lastUpdatedTimestamp!;
         });
 
