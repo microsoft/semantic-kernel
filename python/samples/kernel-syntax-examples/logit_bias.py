@@ -7,15 +7,15 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion impo
     OpenAITextCompletion
 )
 import semantic_kernel as sk
+import asyncio
 
 
 async def run_async():
-    apikey = sk.openai_settings_from_dot_env()
+    api_key, org_id = sk.openai_settings_from_dot_env()
 
-    chat_completion = OpenAIChatCompletion(
-        _model_id="gpt-3.5-turbo",
-        api_key=apikey
-    )
+    chat_completion = OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
+
+    print(chat_completion._model_id)
 
     keys = [
         3919, 626, 17201, 1300, 25782, 9800, 32016, 13571, 43582, 20189,
@@ -31,24 +31,25 @@ async def run_async():
     print("Chat content:")
     print("------------------------")
 
-    response = await chat_completion._send_chat_request(
+    response = await chat_completion.complete_chat_async(
         messages=[
             ("Hi, I'm looking for some suggestions")
         ],
         **settings,
-        stream=True
     )
 
     print(response)
 
     # message = response["choices"][0]["message"]["content"]
 
-    response = await chat_completion.send_message(
+    response = await chat_completion.complete_chat_async(
         messages=[
             ("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?")
         ],
         **settings,
-        stream=True
     )
 
     await run_async()
+
+
+asyncio.run(run_async())
