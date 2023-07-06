@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -239,7 +240,9 @@ public sealed class Plan : ISKFunction
             kernel.Memory,
             kernel.Skills,
             kernel.Log,
+            kernel.Meter,
             cancellationToken);
+
         return this.InvokeNextStepAsync(context);
     }
 
@@ -259,7 +262,14 @@ public sealed class Plan : ISKFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
+            var functionContext = new SKContext(
+                functionVariables,
+                context.Memory,
+                context.Skills,
+                context.Log,
+                context.Meter,
+                context.CancellationToken);
+
             var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
@@ -337,13 +347,10 @@ public sealed class Plan : ISKFunction
     {
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
+            var result = await this.InstrumentedInvokeAsync(this.Function, context, settings).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
-                result.Log.LogError(
-                    result.LastException,
-                    "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
                 return result;
             }
 
@@ -596,6 +603,48 @@ public sealed class Plan : ISKFunction
         return stepVariables;
     }
 
+    private async Task<SKContext> InstrumentedInvokeAsync(
+        ISKFunction function,
+        SKContext context,
+        CompleteRequestSettings? settings = null)
+    {
+        context.Log.LogInformation("{SkillName}.{StepName}: Step execution started.", this.SkillName, this.Name);
+
+        var stopwatch = Stopwatch.StartNew();
+
+        var result = await function.InvokeAsync(context, settings).ConfigureAwait(false);
+
+        if (!result.ErrorOccurred)
+        {
+            context.Log.LogInformation(
+                "{SkillName}.{StepName}: Step execution status: {Status}.",
+                this.SkillName, this.Name, "Success");
+        }
+        else
+        {
+            context.Log.LogInformation(
+                "{SkillName}.{StepName}: Step execution status: {Status}.",
+                this.SkillName, this.Name, "Failed");
+
+            context.Log.LogError(
+                result.LastException,
+                "Something went wrong in plan step {SkillName}.{StepName}:'{ErrorDescription}'",
+                this.SkillName, this.Name, context.LastErrorDescription);
+        }
+
+        stopwatch.Stop();
+
+        context.Log.LogInformation(
+            "{SkillName}.{StepName}: Step execution finished in {ExecutionTime}ms.",
+            this.SkillName, this.Name, stopwatch.ElapsedMilliseconds);
+
+        var stepExecutionTimeMetricName = string.Format(CultureInfo.InvariantCulture, StepExecutionTimeMetricFormat, this.SkillName, this.Name);
+
+        context.Meter.TrackMetric(stepExecutionTimeMetricName, stopwatch.ElapsedMilliseconds);
+
+        return result;
+    }
+
     private void SetFunction(ISKFunction function)
     {
         this.Function = function;
@@ -615,6 +664,8 @@ public sealed class Plan : ISKFunction
     private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
 
     private const string DefaultResultKey = "PLAN.RESULT";
+
+    private const string StepExecutionTimeMetricFormat = "SK.{0}.{1}.ExecutionTime";
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay

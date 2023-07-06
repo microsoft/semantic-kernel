@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Diagnostics.Metering;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Security;
@@ -23,6 +24,7 @@ public sealed class KernelBuilder
     private KernelConfig _config = new();
     private Func<ISemanticTextMemory> _memoryFactory = () => NullMemory.Instance;
     private ILogger _logger = NullLogger.Instance;
+    private IMeter _meter = NullMeter.Instance;
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
@@ -57,6 +59,7 @@ public sealed class KernelBuilder
             this._memoryFactory.Invoke(),
             this._config,
             this._logger,
+            this._meter,
             this._trustService
         );
 
@@ -78,6 +81,18 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(log);
         this._logger = log;
+        return this;
+    }
+
+    /// <summary>
+    /// Add a meter to the kernel to be built.
+    /// </summary>
+    /// <param name="meter">Meter to add.</param>
+    /// <returns>Updated kernel builder including the meter.</returns>
+    public KernelBuilder WithMeter(IMeter meter)
+    {
+        Verify.NotNull(meter);
+        this._meter = meter;
         return this;
     }
 

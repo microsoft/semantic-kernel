@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Diagnostics.Metering;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Services;
@@ -64,6 +65,7 @@ public static class Example42_KernelBuilder
 
         // Manually setup all the dependencies used internally by the kernel
         var logger = NullLogger.Instance;
+        var meter = NullMeter.Instance;
         var memoryStorage = new VolatileMemoryStore();
         var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", logger: logger);
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
@@ -79,7 +81,7 @@ public static class Example42_KernelBuilder
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, config, logger);
+        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, config, logger, meter);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies

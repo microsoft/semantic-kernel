@@ -25,7 +25,7 @@ public sealed class Program
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         var meter = new ApplicationInsightsMeter(telemetryClient);
 
-        var kernel = GetKernel(logger);
+        var kernel = GetKernel(logger, meter);
         var planner = GetPlanner(kernel, logger, meter);
 
         using var operation = telemetryClient.StartOperation<DependencyTelemetry>("Planning");
@@ -74,12 +74,13 @@ public sealed class Program
         });
     }
 
-    private static IKernel GetKernel(ILogger logger)
+    private static IKernel GetKernel(ILogger logger, IMeter meter)
     {
         string folder = RepoFiles.SampleSkillsPath();
 
         var kernel = new KernelBuilder()
             .WithLogger(logger)
+            .WithMeter(meter)
             .WithAzureChatCompletionService(
                 Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
@@ -99,8 +100,10 @@ public sealed class Program
     {
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
 
-        return SequentialPlannerFactory
-            .GetPlanner(kernel, plannerConfig)
-            .WithInstrumentation(logger, meter);
+        return new SequentialPlannerBuilder(kernel)
+            .WithConfiguration(plannerConfig)
+            .WithLogger(logger)
+            .WithMeter(meter)
+            .Build();
     }
 }

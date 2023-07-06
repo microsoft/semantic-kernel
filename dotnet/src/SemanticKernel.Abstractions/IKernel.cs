@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics.Metering;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Security;
@@ -28,6 +29,11 @@ public interface IKernel
     /// App logger
     /// </summary>
     ILogger Log { get; }
+
+    /// <summary>
+    /// App meter
+    /// </summary>
+    IMeter Meter { get; }
 
     /// <summary>
     /// Semantic memory instance

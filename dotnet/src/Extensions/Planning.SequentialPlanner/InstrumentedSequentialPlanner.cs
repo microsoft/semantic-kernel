@@ -52,13 +52,14 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         {
             this._logger.LogInformation("Plan creation status: {Status}", "Failed");
             this._logger.LogError(ex, "Plan creation exception details: {Message}", ex.Message);
+
             throw;
         }
         finally
         {
             stopwatch.Stop();
 
-            this._logger.LogInformation("Plan creation finished in {ElapsedMilliseconds}ms.", stopwatch.ElapsedMilliseconds);
+            this._logger.LogInformation("Plan creation finished in {ExecutionTime}ms.", stopwatch.ElapsedMilliseconds);
 
             this._meter.TrackMetric(CreatePlanExecutionTimeMetricName, stopwatch.ElapsedMilliseconds);
         }
@@ -66,7 +67,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 
     #region private ================================================================================
 
-    private const string CreatePlanExecutionTimeMetricName = "sk.sequentialPlanner.createPlan.ms";
+    private const string CreatePlanExecutionTimeMetricName = "SK.SequentialPlanner.CreatePlan.ExecutionTime";
 
     private readonly ISequentialPlanner _planner;
     private readonly ILogger _logger;
