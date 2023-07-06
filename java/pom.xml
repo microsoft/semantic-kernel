@@ -19,7 +19,6 @@
         <google.java.format.version>1.17.0</google.java.format.version>
         <jreleaser.plugin.version>1.6.0</jreleaser.plugin.version>
         <junit5.version>5.9.3</junit5.version>
-        <android.api-level>21</android.api-level>
         <log4j2.version>2.20.0</log4j2.version>
         <maven.antrun-plugin.version>3.1.0</maven.antrun-plugin.version>
         <maven.changes-plugin.version>2.12.1</maven.changes-plugin.version>
@@ -386,23 +385,23 @@
                             See https://developer.android.com/studio/releases/platforms
 
                             Note: anything below this requires changes to the codebase to pass compatibility
-                        -
+                        -->
                         <signature>
                             <groupId>net.sf.androidscents.signature</groupId>
                             <artifactId>android-api-level-26</artifactId>
                             <version>8.0.0_r2</version>
                         </signature>
-                        - 
-                            PROPOSED: Android API level 21 (Android 5.0)
+                        <!-- 
+                            Android API level 21 (Android 5.0)
                             See https://developer.android.com/studio/releases/platforms
                         -->
-
+                        <!--
                         <signature>
                             <groupId>net.sf.androidscents.signature</groupId>
                             <artifactId>android-api-level-21</artifactId>
                             <version>5.0.1_r2</version>
                         </signature>
-
+                        -->
                     </configuration>
                 </plugin>
             </plugins>
