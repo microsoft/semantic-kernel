@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
-internal class TextCompletionStreamingResult : ITextStreamingResult
+internal sealed class TextCompletionStreamingResult : ITextStreamingResult
 {
     private readonly List<TextCompletionStreamingResponse> _modelResponses;
     private readonly Channel<string> _responseChannel;
