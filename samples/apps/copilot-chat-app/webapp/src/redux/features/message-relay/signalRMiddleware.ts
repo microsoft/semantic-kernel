@@ -151,7 +151,7 @@ export const registerSignalREvents = (store: Store) => {
     });
 
     hubConnection.on(SignalRCallbackMethods.ReceiveResponse, (askResult: IAskResult, chatId: string) => {
-        const loggedInUserId: string = store.getState().conversations.loggedInUserId;
+        const loggedInUserId = store.getState().app.activeUserInfo?.id;
         const originalMessageUserId: string | undefined = askResult.variables.find((v) => v.key === 'userId')?.value;
         const isPlanForLoggedInUser = loggedInUserId === originalMessageUserId;
         const messageType = Number(askResult.variables.find((v) => v.key === 'messageType')?.value) as ChatMessageType;
