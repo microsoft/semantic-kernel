@@ -4,7 +4,7 @@
 
     <groupId>com.microsoft.semantickernel</groupId>
     <artifactId>samples</artifactId>
-    <version>0.2.1-beta</version>
+    <version>0.2.2-beta-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
