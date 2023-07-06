@@ -256,5 +256,4 @@ public class VolatileMemoryStore implements MemoryStore {
             return new VolatileMemoryStore();
         }
     }
-
 }
