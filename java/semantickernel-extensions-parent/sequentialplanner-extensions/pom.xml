@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.microsoft.semantickernel.extensions</groupId>
         <artifactId>semantickernel-extensions-parent</artifactId>
-        <version>0.2.0-beta-SNAPSHOT</version>
+        <version>0.2.0-beta</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
