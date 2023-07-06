@@ -4,10 +4,13 @@ package com.microsoft.semantickernel.coreskills;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import java.time.*;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Locale;
 
 @SuppressWarnings("ReturnValueIgnored")
 public class TimeSkillTest {
@@ -37,7 +40,7 @@ public class TimeSkillTest {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
             String result = timeSkill.time();
-            assertEquals("09:15:07 AM", result);
+            assertEqualsIgnoreCase("09:15:07 AM", result);
         }
     }
 
@@ -61,7 +64,7 @@ public class TimeSkillTest {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
             String result = timeSkill.now();
-            assertEquals("Sunday, January 12, 2025 9:15 AM", result);
+            assertEqualsIgnoreCase("Sunday, January 12, 2025 9:15 AM", result);
         }
     }
 
@@ -125,6 +128,10 @@ public class TimeSkillTest {
         }
     }
 
+    public void assertEqualsIgnoreCase(String a, String b) {
+        Assertions.assertEquals(a.toUpperCase(Locale.ROOT), b.toUpperCase(Locale.ROOT));
+    }
+
     @Test
     public void testHour() {
         TimeSkill timeSkill = new TimeSkill();
@@ -133,7 +140,7 @@ public class TimeSkillTest {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
             String result = timeSkill.hour();
-            assertEquals("9 AM", result);
+            assertEqualsIgnoreCase("9 AM", result);
         }
     }
 

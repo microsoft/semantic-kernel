@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
 import org.junit.jupiter.api.condition.EnabledIf;
 
 import java.io.File;
@@ -29,12 +30,15 @@ public class AbstractKernelTest {
         final OpenAIAsyncClient openAIClient = getAzureOpenAIClient();
         TextCompletion textCompletion = new OpenAITextCompletion(openAIClient, model);
 
-        KernelConfig kernelConfig = SKBuilders.kernelConfig()
-                .addTextCompletionService(model, kernel -> textCompletion)
-                .addTextEmbeddingsGenerationService(
-                        model,
-                        kernel -> SKBuilders.textEmbeddingGenerationService().build(openAIClient, model))
-                .build();
+        KernelConfig kernelConfig =
+                SKBuilders.kernelConfig()
+                        .addTextCompletionService(model, kernel -> textCompletion)
+                        .addTextEmbeddingsGenerationService(
+                                model,
+                                kernel ->
+                                        SKBuilders.textEmbeddingGenerationService()
+                                                .build(openAIClient, model))
+                        .build();
 
         return SKBuilders.kernel()
                 .setKernelConfig(kernelConfig)
@@ -45,18 +49,17 @@ public class AbstractKernelTest {
     public static OpenAIAsyncClient getOpenAIClient() throws IOException {
         String apiKey = getToken(CONF_OPENAI_PROPERTIES);
         NonAzureOpenAIKeyCredential credential = new NonAzureOpenAIKeyCredential(apiKey);
-        return new OpenAIClientBuilder()
-                .credential(credential)
-                .buildAsyncClient();
+        return new OpenAIClientBuilder().credential(credential).buildAsyncClient();
     }
 
     public static OpenAIAsyncClient getAzureOpenAIClient() throws IOException {
         String apiKey = getToken(AZURE_CONF_PROPERTIES);
 
-        OpenAIAsyncClient client = new OpenAIClientBuilder()
-                .endpoint(getEndpoint(AZURE_CONF_PROPERTIES))
-                .credential(new AzureKeyCredential(apiKey))
-                .buildAsyncClient();
+        OpenAIAsyncClient client =
+                new OpenAIClientBuilder()
+                        .endpoint(getEndpoint(AZURE_CONF_PROPERTIES))
+                        .credential(new AzureKeyCredential(apiKey))
+                        .buildAsyncClient();
 
         return client;
     }

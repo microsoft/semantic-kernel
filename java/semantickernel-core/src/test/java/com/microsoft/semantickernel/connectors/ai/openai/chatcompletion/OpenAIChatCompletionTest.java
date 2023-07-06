@@ -63,16 +63,6 @@ public class OpenAIChatCompletionTest {
         return chatGPT.generateMessageAsync(chatHistory, null).block();
     }
 
-    private static class runExample {
-        public final OpenAIChatHistory chatHistory;
-        public final String reply;
-
-        public runExample(OpenAIChatHistory chatHistory, String reply) {
-            this.chatHistory = chatHistory;
-            this.reply = reply;
-        }
-    }
-
     @Test
     public void emptyResponseThrowsError() {
         OpenAIAsyncClient client =

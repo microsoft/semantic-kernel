@@ -2,9 +2,9 @@
 package com.microsoft.semantickernel.e2e;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.extensions.KernelExtensions;
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -21,21 +21,19 @@ public class PlannerTest extends AbstractKernelTest {
     @EnabledIf("isAzureTestEnabled")
     public void executeInlineFunction() throws IOException {
         Kernel kernel = buildTextCompletionKernel();
-        kernel.importSkill(
-                "SummarizeSkill",
-                KernelExtensions.importSemanticSkillFromDirectory(
-                        "../../../samples/skills", "SummarizeSkill"));
-        kernel.importSkill(
-                "WriterSkill",
-                KernelExtensions.importSemanticSkillFromDirectory(
-                        "../../../samples/skills", "WriterSkill"));
+        kernel.importSkillFromDirectory(
+                "SummarizeSkill", "../../../samples/skills", "SummarizeSkill");
+        kernel.importSkillFromDirectory("WriterSkill", "../../../samples/skills", "WriterSkill");
 
         SequentialPlanner planner = new SequentialPlanner(kernel, null, null);
 
-        CompletionSKContext result =
+        Plan plan =
                 planner.createPlanAsync(
                                 "Write a poem about John Doe, then translate it into Italian.")
                         .block();
+
+        SKContext result = plan.invokeAsync().block();
+
         LOGGER.info("Result: " + result.getResult());
     }
 }

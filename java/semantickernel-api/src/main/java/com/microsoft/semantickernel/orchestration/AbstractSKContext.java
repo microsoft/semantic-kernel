@@ -15,8 +15,8 @@ import javax.annotation.CheckReturnValue;
 /// <summary>
 /// Semantic Kernel context.
 /// </summary>memory
-public abstract class AbstractSKContext<T extends SKContext<T>> implements SKContext<T> {
-    @Nullable private final ReadOnlySkillCollection skills;
+public abstract class AbstractSKContext implements SKContext {
+    private final ReadOnlySkillCollection skills;
     private final WritableContextVariables variables;
     @Nullable private final SemanticTextMemory memory;
 
@@ -59,15 +59,19 @@ public abstract class AbstractSKContext<T extends SKContext<T>> implements SKCon
             this.memory = null;
         }
 
-        this.skills = skills;
+        if (skills == null) {
+            this.skills = SKBuilders.skillCollection().build();
+        } else {
+            this.skills = skills;
+        }
     }
 
     @CheckReturnValue
     @Override
-    public T copy() {
+    public SKContext copy() {
         ReadOnlySkillCollection clonedSkill;
         if (skills == null) {
-            clonedSkill = skills;
+            clonedSkill = null;
         } else {
             clonedSkill = skills.copy();
         }
@@ -80,20 +84,19 @@ public abstract class AbstractSKContext<T extends SKContext<T>> implements SKCon
         return memory != null ? memory.copy() : null;
     }
 
-    @Nullable
     @Override
     public ReadOnlySkillCollection getSkills() {
         return skills;
     }
 
     @Override
-    public T setVariable(@NonNull String key, @NonNull String content) {
+    public SKContext setVariable(@NonNull String key, @NonNull String content) {
         variables.setVariable(key, content);
         return getThis();
     }
 
     @Override
-    public T appendToVariable(@NonNull String key, @NonNull String content) {
+    public SKContext appendToVariable(@NonNull String key, @NonNull String content) {
         variables.appendToVariable(key, content);
         return getThis();
     }
@@ -106,16 +109,16 @@ public abstract class AbstractSKContext<T extends SKContext<T>> implements SKCon
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
     @Override
-    public T update(@NonNull String content) {
+    public SKContext update(@NonNull String content) {
         variables.update(content);
         return getThis();
     }
 
     @Override
-    public T update(@NonNull ContextVariables newData) {
+    public SKContext update(@NonNull ContextVariables newData) {
         variables.update(newData, true);
         return getThis();
     }
 
-    protected abstract T getThis();
+    protected abstract SKContext getThis();
 }

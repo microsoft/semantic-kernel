@@ -3,10 +3,12 @@ package com.microsoft.semantickernel.util;
 
 import java.io.IOException;
 
+import javax.annotation.Nullable;
+
 public class OpenAISettings extends ClientSettings<OpenAISettings> {
-    private String key;
-    private String organizationId;
     private static final String DEFAULT_CLIENT_ID = "openai";
+    @Nullable private String key = null;
+    @Nullable private String organizationId = null;
 
     private enum Property {
         OPEN_AI_KEY("key"),
@@ -23,10 +25,16 @@ public class OpenAISettings extends ClientSettings<OpenAISettings> {
     }
 
     public String getKey() {
+        if (key == null) {
+            throw new RuntimeException("OpenAI key is not set");
+        }
         return key;
     }
 
     public String getOrganizationId() {
+        if (organizationId == null) {
+            throw new RuntimeException("OpenAI organization id is not set");
+        }
         return organizationId;
     }
 

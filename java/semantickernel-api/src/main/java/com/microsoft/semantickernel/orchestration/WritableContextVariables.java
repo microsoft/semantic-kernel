@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import reactor.util.annotation.NonNull;
-
 import java.util.Map;
 
 /**
@@ -16,11 +14,11 @@ public interface WritableContextVariables extends ContextVariables {
      *
      * @param key variable name
      * @param content value to set
-     * @return Contect for fluent calls
+     * @return Context for fluent calls
      */
-    ContextVariables setVariable(@NonNull String key, @NonNull String content);
+    ContextVariables setVariable(String key, String content);
 
-    ContextVariables appendToVariable(@NonNull String key, @NonNull String content);
+    ContextVariables appendToVariable(String key, String content);
 
     /// <summary>
     /// Updates the main input text with the new value after a function is complete.
@@ -29,9 +27,11 @@ public interface WritableContextVariables extends ContextVariables {
     // result for the user
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
-    ContextVariables update(@NonNull String content);
+    ContextVariables update(String content);
 
-    ContextVariables update(@NonNull ContextVariables newData, boolean merge);
+    ContextVariables update(ContextVariables newData, boolean merge);
+
+    ContextVariables remove(String key);
 
     interface Builder {
         /**

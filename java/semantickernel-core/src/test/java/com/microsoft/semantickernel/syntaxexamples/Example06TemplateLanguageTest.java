@@ -11,7 +11,6 @@ import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import org.junit.jupiter.api.Assertions;
@@ -19,8 +18,6 @@ import org.junit.jupiter.api.Test;
 
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
-
-import java.util.ArrayList;
 
 public class Example06TemplateLanguageTest {
 
@@ -33,14 +30,9 @@ public class Example06TemplateLanguageTest {
                 SKBuilders.kernelConfig()
                         .addTextCompletionService(
                                 "text-davinci-003",
-                                kernel ->
+                                kernel1 ->
                                         SKBuilders.textCompletionService()
                                                 .build(client, "text-davinci-003"))
-                        .addTextEmbeddingsGenerationService(
-                                "text-embedding-ada-002",
-                                kernel ->
-                                        SKBuilders.textEmbeddingGenerationService()
-                                                .build(client, "text-embedding-ada-002"))
                         .build();
 
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
@@ -63,13 +55,15 @@ public class Example06TemplateLanguageTest {
                         + " (morning/afternoon/evening/night)?\n"
                         + "Is it weekend time (weekend/not weekend)?";
 
-        PromptTemplate promptRenderer = SKBuilders.promptTemplate().build(functionDefinition, null);
+        PromptTemplate promptRenderer =
+                SKBuilders.promptTemplate()
+                        .withPromptTemplateConfig(new PromptTemplateConfig())
+                        .withPromptTemplate(functionDefinition)
+                        .build(kernel.getPromptTemplateEngine());
 
         SKContext skContext = SKBuilders.context().build(kernel.getSkills());
 
-        PromptTemplateEngine promptTemplateEngine = SKBuilders.promptTemplateEngine().build();
-
-        Mono<String> renderedPrompt = promptRenderer.renderAsync(skContext, promptTemplateEngine);
+        Mono<String> renderedPrompt = promptRenderer.renderAsync(skContext);
 
         // Check that it has been rendered
         Assertions.assertTrue(!renderedPrompt.block().contains("time.Date"));
@@ -82,8 +76,7 @@ public class Example06TemplateLanguageTest {
                                 null,
                                 null,
                                 null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0, 0, 0, 0, 256, new ArrayList<>()));
+                                new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256));
 
         Assertions.assertEquals("A-RESULT", kindOfDay.invokeAsync("").block().getResult());
     }

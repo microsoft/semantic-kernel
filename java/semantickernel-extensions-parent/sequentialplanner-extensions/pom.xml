@@ -19,6 +19,10 @@
             <groupId>com.microsoft.semantickernel</groupId>
             <artifactId>semantickernel-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantickernel.extensions</groupId>
+            <artifactId>actionplanner-extension</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

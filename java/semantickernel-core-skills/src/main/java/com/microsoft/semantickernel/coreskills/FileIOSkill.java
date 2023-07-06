@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputA
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,12 +42,16 @@ public class FileIOSkill {
             @SKFunctionInputAttribute
                     @SKFunctionParameters(name = "path", description = "Source file")
                     String path,
-                    @SKFunctionParameters(name = "charset", description = "Character set to use to read the file", defaultValue="UTF-8")
-                    String charset) throws IOException {
+            @SKFunctionParameters(
+                            name = "charset",
+                            description = "Character set to use to read the file",
+                            defaultValue = "UTF-8")
+                    String charset)
+            throws IOException {
         Path filePath = Paths.get(path);
         byte[] fileBytes;
         fileBytes = Files.readAllBytes(filePath);
-        String fileContents = new String(fileBytes, charset);
+        String fileContents = new String(fileBytes, Charset.forName(charset));
         return fileContents;
     }
 
@@ -61,22 +66,25 @@ public class FileIOSkill {
      *
      * @param path The destination file.
      * @param content Contains the 'content' to write
-     * @return An awaitable task.
      */
     @DefineSKFunction(description = "Write a file", name = "writeAsync")
     public void writeFileAsync(
             @SKFunctionInputAttribute
                     @SKFunctionParameters(name = "path", description = "Destination file")
                     String path,
-                    @SKFunctionParameters(
+            @SKFunctionParameters(
                             name = "content",
                             description = "File content",
                             defaultValue = "",
                             type = String.class)
                     String content,
-                    @SKFunctionParameters(name = "charset", description = "Character set to use to read the file", defaultValue="UTF-8")
-                    String charset) throws IOException {
-                        Path filePath = Paths.get(path);
-                        Files.write(filePath, content.getBytes(charset));
+            @SKFunctionParameters(
+                            name = "charset",
+                            description = "Character set to use to read the file",
+                            defaultValue = "UTF-8")
+                    String charset)
+            throws IOException {
+        Path filePath = Paths.get(path);
+        Files.write(filePath, content.getBytes(charset));
     }
 }

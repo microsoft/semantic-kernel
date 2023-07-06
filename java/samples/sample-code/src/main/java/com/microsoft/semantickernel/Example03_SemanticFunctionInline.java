@@ -1,14 +1,12 @@
 package com.microsoft.semantickernel;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
-
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Define a Semantic Function inline with Java code.
@@ -36,10 +34,9 @@ public class Example03_SemanticFunctionInline {
                                 0.5,
                                 0,
                                 0,
-                                2000,
-                                new ArrayList<>()));
+                                2000));
 
-        Mono<CompletionSKContext> result = summarize.invokeAsync(text);
+        Mono<SKContext> result = summarize.invokeAsync(text);
 
         if (result != null) {
             System.out.println(result.block().getResult());

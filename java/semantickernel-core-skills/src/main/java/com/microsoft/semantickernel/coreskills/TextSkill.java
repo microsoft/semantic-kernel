@@ -49,6 +49,6 @@ public class TextSkill {
             @SKFunctionInputAttribute
                     @SKFunctionParameters(description = "Text to lowercase", name = "input")
                     String input) {
-        return input.toLowerCase();
+        return input.toLowerCase(Locale.ROOT);
     }
 }

@@ -6,6 +6,9 @@ import com.microsoft.semantickernel.builders.ServiceLoadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.function.Supplier;
+
+@SuppressWarnings("ImmutableEnumChecker")
 enum InternalBuildersSingleton {
     INST;
 
@@ -14,7 +17,7 @@ enum InternalBuildersSingleton {
     private static final String FALLBACK_VARIABLE_BUILDER_CLASS =
             "com.microsoft.semantickernel.orchestration.DefaultContextVariables$WritableBuilder";
 
-    private final WritableContextVariables.Builder variables;
+    private final Supplier<WritableContextVariables.Builder> variables;
 
     InternalBuildersSingleton() {
         try {
@@ -49,6 +52,6 @@ enum InternalBuildersSingleton {
     }
 
     public static WritableContextVariables.Builder variables() {
-        return INST.variables;
+        return INST.variables.get();
     }
 }

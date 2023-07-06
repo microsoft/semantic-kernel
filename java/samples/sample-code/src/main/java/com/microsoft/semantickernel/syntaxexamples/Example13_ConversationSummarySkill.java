@@ -7,9 +7,9 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.ConversationSummarySkill;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import reactor.core.publisher.Mono;
 
@@ -127,7 +127,7 @@ public class Example13_ConversationSummarySkill {
                     """.stripIndent();
 
     public static void main(String[] args) throws IOException {
-        Config.ClientType clientType = Config.ClientType.OPEN_AI;
+        Config.ClientType clientType = Config.ClientType.AZURE_OPEN_AI;
 
         conversationSummarySkillAsync(clientType);
         getConversationActionItemsAsync(clientType);
@@ -141,7 +141,7 @@ public class Example13_ConversationSummarySkill {
         ReadOnlyFunctionCollection conversationSummarySkill =
                 kernel.importSkill(new ConversationSummarySkill(kernel), null);
 
-        Mono<CompletionSKContext> summary = conversationSummarySkill
+        Mono<SKContext> summary = conversationSummarySkill
                 .getFunction("SummarizeConversation", SKFunction.class)
                 .invokeAsync(ChatTranscript);
 
@@ -157,7 +157,7 @@ public class Example13_ConversationSummarySkill {
         ReadOnlyFunctionCollection conversationSummarySkill =
                 kernel.importSkill(new ConversationSummarySkill(kernel), null);
 
-        Mono<CompletionSKContext> summary = conversationSummarySkill
+        Mono<SKContext> summary = conversationSummarySkill
                 .getFunction("GetConversationActionItems", SKFunction.class)
                 .invokeAsync(ChatTranscript);
 
@@ -171,7 +171,7 @@ public class Example13_ConversationSummarySkill {
         ReadOnlyFunctionCollection conversationSummarySkill =
                 kernel.importSkill(new ConversationSummarySkill(kernel), null);
 
-        Mono<CompletionSKContext> summary = conversationSummarySkill
+        Mono<SKContext> summary = conversationSummarySkill
                 .getFunction("GetConversationTopics", SKFunction.class)
                 .invokeAsync(ChatTranscript);
 

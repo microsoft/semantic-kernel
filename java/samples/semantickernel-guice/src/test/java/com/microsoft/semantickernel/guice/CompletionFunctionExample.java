@@ -4,8 +4,8 @@ package com.microsoft.semantickernel.guice;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 
 import java.util.ArrayList;
 
@@ -61,13 +61,13 @@ public class CompletionFunctionExample {
                     + "poetry—'bearing a pleasant gift', for example, alludes to the use of that\n"
                     + "phrase throughout the Iliad and Odyssey.[a][2];";
 
-        CompletionSKContext summary =
+        SKContext summary =
                 completionFunctionFactory
                         .createFunction(
                                 prompt,
                                 "summarize",
                                 new PromptTemplateConfig.CompletionConfig(
-                                        0.2, 0.5, 0, 0, 2000, new ArrayList<>()))
+                                        0.2, 0.5, 0, 0, 2000))
                         .invokeAsync(text)
                         .block();
 

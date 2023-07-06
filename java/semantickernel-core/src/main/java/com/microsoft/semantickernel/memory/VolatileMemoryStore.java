@@ -3,11 +3,11 @@ package com.microsoft.semantickernel.memory;
 
 import com.microsoft.semantickernel.ai.EmbeddingVector;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
+
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
 
 /** A simple volatile memory embeddings store. */
 public class VolatileMemoryStore implements MemoryStore {
@@ -44,8 +46,9 @@ public class VolatileMemoryStore implements MemoryStore {
     }
 
     @Override
-    public Mono<Collection<String>> getCollectionsAsync() {
-        return Mono.just(Collections.unmodifiableCollection(this._store.keySet()));
+    public Mono<List<String>> getCollectionsAsync() {
+        List<String> keys = new ArrayList<>(this._store.keySet());
+        return Mono.just(Collections.unmodifiableList(keys));
     }
 
     @Override
@@ -159,6 +162,7 @@ public class VolatileMemoryStore implements MemoryStore {
         return new EmbeddingVector<Number>((List<Number>) list);
     }
 
+    @SuppressWarnings("UnnecessaryLambda")
     private static final ToDoubleFunction<Tuple2<MemoryRecord, ? extends Number>>
             extractSimilarity = tuple -> tuple.getT2().doubleValue();
 
@@ -246,35 +250,11 @@ public class VolatileMemoryStore implements MemoryStore {
     public static class Builder implements MemoryStore.Builder {
 
         public Builder() {}
+
         @Override
         public MemoryStore build() {
             return new VolatileMemoryStore();
         }
     }
 
-    /*
-    protected boolean TryGetCollection(
-        String name,
-        [NotNullWhen(true)] out ConcurrentDictionary<String,
-            MemoryRecord>? collection,
-        boolean create)
-    {
-        if (this._store.TryGetValue(name, out collection))
-        {
-            return true;
-        }
-
-        if (create)
-        {
-            collection = new ConcurrentDictionary<String, MemoryRecord>();
-            return this._store.TryAdd(name, collection);
-        }
-
-        collection = null;
-        return false;
-    }
-
-    private readonly ConcurrentDictionary<String,
-        ConcurrentDictionary<String, MemoryRecord>> _store = new();
-    */
 }

@@ -7,11 +7,8 @@ import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
-import com.microsoft.semantickernel.extensions.KernelExtensions;
-import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
@@ -22,12 +19,13 @@ import org.mockito.Mockito;
 
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DefaultKernelTest {
@@ -51,17 +49,15 @@ public class DefaultKernelTest {
                                 "ChatBot",
                                 null,
                                 null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0.7, 0.5, 0, 0, 2000, new ArrayList<>()));
+                                new PromptTemplateConfig.CompletionConfig(0.7, 0.5, 0, 0, 2000));
 
-        ContextVariables variables = SKBuilders.variables().build();
-
-        CompletionSKContext readOnlySkContext =
-                chat.buildContext(variables, null, null)
+        SKContext readOnlySkContext =
+                SKBuilders.context()
+                        .build(kernel)
                         .setVariable("history", "")
                         .setVariable("user_input", "A");
 
-        CompletionSKContext result = chat.invokeAsync(readOnlySkContext, null).block();
+        SKContext result = chat.invokeAsync(readOnlySkContext, null).block();
 
         if (result == null) {
             Assertions.fail();
@@ -88,14 +84,11 @@ public class DefaultKernelTest {
         Kernel kernel = buildKernel(model, client);
 
         CompletionSKFunction function =
-                kernel.importSkill(
-                                "FunSkill",
-                                KernelExtensions.importSemanticSkillFromDirectory(
-                                        "../../samples/skills", "FunSkill"))
+                kernel.importSkillFromDirectory("FunSkill", "../../samples/skills")
                         .getFunction("joke", CompletionSKFunction.class);
 
-        Mono<CompletionSKContext> mono = function.invokeAsync("time travel to dinosaur age");
-        CompletionSKContext result = mono.block();
+        Mono<SKContext> mono = function.invokeAsync("time travel to dinosaur age");
+        SKContext result = mono.block();
 
         String expected =
                 "WRITE EXACTLY ONE JOKE or HUMOROUS STORY ABOUT THE TOPIC BELOW\n"
@@ -150,27 +143,48 @@ public class DefaultKernelTest {
      * This if the client is prompted with "Tell me a joke", the mocked client would
      * respond with "This is a joke"
      */
-
     public static OpenAIAsyncClient mockCompletionOpenAIAsyncClient(
             Tuple2<String, String>... responses) {
 
-        List<Tuple2<ArgumentMatcher<String>, String>> matchers =
+        List<Tuple3<ArgumentMatcher<String>, String, Consumer<String>>> matchers =
                 Arrays.stream(responses)
                         .map(
                                 response ->
-                                        Tuples.<ArgumentMatcher<String>, String>of(
-                                                arg -> arg.contains(response.getT1()),
-                                                response.getT2()))
+                                        Tuples
+                                                .<ArgumentMatcher<String>, String, Consumer<String>>
+                                                        of(
+                                                                arg ->
+                                                                        arg.contains(
+                                                                                response.getT1()),
+                                                                response.getT2(),
+                                                                (arg) -> {}))
                         .collect(Collectors.toList());
 
-        return mockCompletionOpenAIAsyncClientMatchers(matchers.toArray(new Tuple2[0]));
+        return DefaultKernelTest.mockCompletionOpenAIAsyncClientMatchAndAssert(
+                matchers.toArray(new Tuple3[0]));
     }
 
-    public static OpenAIAsyncClient mockCompletionOpenAIAsyncClientMatchers(
+    public static OpenAIAsyncClient mockCompletionOpenAIAsyncClientMatch(
             Tuple2<ArgumentMatcher<String>, String>... responses) {
+
+        Tuple3[] withAssert =
+                Arrays.stream(responses)
+                        .map(
+                                spec ->
+                                        Tuples
+                                                .<ArgumentMatcher<String>, String, Consumer<String>>
+                                                        of(spec.getT1(), spec.getT2(), arg -> {}))
+                        .collect(Collectors.toList())
+                        .toArray(new Tuple3[0]);
+
+        return mockCompletionOpenAIAsyncClientMatchAndAssert(withAssert);
+    }
+
+    public static OpenAIAsyncClient mockCompletionOpenAIAsyncClientMatchAndAssert(
+            Tuple3<ArgumentMatcher<String>, String, Consumer<String>>... responses) {
         OpenAIAsyncClient openAIAsyncClient = Mockito.mock(OpenAIAsyncClient.class);
 
-        for (Tuple2<ArgumentMatcher<String>, String> response : responses) {
+        for (Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response : responses) {
 
             Choice choice = Mockito.mock(Choice.class);
             Mockito.when(choice.getText()).thenReturn(response.getT2());
@@ -184,12 +198,30 @@ public class DefaultKernelTest {
                                     Mockito.any(String.class),
                                     Mockito.<CompletionsOptions>argThat(
                                             it -> response.getT1().matches(it.getPrompt().get(0)))))
+                    .then(
+                            (arg) -> {
+                                response.getT3()
+                                        .accept(
+                                                ((CompletionsOptions) arg.getArgument(1))
+                                                        .getPrompt()
+                                                        .get(0));
+                                return Mono.just(completions);
+                            })
                     .thenReturn(Mono.just(completions));
 
             Mockito.when(
                             openAIAsyncClient.getCompletions(
                                     Mockito.any(String.class),
                                     Mockito.<String>argThat(it -> response.getT1().matches(it))))
+                    .then(
+                            (arg) -> {
+                                response.getT3()
+                                        .accept(
+                                                ((CompletionsOptions) arg.getArgument(1))
+                                                        .getPrompt()
+                                                        .get(0));
+                                return Mono.just(completions);
+                            })
                     .thenReturn(Mono.just(completions));
         }
         return openAIAsyncClient;
@@ -211,18 +243,16 @@ public class DefaultKernelTest {
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
         CompletionSKFunction summarize =
-                SKBuilders.completionFunctions()
+                SKBuilders.completionFunctions(kernel)
                         .createFunction(
                                 prompt,
                                 "summarize",
                                 null,
                                 null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
-        kernel.registerSemanticFunction(summarize);
+                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000));
 
-        Mono<CompletionSKContext> mono = summarize.invokeAsync(text);
-        CompletionSKContext result = mono.block();
+        Mono<SKContext> mono = summarize.invokeAsync(text);
+        SKContext result = mono.block();
 
         String expected = "A block of text\n\nSummarize the content above.";
 

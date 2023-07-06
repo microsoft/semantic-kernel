@@ -8,7 +8,6 @@ import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.text.TextChunker;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import reactor.core.publisher.Mono;
@@ -25,6 +24,7 @@ public class ConversationSummarySkill {
     private final CompletionSKFunction summarizeConversationFunction;
     private final CompletionSKFunction conversationActionItemsFunction;
     private final CompletionSKFunction conversationTopicsFunction;
+    private final Kernel kernel;
 
     /**
      * Initializes a new instance of the ConversationSummarySkill class
@@ -32,6 +32,7 @@ public class ConversationSummarySkill {
      * @param kernel Kernel instance
      */
     public ConversationSummarySkill(Kernel kernel) {
+        this.kernel = kernel;
         this.summarizeConversationFunction =
                 SKBuilders.completionFunctions(kernel)
                         .createFunction(
@@ -85,17 +86,22 @@ public class ConversationSummarySkill {
     @DefineSKFunction(
             description = "Given a long conversation transcript, summarize the conversation.",
             name = "SummarizeConversation")
-    public Mono<CompletionSKContext> summarizeConversationAsync(
+    public Mono<SKContext> summarizeConversationAsync(
             @SKFunctionInputAttribute
                     @SKFunctionParameters(
                             description = "A long conversation transcript.",
                             name = "input")
                     String input,
-            @Nullable SKContext<?> context) {
+            @Nullable SKContext context) {
         List<String> lines = TextChunker.splitPlainTextLines(input, MaxTokens);
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
 
-        CompletionSKContext completionContext = summarizeConversationFunction.buildContext(context);
+        if (context == null) {
+            context =
+                    SKBuilders.context().with(kernel.getSkills()).with(kernel.getMemory()).build();
+        }
+
+        SKContext completionContext = context.copy();
 
         return this.summarizeConversationFunction.aggregatePartitionedResultsAsync(
                 paragraphs, completionContext);
@@ -111,17 +117,17 @@ public class ConversationSummarySkill {
     @DefineSKFunction(
             description = "Given a long conversation transcript, identify action items.",
             name = "GetConversationActionItems")
-    public Mono<CompletionSKContext> getConversationActionItemsAsync(
+    public Mono<SKContext> getConversationActionItemsAsync(
             @SKFunctionInputAttribute
                     @SKFunctionParameters(
                             description = "A long conversation transcript.",
                             name = "input")
                     String input,
-            SKContext<?> context) {
+            SKContext context) {
         List<String> lines = TextChunker.splitPlainTextLines(input, MaxTokens);
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
 
-        CompletionSKContext completionContext = summarizeConversationFunction.buildContext(context);
+        SKContext completionContext = context.copy();
 
         return this.conversationActionItemsFunction.aggregatePartitionedResultsAsync(
                 paragraphs, completionContext);
@@ -138,17 +144,17 @@ public class ConversationSummarySkill {
             description =
                     "Given a long conversation transcript, identify topics worth remembering.",
             name = "GetConversationTopics")
-    public Mono<CompletionSKContext> getConversationTopicsAsync(
+    public Mono<SKContext> getConversationTopicsAsync(
             @SKFunctionInputAttribute
                     @SKFunctionParameters(
                             description = "A long conversation transcript.",
                             name = "input")
                     String input,
-            SKContext<?> context) {
+            SKContext context) {
         List<String> lines = TextChunker.splitPlainTextLines(input, MaxTokens);
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
 
-        CompletionSKContext completionContext = summarizeConversationFunction.buildContext(context);
+        SKContext completionContext = context.copy();
 
         return this.conversationTopicsFunction.aggregatePartitionedResultsAsync(
                 paragraphs, completionContext);

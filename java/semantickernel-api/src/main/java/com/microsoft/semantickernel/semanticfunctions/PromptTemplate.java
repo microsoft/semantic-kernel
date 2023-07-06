@@ -22,14 +22,17 @@ public interface PromptTemplate {
      * Render the template using the information in the context
      *
      * @param executionContext Kernel execution context helpers
-     * @param promptTemplateEngine
      * @return Prompt rendered to string
      */
-    Mono<String> renderAsync(SKContext executionContext, PromptTemplateEngine promptTemplateEngine);
+    Mono<String> renderAsync(SKContext executionContext);
 
     abstract class Builder {
         protected Builder() {}
 
-        public abstract PromptTemplate build(String promptTemplate, PromptTemplateConfig config);
+        public abstract PromptTemplate build(PromptTemplateEngine promptTemplateEngine);
+
+        public abstract Builder withPromptTemplate(String promptTemplate);
+
+        public abstract Builder withPromptTemplateConfig(PromptTemplateConfig config);
     }
 }

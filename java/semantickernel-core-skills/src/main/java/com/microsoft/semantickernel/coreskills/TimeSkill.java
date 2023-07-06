@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.time.format.TextStyle;
 import java.util.Locale;
 
@@ -55,6 +54,9 @@ import java.util.Locale;
  * <p>{{time.timeZoneName}} => Pacific Time
  */
 public class TimeSkill {
+
+    public static final String DAY_MONTH_DAY_YEAR = "EEEE, MMMM d, yyyy";
+
     /**
      * Get the current date.
      *
@@ -64,7 +66,8 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "date", description = "Get the current date")
     public String date() {
-        return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(ZonedDateTime.now());
+        // Example: Sunday, 12 January, 2025
+        return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR).format(ZonedDateTime.now());
     }
 
     /**
@@ -76,6 +79,7 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "time", description = "Get the current time")
     public String time() {
+        // Example: 09:15:07 PM
         return DateTimeFormatter.ofPattern("hh:mm:ss a").format(ZonedDateTime.now());
     }
 
@@ -88,7 +92,7 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "utcNow", description = "Get the current UTC date and time")
     public String utcNow() {
-        return DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy h:mm a")
+        return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR + " h:mm a")
                 .format(ZonedDateTime.now().withZoneSameInstant(ZoneOffset.UTC));
     }
 
@@ -115,7 +119,7 @@ public class TimeSkill {
             name = "now",
             description = "Get the current date and time in the local time zone")
     public String now() {
-        return DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy h:mm a")
+        return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR + " h:mm a")
                 .format(ZonedDateTime.now());
     }
 
@@ -164,7 +168,7 @@ public class TimeSkill {
      */
     @DefineSKFunction(name = "day", description = "Get the current day of the month")
     public String day() {
-        return DateTimeFormatter.ofPattern("dd").format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("d").format(ZonedDateTime.now());
     }
 
     /**
@@ -217,7 +221,7 @@ public class TimeSkill {
             description = "Get the date of offset from today by a provided number of days")
     public static String daysAgo(String days) {
         int offsetDays = Integer.parseInt(days);
-        return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
+        return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR)
                 .format(ZonedDateTime.now().minusDays(offsetDays));
     }
 
@@ -241,7 +245,7 @@ public class TimeSkill {
                     currentDate.getDayOfWeek().getDisplayName(TextStyle.FULL, systemLocale);
 
             if (currentDayName.equalsIgnoreCase(dayName)) {
-                return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(currentDate);
+                return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR).format(currentDate);
             }
         }
         throw new IllegalArgumentException("dayName is not recognized");

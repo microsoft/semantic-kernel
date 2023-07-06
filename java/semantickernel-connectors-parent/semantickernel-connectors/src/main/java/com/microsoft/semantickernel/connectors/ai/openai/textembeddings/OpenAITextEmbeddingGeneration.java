@@ -27,7 +27,8 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
     }
 
     protected Mono<List<Embedding<Float>>> internalGenerateTextEmbeddingsAsync(List<String> data) {
-        EmbeddingsOptions options = new EmbeddingsOptions(data).setModel(getModelId()).setUser("default");
+        EmbeddingsOptions options =
+                new EmbeddingsOptions(data).setModel(getModelId()).setUser("default");
 
         return getClient()
                 .getEmbeddings(getModelId(), options)

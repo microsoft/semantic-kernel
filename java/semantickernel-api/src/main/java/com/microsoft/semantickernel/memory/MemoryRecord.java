@@ -109,7 +109,7 @@ public class MemoryRecord extends DataEntryBase {
             @Nullable String key,
             @Nullable ZonedDateTime timestamp) {
 
-        boolean isReference = true;
+        boolean isReference = false;
         String emptyString = "";
         MemoryRecordMetadata metadata =
                 new MemoryRecordMetadata(
@@ -143,7 +143,7 @@ public class MemoryRecord extends DataEntryBase {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof MemoryRecord)) return false;
 
         MemoryRecord that = (MemoryRecord) o;
 

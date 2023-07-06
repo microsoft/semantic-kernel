@@ -17,21 +17,23 @@ import org.mockito.Mockito;
 
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
+
 public class NativeSKFunctionTest {
 
     @Test
     public void singleStringIsBoundToInput() {
-        class Test {
+        class SinleStringSkill {
             @DefineSKFunction
             public String doSomething(String anInput) {
                 return "";
             }
         }
 
-        Test skill = Mockito.spy(new Test());
+        SinleStringSkill skill = Mockito.spy(new SinleStringSkill());
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
-        Mono<?> ignore = skills.getFunction("doSomething").invokeAsync("foo");
+        SKContext ignore = skills.getFunction("doSomething").invokeAsync("foo").block();
         Mockito.verify(skill, Mockito.times(1)).doSomething("foo");
     }
 
@@ -57,7 +59,7 @@ public class NativeSKFunctionTest {
 
     @Test
     public void annotatedWithNonInputIsBound() {
-        class With2Inputs {
+        class With2InputParameters {
             @DefineSKFunction
             public String doSomething(
                     @SKFunctionParameters(name = "anInput") String anInput,
@@ -65,7 +67,7 @@ public class NativeSKFunctionTest {
                 return "";
             }
         }
-        With2Inputs skill = Mockito.spy(new With2Inputs());
+        With2InputParameters skill = Mockito.spy(new With2InputParameters());
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
         ContextVariables variables = SKBuilders.variables().build();
@@ -100,13 +102,13 @@ public class NativeSKFunctionTest {
 
     @Test
     public void noAnnotationCreatesError() {
-        class DoesNotExist {
+        class AnnotationDoesNotExist {
             public String doSomething(String anInput) {
                 return "";
             }
         }
 
-        DoesNotExist skill = Mockito.spy(new DoesNotExist());
+        AnnotationDoesNotExist skill = Mockito.spy(new AnnotationDoesNotExist());
         Assertions.assertThrows(
                 FunctionNotFound.class,
                 () -> {
@@ -129,7 +131,7 @@ public class NativeSKFunctionTest {
         WithContext skill = Mockito.spy(new WithContext());
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
-        Mono<?> ignore = skills.getFunction("doSomething").invokeAsync("foo");
+        SKContext ignore = skills.getFunction("doSomething").invokeAsync("foo").block();
         Mockito.verify(skill, Mockito.only()).doSomething(Mockito.notNull());
     }
 
@@ -145,7 +147,7 @@ public class NativeSKFunctionTest {
         WithMono skill = Mockito.spy(new WithMono());
         FunctionCollection skills =
                 SkillImporter.importSkill(skill, "test", DefaultSkillCollection::new);
-        SKContext<?> result = skills.getFunction("doSomething").invokeAsync("foo").block();
-        Assertions.assertEquals("A-RESULT", result.getResult());
+        SKContext result = skills.getFunction("doSomething").invokeAsync("foo").block();
+        Assertions.assertEquals("A-RESULT", Objects.requireNonNull(result).getResult());
     }
 }

@@ -13,7 +13,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
     public FunctionIdBlock(String content) {
         super(content, BlockTypes.FunctionId);
 
-        String[] functionNameParts = this.getContent().split("\\.");
+        String[] functionNameParts = this.getContent().split("\\.", -1);
         if (functionNameParts.length > 2) {
             throw new RuntimeException(
                     "A function name can contain at most one dot separating the skill name from the"
@@ -36,6 +36,7 @@ public final class FunctionIdBlock extends Block implements TextRendering {
         return this.getContent();
     }
 
+    @Override
     public boolean isValid() {
         if (!this.getContent().matches("^[a-zA-Z0-9_.]*$")) {
             // errorMsg = "The function identifier is empty";

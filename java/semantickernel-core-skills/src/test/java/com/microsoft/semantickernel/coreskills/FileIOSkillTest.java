@@ -1,18 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.SKContext;
-
-import reactor.test.StepVerifier;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class FileIOSkillTest {
 
@@ -21,7 +16,7 @@ public class FileIOSkillTest {
         // Create a temporary file with some content
         String content = "Hello, World!";
         Path tempFile = Files.createTempFile("test", ".txt");
-        Files.write(tempFile, content.getBytes());
+        Files.write(tempFile, content.getBytes(StandardCharsets.UTF_8));
 
         // Create an instance of FileIOSkill
         FileIOSkill fileIOSkill = new FileIOSkill();
@@ -52,7 +47,7 @@ public class FileIOSkillTest {
         fileIOSkill.writeFileAsync(tempFile.toAbsolutePath().toString(), content, "UTF-8");
 
         // Read the written file to verify the content
-        String fileContents = new String(Files.readAllBytes(tempFile));
+        String fileContents = new String(Files.readAllBytes(tempFile), StandardCharsets.UTF_8);
         Assertions.assertEquals(content, fileContents);
 
         // Delete the temporary file

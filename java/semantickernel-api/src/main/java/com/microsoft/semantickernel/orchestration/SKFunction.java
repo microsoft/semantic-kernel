@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 
 import reactor.core.publisher.Mono;
@@ -15,52 +16,14 @@ import javax.annotation.Nullable;
  * @param <RequestConfiguration> The type of the configuration argument that will be provided when
  *     the function is invoked
  */
-public interface SKFunction<RequestConfiguration, ContextType extends SKContext<ContextType>> {
-    /*
-        /// <summary>
-        /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
-        /// </summary>
-        string Name { get; }
-
-        /// <summary>
-        /// Name of the skill containing the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
-        /// </summary>
-        string SkillName { get; }
-
-        /// <summary>
-        /// Function description. The description is used in combination with embeddings when searching relevant functions.
-        /// </summary>
-        string Description { get; }
-
-        /// <summary>
-        /// Whether the function is defined using a prompt template.
-        /// IMPORTANT: native functions might use semantic functions internally,
-        /// so when this property is False, executing the function might still involve AI calls.
-        /// </summary>
-        public bool IsSemantic { get; }
-
-        /// <summary>
-        /// AI service settings
-        /// </summary>
-        public CompleteRequestSettings RequestSettings { get; }
-
-        /// <summary>
-        /// Returns a description of the function, including parameters.
-        /// </summary>
-        /// <returns>An instance of <see cref="FunctionView"/> describing the function</returns>
-        FunctionView Describe();
-    */
-    // TODO: CancellationToken
-    /// <summary>
-    /// Invoke the internal delegate with an explicit string input
-    /// </summary>
-    /// <param name="input">String input</param>
-    /// <param name="context">SK context</param>
-    /// <param name="settings">LLM completion settings</param>
-    /// <param name="log">Application logger</param>
-    /// <param name="cancel">Cancellation token</param>
-    /// <returns>The updated context, potentially a new one if context switching is
-    // implemented.</returns>
+public interface SKFunction<RequestConfiguration> {
+    /**
+     * Returns a description of the function, including parameters.
+     *
+     * @return An instance of {@link FunctionView} describing the function
+     */
+    @Nullable
+    FunctionView describe();
 
     /**
      * Invokes the function with the given input, context and settings
@@ -71,7 +34,9 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
-    Mono<ContextType> invokeAsync(String input, ContextType context, RequestConfiguration settings);
+    Mono<SKContext> invokeAsync(String input, SKContext context, RequestConfiguration settings);
+
+    Mono<SKContext> invokeAsync();
 
     /**
      * Invokes the function with the given input
@@ -80,9 +45,19 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
-    Mono<ContextType> invokeAsync(String input);
+    Mono<SKContext> invokeAsync(String input);
 
+    @Nullable
     Class<RequestConfiguration> getType();
+
+    /**
+     * Invokes the function with the given context and settings
+     *
+     * @param context Request context
+     * @return an updated context with the result of the request
+     */
+    @CheckReturnValue
+    Mono<SKContext> invokeAsync(SKContext context);
 
     /**
      * Invokes the function with the given context and settings
@@ -92,31 +67,7 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
      * @return an updated context with the result of the request
      */
     @CheckReturnValue
-    Mono<ContextType> invokeAsync(ContextType context, @Nullable RequestConfiguration settings);
-
-    /// <summary>
-    /// Set the default skill collection to use when the function is invoked
-    /// without a context or with a context that doesn't have a collection.
-    /// </summary>
-    /// <param name="skills">Kernel's skill collection</param>
-    /// <returns>Self instance</returns>
-    /*
-    SKFunction<RequestConfiguration> setDefaultSkillCollection(SkillCollection skills);
-      /// <summary>
-      /// Set the AI service used by the semantic function, passing a factory method.
-      /// The factory allows to lazily instantiate the client and to properly handle its disposal.
-      /// </summary>
-      /// <param name="serviceFactory">AI service factory</param>
-      /// <returns>Self instance</returns>
-      SKFunction setAIService(Supplier<TextCompletion> serviceFactory);
-
-      /// <summary>
-      /// Set the AI completion settings used with LLM requests
-      /// </summary>
-      /// <param name="settings">LLM completion settings</param>
-      /// <returns>Self instance</returns>
-      SKFunction setAIConfiguration(CompleteRequestSettings settings);
-    */
+    Mono<SKContext> invokeAsync(SKContext context, @Nullable RequestConfiguration settings);
 
     /**
      * @return The name of the skill that this function is within
@@ -135,28 +86,17 @@ public interface SKFunction<RequestConfiguration, ContextType extends SKContext<
      */
     String toFullyQualifiedName();
 
+    /**
+     * @return A description of the function
+     */
     String getDescription();
 
     String toEmbeddingString();
 
     String toManualString();
 
-    ContextType buildContext(
-            ContextVariables variables,
-            @Nullable SemanticTextMemory memory,
-            @Nullable ReadOnlySkillCollection skills);
-
-    ContextType buildContext();
-
-    /**
-     * Build a context cloning the state of the given context
-     *
-     * @param toClone The context to clone
-     */
-    ContextType buildContext(SKContext toClone);
-
-    Mono<ContextType> invokeWithCustomInputAsync(
+    Mono<SKContext> invokeWithCustomInputAsync(
             ContextVariables variablesClone,
-            SemanticTextMemory semanticMemory,
-            ReadOnlySkillCollection skills);
+            @Nullable SemanticTextMemory semanticMemory,
+            @Nullable ReadOnlySkillCollection skills);
 }

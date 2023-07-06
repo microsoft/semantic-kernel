@@ -5,7 +5,7 @@ import static com.microsoft.semantickernel.skilldefinition.annotations.SKFunctio
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.AIException;
-import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,15 +33,15 @@ import javax.annotation.Nullable;
 // cref="Action"/>,
 /// with additional methods required by the kernel.
 /// </summary>
-public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext> {
+public class NativeSKFunction extends AbstractSkFunction<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeSKFunction.class);
 
-    private final SKNativeTask<SemanticSKContext> function;
+    private final SKNativeTask<SKContext> function;
 
     public NativeSKFunction(
             AbstractSkFunction.DelegateTypes delegateType,
-            SKNativeTask<SemanticSKContext> delegateFunction,
+            SKNativeTask<SKContext> delegateFunction,
             List<ParameterView> parameters,
             String skillName,
             String functionName,
@@ -57,6 +58,17 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
     }
 
     @Override
+    public FunctionView describe() {
+        return new FunctionView(
+                super.getName(),
+                super.getSkillName(),
+                super.getDescription(),
+                super.getParameters(),
+                false,
+                false);
+    }
+
+    @Override
     public Class<Void> getType() {
         return Void.class;
     }
@@ -69,7 +81,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
     private static class MethodDetails {
         public final boolean hasSkFunctionAttribute;
         public final AbstractSkFunction.DelegateTypes type;
-        public final SKNativeTask<SemanticSKContext> function;
+        public final SKNativeTask<SKContext> function;
         public final List<ParameterView> parameters;
         public final String name;
         public final String description;
@@ -77,7 +89,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
         private MethodDetails(
                 boolean hasSkFunctionAttribute,
                 AbstractSkFunction.DelegateTypes type,
-                SKNativeTask<SemanticSKContext> function,
+                SKNativeTask<SKContext> function,
                 List<ParameterView> parameters,
                 String name,
                 String description) {
@@ -116,24 +128,9 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
                 kernelSkillsSupplier);
     }
 
-    @Override
-    public SemanticSKContext buildContext(
-            ContextVariables variables,
-            @Nullable SemanticTextMemory memory,
-            @Nullable ReadOnlySkillCollection skills) {
-        return new DefaultSemanticSKContext(variables, memory, skills);
-    }
-
-    @Override
-    public SemanticSKContext buildContext(SKContext toClone) {
-        return new DefaultSemanticSKContext(
-                toClone.getVariables(), toClone.getSemanticMemory(), toClone.getSkills());
-    }
-
     // Run the native function
     @Override
-    protected Mono<SemanticSKContext> invokeAsyncInternal(
-            SemanticSKContext context, @Nullable Void settings) {
+    protected Mono<SKContext> invokeAsyncInternal(SKContext context, @Nullable Void settings) {
         return this.function.run(context);
     }
 
@@ -142,7 +139,6 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
         // Verify.NotNull(methodSignature, "Method is NULL");
 
         // String name = methodSignature.getName();
-        ArrayList<ParameterView> parameters = new ArrayList<>();
 
         boolean hasSkFunctionAttribute =
                 methodSignature.isAnnotationPresent(DefineSKFunction.class);
@@ -151,8 +147,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
             throw new RuntimeException("method is not annotated with DefineSKFunction");
         }
         DelegateTypes type = getDelegateType(methodSignature);
-        SKNativeTask<SemanticSKContext> function =
-                getFunction(methodSignature, methodContainerInstance);
+        SKNativeTask<SKContext> function = getFunction(methodSignature, methodContainerInstance);
 
         // boolean hasStringParam =
         //    Arrays.asList(methodSignature.getGenericParameterTypes()).contains(String.class);
@@ -165,18 +160,61 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
 
         String description = methodSignature.getAnnotation(DefineSKFunction.class).description();
 
+        List<ParameterView> parameters = getParameters(methodSignature);
+
         return new MethodDetails(
                 hasSkFunctionAttribute, type, function, parameters, name, description);
     }
 
-    private static SKNativeTask<SemanticSKContext> getFunction(Method method, Object instance) {
+    private static List<ParameterView> getParameters(Method method) {
+
+        List<ParameterView> params =
+                Arrays.stream(method.getParameters())
+                        .filter(
+                                parameter ->
+                                        parameter.isAnnotationPresent(SKFunctionParameters.class)
+                                                || parameter.isAnnotationPresent(
+                                                        SKFunctionInputAttribute.class))
+                        .map(
+                                parameter -> {
+                                    if (parameter.isAnnotationPresent(SKFunctionParameters.class)) {
+                                        SKFunctionParameters annotation =
+                                                parameter.getAnnotation(SKFunctionParameters.class);
+                                        return new ParameterView(
+                                                annotation.name(),
+                                                annotation.description(),
+                                                annotation.defaultValue());
+                                    } else {
+                                        return new ParameterView("input");
+                                    }
+                                })
+                        .collect(Collectors.toList());
+
+        HashSet<ParameterView> out = new HashSet<>(params);
+
+        boolean hasInput = params.stream().anyMatch(p -> p.getName().equals("input"));
+
+        if (!hasInput) {
+            List<ParameterView> inputArgs =
+                    determineInputArgs(method).stream()
+                            .map(
+                                    parameter -> {
+                                        return new ParameterView("input");
+                                    })
+                            .collect(Collectors.toList());
+            out.addAll(inputArgs);
+        }
+
+        return new ArrayList<>(out);
+    }
+
+    private static SKNativeTask<SKContext> getFunction(Method method, Object instance) {
         return (contextInput) -> {
-            SemanticSKContext context = contextInput.copy();
+            SKContext context = contextInput.copy();
 
             Set<Parameter> inputArgs = determineInputArgs(method);
 
             try {
-
                 List<Object> args =
                         Arrays.stream(method.getParameters())
                                 .map(
@@ -209,11 +247,26 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
                         return Mono.error(e);
                     }
                 } else {
-                    try {
-                        mono = Mono.just(method.invoke(instance, args.toArray()));
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        return Mono.error(e);
-                    }
+                    mono =
+                            Mono.defer(
+                                    () -> {
+                                        return Mono.fromCallable(
+                                                        () -> {
+                                                            try {
+                                                                Object result =
+                                                                        method.invoke(
+                                                                                instance,
+                                                                                args.toArray());
+
+                                                                return result;
+                                                            } catch (IllegalAccessException
+                                                                    | InvocationTargetException e) {
+                                                                throw new RuntimeException(
+                                                                        e.getCause());
+                                                            }
+                                                        })
+                                                .subscribeOn(Schedulers.boundedElastic());
+                                    });
                 }
 
                 return mono.map(
@@ -231,10 +284,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
     }
 
     private static String getArgumentValue(
-            Method method,
-            SemanticSKContext context,
-            Parameter parameter,
-            Set<Parameter> inputArgs) {
+            Method method, SKContext context, Parameter parameter, Set<Parameter> inputArgs) {
         String variableName = getGetVariableName(parameter);
 
         String arg = context.getVariables().get(variableName);
@@ -242,12 +292,12 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
             // If this is bound to input get the input value
             if (inputArgs.contains(parameter)) {
                 String input = context.getVariables().get(ContextVariables.MAIN_KEY);
-                if (input != null && !input.isEmpty()) {
+                if (input != null) {
                     arg = input;
                 }
             }
 
-            if (arg == null || arg.isEmpty()) {
+            if (arg == null) {
                 SKFunctionParameters annotation =
                         parameter.getAnnotation(SKFunctionParameters.class);
                 if (annotation != null) {
@@ -256,7 +306,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
             }
         }
 
-        if ((arg == null || arg.isEmpty()) && variableName.matches("arg\\d")) {
+        if (arg == null && variableName.matches("arg\\d")) {
             LOGGER.warn(
                     "For the function "
                             + method.getDeclaringClass().getName()
@@ -364,6 +414,10 @@ public class NativeSKFunction extends AbstractSkFunction<Void, SemanticSKContext
         // TODO ALL TYPES
         if (method.getReturnType().equals(String.class)) {
             return AbstractSkFunction.DelegateTypes.OutString;
+        }
+
+        if (method.getReturnType().getName().equals("void")) {
+            return DelegateTypes.Void;
         }
 
         if (method.getReturnType().equals(Mono.class)) {

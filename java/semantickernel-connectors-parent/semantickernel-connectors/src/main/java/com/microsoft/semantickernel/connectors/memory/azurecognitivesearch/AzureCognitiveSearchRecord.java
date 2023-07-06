@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.List;
 
-
 /**
  * Azure Cognitive Search record and index definition. Note: once defined, index cannot be modified.
  */
@@ -37,12 +36,12 @@ public final class AzureCognitiveSearchRecord {
 
     @JsonCreator
     public AzureCognitiveSearchRecord(
-             @JsonProperty("Id") String id,
-             @JsonProperty("Text") String text,
-             @JsonProperty("Description") String description,
-             @JsonProperty("AdditionalMetadata") String additionalMetadata,
-             @JsonProperty("ExternalSourceName") String externalSourceName,
-             @JsonProperty("Reference") boolean isReference) {
+            @JsonProperty("Id") String id,
+            @JsonProperty("Text") String text,
+            @JsonProperty("Description") String description,
+            @JsonProperty("AdditionalMetadata") String additionalMetadata,
+            @JsonProperty("ExternalSourceName") String externalSourceName,
+            @JsonProperty("Reference") boolean isReference) {
         this.id = id;
         this.text = text;
         this.description = description;
@@ -126,8 +125,7 @@ public final class AzureCognitiveSearchRecord {
                 new SearchField("ExternalSourceName", SearchFieldDataType.STRING)
                         .setSearchable(true)
                         .setAnalyzerName(LexicalAnalyzerName.EN_LUCENE),
-                new SearchField("Reference", SearchFieldDataType.BOOLEAN).setFilterable(true)
-        );
+                new SearchField("Reference", SearchFieldDataType.BOOLEAN).setFilterable(true));
     }
     // TODO: add one more field with the vector, float array, mark it as searchable
 
