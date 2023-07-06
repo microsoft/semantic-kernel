@@ -215,7 +215,7 @@ Goal: tell me a joke.
 
     /// <summary>
     /// Native function that filters out good JSON from planner result in case additional text is present
-    /// using a similiar regex to the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions
+    /// using a similar regex to the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions
     /// </summary>
     /// <param name="plannerResult">Result context of planner function.</param>
     /// <returns>An ActionPlanResponse object deserialized from extracted JSON.</returns>
