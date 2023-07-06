@@ -98,10 +98,6 @@ npm install -g @azure/static-web-apps-cli
 ./deploy-webapp.sh --subscription {YOUR_SUBSCRIPTION_ID} --resource-group rg-{YOUR_DEPLOYMENT_NAME} --deployment-name {YOUR_DEPLOYMENT_NAME} --application-id {YOUR_APPLICATION_ID}
 ```
 
-## Update your redirect URI
-Go back to your AAD application registration and add your frontend's URL as an additional redirect URI.  
-_**Note:** This step must be done via the Azure portal, as the Azure CLI does not currently support it for the SPA platform type._
-
 Your CopilotChat application is now deployed!
 
 
