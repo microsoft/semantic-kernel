@@ -610,9 +610,13 @@ public sealed class Plan : ISKFunction
     {
         context.Log.LogInformation("{SkillName}.{StepName}: Step execution started.", this.SkillName, this.Name);
 
-        var stopwatch = Stopwatch.StartNew();
+        var stopwatch = new Stopwatch();
+
+        stopwatch.Start();
 
         var result = await function.InvokeAsync(context, settings).ConfigureAwait(false);
+
+        stopwatch.Stop();
 
         if (!result.ErrorOccurred)
         {
@@ -631,8 +635,6 @@ public sealed class Plan : ISKFunction
                 "Something went wrong in plan step {SkillName}.{StepName}:'{ErrorDescription}'",
                 this.SkillName, this.Name, context.LastErrorDescription);
         }
-
-        stopwatch.Stop();
 
         context.Log.LogInformation(
             "{SkillName}.{StepName}: Step execution finished in {ExecutionTime}ms.",

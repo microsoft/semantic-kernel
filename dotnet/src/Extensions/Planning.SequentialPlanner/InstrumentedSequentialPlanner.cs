@@ -37,11 +37,15 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         this._logger.LogInformation("Plan creation started.");
         this._logger.LogTrace("Plan Goal: {Goal}", goal);
 
-        var stopwatch = Stopwatch.StartNew();
+        var stopwatch = new Stopwatch();
 
         try
         {
+            stopwatch.Start();
+
             var plan = await this._planner.CreatePlanAsync(goal).ConfigureAwait(false);
+
+            stopwatch.Stop();
 
             this._logger.LogInformation("Plan creation status: {Status}", "Success");
 
@@ -59,8 +63,6 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         }
         finally
         {
-            stopwatch.Stop();
-
             this._logger.LogInformation("Plan creation finished in {ExecutionTime}ms.", stopwatch.ElapsedMilliseconds);
 
             this._meter.TrackMetric(CreatePlanExecutionTimeMetricName, stopwatch.ElapsedMilliseconds);

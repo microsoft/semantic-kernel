@@ -13,8 +13,18 @@ using Microsoft.SemanticKernel.Diagnostics.Metering;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
 
+/// <summary>
+/// Example of telemetry in Semantic Kernel using Application Insights within console application.
+/// </summary>
 public sealed class Program
 {
+    /// <summary>
+    /// Log level to be used by <see cref="ILogger"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="LogLevel.Information"/> is set by default. <para />
+    /// <see cref="LogLevel.Trace"/> will enable logging with more detailed information, including sensitive data. Should not be used in production. <para />
+    /// </remarks>
     private static LogLevel LogLevel = LogLevel.Information;
 
     public static async Task Main()
@@ -28,25 +38,30 @@ public sealed class Program
         var kernel = GetKernel(logger, meter);
         var planner = GetPlanner(kernel, logger, meter);
 
-        using var operation = telemetryClient.StartOperation<DependencyTelemetry>("Planning");
+        try
+        {
+            using var operation = telemetryClient.StartOperation<DependencyTelemetry>("SequentialPlanner.Example");
 
-        Console.WriteLine("Trace ID:");
-        Console.WriteLine(Activity.Current?.TraceId);
+            Console.WriteLine("Operation/Trace ID:");
+            Console.WriteLine(Activity.Current?.TraceId);
 
-        var plan = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
+            var plan = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
 
-        Console.WriteLine("Original plan:");
-        Console.WriteLine(plan.ToPlanString());
+            Console.WriteLine("Original plan:");
+            Console.WriteLine(plan.ToPlanString());
 
-        var result = await kernel.RunAsync(plan);
+            var result = await kernel.RunAsync(plan);
 
-        Console.WriteLine("Result:");
-        Console.WriteLine(result.Result);
-
-        // Explicitly call Flush() followed by sleep is required in console apps.
-        // This is to ensure that even if application terminates, telemetry is sent to the back-end.
-        telemetryClient.Flush();
-        await Task.Delay(5000);
+            Console.WriteLine("Result:");
+            Console.WriteLine(result.Result);
+        }
+        finally
+        {
+            // Explicitly call Flush() followed by sleep is required in console apps.
+            // This is to ensure that even if application terminates, telemetry is sent to the back-end.
+            telemetryClient.Flush();
+            await Task.Delay(5000);
+        }
     }
 
     private static ServiceProvider GetServiceProvider()

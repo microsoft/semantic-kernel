@@ -93,7 +93,7 @@ public abstract class OpenAIClientBase
         }
         catch (Exception ex) when (ex is NotSupportedException or JsonException)
         {
-            this._log.LogWarning("Unable to extract error from response body content. Exception: {0}:{1}", ex.GetType(), ex.Message);
+            this._log.LogError(ex, "Unable to extract error from response body content. Exception: {0}:{1}", ex.GetType(), ex.Message);
         }
 
         return null;

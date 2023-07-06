@@ -18,6 +18,9 @@ internal sealed class ApplicationInsightsMeter : IMeter
 
     public void TrackMetric(string name, double value, IDictionary<string, string>? properties = null)
     {
+        // TrackMetric here is used for demonstration purposes. It's not preferred method for sending metrics. 
+        // GetMetric.TrackValue should be used instead.
+        // More information here: https://learn.microsoft.com/en-us/azure/azure-monitor/app/api-custom-events-metrics#trackmetric
         this._telemetryClient.TrackMetric(name, value, properties);
     }
 }
