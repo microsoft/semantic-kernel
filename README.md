@@ -78,6 +78,7 @@ and to run one of the C# or Python console applications/scripts:
 5. Run with `F5` or `dotnet run`
 
 ### For Python:
+
 1. Install the pip package: `python -m pip install semantic-kernel`.
 2. Create a new script e.g. `hello-world.py`.
 3. Store your API key and settings in an `.env` file as described [here](python/README.md).
