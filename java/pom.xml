@@ -629,6 +629,13 @@
         </profile>
 
         <profile>
+            <id>with-samples</id>
+            <modules>
+                <module>samples</module>
+                <module>api-test</module>
+            </modules>
+        </profile>
+        <profile>
             <id>release</id>
             <properties>
                 <maven.compiler.source>1.8</maven.compiler.source>
