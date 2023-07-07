@@ -2,11 +2,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Diagnostics.Metering;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Services;
@@ -23,7 +23,7 @@ public sealed class KernelBuilder
     private KernelConfig _config = new();
     private Func<ISemanticTextMemory> _memoryFactory = () => NullMemory.Instance;
     private ILogger _logger = NullLogger.Instance;
-    private IMeter _meter = NullMeter.Instance;
+    private MeterListener? _meterListener;
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
@@ -56,8 +56,7 @@ public sealed class KernelBuilder
             this._promptTemplateEngine ?? new PromptTemplateEngine(this._logger),
             this._memoryFactory.Invoke(),
             this._config,
-            this._logger,
-            this._meter
+            this._logger
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -65,6 +64,8 @@ public sealed class KernelBuilder
         {
             instance.UseMemory(this._memoryStorageFactory.Invoke());
         }
+
+        this._meterListener?.Start();
 
         return instance;
     }
@@ -82,14 +83,24 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
-    /// Add a meter to the kernel to be built.
+    /// Add metering to the kernel to be built.
     /// </summary>
-    /// <param name="meter">Meter to add.</param>
-    /// <returns>Updated kernel builder including the meter.</returns>
-    public KernelBuilder AddMetering(IMeter meter)
+    /// <param name="meterListener">Instance of <see cref="MeterListener"/> to be used for kernel metering.</param>
+    /// <returns>Kernel builder with enabled metering.</returns>
+    public KernelBuilder AddMetering(MeterListener meterListener)
     {
-        Verify.NotNull(meter);
-        this._meter = meter;
+        Verify.NotNull(meterListener);
+
+        meterListener.InstrumentPublished = (instrument, listener) =>
+        {
+            if (instrument.Meter.Name.StartsWith(typeof(Kernel).Namespace, StringComparison.Ordinal))
+            {
+                listener.EnableMeasurementEvents(instrument);
+            }
+        };
+
+        this._meterListener = meterListener;
+
         return this;
     }
 

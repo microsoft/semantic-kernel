@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -25,11 +26,6 @@ namespace Microsoft.SemanticKernel.Planning;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class Plan : ISKFunction
 {
-    /// <summary>
-    /// Instance of <see cref="ActivitySource"/> for plan-related activities.
-    /// </summary>
-    private static ActivitySource activitySource = new(typeof(Plan).FullName);
-
     /// <summary>
     /// State of the plan
     /// </summary>
@@ -236,7 +232,6 @@ public sealed class Plan : ISKFunction
             kernel.Memory,
             kernel.Skills,
             kernel.Log,
-            kernel.Meter,
             cancellationToken);
 
         return this.InvokeNextStepAsync(context);
@@ -263,7 +258,6 @@ public sealed class Plan : ISKFunction
                 context.Memory,
                 context.Skills,
                 context.Log,
-                context.Meter,
                 context.CancellationToken);
 
             var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
@@ -604,7 +598,7 @@ public sealed class Plan : ISKFunction
         SKContext context,
         CompleteRequestSettings? settings = null)
     {
-        using var activity = activitySource.StartActivity($"{this.SkillName}.{this.Name}");
+        using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
 
         context.Log.LogInformation("{SkillName}.{StepName}: Step execution started.", this.SkillName, this.Name);
 
@@ -640,7 +634,12 @@ public sealed class Plan : ISKFunction
 
         var stepExecutionTimeMetricName = string.Format(CultureInfo.InvariantCulture, StepExecutionTimeMetricFormat, this.SkillName, this.Name);
 
-        context.Meter.TrackMetric(stepExecutionTimeMetricName, stopwatch.ElapsedMilliseconds);
+        var stepExecutionTimeHistogram = s_meter.CreateHistogram<double>(
+            name: stepExecutionTimeMetricName,
+            unit: "ms",
+            description: "Plan step execution time");
+
+        stepExecutionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
 
         return result;
     }
@@ -685,4 +684,18 @@ public sealed class Plan : ISKFunction
             return display;
         }
     }
+
+    #region Instrumentation
+
+    /// <summary>
+    /// Instance of <see cref="ActivitySource"/> for plan-related activities.
+    /// </summary>
+    private static ActivitySource s_activitySource = new(typeof(Plan).FullName);
+
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for planner-related metrics.
+    /// </summary>
+    private static Meter s_meter = new(typeof(Plan).FullName);
+
+    #endregion
 }

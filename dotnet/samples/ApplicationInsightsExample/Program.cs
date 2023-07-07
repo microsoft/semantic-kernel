@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
@@ -11,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics.Metering;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
 
@@ -35,12 +35,12 @@ public sealed class Program
         var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
 
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-        var meter = new ApplicationInsightsMeter(telemetryClient);
 
-        using var kernelListener = GetActivityListener(telemetryClient);
+        using var meterListener = GetMeterListener(telemetryClient);
+        using var activityListener = GetActivityListener(telemetryClient);
 
-        var kernel = GetKernel(logger, meter, kernelListener);
-        var planner = GetPlanner(kernel, logger, meter);
+        var kernel = GetKernel(logger, meterListener, activityListener);
+        var planner = GetPlanner(kernel, logger);
 
         try
         {
@@ -93,13 +93,13 @@ public sealed class Program
         });
     }
 
-    private static IKernel GetKernel(ILogger logger, IMeter meter, ActivityListener activityListener)
+    private static IKernel GetKernel(ILogger logger, MeterListener meterListener, ActivityListener activityListener)
     {
         string folder = RepoFiles.SampleSkillsPath();
 
         var kernel = new KernelBuilder()
             .WithLogger(logger)
-            .AddMetering(meter)
+            .AddMetering(meterListener)
             .AddTracing(activityListener)
             .WithAzureChatCompletionService(
                 Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
@@ -115,7 +115,6 @@ public sealed class Program
     private static ISequentialPlanner GetPlanner(
         IKernel kernel,
         ILogger logger,
-        IMeter meter,
         int maxTokens = 1024)
     {
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
@@ -123,8 +122,26 @@ public sealed class Program
         return new SequentialPlannerBuilder(kernel)
             .AddConfiguration(plannerConfig)
             .AddLogging(logger)
-            .AddMetering(meter)
             .Build();
+    }
+
+    /// <summary>
+    /// Example of metering configuration in Application Insights
+    /// using <see cref="MeterListener"/> to attach for <see cref="Meter"/> recordings.
+    /// </summary>
+    /// <param name="telemetryClient">Instance of Application Insights <see cref="TelemetryClient"/>.</param>
+    private static MeterListener GetMeterListener(TelemetryClient telemetryClient)
+    {
+        var meterListener = new MeterListener();
+
+        MeasurementCallback<double> measurementCallback = (instrument, measurement, tags, state) =>
+        {
+            telemetryClient.GetMetric(instrument.Name).TrackValue(measurement);
+        };
+
+        meterListener.SetMeasurementEventCallback(measurementCallback);
+
+        return meterListener;
     }
 
     /// <summary>

@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics.Metering;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -130,32 +129,24 @@ public sealed class SKContext
     public ILogger Log { get; }
 
     /// <summary>
-    /// App meter
-    /// </summary>
-    public IMeter Meter { get; }
-
-    /// <summary>
     /// Constructor for the context.
     /// </summary>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="memory">Semantic text memory unit to include in context.</param>
     /// <param name="skills">Skills to include in context.</param>
     /// <param name="logger">Logger for operations in context.</param>
-    /// <param name="meter">Meter for operations in context.</param>
     /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
     public SKContext(
         ContextVariables? variables = null,
         ISemanticTextMemory? memory = null,
         IReadOnlySkillCollection? skills = null,
         ILogger? logger = null,
-        IMeter? meter = null,
         CancellationToken cancellationToken = default)
     {
         this.Variables = variables ?? new();
         this.Memory = memory ?? NullMemory.Instance;
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
         this.Log = logger ?? NullLogger.Instance;
-        this.Meter = meter ?? NullMeter.Instance;
         this.CancellationToken = cancellationToken;
         this._culture = CultureInfo.CurrentCulture;
     }
@@ -182,7 +173,6 @@ public sealed class SKContext
             memory: this.Memory,
             skills: this.Skills,
             logger: this.Log,
-            meter: this.Meter,
             cancellationToken: this.CancellationToken)
         {
             Culture = this.Culture,

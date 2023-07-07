@@ -2,10 +2,10 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics.Metering;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
@@ -18,28 +18,39 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for planner-related activities.
     /// </summary>
-    private static ActivitySource activitySource = new(typeof(InstrumentedSequentialPlanner).FullName);
+    private static ActivitySource s_activitySource = new(typeof(InstrumentedSequentialPlanner).FullName);
+
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for planner-related metrics.
+    /// </summary>
+    private static Meter s_meter = new(typeof(InstrumentedSequentialPlanner).FullName);
+
+    /// <summary>
+    /// Instance of <see cref="Histogram{T}"/> to record plan creation execution time.
+    /// </summary>
+    private static Histogram<double> s_createPlanExecutionTime =
+        s_meter.CreateHistogram<double>(
+            name: "SK.SequentialPlanner.CreatePlan.ExecutionTime",
+            unit: "ms",
+            description: "Execution time of plan creation");
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSequentialPlanner"/> class.
     /// </summary>
     /// <param name="planner">Instance of <see cref="ISequentialPlanner"/> to decorate.</param>
     /// <param name="logger">Optional logger.</param>
-    /// <param name="meter">Optional meter.</param>
     public InstrumentedSequentialPlanner(
         ISequentialPlanner planner,
-        ILogger? logger = null,
-        IMeter? meter = null)
+        ILogger? logger = null)
     {
         this._planner = planner;
         this._logger = logger ?? NullLogger.Instance;
-        this._meter = meter ?? NullMeter.Instance;
     }
 
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal)
     {
-        using var activity = activitySource.StartActivity("SequentialPlanner.CreatePlan");
+        using var activity = s_activitySource.StartActivity("SequentialPlanner.CreatePlan");
 
         this._logger.LogInformation("Plan creation started.");
         this._logger.LogTrace("Plan Goal: {Goal}", goal);
@@ -72,17 +83,14 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         {
             this._logger.LogInformation("Plan creation finished in {ExecutionTime}ms.", stopwatch.ElapsedMilliseconds);
 
-            this._meter.TrackMetric(CreatePlanExecutionTimeMetricName, stopwatch.ElapsedMilliseconds);
+            s_createPlanExecutionTime.Record(stopwatch.ElapsedMilliseconds);
         }
     }
 
     #region private ================================================================================
 
-    private const string CreatePlanExecutionTimeMetricName = "SK.SequentialPlanner.CreatePlan.ExecutionTime";
-
     private readonly ISequentialPlanner _planner;
     private readonly ILogger _logger;
-    private readonly IMeter _meter;
 
     #endregion
 }

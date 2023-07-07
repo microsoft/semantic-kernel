@@ -43,7 +43,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, memory.Object, skills.ReadOnlySkillCollection, logger, cancellationToken: cancellationToken);
+        var context = new SKContext(variables, memory.Object, skills.ReadOnlySkillCollection, logger, cancellationToken);
         var config = new SequentialPlannerConfig();
         var semanticQuery = "test";
 
@@ -98,7 +98,7 @@ public class SKContextExtensionsTests
         skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, memory.Object, skills.Object, logger, cancellationToken: cancellationToken);
+        var context = new SKContext(variables, memory.Object, skills.Object, logger, cancellationToken);
         var config = new SequentialPlannerConfig();
         var semanticQuery = "test";
 
@@ -164,7 +164,7 @@ public class SKContextExtensionsTests
         skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, memory.Object, skills.Object, logger, cancellationToken: cancellationToken);
+        var context = new SKContext(variables, memory.Object, skills.Object, logger, cancellationToken);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78 };
         var semanticQuery = "test";
 
@@ -217,7 +217,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, memory.Object, skills.ReadOnlySkillCollection, logger, cancellationToken: cancellationToken);
+        var context = new SKContext(variables, memory.Object, skills.ReadOnlySkillCollection, logger, cancellationToken);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78 };
         var semanticQuery = "test";
 

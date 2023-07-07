@@ -3,7 +3,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Diagnostics.Metering;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
@@ -29,7 +28,7 @@ public class SequentialPlannerBuilder
     {
         ISequentialPlanner instance = new SequentialPlanner(this._kernel, this._config, this.prompt);
 
-        instance = new InstrumentedSequentialPlanner(instance, this._logger, this._meter);
+        instance = new InstrumentedSequentialPlanner(instance, this._logger);
 
         return instance;
     }
@@ -70,18 +69,6 @@ public class SequentialPlannerBuilder
         return this;
     }
 
-    /// <summary>
-    /// Add metering to the planner to be built.
-    /// </summary>
-    /// <param name="meter">Instance of <see cref="IMeter"/> to be used for planner metering.</param>
-    /// <returns>Updated planner builder with added metering.</returns>
-    public SequentialPlannerBuilder AddMetering(IMeter meter)
-    {
-        Verify.NotNull(meter);
-        this._meter = meter;
-        return this;
-    }
-
     #region private ================================================================================
 
     private readonly IKernel _kernel;
@@ -89,7 +76,6 @@ public class SequentialPlannerBuilder
     private SequentialPlannerConfig? _config = null;
     private string? prompt = null;
     private ILogger? _logger = NullLogger.Instance;
-    private IMeter? _meter = NullMeter.Instance;
 
     #endregion
 }

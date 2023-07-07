@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Diagnostics.Metering;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -43,9 +42,6 @@ public sealed class Kernel : IKernel, IDisposable
     public ILogger Log { get; }
 
     /// <inheritdoc/>
-    public IMeter Meter { get; }
-
-    /// <inheritdoc/>
     public ISemanticTextMemory Memory => this._memory;
 
     /// <inheritdoc/>
@@ -68,18 +64,15 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="memory"></param>
     /// <param name="config"></param>
     /// <param name="log"></param>
-    /// <param name="meter"></param>
     public Kernel(
         ISkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         KernelConfig config,
-        ILogger log,
-        IMeter meter)
+        ILogger log)
     {
         this.Log = log;
-        this.Meter = meter;
         this.Config = config;
         this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
@@ -181,7 +174,6 @@ public sealed class Kernel : IKernel, IDisposable
             this._memory,
             this._skillCollection.ReadOnlySkillCollection,
             this.Log,
-            this.Meter,
             cancellationToken);
 
         int pipelineStepCount = -1;

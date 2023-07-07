@@ -5,7 +5,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics.Metering;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
@@ -30,7 +29,6 @@ public class CloudDriveSkillTests : IDisposable
             NullMemory.Instance,
             null,
             this._logger,
-            NullMeter.Instance,
             CancellationToken.None);
     }
 
