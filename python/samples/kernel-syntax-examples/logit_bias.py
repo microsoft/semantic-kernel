@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import semantic_kernel as sk
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.connectors.ai.complete_request_settings import CompleteRequestSettings
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
@@ -6,17 +9,16 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion impo
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
     OpenAITextCompletion
 )
-import semantic_kernel as sk
-import asyncio
-
-api_key, org_id = sk.openai_settings_from_dot_env()
 
 
 async def run_async():
+    api_key_from_env, org_from_env = sk.openai_settings_from_dot_env()
 
-    chat_completion = OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
-
-    print(chat_completion._model_id)
+    chat_completion = OpenAIChatCompletion(
+        _model_id="gpt-3.5-turbo",
+        api_key=api_key_from_env,
+        org_id=org_from_env
+    )
 
     keys = [
         3919, 626, 17201, 1300, 25782, 9800, 32016, 13571, 43582, 20189,
@@ -26,7 +28,9 @@ async def run_async():
 
     settings = ChatRequestSettings()
 
+    # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for key in keys:
+        # For this example, each key is mapped to a value of -100
         settings.token_selection_biases[key] = -100
 
     print("Chat content:")

@@ -76,7 +76,7 @@ chmod +x ./deploy-webapi.sh
 ### App registration (identity)
 You will need an Azure Active Directory (AAD) application registration. 
 > For details on creating an application registration, go [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
-- Select `Single-page application (SPA)` as platform type, and set the Web redirect URI to `http://localhost:3000`
+- Select `Single-page application (SPA)` as platform type, and set the redirect URI to `http://localhost:3000`
 - Select `Accounts in any organizational directory and personal Microsoft Accounts` as supported account types for this sample.
 - Make a note of the `Application (client) ID` from the Azure Portal for use in the `Deploy` below.
 
@@ -98,7 +98,7 @@ npm install -g @azure/static-web-apps-cli
 ./deploy-webapp.sh --subscription {YOUR_SUBSCRIPTION_ID} --resource-group rg-{YOUR_DEPLOYMENT_NAME} --deployment-name {YOUR_DEPLOYMENT_NAME} --application-id {YOUR_APPLICATION_ID}
 ```
 
-Your CoplitChat application is now deployed!
+Your CopilotChat application is now deployed!
 
 
 # Appendix
