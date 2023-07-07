@@ -211,14 +211,14 @@ Goal: tell me a joke.
 ";
     }
 
-    #region Private
+    #region private ================================================================================
 
     /// <summary>
     /// Native function that filters out good JSON from planner result in case additional text is present
     /// using a similar regex to the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions
     /// </summary>
     /// <param name="plannerResult">Result context of planner function.</param>
-    /// <returns>An ActionPlanResponse object deserialized from extracted JSON.</returns>
+    /// <returns>Instance of <see cref="ActionPlanResponse"/> object deserialized from extracted JSON.</returns>
     private ActionPlanResponse? ParsePlannerResult(SKContext plannerResult)
     {
         Regex planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline);

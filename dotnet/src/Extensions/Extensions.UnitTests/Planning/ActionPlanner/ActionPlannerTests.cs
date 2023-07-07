@@ -22,6 +22,7 @@ public sealed class ActionPlannerTests
     [Fact]
     public async Task ExtractsAndDeserializesWellFormedJsonFromPlannerResult()
     {
+        // Arrange
         var functions = new List<(string name, string skillName, string description, bool isSemantic)>()
         {
             ("SendEmail", "email", "Send an e-mail", false),
@@ -53,7 +54,9 @@ public sealed class ActionPlannerTests
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
 
         string planString = "Here is a possible plan to accomplish the user intent:\n\n{\"plan\":{\n\"rationale\": \"the list contains a function that allows to list pull requests\",\n\"function\": \"GitHubSkill.PullsList\",\n\"parameters\": {\n\"owner\": \"microsoft\",\n\"repo\": \"semantic-kernel\",\n\"state\": \"open\"\n}}}\n\nThis plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `\"open\"` to filter the results to only show open pull requests.";
-        this.CreateMockKernelAndFunctionFlowWithTestString(planString, skills, out var kernel);
+
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(planString, skills);
+
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
         // Act
@@ -70,30 +73,36 @@ public sealed class ActionPlannerTests
     [Fact]
     public async Task InvalidJsonThrowsAsync()
     {
+        // Arrange
         string invalidJsonString = "<>";
-        this.CreateMockKernelAndFunctionFlowWithTestString(invalidJsonString, null, out var kernel);
+
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(invalidJsonString);
+
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
-        // Act
+        // Act & Assert
         await Assert.ThrowsAsync<PlanningException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
     [Fact]
     public async Task MalformedJsonThrowsAsync()
     {
+        // Arrange
+
         // Extra opening brace before rationale
         string invalidJsonString = "Here is a possible plan to accomplish the user intent:\n\n{\"plan\": { {\n\"rationale\": \"the list contains a function that allows to list pull requests\",\n\"function\": \"GitHubSkill.PullsList\",\n\"parameters\": {\n\"owner\": \"microsoft\",\n\"repo\": \"semantic-kernel\",\n\"state\": \"open\"\n}}}\n\nThis plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `\"open\"` to filter the results to only show open pull requests.";
-        this.CreateMockKernelAndFunctionFlowWithTestString(invalidJsonString, null, out var kernel);
+
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(invalidJsonString);
+
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
-        // Act
+        // Act & Assert
         await Assert.ThrowsAsync<PlanningException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
-    private void CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? mockSkills, out Mock<IKernel> kernel)
+    private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? mockSkills = null)
     {
-        // Arrange
-        kernel = new Mock<IKernel>();
+        var kernel = new Mock<IKernel>();
 
         var memory = new Mock<ISemanticTextMemory>();
         var skills = mockSkills;
@@ -138,6 +147,8 @@ public sealed class ActionPlannerTests
             It.IsAny<SemanticFunctionConfig>(),
             It.IsAny<ITrustService?>()
         )).Returns(mockFunctionFlowFunction.Object);
+
+        return kernel;
     }
 
     // Method to create Mock<ISKFunction> objects
