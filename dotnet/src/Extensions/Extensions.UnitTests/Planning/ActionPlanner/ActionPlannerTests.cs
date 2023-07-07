@@ -144,8 +144,7 @@ public sealed class ActionPlannerTests
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
             It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>(),
-            It.IsAny<ITrustService?>()
+            It.IsAny<SemanticFunctionConfig>()
         )).Returns(mockFunctionFlowFunction.Object);
 
         return kernel;
