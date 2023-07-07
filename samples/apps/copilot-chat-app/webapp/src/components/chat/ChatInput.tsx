@@ -216,7 +216,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             </div>
             <div className={classes.controls}>
                 <div className={classes.functional}>
-                    {/* Hidden input for file upload. Only accept .txt files for now. */}
+                    {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
                     <input
                         type="file"
                         ref={documentFileRef}

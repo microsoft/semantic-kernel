@@ -153,6 +153,7 @@ export const ChatWindow: React.FC = () => {
                         <PopoverTrigger disableButtonEnhancement>
                             <Tooltip content={'Edit conversation name'} relationship="label">
                                 <Button
+                                    data-testid='editChatTitleButton'
                                     icon={isEditing ? <Edit24Filled /> : <EditRegular />}
                                     appearance="transparent"
                                     onClick={onClose}
@@ -173,10 +174,10 @@ export const ChatWindow: React.FC = () => {
                         </PopoverSurface>
                     </Popover>
                     <TabList selectedValue={selectedTab} onTabSelect={onTabSelect}>
-                        <Tab id="chat" value="chat">
+                        <Tab data-testid="chatTab" id="chat" value="chat">
                             Chat
                         </Tab>
-                        <Tab id="files" value="files">
+                        <Tab data-testid="filesTab" id="files" value="files">
                             Files
                         </Tab>
                     </TabList>
