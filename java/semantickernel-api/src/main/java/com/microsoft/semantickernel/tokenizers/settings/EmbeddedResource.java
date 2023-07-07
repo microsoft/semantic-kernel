@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.tokenizers.settings;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 public class EmbeddedResource {
     /**
@@ -38,7 +43,8 @@ public class EmbeddedResource {
             throw new FileNotFoundException("File not found: " + fileName);
         }
 
-        try (InputStreamReader streamReader = new InputStreamReader(inputStream);
+        try (InputStreamReader streamReader =
+                        new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                 BufferedReader reader = new BufferedReader(streamReader)) {
 
             String line;

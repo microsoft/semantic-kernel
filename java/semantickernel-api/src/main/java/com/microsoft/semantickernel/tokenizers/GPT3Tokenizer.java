@@ -7,10 +7,7 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -127,16 +124,12 @@ public class GPT3Tokenizer {
             char[] chars = new char[maxUtf8Length];
 
             // Rather than using separate space for the UTF8 bytes, we just reinterpret the char
-            // array
-            // as a byte array. Since our mapping is 1:1, the space required for the bytes will
-            // always
-            // be half of the space required for the chars. We can UTF8-encode into the first half,
-            // and
-            // then walk backwards through the bytes, using the byte-to-char mapping scheme to
-            // populate
-            // the chars from the back to the front. By going in reverse, we guarantee we won't
-            // overwrite
-            // any bytes we haven't yet seen.
+            // array as a byte array. Since our mapping is 1:1,
+            // the space required for the bytes will always be half of the space required for
+            // the chars. We can UTF8-encode into the first half,
+            // and then walk backwards through the bytes, using the byte-to-char mapping
+            // scheme to populate the chars from the back to the front. By going in reverse,
+            // we guarantee we won't overwrite any bytes we haven't yet seen.
             byte[] bytes = new byte[maxUtf8Length];
 
             // Now that our space is created, do the actual encoding.
@@ -166,7 +159,7 @@ public class GPT3Tokenizer {
         if (stringBuilder != null) {
             return encode(stringBuilder.toString());
         } else {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 
@@ -174,7 +167,7 @@ public class GPT3Tokenizer {
         if (chars != null) {
             return encode(new String(chars));
         } else {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 
@@ -186,7 +179,7 @@ public class GPT3Tokenizer {
             }
             return encode(sb.toString());
         } else {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 
@@ -195,6 +188,9 @@ public class GPT3Tokenizer {
     }
 
     private static int encodingUtf8GetBytes(String str, byte[] bytes) {
+        assert str != null;
+        assert bytes != null;
+
         byte[] strBytes = str.getBytes(StandardCharsets.UTF_8);
         System.arraycopy(strBytes, 0, bytes, 0, strBytes.length);
         return strBytes.length;

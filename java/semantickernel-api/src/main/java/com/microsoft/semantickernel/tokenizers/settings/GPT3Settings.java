@@ -14,8 +14,8 @@ import java.util.Map;
 
 public class GPT3Settings {
 
-    public static Map<String, Integer> encoder;
-    public static Map<Tuple2<String, String>, Integer> bpeRanks;
+    public static final Map<String, Integer> encoder;
+    public static final Map<Tuple2<String, String>, Integer> bpeRanks;
 
     static {
         try {
