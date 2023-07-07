@@ -78,8 +78,7 @@ BEGIN SUMMARY:
     /// <param name="patToken">Personal access token for private repositories</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Name of the memory collection used to store the code summaries.</returns>
-    [SKName("SummarizeRepository")]
-    [Description("Downloads a repository and summarizes the content")]
+    [SKFunction, SKName("SummarizeRepository"), Description("Downloads a repository and summarizes the content")]
     public async Task<string?> SummarizeRepositoryAsync(
         [Description("URL of the GitHub repository to summarize")] string input,
         [Description("Name of the repository repositoryBranch which will be downloaded and summarized"), DefaultValue("main")] string repositoryBranch,
