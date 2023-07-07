@@ -31,11 +31,6 @@ public sealed class SKContext
     public string Result => this.Variables.ToString();
 
     /// <summary>
-    /// Whether all the context variables are trusted or not.
-    /// </summary>
-    public bool IsTrusted => this.Variables.IsAllTrusted();
-
-    /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
     /// </summary>
     public bool ErrorOccurred { get; private set; }
@@ -163,22 +158,6 @@ public sealed class SKContext
         this.Meter = meter ?? NullMeter.Instance;
         this.CancellationToken = cancellationToken;
         this._culture = CultureInfo.CurrentCulture;
-    }
-
-    /// <summary>
-    /// Make all the variables stored in the context untrusted.
-    /// </summary>
-    public void UntrustAll()
-    {
-        this.Variables.UntrustAll();
-    }
-
-    /// <summary>
-    /// Make the result untrusted.
-    /// </summary>
-    public void UntrustResult()
-    {
-        this.Variables.UntrustInput();
     }
 
     /// <summary>

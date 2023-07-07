@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SemanticKernel.Service.Options;
@@ -16,7 +15,7 @@ public class ServiceOptions
     /// Configuration Key Vault URI
     /// </summary>
     [Url]
-    public Uri? KeyVaultUri { get; set; }
+    public string? KeyVault { get; set; }
 
     /// <summary>
     /// Local directory in which to load semantic skills.

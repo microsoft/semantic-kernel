@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Diagnostics.Metering;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -18,7 +17,6 @@ namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A builder for Semantic Kernel.
-/// TODO: unit tests
 /// </summary>
 public sealed class KernelBuilder
 {
@@ -30,7 +28,6 @@ public sealed class KernelBuilder
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
-    private ITrustService? _trustService = null;
 
     /// <summary>
     /// Create a new kernel instance
@@ -60,8 +57,7 @@ public sealed class KernelBuilder
             this._memoryFactory.Invoke(),
             this._config,
             this._logger,
-            this._meter,
-            this._trustService
+            this._meter
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -210,19 +206,6 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(config);
         this._config = config;
-        return this;
-    }
-
-    /// <summary>
-    /// Use the given default trust service with the kernel to be built.
-    /// Functions directly created through the kernel will use this trust service.
-    /// If null, the created functions will rely on the TrustService.DefaultTrusted implementation.
-    /// </summary>
-    /// <param name="trustService">Trust service to use.</param>
-    /// <returns>Updated kernel builder including the given service.</returns>
-    public KernelBuilder WithTrustService(ITrustService? trustService)
-    {
-        this._trustService = trustService;
         return this;
     }
 
