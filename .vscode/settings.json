@@ -20,7 +20,8 @@
   ],
   "notebook.output.textLineLimit": 500,
   "python.analysis.extraPaths": [
-    "./python/src"
+    "./python/src",
+    "./python/semantic_kernel/connectors/ai"
   ],
   "javascript.updateImportsOnFileMove.enabled": "always",
   "search.exclude": {

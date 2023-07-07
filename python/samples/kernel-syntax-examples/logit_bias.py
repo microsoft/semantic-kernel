@@ -1,21 +1,23 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import semantic_kernel as sk
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
-    OpenAIChatCompletion
-)
+
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
     OpenAITextCompletion
 )
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
+    OpenAIChatCompletion
+)
+from semantic_kernel.connectors.ai.complete_request_settings import CompleteRequestSettings
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+import semantic_kernel as sk
+import asyncio
 
 
 async def run_async():
     api_key_from_env, org_from_env = sk.openai_settings_from_dot_env()
 
     chat_completion = OpenAIChatCompletion(
-        _model_id="gpt-3.5-turbo",
+        model_id="gpt-3.5-turbo",
         api_key=api_key_from_env,
         org_id=org_from_env
     )
@@ -45,7 +47,7 @@ async def run_async():
 
     print(response)
 
-    # message = response["choices"][0]["message"]["content"]
+    message = response["choices"][0]["message"]["content"]
 
     response = await chat_completion.complete_chat_async(
         messages=[
@@ -54,7 +56,11 @@ async def run_async():
         **settings,
     )
 
+    return
+
+
+async def main() -> None:
     await run_async()
 
-
-asyncio.run(run_async())
+if __name__ == "__main__":
+    asyncio.run(main())
