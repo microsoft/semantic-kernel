@@ -41,11 +41,11 @@ const useClasses = makeStyles({
         ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalL),
     },
     me: {
-        backgroundColor: tokens.colorBrandBackground2,
+        backgroundColor: "#e8ebf9",
     },
     time: {
         color: tokens.colorNeutralForeground3,
-        fontSize: '12px',
+        fontSize: tokens.fontSizeBase200,
         fontWeight: 400,
     },
     header: {
