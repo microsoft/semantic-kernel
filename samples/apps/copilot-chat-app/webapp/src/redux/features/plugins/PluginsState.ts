@@ -68,7 +68,7 @@ export const initialState: PluginsState = {
         enabled: false,
         authRequirements: {
             Msal: true,
-            scopes: Constants.msGraphScopes,
+            scopes: Constants.msGraphPluginScopes,
         },
         headerTag: AuthHeaderTags.MsGraph,
         icon: GraphIcon,

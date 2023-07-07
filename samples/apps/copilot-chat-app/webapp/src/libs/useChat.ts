@@ -85,6 +85,7 @@ export const useChat = () => {
                         botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
                         input: '',
                         isBotTyping: false,
+                        userDataLoaded: false,
                     };
 
                     dispatch(addConversation(newChat));
@@ -155,6 +156,7 @@ export const useChat = () => {
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
                         input: '',
                         isBotTyping: false,
+                        userDataLoaded: false,
                     };
                 }
 
@@ -209,7 +211,7 @@ export const useChat = () => {
             });
     };
 
-    const getBotProfilePicture = (index: number) => {
+    const getBotProfilePicture = (index: number): string => {
         return botProfilePictures[index % botProfilePictures.length];
     };
 
@@ -269,6 +271,7 @@ export const useChat = () => {
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
                     input: '',
                     isBotTyping: false,
+                    userDataLoaded: false,
                 };
 
                 dispatch(addConversation(newChat));

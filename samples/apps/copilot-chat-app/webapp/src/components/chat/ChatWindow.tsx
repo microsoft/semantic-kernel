@@ -25,11 +25,13 @@ import { Edit24Filled, EditRegular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
+import { IChatUser } from '../../libs/models/ChatUser';
 import { ChatService } from '../../libs/services/ChatService';
+import { useGraph } from '../../libs/useGraph';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
-import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
+import { editConversationTitle, setUsersLoaded } from '../../redux/features/conversations/conversationsSlice';
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
 import { ShareBotMenu } from './ShareBotMenu';
@@ -84,13 +86,28 @@ const useClasses = makeStyles({
 export const ChatWindow: React.FC = () => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
+    const { instance, inProgress } = useMsal();
+    const msGraph = useGraph();
+    const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
+
+    const { users } = useAppSelector((state: RootState) => state.users);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
+    const chatUsers = conversations[selectedId].users;
+
     const [title = '', setTitle] = useState<string | undefined>(selectedId);
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const { instance, inProgress } = useMsal();
 
-    const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
+    useEffect(() => {
+        if (!conversations[selectedId].userDataLoaded) {
+            void msGraph.loadUsers(chatUsers.map((user: IChatUser) => user.id)).then(() => {
+                dispatch(setUsersLoaded(selectedId));
+            });
+        }
+
+        // Limiting dependencies or else this effect is triggered on all user typing events
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedId, chatUsers.length]);
 
     const onSave = async () => {
         if (chatName !== title) {
@@ -184,7 +201,12 @@ export const ChatWindow: React.FC = () => {
                 <div className={classes.controls}>
                     <AvatarGroupPopover>
                         {conversations[selectedId].users.map((user) => (
-                            <AvatarGroupItem name={user.id} key={user.id} />
+                            <AvatarGroupItem
+                                // falsy lint check, users[userId] can be null if user data hasn't been loaded
+                                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                                name={users[user.id.split('.')[0]]?.displayName ?? user.id}
+                                key={user.id}
+                            />
                         ))}
                     </AvatarGroupPopover>
                     <ShareBotMenu chatId={selectedId} chatTitle={title} />
