@@ -19,12 +19,13 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParame
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import reactor.util.function.Tuples;
 
 import java.io.IOException;
 
-public class Example12SequentialPlanner {
+public class Example12SequentialPlannerTest {
     @Test
     public void poetrySamplesAsync() {
         OpenAIAsyncClient client =
@@ -71,6 +72,12 @@ public class Example12SequentialPlanner {
     }
 
     private static SequentialPlanner getSequentialPlanner(OpenAIAsyncClient client) {
+        Kernel kernel = getKernel(client);
+
+        return new SequentialPlanner(kernel, null, null);
+    }
+
+    private static Kernel getKernel(OpenAIAsyncClient client) {
         Kernel kernel =
                 SKBuilders.kernel()
                         .setKernelConfig(
@@ -86,9 +93,7 @@ public class Example12SequentialPlanner {
         kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
         kernel.importSkillFromDirectory("WriterSkill", "../../samples/skills", "WriterSkill");
         kernel.importSkill(new TextSkill(), "TextSkill");
-        kernel.importSkill(new EmailSkill(), "email");
-
-        return new SequentialPlanner(kernel, null, null);
+        return kernel;
     }
 
     public static class EmailSkill {
@@ -123,19 +128,21 @@ public class Example12SequentialPlanner {
 
     @Test
     public void emailSamplesAsync() throws IOException {
+
         OpenAIAsyncClient client =
                 mockCompletionOpenAIAsyncClient(
                         Tuples.of(
                                 "Create an XML plan step by step",
                                 "<plan>\n"
-                                    + "  <function.WriterSkill.TwoSentenceSummary/>\n"
-                                    + "  <function.WriterSkill.Translate language=\"French\""
-                                    + " setContextVariable=\"TRANSLATED_SUMMARY\"/>\n"
-                                    + "  <function.email.GetEmailAddressAsync input=\"John Doe\""
-                                    + " setContextVariable=\"EMAIL_ADDRESS\"/>\n"
-                                    + "  <function.email.SendEmail input=\"$TRANSLATED_SUMMARY\""
-                                    + " email_address=\"$EMAIL_ADDRESS\"/>\n"
-                                    + "</plan>"),
+                                        + "  <function.WriterSkill.TwoSentenceSummary/>\n"
+                                        + "  <function.WriterSkill.Translate language=\"French\""
+                                        + " setContextVariable=\"TRANSLATED_SUMMARY\"/>\n"
+                                        + "  <function.EmailSkill.GetEmailAddressAsync input=\"John"
+                                        + " Doe\" setContextVariable=\"EMAIL_ADDRESS\"/>\n"
+                                        + "  <function.EmailSkill.SendEmail"
+                                        + " input=\"$TRANSLATED_SUMMARY\""
+                                        + " email_address=\"$EMAIL_ADDRESS\"/>\n"
+                                        + "</plan>"),
                         Tuples.of(
                                 "Summarize the following text in two sentences or less",
                                 "Once upon a time, in a faraway kingdom, there lived a kind and"
@@ -162,7 +169,13 @@ public class Example12SequentialPlanner {
                                     + " young woman who saved them from the dragon."),
                         Tuples.of("Translate the input below", "a poem translated to french"));
 
-        SequentialPlanner planner = getSequentialPlanner(client);
+        Kernel kernel = getKernel(client);
+
+        EmailSkill email = Mockito.spy(new EmailSkill());
+
+        kernel.importSkill(email, "EmailSkill");
+
+        SequentialPlanner planner = new SequentialPlanner(kernel, null, null);
 
         Plan plan =
                 planner.createPlanAsync(
@@ -192,5 +205,10 @@ public class Example12SequentialPlanner {
                     + " remembering Mira as the brave young woman who saved them from the dragon.";
 
         plan.invokeAsync(input).block();
+
+        Mockito.verify(email, Mockito.times(1))
+                .sendEmail(
+                        Mockito.matches("a poem translated to french"),
+                        Mockito.matches("fake@example.com"));
     }
 }
