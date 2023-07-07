@@ -325,6 +325,12 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>license-maven-plugin</artifactId>
                     <version>${maven.license-plugin.version}</version>
+                    <configuration>
+                        <organizationName>Microsoft</organizationName>
+                        <inceptionYear>2023</inceptionYear>
+                        <licenseName>mit</licenseName>
+                        <licenseFile>${basedir}/target/LICENSE</licenseFile>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -374,6 +380,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>update-project-license</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
 
