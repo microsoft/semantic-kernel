@@ -63,10 +63,9 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
 
     const planState = message.state ?? parsedContent.state;
 
-    // If plan came from ActionPlanner, use parameters from top-level plan state
-    // TODO: Can remove this after consuming nugets with #997 fixed
+    // If plan came from ActionPlanner, use parameters from top-level of plan
     if (parsedContent.type === PlanType.Action) {
-        originalPlan.steps[0].parameters = originalPlan.state;
+        originalPlan.steps[0].parameters = originalPlan.parameters;
     }
 
     const userIntentPrefix = 'User Intent:User intent: ';
