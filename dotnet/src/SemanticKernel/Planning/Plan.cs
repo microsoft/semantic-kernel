@@ -27,6 +27,11 @@ namespace Microsoft.SemanticKernel.Planning;
 public sealed class Plan : ISKFunction
 {
     /// <summary>
+    /// Instance of <see cref="ActivitySource"/> for plan-related activities.
+    /// </summary>
+    private static ActivitySource activitySource = new(typeof(Plan).FullName);
+
+    /// <summary>
     /// State of the plan
     /// </summary>
     [JsonPropertyName("state")]
@@ -608,6 +613,8 @@ public sealed class Plan : ISKFunction
         SKContext context,
         CompleteRequestSettings? settings = null)
     {
+        using var activity = activitySource.StartActivity($"{this.SkillName}.{this.Name}");
+
         context.Log.LogInformation("{SkillName}.{StepName}: Step execution started.", this.SkillName, this.Name);
 
         var stopwatch = new Stopwatch();

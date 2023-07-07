@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -89,10 +90,27 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="meter">Meter to add.</param>
     /// <returns>Updated kernel builder including the meter.</returns>
-    public KernelBuilder WithMeter(IMeter meter)
+    public KernelBuilder AddMetering(IMeter meter)
     {
         Verify.NotNull(meter);
         this._meter = meter;
+        return this;
+    }
+
+    /// <summary>
+    /// Add tracing to the kernel to be built.
+    /// </summary>
+    /// <param name="activityListener">Instance of <see cref="ActivityListener"/> to be used for kernel tracing.</param>
+    /// <returns>Kernel builder with enabled tracing.</returns>
+    public KernelBuilder AddTracing(ActivityListener activityListener)
+    {
+        Verify.NotNull(activityListener);
+
+        activityListener.ShouldListenTo =
+            activitySource => activitySource.Name.StartsWith(typeof(Kernel).Namespace, StringComparison.Ordinal);
+
+        ActivitySource.AddActivityListener(activityListener);
+
         return this;
     }
 

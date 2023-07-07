@@ -35,11 +35,11 @@ public class SequentialPlannerBuilder
     }
 
     /// <summary>
-    /// Use the given configuration with the planner to be built.
+    /// Add configuration to the planner to be built.
     /// </summary>
     /// <param name="config">Instance of <see cref="SequentialPlannerConfig"/> planner configuration.</param>
     /// <returns>Updated planner builder including the given configuration.</returns>
-    public SequentialPlannerBuilder WithConfiguration(SequentialPlannerConfig config)
+    public SequentialPlannerBuilder AddConfiguration(SequentialPlannerConfig config)
     {
         Verify.NotNull(config);
         this._config = config;
@@ -47,11 +47,11 @@ public class SequentialPlannerBuilder
     }
 
     /// <summary>
-    /// Use the given prompt with the planner to be built.
+    /// Add prompt to the planner to be built.
     /// </summary>
     /// <param name="prompt">Prompt string.</param>
     /// <returns>Updated planner builder including the given prompt.</returns>
-    public SequentialPlannerBuilder WithPrompt(string prompt)
+    public SequentialPlannerBuilder AddPrompt(string prompt)
     {
         Verify.NotNullOrWhiteSpace(prompt);
         this.prompt = prompt;
@@ -59,11 +59,11 @@ public class SequentialPlannerBuilder
     }
 
     /// <summary>
-    /// Add a logger to the planner to be built.
+    /// Add logging to the planner to be built.
     /// </summary>
-    /// <param name="logger">Logger to add.</param>
-    /// <returns>Updated planner builder including the logger.</returns>
-    public SequentialPlannerBuilder WithLogger(ILogger logger)
+    /// <param name="logger">Instance of <see cref="ILogger"/> to be used for planner logging.</param>
+    /// <returns>Updated planner builder with added logging.</returns>
+    public SequentialPlannerBuilder AddLogging(ILogger logger)
     {
         Verify.NotNull(logger);
         this._logger = logger;
@@ -71,11 +71,11 @@ public class SequentialPlannerBuilder
     }
 
     /// <summary>
-    /// Add a meter to the planner to be built.
+    /// Add metering to the planner to be built.
     /// </summary>
-    /// <param name="meter">Meter to add.</param>
-    /// <returns>Updated planner builder including the meter.</returns>
-    public SequentialPlannerBuilder WithMeter(IMeter meter)
+    /// <param name="meter">Instance of <see cref="IMeter"/> to be used for planner metering.</param>
+    /// <returns>Updated planner builder with added metering.</returns>
+    public SequentialPlannerBuilder AddMetering(IMeter meter)
     {
         Verify.NotNull(meter);
         this._meter = meter;

@@ -16,6 +16,11 @@ namespace Microsoft.SemanticKernel.Planning.Sequential;
 public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 {
     /// <summary>
+    /// Instance of <see cref="ActivitySource"/> for planner-related activities.
+    /// </summary>
+    private static ActivitySource activitySource = new(typeof(InstrumentedSequentialPlanner).FullName);
+
+    /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSequentialPlanner"/> class.
     /// </summary>
     /// <param name="planner">Instance of <see cref="ISequentialPlanner"/> to decorate.</param>
@@ -34,6 +39,8 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal)
     {
+        using var activity = activitySource.StartActivity("SequentialPlanner.CreatePlan");
+
         this._logger.LogInformation("Plan creation started.");
         this._logger.LogTrace("Plan Goal: {Goal}", goal);
 

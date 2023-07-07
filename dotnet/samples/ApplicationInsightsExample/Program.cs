@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
@@ -35,12 +37,14 @@ public sealed class Program
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         var meter = new ApplicationInsightsMeter(telemetryClient);
 
-        var kernel = GetKernel(logger, meter);
+        using var kernelListener = GetActivityListener(telemetryClient);
+
+        var kernel = GetKernel(logger, meter, kernelListener);
         var planner = GetPlanner(kernel, logger, meter);
 
         try
         {
-            using var operation = telemetryClient.StartOperation<DependencyTelemetry>("SequentialPlanner.Example");
+            using var operation = telemetryClient.StartOperation<DependencyTelemetry>("ApplicationInsights.Example");
 
             Console.WriteLine("Operation/Trace ID:");
             Console.WriteLine(Activity.Current?.TraceId);
@@ -89,13 +93,14 @@ public sealed class Program
         });
     }
 
-    private static IKernel GetKernel(ILogger logger, IMeter meter)
+    private static IKernel GetKernel(ILogger logger, IMeter meter, ActivityListener activityListener)
     {
         string folder = RepoFiles.SampleSkillsPath();
 
         var kernel = new KernelBuilder()
             .WithLogger(logger)
-            .WithMeter(meter)
+            .AddMetering(meter)
+            .AddTracing(activityListener)
             .WithAzureChatCompletionService(
                 Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
@@ -116,9 +121,45 @@ public sealed class Program
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
 
         return new SequentialPlannerBuilder(kernel)
-            .WithConfiguration(plannerConfig)
-            .WithLogger(logger)
-            .WithMeter(meter)
+            .AddConfiguration(plannerConfig)
+            .AddLogging(logger)
+            .AddMetering(meter)
             .Build();
+    }
+
+    /// <summary>
+    /// Example of advanced distributed tracing configuration in Application Insights
+    /// using <see cref="ActivityListener"/> to attach for <see cref="Activity"/> events.
+    /// </summary>
+    /// <param name="telemetryClient">Instance of Application Insights <see cref="TelemetryClient"/>.</param>
+    private static ActivityListener GetActivityListener(TelemetryClient telemetryClient)
+    {
+        var operations = new ConcurrentDictionary<string, IOperationHolder<DependencyTelemetry>>();
+
+        // For more detailed tracing we need to attach Activity entity to Application Insights operation manually.
+        Action<Activity> activityStarted = activity =>
+        {
+            var operation = telemetryClient.StartOperation<DependencyTelemetry>(activity);
+            operation.Telemetry.Type = activity.Kind.ToString();
+
+            operations.TryAdd(activity.TraceId.ToString(), operation);
+        };
+
+        // We also need to manually stop Application Insights operation when Activity entity is stopped.
+        Action<Activity> activityStopped = activity =>
+        {
+            if (operations.TryRemove(activity.TraceId.ToString(), out var operation))
+            {
+                telemetryClient.StopOperation(operation);
+            }
+        };
+
+        return new ActivityListener()
+        {
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            SampleUsingParentId = (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activityStarted,
+            ActivityStopped = activityStopped
+        };
     }
 }
