@@ -68,7 +68,7 @@ export const PluginGallery: React.FC = () => {
                     <DialogTitle
                         action={
                             <DialogTrigger action="close">
-                                <Button appearance="subtle" aria-label="close" icon={<Dismiss24Regular />} />
+                                <Button data-testid="closeEnableCCPluginsPopUp" appearance="subtle" aria-label="close" icon={<Dismiss24Regular />} />
                             </DialogTrigger>
                         }
                     >
