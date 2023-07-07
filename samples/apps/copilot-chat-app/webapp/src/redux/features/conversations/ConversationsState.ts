@@ -8,13 +8,11 @@ export type Conversations = Record<string, ChatState>;
 export interface ConversationsState {
     conversations: Conversations;
     selectedId: string;
-    loggedInUserId: string;
 }
 
 export const initialState: ConversationsState = {
     conversations: {},
     selectedId: '',
-    loggedInUserId: '',
 };
 
 export interface UpdateConversationPayload {
