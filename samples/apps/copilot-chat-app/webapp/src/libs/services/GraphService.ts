@@ -25,10 +25,16 @@ export class GraphService extends BaseService {
         super('https://graph.microsoft.com');
     }
 
+    private version = 'v1.0';
+
+    private getCommandPath = (resourcePath: string) => {
+        return `/${this.version}/${resourcePath}`;
+    };
+
     public makeBatchRequest = async (batchRequests: BatchRequest[], accessToken: string) => {
         const result = await this.getResponseAsync<BatchResponseBody>(
             {
-                commandPath: '/v1.0/$batch',
+                commandPath: this.getCommandPath('$batch'),
                 method: 'POST',
                 body: { requests: batchRequests },
             },
@@ -41,7 +47,7 @@ export class GraphService extends BaseService {
     public loadUser = async (userId: string, accessToken: string) => {
         const result = await this.getResponseAsync<object>(
             {
-                commandPath: `/users/${userId}`,
+                commandPath: this.getCommandPath(`users/${userId}`),
                 method: 'GET',
             },
             accessToken,

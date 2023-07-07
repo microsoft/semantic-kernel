@@ -20,13 +20,15 @@ export const useGraph = () => {
         const MAX_RETRIES = 3;
         let retries = 1;
 
-        // Initialize empty arrays to store the results
+        // Initialize empty arrays to store results
+        const usersToLoad: string[] = [];
         const loadedUsers: UserData[] = [];
         const usersToRetry: string[] = [];
-        const failedUsers: string[] = [];
-        const userData = { ...users };
-        const usersToLoad: string[] = [];
 
+        // Copy current state of user data
+        const userData = { ...users };
+
+        // Filter user Ids list to optimize fetch
         userIds.forEach((userId) => {
             const ids = userId.split('.');
             const oid = ids[0];
@@ -49,20 +51,21 @@ export const useGraph = () => {
 
         try {
             if (usersToLoad.length > 0) {
-                await makeBatchGetUsersRequest(usersToLoad, loadedUsers, usersToRetry, failedUsers);
+                await makeBatchGetUsersRequest(usersToLoad, loadedUsers, usersToRetry);
 
+                // Retry any users that failed with transient (5xx) errors up to 3 times
                 while (usersToRetry.length > 0 && retries <= MAX_RETRIES) {
                     console.log(`Retrying batch request  ${retries}/${MAX_RETRIES}`);
-                    await makeBatchGetUsersRequest(usersToRetry, loadedUsers, usersToRetry, failedUsers);
+                    await makeBatchGetUsersRequest(usersToRetry, loadedUsers, usersToRetry);
                     retries++;
                 }
 
+                // Populate user data record to update state
                 loadedUsers.forEach((user) => {
                     userData[user.id] = user;
                 });
 
-                const unknownUsers = usersToRetry.concat(failedUsers);
-                unknownUsers.forEach((userId) => {
+                usersToRetry.forEach((userId) => {
                     userData[userId] = {
                         id: userId,
                         displayName: 'Unknown',
@@ -81,13 +84,8 @@ export const useGraph = () => {
         }
     };
 
-    // Helper function to fetch user data in batches of 20
-    const makeBatchGetUsersRequest = async (
-        userIds: string[],
-        loadedUsers: UserData[],
-        usersToRetry: string[],
-        failedUsers: string[],
-    ) => {
+    // Helper function to fetch user data in batches of up to 20
+    const makeBatchGetUsersRequest = async (userIds: string[], loadedUsers: UserData[], usersToRetry: string[]) => {
         const getUserScope = 'User.Read';
 
         const token = await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, [getUserScope]);
@@ -105,7 +103,7 @@ export const useGraph = () => {
 
             // Loop through the batch responses and parse the user data
             for (const response of responses) {
-                const userData = parseGetUserResponse(response, userIds, usersToRetry, failedUsers);
+                const userData = parseGetUserResponse(response, userIds, usersToRetry);
                 if (userData) {
                     // Push the user data to the results array
                     loadedUsers.push(userData);
@@ -131,7 +129,6 @@ export const useGraph = () => {
         response: BatchResponse,
         userIds: string[],
         usersToRetry: string[],
-        failedUsers: string[],
     ): UserData | null => {
         if (response.status === 200 && response.body) {
             const user = response.body as UserData;
@@ -144,7 +141,11 @@ export const useGraph = () => {
             // Transient error, try again
             usersToRetry.push(userIds[response.id]);
         } else {
-            failedUsers.push(userIds[response.id]);
+            // Failed to fetch, user data unavailable
+            return {
+                id: userIds[response.id],
+                displayName: 'Unknown',
+            };
         }
         return null;
     };

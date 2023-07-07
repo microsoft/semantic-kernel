@@ -16,6 +16,7 @@ import {
 import { IChatUser } from '../../../libs/models/ChatUser';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { ScrollBarStyles } from '../../../styles';
 
 interface ShareBotMenuProps {
     participants: IChatUser[];
@@ -23,16 +24,8 @@ interface ShareBotMenuProps {
 const useClasses = makeStyles({
     root: {
         display: 'flex',
-        overflowY: 'auto',
-        '&:hover': {
-            '&::-webkit-scrollbar-thumb': {
-                backgroundColor: tokens.colorScrollbarOverlay,
-                visibility: 'visible',
-            },
-        },
-        '&::-webkit-scrollbar-track': {
-            backgroundColor: tokens.colorSubtleBackground,
-        },
+        overflowY: 'scroll',
+        ...ScrollBarStyles.root,
         ...shorthands.padding(tokens.spacingVerticalNone, tokens.spacingVerticalXS),
         ...shorthands.border(tokens.spacingVerticalM),
         ...shorthands.borderRight(tokens.spacingHorizontalXS),
@@ -44,7 +37,6 @@ const useClasses = makeStyles({
         maxHeight: '220px',
         width: '200px',
         overflowWrap: 'anywhere',
-        paddingRight: tokens.spacingVerticalXS,
         ...shorthands.gap(tokens.spacingVerticalS),
     },
 });
