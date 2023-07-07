@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
-
+import time
 import numpy as np
 import pytest
 
@@ -20,6 +20,10 @@ pytestmark = pytest.mark.skipif(
     not pinecone_installed, reason="pinecone is not installed"
 )
 
+@pytest.fixture(autouse=True, scope="module")
+def slow_down_tests():
+    yield
+    time.sleep(1)
 
 @pytest.fixture(scope="session")
 def get_pinecone_config():
