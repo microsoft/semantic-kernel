@@ -159,8 +159,8 @@ internal static class Extensions
 
         if (ShouldLoad(nameof(GitHubPlugin), skillsToLoad))
         {
-            GitHubPlugin githubSkill = new(kernel);
-            _ = kernel.ImportSkill(githubSkill, nameof(GitHubPlugin));
+            GitHubPlugin githubPlugin = new(kernel);
+            _ = kernel.ImportSkill(githubPlugin, nameof(GitHubPlugin));
         }
     }
 

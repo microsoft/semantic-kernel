@@ -144,7 +144,7 @@ BEGIN SUMMARY:
         using HttpResponseMessage response = await client.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        using Stream contentStream = await response.Content.ReadAsStreamAsync();
+        using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using FileStream fileStream = File.Create(filePath);
         await contentStream.CopyToAsync(fileStream, 81920, cancellationToken);
         await fileStream.FlushAsync(cancellationToken);
