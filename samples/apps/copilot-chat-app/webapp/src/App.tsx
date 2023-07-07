@@ -16,7 +16,7 @@ import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { removeAlert } from './redux/features/app/appSlice';
-import { setLoggedInUserId } from './redux/features/conversations/conversationsSlice';
+import { setLoggedInUserId } from './redux/features/users/usersSlice';
 import { CopilotChatTokens } from './styles';
 
 export const useClasses = makeStyles({

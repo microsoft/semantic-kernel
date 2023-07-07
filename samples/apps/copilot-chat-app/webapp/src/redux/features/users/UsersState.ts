@@ -2,7 +2,13 @@
 
 export interface UsersState {
     users: Users;
+    loggedInUserId: string;
 }
+
+export const initialState: UsersState = {
+    users: {},
+    loggedInUserId: '',
+};
 
 export type Users = Record<string, UserData>;
 

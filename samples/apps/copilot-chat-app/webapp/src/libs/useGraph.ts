@@ -11,8 +11,7 @@ import { BatchRequest, BatchResponse, GraphService } from './services/GraphServi
 
 export const useGraph = () => {
     const { instance, inProgress } = useMsal();
-    const { users } = useAppSelector((state: RootState) => state.users);
-    const { loggedInUserId } = useAppSelector((state: RootState) => state.conversations);
+    const { loggedInUserId, users } = useAppSelector((state: RootState) => state.users);
     const dispatch = useAppDispatch();
     const graphService = new GraphService();
 
