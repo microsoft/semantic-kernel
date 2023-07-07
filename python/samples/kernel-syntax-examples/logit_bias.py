@@ -9,6 +9,8 @@ from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSetti
 
 # See Example49_LogitBias.cs for original example
 async def chat_request_example():
+    # To use Logit Bias you will need to know the token ids of the words you want to use.
+    # Getting the token ids using the GPT Tokenizer: https: // platform.openai.com/tokenizer
     kernel = sk.Kernel()
     api_key, org_id = sk.openai_settings_from_dot_env()
     kernel.add_chat_service(
@@ -22,12 +24,11 @@ async def chat_request_example():
         1891, 10424, 9631, 16497, 12984, 20020, 24046, 13159, 805, 15817,
         5239, 2070, 13466, 32932, 8095, 1351, 25323
     ]
-
+    # This will make the model try its best to avoid any of the above related words.
     settings = ChatRequestSettings()
-
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for key in keys:
-        # For this example, each key is mapped to a value of -100
+        # -100 to potentially ban all the tokens from the list.
         settings.token_selection_biases[key] = -100
 
     print("Chat content:")
