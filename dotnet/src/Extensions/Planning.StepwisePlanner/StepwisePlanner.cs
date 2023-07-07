@@ -142,8 +142,19 @@ public class StepwisePlanner
                     try
                     {
                         await Task.Delay(this.Config.MinIterationTimeMs).ConfigureAwait(false);
-                        var result = await this.InvokeActionAsync(nextStep.Action!, nextStep!.ActionVariables!).ConfigureAwait(false);
+                        var resultContext = await this.InvokeActionAsync(nextStep.Action!, nextStep!.ActionVariables!).ConfigureAwait(false);
 
+                        foreach (var kvp in resultContext.Variables)
+                        {
+                            TrustAwareString value;
+                            if (!kvp.Key.Equals("INPUT") && resultContext.Variables.TryGetValue(kvp.Key, out value))
+                            {
+                                context.Variables.Set(kvp.Key, kvp.Value);
+                            }
+                        }
+
+                        var result = resultContext.Result;
+                        
                         if (string.IsNullOrEmpty(result))
                         {
                             nextStep.Observation = "Got no result from action";
@@ -317,7 +328,7 @@ public class StepwisePlanner
         return string.Join("\n", scratchPadLines).Trim();
     }
 
-    private async Task<string> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables)
+    private async Task<SKContext> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables)
     {
         var availableFunctions = this.GetAvailableFunctions();
         var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionName);
@@ -336,7 +347,9 @@ public class StepwisePlanner
             if (result.ErrorOccurred)
             {
                 this._logger?.LogError("Error occurred: {Error}", result.LastException);
-                return $"Error occurred: {result.LastException}";
+                var exception = new PlanningException(PlanningException.ErrorCodes.UnknownError, $"Error occurred: {result.LastException}");
+                actionContext.Fail(exception.Message, exception);
+                return actionContext;
             }
 
             this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
@@ -346,7 +359,9 @@ public class StepwisePlanner
         catch (Exception e) when (!e.IsCriticalException())
         {
             this._logger?.LogError(e, "Something went wrong in system step: {0}.{1}. Error: {2}", targetFunction.SkillName, targetFunction.Name, e.Message);
-            return $"Something went wrong in system step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException.Message}";
+            var exception = new PlanningException(PlanningException.ErrorCodes.UnknownError, $"Something went wrong in system step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message}");
+            actionContext?.Fail(exception.Message, exception);
+            return actionContext;
         }
     }
 
@@ -357,7 +372,15 @@ public class StepwisePlanner
         {
             foreach (var kvp in actionVariables)
             {
-                actionContext.Variables.Set(kvp.Key, kvp.Value);
+                TrustAwareString value;
+                if (!kvp.Key.Equals("INPUT") && context.Variables.TryGetValue(kvp.Key, out value))
+                {
+                    actionContext.Variables.Set(kvp.Key, value);
+                }
+                else
+                {
+                    actionContext.Variables.Set(kvp.Key, kvp.Value);
+                }
             }
         }
 
