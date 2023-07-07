@@ -355,6 +355,55 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>animal-sniffer-maven-plugin</artifactId>
+                    <version>1.23</version>
+                    <executions>
+                        <execution>
+                            <id>android</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <!-- 
+                            LATEST: Android API level 32 (Android 12)
+                            See https://developer.android.com/studio/releases/platforms
+                        -->
+                        <!--
+                        <signature>
+                            <groupId>net.sf.androidscents.signature</groupId>
+                            <artifactId>android-api-level-32</artifactId>
+                            <version>12_r1</version>
+                        </signature>
+                        -->
+                        <!-- 
+                            COMPATIBLE: Android API level 26 (Android 8.0)
+                            See https://developer.android.com/studio/releases/platforms
+
+                            Note: anything below this requires changes to the codebase to pass compatibility
+                        -->
+                        <signature>
+                            <groupId>net.sf.androidscents.signature</groupId>
+                            <artifactId>android-api-level-26</artifactId>
+                            <version>8.0.0_r2</version>
+                        </signature>
+                        <!-- 
+                            Android API level 21 (Android 5.0)
+                            See https://developer.android.com/studio/releases/platforms
+                        -->
+                        <!--
+                        <signature>
+                            <groupId>net.sf.androidscents.signature</groupId>
+                            <artifactId>android-api-level-21</artifactId>
+                            <version>5.0.1_r2</version>
+                        </signature>
+                        -->
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -624,6 +673,11 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <!-- Check compatibility with Android API -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>animal-sniffer-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>
