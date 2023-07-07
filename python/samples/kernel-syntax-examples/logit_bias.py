@@ -9,9 +9,10 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion impo
 import semantic_kernel as sk
 import asyncio
 
+api_key, org_id = sk.openai_settings_from_dot_env()
+
 
 async def run_async():
-    api_key, org_id = sk.openai_settings_from_dot_env()
 
     chat_completion = OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
 
