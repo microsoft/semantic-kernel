@@ -10,7 +10,7 @@ import {
     Conversations,
     ConversationsState,
     ConversationTitleChange,
-    initialState,
+    initialState
 } from './ConversationsState';
 
 export const conversationsSlice: Slice<ConversationsState> = createSlice({

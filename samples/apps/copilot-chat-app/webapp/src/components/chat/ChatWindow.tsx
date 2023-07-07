@@ -9,6 +9,7 @@ import {
     InputOnChangeData,
     Label,
     makeStyles,
+    mergeClasses,
     Persona,
     Popover,
     PopoverSurface,
@@ -21,7 +22,8 @@ import {
     tokens,
     Tooltip,
 } from '@fluentui/react-components';
-import { Edit24Filled, EditRegular } from '@fluentui/react-icons';
+import { Alert } from '@fluentui/react-components/unstable';
+import { Dismiss16Regular, Edit24Filled, EditRegular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
@@ -30,7 +32,7 @@ import { ChatService } from '../../libs/services/ChatService';
 import { useGraph } from '../../libs/useGraph';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { addAlert } from '../../redux/features/app/appSlice';
+import { addAlert, removeAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle, setUsersLoaded } from '../../redux/features/conversations/conversationsSlice';
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
@@ -81,6 +83,18 @@ const useClasses = makeStyles({
     input: {
         width: '100%',
     },
+    alert: {
+        ...shorthands.borderRadius(0),
+    },
+    infoAlert: {
+        fontWeight: tokens.fontWeightRegular,
+        color: tokens.colorNeutralForeground1,
+        backgroundColor: tokens.colorNeutralBackground6,
+        ...shorthands.borderRadius(0),
+        fontSize: tokens.fontSizeBase200,
+        lineHeight: tokens.lineHeightBase200,
+        ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
+    },
 });
 
 export const ChatWindow: React.FC = () => {
@@ -89,6 +103,7 @@ export const ChatWindow: React.FC = () => {
     const { instance, inProgress } = useMsal();
     const msGraph = useGraph();
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
+    const { alerts } = useAppSelector((state: RootState) => state.app);
 
     const { users } = useAppSelector((state: RootState) => state.users);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
@@ -127,6 +142,10 @@ export const ChatWindow: React.FC = () => {
         setSelectedTab(data.value);
     };
 
+    const onDismissAlert = (index: number) => {
+        dispatch(removeAlert(index));
+    };
+
     const onClose = () => {
         setTitle(chatName);
         setIsEditing(!isEditing);
@@ -155,6 +174,28 @@ export const ChatWindow: React.FC = () => {
 
     return (
         <div className={classes.root}>
+            {alerts.map(({ type, message }, index) => {
+                return (
+                    <Alert
+                        intent={type}
+                        action={{
+                            icon: (
+                                <Dismiss16Regular
+                                    aria-label="dismiss message"
+                                    onClick={() => {
+                                        onDismissAlert(index);
+                                    }}
+                                    color="black"
+                                />
+                            ),
+                        }}
+                        key={`${index}-${type}`}
+                        className={mergeClasses(classes.alert, classes.infoAlert)}
+                    >
+                        {message}
+                    </Alert>
+                );
+            })}
             <div className={classes.header}>
                 <div className={classes.title}>
                     <Persona
@@ -170,6 +211,7 @@ export const ChatWindow: React.FC = () => {
                         <PopoverTrigger disableButtonEnhancement>
                             <Tooltip content={'Edit conversation name'} relationship="label">
                                 <Button
+                                    data-testid="editChatTitleButton"
                                     icon={isEditing ? <Edit24Filled /> : <EditRegular />}
                                     appearance="transparent"
                                     onClick={onClose}
@@ -190,10 +232,10 @@ export const ChatWindow: React.FC = () => {
                         </PopoverSurface>
                     </Popover>
                     <TabList selectedValue={selectedTab} onTabSelect={onTabSelect}>
-                        <Tab id="chat" value="chat">
+                        <Tab data-testid="chatTab" id="chat" value="chat">
                             Chat
                         </Tab>
-                        <Tab id="files" value="files">
+                        <Tab data-testid="filesTab" id="files" value="files">
                             Files
                         </Tab>
                     </TabList>

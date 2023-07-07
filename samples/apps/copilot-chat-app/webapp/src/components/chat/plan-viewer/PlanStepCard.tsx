@@ -20,7 +20,6 @@ import { Dismiss12Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { Constants } from '../../../Constants';
 import { IPlanInput } from '../../../libs/models/Plan';
-import { CopilotChatTokens } from '../../../styles';
 import { PlanStepInput } from './PlanStepInput';
 import { Plan } from './PlanViewer';
 
@@ -31,7 +30,7 @@ const useClasses = makeStyles({
         maxWidth: '100%',
     },
     header: {
-        color: CopilotChatTokens.titleColor,
+        color: tokens.colorBrandForeground1,
     },
     parameters: {
         ...shorthands.gap(tokens.spacingHorizontalS),
@@ -41,7 +40,7 @@ const useClasses = makeStyles({
     bar: {
         ...shorthands.borderRadius(tokens.borderRadiusMedium),
         width: '4px',
-        backgroundColor: CopilotChatTokens.titleColor,
+        backgroundColor: tokens.colorBrandBackground,
     },
     flexRow: {
         display: 'flex',
@@ -58,12 +57,12 @@ const useClasses = makeStyles({
     },
     singleLine: {
         ...shorthands.overflow('hidden'),
-        lineHeight: '16px',
+        lineHeight: tokens.lineHeightBase200,
         display: '-webkit-box',
         WebkitLineClamp: 1,
         WebkitBoxOrient: 'vertical',
         width: '650px',
-        fontSize: '12px',
+        fontSize: tokens.fontSizeBase200,
     },
     dialog: {
         width: '398px',

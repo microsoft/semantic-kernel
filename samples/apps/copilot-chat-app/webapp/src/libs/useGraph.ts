@@ -11,7 +11,8 @@ import { BatchRequest, BatchResponse, GraphService } from './services/GraphServi
 
 export const useGraph = () => {
     const { instance, inProgress } = useMsal();
-    const { loggedInUserId, users } = useAppSelector((state: RootState) => state.users);
+    const { users } = useAppSelector((state: RootState) => state.users);
+    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
     const dispatch = useAppDispatch();
     const graphService = new GraphService();
 
@@ -31,9 +32,9 @@ export const useGraph = () => {
             const oid = ids[0];
             const tid = ids[1];
 
-            // Logged in user can only access user data within their own tenant
+            // Active user can only access user data within their own tenant
             // Mark chat users outside of tenant as External
-            if (tid !== loggedInUserId.split('.')[1]) {
+            if (activeUserInfo && tid !== activeUserInfo.id.split('.')[1]) {
                 userData[oid] = {
                     id: oid,
                     displayName: 'External User',
