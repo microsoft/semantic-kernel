@@ -34,20 +34,15 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
             <Menu>
                 <MenuTrigger disableButtonEnhancement>
                     <Tooltip content="Share" relationship="label">
-                        <Button icon={<ShareRegular />} appearance="transparent" />
+                        <Button data-testid="shareButton" icon={<ShareRegular />} appearance="transparent" />
                     </Tooltip>
                 </MenuTrigger>
                 <MenuPopover>
                     <MenuList>
-                        <MenuItem icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
+                        <MenuItem data-testid="downloadBotMenuItem" icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
                             Download your Bot
                         </MenuItem>
-                        <MenuItem
-                            icon={<PeopleTeamAddRegular />}
-                            onClick={() => {
-                                setIsGettingInvitationId(true);
-                            }}
-                        >
+                        <MenuItem data-testid="inviteOthersMenuItem" icon={<PeopleTeamAddRegular />} onClick={() => setIsGettingInvitationId(true)}>
                             Invite others to your Bot
                         </MenuItem>
                     </MenuList>
