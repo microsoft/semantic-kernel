@@ -10,8 +10,8 @@ export const initialState: UsersState = {
 
 export type Users = Record<string, UserData>;
 
-export type UserData = {
+export interface UserData {
     id: string;
     displayName?: string;
     userPrincipalName?: string;
-};
+}
