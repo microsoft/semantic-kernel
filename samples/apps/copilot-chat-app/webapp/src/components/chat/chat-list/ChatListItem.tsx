@@ -1,11 +1,13 @@
 import {
     makeStyles,
+    mergeClasses,
     Persona,
     Popover,
     PopoverSurface,
     PopoverTrigger,
     shorthands,
     Text,
+    tokens,
 } from '@fluentui/react-components';
 import { FC } from 'react';
 import { Constants } from '../../../Constants';
@@ -16,62 +18,57 @@ import { timestampToDateString } from '../../utils/TextUtils';
 
 const useClasses = makeStyles({
     root: {
+        boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'row',
-        paddingTop: '0.8rem',
-        paddingBottom: '0.8rem',
-        paddingRight: '1rem',
-        width: '93%',
+        width: '100%',
         ...Breakpoints.small({
             justifyContent: 'center',
         }),
+        cursor: 'pointer',
+        ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalXL),
     },
     avatar: {
-        flexShrink: '0',
-        minWidth: '3.2rem',
+        flexShrink: 0,
+        width: '32px',
     },
     body: {
+        minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
-        minWidth: '0',
-        flexGrow: '1',
-        lineHeight: '1.6rem',
-        paddingLeft: '0.8rem',
+        marginLeft: tokens.spacingHorizontalXS,
         ...Breakpoints.small({
             display: 'none',
         }),
     },
     header: {
+        flexGrow: 1,
         display: 'flex',
         flexDirection: 'row',
-        maxHeight: '1.2rem',
-        lineHeight: '20px',
-        flexGrow: '1',
         justifyContent: 'space-between',
-    },
-    timestamp: {
-        flexShrink: 0,
-        fontSize: 'small',
-        maxWidth: '6rem',
-        marginTop: '0',
-        marginBottom: 'auto',
-        marginLeft: '0.8rem',
     },
     title: {
         ...shorthands.overflow('hidden'),
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-        minWidth: '4rem',
+        fontSize: tokens.fontSizeBase300,
+        color: tokens.colorNeutralForeground1,
+        lineHeight: tokens.lineHeightBase200,
     },
-    preview: {
-        marginTop: '0.2rem',
-        lineHeight: '16px',
+    timestamp: {
+        flexShrink: 0,
+        marginLeft: tokens.spacingHorizontalM,
+        fontSize: tokens.fontSizeBase200,
+        color: tokens.colorNeutralForeground2,
+        lineHeight: tokens.lineHeightBase200,
     },
     previewText: {
         display: 'block',
-        ...shorthands.overflow('hidden'),
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
+        lineHeight: tokens.lineHeightBase100,
+        color: tokens.colorNeutralForeground2,
+        ...shorthands.overflow('hidden')
     },
     popoverSurface: {
         display: 'none',
@@ -80,6 +77,9 @@ const useClasses = makeStyles({
             flexDirection: 'column',
         }),
     },
+    selected: {
+        backgroundColor: tokens.colorNeutralBackground1,
+    }
 });
 
 interface IChatListItemProps {
@@ -117,11 +117,11 @@ export const ChatListItem: FC<IChatListItemProps> = ({
             }}
         >
             <PopoverTrigger disableButtonEnhancement>
-                <div className={classes.root} onClick={onClick}>
+                <div className={mergeClasses(classes.root, isSelected && classes.selected)} onClick={onClick}>
                     <Persona avatar={{ image: { src: botProfilePicture } }} presence={{ status: 'available' }} />
                     <div className={classes.body}>
                         <div className={classes.header}>
-                            <Text className={classes.title} style={{ color: 'var(--colorNeutralForeground1)' }}>
+                            <Text className={classes.title}>
                                 {header}
                             </Text>
                             <Text className={classes.timestamp} size={300}>
@@ -129,13 +129,13 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                             </Text>
                         </div>
                         {preview && (
-                            <div className={classes.preview}>
+                            <>
                                 {
                                     <Text id={`message-preview-${id}`} size={200} className={classes.previewText}>
                                         {preview}
                                     </Text>
                                 }
-                            </div>
+                            </>
                         )}
                     </div>
                 </div>
