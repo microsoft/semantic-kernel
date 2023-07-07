@@ -24,8 +24,7 @@ interface ShareBotMenuProps {
 const useClasses = makeStyles({
     root: {
         display: 'flex',
-        overflowY: 'scroll',
-        ...ScrollBarStyles.root,
+        ...ScrollBarStyles,
         ...shorthands.padding(tokens.spacingVerticalNone, tokens.spacingVerticalXS),
         ...shorthands.border(tokens.spacingVerticalM),
         ...shorthands.borderRight(tokens.spacingHorizontalXS),
