@@ -2,8 +2,6 @@
 
 import { useMsal } from '@azure/msal-react';
 import {
-    AvatarGroupItem,
-    AvatarGroupPopover,
     Button,
     Input,
     InputOnChangeData,
@@ -36,7 +34,8 @@ import { addAlert, removeAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle, setUsersLoaded } from '../../redux/features/conversations/conversationsSlice';
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
-import { ShareBotMenu } from './ShareBotMenu';
+import { ParticipantsList } from './controls/ParticipantsList';
+import { ShareBotMenu } from './controls/ShareBotMenu';
 
 const useClasses = makeStyles({
     root: {
@@ -64,6 +63,7 @@ const useClasses = makeStyles({
     },
     controls: {
         display: 'flex',
+        alignItems: 'center',
     },
     popoverHeader: {
         ...shorthands.margin('0'),
@@ -105,7 +105,6 @@ export const ChatWindow: React.FC = () => {
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
     const { alerts } = useAppSelector((state: RootState) => state.app);
 
-    const { users } = useAppSelector((state: RootState) => state.users);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
     const chatUsers = conversations[selectedId].users;
@@ -241,16 +240,7 @@ export const ChatWindow: React.FC = () => {
                     </TabList>
                 </div>
                 <div className={classes.controls}>
-                    <AvatarGroupPopover>
-                        {conversations[selectedId].users.map((user) => (
-                            <AvatarGroupItem
-                                // falsy lint check, users[userId] can be null if user data hasn't been loaded
-                                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                                name={users[user.id.split('.')[0]]?.displayName ?? user.id}
-                                key={user.id}
-                            />
-                        ))}
-                    </AvatarGroupPopover>
+                    <ParticipantsList participants={conversations[selectedId].users} />
                     <ShareBotMenu chatId={selectedId} chatTitle={title} />
                 </div>
             </div>
