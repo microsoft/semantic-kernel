@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -205,6 +207,38 @@ public sealed class PromptTemplateEngineTests
 
         // Assert
         Assert.Equal("foo-BAR-baz", result);
+    }
+
+    [Fact]
+    public async Task ItRendersCodeInParallelAsync()
+    {
+        // Arrange
+        ISKFunction func1 = SKFunction.FromNativeFunction(() => "F(OUTPUT-FOO)", "", "func1");
+        ISKFunction func2 = SKFunction.FromNativeFunction(() => "F(OUTPUT-BAR)", "", "func2");
+
+        var functions = new List<ISKFunction>()
+        {
+            func1,
+            func2
+        };
+
+        var blocks = new List<Block>();
+        foreach (var func in functions)
+        {
+            blocks.Add(new CodeBlock(new List<Block> { new FunctionIdBlock(func.Name) }, "", NullLogger.Instance));
+
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.GetFunction(It.Is<string>(s => s == func.Name))).Returns(func);
+            this._skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == func.Name), out outFunc)).Returns(true);
+        }
+
+        // Act
+        var result = await this._target.RenderCodeAsync(blocks, this.MockContext());
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        Assert.Equal("F(OUTPUT-FOO)", result[0].Content);
+        Assert.Equal("F(OUTPUT-BAR)", result[1].Content);
     }
 
     private static MethodInfo Method(Delegate method)
