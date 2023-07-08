@@ -1,73 +1,72 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { FC, useCallback, useRef, useState } from 'react';
+import { FC, useState } from 'react';
 
 import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tooltip } from '@fluentui/react-components';
-import { ArrowUploadRegular, BotAdd20Regular } from '@fluentui/react-icons';
+import {
+    ArrowUploadRegular,
+    BotAdd20Filled,
+    BotAdd20Regular,
+    PeopleTeamAddRegular,
+    bundleIcon,
+} from '@fluentui/react-icons';
 import { useChat } from '../../../libs/useChat';
-import { FileUploader } from '../../FileUploader';
-import { useFile } from '../../../libs/useFile';
-import { Bot } from '../../../libs/models/Bot';
-import { useAppDispatch } from '../../../redux/app/hooks';
-import { addAlert } from '../../../redux/features/app/appSlice';
-import { AlertType } from '../../../libs/models/AlertType';
+import { InvitationJoinDialog } from '../invitation-dialog/InvitationJoinDialog';
 
-export const NewBotMenu: FC = () => {
-    const dispatch = useAppDispatch();
+interface NewBotMenuProps {
+    onFileUpload: () => void;
+}
+
+export const NewBotMenu: FC<NewBotMenuProps> = ({ onFileUpload }) => {
     const chat = useChat();
-    const fileHandler = useFile();
-    const [isNewBotMenuOpen, setIsNewBotMenuOpen] = useState(false);
+    // It needs to keep the menu open to keep the FileUploader reference
+    // when the file uploader is clicked.
+    const [isJoiningBot, setIsJoiningBot] = useState(false);
 
-    const fileUploaderRef = useRef<HTMLInputElement>(null);
+    const BotAdd20 = bundleIcon(BotAdd20Filled, BotAdd20Regular);
 
     const onAddChat = () => {
-        chat.createChat();
-        setIsNewBotMenuOpen(false);
+        void chat.createChat();
+    };
+    const onJoinClick = () => {
+        setIsJoiningBot(true);
     };
 
-    const onUpload = useCallback(
-        (file: File) => {
-            fileHandler
-                .loadFile<Bot>(file, chat.uploadBot)
-                .catch((error) =>
-                    dispatch(
-                        addAlert({ message: `Failed to parse uploaded file. ${error.message}`, type: AlertType.Error }),
-                    ),
-                );
-            setIsNewBotMenuOpen(false);
-        },
-        [fileHandler, chat, dispatch],
-    );
+    const onCloseDialog = () => {
+        setIsJoiningBot(false);
+    };
 
     return (
-        <Menu open={isNewBotMenuOpen}>
-            <MenuTrigger disableButtonEnhancement>
-                <Tooltip content="Create new conversation" relationship="label">
-                    <Button
-                        icon={<BotAdd20Regular />}
-                        appearance="transparent"
-                        onClick={() => setIsNewBotMenuOpen(!isNewBotMenuOpen)}
-                    />
-                </Tooltip>
-            </MenuTrigger>
-            <MenuPopover>
-                <MenuList>
-                    <MenuItem icon={<BotAdd20Regular />} onClick={onAddChat}>
-                        Add a new Bot
-                    </MenuItem>
-                    <MenuItem
-                        icon={<ArrowUploadRegular />}
-                        onClick={() => fileUploaderRef && fileUploaderRef.current && fileUploaderRef.current.click()}
-                    >
-                        <div>Upload a Bot</div>
-                        <FileUploader
-                            ref={fileUploaderRef}
-                            acceptedExtensions={['.txt', '.json']}
-                            onSelectedFile={onUpload}
+        <div>
+            <Menu>
+                <MenuTrigger disableButtonEnhancement>
+                    <Tooltip content="Create new conversation" relationship="label">
+                        <Button
+                            data-testid="createNewConversationButton"
+                            icon={<BotAdd20 />}
+                            appearance="transparent"
                         />
-                    </MenuItem>
-                </MenuList>
-            </MenuPopover>
-        </Menu>
+                    </Tooltip>
+                </MenuTrigger>
+                <MenuPopover>
+                    <MenuList>
+                        <MenuItem data-testid="addNewBotMenuItem" icon={<BotAdd20Regular />} onClick={onAddChat}>
+                            Add a new Bot
+                        </MenuItem>
+                        <MenuItem
+                            data-testid="uploadABotMenuItem"
+                            icon={<ArrowUploadRegular />}
+                            onClick={onFileUpload}
+                        >
+                            <div>Upload a Bot</div>
+                        </MenuItem>
+                        <MenuItem data-testid="joinABotMenuItem" icon={<PeopleTeamAddRegular />} onClick={onJoinClick}>
+                            Join a Bot
+                        </MenuItem>
+                    </MenuList>
+                </MenuPopover>
+            </Menu>
+            {isJoiningBot && <InvitationJoinDialog onCloseDialog={onCloseDialog} />}
+        </div>
     );
 };

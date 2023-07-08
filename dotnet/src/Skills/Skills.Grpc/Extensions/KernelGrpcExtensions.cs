@@ -27,8 +27,13 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the skill directory.</param>
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
+    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportGrpcSkillFromDirectory(this IKernel kernel, string parentDirectory, string skillDirectoryName)
+    public static IDictionary<string, ISKFunction> ImportGrpcSkillFromDirectory(
+        this IKernel kernel,
+        string parentDirectory,
+        string skillDirectoryName,
+        HttpClient? httpClient = null)
     {
         const string ProtoFile = "grpc.proto";
 
@@ -47,7 +52,7 @@ public static class KernelGrpcExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.RegisterGrpcSkill(stream, skillDirectoryName);
+        return kernel.RegisterGrpcSkill(stream, skillDirectoryName, httpClient);
     }
 
     /// <summary>
@@ -56,11 +61,13 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Name of the skill to register.</param>
     /// <param name="filePath">File path to .proto document.</param>
+    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static IDictionary<string, ISKFunction> ImportGrpcSkillFromFile(
         this IKernel kernel,
         string skillName,
-        string filePath)
+        string filePath,
+        HttpClient? httpClient = null)
     {
         if (!File.Exists(filePath))
         {
@@ -71,7 +78,7 @@ public static class KernelGrpcExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.RegisterGrpcSkill(stream, skillName);
+        return kernel.RegisterGrpcSkill(stream, skillName, httpClient);
     }
 
     /// <summary>
@@ -80,11 +87,13 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="skillName">Skill name.</param>
+    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static IDictionary<string, ISKFunction> RegisterGrpcSkill(
         this IKernel kernel,
         Stream documentStream,
-        string skillName)
+        string skillName,
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(kernel);
         Verify.ValidSkillName(skillName);
@@ -96,7 +105,9 @@ public static class KernelGrpcExtensions
 
         var skill = new Dictionary<string, ISKFunction>();
 
-        var runner = new GrpcOperationRunner(new HttpClient());
+        var client = HttpClientProvider.GetHttpClient(kernel.Config, httpClient, kernel.Log);
+
+        var runner = new GrpcOperationRunner(client);
 
         foreach (var operation in operations)
         {
@@ -178,7 +189,6 @@ public static class KernelGrpcExtensions
             description: operation.Name,
             skillName: skillName,
             functionName: operation.Name,
-            isSensitive: false,
             log: kernel.Log);
 
         return kernel.RegisterCustomFunction(function);

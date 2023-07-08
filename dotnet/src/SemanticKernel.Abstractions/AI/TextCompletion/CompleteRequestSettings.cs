@@ -40,7 +40,7 @@ public class CompleteRequestSettings
     /// <summary>
     /// The maximum number of tokens to generate in the completion.
     /// </summary>
-    public int MaxTokens { get; set; } = 256;
+    public int? MaxTokens { get; set; }
 
     /// <summary>
     /// Sequences where the completion will stop generating further tokens.
@@ -53,6 +53,17 @@ public class CompleteRequestSettings
     /// Use carefully and ensure that you have reasonable settings for max_tokens and stop.
     /// </summary>
     public int ResultsPerPrompt { get; set; } = 1;
+
+    /// <summary>
+    /// The system prompt to use when generating text completions using a chat model.
+    /// Defaults to "Assistant is a large language model."
+    /// </summary>
+    public string ChatSystemPrompt { get; set; } = "Assistant is a large language model.";
+
+    /// <summary>
+    /// Modify the likelihood of specified tokens appearing in the completion.
+    /// </summary>
+    public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
 
     /// <summary>
     /// Create a new settings object with the values from another settings object.

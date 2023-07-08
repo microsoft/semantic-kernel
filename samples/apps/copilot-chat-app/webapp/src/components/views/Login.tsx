@@ -12,13 +12,13 @@ export const Login: React.FC = () => {
         <div style={{ padding: 40, gap: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <Title3>Login with your Microsoft Account</Title3>
             <Body1>
-                Don't have an account? Create one for free at{' '}
+                {'Don\'t have an account? Create one for free at'}{' '}
                 <a href="https://account.microsoft.com/" target="_blank" rel="noreferrer">
                     https://account.microsoft.com/
                 </a>
             </Body1>
 
-            <Button style={{ padding: 0 }} appearance="transparent" onClick={() => instance.loginRedirect()}>
+            <Button style={{ padding: 0 }} appearance="transparent" onClick={() => { instance.loginRedirect().catch(() => { }); }}>
                 <Image src={signInLogo} />
             </Button>
         </div>

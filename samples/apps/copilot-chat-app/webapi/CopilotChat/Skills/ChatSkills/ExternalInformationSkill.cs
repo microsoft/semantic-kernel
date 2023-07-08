@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
+using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Skills.OpenApiSkills.GitHubSkill.Model;
 using SemanticKernel.Service.CopilotChat.Skills.OpenApiSkills.JiraSkill.Model;
@@ -37,7 +38,7 @@ public class ExternalInformationSkill
     /// <summary>
     /// Proposed plan to return for approval.
     /// </summary>
-    public Plan? ProposedPlan { get; private set; }
+    public ProposedPlan? ProposedPlan { get; private set; }
 
     /// <summary>
     /// Preamble to add to the related information text.
@@ -77,11 +78,13 @@ public class ExternalInformationSkill
         }
 
         // Check if plan exists in ask's context variables.
-        // If plan was returned at this point, that means it was approved and should be run
-        var planApproved = context.Variables.TryGetValue("proposedPlan", out string? planJson);
+        var planExists = context.Variables.TryGetValue("proposedPlan", out string? proposedPlanJson);
+        var deserializedPlan = planExists && !string.IsNullOrWhiteSpace(proposedPlanJson) ? JsonSerializer.Deserialize<ProposedPlan>(proposedPlanJson) : null;
 
-        if (planApproved && !string.IsNullOrWhiteSpace(planJson))
+        // Run plan if it was approved
+        if (deserializedPlan != null && deserializedPlan.State == PlanState.Approved)
         {
+            string planJson = JsonSerializer.Serialize(deserializedPlan.Plan);
             // Reload the plan with the planner's kernel so
             // it has full context to be executed
             var newPlanContext = new SKContext(
@@ -122,15 +125,15 @@ public class ExternalInformationSkill
 
             if (plan.Steps.Count > 0)
             {
-                // Parameters stored in plan's top level state
-                this.MergeContextIntoPlan(context.Variables, plan.State);
+                // Parameters stored in plan's top level
+                this.MergeContextIntoPlan(context.Variables, plan.Parameters);
 
                 // TODO: Improve Kernel to give developers option to skip this override 
                 // (i.e., keep functions regardless of whether they're available in the planner's context or not)
                 Plan sanitizedPlan = this.SanitizePlan(plan, context);
-                sanitizedPlan.State.Update(plan.State);
+                sanitizedPlan.Parameters.Update(plan.Parameters);
 
-                this.ProposedPlan = sanitizedPlan;
+                this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner.PlannerOptions!.Type, PlanState.NoOp);
             }
         }
 

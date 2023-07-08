@@ -12,15 +12,15 @@ numpy = "^1.24.2"
 openai = "^0.27.0"
 aiofiles = "^23.1.0"
 python-dotenv = "1.0.0"
+regex = "^2023.6.3"
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "2.21.0"
+pre-commit = "3.3.3"
 black = {version = "23.3.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
-pytest = "7.2.0"
-ruff = "0.0.257"
+pytest = "7.4.0"
+ruff = "0.0.277"
 pytest-asyncio = "0.21.0"
-
 
 [tool.poetry.group.hugging_face.dependencies]
 transformers = "^4.28.1"
@@ -34,10 +34,14 @@ chromadb = "^0.3.23"
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = "^3.18.0"
 
+[tool.poetry.group.pinecone.dependencies]
+pinecone-client = "^2.2.2"
+
 [tool.isort]
 profile = "black"
 
 [tool.ruff]
+select = ["E", "F", "I"]
 line-length = 120
 
 [build-system]

@@ -1,6 +1,6 @@
 import { IPublicClientApplication, PublicClientApplication } from '@azure/msal-browser';
 import { MsalProvider } from '@azure/msal-react';
-import { FluentProvider, webLightTheme } from '@fluentui/react-components';
+import { FluentProvider } from '@fluentui/react-components';
 import ReactDOM from 'react-dom/client';
 import { Provider as ReduxProvider } from 'react-redux';
 import App from './App';
@@ -12,6 +12,7 @@ import { store } from './redux/app/store';
 
 import React from 'react';
 import { getMissingEnvVariables } from './checkEnv';
+import { semanticKernelLightTheme } from './styles';
 
 if (!localStorage.getItem('debug')) {
     localStorage.setItem('debug', `${Constants.debug.root}:*`);
@@ -19,7 +20,7 @@ if (!localStorage.getItem('debug')) {
 
 let container: HTMLElement | null = null;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     if (!container) {
         container = document.getElementById('root');
         if (!container) {
@@ -30,13 +31,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const missingEnvVariables = getMissingEnvVariables();
         const validEnvFile = missingEnvVariables.length === 0;
 
-        var msalInstance: IPublicClientApplication | null = null;
+        let msalInstance: IPublicClientApplication | null = null;
         if (validEnvFile) {
             msalInstance = new PublicClientApplication(AuthHelper.msalConfig);
 
-            msalInstance.handleRedirectPromise().then((response) => {
+            void msalInstance.handleRedirectPromise().then((response) => {
                 if (response) {
-                    msalInstance?.setActiveAccount(response?.account);
+                    msalInstance?.setActiveAccount(response.account);
                 }
             });
         }
@@ -46,8 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 {!validEnvFile && <MissingEnvVariablesError missingVariables={missingEnvVariables} />}
                 {validEnvFile && (
                     <ReduxProvider store={store}>
+                        {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
                         <MsalProvider instance={msalInstance!}>
-                            <FluentProvider className="app-container" theme={webLightTheme}>
+                            <FluentProvider className="app-container" theme={semanticKernelLightTheme}>
                                 <App />
                             </FluentProvider>
                         </MsalProvider>
