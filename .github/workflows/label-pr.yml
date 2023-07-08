@@ -49,8 +49,8 @@ jobs:
             const prefix = '${{ matrix.prefix }}'
           
             // Get the title and labels
-            let title = context.payload.pull_request.title
-            let labels = context.payload.pull_request.labels.*.name
+            let title = context.payload.pull_request.title;
+            let labels = context.payload.pull_request.labels.map(label => label.name);
 
             // Update the title based on the label and prefix
             // Check if the issue or PR has the label
