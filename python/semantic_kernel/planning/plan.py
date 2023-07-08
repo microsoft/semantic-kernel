@@ -1,18 +1,23 @@
-import json
+import asyncio
 import re
-import regex
+import threading
 from typing import Any, Callable, List, Union, Optional
 from logging import Logger
 from semantic_kernel import Kernel
-from python.semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.connectors.ai import CompleteRequestSettings
-from python.semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 
-from python.semantic_kernel.skill_definition.function_view import FunctionView
-from python.semantic_kernel.skill_definition.parameter_view import ParameterView
+from semantic_kernel.skill_definition.function_view import FunctionView
+from semantic_kernel.skill_definition.parameter_view import ParameterView
+
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.skill_definition.read_only_skill_collection_base import (
+    ReadOnlySkillCollectionBase,
+)
 
 
 class Plan(SKFunctionBase):
@@ -51,7 +56,7 @@ class Plan(SKFunctionBase):
         return self._function
 
     @property
-    def parameters(self) -> List[ParameterView]:
+    def parameters(self) -> ContextVariables:
         return self._parameters
 
     @property
@@ -60,7 +65,10 @@ class Plan(SKFunctionBase):
 
     @property
     def is_native(self) -> bool:
-        return not self._is_semantic
+        if self._is_semantic is None:
+            return None
+        else:
+            return not self._is_semantic
 
     @property
     def request_settings(self) -> CompleteRequestSettings:
@@ -93,32 +101,128 @@ class Plan(SKFunctionBase):
         self._next_step_index = 0 if next_step_index is None else next_step_index
         self._state = ContextVariables() if state is None else state
         self._parameters = ContextVariables() if parameters is None else parameters
-        self._outputs = [""] if outputs is None else outputs
+        self._outputs = [] if outputs is None else outputs
         self._steps = [] if steps is None else steps
         self._has_next_step = len(self._steps) > 0
         self._is_semantic = None
+        self._function = None if function is None else function
+        self._request_settings = None
 
         if function is not None:
             self.set_function(function)
+    
+    async def invoke_async(
+        self,
+        context: SKContext,
+        input: Optional[str] = None,
+        settings: Optional[CompleteRequestSettings] = None,
+        memory: Optional[SemanticTextMemoryBase] = None,
+        logger: Optional[Logger] = None,
+        # TODO: cancellation_token: CancellationToken,
+    ) -> SKContext:
+        if input is not None:
+            self._state.update(input)
+        
+        if context is None:
+            context = SKContext(
+                variables=self._state,
+                skill_collection=None,
+                memory=memory,
+                logger=logger
+            )
+        
+        if self._function is not None:
+            result = await self._function.invoke_async(context=context, settings=settings)
+            if result.error_occurred:
+                result.log.error(
+                    msg="Something went wrong in plan step {0}.{1}:'{2}'".format(
+                        self._skill_name,
+                        self._name,
+                        context.last_error_description
+                    )
+                )
+                return result
+            context.variables.update(result.result)
+        else:
+            # loop through steps until completion
+            while self.has_next_step:
+                function_context = context
+                self.add_variables_to_context(self._state, function_context)
+                await self.invoke_next_step(function_context)
+                self.update_context_with_outputs(context)
 
+        return context
 
-    def describe(self) -> FunctionView:
-        return self._function.describe()
-
-    def to_json(self, indented: Optional[bool] = False) -> str:
-        return json.dumps(self.__dict__, indent=4 if indented else None)
-
-    def from_json(self, json: Any, context: Optional[SKContext] = None) -> "Plan":
-        # Filter out good JSON from the input in case additional text is present
-        json_regex = r"\{(?:[^{}]|(?R))*\}"
-        plan_string = regex.search(json_regex, json).group()
-        new_plan = Plan()
-        new_plan.__dict__ = json.loads(plan_string)
+    def invoke(
+        self,
+        input: Optional[str] = None,
+        context: Optional[SKContext] = None,
+        settings: Optional[CompleteRequestSettings] = None,
+        memory: Optional[SemanticTextMemoryBase] = None,
+        logger: Optional[Logger] = None,
+    ) -> SKContext:
+        if input is not None:
+            self._state.update(input)
 
         if context is None:
-            new_plan = self.set_available_functions(new_plan, context)
+            context = SKContext(
+                variables=self._state,
+                skill_collection=None,
+                memory=memory,
+                logger=logger
+            )
+            
+        if self._function is not None:
+            result = self._function.invoke(context=context, settings=settings)
+            if result.error_occurred:
+                result.log.error(
+                    result.last_exception,
+                    "Something went wrong in plan step {0}.{1}:'{2}'".format(self.skill_name, self.name, context.last_error_description)
+                )
+                return result
+            context.variables.update(result.result)
+        else:
+            # loop through steps until completion
+            while self.has_next_step:
 
-        return new_plan
+                # Check if there is an event loop
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = None
+                function_context = context
+                self.add_variables_to_context(self._state, function_context)
+                
+                # Handle "asyncio.run() cannot be called from a running event loop"
+                if loop and loop.is_running():
+                    self._runThread(self.invoke_next_step(function_context))
+                else:
+                    asyncio.run(self.invoke_next_step(function_context))
+                self.update_context_with_outputs(context)
+        return context
+
+    def set_ai_configuration(
+        self,
+        settings: CompleteRequestSettings,
+    ) -> SKFunctionBase:
+        if self._function is not None:
+            self._function.set_ai_configuration(settings)
+
+    def set_ai_service(
+        self, service: Callable[[], TextCompletionClientBase]
+    ) -> SKFunctionBase:
+        if self._function is not None:
+            self._function.set_ai_service(service)
+
+    def set_default_skill_collection(
+        self,
+        skills: ReadOnlySkillCollectionBase,          
+    ) -> SKFunctionBase:
+        if self._function is not None:
+            self._function.set_default_skill_collection(skills)
+        
+    def describe(self) -> FunctionView:
+        return self._function.describe()
     
     def set_available_functions(self, plan: "Plan", context: SKContext) -> "Plan":
         if len(plan.steps) == 0:
@@ -143,14 +247,14 @@ class Plan(SKFunctionBase):
                 self._steps.append(step)
             else:
                 new_step = Plan(
-                    step.name,
-                    step.skill_name,
-                    step.description,
-                    0,
-                    ContextVariables(),
-                    ContextVariables(),
-                    [],
-                    [],
+                    name=step.name,
+                    skill_name=step.skill_name,
+                    description=step.description,
+                    next_step_index=0,
+                    state=ContextVariables(),
+                    parameters=ContextVariables(),
+                    outputs=[],
+                    steps=[],
                 )
                 new_step.set_function(step)
                 self._steps.append(new_step)
@@ -163,16 +267,16 @@ class Plan(SKFunctionBase):
         self._is_semantic = function.is_semantic
         self._request_settings = function.request_settings
     
-    def run_next_step_async(
+    async def run_next_step_async(
         self,
         kernel: Kernel,
         variables: ContextVariables,
     ) -> "Plan":
         context = kernel.create_new_context(variables)
-        return self.invoke_next_step(context)
+        return await self.invoke_next_step(context)
 
     async def invoke_next_step(self, context: SKContext) -> "Plan":
-        if self._has_next_step:
+        if self.has_next_step:
             step = self._steps[self._next_step_index]
 
             # merge the state with the current context variables for step execution
@@ -182,11 +286,11 @@ class Plan(SKFunctionBase):
             func_context = SKContext(
                 variables=variables,
                 memory=context._memory,
-                skills=context.skills,
+                skill_collection=context.skills,
                 logger=context.log
             )
-            result = await step.invoke_async(func_context)
-            result_value = result.result.strip()
+            result = await step.invoke_async(context=func_context)
+            result_value = result.result
 
             if result.error_occurred:
                 raise KernelException(
@@ -199,16 +303,16 @@ class Plan(SKFunctionBase):
             self.state.update(result_value)
 
             # Update plan result in state with matching outputs (if any)
-            if set(self._outputs & step._outputs):                
+            if set(self._outputs).intersection(set(step._outputs)):                
                 current_plan_result = ""
-                if Plan.DEFAULT_RESULT_KEY in self._state:
+                if Plan.DEFAULT_RESULT_KEY in self._state._variables:
                     current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
                 self._state.set(Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value)
 
 
             # Update state with outputs (if any)
             for output in step._outputs:
-                if output in result.variables:
+                if output in result.variables._variables:
                     self._state.set(output, result.variables[output])
                 else:
                     self._state.set(output, result_value)
@@ -217,60 +321,19 @@ class Plan(SKFunctionBase):
             self._next_step_index += 1
 
         return self
-    
-    async def invoke_async(
-        self,
-        context: SKContext,
-        input: Optional[str] = None,
-        settings: Optional[CompleteRequestSettings] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
-        logger: Optional[Logger] = None,
-        # TODO: cancellation_token: CancellationToken,
-    ) -> SKContext:
-        if input is not None:
-            self._state.update(input)
-        
-        context = SKContext(
-            variables=self._state,
-            memory=memory,
-            logger=logger
-        )
-        
-        if self._function is not None:
-            result = await self._function.invoke_async(context=context, settings=settings)
-            if result.error_occurred:
-                result.log.error(
-                    msg="Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self._skill_name,
-                        self._name,
-                        context.last_error_description
-                    )
-                )
-                return result
-            
-            context.variables.update(result.result)
-        else:
-            # loop through steps until completion
-            while self._has_next_step:
-                function_context = context
-                self.add_variables_to_context(self._state, function_context)
-                await self.invoke_next_step(function_context)
-                self.update_context_with_outputs(context)
-
-        return context
 
     def add_variables_to_context(
         self,
         variables: ContextVariables,
         context: SKContext
     ) -> None:
-        for key in variables:
+        for key in variables._variables:
             if not context.variables.contains_key(key):
                 context.variables.set(key, variables[key])
 
     def update_context_with_outputs(self, context: SKContext) -> None:
         result_string = ""
-        if Plan.DEFAULT_RESULT_KEY in self._state:
+        if Plan.DEFAULT_RESULT_KEY in self._state._variables:
             result_string = self._state[Plan.DEFAULT_RESULT_KEY]
         else:
             result_string = str(self._state)
@@ -297,8 +360,8 @@ class Plan(SKFunctionBase):
         # - Empty if sending to another plan
         # - Plan.Description
         input_string = ""
-        if step.parameters["input"] is not None:
-            input_string = self.expand_from_variables(variables, step.parameters["input"])
+        if step._parameters["input"] is not None:
+            input_string = self.expand_from_variables(variables, step._parameters["input"])
         elif variables["input"] is not None:
             input_string = variables["input"]
         elif self._state["input"] is not None:
@@ -314,7 +377,7 @@ class Plan(SKFunctionBase):
         # - Function Parameters (pull from variables or state by a key value)
         # - Step Parameters (pull from variables or state by a key value)
         function_params = step.describe()
-        for param in function_params.parameters:
+        for param in function_params._parameters:
             if param.name.lower == "input":
                 continue
             if step_variables.contains_key(param.name):
@@ -322,19 +385,19 @@ class Plan(SKFunctionBase):
             elif self._state.contains_key(param.name) and self._state[param.name] is not None:
                 step_variables.set(param.name, self._state[param.name])
 
-        for param in step.parameters:
-            if step_variables.contains_key(param.name):
+        for param_var in step.parameters._variables:
+            if step_variables.contains_key(param_var):
                 continue
 
-            expanded_value = self.expand_from_variables(variables, param._default_value)
-            if expanded_value.lower() == param._default_value.lower():
-                step_variables.set(param.name, expanded_value)
-            elif variables.contains_key(param.name):
-                step_variables.set(param.name, variables[param.name])
-            elif self._state.contains_key(param.name):
-                step_variables.set(param.name, self._state[param.name])
+            expanded_value = self.expand_from_variables(variables, param_var)
+            if expanded_value.lower() == param_var.lower():
+                step_variables.set(param_var, expanded_value)
+            elif variables.contains_key(param_var):
+                step_variables.set(param_var, variables[param_var])
+            elif self._state.contains_key(param_var):
+                step_variables.set(param_var, self._state[param_var])
             else:
-                step_variables.set(param.name, expanded_value)
+                step_variables.set(param_var, expanded_value)
 
         return step_variables
     
@@ -354,3 +417,10 @@ class Plan(SKFunctionBase):
                 result = result.replace(f"${var_name}", variables[var_name])
                 
         return result
+
+    def _runThread(self, code: Callable):
+        result = []
+        thread = threading.Thread(target=self._runCode, args=(code, result))
+        thread.start()
+        thread.join()
+        return result[0]
