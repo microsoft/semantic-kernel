@@ -23,6 +23,7 @@ public sealed class KernelBuilder
     private KernelConfig _config = new();
     private Func<ISemanticTextMemory> _memoryFactory = () => NullMemory.Instance;
     private ILogger _logger = NullLogger.Instance;
+    private ActivityListener? _activityListener;
     private MeterListener? _meterListener;
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
@@ -66,6 +67,11 @@ public sealed class KernelBuilder
         }
 
         this._meterListener?.Start();
+
+        if (this._activityListener is not null)
+        {
+            ActivitySource.AddActivityListener(this._activityListener);
+        }
 
         return instance;
     }
@@ -129,7 +135,7 @@ public sealed class KernelBuilder
         activityListener.ShouldListenTo =
             activitySource => activitySource.Name.StartsWith(typeof(Kernel).Namespace, StringComparison.Ordinal);
 
-        ActivitySource.AddActivityListener(activityListener);
+        this._activityListener = activityListener;
 
         return this;
     }

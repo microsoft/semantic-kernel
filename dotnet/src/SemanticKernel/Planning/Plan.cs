@@ -662,8 +662,6 @@ public sealed class Plan : ISKFunction
 
     private const string DefaultResultKey = "PLAN.RESULT";
 
-    private const string StepExecutionTimeMetricFormat = "SK.{0}.{1}.ExecutionTime";
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
@@ -686,6 +684,8 @@ public sealed class Plan : ISKFunction
     }
 
     #region Instrumentation
+
+    private const string StepExecutionTimeMetricFormat = "SK.{0}.{1}.ExecutionTime";
 
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for plan-related activities.

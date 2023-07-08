@@ -16,25 +16,6 @@ namespace Microsoft.SemanticKernel.Planning.Sequential;
 public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 {
     /// <summary>
-    /// Instance of <see cref="ActivitySource"/> for planner-related activities.
-    /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(InstrumentedSequentialPlanner).FullName);
-
-    /// <summary>
-    /// Instance of <see cref="Meter"/> for planner-related metrics.
-    /// </summary>
-    private static Meter s_meter = new(typeof(InstrumentedSequentialPlanner).FullName);
-
-    /// <summary>
-    /// Instance of <see cref="Histogram{T}"/> to record plan creation execution time.
-    /// </summary>
-    private static Histogram<double> s_createPlanExecutionTime =
-        s_meter.CreateHistogram<double>(
-            name: "SK.SequentialPlanner.CreatePlan.ExecutionTime",
-            unit: "ms",
-            description: "Execution time of plan creation");
-
-    /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSequentialPlanner"/> class.
     /// </summary>
     /// <param name="planner">Instance of <see cref="ISequentialPlanner"/> to decorate.</param>
@@ -91,6 +72,25 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 
     private readonly ISequentialPlanner _planner;
     private readonly ILogger _logger;
+
+    /// <summary>
+    /// Instance of <see cref="ActivitySource"/> for planner-related activities.
+    /// </summary>
+    private static ActivitySource s_activitySource = new(typeof(InstrumentedSequentialPlanner).FullName);
+
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for planner-related metrics.
+    /// </summary>
+    private static Meter s_meter = new(typeof(InstrumentedSequentialPlanner).FullName);
+
+    /// <summary>
+    /// Instance of <see cref="Histogram{T}"/> to record plan creation execution time.
+    /// </summary>
+    private static Histogram<double> s_createPlanExecutionTime =
+        s_meter.CreateHistogram<double>(
+            name: "SK.SequentialPlanner.CreatePlan.ExecutionTime",
+            unit: "ms",
+            description: "Execution time of plan creation");
 
     #endregion
 }

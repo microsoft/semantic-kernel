@@ -32,8 +32,8 @@ public sealed class Program
     public static async Task Main()
     {
         var serviceProvider = GetServiceProvider();
-        var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
 
+        var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
         using var meterListener = GetMeterListener(telemetryClient);
@@ -72,12 +72,12 @@ public sealed class Program
     {
         var services = new ServiceCollection();
 
-        ConfigureLogging(services);
+        ConfigureApplicationInsightsTelemetry(services);
 
         return services.BuildServiceProvider();
     }
 
-    private static void ConfigureLogging(ServiceCollection services)
+    private static void ConfigureApplicationInsightsTelemetry(ServiceCollection services)
     {
         string instrumentationKey = Env.Var("APP_INSIGHTS_INSTRUMENTATION_KEY");
 
