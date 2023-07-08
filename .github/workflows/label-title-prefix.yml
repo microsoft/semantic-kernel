@@ -2,21 +2,13 @@ name: Label title prefix
 on:
   issues:
     types: [ labeled ]
-  pull_request:
+  pull_request_target:
     types: [ labeled ]
 
 jobs:
   add_title_prefix:
     name: "Issue/PR: add title prefix"
-    # Define a matrix of label and prefix pairs
-    strategy:
-      matrix:
-        include:
-          - {label: 'python', prefix: 'Python'}
-          - {label: 'java', prefix: 'Java'}
-          - {label: '.NET', prefix: '.Net'}
-          - {label: 'copilot chat', prefix: 'Copilot Chat'}
-
+    continue-on-error: true
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -26,72 +18,57 @@ jobs:
       - uses: actions/github-script@v6
         name: "Issue/PR: update title"
         with:
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           script: |
-            // Get the label and prefix from the matrix
-            const label = '${{ matrix.label }}'
-            const prefix = '${{ matrix.prefix }}'
+            let prefixLabels = {
+              "python": "Python",
+              "java": "Java",
+              ".NET": ".Net",
+              "copilot chat": "Copilot Chat"
+            };
             
-            labelAdded = context.payload.label.name
-            
-            // Write the contents of context to console
-            core.info(JSON.stringify(context, null, 2))
-          
-            // Get the event name, title and labels
-            let title
-            switch(context.eventName) {
-              case 'issues':
-                title = context.payload.issue.title
-                break              
-              case 'pull_request':
-                title = context.payload.pull_request.title
-                break
-              default:
-                core.setFailed('Unrecognited eventName: ' + context.eventName)
-            }
-            
-            let originalTitle = title
-
-            // Update the title based on the label and prefix
-            // Check if the issue or PR has the label
-            if (labelAdded == label) {
+            function addTitlePrefix(title, prefix)
+            {
+              // Update the title based on the label and prefix
               // Check if the title starts with the prefix (case-sensitive)
               if (!title.startsWith(prefix + ": ")) {
                 // If not, check if the first word is the label (case-insensitive)
                 if (title.match(new RegExp(`^${prefix}`, 'i'))) {
                   // If yes, replace it with the prefix (case-sensitive)
-                  title = title.replace(new RegExp(`^${prefix}`, 'i'), prefix)
+                  title = title.replace(new RegExp(`^${prefix}`, 'i'), prefix);
                 } else {
                   // If not, prepend the prefix to the title
-                  title = prefix + ": " + title
+                  title = prefix + ": " + title;
                 }
               }
+              
+              return title;
             }
             
-            // Update the issue or PR title, if changed
-            if (title != originalTitle ) {
+            labelAdded = context.payload.label.name
+            
+            // Check if the issue or PR has the label
+            if (labelAdded in prefixLabels) {
+              let prefix = prefixLabels[labelAdded];
               switch(context.eventName) {
                 case 'issues':
                   github.rest.issues.update({
                     issue_number: context.issue.number,
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    title: title
+                    title: addTitlePrefix(context.payload.issue.title, prefix)
                   });
-                  break              
-                case 'pull_request':
-                  try {
-                    github.rest.pulls.update({
-                      pull_number: context.issue.number,
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      title: title
-                    });
-                  }
-                  catch (err) {
-                    core.info("Update PR title failed: " + err.message)
-                  }
+                  break
+                  
+                case 'pull_request_target':
+                  github.rest.pulls.update({
+                    pull_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: addTitlePrefix(context.payload.pull_request.title, prefix)
+                  });
                   break
                 default:
-                  core.setFailed('Unrecognited eventName: ' + context.eventName)
+                  core.setFailed('Unrecognited eventName: ' + context.eventName);
               }
             }
