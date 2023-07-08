@@ -42,7 +42,7 @@ jobs:
                 }
               }
               
-              return titleToUpdate;
+              return title;
             }
             
             labelAdded = context.payload.label.name
