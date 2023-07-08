@@ -38,25 +38,39 @@ interface PlanViewerProps {
     getResponse: (options: GetResponseOptions) => Promise<void>;
 }
 
+/**
+ * See Semantic Kernel's `Plan` object below for full definition.
+ * Not explicitly defining the type here to avoid additional overhead of property maintenance.
+ * https://github.com/microsoft/semantic-kernel/blob/df07fc6f28853a481dd6f47e60d39a52fc6c9967/dotnet/src/SemanticKernel/Planning/Plan.cs#
+ */
+
+/*
+eslint-disable 
+    @typescript-eslint/no-unsafe-assignment,
+    @typescript-eslint/no-unsafe-member-access,
+    @typescript-eslint/no-unsafe-call,
+*/
+export type Plan = any;
+
 export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, getResponse }) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     // Track original plan from user message
-    const parsedContent = JSON.parse(message.content);
+    const parsedContent: Plan = JSON.parse(message.content);
     const originalPlan = parsedContent.proposedPlan;
 
-    var planState = message.state ?? parsedContent.state;
+    const planState = message.state ?? parsedContent.state;
 
-    // If plan came from ActionPlanner, use parameters from top-level plan state
+    // If plan came from ActionPlanner, use parameters from top-level of plan
     if (parsedContent.type === PlanType.Action) {
-        originalPlan.steps[0].parameters = originalPlan.state;
+        originalPlan.steps[0].parameters = originalPlan.parameters;
     }
 
     const userIntentPrefix = 'User Intent:User intent: ';
-    const userIntentIndex = originalPlan.description.indexOf(userIntentPrefix);
-    const description =
+    const userIntentIndex = originalPlan.description.indexOf(userIntentPrefix) as number;
+    const description: string =
         userIntentIndex !== -1
             ? originalPlan.description.substring(userIntentIndex + userIntentPrefix.length).trim()
             : '';
@@ -67,7 +81,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
         dispatch(
             updateMessageState({
                 newMessageState: planState,
-                messageIndex: messageIndex,
+                messageIndex,
                 chatId: selectedId,
             }),
         );
@@ -90,19 +104,19 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
         contextVariables.push(
             planState === PlanState.PlanApproved
                 ? {
-                      key: 'planUserIntent',
-                      value: description,
-                  }
+                    key: 'planUserIntent',
+                    value: description,
+                }
                 : {
-                      key: 'userCancelledPlan',
-                      value: 'true',
-                  },
+                    key: 'userCancelledPlan',
+                    value: 'true',
+                },
         );
 
         // Invoke plan
         await getResponse({
             value: planState === PlanState.PlanApproved ? 'Yes, proceed' : 'No, cancel',
-            contextVariables: contextVariables,
+            contextVariables,
             messageType: ChatMessageType.Plan,
             chatId: selectedId,
         });
@@ -123,7 +137,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 return (
                     <PlanStepCard
                         key={`Plan step: ${index}`}
-                        step={{ ...step, index: index }}
+                        step={{ ...step, index }}
                         enableEdits={planState === PlanState.PlanApprovalRequired}
                         enableStepDelete={plan.steps.length > 1}
                         onDeleteStep={onDeleteStep}
@@ -134,10 +148,23 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                 <>
                     Would you like to proceed with the plan?
                     <div className={classes.buttons}>
-                        <Button appearance="secondary" onClick={() => onPlanAction(PlanState.PlanRejected)}>
+                        <Button
+                            data-testid="cancelPlanButton"
+                            appearance="secondary"
+                            onClick={() => {
+                                void onPlanAction(PlanState.PlanRejected);
+                            }}
+                        >
                             No, cancel plan
                         </Button>
-                        <Button type="submit" appearance="primary" onClick={() => onPlanAction(PlanState.PlanApproved)}>
+                        <Button
+                            data-testid="proceedWithPlanButton"
+                            type="submit"
+                            appearance="primary"
+                            onClick={() => {
+                                void onPlanAction(PlanState.PlanApproved);
+                            }}
+                        >
                             Yes, proceed
                         </Button>
                     </div>
@@ -155,12 +182,13 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                     <Text className={classes.text}> Plan Cancelled</Text>
                 </div>
             )}
-            {planState === PlanState.NoOp && (
+            {(planState === PlanState.NoOp || planState === PlanState.Disabled) && (
                 <div className={mergeClasses(classes.buttons, classes.status)}>
                     <Info24Regular />
                     <Text className={classes.text}>
-                        Your app state has changed since this plan was generated, making it unreliable for the planner.
-                        Please request a fresh plan to avoid potential conflicts.
+                        {planState === PlanState.NoOp
+                            ? 'Your app state has changed since this plan was generated, making it unreliable for the planner. Please request a fresh plan to avoid potential conflicts.'
+                            : 'Only the person who prompted this plan can take action on it.'}
                     </Text>
                 </div>
             )}

@@ -63,15 +63,15 @@ const App: FC = () => {
             items: [
                 {
                     title: 'Summarize',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/CoreSkills/ConversationSummarySkill.cs#L70',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Skills/Skills.Core/ConversationSummarySkill.cs#L70',
                 },
                 {
                     title: 'Action Items',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/CoreSkills/ConversationSummarySkill.cs#L87',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Skills/Skills.Core/ConversationSummarySkill.cs#L87',
                 },
                 {
                     title: 'Topics',
-                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/CoreSkills/ConversationSummarySkill.cs#L104',
+                    uri: 'https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Skills/Skills.Core/ConversationSummarySkill.cs#L104',
                 },
             ],
         },

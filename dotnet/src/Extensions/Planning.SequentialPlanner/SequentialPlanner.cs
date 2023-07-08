@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// </summary>
 public sealed class SequentialPlanner
 {
-    private const string StopSequence = "<!--";
+    private const string StopSequence = "<!-- END -->";
 
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
@@ -54,6 +54,7 @@ public sealed class SequentialPlanner
     /// </summary>
     /// <param name="goal">The goal to create a plan for.</param>
     /// <returns>The plan.</returns>
+    /// <exception cref="PlanningException">Thrown when the plan cannot be created.</exception>
     public async Task<Plan> CreatePlanAsync(string goal)
     {
         if (string.IsNullOrEmpty(goal))
@@ -68,16 +69,37 @@ public sealed class SequentialPlanner
 
         var planResult = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
 
+        if (planResult.ErrorOccurred)
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, $"Error creating plan for goal: {planResult.LastErrorDescription}", planResult.LastException);
+        }
+
         string planResultString = planResult.Result.Trim();
 
         try
         {
-            var plan = planResultString.ToPlanFromXml(goal, this._context);
+            var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
+            var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+
+            if (plan.Steps.Count == 0)
+            {
+                throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, $"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
+            }
+
             return plan;
+        }
+        catch (PlanningException planException) when (planException.ErrorCode == PlanningException.ErrorCodes.CreatePlanError)
+        {
+            throw;
+        }
+        catch (PlanningException planException) when (planException.ErrorCode == PlanningException.ErrorCodes.InvalidPlan ||
+                                                      planException.ErrorCode == PlanningException.ErrorCodes.InvalidGoal)
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, "Unable to create plan", planException);
         }
         catch (Exception e)
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Plan parsing error, invalid XML", e);
+            throw new PlanningException(PlanningException.ErrorCodes.UnknownError, "Unknown error creating plan", e);
         }
     }
 

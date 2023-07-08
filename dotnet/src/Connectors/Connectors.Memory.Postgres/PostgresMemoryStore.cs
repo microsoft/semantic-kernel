@@ -1,64 +1,64 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Pgvector;
-using Pgvector.Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Postgres database with pgvector extension.
 /// </summary>
-public class PostgresMemoryStore : IMemoryStore, IDisposable
+/// <remarks>The embedded data is saved to the Postgres database specified in the constructor.
+/// Similarity search capability is provided through the pgvector extension. Use Postgres's "Table" to implement "Collection".
+/// </remarks>
+public class PostgresMemoryStore : IMemoryStore
 {
-    /// <summary>
-    /// Connect a Postgres database
-    /// </summary>
-    /// <param name="connectionString">Database connection string. If table does not exist, it will be created.</param>
-    /// <param name="vectorSize">Embedding vector size</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public static async Task<PostgresMemoryStore> ConnectAsync(string connectionString, int vectorSize,
-        CancellationToken cancellationToken = default)
-    {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
-        // Use pgvector
-        dataSourceBuilder.UseVector();
+    internal const string DefaultSchema = "public";
 
-        var memoryStore = new PostgresMemoryStore(dataSourceBuilder.Build());
-        using NpgsqlConnection dbConnection = await memoryStore._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await memoryStore._dbConnector.CreatePgVectorExtensionAsync(dbConnection, cancellationToken).ConfigureAwait(false);
-        await memoryStore._dbConnector.CreateTableAsync(dbConnection, vectorSize, cancellationToken).ConfigureAwait(false);
-        await memoryStore._dbConnector.CreateIndexAsync(dbConnection, cancellationToken).ConfigureAwait(false);
-        return memoryStore;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
+    /// </summary>
+    /// <param name="dataSource">Postgres data source.</param>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="schema">Database schema of collection tables. The default value is "public".</param>
+    public PostgresMemoryStore(NpgsqlDataSource dataSource, int vectorSize, string schema = DefaultSchema)
+        : this(new PostgresDbClient(dataSource, schema, vectorSize))
+    {
+    }
+
+    public PostgresMemoryStore(IPostgresDbClient postgresDbClient)
+    {
+        this._postgresDbClient = postgresDbClient;
     }
 
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await this._dbConnector.CreateCollectionAsync(dbConnection, collectionName, cancellationToken).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        await this._postgresDbClient.CreateTableAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        return await this._dbConnector.DoesCollectionExistsAsync(dbConnection, collectionName, cancellationToken).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        return await this._postgresDbClient.DoesTableExistsAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await foreach (var collection in this._dbConnector.GetCollectionsAsync(dbConnection, cancellationToken).ConfigureAwait(false))
+        await foreach (string collection in this._postgresDbClient.GetTablesAsync(cancellationToken).ConfigureAwait(false))
         {
             yield return collection;
         }
@@ -67,69 +67,69 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await this._dbConnector.DeleteCollectionAsync(dbConnection, collectionName, cancellationToken).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        await this._postgresDbClient.DeleteTableAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        return await this.InternalUpsertAsync(dbConnection, collectionName, record, cancellationToken).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        return await this.InternalUpsertAsync(collectionName, record, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        foreach (var record in records)
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        foreach (MemoryRecord record in records)
         {
-            yield return await this.InternalUpsertAsync(dbConnection, collectionName, record, cancellationToken).ConfigureAwait(false);
+            yield return await this.InternalUpsertAsync(collectionName, record, cancellationToken).ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        return await this.InternalGetAsync(dbConnection, collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        PostgresMemoryEntry? entry = await this._postgresDbClient.ReadAsync(collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
+
+        if (!entry.HasValue) { return null; }
+
+        return this.GetMemoryRecordFromEntry(entry.Value);
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        foreach (var key in keys)
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        await foreach (PostgresMemoryEntry entry in this._postgresDbClient.ReadBatchAsync(collectionName, keys, withEmbeddings, cancellationToken).ConfigureAwait(false))
         {
-            var result = await this.InternalGetAsync(dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result != null)
-            {
-                yield return result;
-            }
-            else
-            {
-                yield break;
-            }
+            yield return this.GetMemoryRecordFromEntry(entry);
         }
     }
 
     /// <inheritdoc/>
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await this._dbConnector.DeleteAsync(dbConnection, collectionName, key, cancellationToken).ConfigureAwait(false);
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        await this._postgresDbClient.DeleteAsync(collectionName, key, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-        foreach (var key in keys)
-        {
-            await this._dbConnector.DeleteAsync(dbConnection, collectionName, key, cancellationToken).ConfigureAwait(false);
-        }
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        await this._postgresDbClient.DeleteBatchAsync(collectionName, keys, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -141,30 +141,24 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNullOrWhiteSpace(collectionName);
+
         if (limit <= 0)
         {
             yield break;
         }
 
-        using NpgsqlConnection dbConnection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-
-        IAsyncEnumerable<(DatabaseEntry, double)> results = this._dbConnector.GetNearestMatchesAsync(
-            dbConnection,
-            collectionName: collectionName,
-            embeddingFilter: new Vector(embedding.Vector.ToArray()),
+        IAsyncEnumerable<(PostgresMemoryEntry, double)> results = this._postgresDbClient.GetNearestMatchesAsync(
+            tableName: collectionName,
+            embedding: new Vector(embedding.Vector.ToArray()),
             limit: limit,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbeddings,
             cancellationToken: cancellationToken);
 
-        await foreach (var (entry, cosineSimilarity) in results.ConfigureAwait(false))
+        await foreach ((PostgresMemoryEntry entry, double cosineSimilarity) in results.ConfigureAwait(false))
         {
-            MemoryRecord record = MemoryRecord.FromJsonMetadata(
-                json: entry.MetadataString,
-                withEmbeddings && entry.Embedding != null ? new Embedding<float>(entry.Embedding!.ToArray()) : Embedding<float>.Empty,
-                entry.Key,
-                ParseTimestamp(entry.Timestamp));
-            yield return (record, cosineSimilarity);
+            yield return (this.GetMemoryRecordFromEntry(entry), cosineSimilarity);
         }
     }
 
@@ -181,98 +175,32 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    #region protected ================================================================================
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this._disposedValue)
-        {
-            if (disposing)
-            {
-                this._dataSource.Dispose();
-            }
-
-            this._disposedValue = true;
-        }
-    }
-
-    #endregion
-
     #region private ================================================================================
 
-    private readonly Database _dbConnector;
-    private readonly NpgsqlDataSource _dataSource;
-    private bool _disposedValue;
+    private readonly IPostgresDbClient _postgresDbClient;
 
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="dataSource">Postgres data source.</param>
-    private PostgresMemoryStore(NpgsqlDataSource dataSource)
-    {
-        this._dataSource = dataSource;
-        this._dbConnector = new Database();
-        this._disposedValue = false;
-    }
-
-    private static long? ToTimestampLong(DateTimeOffset? timestamp)
-    {
-        return timestamp?.ToUnixTimeMilliseconds();
-    }
-
-    private static DateTimeOffset? ParseTimestamp(long? timestamp)
-    {
-        if (timestamp.HasValue)
-        {
-            return DateTimeOffset.FromUnixTimeMilliseconds(timestamp.Value);
-        }
-
-        return null;
-    }
-
-    private async Task<string> InternalUpsertAsync(NpgsqlConnection connection, string collectionName, MemoryRecord record, CancellationToken cancellationToken)
+    private async Task<string> InternalUpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken)
     {
         record.Key = record.Metadata.Id;
 
-        await this._dbConnector.UpsertAsync(
-            conn: connection,
-            collectionName: collectionName,
+        await this._postgresDbClient.UpsertAsync(
+            tableName: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
             embedding: new Vector(record.Embedding.Vector.ToArray()),
-            timestamp: ToTimestampLong(record.Timestamp),
+            timestamp: record.Timestamp?.UtcDateTime,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return record.Key;
     }
 
-    private async Task<MemoryRecord?> InternalGetAsync(NpgsqlConnection connection, string collectionName, string key, bool withEmbedding, CancellationToken cancellationToken)
+    private MemoryRecord GetMemoryRecordFromEntry(PostgresMemoryEntry entry)
     {
-        DatabaseEntry? entry = await this._dbConnector.ReadAsync(connection, collectionName, key, withEmbedding, cancellationToken).ConfigureAwait(false);
-
-        if (!entry.HasValue) { return null; }
-
-        if (withEmbedding)
-        {
-            return MemoryRecord.FromJsonMetadata(
-                json: entry.Value.MetadataString,
-                embedding: entry.Value.Embedding != null ? new Embedding<float>(entry.Value.Embedding.ToArray()) : Embedding<float>.Empty,
-                entry.Value.Key,
-                ParseTimestamp(entry.Value.Timestamp));
-        }
-
         return MemoryRecord.FromJsonMetadata(
-            json: entry.Value.MetadataString,
-            Embedding<float>.Empty,
-            entry.Value.Key,
-            ParseTimestamp(entry.Value.Timestamp));
+            json: entry.MetadataString,
+            embedding: entry.Embedding != null ? new Embedding<float>(entry.Embedding!.ToArray()) : Embedding<float>.Empty,
+            key: entry.Key,
+            timestamp: entry.Timestamp?.ToLocalTime());
     }
 
     #endregion

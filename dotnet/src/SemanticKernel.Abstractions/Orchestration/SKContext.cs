@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -18,15 +19,15 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public sealed class SKContext
 {
     /// <summary>
+    /// The culture currently associated with this context.
+    /// </summary>
+    private CultureInfo _culture;
+
+    /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
     public string Result => this.Variables.ToString();
-
-    /// <summary>
-    /// Whether all the context variables are trusted or not.
-    /// </summary>
-    public bool IsTrusted => this.Variables.IsAllTrusted();
 
     /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
@@ -53,6 +54,15 @@ public sealed class SKContext
     /// The token to monitor for cancellation requests.
     /// </summary>
     public CancellationToken CancellationToken { get; }
+
+    /// <summary>
+    /// The culture currently associated with this context.
+    /// </summary>
+    public CultureInfo Culture
+    {
+        get => this._culture;
+        set => this._culture = value ?? CultureInfo.CurrentCulture;
+    }
 
     /// <summary>
     /// Shortcut into user data, access variables by name
@@ -138,22 +148,7 @@ public sealed class SKContext
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
         this.Log = logger ?? NullLogger.Instance;
         this.CancellationToken = cancellationToken;
-    }
-
-    /// <summary>
-    /// Make all the variables stored in the context untrusted.
-    /// </summary>
-    public void UntrustAll()
-    {
-        this.Variables.UntrustAll();
-    }
-
-    /// <summary>
-    /// Make the result untrusted.
-    /// </summary>
-    public void UntrustResult()
-    {
-        this.Variables.UntrustInput();
+        this._culture = CultureInfo.CurrentCulture;
     }
 
     /// <summary>
@@ -180,9 +175,10 @@ public sealed class SKContext
             logger: this.Log,
             cancellationToken: this.CancellationToken)
         {
+            Culture = this.Culture,
             ErrorOccurred = this.ErrorOccurred,
             LastErrorDescription = this.LastErrorDescription,
-            LastException = this.LastException
+            LastException = this.LastException,
         };
     }
 
@@ -208,6 +204,8 @@ public sealed class SKContext
             {
                 display += $", Memory = {memory.GetType().Name}";
             }
+
+            display += $", Culture = {this.Culture.EnglishName}";
 
             return display;
         }
