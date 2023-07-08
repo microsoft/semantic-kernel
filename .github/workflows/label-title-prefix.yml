@@ -8,6 +8,7 @@ on:
 jobs:
   add_title_prefix:
     name: "Issue/PR: add title prefix"
+    continue-on-error: true
     # Define a matrix of label and prefix pairs
     strategy:
       matrix:
@@ -26,6 +27,7 @@ jobs:
       - uses: actions/github-script@v6
         name: "Issue/PR: update title"
         with:
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           script: |
             // Get the label and prefix from the matrix
             const label = '${{ matrix.label }}'
