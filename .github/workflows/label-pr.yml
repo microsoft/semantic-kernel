@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         name: "Issue/PR: update title"
-        if: contains( context.payload.pull_request.labels.*.name, ${{ matrix.label }})
+        if: contains( context.payload.pull_request.labels.*.name, matrix.label )
         with:
           script: |
             // Get the label and prefix from the matrix
