@@ -44,7 +44,7 @@ jobs:
               case 'issues':
                 title = context.payload.issue.title
                 break              
-              case 'pull_request':
+              case 'pull_request_target':
                 title = context.payload.pull_request.title
                 break
               default:
