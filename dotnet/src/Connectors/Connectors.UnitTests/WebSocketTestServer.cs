@@ -159,13 +159,13 @@ internal class WebSocketTestServer : IDisposable
                 await connectedClient.Socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing without waiting for acknowledgment", CancellationToken.None).ConfigureAwait(false);
             }
         }
-        catch (OperationCanceledException oce)
+        catch (OperationCanceledException exception)
         {
-            this._logger?.LogTrace(message: "Closing server web socket before disposal was cancelled", exception: oce);
+            this._logger?.LogTrace(message: "Closing server web socket before disposal was cancelled", exception: exception);
         }
-        catch (WebSocketException wse)
+        catch (WebSocketException exception)
         {
-            this._logger?.LogTrace(message: "Closing server web socket before disposal raised web socket exception", exception: wse);
+            this._logger?.LogTrace(message: "Closing server web socket before disposal raised web socket exception", exception: exception);
         }
         finally
         {
@@ -203,9 +203,9 @@ internal class WebSocketTestServer : IDisposable
             this._socketCancellationTokenSource.Cancel();
             this._mainCancellationTokenSource.Cancel();
         }
-        catch (OperationCanceledException oce)
+        catch (OperationCanceledException exception)
         {
-            this._logger?.LogTrace(message: "\"Disposing web socket test server raised operation cancel exception", exception: oce);
+            this._logger?.LogTrace(message: "\"Disposing web socket test server raised operation cancel exception", exception: exception);
         }
         finally
         {

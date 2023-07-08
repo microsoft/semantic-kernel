@@ -435,9 +435,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 }
             }
         }
-        catch (OperationCanceledException oce)
+        catch (OperationCanceledException exception)
         {
-            this._logger?.LogTrace(message: "FlushWebSocketClientsAsync cleaning task was cancelled", exception: oce);
+            this._logger?.LogTrace(message: "FlushWebSocketClientsAsync cleaning task was cancelled", exception: exception);
             while (this._webSocketPool.TryTake(out ClientWebSocket clientToDispose))
             {
                 await this.DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
@@ -457,13 +457,13 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing client before disposal", CancellationToken.None).ConfigureAwait(false);
             }
         }
-        catch (OperationCanceledException oce)
+        catch (OperationCanceledException exception)
         {
-            this._logger?.LogTrace(message: "Closing client web socket before disposal was cancelled", exception: oce);
+            this._logger?.LogTrace(message: "Closing client web socket before disposal was cancelled", exception: exception);
         }
-        catch (WebSocketException wse)
+        catch (WebSocketException exception)
         {
-            this._logger?.LogTrace(message: "Closing client web socket before disposal raised web socket exception", exception: wse);
+            this._logger?.LogTrace(message: "Closing client web socket before disposal raised web socket exception", exception: exception);
         }
         finally
         {
