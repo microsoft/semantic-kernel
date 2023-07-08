@@ -23,7 +23,7 @@ public sealed class TextCompletionRequest
     /// The maximum number of tokens to generate, ignoring the number of tokens in the prompt.
     /// </summary>
     [JsonPropertyName("max_new_tokens")]
-    public int MaxNewTokens { get; set; }
+    public int? MaxNewTokens { get; set; }
 
     /// <summary>
     /// Determines whether or not to use sampling; use greedy decoding if false.
