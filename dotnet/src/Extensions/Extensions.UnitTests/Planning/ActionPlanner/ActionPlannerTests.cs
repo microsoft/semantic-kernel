@@ -9,7 +9,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -144,8 +143,7 @@ public sealed class ActionPlannerTests
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
             It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>(),
-            It.IsAny<ITrustService?>()
+            It.IsAny<SemanticFunctionConfig>()
         )).Returns(mockFunctionFlowFunction.Object);
 
         return kernel;
