@@ -28,7 +28,6 @@ class PostgresMemoryStore(MemoryStoreBase):
     _connection_pool: ConnectionPool
     _default_dimensionality: int
     _schema: str
-    _timezone_offset: str
     _logger: Logger
 
     def __init__(
@@ -38,7 +37,6 @@ class PostgresMemoryStore(MemoryStoreBase):
         min_pool: int,
         max_pool: int,
         schema: str = DEFAULT_SCHEMA,
-        timezone_offset: Optional[str] = None,
         logger: Optional[Logger] = None,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
@@ -53,27 +51,8 @@ class PostgresMemoryStore(MemoryStoreBase):
             Expected format '-7:00'. Uses the local timezone offset when not provided.\n
             logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
-        if default_dimensionality > MAX_DIMENSIONALITY:
-            raise ValueError(
-                f"Dimensionality of {default_dimensionality} exceeds "
-                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
-            )
-        if default_dimensionality <= 0:
-            raise ValueError("Dimensionality must be a positive integer. ")
 
-        if timezone_offset is None:
-            t = time.time()
-
-            if time.localtime(t).tm_isdst and time.daylight:
-                float_offset = -time.altzone / 60 / 60
-            else:
-                float_offset = -time.timezone / 60 / 60
-
-            self._timezone_offset = (
-                str(float_offset).replace(".", ":")[:5]
-                if float_offset < 0
-                else str(float_offset).replace(".", ":")[:4]
-            )
+        self._check_dimensionality(default_dimensionality)
 
         self._connection_string = connection_string
         self._default_dimensionality = default_dimensionality
@@ -101,13 +80,8 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         if dimension_num is None:
             dimension_num = self._default_dimensionality
-        if dimension_num > MAX_DIMENSIONALITY:
-            raise ValueError(
-                f"Dimensionality of {dimension_num} exceeds "
-                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
-            )
-        if dimension_num <= 0:
-            raise ValueError("Dimensionality must be a positive integer. ")
+        else:
+            self._check_dimensionality(dimension_num)
 
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
@@ -118,7 +92,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                             key TEXT PRIMARY KEY,
                             embedding vector({dim}),
                             metadata JSONB,
-                            timestamp TIMESTAMP WITH TIME ZONE
+                            timestamp TIMESTAMP
                         )"""
                     ).format(
                         scm=Identifier(self._schema),
@@ -186,7 +160,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     SQL(
                         """
                         INSERT INTO {scm}.{tbl} (key, embedding, metadata, timestamp)
-                        VALUES (%s, %s, %s, %s AT TIME ZONE INTERVAL {tz})
+                        VALUES (%s, %s, %s, %s)
                         ON CONFLICT (key) DO UPDATE
                         SET embedding = EXCLUDED.embedding,
                             metadata = EXCLUDED.metadata,
@@ -196,7 +170,6 @@ class PostgresMemoryStore(MemoryStoreBase):
                     ).format(
                         scm=Identifier(self._schema),
                         tbl=Identifier(collection_name),
-                        tz=Literal(self._timezone_offset),
                     ),
                     (
                         record._id,
@@ -231,7 +204,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     SQL(
                         """
                         INSERT INTO {scm}.{tbl} (key, embedding, metadata, timestamp)
-                        VALUES (%s, %s, %s, %s AT TIME ZONE INTERVAL {tz})
+                        VALUES (%s, %s, %s, %s)
                         ON CONFLICT (key) DO UPDATE
                         SET embedding = EXCLUDED.embedding,
                             metadata = EXCLUDED.metadata,
@@ -241,7 +214,6 @@ class PostgresMemoryStore(MemoryStoreBase):
                     ).format(
                         scm=Identifier(self._schema),
                         tbl=Identifier(collection_name),
-                        tz=Literal(self._timezone_offset),
                     ),
                     [
                         (
@@ -283,13 +255,13 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    SELECT key, embedding, metadata, timestamp AT TIME ZONE INTERVAL {tz} AS timestamp
-                    FROM {scm}.{tbl}
-                    WHERE key = %s"""
+                        SELECT key, embedding, metadata, timestamp
+                        FROM {scm}.{tbl}
+                        WHERE key = %s
+                        """
                     ).format(
                         scm=Identifier(self._schema),
                         tbl=Identifier(collection_name),
-                        tz=Literal(self._timezone_offset),
                     ),
                     (key,),
                 )
@@ -327,13 +299,13 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    SELECT key, embedding, metadata, timestamp AT TIME ZONE INTERVAL {tz} AS timestamp
-                    FROM {scm}.{tbl}
-                    WHERE key = ANY(%s)"""
+                        SELECT key, embedding, metadata, timestamp
+                        FROM {scm}.{tbl}
+                        WHERE key = ANY(%s)
+                        """
                     ).format(
                         scm=Identifier(self._schema),
                         tbl=Identifier(collection_name),
-                        tz=Literal(self._timezone_offset),
                     ),
                     (list(keys),),
                 )
@@ -371,8 +343,9 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    DELETE FROM {scm}.{tbl}
-                    WHERE key = %s"""
+                        DELETE FROM {scm}.{tbl}
+                        WHERE key = %s
+                        """
                     ).format(
                         scm=Identifier(self._schema), tbl=Identifier(collection_name)
                     ),
@@ -396,8 +369,9 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    DELETE FROM {scm}.{tbl}
-                    WHERE key = ANY(%s)"""
+                        DELETE FROM {scm}.{tbl}
+                        WHERE key = ANY(%s)
+                        """
                     ).format(
                         scm=Identifier(self._schema), tbl=Identifier(collection_name)
                     ),
@@ -431,22 +405,22 @@ class PostgresMemoryStore(MemoryStoreBase):
                 cur.execute(
                     SQL(
                         """
-                    SELECT key,
-                        embedding,
-                        metadata,
-                        cosine_similarity,
-                        timestamp AT TIME ZONE INTERVAL {tz} AS timestamp
-                    FROM (
-                        SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity, timestamp
-                        FROM {scm}.{tbl}
-                    ) AS subquery
-                    WHERE cosine_similarity >= {mrs}
-                    ORDER BY cosine_similarity DESC
-                    LIMIT {limit}"""
+                        SELECT key,
+                            embedding,
+                            metadata,
+                            cosine_similarity,
+                            timestamp
+                        FROM (
+                            SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity, timestamp
+                            FROM {scm}.{tbl}
+                        ) AS subquery
+                        WHERE cosine_similarity >= {mrs}
+                        ORDER BY cosine_similarity DESC
+                        LIMIT {limit}
+                        """
                     ).format(
                         scm=Identifier(self._schema),
                         tbl=Identifier(collection_name),
-                        tz=Literal(self._timezone_offset),
                         mrs=min_relevance_score,
                         limit=limit,
                         emb=SQL(",").join(embedding.tolist()),
@@ -491,51 +465,17 @@ class PostgresMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        with self._connection_pool.connection() as conn:
-            with conn.cursor() as cur:
-                if not await self.__does_collection_exist_async(cur, collection_name):
-                    raise Exception(f"Collection '{collection_name}' does not exist")
-                cur.execute(
-                    SQL(
-                        """
-                    SELECT key,
-                        embedding,
-                        metadata,
-                        cosine_similarity,
-                        timestamp AT TIME ZONE INTERVAL {tz} AS timestamp
-                    FROM (
-                        SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity, timestamp
-                        FROM {scm}.{tbl}
-                    ) AS subquery
-                    WHERE cosine_similarity >= {mrs}
-                    ORDER BY cosine_similarity DESC
-                    LIMIT 1"""
-                    ).format(
-                        scm=Identifier(self._schema),
-                        tbl=Identifier(collection_name),
-                        tz=Literal(self._timezone_offset),
-                        mrs=min_relevance_score,
-                        emb=SQL(",").join(embedding.tolist()),
-                    )
-                )
-                result = cur.fetchone()
-                if result is None:
-                    raise Exception("No match found")
-                return (
-                    MemoryRecord.local_record(
-                        id=result[0],
-                        embedding=np.fromstring(
-                            result[1].strip("[]"), dtype=float, sep=","
-                        )
-                        if with_embedding
-                        else np.array([]),
-                        text=result[2]["text"],
-                        description=result[2]["description"],
-                        additional_metadata=result[2]["additional_metadata"],
-                        timestamp=result[4],
-                    ),
-                    result[3],
-                )
+        
+        results = await self.get_nearest_matches_async(
+            collection_name=collection_name,
+            embedding=embedding,
+            limit=1,
+            min_relevance_score=min_relevance_score,
+            with_embeddings=with_embedding,
+        )
+        if len(results) == 0:
+            raise Exception("No match found")
+        return results[0]
 
     async def __does_collection_exist_async(
         self, cur: Cursor, collection_name: str
@@ -553,6 +493,15 @@ class PostgresMemoryStore(MemoryStoreBase):
             (self._schema,),
         )
         return [row[0] for row in cur.fetchall()]
+
+    def _check_dimensionality(self, dimension_num):
+        if dimension_num > MAX_DIMENSIONALITY:
+            raise ValueError(
+                f"Dimensionality of {dimension_num} exceeds "
+                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+            )
+        if dimension_num <= 0:
+            raise ValueError("Dimensionality must be a positive integer. ")
 
     def __serialize_metadata(self, record: MemoryRecord) -> str:
         return json.dumps(

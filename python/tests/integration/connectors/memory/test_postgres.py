@@ -34,7 +34,7 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.fixture(scope="session")
-def get_postgres_config():
+def connection_string():
     if "Python_Integration_Tests" in os.environ:
         connection_string = os.environ["Postgres__ApiKey"]
     else:
@@ -86,15 +86,13 @@ def memory_record3():
     )
 
 
-def test_constructor(get_postgres_config):
-    connection_string = get_postgres_config
+def test_constructor(connection_string):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
     assert memory._connection_pool is not None
 
 
 @pytest.mark.asyncio
-async def test_create_and_does_collection_exist_async(get_postgres_config):
-    connection_string = get_postgres_config
+async def test_create_and_does_collection_exist_async(connection_string):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection_async("test_collection")
@@ -103,8 +101,7 @@ async def test_create_and_does_collection_exist_async(get_postgres_config):
 
 
 @pytest.mark.asyncio
-async def test_get_collections_async(get_postgres_config):
-    connection_string = get_postgres_config
+async def test_get_collections_async(connection_string):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection_async("test_collection")
@@ -113,8 +110,7 @@ async def test_get_collections_async(get_postgres_config):
 
 
 @pytest.mark.asyncio
-async def test_delete_collection_async(get_postgres_config):
-    connection_string = get_postgres_config
+async def test_delete_collection_async(connection_string):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection_async("test_collection")
@@ -128,8 +124,7 @@ async def test_delete_collection_async(get_postgres_config):
 
 
 @pytest.mark.asyncio
-async def test_does_collection_exist_async(get_postgres_config):
-    connection_string = get_postgres_config
+async def test_does_collection_exist_async(connection_string):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection_async("test_collection")
@@ -138,8 +133,7 @@ async def test_does_collection_exist_async(get_postgres_config):
 
 
 @pytest.mark.asyncio
-async def test_upsert_async_and_get_async(get_postgres_config, memory_record1):
-    connection_string = get_postgres_config
+async def test_upsert_async_and_get_async(connection_string, memory_record1):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection_async("test_collection")
@@ -157,9 +151,8 @@ async def test_upsert_async_and_get_async(get_postgres_config, memory_record1):
 
 @pytest.mark.asyncio
 async def test_upsert_batch_async_and_get_batch_async(
-    get_postgres_config, memory_record1, memory_record2
+    connection_string, memory_record1, memory_record2
 ):
-    connection_string = get_postgres_config
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection_async("test_collection")
@@ -177,8 +170,7 @@ async def test_upsert_batch_async_and_get_batch_async(
 
 
 @pytest.mark.asyncio
-async def test_remove_async(get_postgres_config, memory_record1):
-    connection_string = get_postgres_config
+async def test_remove_async(connection_string, memory_record1):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection_async("test_collection")
@@ -197,8 +189,7 @@ async def test_remove_async(get_postgres_config, memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_remove_batch_async(get_postgres_config, memory_record1, memory_record2):
-    connection_string = get_postgres_config
+async def test_remove_batch_async(connection_string, memory_record1, memory_record2):
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection_async("test_collection")
@@ -219,9 +210,8 @@ async def test_remove_batch_async(get_postgres_config, memory_record1, memory_re
 
 @pytest.mark.asyncio
 async def test_get_nearest_match_async(
-    get_postgres_config, memory_record1, memory_record2
+    connection_string, memory_record1, memory_record2
 ):
-    connection_string = get_postgres_config
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection_async("test_collection")
@@ -242,9 +232,8 @@ async def test_get_nearest_match_async(
 
 @pytest.mark.asyncio
 async def test_get_nearest_matches_async(
-    get_postgres_config, memory_record1, memory_record2, memory_record3
+    connection_string, memory_record1, memory_record2, memory_record3
 ):
-    connection_string = get_postgres_config
     memory = PostgresMemoryStore(connection_string, 2, 1, 5)
 
     await memory.create_collection_async("test_collection")
