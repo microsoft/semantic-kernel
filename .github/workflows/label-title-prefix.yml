@@ -8,6 +8,7 @@ on:
 jobs:
   add_title_prefix:
     name: "Issue/PR: add title prefix"
+    continue-on-error: true
     # Define a matrix of label and prefix pairs
     strategy:
       matrix:
