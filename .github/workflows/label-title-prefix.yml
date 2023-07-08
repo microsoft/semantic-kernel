@@ -2,7 +2,7 @@ name: Label title prefix
 on:
   issues:
     types: [ labeled ]
-  pull_request:
+  pull_request_target:
     types: [ labeled ]
 
 jobs:
