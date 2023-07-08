@@ -298,7 +298,7 @@ class Plan(SKFunctionBase):
             if result.error_occurred:
                 raise KernelException(
                     KernelException.ErrorCodes.FunctionInvokeError,
-                    "Error occured while running plan step: "
+                    "Error occurred while running plan step: "
                     + result.last_error_description,
                     result.last_exception,
                 )
