@@ -9,7 +9,7 @@ name: Label pull request
 on: [pull_request_target]
 
 jobs:
-  label:
+  add_label:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -23,6 +23,8 @@ jobs:
   add_title_prefix:
     name: "PR: add title prefix"
     continue-on-error: true
+    needs: add_label
+    
     # Define a matrix of label and prefix pairs
     strategy:
       matrix:
@@ -40,7 +42,6 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         name: "Issue/PR: update title"
-        if: contains( context.payload.pull_request.labels.*.name, matrix.label )
         with:
           script: |
             // Get the label and prefix from the matrix
@@ -49,12 +50,12 @@ jobs:
           
             // Get the title and labels
             let title = context.payload.pull_request.title
-            
-            let originalTitle = title
+            let labels = context.payload.pull_request.labels.*.name
 
             // Update the title based on the label and prefix
             // Check if the issue or PR has the label
-            if (labels.Contains(label) {
+            if (labels.includes(label)) {
+              let originalTitle = title
               // Check if the title starts with the prefix (case-sensitive)
               if (!title.startsWith(prefix + ": ")) {
                 // If not, check if the first word is the label (case-insensitive)
@@ -66,10 +67,9 @@ jobs:
                   title = prefix + ": " + title
                 }
               }
-            }
-            
-            // Update the PR title, if changed
-            if (title != originalTitle ) {
+              
+              // Update the PR title, if changed
+              if (title != originalTitle ) {
                 try {
                   github.rest.pulls.update({
                     pull_number: context.issue.number,
@@ -81,4 +81,5 @@ jobs:
                 catch (err) {
                   core.info("Update PR title failed: " + err.message)
                 }
+              }
             }
