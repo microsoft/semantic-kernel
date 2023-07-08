@@ -111,8 +111,7 @@ const App: FC = () => {
             <AuthenticatedTemplate>
                 <div className={classes.container}>
                     <div className={classes.header}>
-                        <Subtitle1 as="h1">Copliot Chat</Subtitle1>
-                                                
+                        <Subtitle1 as="h1">Copliot Chat</Subtitle1>                                                
                         <div className={classes.cornerItems}>
                             <PluginGallery />
                             <UserSettings setLoadingState={() => setAppState(AppState.SigningOut)} />
