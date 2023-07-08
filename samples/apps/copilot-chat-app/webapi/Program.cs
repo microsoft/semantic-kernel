@@ -14,10 +14,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SemanticKernel.Service.CopilotChat.Extensions;
 using SemanticKernel.Service.CopilotChat.Hubs;
-using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.Diagnostics;
 using SemanticKernel.Service.Services;
-using Tesseract;
 
 namespace SemanticKernel.Service;
 
@@ -49,22 +47,11 @@ public sealed class Program
         builder.Services
             .AddCopilotChatOptions(builder.Configuration)
             .AddCopilotChatPlannerServices()
-            .AddPersistentChatStore();
+            .AddPersistentChatStore()
+            .AddPersistentOcrSupport();
 
         // Add SignalR as the real time relay service
         builder.Services.AddSignalR();
-
-        // Add TesseractEngine if we find the language file in the specified location.
-        var tesseractFilePath = builder.Configuration["Tesseract:FilePath"];
-        var tesseractLanguage = builder.Configuration["Tesseract:Language"];
-        if (!string.IsNullOrEmpty(tesseractFilePath) && !string.IsNullOrEmpty(tesseractLanguage) && System.IO.File.Exists(System.IO.Path.Combine(tesseractFilePath, $"{tesseractLanguage}.traineddata")))
-        {
-            builder.Services.AddSingleton<ITesseractEngine>(sp => new TesseractEngineWrapper(new TesseractEngine(tesseractFilePath, tesseractLanguage, EngineMode.Default)));
-        }
-        else
-        {
-            builder.Services.AddSingleton<ITesseractEngine>(sp => new NullTesseractEngine());
-        }
 
         // Add AppInsights telemetry
         builder.Services
