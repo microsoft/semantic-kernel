@@ -278,6 +278,11 @@ public abstract class ClientBase
             User = null,
         };
 
+        foreach (var keyValue in requestSettings.TokenSelectionBiases)
+        {
+            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+        }
+
         if (requestSettings.StopSequences is { Count: > 0 })
         {
             foreach (var s in requestSettings.StopSequences)
@@ -305,6 +310,11 @@ public abstract class ClientBase
             PresencePenalty = (float?)requestSettings.PresencePenalty,
             ChoicesPerPrompt = requestSettings.ResultsPerPrompt
         };
+
+        foreach (var keyValue in requestSettings.TokenSelectionBiases)
+        {
+            options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
+        }
 
         if (requestSettings.StopSequences is { Count: > 0 })
         {
@@ -337,9 +347,9 @@ public abstract class ClientBase
         return validRole;
     }
 
-    private static void ValidateMaxTokens(int maxTokens)
+    private static void ValidateMaxTokens(int? maxTokens)
     {
-        if (maxTokens < 1)
+        if (maxTokens.HasValue && maxTokens < 1)
         {
             throw new AIException(
                 AIException.ErrorCodes.InvalidRequest,

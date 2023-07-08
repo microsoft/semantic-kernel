@@ -1,0 +1,45 @@
+name: Label issues
+on:
+  issues:
+    types:
+      - reopened
+      - opened
+
+jobs:
+  label_issues:
+    name: "Issue: add labels"
+    if: ${{ github.event.action == 'opened' || github.event.action == 'reopened' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          script: |
+            // Get the issue body and title
+            const body = context.payload.issue.body
+            let title = context.payload.issue.title
+            
+            // Define the labels array
+            let labels = ["triage"]
+            
+            // Check if the body or the title contains the word 'python' (case-insensitive)
+            if (body.match(/python/i) || title.match(/python/i)) {
+              // Add the 'python' label to the array
+              labels.push("python")
+            }
+            
+            // Check if the body or the title contains the word 'java' (case-insensitive)
+            if (body.match(/java/i) || title.match(/java/i)) {
+              // Add the 'java' label to the array
+              labels.push("java")
+            }
+
+            // Add the labels to the issue
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: labels
+            });
