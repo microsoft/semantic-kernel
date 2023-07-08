@@ -2,7 +2,7 @@ import botIcon1 from './assets/bot-icons/bot-icon-1.png';
 
 export const Constants = {
     app: {
-        name: 'Eva',
+        name: 'Copilot',
         updateCheckIntervalSeconds: 60 * 5,
     },
     msal: {
@@ -20,7 +20,7 @@ export const Constants = {
     bot: {
         profile: {
             id: 'bot',
-            fullName: 'Eva',
+            fullName: 'Copilot',
             emailAddress: '',
             photo: botIcon1,
         },
