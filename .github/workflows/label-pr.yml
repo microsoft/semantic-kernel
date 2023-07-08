@@ -1,0 +1,84 @@
+# This workflow will triage pull requests and apply a label based on the
+# paths that are modified in the pull request.
+#
+# To use this workflow, you will need to set up a .github/labeler.yml
+# file with configuration.  For more information, see:
+# https://github.com/actions/labeler
+
+name: Label pull request
+on: [pull_request_target]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/labeler@v4
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+      
+  add_title_prefix:
+    name: "PR: add title prefix"
+    continue-on-error: true
+    # Define a matrix of label and prefix pairs
+    strategy:
+      matrix:
+        include:
+          - {label: 'python', prefix: 'Python'}
+          - {label: 'java', prefix: 'Java'}
+          - {label: '.NET', prefix: '.Net'}
+          - {label: 'copilot chat', prefix: 'Copilot Chat'}
+
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      
+    steps:
+      - uses: actions/github-script@v6
+        name: "Issue/PR: update title"
+        if: contains( context.payload.pull_request.labels.*.name, ${{ matrix.label }})
+        with:
+          script: |
+            // Get the label and prefix from the matrix
+            const label = '${{ matrix.label }}'
+            const prefix = '${{ matrix.prefix }}'
+          
+            // Get the title and labels
+            let title = context.payload.pull_request.title
+            
+            let originalTitle = title
+
+            // Update the title based on the label and prefix
+            // Check if the issue or PR has the label
+            if (labels.Contains(label) {
+              // Check if the title starts with the prefix (case-sensitive)
+              if (!title.startsWith(prefix + ": ")) {
+                // If not, check if the first word is the label (case-insensitive)
+                if (title.match(new RegExp(`^${prefix}`, 'i'))) {
+                  // If yes, replace it with the prefix (case-sensitive)
+                  title = title.replace(new RegExp(`^${prefix}`, 'i'), prefix)
+                } else {
+                  // If not, prepend the prefix to the title
+                  title = prefix + ": " + title
+                }
+              }
+            }
+            
+            // Update the PR title, if changed
+            if (title != originalTitle ) {
+                try {
+                  github.rest.pulls.update({
+                    pull_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: title
+                  });
+                }
+                catch (err) {
+                  core.info("Update PR title failed: " + err.message)
+                }
+            }
