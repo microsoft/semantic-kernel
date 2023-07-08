@@ -27,6 +27,7 @@ jobs:
       - uses: actions/github-script@v6
         name: "Issue/PR: update title"
         with:
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           script: |
             // Get the label and prefix from the matrix
             const label = '${{ matrix.label }}'
