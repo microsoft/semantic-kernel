@@ -43,8 +43,8 @@
 | Http Skill                        | ✅  | ✅     | ✅   |       |
 | Math Skill                        | ✅  | ✅     | ✅   |       |
 | Text Skill                        | ✅  | ✅     | 🔄   |       |
-| Time Skill                        | ✅  | ✅     | 🔄   |       |
-| Wait Skill                        | ✅  | ✅     | ❌   |       |
+| Time Skill                        | ✅  | ✅     | ✅   |       |
+| Wait Skill                        | ✅  | ✅     | ✅   |       |
 
 ## Planning
 
