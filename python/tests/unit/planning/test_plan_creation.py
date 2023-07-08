@@ -1,10 +1,8 @@
 import semantic_kernel as sk
-
-from pytest import mark, raises
-from semantic_kernel.planning import Plan
-from semantic_kernel.orchestration.context_variables import ContextVariables
-
 from semantic_kernel.core_skills.math_skill import MathSkill
+from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.planning import Plan
+
 
 def test_create_empty_plan():
     plan = Plan()
@@ -22,6 +20,7 @@ def test_create_empty_plan():
     assert plan.next_step_index == 0
     assert plan._steps == []
 
+
 def test_create_plan_with_name():
     plan = Plan(name="test")
     assert plan is not None
@@ -37,6 +36,7 @@ def test_create_plan_with_name():
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
     assert plan._steps == []
+
 
 def test_create_plan_with_name_and_description():
     plan = Plan(name="test", description="test description")
@@ -54,8 +54,13 @@ def test_create_plan_with_name_and_description():
     assert plan.next_step_index == 0
     assert plan._steps == []
 
+
 def test_create_plan_with_state_and_parameters():
-    plan = Plan(name="test", state=ContextVariables(), parameters={"test_param": "test_param_val"})
+    plan = Plan(
+        name="test",
+        state=ContextVariables(),
+        parameters={"test_param": "test_param_val"},
+    )
     assert plan is not None
     assert plan.name == "test"
     assert plan.state["input"] == ""
@@ -69,6 +74,7 @@ def test_create_plan_with_state_and_parameters():
     assert plan.has_next_step is False
     assert plan.next_step_index == 0
     assert plan._steps == []
+
 
 def test_create_plan_with_name_and_function():
     # create a kernel
@@ -95,6 +101,7 @@ def test_create_plan_with_name_and_function():
     assert plan.next_step_index == 0
     assert plan._steps == []
 
+
 def test_create_multistep_plan_with_functions():
     # create a kernel
     kernel = sk.Kernel()
@@ -105,7 +112,7 @@ def test_create_multistep_plan_with_functions():
 
     test_function1 = skill_config_dict["Add"]
     test_function2 = skill_config_dict["Subtract"]
-    
+
     plan = Plan(name="multistep_test")
     plan.add_steps([test_function1, test_function2])
 
@@ -118,10 +125,11 @@ def test_create_multistep_plan_with_functions():
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is None
     assert plan.is_native is None
-    assert plan.request_settings == None
+    assert plan.request_settings is None
     assert plan.has_next_step is True
     assert plan.next_step_index == 0
     assert len(plan._steps) == 2
+
 
 def test_create_multistep_plan_with_plans():
     # create a kernel
@@ -133,7 +141,7 @@ def test_create_multistep_plan_with_plans():
 
     test_function1 = skill_config_dict["Add"]
     test_function2 = skill_config_dict["Subtract"]
-    
+
     plan = Plan(name="multistep_test")
     plan_step1 = Plan(name="step1", function=test_function1)
     plan_step2 = Plan(name="step2", function=test_function2)
@@ -148,10 +156,11 @@ def test_create_multistep_plan_with_plans():
     assert type(plan.parameters) is ContextVariables
     assert plan.is_semantic is None
     assert plan.is_native is None
-    assert plan.request_settings == None
+    assert plan.request_settings is None
     assert plan.has_next_step is True
     assert plan.next_step_index == 0
     assert len(plan._steps) == 2
+
 
 def test_add_step_to_plan():
     # create a kernel
@@ -163,7 +172,7 @@ def test_add_step_to_plan():
 
     test_function1 = skill_config_dict["Add"]
     test_function2 = skill_config_dict["Subtract"]
-    
+
     plan = Plan(name="multistep_test", function=test_function1)
     plan.add_steps([test_function2])
     assert plan is not None

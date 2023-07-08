@@ -1,14 +1,13 @@
 import semantic_kernel as sk
-
-from pytest import mark, raises
+from semantic_kernel.core_skills.text_skill import TextSkill
 from semantic_kernel.planning import Plan
 
-from semantic_kernel.core_skills.text_skill import TextSkill
 
 def test_invoke_empty_plan():
     plan = Plan()
     result = plan.invoke()
     assert result.result == ""
+
 
 def test_invoke_plan_constructed_with_function():
     # create a kernel
@@ -26,6 +25,7 @@ def test_invoke_plan_constructed_with_function():
     plan = Plan(name="test", function=test_function)
     result = plan.invoke(context=context)
     assert result.result == "HELLO WORLD "
+
 
 def test_invoke_empty_plan_with_added_function_step():
     # create a kernel
@@ -45,6 +45,7 @@ def test_invoke_empty_plan_with_added_function_step():
     result = plan.invoke(context=context)
     assert result.result == "HELLO WORLD "
 
+
 def test_invoke_empty_plan_with_added_plan_step():
     # create a kernel
     kernel = sk.Kernel()
@@ -63,6 +64,7 @@ def test_invoke_empty_plan_with_added_plan_step():
     plan.add_steps([new_step])
     result = plan.invoke(context=context)
     assert result.result == "HELLO WORLD "
+
 
 def test_invoke_multi_step_plan():
     # create a kernel

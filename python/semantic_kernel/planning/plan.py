@@ -1,20 +1,20 @@
 import asyncio
 import re
 import threading
-from typing import Any, Callable, List, Union, Optional
 from logging import Logger
+from typing import Any, Callable, List, Optional
+
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai import CompleteRequestSettings
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.connectors.ai import CompleteRequestSettings
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
-
+from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.function_view import FunctionView
-from semantic_kernel.skill_definition.parameter_view import ParameterView
-
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
@@ -22,7 +22,7 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
 
 class Plan(SKFunctionBase):
     _state: ContextVariables
-    _steps: List["Plan"]    
+    _steps: List["Plan"]
     _function: SKFunctionBase
     _parameters: ContextVariables
     _outputs: List[str]
@@ -38,7 +38,7 @@ class Plan(SKFunctionBase):
     @property
     def name(self) -> str:
         return self._name
-    
+
     @property
     def state(self) -> ContextVariables:
         return self._state
@@ -50,7 +50,7 @@ class Plan(SKFunctionBase):
     @property
     def description(self) -> str:
         return self._description
-    
+
     @property
     def function(self) -> Callable[..., Any]:
         return self._function
@@ -73,15 +73,14 @@ class Plan(SKFunctionBase):
     @property
     def request_settings(self) -> CompleteRequestSettings:
         return self._request_settings
-    
+
     @property
     def has_next_step(self) -> bool:
         return self._next_step_index < len(self._steps)
-    
+
     @property
     def next_step_index(self) -> int:
         return self._next_step_index
-
 
     def __init__(
         self,
@@ -110,7 +109,7 @@ class Plan(SKFunctionBase):
 
         if function is not None:
             self.set_function(function)
-    
+
     async def invoke_async(
         self,
         context: SKContext,
@@ -122,23 +121,23 @@ class Plan(SKFunctionBase):
     ) -> SKContext:
         if input is not None:
             self._state.update(input)
-        
+
         if context is None:
             context = SKContext(
                 variables=self._state,
                 skill_collection=None,
                 memory=memory,
-                logger=logger
+                logger=logger,
             )
-        
+
         if self._function is not None:
-            result = await self._function.invoke_async(context=context, settings=settings)
+            result = await self._function.invoke_async(
+                context=context, settings=settings
+            )
             if result.error_occurred:
                 result.log.error(
                     msg="Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self._skill_name,
-                        self._name,
-                        context.last_error_description
+                        self._skill_name, self._name, context.last_error_description
                     )
                 )
                 return result
@@ -169,22 +168,23 @@ class Plan(SKFunctionBase):
                 variables=self._state,
                 skill_collection=None,
                 memory=memory,
-                logger=logger
+                logger=logger,
             )
-            
+
         if self._function is not None:
             result = self._function.invoke(context=context, settings=settings)
             if result.error_occurred:
                 result.log.error(
                     result.last_exception,
-                    "Something went wrong in plan step {0}.{1}:'{2}'".format(self.skill_name, self.name, context.last_error_description)
+                    "Something went wrong in plan step {0}.{1}:'{2}'".format(
+                        self.skill_name, self.name, context.last_error_description
+                    ),
                 )
                 return result
             context.variables.update(result.result)
         else:
             # loop through steps until completion
             while self.has_next_step:
-
                 # Check if there is an event loop
                 try:
                     loop = asyncio.get_running_loop()
@@ -192,7 +192,7 @@ class Plan(SKFunctionBase):
                     loop = None
                 function_context = context
                 self.add_variables_to_context(self._state, function_context)
-                
+
                 # Handle "asyncio.run() cannot be called from a running event loop"
                 if loop and loop.is_running():
                     self._runThread(self.invoke_next_step(function_context))
@@ -216,31 +216,32 @@ class Plan(SKFunctionBase):
 
     def set_default_skill_collection(
         self,
-        skills: ReadOnlySkillCollectionBase,          
+        skills: ReadOnlySkillCollectionBase,
     ) -> SKFunctionBase:
         if self._function is not None:
             self._function.set_default_skill_collection(skills)
-        
+
     def describe(self) -> FunctionView:
         return self._function.describe()
-    
+
     def set_available_functions(self, plan: "Plan", context: SKContext) -> "Plan":
         if len(plan.steps) == 0:
             if context.skills is None:
                 raise KernelException(
                     KernelException.ErrorCodes.SkillCollectionNotSet,
-                    "Skill collection not found in the context")
+                    "Skill collection not found in the context",
+                )
             try:
                 skillFunction = context.skills.get_function(plan.skill_name, plan.name)
                 plan.set_function(skillFunction)
-            except:
+            except Exception:
                 pass
         else:
             for step in plan.steps:
                 step = self.set_available_functions(step, context)
 
         return plan
-    
+
     def add_steps(self, steps: Optional[List[SKFunctionBase]]) -> None:
         for step in steps:
             if type(step) is Plan:
@@ -266,7 +267,7 @@ class Plan(SKFunctionBase):
         self._description = function.description
         self._is_semantic = function.is_semantic
         self._request_settings = function.request_settings
-    
+
     async def run_next_step_async(
         self,
         kernel: Kernel,
@@ -287,7 +288,7 @@ class Plan(SKFunctionBase):
                 variables=variables,
                 memory=context._memory,
                 skill_collection=context.skills,
-                logger=context.log
+                logger=context.log,
             )
             result = await step.invoke_async(context=func_context)
             result_value = result.result
@@ -295,20 +296,22 @@ class Plan(SKFunctionBase):
             if result.error_occurred:
                 raise KernelException(
                     KernelException.ErrorCodes.FunctionInvokeError,
-                    "Error occured while running plan step: " + result.last_error_description,
-                    result.last_exception
+                    "Error occured while running plan step: "
+                    + result.last_error_description,
+                    result.last_exception,
                 )
-            
+
             # Update state with result
             self.state.update(result_value)
 
             # Update plan result in state with matching outputs (if any)
-            if set(self._outputs).intersection(set(step._outputs)):                
+            if set(self._outputs).intersection(set(step._outputs)):
                 current_plan_result = ""
                 if Plan.DEFAULT_RESULT_KEY in self._state._variables:
                     current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
-                self._state.set(Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value)
-
+                self._state.set(
+                    Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value
+                )
 
             # Update state with outputs (if any)
             for output in step._outputs:
@@ -323,9 +326,7 @@ class Plan(SKFunctionBase):
         return self
 
     def add_variables_to_context(
-        self,
-        variables: ContextVariables,
-        context: SKContext
+        self, variables: ContextVariables, context: SKContext
     ) -> None:
         for key in variables._variables:
             if not context.variables.contains_key(key):
@@ -340,18 +341,16 @@ class Plan(SKFunctionBase):
 
         context.variables.update(result_string)
 
-        for item in self._steps[self._next_step_index-1]._outputs:
+        for item in self._steps[self._next_step_index - 1]._outputs:
             if item in self._state:
                 context.variables.set(item, self._state[item])
             else:
                 context.variables.set(item, result_string)
 
         return context
-    
+
     def get_next_step_variables(
-        self,
-        variables: ContextVariables,
-        step: "Plan"
+        self, variables: ContextVariables, step: "Plan"
     ) -> ContextVariables:
         # Priority for Input
         # - Parameters (expand from variables if needed)
@@ -361,7 +360,9 @@ class Plan(SKFunctionBase):
         # - Plan.Description
         input_string = ""
         if step._parameters["input"] is not None:
-            input_string = self.expand_from_variables(variables, step._parameters["input"])
+            input_string = self.expand_from_variables(
+                variables, step._parameters["input"]
+            )
         elif variables["input"] is not None:
             input_string = variables["input"]
         elif self._state["input"] is not None:
@@ -372,7 +373,7 @@ class Plan(SKFunctionBase):
             input_string = self._description
 
         step_variables = ContextVariables(input_string)
-        
+
         # Priority for remaining stepVariables is:
         # - Function Parameters (pull from variables or state by a key value)
         # - Step Parameters (pull from variables or state by a key value)
@@ -382,7 +383,10 @@ class Plan(SKFunctionBase):
                 continue
             if step_variables.contains_key(param.name):
                 step_variables.set(param.name, variables[param.name])
-            elif self._state.contains_key(param.name) and self._state[param.name] is not None:
+            elif (
+                self._state.contains_key(param.name)
+                and self._state[param.name] is not None
+            ):
                 step_variables.set(param.name, self._state[param.name])
 
         for param_var in step.parameters._variables:
@@ -400,22 +404,22 @@ class Plan(SKFunctionBase):
                 step_variables.set(param_var, expanded_value)
 
         return step_variables
-    
+
     def expand_from_variables(
-        self,
-        variables: ContextVariables,
-        input_string: str
+        self, variables: ContextVariables, input_string: str
     ) -> str:
         result = input_string
         variables_regex = r"\$(?P<var>\w+)"
         matches = re.findall(variables_regex, input_string)
-        ordered_matches = sorted(matches, key=lambda m: len(m.group("var")), reverse=True)
-        
+        ordered_matches = sorted(
+            matches, key=lambda m: len(m.group("var")), reverse=True
+        )
+
         for match in ordered_matches:
             var_name = match.group("var")
             if variables.contains_key(var_name):
                 result = result.replace(f"${var_name}", variables[var_name])
-                
+
         return result
 
     def _runThread(self, code: Callable):
