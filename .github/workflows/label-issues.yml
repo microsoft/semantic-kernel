@@ -15,36 +15,8 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           script: |
-            function addTitlePrefix(prefix) {
-              let title = context.payload.issue.title
-            
-              // Update the title based on the label and prefix
-              // Check if the title starts with the prefix (case-sensitive)
-              if (!title.startsWith(prefix + ": ")) {
-                let originalTitle = title
-
-                // If not, check if the first word is the label (case-insensitive)
-                if (title.match(new RegExp(`^${prefix}`, 'i'))) {
-                  // If yes, replace it with the prefix (case-sensitive)
-                  title = title.replace(new RegExp(`^${prefix}`, 'i'), prefix)
-                } else {
-                  // If not, prepend the prefix to the title
-                  title = prefix + ": " + title
-                }
-
-                // Update the issue title, if changed
-                if (title != originalTitle ) {
-                  github.rest.issues.update({
-                    issue_number: context.issue.number,
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    title: title
-                  });
-                }
-              }
-            }
-          
             // Get the issue body and title
             const body = context.payload.issue.body
             let title = context.payload.issue.title
@@ -56,14 +28,12 @@ jobs:
             if (body.match(/python/i) || title.match(/python/i)) {
               // Add the 'python' label to the array
               labels.push("python")
-              addTitlePrefix("Python")
             }
             
             // Check if the body or the title contains the word 'java' (case-insensitive)
             if (body.match(/java/i) || title.match(/java/i)) {
               // Add the 'java' label to the array
               labels.push("java")
-              addTitlePrefix("Java")
             }
 
             // Add the labels to the issue
