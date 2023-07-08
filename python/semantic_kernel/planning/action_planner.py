@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from logging import Logger
 from typing import Optional
 

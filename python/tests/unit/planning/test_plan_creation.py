@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import semantic_kernel as sk
 from semantic_kernel.core_skills.math_skill import MathSkill
 from semantic_kernel.orchestration.context_variables import ContextVariables

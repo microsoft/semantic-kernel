@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import asyncio
 import re
 import threading
@@ -112,8 +114,8 @@ class Plan(SKFunctionBase):
 
     async def invoke_async(
         self,
-        context: SKContext,
         input: Optional[str] = None,
+        context: Optional[SKContext] = None,
         settings: Optional[CompleteRequestSettings] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         logger: Optional[Logger] = None,
