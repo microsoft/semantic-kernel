@@ -5,11 +5,11 @@
 # file with configuration.  For more information, see:
 # https://github.com/actions/labeler
 
-name: Labeler
+name: Label pull request
 on: [pull_request_target]
 
 jobs:
-  label:
+  add_label:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,4 +18,4 @@ jobs:
     steps:
       - uses: actions/labeler@v4
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          repo-token: "${{ secrets.GH_ACTIONS_PR_WRITE }}"
