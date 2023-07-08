@@ -20,12 +20,12 @@ jobs:
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           script: |
-            let prefixLabels = [
-              "python",
-              "java",
-              ".NET",
-              "copilot chat"
-            ];
+            let prefixLabels = {
+              "python": "Python",
+              "java": "Java",
+              ".NET": ".Net",
+              "copilot chat": "Copilot Chat"
+            };
             
             function addTitlePrefix(title, prefix)
             {
@@ -48,14 +48,15 @@ jobs:
             labelAdded = context.payload.label.name
             
             // Check if the issue or PR has the label
-            if (prefixLabels.includes(labelAdded)) {
+            if (labelAdded in prefixLabels) {
+              let prefix = prefixLabels[labelAdded];
               switch(context.eventName) {
                 case 'issues':
                   github.rest.issues.update({
                     issue_number: context.issue.number,
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    title: addTitlePrefix(context.payload.issue.title, labelAdded)
+                    title: addTitlePrefix(context.payload.issue.title, prefix)
                   });
                   break
                   
@@ -64,7 +65,7 @@ jobs:
                     pull_number: context.issue.number,
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    title: addTitlePrefix(context.payload.pull_request.title, labelAdded)
+                    title: addTitlePrefix(context.payload.pull_request.title, prefix)
                   });
                   break
                 default:
