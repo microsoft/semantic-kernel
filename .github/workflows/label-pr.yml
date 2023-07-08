@@ -1,13 +1,27 @@
-name: Label title prefix
-on:
-  issues:
-    types: [ labeled ]
-  pull_request:
-    types: [ labeled ]
+# This workflow will triage pull requests and apply a label based on the
+# paths that are modified in the pull request.
+#
+# To use this workflow, you will need to set up a .github/labeler.yml
+# file with configuration.  For more information, see:
+# https://github.com/actions/labeler
+
+name: Label pull request
+on: [pull_request_target]
 
 jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/labeler@v4
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+      
   add_title_prefix:
-    name: "Issue/PR: add title prefix"
+    name: "PR: add title prefix"
     continue-on-error: true
     # Define a matrix of label and prefix pairs
     strategy:
@@ -26,35 +40,21 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         name: "Issue/PR: update title"
+        if: contains( context.payload.pull_request.labels.*.name, ${{ matrix.label }})
         with:
           script: |
             // Get the label and prefix from the matrix
             const label = '${{ matrix.label }}'
             const prefix = '${{ matrix.prefix }}'
-            
-            labelAdded = context.payload.label.name
-            
-            // Write the contents of context to console
-            core.info(JSON.stringify(context, null, 2))
           
-            // Get the event name, title and labels
-            let title
-            switch(context.eventName) {
-              case 'issues':
-                title = context.payload.issue.title
-                break              
-              case 'pull_request':
-                title = context.payload.pull_request.title
-                break
-              default:
-                core.setFailed('Unrecognited eventName: ' + context.eventName)
-            }
+            // Get the title and labels
+            let title = context.payload.pull_request.title
             
             let originalTitle = title
 
             // Update the title based on the label and prefix
             // Check if the issue or PR has the label
-            if (labelAdded == label) {
+            if (labels.Contains(label) {
               // Check if the title starts with the prefix (case-sensitive)
               if (!title.startsWith(prefix + ": ")) {
                 // If not, check if the first word is the label (case-insensitive)
@@ -68,31 +68,17 @@ jobs:
               }
             }
             
-            // Update the issue or PR title, if changed
+            // Update the PR title, if changed
             if (title != originalTitle ) {
-              switch(context.eventName) {
-                case 'issues':
-                  github.rest.issues.update({
-                    issue_number: context.issue.number,
+                try {
+                  github.rest.pulls.update({
+                    pull_number: context.issue.number,
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     title: title
                   });
-                  break              
-                case 'pull_request':
-                  try {
-                    github.rest.pulls.update({
-                      pull_number: context.issue.number,
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      title: title
-                    });
-                  }
-                  catch (err) {
-                    core.info("Update PR title failed: " + err.message)
-                  }
-                  break
-                default:
-                  core.setFailed('Unrecognited eventName: ' + context.eventName)
-              }
+                }
+                catch (err) {
+                  core.info("Update PR title failed: " + err.message)
+                }
             }
