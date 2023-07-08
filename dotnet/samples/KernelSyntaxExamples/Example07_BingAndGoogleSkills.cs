@@ -22,7 +22,7 @@ public static class Example07_BingAndGoogleSkills
     public static async Task RunAsync()
     {
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
+            .AddLogging(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
             .Build();
 

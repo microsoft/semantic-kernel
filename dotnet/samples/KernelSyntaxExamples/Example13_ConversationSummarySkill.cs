@@ -179,7 +179,7 @@ Jane: Goodbye!
     private static IKernel InitializeKernel()
     {
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
+            .AddLogging(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
                 Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_ENDPOINT"),

@@ -110,7 +110,7 @@ public static class Example51_StepwisePlanner
         }
 
         var kernel = builder
-            .WithLogger(ConsoleLogger.Log)
+            .AddLogging(ConsoleLogger.Log)
             .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
             {
                 MaxRetryCount = 3,

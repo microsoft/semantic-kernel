@@ -15,7 +15,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
         Console.WriteLine("======== LLMPrompts ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
+            .AddLogging(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-002")
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
             .Build();

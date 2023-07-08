@@ -75,10 +75,23 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="log">Logger to add.</param>
     /// <returns>Updated kernel builder including the logger.</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Use AddLogging instead.")]
     public KernelBuilder WithLogger(ILogger log)
     {
         Verify.NotNull(log);
         this._logger = log;
+        return this;
+    }
+
+    /// <summary>
+    /// Add logging to the kernel to be built.
+    /// </summary>
+    /// <param name="logger">Logger to add.</param>
+    /// <returns>Updated kernel builder with enabled logging.</returns>
+    public KernelBuilder AddLogging(ILogger logger)
+    {
+        Verify.NotNull(logger);
+        this._logger = logger;
         return this;
     }
 

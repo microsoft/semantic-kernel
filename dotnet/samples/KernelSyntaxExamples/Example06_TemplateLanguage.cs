@@ -19,7 +19,7 @@ public static class Example06_TemplateLanguage
         Console.WriteLine("======== TemplateLanguage ========");
 
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
+            .AddLogging(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
             .Build();
 

@@ -19,7 +19,7 @@ public static class Example09_FunctionTypes
         var fakeContext = new SKContext(logger: ConsoleLogger.Log);
 
         var kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
+            .AddLogging(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
             .Build();
 

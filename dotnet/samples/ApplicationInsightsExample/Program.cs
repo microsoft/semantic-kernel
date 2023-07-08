@@ -98,7 +98,7 @@ public sealed class Program
         string folder = RepoFiles.SampleSkillsPath();
 
         var kernel = new KernelBuilder()
-            .WithLogger(logger)
+            .AddLogging(logger)
             .AddMetering(meterListener)
             .AddTracing(activityListener)
             .WithAzureChatCompletionService(

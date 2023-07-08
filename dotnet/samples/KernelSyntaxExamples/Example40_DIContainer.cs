@@ -42,7 +42,7 @@ public static class Example40_DIContainer
         collection.AddTransient<IKernel>((serviceProvider) =>
         {
             return Kernel.Builder
-            .WithLogger(serviceProvider.GetRequiredService<ILogger>())
+            .AddLogging(serviceProvider.GetRequiredService<ILogger>())
             .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"))
             .Build();
         });

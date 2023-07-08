@@ -35,7 +35,7 @@ public static class Example08_RetryHandler
 
     private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? config = null)
     {
-        var kernelBuilder = Kernel.Builder.WithLogger(InfoLogger.Log);
+        var kernelBuilder = Kernel.Builder.AddLogging(InfoLogger.Log);
         if (config != null)
         {
             kernelBuilder = kernelBuilder.Configure(c => c.SetDefaultHttpRetryConfig(config));
@@ -57,7 +57,7 @@ public static class Example08_RetryHandler
     private static IKernel InitializeKernel()
     {
         var kernel = Kernel.Builder
-            .WithLogger(InfoLogger.Log)
+            .AddLogging(InfoLogger.Log)
             // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
             .WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY")
             .Build();
@@ -73,7 +73,7 @@ public static class Example08_RetryHandler
 
     private static async Task RunRetryPolicyBuilderAsync(Type retryHandlerFactoryType)
     {
-        var kernel = Kernel.Builder.WithLogger(InfoLogger.Log)
+        var kernel = Kernel.Builder.AddLogging(InfoLogger.Log)
             .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
             // OpenAI settings - you can set the OPENAI_API_KEY to an invalid value to see the retry policy in play
             .WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY")
