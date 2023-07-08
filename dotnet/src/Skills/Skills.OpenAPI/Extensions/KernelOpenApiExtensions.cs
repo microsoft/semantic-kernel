@@ -327,7 +327,6 @@ public static class KernelOpenApiExtensions
             description: operation.Description,
             skillName: skillName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
-            isSensitive: false,
             log: logger);
 
         return kernel.RegisterCustomFunction(function);

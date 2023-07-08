@@ -17,7 +17,7 @@ const useClasses = makeStyles({
         ...shorthands.margin(tokens.spacingHorizontalXXS),
         maxHeight: '10px',
         minHeight: '10px',
-        fontSize: '12px',
+        fontSize: tokens.fontSizeBase200,
     },
     interactable: {
         zIndex: '50',
@@ -62,7 +62,7 @@ export const PlanStepInput: React.FC<PlanStepInputProps> = ({ input, onEdit, ena
                             style={{ width: input.Value.length * 6, minWidth: '75px' }}
                             placeholder={input.Value}
                             value={inputValue}
-                            onChange={(event: any) => {
+                            onChange={(event) => {
                                 setInputValue(event.target.value);
                             }}
                             onKeyDown={(event) => {
