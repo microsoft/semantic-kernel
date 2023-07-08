@@ -202,7 +202,7 @@ public class DefaultSequentialPlannerSKContext {
         }
 
         return Flux.fromIterable(availableFunctions)
-                .flatMap(
+                .concatMap(
                         function -> {
                             String functionName = function.toFullyQualifiedName();
                             String key = functionName;
