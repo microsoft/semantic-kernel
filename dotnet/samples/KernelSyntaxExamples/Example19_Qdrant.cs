@@ -24,7 +24,7 @@ public static class Example19_Qdrant
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");
-        var collections = memoryStore.GetCollectionsAsync();
+        var collections = memoryStore.GetCollectionsAsync().ConfigureAwait(false);
         await foreach (var collection in collections)
         {
             Console.WriteLine(collection);
@@ -37,7 +37,7 @@ public static class Example19_Qdrant
         var key3 = await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "cat3", text: "norwegian forest cat");
 
         Console.WriteLine("== Printing Collections in DB ==");
-        collections = memoryStore.GetCollectionsAsync();
+        collections = memoryStore.GetCollectionsAsync().ConfigureAwait(false);
         await foreach (var collection in collections)
         {
             Console.WriteLine(collection);
