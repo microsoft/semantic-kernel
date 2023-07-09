@@ -17,7 +17,7 @@ internal sealed class NonDisposableHttpClientHandler : HttpClientHandler
     /// <summary>
     /// Gets the singleton instance of <see cref="NonDisposableHttpClientHandler"/>.
     /// </summary>
-    public static NonDisposableHttpClientHandler Instance { get; } = new NonDisposableHttpClientHandler();
+    public static NonDisposableHttpClientHandler Instance { get; } = new();
 
     /// <summary>
     /// Disposes the underlying resources held by the <see cref="NonDisposableHttpClientHandler"/>.
