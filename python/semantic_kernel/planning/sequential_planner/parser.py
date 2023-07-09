@@ -42,8 +42,7 @@ class SequentialPlanParser:
         xml_string = "<xml>" + xml_string + "</xml>"
         try:
             xml_doc = ET.fromstring(xml_string)
-        except ET.ParseError as e:
-            print(e)
+        except ET.ParseError:
             # Attempt to parse <plan> out of it
             plan_regex = re.compile(r"<plan\b[^>]*>(.*?)</plan>", re.DOTALL)
             match = plan_regex.search(xml_string)
@@ -63,19 +62,16 @@ class SequentialPlanParser:
                     f"Failed to parse plan xml string: '{xml_string}'",
                 )
 
-        # Get the Solution
         solution = xml_doc.findall(".//" + SOLUTION_TAG)
 
-        plan = Plan.from_goal(goal)  # Assuming Plan is a defined class
-
-        # loop through solution node and add to Steps
-        for solutionNode in solution:
-            for childNode in solutionNode:
-                if childNode.tag == "#text" or childNode.tag == "#comment":
+        plan = Plan.from_goal(goal)
+        for solution_node in solution:
+            for child_node in solution_node:
+                if child_node.tag == "#text" or child_node.tag == "#comment":
                     continue
 
-                if childNode.tag.startswith(FUNCTION_TAG):
-                    skill_function_name = childNode.tag.split(FUNCTION_TAG)[1]
+                if child_node.tag.startswith(FUNCTION_TAG):
+                    skill_function_name = child_node.tag.split(FUNCTION_TAG)[1]
                     (
                         skill_name,
                         function_name,
@@ -97,25 +93,24 @@ class SequentialPlanParser:
                             for p in view.parameters:
                                 function_variables.set(p.name, p.default_value)
 
-                            for attr in childNode.attrib:
+                            for attr in child_node.attrib:
                                 if attr == SET_CONTEXT_VARIABLE_TAG:
-                                    function_outputs.append(childNode.attrib[attr])
+                                    function_outputs.append(child_node.attrib[attr])
                                 elif attr == APPEND_TO_RESULT_TAG:
-                                    function_outputs.append(childNode.attrib[attr])
-                                    function_results.append(childNode.attrib[attr])
+                                    function_outputs.append(child_node.attrib[attr])
+                                    function_results.append(child_node.attrib[attr])
                                 else:
-                                    function_variables.set(attr, childNode.attrib[attr])
+                                    function_variables.set(
+                                        attr, child_node.attrib[attr]
+                                    )
 
-                            # Assuming Plan has Outputs and Parameters attributes
                             plan_step._outputs = function_outputs
                             plan_step._parameters = function_variables
 
                             for result in function_results:
                                 plan._outputs.append(result)
 
-                            plan.add_steps(
-                                [plan_step]
-                            )  # Assuming add_steps() method is present
+                            plan.add_steps([plan_step])
                         elif allow_missing_functions:
                             plan.add_steps([Plan.from_goal(skill_function_name)])
                         else:
