@@ -23,10 +23,8 @@ public class ZipFileCompressor : IFileCompressor
     {
         return Task.Run(() =>
         {
-            using (ZipArchive zip = ZipFile.Open(destinationFilePath, ZipArchiveMode.Create))
-            {
-                zip.CreateEntryFromFile(sourceFilePath, Path.GetFileName(sourceFilePath));
-            }
+            using ZipArchive zip = ZipFile.Open(destinationFilePath, ZipArchiveMode.Create);
+            zip.CreateEntryFromFile(sourceFilePath, Path.GetFileName(sourceFilePath));
         }, cancellationToken);
     }
 
