@@ -8,12 +8,12 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 internal static class ValidateExtensions
 {
-    public static void Validate(IValidatable target)
+    public static void Validate(IValidatable? target)
     {
         target?.Validate();
     }
 
-    public static void Validate(params IValidatable[] targets)
+    public static void Validate(IEnumerable<IValidatable> targets)
     {
         foreach (var t in targets ?? Enumerable.Empty<IValidatable>())
         {
