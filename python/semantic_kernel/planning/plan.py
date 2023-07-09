@@ -4,7 +4,7 @@ import asyncio
 import re
 import threading
 from logging import Logger
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Union
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import CompleteRequestSettings
@@ -111,6 +111,16 @@ class Plan(SKFunctionBase):
 
         if function is not None:
             self.set_function(function)
+
+    @classmethod
+    def from_goal(cls, goal: str) -> "Plan":
+        return cls(description=goal, skill_name=cls.__name__)
+
+    @classmethod
+    def from_function(cls, function: SKFunctionBase) -> "Plan":
+        plan = cls()
+        plan.set_function(function)
+        return plan
 
     async def invoke_async(
         self,
@@ -244,7 +254,7 @@ class Plan(SKFunctionBase):
 
         return plan
 
-    def add_steps(self, steps: Optional[List[SKFunctionBase]]) -> None:
+    def add_steps(self, steps: Union[List["Plan"], List[SKFunctionBase]]) -> None:
         for step in steps:
             if type(step) is Plan:
                 self._steps.append(step)
