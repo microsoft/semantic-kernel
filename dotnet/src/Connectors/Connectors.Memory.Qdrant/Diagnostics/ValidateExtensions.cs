@@ -13,7 +13,7 @@ internal static class ValidateExtensions
         target?.Validate();
     }
 
-    public static void Validate(IEnumerable<IValidatable> targets)
+    public static void Validate(IEnumerable<IValidatable>? targets)
     {
         foreach (var t in targets ?? Enumerable.Empty<IValidatable>())
         {
