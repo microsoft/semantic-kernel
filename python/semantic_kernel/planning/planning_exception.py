@@ -26,7 +26,7 @@ class PlanningException(Exception):
         message: str,
         inner_exception: Optional[Exception] = None,
     ) -> None:
-        """Initializes a new instance of the KernelError class.
+        """Initializes a new instance of the PlanningError class.
 
         Arguments:
             error_code {ErrorCodes} -- The error code.
