@@ -13,7 +13,7 @@ This document details how to deploy CopilotChat's required resources to your Azu
 
 # Configure your environment
 Before you get started, make sure you have the following requirements in place:
-- Azure CLI (i.e., az)
+- Azure CLI (i.e., az) (if you already installed Azure CLI, make sure to update your installation to the latest version)
   - Windows, go to https://aka.ms/installazurecliwindows
   - Linux, run "`curl -L https://aka.ms/InstallAzureCli | bash`"
 - Azure Static Web App CLI (i.e., swa) can be installed by running "`npm install -g @azure/static-web-apps-cli`"
@@ -71,23 +71,34 @@ chmod +x ./deploy-webapi.sh
 
 
 # Deploy Frontend (WebApp)
+
+## Prerequisites
+### App registration (identity)
 You will need an Azure Active Directory (AAD) application registration. 
 > For details on creating an application registration, go [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
-- Select `Single-page application (SPA)` as platform type, and set the Web redirect URI to `http://localhost:3000`
+- Select `Single-page application (SPA)` as platform type, and set the redirect URI to `http://localhost:3000`
 - Select `Accounts in any organizational directory and personal Microsoft Accounts` as supported account types for this sample.
 - Make a note of the `Application (client) ID` from the Azure Portal for use in the `Deploy` below.
 
-## Install Azure's Static Web Apps CLI
+### Install Azure's Static Web Apps CLI
 ```bash
 npm install -g @azure/static-web-apps-cli
 ```
 
-## Deploy
+## PowerShell
+
+```powershell
+
+./deploy-webapp.ps1 -Subscription {YOUR_SUBSCRIPTION_ID} -ResourceGroupName rg-{YOUR_DEPLOYMENT_NAME} -DeploymentName {YOUR_DEPLOYMENT_NAME} -ApplicationClientId {YOUR_APPLICATION_ID}
+```
+
+## Bash
+
 ```bash
 ./deploy-webapp.sh --subscription {YOUR_SUBSCRIPTION_ID} --resource-group rg-{YOUR_DEPLOYMENT_NAME} --deployment-name {YOUR_DEPLOYMENT_NAME} --application-id {YOUR_APPLICATION_ID}
 ```
 
-Your CoplitChat application is now deployed!
+Your CopilotChat application is now deployed!
 
 
 # Appendix

@@ -35,17 +35,18 @@ public interface ReadOnlySkillCollection {
 
     /** Get function with name from the global scope */
     @Nullable
-    <T extends SKFunction<?, ?>> T getFunction(
-            String functionName, @Nullable Class<T> functionType);
+    <T extends SKFunction<?>> T getFunction(String functionName, @Nullable Class<T> functionType);
 
     @Nullable
-    <T extends SKFunction<?, ?>> T getFunction(
-            String skillName, String funName, Class<T> functionClazz);
+    <T extends SKFunction<?>> T getFunction(
+            String skillName, String funName, @Nullable Class<T> functionClazz);
 
     @Nullable
     ReadOnlyFunctionCollection getFunctions(String skillName);
 
     boolean hasFunction(String functionName);
+
+    boolean hasFunction(String skillName, String functionName);
 
     public interface Builder {
         public ReadOnlySkillCollection build();

@@ -40,23 +40,56 @@ public class CompletionRequestSettings {
     /** Sequences where the completion will stop generating further tokens. */
     private final List<String> stopSequences; // { get; set; } = Array.Empty<string>();
 
+    /**
+     * The maximum number of completions to generate for each prompt. This is used by the
+     * CompletionService to generate multiple completions for a single prompt.
+     */
+    private final int bestOf;
+
+    /**
+     * A unique identifier representing your end-user, which can help OpenAI to monitor and detect
+     * abuse
+     */
+    private final String user;
+
+    public CompletionRequestSettings(
+            double temperature,
+            double topP,
+            double presencePenalty,
+            double frequencyPenalty,
+            int maxTokens) {
+        this(
+                temperature,
+                topP,
+                presencePenalty,
+                frequencyPenalty,
+                maxTokens,
+                1,
+                "",
+                Collections.emptyList());
+    }
+
     public CompletionRequestSettings(
             double temperature,
             double topP,
             double presencePenalty,
             double frequencyPenalty,
             int maxTokens,
+            int bestOf,
+            String user,
             List<String> stopSequences) {
         this.temperature = temperature;
         this.topP = topP;
         this.presencePenalty = presencePenalty;
         this.frequencyPenalty = frequencyPenalty;
         this.maxTokens = maxTokens;
+        this.bestOf = bestOf;
+        this.user = user;
         this.stopSequences = new ArrayList<>(stopSequences);
     }
 
     public CompletionRequestSettings() {
-        this(0, 0, 0, 0, 256, new ArrayList<>());
+        this(0, 0, 0, 0, 256, 1, "", new ArrayList<>());
     }
 
     /// <summary>
@@ -72,6 +105,8 @@ public class CompletionRequestSettings {
                 config.getPresencePenalty(),
                 config.getFrequencyPenalty(),
                 config.getMaxTokens(),
+                config.getBestOf(),
+                config.getUser(),
                 new ArrayList<>());
     }
 
@@ -116,5 +151,21 @@ public class CompletionRequestSettings {
     /** Sequences where the completion will stop generating further tokens. */
     public List<String> getStopSequences() {
         return Collections.unmodifiableList(stopSequences);
+    }
+
+    /**
+     * The maximum number of completions to generate for each prompt. This is used by the
+     * CompletionService to generate multiple completions for a single prompt.
+     */
+    public Integer getBestOf() {
+        return bestOf;
+    }
+
+    /**
+     * A unique identifier representing your end-user, which can help OpenAI to monitor and detect
+     * abuse
+     */
+    public String getUser() {
+        return user;
     }
 }

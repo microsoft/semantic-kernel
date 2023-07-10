@@ -98,8 +98,6 @@ public class SemanticKernelModule extends AbstractModule {
         if (embeddingsGenerationServiceId != null) {
             OpenAITextEmbeddingGeneration embeddings = new OpenAITextEmbeddingGeneration(client,
                     embeddingsGenerationServiceId);
-            kernelConfig.addTextEmbeddingsGenerationService(
-                    embeddingsGenerationServiceId, kernel -> embeddings);
             bind(new TypeLiteral<EmbeddingGeneration<String, Float>>() {
             }).toInstance(embeddings);
         }

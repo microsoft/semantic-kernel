@@ -3,7 +3,6 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
-import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import java.util.*;
@@ -19,28 +18,21 @@ public final class KernelConfig {
 
     private final Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
             textEmbeddingGenerationServices;
-    private final ArrayList<SKFunction<?, ?>> skills;
 
     public KernelConfig(
             Map<String, Function<Kernel, TextCompletion>> textCompletionServices,
             Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
                     textEmbeddingGenerationServices,
-            Map<String, Function<Kernel, ChatCompletion>> chatCompletionServices,
-            List<SKFunction<?, ?>> skills) {
+            Map<String, Function<Kernel, ChatCompletion>> chatCompletionServices) {
         this.textCompletionServices = new HashMap<>();
         this.textCompletionServices.putAll(textCompletionServices);
         this.textEmbeddingGenerationServices = new HashMap<>(textEmbeddingGenerationServices);
         this.chatCompletionServices = new HashMap<>(chatCompletionServices);
-        this.skills = new ArrayList<>(skills);
     }
 
     @Nullable
     public Function<Kernel, TextCompletion> getTextCompletionService(String serviceId) {
         return textCompletionServices.get(serviceId);
-    }
-
-    public List<SKFunction<?, ?>> getSkills() {
-        return Collections.unmodifiableList(skills);
     }
 
     public Function<Kernel, TextCompletion> getTextCompletionServiceOrDefault(
@@ -52,7 +44,10 @@ public final class KernelConfig {
         if (!this.textCompletionServices.containsKey(serviceId)) {
             throw new KernelException(
                     KernelException.ErrorCodes.ServiceNotFound,
-                    "A text completion service id '" + serviceId + "' doesn't exist");
+                    "A text completion service id '"
+                            + serviceId
+                            + "' doesn't exist. This likely means a text completion service was not"
+                            + " registered on this kernel.");
         }
 
         return this.textCompletionServices.get(serviceId);
@@ -73,21 +68,30 @@ public final class KernelConfig {
         return this.chatCompletionServices.get(serviceId);
     }
 
+    public Function<Kernel, EmbeddingGeneration<String, Float>>
+            getTextEmbeddingGenerationServiceOrDefault(@Nullable String serviceId) {
+
+        if (serviceId == null) {
+            serviceId = DEFAULT_SERVICE_ID;
+        }
+
+        if (!this.textEmbeddingGenerationServices.containsKey(serviceId)) {
+            throw new KernelException(
+                    KernelException.ErrorCodes.ServiceNotFound,
+                    "A embedding generation service id '" + serviceId + "' doesn't exist");
+        }
+
+        return this.textEmbeddingGenerationServices.get(serviceId);
+    }
+
     public static class Builder {
         private Map<String, Function<Kernel, TextCompletion>> textCompletionServices =
                 new HashMap<>();
-
-        private List<SKFunction<?, ?>> skillBuilders = new ArrayList<>();
 
         private Map<String, Function<Kernel, EmbeddingGeneration<String, Float>>>
                 textEmbeddingGenerationServices = new HashMap<>();
         private final Map<String, Function<Kernel, ChatCompletion>> chatCompletionServices =
                 new HashMap<>();
-
-        public Builder addSkill(SKFunction<?, ?> functionDefinition) {
-            skillBuilders.add(functionDefinition);
-            return this;
-        }
 
         // TODO, is there a need for this to be a factory?
         public Builder addTextCompletionService(
@@ -141,7 +145,8 @@ public final class KernelConfig {
          */
         public Builder addChatCompletionService(
                 @Nullable String serviceId, Function<Kernel, ChatCompletion> serviceFactory) {
-            if (serviceId != null && serviceId.toUpperCase().equals(DEFAULT_SERVICE_ID)) {
+            if (serviceId != null
+                    && serviceId.toUpperCase(Locale.ROOT).equals(DEFAULT_SERVICE_ID)) {
                 String msg =
                         "The service id '"
                                 + serviceId
@@ -166,8 +171,7 @@ public final class KernelConfig {
             return new KernelConfig(
                     Collections.unmodifiableMap(textCompletionServices),
                     textEmbeddingGenerationServices,
-                    chatCompletionServices,
-                    skillBuilders);
+                    chatCompletionServices);
         }
     }
 }

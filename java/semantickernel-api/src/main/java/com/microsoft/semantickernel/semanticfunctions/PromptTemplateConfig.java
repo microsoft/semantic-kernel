@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import reactor.util.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /** Prompt template configuration */
@@ -44,6 +45,8 @@ public class PromptTemplateConfig {
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
                             completionConfig.maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             completionConfig.stopSequences));
         }
 
@@ -55,6 +58,8 @@ public class PromptTemplateConfig {
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
                             completionConfig.maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             completionConfig.stopSequences));
         }
 
@@ -66,6 +71,8 @@ public class PromptTemplateConfig {
                             presencePenalty,
                             completionConfig.frequencyPenalty,
                             completionConfig.maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             completionConfig.stopSequences));
         }
 
@@ -77,6 +84,8 @@ public class PromptTemplateConfig {
                             completionConfig.presencePenalty,
                             frequencyPenalty,
                             completionConfig.maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             completionConfig.stopSequences));
         }
 
@@ -88,6 +97,8 @@ public class PromptTemplateConfig {
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
                             maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             completionConfig.stopSequences));
         }
 
@@ -99,12 +110,18 @@ public class PromptTemplateConfig {
                             completionConfig.presencePenalty,
                             completionConfig.frequencyPenalty,
                             completionConfig.maxTokens,
+                            completionConfig.bestOf,
+                            completionConfig.user,
                             stopSequences));
         }
 
         public CompletionConfig build() {
             return completionConfig;
         }
+    }
+
+    public InputConfig getInput() {
+        return input;
     }
 
     /** Completion configuration parameters */
@@ -166,8 +183,37 @@ public class PromptTemplateConfig {
         */
         public final List<String> stopSequences; // { get; set; } = new();
 
+        /**
+         * The maximum number of completions to generate for each prompt. This is used by the
+         * CompletionService to generate multiple completions for a single prompt.
+         */
+        private final Integer bestOf;
+
+        /**
+         * A unique identifier representing your end-user, which can help OpenAI to monitor and
+         * detect abuse
+         */
+        private final String user;
+
         public CompletionConfig() {
-            this(0.0, 0.0, 0.0, 0.0, 256, new ArrayList<>());
+            this(0.0, 0.0, 0.0, 0.0, 256, 1, "", new ArrayList<>());
+        }
+
+        public CompletionConfig(
+                double temperature,
+                double topP,
+                double presencePenalty,
+                double frequencyPenalty,
+                int maxTokens) {
+            this(
+                    temperature,
+                    topP,
+                    presencePenalty,
+                    frequencyPenalty,
+                    maxTokens,
+                    1,
+                    "",
+                    new ArrayList<>());
         }
 
         @JsonCreator
@@ -177,12 +223,22 @@ public class PromptTemplateConfig {
                 @JsonProperty("presence_penalty") double presencePenalty,
                 @JsonProperty("frequency_penalty") double frequencyPenalty,
                 @JsonProperty("max_tokens") int maxTokens,
+                @JsonProperty("best_of") int bestOf,
+                @JsonProperty("user") String user,
                 @JsonProperty(value = "stop_sequences") List<String> stopSequences) {
             this.temperature = temperature;
             this.topP = topP;
             this.presencePenalty = presencePenalty;
             this.frequencyPenalty = frequencyPenalty;
             this.maxTokens = maxTokens;
+
+            // bestOf must be at least 1
+            this.bestOf = Math.max(1, bestOf);
+
+            if (user == null) {
+                user = "";
+            }
+            this.user = user;
             if (stopSequences == null) {
                 stopSequences = new ArrayList<>();
             }
@@ -208,6 +264,22 @@ public class PromptTemplateConfig {
         public int getMaxTokens() {
             return maxTokens;
         }
+
+        /**
+         * The maximum number of completions to generate for each prompt. This is used by the
+         * CompletionService to generate multiple completions for a single prompt.
+         */
+        public int getBestOf() {
+            return bestOf;
+        }
+
+        /**
+         * A unique identifier representing your end-user, which can help OpenAI to monitor and
+         * detect abuse
+         */
+        public String getUser() {
+            return user;
+        }
     }
 
     /** Input parameter for semantic functions */
@@ -226,6 +298,34 @@ public class PromptTemplateConfig {
             this.description = description;
             this.defaultValue = defaultValue;
         }
+
+        /**
+         * Name of the parameter to pass to the function. e.g. when using "{{$input}}" the name is
+         * "input", when using "{{$style}}" the name is "style", etc.
+         *
+         * @return name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Parameter description for UI apps and planner. Localization is not supported here.
+         *
+         * @return description
+         */
+        public String getDescription() {
+            return description;
+        }
+
+        /**
+         * Default value when nothing is provided
+         *
+         * @return the default value
+         */
+        public String getDefaultValue() {
+            return defaultValue;
+        }
     }
 
     /** Input configuration (list of all input parameters for a semantic function). */
@@ -235,36 +335,26 @@ public class PromptTemplateConfig {
 
         @JsonCreator
         public InputConfig(@JsonProperty("parameters") List<InputParameter> parameters) {
-            this.parameters = parameters;
+            this.parameters = Collections.unmodifiableList(parameters);
+        }
+
+        public List<InputParameter> getParameters() {
+            return parameters;
         }
     }
 
-    /*
-    /// <summary>
-    /// Schema - Not currently used.
-    /// </summary>
-    [JsonPropertyName("schema")]
-    [JsonPropertyOrder(1)]
-    public int Schema { get; set; } = 1;
-
-    /// <summary>
-    /// Type, such as "completion", "embeddings", etc.
-    /// </summary>
-    /// <remarks>TODO: use enum</remarks>
-    [JsonPropertyName("type")]
-    [JsonPropertyOrder(2)]
-    */
     private final int schema;
 
     private final String type; // { get; set; } = "completion";
-    /*
-        /// <summary>
-        /// Description
-        /// </summary>
-        [JsonPropertyName("description")]
-        [JsonPropertyOrder(3)]
-    */
     private final String description;
+
+    public PromptTemplateConfig() {
+        this("", "", null);
+    }
+
+    public PromptTemplateConfig(CompletionConfig completionConfig) {
+        this(1, "", "", completionConfig, new InputConfig(new ArrayList<>()));
+    }
 
     public PromptTemplateConfig(
             String description, String type, @Nullable CompletionConfig completionConfig) {
@@ -277,7 +367,7 @@ public class PromptTemplateConfig {
             @JsonProperty("description") String description,
             @JsonProperty("type") String type,
             @Nullable @JsonProperty("completion") CompletionConfig completionConfig,
-            @JsonProperty("input") InputConfig input) {
+            @Nullable @JsonProperty("input") InputConfig input) {
         if (completionConfig == null) {
             completionConfig = new CompletionConfig();
         }
@@ -285,9 +375,17 @@ public class PromptTemplateConfig {
         this.description = description;
         this.type = type;
         this.completionConfig = completionConfig;
+        if (input == null) {
+            input = new InputConfig(new ArrayList<>());
+        }
         this.input = input;
     }
 
+    /**
+     * Description
+     *
+     * @return Description
+     */
     public String getDescription() {
         return description;
     }

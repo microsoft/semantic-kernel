@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
+import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 
@@ -125,7 +126,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
 
     @Override
     public Mono<List<String>> getCollectionsAsync() {
-        return Mono.error(new NotSupportedException("Pending implementation"));
+        return _storage.getCollectionsAsync();
     }
 
     @Override
@@ -137,24 +138,29 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
             @Nullable String description,
             @Nullable String additionalMetadata) {
 
-        return Mono.error(new NotSupportedException("Pending implementation"));
-        //        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text,
-        // cancellationToken: cancel);
-        //        var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName:
-        // externalSourceName, description: description,
-        //            additionalMetadata: additionalMetadata, embedding: embedding);
-        //
-        //        if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
-        //        {
-        //            await this._storage.CreateCollectionAsync(collection, cancel);
-        //        }
-        //
-        //        return await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
-    }
-
-    @Override
-    public SemanticTextMemory merge(MemoryQueryResult b) {
-        throw new NotSupportedException("Pending implementation");
+        return this._storage
+                .doesCollectionExistAsync(collection)
+                .map(
+                        exists -> {
+                            if (!exists) {
+                                return this._storage.createCollectionAsync(collection);
+                            }
+                            return Mono.empty();
+                        })
+                .then(
+                        this._embeddingGenerator.generateEmbeddingsAsync(
+                                Collections.singletonList(text)))
+                .map(
+                        embeddings ->
+                                MemoryRecord.referenceRecord(
+                                        externalId,
+                                        externalSourceName,
+                                        description,
+                                        (Embedding<Float>) embeddings.iterator().next(),
+                                        additionalMetadata,
+                                        null,
+                                        null))
+                .flatMap(record -> this._storage.upsertAsync(collection, record));
     }
 
     public static class Builder implements SemanticTextMemory.Builder {

@@ -1,16 +1,4 @@
-
 // Copyright (c) Microsoft. All rights reserved.
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
@@ -21,6 +9,16 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+
 public class InlineFunctionExample {
     public static final String AZURE_CONF_PROPERTIES = "conf.properties";
     private static final Logger LOGGER = LoggerFactory.getLogger(InlineFunctionExample.class);
@@ -28,7 +26,8 @@ public class InlineFunctionExample {
 
     private static final String API_KEY;
     private static final String ENDPOINT;
-    private static final String TEXT_TO_SUMMARIZE = """
+    private static final String TEXT_TO_SUMMARIZE =
+            """
             Demo (ancient Greek poet)
                From Wikipedia, the free encyclopedia
                Demo or Damo (Greek: Δεμώ, Δαμώ; fl. c. AD 200) was a Greek woman of the
@@ -94,28 +93,30 @@ public class InlineFunctionExample {
     }
 
     public static void main(String[] args) {
-        OpenAIAsyncClient client = new OpenAIClientBuilder()
-                .endpoint(ENDPOINT)
-                .credential(new AzureKeyCredential(API_KEY))
-                .buildAsyncClient();
+        OpenAIAsyncClient client =
+                new OpenAIClientBuilder()
+                        .endpoint(ENDPOINT)
+                        .credential(new AzureKeyCredential(API_KEY))
+                        .buildAsyncClient();
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, MODEL);
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
-        KernelConfig kernelConfig = new KernelConfig.Builder()
-                .addTextCompletionService(MODEL, kernel -> textCompletion)
-                .build();
+        KernelConfig kernelConfig =
+                new KernelConfig.Builder()
+                        .addTextCompletionService(MODEL, kernel -> textCompletion)
+                        .build();
 
         Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
 
-        CompletionSKFunction summarize = kernel.getSemanticFunctionBuilder()
-                .createFunction(
-                        prompt,
-                        "summarize",
-                        null,
-                        null,
-                        new PromptTemplateConfig.CompletionConfig(
-                                0.2, 0.5, 0, 0, 2000, new ArrayList<>()));
+        CompletionSKFunction summarize =
+                kernel.getSemanticFunctionBuilder()
+                        .createFunction(
+                                prompt,
+                                "summarize",
+                                null,
+                                null,
+                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000));
 
         if (summarize == null) {
             LOGGER.error("Null function");

@@ -3,43 +3,36 @@ package com.microsoft.semantickernel.planner.sequentialplanner;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
-import com.microsoft.semantickernel.planner.SequentialPlannerRequestSettings;
+import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.planner.PlanningException;
+import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.CompletionSKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-
 import javax.annotation.Nullable;
 
-/// <summary>
-/// A planner that uses semantic function to create a sequential plan.
-/// </summary>
+/** A planner that uses semantic function to create a sequential plan. */
 public class SequentialPlanner {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SequentialPlanner.class);
     private static final String StopSequence = "<!--";
 
-    /// <summary>
-    /// The name to use when creating semantic functions that are restricted from plan creation
-    /// </summary>
+    // The name to use when creating semantic functions that are restricted from plan creation
     private static final String RestrictedSkillName = "SequentialPlanner_Excluded";
 
     private final SequentialPlannerRequestSettings config;
-    private final CompletionSKContext context;
+    private final SKContext context;
 
-    /// <summary>
-    /// the function flow semantic function, which takes a goal and creates an xml plan that can be
+    // the function flow semantic function, which takes a goal and creates an xml plan that can be
     // executed
-    /// </summary>
     private final CompletionSKFunction functionFlowFunction;
 
-    /// <summary>
-    /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
-    /// </summary>
-    /// <param name="kernel">The semantic kernel instance.</param>
-    /// <param name="config">The planner configuration.</param>
-    /// <param name="prompt">Optional prompt override</param>
     public SequentialPlanner(
             Kernel kernel,
             @Nullable SequentialPlannerRequestSettings config,
@@ -69,38 +62,50 @@ public class SequentialPlanner {
                                     + " fulfill the request using functions. This ability is also"
                                     + " known as decision making and function flow",
                                 new PromptTemplateConfig.CompletionConfig(
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        this.config.getMaxTokens(),
-                                        new ArrayList<>()));
+                                        0.0, 0.0, 0.0, 0.0, this.config.getMaxTokens()));
 
-        this.context = functionFlowFunction.buildContext();
+        this.context = SKBuilders.context().build(kernel);
     }
 
-    /// <summary>
-    /// Create a plan for a goal.
-    /// </summary>
-    /// <param name="goal">The goal to create a plan for.</param>
-    /// <returns>The plan.</returns>
-    public Mono<CompletionSKContext> createPlanAsync(String goal) {
+    /**
+     * Create a plan for a goal.
+     *
+     * @param goal The goal to create a plan for.
+     * @return The plan
+     */
+    public Mono<Plan> createPlanAsync(String goal) {
         if (goal == null || goal.isEmpty()) {
-            // throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal
-            // specified is empty");
-            throw new RuntimeException();
+            throw new PlanningException(
+                    PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
         }
 
-        return new DefaultSequentialPlannerSKContext(context)
-                .getFunctionsManualAsync(goal, this.config)
-                .flatMap(
-                        relevantFunctionsManual -> {
-                            CompletionSKContext updatedContext =
-                                    context.setVariable(
-                                                    "available_functions", relevantFunctionsManual)
-                                            .update(goal);
+        try {
+            return new DefaultSequentialPlannerSKContext(context)
+                    .getFunctionsManualAsync(goal, this.config)
+                    .flatMap(
+                            relevantFunctionsManual -> {
+                                SKContext updatedContext =
+                                        context.setVariable(
+                                                        "available_functions",
+                                                        relevantFunctionsManual)
+                                                .update(goal);
 
-                            return functionFlowFunction.invokeAsync(updatedContext, null);
-                        });
+                                return functionFlowFunction.invokeAsync(updatedContext, null);
+                            })
+                    .map(
+                            planResult -> {
+                                String planResultString = planResult.getResult().trim();
+
+                                LOGGER.debug("Plan result: " + planResultString);
+
+                                Plan plan =
+                                        SequentialPlanParser.toPlanFromXml(
+                                                planResultString, goal, context);
+                                return plan;
+                            });
+        } catch (Exception e) {
+            throw new PlanningException(
+                    PlanningException.ErrorCodes.InvalidPlan, "Plan parsing error, invalid XML", e);
+        }
     }
 }

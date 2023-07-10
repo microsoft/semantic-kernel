@@ -78,10 +78,6 @@ public final class NullMemory implements SemanticTextMemory {
         return Mono.just(Collections.emptyList());
     }
 
-    @Override
-    public SemanticTextMemory merge(MemoryQueryResult b) {
-        return this;
-    }
     /*
 
     /// <inheritdoc/>

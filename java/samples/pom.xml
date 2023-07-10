@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.microsoft.semantickernel</groupId>
     <artifactId>samples</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.2-beta-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -19,8 +18,9 @@
         <log4j2.version>2.20.0</log4j2.version>
         <maven.compiler-plugin.version>3.11.0</maven.compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencyManagement>
@@ -89,6 +89,11 @@
             <artifactId>sequentialplanner-extensions</artifactId>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantickernel.extensions</groupId>
+            <artifactId>actionplanner-extension</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -104,7 +109,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>${maven.compiler.plugin.version}</version>
+                        <version>${maven.compiler-plugin.version}</version>
                         <configuration>
                             <source>${maven.compiler.release}</source>
                             <target>${maven.compiler.release}</target>

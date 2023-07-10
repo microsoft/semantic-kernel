@@ -2,26 +2,20 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.builders.BuildersSingleton;
-import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
-import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
-import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
-import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
-
 import javax.annotation.Nullable;
 
 /** Interface for the semantic kernel. */
-public interface Kernel {
+public interface Kernel extends SkillExecutor {
 
     /**
      * Settings required to execute functions, including details about AI dependencies, e.g.
@@ -32,23 +26,16 @@ public interface Kernel {
     /**
      * Reference to the engine rendering prompt templates
      *
-     * @return
+     * @return Reference to the engine rendering prompt templates
      */
     PromptTemplateEngine getPromptTemplateEngine();
 
     /**
-     * Return the memory store used by the kernel.
+     * Get the SemanticTextMemory in use.
      *
-     * @return the MemoryStore instance
+     * @return the SemanticTextMemory in use
      */
-    MemoryStore getMemoryStore();
-
-    /**
-     * Set the SemanticTextMemory to use.
-     *
-     * @param memory {@link SemanticTextMemory} instance
-     */
-    void registerMemory(SemanticTextMemory memory);
+    SemanticTextMemory getMemory();
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -56,7 +43,7 @@ public interface Kernel {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext<?>> runAsync(SKFunction<?, ?>... pipeline);
+    Mono<SKContext> runAsync(SKFunction<?>... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -65,7 +52,7 @@ public interface Kernel {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext<?>> runAsync(String input, SKFunction<?, ?>... pipeline);
+    Mono<SKContext> runAsync(String input, SKFunction<?>... pipeline);
 
     /**
      * Run a pipeline composed of synchronous and asynchronous functions.
@@ -74,42 +61,7 @@ public interface Kernel {
      * @param pipeline List of functions
      * @return Result of the function composition
      */
-    Mono<SKContext<?>> runAsync(ContextVariables variables, SKFunction<?, ?>... pipeline);
-
-    /**
-     * Import a set of skills
-     *
-     * @param skillName
-     * @param skills
-     * @return
-     * @throws SkillsNotFoundException
-     */
-    ReadOnlyFunctionCollection importSkill(
-            String skillName, Map<String, SemanticFunctionConfig> skills)
-            throws SkillsNotFoundException;
-
-    /**
-     * Get function collection with the skill name
-     *
-     * @param skillName
-     * @return
-     * @throws SkillsNotFoundException
-     */
-    ReadOnlyFunctionCollection getSkill(String skillName) throws SkillsNotFoundException;
-
-    /**
-     * Imports the native functions annotated on the given object as a skill.
-     *
-     * @param nativeSkill
-     * @param skillName
-     * @return
-     */
-    ReadOnlyFunctionCollection importSkill(Object nativeSkill, @Nullable String skillName);
-
-    /**
-     * @return Reference to the read-only skill collection containing all the imported functions
-     */
-    ReadOnlySkillCollection getSkills();
+    Mono<SKContext> runAsync(ContextVariables variables, SKFunction<?>... pipeline);
 
     CompletionSKFunction.Builder getSemanticFunctionBuilder();
 
@@ -117,11 +69,10 @@ public interface Kernel {
     <T> T getService(@Nullable String name, Class<T> clazz) throws KernelException;
 
     /** Registers a semantic functon on this kernel */
-    <
-                    RequestConfiguration,
-                    ContextType extends SKContext<ContextType>,
-                    FunctionType extends SKFunction<RequestConfiguration, ContextType>>
+    <RequestConfiguration, FunctionType extends SKFunction<RequestConfiguration>>
             FunctionType registerSemanticFunction(FunctionType semanticFunctionDefinition);
+
+    SKFunction getFunction(String skill, String function);
 
     // <T extends ReadOnlySKContext<T>> T createNewContext();
 
@@ -129,6 +80,7 @@ public interface Kernel {
         @Nullable private KernelConfig kernelConfig = null;
         @Nullable private PromptTemplateEngine promptTemplateEngine = null;
         @Nullable private MemoryStore memoryStore = null;
+        @Nullable private SemanticTextMemory memory = null;
 
         public Builder setKernelConfig(KernelConfig kernelConfig) {
             this.kernelConfig = kernelConfig;
@@ -145,6 +97,11 @@ public interface Kernel {
             return this;
         }
 
+        public Builder withMemory(SemanticTextMemory memory) {
+            this.memory = memory;
+            return this;
+        }
+
         public Kernel build() {
             if (kernelConfig == null) {
                 throw new IllegalStateException("Must provide a kernel configuration");
@@ -152,7 +109,7 @@ public interface Kernel {
 
             return BuildersSingleton.INST
                     .getKernelBuilder()
-                    .build(kernelConfig, promptTemplateEngine, memoryStore);
+                    .build(kernelConfig, promptTemplateEngine, memory, memoryStore);
         }
     }
 
@@ -160,6 +117,7 @@ public interface Kernel {
         Kernel build(
                 KernelConfig kernelConfig,
                 @Nullable PromptTemplateEngine promptTemplateEngine,
+                @Nullable SemanticTextMemory memory,
                 @Nullable MemoryStore memoryStore);
     }
 }

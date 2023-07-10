@@ -3,12 +3,17 @@ package com.microsoft.semantickernel.util;
 
 import java.io.IOException;
 
+import javax.annotation.Nullable;
+
 public class AzureOpenAISettings extends ClientSettings<AzureOpenAISettings> {
 
     private static final String DEFAULT_CLIENT_ID = "azureopenai";
-    private String key;
-    private String endpoint;
-    private String deploymentName;
+
+    @Nullable private String key = null;
+
+    @Nullable private String endpoint = null;
+
+    @Nullable private String deploymentName = null;
 
     public enum Property {
         AZURE_OPEN_AI_KEY("key"),
@@ -26,14 +31,23 @@ public class AzureOpenAISettings extends ClientSettings<AzureOpenAISettings> {
     }
 
     public String getKey() {
+        if (key == null) {
+            throw new RuntimeException("Azure OpenAI key is not set");
+        }
         return key;
     }
 
     public String getEndpoint() {
+        if (endpoint == null) {
+            throw new RuntimeException("Azure OpenAI endpoint is not set");
+        }
         return endpoint;
     }
 
     public String getDeploymentName() {
+        if (deploymentName == null) {
+            throw new RuntimeException("Azure OpenAI deployment name is not set");
+        }
         return deploymentName;
     }
 

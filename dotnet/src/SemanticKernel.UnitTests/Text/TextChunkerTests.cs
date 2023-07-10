@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.SemanticKernel.Text;
 using Xunit;
 
@@ -454,4 +455,27 @@ public sealed class TextChunkerTests
     }
 
     // a markdown example that does not have any of the above characters
+
+    [Fact]
+    public void CanSplitVeryLargeDocumentsWithoutStackOverflowing()
+    {
+#pragma warning disable CA5394 // this test relies on repeatable pseudo-random numbers
+        var rand = new Random(42);
+        var sb = new StringBuilder(100_000 * 11);
+        for (int wordNum = 0; wordNum < 100_000; wordNum++)
+        {
+            int wordLength = rand.Next(1, 10);
+            for (int charNum = 0; charNum < wordLength; charNum++)
+            {
+                sb.Append((char)('a' + rand.Next(0, 26)));
+            }
+            sb.Append(' ');
+        }
+
+        string text = sb.ToString();
+        List<string> lines = TextChunker.SplitPlainTextLines(text, 20);
+        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 200);
+        Assert.NotEmpty(paragraphs);
+#pragma warning restore CA5394
+    }
 }

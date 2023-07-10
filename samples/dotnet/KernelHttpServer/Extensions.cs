@@ -8,14 +8,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using GitHubSkills;
 using KernelHttpServer.Config;
+using KernelHttpServer.Plugins;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Document.FileSystem;
 using Microsoft.SemanticKernel.Skills.Document.OpenXml;
@@ -157,11 +157,10 @@ internal static class Extensions
             _ = kernel.ImportSkill(webFileDownloadSkill, nameof(WebFileDownloadSkill));
         }
 
-        if (ShouldLoad(nameof(GitHubSkill), skillsToLoad))
+        if (ShouldLoad(nameof(GitHubPlugin), skillsToLoad))
         {
-            var downloadSkill = new WebFileDownloadSkill();
-            GitHubSkill githubSkill = new(kernel, downloadSkill);
-            _ = kernel.ImportSkill(githubSkill, nameof(GitHubSkill));
+            GitHubPlugin githubPlugin = new(kernel);
+            _ = kernel.ImportSkill(githubPlugin, nameof(GitHubPlugin));
         }
     }
 

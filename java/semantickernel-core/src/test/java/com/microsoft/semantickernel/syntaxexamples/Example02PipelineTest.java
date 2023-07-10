@@ -22,7 +22,7 @@ public class Example02PipelineTest {
         // Load native skill
         ReadOnlyFunctionCollection text = kernel.importSkill(new TextSkill(), null);
 
-        Mono<SKContext<?>> result =
+        Mono<SKContext> result =
                 kernel.runAsync(
                         "    i n f i n i t e     s p a c e     ",
                         text.getFunction("LStrip"),

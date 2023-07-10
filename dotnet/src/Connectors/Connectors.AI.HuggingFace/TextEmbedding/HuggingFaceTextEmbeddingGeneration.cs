@@ -137,12 +137,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
                 Input = data
             };
 
-            using var httpRequestMessage = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Post,
-                RequestUri = this.GetRequestUri(),
-                Content = new StringContent(JsonSerializer.Serialize(embeddingRequest)),
-            };
+            using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
 
             httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
 

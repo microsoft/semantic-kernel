@@ -12,7 +12,7 @@ public interface ReadOnlyFunctionCollection {
 
     String getSkillName();
 
-    SKFunction<?, ?> getFunction(String functionName);
+    SKFunction<?> getFunction(String functionName);
 
     /**
      * Get function with the given SKFunction type argument.
@@ -34,5 +34,5 @@ public interface ReadOnlyFunctionCollection {
     /**
      * @return An unmodifiable list of all functions
      */
-    List<SKFunction<?, ?>> getAll();
+    List<SKFunction<?>> getAll();
 }

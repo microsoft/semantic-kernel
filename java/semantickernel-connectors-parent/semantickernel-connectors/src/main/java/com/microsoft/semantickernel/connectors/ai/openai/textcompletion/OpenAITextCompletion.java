@@ -15,6 +15,7 @@ import jakarta.inject.Inject;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /// <summary>
@@ -59,7 +60,9 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
                         .setFrequencyPenalty(requestSettings.getFrequencyPenalty())
                         .setPresencePenalty(requestSettings.getPresencePenalty())
                         .setModel(getModelId())
-                        .setUser(null);
+                        .setUser(requestSettings.getUser())
+                        .setBestOf(requestSettings.getBestOf())
+                        .setLogitBias(new HashMap<>());
 
         return getClient()
                 .getCompletions(getModelId(), completionsOptions)

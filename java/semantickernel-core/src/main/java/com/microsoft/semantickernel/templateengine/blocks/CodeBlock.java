@@ -12,11 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Mono;
-import reactor.util.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 public final class CodeBlock extends Block implements CodeRendering {
 
@@ -26,11 +27,6 @@ public final class CodeBlock extends Block implements CodeRendering {
     public CodeBlock(List<Block> tokens, String content) {
         super(content, BlockTypes.Code);
         this.tokens = Collections.unmodifiableList(tokens);
-    }
-
-    public CodeBlock(String content) {
-        super(content, BlockTypes.Code);
-        this.tokens = null;
     }
 
     @Override
@@ -63,7 +59,6 @@ public final class CodeBlock extends Block implements CodeRendering {
     }
 
     @Override
-    @Nullable
     public Mono<String> renderCodeAsync(SKContext context) {
         if (!this.isValid()) {
             throw new TemplateException(TemplateException.ErrorCodes.SyntaxError);
@@ -79,9 +74,13 @@ public final class CodeBlock extends Block implements CodeRendering {
 
             case FunctionId:
                 return this.renderFunctionCallAsync((FunctionIdBlock) this.tokens.get(0), context);
-        }
 
-        throw new RuntimeException("Unknown type");
+            case Undefined:
+            case Text:
+            case Code:
+            default:
+                throw new RuntimeException("Unknown type");
+        }
     }
 
     private Mono<String> renderFunctionCallAsync(FunctionIdBlock fBlock, SKContext context) {
@@ -115,14 +114,14 @@ public final class CodeBlock extends Block implements CodeRendering {
                 });
     }
 
+    @Nullable
     private SKFunction getFunctionFromSkillCollection(
             ReadOnlySkillCollection skills, FunctionIdBlock fBlock) {
         String skillName = fBlock.getSkillName();
         // Function in the global skill
         if ((skillName == null || skillName.isEmpty())
                 && skills.hasFunction(fBlock.getFunctionName())) {
-            SKFunction<?, ?> function =
-                    skills.getFunction(fBlock.getFunctionName(), SKFunction.class);
+            SKFunction<?> function = skills.getFunction(fBlock.getFunctionName(), SKFunction.class);
             return function;
         }
 
