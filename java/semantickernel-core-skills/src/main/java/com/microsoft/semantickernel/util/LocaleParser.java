@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
+import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
+
 /**
  * Locale parser to support Java 8 and Java 9+ due to JEP 252.
  *
@@ -34,7 +37,9 @@ public final class LocaleParser {
 
         Locale parsedLocale = null;
 
-        if (locale.indexOf("-") > -1) {
+        if (locale == null || "".equals(locale.trim()) || locale == SKFunctionParameters.NO_DEFAULT_VALUE) {
+          return Locale.getDefault();
+        } else if (locale.indexOf("-") > -1) {
             parsedLocale = Locale.forLanguageTag(locale);
         } else if (locale.indexOf("_") > -1) {
             String[] parts = locale.split("_");
