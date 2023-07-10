@@ -12,7 +12,7 @@
   "input": {
     "parameters": [
       {
-        "name": "input",
+        "name": "message",
         "description": "The new message",
         "defaultValue": ""
       },
@@ -47,8 +47,13 @@
         "defaultValue": ""
       },
       {
-        "name": "knowledgeCutoff",
-        "description": "LLM knowledge stops at this date",
+        "name": "prompt",
+        "description": "The prompt used to generate the response",
+        "defaultValue": ""
+      },
+      {
+        "name": "userCancelledPlan",
+        "description": "Variable that determines if the user cancelled the plan or not",
         "defaultValue": ""
       },
       {
@@ -57,13 +62,13 @@
         "defaultValue": ""
       },
       {
-        "name": "prompt",
-        "description": "The prompt used to generate the response",
+        "name": "knowledgeCutoff",
+        "description": "LLM knowledge stops at this date",
         "defaultValue": ""
       },
       {
-        "name": "userCancelledPlan",
-        "description": "Variable that determines if the user cancelled the plan or not",
+        "name": "Audience",
+        "description": "The audience the chat bot is interacting with",
         "defaultValue": ""
       },
       {

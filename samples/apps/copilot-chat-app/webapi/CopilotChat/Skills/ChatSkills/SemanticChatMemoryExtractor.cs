@@ -38,7 +38,7 @@ internal static class SemanticChatMemoryExtractor
         SKContext context,
         PromptsOptions options,
         IDictionary<string, ISKFunction> chatPlugin,
-        IDictionary<string, PromptPluginOptions> chatPluginPromptOptions)
+        IDictionary<string, PluginPromptOptions> chatPluginPromptOptions)
     {
         var memoryExtractionContext = Utilities.CopyContextWithVariablesClone(context);
         memoryExtractionContext.Variables.Set("MemoryFormat", options.MemoryFormat);
@@ -84,7 +84,7 @@ internal static class SemanticChatMemoryExtractor
         SKContext memoryExtractionContext,
         PromptsOptions options,
         ISKFunction extractMemoryFunc,
-        PromptPluginOptions skillPromptOptions)
+        PluginPromptOptions skillPromptOptions)
     {
         if (!options.MemoryTypes.Contains(memoryType))
         {
@@ -92,7 +92,7 @@ internal static class SemanticChatMemoryExtractor
         }
 
         // Token limit for chat history
-        var remainingToken =
+        int remainingToken =
             options.CompletionTokenLimit -
             skillPromptOptions.CompletionSettings.MaxTokens -
             skillPromptOptions.PromptTokenCount;
@@ -121,10 +121,10 @@ internal static class SemanticChatMemoryExtractor
         string memoryType,
         PromptsOptions options)
     {
-        var memoryCollectionName = SemanticChatMemoryExtractor.MemoryCollectionType(chatId, memoryType);
+        var memoryCollectionType = SemanticChatMemoryExtractor.MemoryCollectionType(chatId, memoryType);
 
         var memories = await context.Memory.SearchAsync(
-                collection: memoryCollectionName,
+                collection: memoryCollectionType,
                 query: item.ToFormattedString(),
                 limit: 1,
                 minRelevanceScore: options.SemanticMemoryMinRelevance,
@@ -136,7 +136,7 @@ internal static class SemanticChatMemoryExtractor
         if (memories.Count == 0)
         {
             await context.Memory.SaveInformationAsync(
-                collection: memoryCollectionName,
+                collection: memoryCollectionType,
                 text: item.ToFormattedString(),
                 id: Guid.NewGuid().ToString(),
                 description: memoryType,

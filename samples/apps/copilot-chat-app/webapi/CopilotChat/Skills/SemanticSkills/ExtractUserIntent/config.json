@@ -23,7 +23,7 @@
       },
       {
         "name": "audience",
-        "description": "The audience the chat bot is interacting with.",
+        "description": "The audience the chat bot is interacting with",
         "defaultValue": ""
       },
       {

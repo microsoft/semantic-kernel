@@ -51,8 +51,7 @@ public static class CopilotChatSemanticKernelExtensions
                 chatSessionRepository: sp.GetRequiredService<ChatSessionRepository>(),
                 promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
                 documentImportOptions: sp.GetRequiredService<IOptions<DocumentMemoryOptions>>(),
-                planner: sp.GetRequiredService<CopilotChatPlanner>(),
-                logger: sp.GetRequiredService<ILogger<ChatSkill>>()),
+                planner: sp.GetRequiredService<CopilotChatPlanner>()),
             nameof(ChatSkill));
 
         return kernel;

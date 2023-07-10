@@ -1,6 +1,7 @@
 ﻿We are building a cognitive architecture and need to extract the various details necessary to serve as the data for simulating a part of our memory system.  There will eventually be a lot of these, and we will search over them using the embeddings of the labels and details compared to the new incoming chat requests, so keep that in mind when determining what data to store for this particular type of memory simulation.  There are also other types of memory stores for handling different types of memories with differing purposes, levels of detail, and retention, so you don't need to capture everything - just focus on the items needed for WorkingMemory.  Do not make up or assume information that is not supported by evidence.  Perform analysis of the chat history so far and extract the details that you think are important in JSON format:
 {{$MemoryFormat}}
 
+
 WorkingMemory Description:
 Extract information for a short period of time, such as a few seconds or minutes. It should be useful for performing complex cognitive tasks that require attention, concentration, or mental calculation.
 

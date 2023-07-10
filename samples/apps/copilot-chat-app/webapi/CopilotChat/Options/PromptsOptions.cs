@@ -11,7 +11,7 @@ namespace SemanticKernel.Service.CopilotChat.Options;
 /// </summary>
 public class PromptsOptions
 {
-    public const string PropertyName = "Prompts";
+    public const string PropertyName = "ReusablePromptVariables";
 
     /// <summary>
     /// Token limit of the chat model.

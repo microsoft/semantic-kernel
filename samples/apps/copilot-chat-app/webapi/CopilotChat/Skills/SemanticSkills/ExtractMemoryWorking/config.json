@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Extract list of participants from the conversation history. Note that only those who have spoken will be included.",
+  "description": "Extracts the working semantic chat memory from the chat session",
   "type": "completion",
   "completion": {
     "max_tokens": 1024,
@@ -24,6 +24,11 @@
       {
         "name": "knowledgeCutoff",
         "description": "LLM knowledge stops at this date",
+        "defaultValue": ""
+      },
+      {
+        "name": "memoryFormat",
+        "description": "The memory format used to represent extracted chat messages",
         "defaultValue": ""
       }
     ]

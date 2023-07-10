@@ -71,7 +71,7 @@ public class ChatSkill
     /// <summary>
     /// A dictionary mapping all of the semantic chat skill functions to the token counts of their prompts
     /// </summary>
-    private readonly IDictionary<string, PromptPluginOptions> _chatPluginPromptOptions;
+    private readonly IDictionary<string, PluginPromptOptions> _chatPluginPromptOptions;
 
     /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
@@ -82,8 +82,7 @@ public class ChatSkill
         ChatSessionRepository chatSessionRepository,
         IOptions<PromptsOptions> promptOptions,
         IOptions<DocumentMemoryOptions> documentImportOptions,
-        CopilotChatPlanner planner,
-        ILogger logger)
+        CopilotChatPlanner planner)
     {
         this._kernel = kernel;
         this._chatMessageRepository = chatMessageRepository;
@@ -94,13 +93,13 @@ public class ChatSkill
             promptOptions);
         this._documentMemorySkill = new DocumentMemorySkill(
             promptOptions,
-            documentImportOptions);
+            documentImportOptions,
+            kernel.Log);
         this._externalInformationSkill = new ExternalInformationSkill(
             promptOptions,
             planner);
 
-        var parentDir = System.IO.Directory.GetCurrentDirectory() + "\\..\\..\\..";
-        parentDir = Path.GetFullPath(Path.Combine(parentDir, "CopilotChat", "Skills"));
+        var parentDir = Path.GetFullPath(Path.Combine(System.IO.Directory.GetCurrentDirectory(), "..", "..", "..", "CopilotChat", "Skills"));
         this._chatPlugin = this._kernel.ImportSemanticSkillFromDirectory(parentDir, "SemanticSkills");
 
         var skillDir = Path.Combine(parentDir, "SemanticSkills");
@@ -110,8 +109,7 @@ public class ChatSkill
     /// <summary>
     /// Extract chat history.
     /// </summary>
-    /// <param name="context">Contains the 'tokenLimit' controlling the length of the prompt.</param>
-    [SKFunction, Description("Extract chat history")]
+    [SKFunction("Extract chat history")]
     public async Task<string> ExtractChatHistoryAsync(
         [Description("Chat ID to extract history from")] string chatId,
         [Description("Maximum number of tokens")] int tokenLimit)
@@ -165,15 +163,15 @@ public class ChatSkill
     /// messages to memory, and fill in the necessary context variables for completing the
     /// prompt that will be rendered by the template engine.
     /// </summary>
-    [SKFunction, Description("Get chat response")]
+    [SKFunction("Get chat response")]
     public async Task<SKContext> ChatAsync(
         [Description("The new message")] string message,
         [Description("Unique and persistent identifier for the user")] string userId,
         [Description("Name of the user")] string userName,
         [Description("Unique and persistent identifier for the chat")] string chatId,
         [Description("Type of the message")] string messageType,
-        [Description("Previously proposed plan that is approved"), DefaultValue(null), SKName("proposedPlan")] string? planJson,
-        [Description("ID of the response message for planner"), DefaultValue(null), SKName("responseMessageId")] string? messageId,
+        [Description("Previously proposed plan that is approved"), DefaultValue(null)] string? proposedPlan,
+        [Description("ID of the response message for planner"), DefaultValue(null)] string? responseMessageId,
         SKContext context)
     {
         // Save this new message to memory such that subsequent chat responses can use it
@@ -187,10 +185,10 @@ public class ChatSkill
         // Check if plan exists in ask's context variables.
         // If plan was returned at this point, that means it was approved or cancelled.
         // Update the response previously saved in chat history with state
-        if (!string.IsNullOrWhiteSpace(planJson) &&
-            !string.IsNullOrEmpty(messageId))
+        if (!string.IsNullOrWhiteSpace(proposedPlan) &&
+            !string.IsNullOrEmpty(responseMessageId))
         {
-            await this.UpdateResponseAsync(planJson, messageId);
+            await this.UpdateResponseAsync(proposedPlan, responseMessageId);
         }
 
         var response = chatContext.Variables.ContainsKey("userCancelledPlan")
@@ -268,7 +266,7 @@ public class ChatSkill
 
         // 4. Query relevant semantic memories
         var chatMemoriesTokenLimit = (int)(remainingToken * this._promptOptions.MemoriesResponseContextWeight);
-        var chatMemories = await this._semanticChatMemorySkill.QueryMemoriesAsync(userIntent, chatId, chatMemoriesTokenLimit, chatContext.Memory);
+        var chatMemories = await this._semanticChatMemorySkill.QueryMemoriesAsync(chatContext, userIntent, chatId, chatMemoriesTokenLimit, chatContext.Memory);
         if (chatContext.ErrorOccurred)
         {
             return string.Empty;
@@ -297,8 +295,7 @@ public class ChatSkill
         }
 
         //Get the prompt.txt text
-        var parentDir = System.IO.Directory.GetCurrentDirectory() + "\\..\\..\\..";
-        var skillDir = Path.GetFullPath(Path.Combine(parentDir, "CopilotChat", "Skills", "SemanticSkills"));
+        var skillDir = Path.GetFullPath(Path.Combine(System.IO.Directory.GetCurrentDirectory(), "..", "..", "..", "CopilotChat", "Skills", "SemanticSkills"));
         var chatPromptText = this.GetPromptTemplateText(this._chatPlugin, skillDir, "Chat");
 
         // Invoke the model
@@ -379,7 +376,7 @@ public class ChatSkill
     /// </summary>
     private Task<string> QueryChatMemoriesAsync(SKContext context, string userIntent, int tokenLimit)
     {
-        return this._semanticChatMemorySkill.QueryMemoriesAsync(userIntent, context["chatId"], tokenLimit, context.Memory);
+        return this._semanticChatMemorySkill.QueryMemoriesAsync(context, userIntent, context["chatId"], tokenLimit, context.Memory);
     }
 
     /// <summary>
@@ -407,7 +404,7 @@ public class ChatSkill
             context.CancellationToken
         );
 
-        var plan = await this._externalInformationSkill.AcquireExternalInformationAsync(userIntent, planContext);
+        var plan = await this._externalInformationSkill.AcquireExternalInformationAsync(tokenLimit, userIntent, planContext);
 
         // Propagate the error
         if (planContext.ErrorOccurred)
@@ -488,19 +485,17 @@ public class ChatSkill
     /// <summary>
     /// Create a dictionary mapping semantic functions for a skill to the number of tokens their prompts use/
     /// </summary>
-    private Dictionary<string, PromptPluginOptions> calcChatPluginTokens(IDictionary<string, ISKFunction> skillPlugin, string skillDir)
+    private Dictionary<string, PluginPromptOptions> calcChatPluginTokens(IDictionary<string, ISKFunction> skillPlugin, string skillDir)
     {
-        var funcTokenCounts = new Dictionary<string, PromptPluginOptions>(); ;
-        const string PromptFile = "skprompt.txt";
-        const string ConfigFile = "config.json";
+        var funcTokenCounts = new Dictionary<string, PluginPromptOptions>();
 
         foreach (KeyValuePair<string, ISKFunction> funcEntry in skillPlugin)
         {
-            var promptPath = Path.Combine(skillDir, funcEntry.Key, PromptFile);
+            var promptPath = Path.Combine(skillDir, funcEntry.Key, Constants.PromptFileName);
             if (!File.Exists(promptPath)) { continue; }
 
-            var configPath = Path.Combine(skillDir, funcEntry.Key, ConfigFile);
-            funcTokenCounts.Add(funcEntry.Key, new PromptPluginOptions(promptPath, ConfigFile));
+            var configPath = Path.Combine(skillDir, funcEntry.Key, Constants.ConfigFileName);
+            funcTokenCounts.Add(funcEntry.Key, new PluginPromptOptions(promptPath, configPath, this._kernel.Log));
         }
 
         return funcTokenCounts;
@@ -512,8 +507,7 @@ public class ChatSkill
     private string GetPromptTemplateText(IDictionary<string, ISKFunction> skillPlugin, string skillDir, string funcName)
     {
         var promptText = "";
-        const string PromptFile = "skprompt.txt";
-        var promptPath = Path.Combine(skillDir, funcName, PromptFile);
+        var promptPath = Path.Combine(skillDir, funcName, Constants.PromptFileName);
 
         if (skillPlugin.ContainsKey("Chat") && File.Exists(promptPath))
         {
