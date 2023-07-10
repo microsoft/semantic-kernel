@@ -36,6 +36,7 @@ class SemanticTextMemoryBase(ABC):
         self,
         collection: str,
         query: str,
+        # TODO: with_embedding: bool,
     ) -> Optional[MemoryQueryResult]:
         pass
 
