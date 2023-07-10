@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 public class Example02_Pipeline {
     public static void main(String[] args) {
         KernelConfig kernelConfig = SKBuilders.kernelConfig().build();
-        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
 
         // Load native skill
         ReadOnlyFunctionCollection text = kernel.importSkill(new TextSkill(), null);

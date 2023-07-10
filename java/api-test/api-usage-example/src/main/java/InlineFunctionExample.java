@@ -107,7 +107,7 @@ public class InlineFunctionExample {
                         .addTextCompletionService(MODEL, kernel -> textCompletion)
                         .build();
 
-        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
 
         CompletionSKFunction summarize =
                 kernel.getSemanticFunctionBuilder()

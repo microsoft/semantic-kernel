@@ -5,7 +5,6 @@ import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemory;
-import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -42,7 +41,7 @@ public class Example14_SemanticMemory
         var kernelConfig = SKBuilders.kernelConfig().build();
 
         var kernelWithACS = SKBuilders.kernel()
-                .setKernelConfig(kernelConfig)
+                .withKernelConfig(kernelConfig)
                 .withMemory(new AzureCognitiveSearchMemory(System.getenv("ACS_ENDPOINT"), System.getenv("ACS_API_KEY")))
                 .build();
 
@@ -69,7 +68,7 @@ public class Example14_SemanticMemory
                 .build();
 
         var kernelWithCustomDb = SKBuilders.kernel()
-                .setKernelConfig(kernelConfigWithTextEmbedding)
+                .withKernelConfig(kernelConfigWithTextEmbedding)
                 .withMemoryStore(SKBuilders.memoryStore().build())
                 .build();
 

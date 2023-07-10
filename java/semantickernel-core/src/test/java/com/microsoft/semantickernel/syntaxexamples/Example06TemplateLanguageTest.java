@@ -35,7 +35,7 @@ public class Example06TemplateLanguageTest {
                                                 .build(client, "text-davinci-003"))
                         .build();
 
-        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
 
         // Load native skill into the kernel skill collection, sharing its functions
         // with prompt

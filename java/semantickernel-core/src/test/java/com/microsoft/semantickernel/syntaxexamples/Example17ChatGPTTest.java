@@ -48,7 +48,7 @@ public class Example17ChatGPTTest {
                                                 .build(client, "gpt-3.5-turbo-0301"))
                         .build();
 
-        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
 
         ChatCompletion<OpenAIChatHistory> chatGPT = kernel.getService(null, ChatCompletion.class);
 

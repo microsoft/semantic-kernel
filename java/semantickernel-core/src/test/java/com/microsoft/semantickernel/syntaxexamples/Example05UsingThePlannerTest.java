@@ -43,7 +43,7 @@ public class Example05UsingThePlannerTest {
                                                 .build(client, "text-davinci-003"))
                         .build();
 
-        Kernel kernel = SKBuilders.kernel().setKernelConfig(config).build();
+        Kernel kernel = SKBuilders.kernel().withKernelConfig(config).build();
 
         SequentialPlanner planner = getPlanner(kernel);
         System.out.println(

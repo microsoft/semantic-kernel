@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.syntaxexamples;
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Config;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
@@ -21,13 +20,16 @@ public class Example17_ChatGPT {
     public static void main(String[] args) throws IOException {
         OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
 
-        KernelConfig kernelConfig = SKBuilders.kernelConfig()
-                .addChatCompletionService(
+        Kernel kernel = SKBuilders.kernel()
+                .withKernelConfig(SKBuilders.kernelConfig()
+                        .build())
+                .withAIService(
                         "chat-test",
-                        kernel -> SKBuilders.chatCompletion().build(client, "chat-test"))
+                        SKBuilders.chatCompletion().build(client, "chat-test"),
+                        true,
+                        ChatCompletion.class
+                )
                 .build();
-
-        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
 
         ChatCompletion<OpenAIChatHistory> chatGPT = kernel.getService(null, ChatCompletion.class);
 

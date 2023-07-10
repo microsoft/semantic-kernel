@@ -16,7 +16,7 @@ public class Example28_ActionPlanner {
         System.out.println("======== Action Planner ========");
 
         var kernel = SKBuilders.kernel()
-                .setKernelConfig(SKBuilders
+                .withKernelConfig(SKBuilders
                         .kernelConfig()
                         .addTextCompletionService("text-davinci-002", kernel1 -> SKBuilders.textCompletionService()
                                 .build(client, "text-davinci-002"))

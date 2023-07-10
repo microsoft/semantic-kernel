@@ -57,7 +57,7 @@ public class KernelTest extends AbstractKernelTest {
                         .addTextCompletionService(model, kernel -> textCompletion)
                         .build();
 
-        return SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+        return SKBuilders.kernel().withKernelConfig(kernelConfig).build();
     }
 
     @Test

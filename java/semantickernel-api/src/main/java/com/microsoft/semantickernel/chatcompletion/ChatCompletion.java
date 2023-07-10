@@ -2,12 +2,13 @@
 package com.microsoft.semantickernel.chatcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.services.AIService;
 
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 
-public interface ChatCompletion<ChatHistoryType extends ChatHistory> {
+public interface ChatCompletion<ChatHistoryType extends ChatHistory> extends AIService {
     /**
      * Generate a new chat message
      *

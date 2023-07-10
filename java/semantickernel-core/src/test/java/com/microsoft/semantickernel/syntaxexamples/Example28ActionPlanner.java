@@ -123,7 +123,7 @@ public class Example28ActionPlanner {
     private static ActionPlanner createPlanner(OpenAIAsyncClient client) {
         Kernel kernel =
                 SKBuilders.kernel()
-                        .setKernelConfig(
+                        .withKernelConfig(
                                 SKBuilders.kernelConfig()
                                         .addTextCompletionService(
                                                 "text-davinci-002",

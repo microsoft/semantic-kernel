@@ -119,7 +119,7 @@ public class DefaultKernelTest {
                         .addTextCompletionService(model, kernel -> textCompletion)
                         .build();
 
-        return SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+        return SKBuilders.kernel().withKernelConfig(kernelConfig).build();
     }
 
     private static OpenAIAsyncClient mockCompletionOpenAIAsyncClient(String arg, String response) {
