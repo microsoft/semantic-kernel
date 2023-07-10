@@ -65,12 +65,16 @@ class SequentialPlanner:
         prompt_config.completion.max_tokens = self.config.max_tokens
 
         prompt_template = PromptTemplate(
-            prompt_template, prompt_config, kernel.prompt_template_engine
+            template=prompt_template,
+            template_engine=kernel.prompt_template_engine,
+            prompt_config=prompt_config,
         )
         function_config = SemanticFunctionConfig(prompt_config, prompt_template)
 
         return kernel.register_semantic_function(
-            function_name=self.RESTRICTED_SKILL_NAME, function_config=function_config
+            skill_name=self.RESTRICTED_SKILL_NAME,
+            function_name=self.RESTRICTED_SKILL_NAME,
+            function_config=function_config,
         )
 
     async def create_plan_async(self, goal: str) -> Plan:
@@ -84,9 +88,11 @@ class SequentialPlanner:
         )
         self._context.variables.set("available_functions", relevant_function_manual)
 
-        self._context.variables.update("goal")
+        self._context.variables.update(goal)
 
-        plan_result = await self._function_flow_function.invoke_async(self._context)
+        plan_result = await self._function_flow_function.invoke_async(
+            context=self._context
+        )
 
         if plan_result.error_occurred:
             raise PlanningException(
