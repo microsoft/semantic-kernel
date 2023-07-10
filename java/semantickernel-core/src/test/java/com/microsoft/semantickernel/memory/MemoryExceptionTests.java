@@ -1,32 +1,33 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
- class MemoryExceptionTests
-{
+import org.junit.jupiter.api.Test;
+
+class MemoryExceptionTests {
     @Test
-     void itRoundtripsArgsToErrorCodeCtor()
-    {
+    void itRoundtripsArgsToErrorCodeCtor() {
         // Arrange
-        MemoryException e = new MemoryException(MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION);
+        MemoryException e =
+                new MemoryException(MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION);
 
         // Assert
         assertEquals(MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, e.getErrorCode());
         assertTrue(e.getMessage().contains("Failed to create collection"));
-        assertNull(e.getCause());    }
+        assertNull(e.getCause());
+    }
 
     @Test
-     void itRoundtripsArgsToErrorCodeMessageCtor()
-    {
+    void itRoundtripsArgsToErrorCodeMessageCtor() {
         // Arrange
         String message = "this is a test";
-        MemoryException e = new MemoryException(MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, message);
+        MemoryException e =
+                new MemoryException(
+                        MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, message);
 
         // Assert
         assertEquals(MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, e.getErrorCode());
@@ -36,12 +37,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }
 
     @Test
-     void itRoundtripsArgsToErrorCodeMessageExceptionCtor()
-    {
+    void itRoundtripsArgsToErrorCodeMessageExceptionCtor() {
         // Arrange
         String message = "this is a test";
         Exception inner = new NumberFormatException();
-        MemoryException e = new MemoryException(MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, message, inner);
+        MemoryException e =
+                new MemoryException(
+                        MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, message, inner);
 
         // Assert
         assertEquals(MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, e.getErrorCode());
@@ -51,10 +53,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     }
 
     @Test
-     void itAllowsNullMessageAndInnerExceptionInCtors()
-    {
+    void itAllowsNullMessageAndInnerExceptionInCtors() {
         // Arrange
-        MemoryException e = new MemoryException(MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, null, null);
+        MemoryException e =
+                new MemoryException(
+                        MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, null, null);
 
         // Assert
         assertEquals(MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, e.getErrorCode());

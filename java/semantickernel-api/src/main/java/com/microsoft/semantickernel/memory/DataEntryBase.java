@@ -40,5 +40,4 @@ public class DataEntryBase {
     public ZonedDateTime getTimestamp() {
         return timestamp;
     }
-
 }
