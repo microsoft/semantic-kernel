@@ -61,9 +61,10 @@ async def chat_request_example():
 
     return context_vars
 
+
 async def main() -> None:
     chat = await chat_request_example()
-    print("Chat content:")
+    print("Chat completion example:")
     print("------------------------")
     print(chat["chat_history"])
     banned_words = ["novel", "literature", "reading", "author", "library",
@@ -79,8 +80,11 @@ async def main() -> None:
             passed = False
     if passed == True:
         print("None of the banned words were found in the answer")
-
+    print("------------------------")
+    print("Text completion example:")
+    print("------------------------")
     await text_complete_request_example()
+    print("------------------------")
     return
 
 
