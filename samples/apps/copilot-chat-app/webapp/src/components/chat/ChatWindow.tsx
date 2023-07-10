@@ -119,7 +119,7 @@ export const ChatWindow: React.FC = () => {
             });
         }
 
-        // Limiting dependencies or else this effect is triggered on all user typing events
+        // Limiting dependencies or else this effect is triggered on all user typing events or new chat messages
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedId, chatUsers.length]);
 

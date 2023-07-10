@@ -53,15 +53,15 @@ export const ParticipantsList: FC<ShareBotMenuProps> = ({ participants }) => {
             </PopoverTrigger>
             <PopoverSurface className={classes.root}>
                 <div className={classes.list}>
-                    {participants.map((user) => (
+                    {participants.map((participant) => (
                         <Persona
                             textAlignment="center"
                             name={
                                 // falsy lint check, users[userId] can be null if user data hasn't been loaded
                                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                                users[user.id.split('.')[0]]?.displayName ?? user.id
+                                users[participant.id.split('.')[0]]?.displayName ?? participant.id
                             }
-                            key={user.id}
+                            key={participant.id}
                             avatar={{ color: 'colorful' }}
                         />
                     ))}
