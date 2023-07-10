@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Globalization;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.CopilotChat.Options;
 
@@ -43,15 +42,13 @@ public class DocumentMemorySkill
     /// </summary>
     /// <param name="query">Query to match.</param>
     /// <param name="context">The SkContext.</param>
-    [SKFunction("Query documents in the memory given a user message")]
-    [SKFunctionName("QueryDocuments")]
-    [SKFunctionInput(Description = "Query to match.")]
-    [SKFunctionContextParameter(Name = "chatId", Description = "ID of the chat that owns the documents")]
-    [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    public async Task<string> QueryDocumentsAsync(string query, SKContext context)
+    [SKFunction, Description("Query documents in the memory given a user message")]
+    public async Task<string> QueryDocumentsAsync(
+        [Description("Query to match.")] string query,
+        [Description("ID of the chat that owns the documents")] string chatId,
+        [Description("Maximum number of tokens")] int tokenLimit,
+        ISemanticTextMemory textMemory)
     {
-        string chatId = context.Variables["chatId"];
-        int tokenLimit = int.Parse(context.Variables["tokenLimit"], new NumberFormatInfo());
         var remainingToken = tokenLimit;
 
         // Search for relevant document snippets.
@@ -64,7 +61,7 @@ public class DocumentMemorySkill
         List<MemoryQueryResult> relevantMemories = new();
         foreach (var documentCollection in documentCollections)
         {
-            var results = context.Memory.SearchAsync(
+            var results = textMemory.SearchAsync(
                 documentCollection,
                 query,
                 limit: 100,

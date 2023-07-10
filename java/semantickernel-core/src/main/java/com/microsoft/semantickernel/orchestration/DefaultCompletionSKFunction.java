@@ -126,7 +126,7 @@ public class DefaultCompletionSKFunction
         // function
         BiFunction<Flux<SKContext>, String, Flux<SKContext>> executeNextChunk =
                 (contextInput, input) ->
-                        contextInput.flatMap(
+                        contextInput.concatMap(
                                 newContext -> {
                                     SKContext updated = newContext.update(input);
                                     return invokeAsync(updated, null);
