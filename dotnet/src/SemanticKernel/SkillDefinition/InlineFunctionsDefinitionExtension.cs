@@ -42,7 +42,7 @@ public static class InlineFunctionsDefinitionExtension
         string? functionName = null,
         string? skillName = null,
         string? description = null,
-        int maxTokens = 256,
+        int? maxTokens = null,
         double temperature = 0,
         double topP = 0,
         double presencePenalty = 0,
