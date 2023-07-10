@@ -125,9 +125,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
 
     const handleImport = (dragAndDropFiles?: FileList) => {
         const files = dragAndDropFiles ?? documentFileRef.current?.files;
+
         if (files && files.length > 0) {
             setDocumentImporting(true);
-            chat.importDocument(selectedId, files).finally(() => {
+            // Deep copy the FileList into an array so that the function
+            // maintains a list of files to import before the import is complete.
+            const filesArray = Array.from(files);
+            chat.importDocument(selectedId, filesArray).finally(() => {
                 setDocumentImporting(false);
             });
         }
@@ -222,7 +226,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         style={{ display: 'none' }}
                         accept=".txt,.pdf"
                         multiple={true}
-                        onChange={() => handleImport()}
+                        onChange={() => {
+                            handleImport();
+                        }}
                     />
                     <Button
                         disabled={documentImporting}

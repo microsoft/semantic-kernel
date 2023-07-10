@@ -225,7 +225,7 @@ export const useChat = () => {
         return [];
     };
 
-    const importDocument = async (chatId: string, files: FileList) => {
+    const importDocument = async (chatId: string, files: File[]) => {
         try {
             await documentImportService.importDocumentAsync(
                 userId,

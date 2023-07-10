@@ -8,7 +8,7 @@ export class DocumentImportService extends BaseService {
         userId: string,
         userName: string,
         chatId: string,
-        documents: FileList,
+        documents: File[],
         accessToken: string,
     ) => {
         const formData = new FormData();

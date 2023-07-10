@@ -82,7 +82,7 @@ export const ChatHistoryDocumentContent: React.FC<ChatHistoryDocumentContentProp
     return (
         <>
             {documents.map((document, index) => (
-                <div className={classes.root} key={`${message.id}-document-${index}`}>
+                <div className={classes.root} key={`${message.id ?? 'unknown-message-id'}-document-${index}`}>
                     <Card appearance="filled-alternative" className={classes.card}>
                         <CardHeader
                             className={classes.cardHeader}
