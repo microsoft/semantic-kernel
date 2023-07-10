@@ -142,9 +142,8 @@ class OpenAITextCompletion(TextCompletionClientBase):
                     and len(request_settings.stop_sequences) > 0
                     else None
                 ),
+                logit_bias=request_settings.token_selection_biases.copy()
             )
-            for key, value in request_settings.token_selection_biases.items():
-                response.token_selection_biases[key] = value
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,

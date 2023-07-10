@@ -12,9 +12,9 @@ async def chat_request_example():
     # Getting the token ids using the GPT Tokenizer: https: // platform.openai.com/tokenizer
     kernel = sk.Kernel()
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.add_chat_service(
-        "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
-    )
+    openai_chat_completion = sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
+    kernel.add_chat_service("ChatBot", openai_chat_completion)
+
     # The following text is the tokenized version of the book related tokens
     # novel literature reading author library story chapter paperback hardcover
     # ebook publishing fiction nonfiction manuscript textbook bestseller bookstore
@@ -40,22 +40,26 @@ async def chat_request_example():
         "{{$user_input}}", kernel.prompt_template_engine, prompt_config
     )
 
+    # Setting up the prompt
     prompt_template.add_system_message("You are a librarian expert")
     user_mssg = "Hi, I'm looking some suggestions"
     prompt_template.add_user_message(user_mssg)
     function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
     chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
-    answer = await kernel.run_async(chat_function, input_vars=None)
+
+    # First user message and response
+    answer = await openai_chat_completion.complete_async(user_mssg, settings)
     context_vars["chat_history"] = f"User:> {user_mssg}\nChatBot:> {answer}\n"
     context_vars["chat_bot_ans"] = str(answer)
+
+    # Second user message and response
     user_mssg = "I love history and philosophy, I'd like to learn something new about Greece, any suggestion?"
     prompt_template.add_user_message(user_mssg)
-    answer = await kernel.run_async(chat_function, input_vars=None)
+    answer = await openai_chat_completion.complete_async(user_mssg, settings)
     context_vars["chat_history"] += f"\nUser:> {user_mssg}\nChatBot:> {answer}\n"
     context_vars["chat_bot_ans"] += '\n' + str(answer)
 
     return context_vars
-
 
 async def main() -> None:
     chat = await chat_request_example()
@@ -68,12 +72,13 @@ async def main() -> None:
                     "textbook", "bestseller", "bookstore", "reading list",
                     "bookworm"]
     passed = True
+    print("------------------------")
     for word in banned_words:
         if word in chat["chat_bot_ans"]:
-            print("The banned word " + word + " was found in the answer")
+            print(f"The banned word \"{word}\" was found in the answer")
             passed = False
     if passed == True:
-        print("None of the banned words were not found in the answer")
+        print("None of the banned words were found in the answer")
 
     await text_complete_request_example()
     return
