@@ -31,7 +31,7 @@ public static class SKFunctionExtensions
     /// <param name="skFunction">Semantic function</param>
     /// <param name="maxTokens">Tokens count</param>
     /// <returns>Self instance</returns>
-    public static ISKFunction UseMaxTokens(this ISKFunction skFunction, int maxTokens)
+    public static ISKFunction UseMaxTokens(this ISKFunction skFunction, int? maxTokens)
     {
         skFunction.RequestSettings.MaxTokens = maxTokens;
         return skFunction;
