@@ -31,20 +31,20 @@ export const useGraph = () => {
         // Filter user Ids list to optimize fetch
         userIds.forEach((userId) => {
             const ids = userId.split('.');
-            const oid = ids[0];
-            const tid = ids[1];
+            const objectId = ids[0]; // Unique GUID assigned to each user in their home tenant
+            const tenantId = ids[1]; // Home tenant id
 
             // Active user can only access user data within their own tenant
             // Mark chat users outside of tenant as External
-            if (activeUserInfo && tid !== activeUserInfo.id.split('.')[1]) {
-                userData[oid] = {
-                    id: oid,
+            if (activeUserInfo && tenantId !== activeUserInfo.id.split('.')[1]) {
+                userData[objectId] = {
+                    id: objectId,
                     displayName: 'External User',
                 };
             } else {
                 // Only fetch users that haven't already been loaded
-                if (!(oid in users)) {
-                    usersToLoad.push(oid);
+                if (!(objectId in users)) {
+                    usersToLoad.push(objectId);
                 }
             }
         });

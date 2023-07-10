@@ -43,16 +43,4 @@ export class GraphService extends BaseService {
 
         return result.responses;
     };
-
-    public loadUser = async (userId: string, accessToken: string) => {
-        const result = await this.getResponseAsync<object>(
-            {
-                commandPath: this.getCommandPath(`users/${userId}`),
-                method: 'GET',
-            },
-            accessToken,
-        );
-
-        return result;
-    };
 }
