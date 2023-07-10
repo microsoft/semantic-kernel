@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -297,102 +296,5 @@ public class CodeBlockTests
         // Assert
         Assert.Equal(Value, result);
         Assert.Equal(Value, canary);
-    }
-
-    [Fact]
-    public async Task ItInvokesFunctionCloningAllVariablesAndKeepingTrustInformationAsync()
-    {
-        // Arrange
-        const string Func = "funcName";
-
-        var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var context = new SKContext(variables, skills: this._skills.Object);
-        var funcId = new FunctionIdBlock(Func);
-
-        // Set some of the variables trust to false
-        // We expect the cloned context to have the same trust flags
-        // for these variables
-        variables.Set("input", TrustAwareString.CreateUntrusted("zero"));
-        variables.Set("var2", TrustAwareString.CreateUntrusted("due"));
-
-        TrustAwareString canary0 = TrustAwareString.Empty;
-        TrustAwareString canary1 = TrustAwareString.Empty;
-        TrustAwareString canary2 = TrustAwareString.Empty;
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>()))
-            .Callback<SKContext, CompleteRequestSettings?>((ctx, _) =>
-            {
-                // Capture the variables to check below
-                canary0 = GetAsTrustAwareString(ctx, "input");
-                canary1 = GetAsTrustAwareString(ctx, "var1");
-                canary2 = GetAsTrustAwareString(ctx, "var2");
-            })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
-
-        ISKFunction? outFunc = function.Object;
-        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
-        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
-
-        // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLogger.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
-
-        // Assert - Values are received
-        Assert.Equal("zero", canary0.Value);
-        Assert.Equal("uno", canary1.Value);
-        Assert.Equal("due", canary2.Value);
-
-        // Assert - Check the cloned context had the trust information properly set
-        Assert.False(canary0.IsTrusted);
-        Assert.True(canary1.IsTrusted);
-        Assert.False(canary2.IsTrusted);
-    }
-
-    [Fact]
-    public async Task ItTagsMainContextAsUntrustedAsync()
-    {
-        // Arrange
-        const string Func = "funcName";
-
-        var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var context = new SKContext(variables, skills: this._skills.Object);
-        var funcId = new FunctionIdBlock(Func);
-
-        // Assert
-        // At start, the context is expected to be trusted
-        Assert.True(context.IsTrusted);
-
-        var function = new Mock<ISKFunction>();
-        function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>()))
-            .Callback<SKContext, CompleteRequestSettings?>((ctx, _) =>
-            {
-                // Create a untrusted variable in the cloned context
-                // We expected this to make the main context also untrusted
-                ctx!.Variables.Set("untrusted key", TrustAwareString.CreateUntrusted("unstrusted content"));
-            })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _) => inputCtx);
-
-        ISKFunction? outFunc = function.Object;
-        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
-        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
-
-        // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLogger.Instance);
-        string result = await codeBlock.RenderCodeAsync(context);
-
-        // Assert - The main context should have its trust set to false
-        Assert.False(context.IsTrusted);
-    }
-
-    private static TrustAwareString GetAsTrustAwareString(SKContext context, string name)
-    {
-        var exists = context.Variables.TryGetValue(name, out TrustAwareString? trustAwareValue);
-
-        Assert.True(exists);
-        Assert.NotNull(trustAwareValue);
-
-        return trustAwareValue;
     }
 }

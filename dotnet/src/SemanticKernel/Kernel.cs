@@ -14,7 +14,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -51,9 +50,6 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public IPromptTemplateEngine PromptTemplateEngine { get; }
 
-    /// <inheritdoc/>
-    public ITrustService? TrustServiceInstance => this._trustService;
-
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
     /// </summary>
@@ -68,15 +64,13 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="memory"></param>
     /// <param name="config"></param>
     /// <param name="log"></param>
-    /// <param name="trustService"></param>
     public Kernel(
         ISkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         KernelConfig config,
-        ILogger log,
-        ITrustService? trustService = null)
+        ILogger log)
     {
         this.Log = log;
         this.Config = config;
@@ -85,30 +79,29 @@ public sealed class Kernel : IKernel, IDisposable
         this._aiServiceProvider = aiServiceProvider;
         this._promptTemplateEngine = promptTemplateEngine;
         this._skillCollection = skillCollection;
-        this._trustService = trustService;
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig, ITrustService? trustService = null)
+    public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
     {
-        return this.RegisterSemanticFunction(SkillCollection.GlobalSkill, functionName, functionConfig, trustService);
+        return this.RegisterSemanticFunction(SkillCollection.GlobalSkill, functionName, functionConfig);
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string skillName, string functionName, SemanticFunctionConfig functionConfig, ITrustService? trustService = null)
+    public ISKFunction RegisterSemanticFunction(string skillName, string functionName, SemanticFunctionConfig functionConfig)
     {
         // Future-proofing the name not to contain special chars
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
 
-        ISKFunction function = this.CreateSemanticFunction(skillName, functionName, functionConfig, trustService);
+        ISKFunction function = this.CreateSemanticFunction(skillName, functionName, functionConfig);
         this._skillCollection.AddFunction(function);
 
         return function;
     }
 
     /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null, ITrustService? trustService = null)
+    public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null)
     {
         Verify.NotNull(skillInstance);
 
@@ -125,8 +118,6 @@ public sealed class Kernel : IKernel, IDisposable
         Dictionary<string, ISKFunction> skill = ImportSkill(
             skillInstance,
             skillName!,
-            // Use the default trust service registered if none is provided
-            trustService ?? this.TrustServiceInstance,
             this.Log
         );
         foreach (KeyValuePair<string, ISKFunction> f in skill)
@@ -141,9 +132,6 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
     {
-        // Note this does not accept the trustService, it is already defined
-        // when the custom function is created, so the kernel will not override
-
         Verify.NotNull(customFunction);
 
         customFunction.SetDefaultSkillCollection(this.Skills);
@@ -325,13 +313,11 @@ public sealed class Kernel : IKernel, IDisposable
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
-    private ITrustService? _trustService;
 
     private ISKFunction CreateSemanticFunction(
         string skillName,
         string functionName,
-        SemanticFunctionConfig functionConfig,
-        ITrustService? trustService = null)
+        SemanticFunctionConfig functionConfig)
     {
         if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
         {
@@ -344,8 +330,6 @@ public sealed class Kernel : IKernel, IDisposable
             skillName,
             functionName,
             functionConfig,
-            // Use the default trust service registered if none is provided
-            trustService ?? this.TrustServiceInstance,
             this.Log
         );
 
@@ -366,10 +350,9 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     /// <param name="skillInstance">Skill class instance</param>
     /// <param name="skillName">Skill name, used to group functions under a shared namespace</param>
-    /// <param name="trustService">Service used for trust checks</param>
     /// <param name="log">Application logger</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ITrustService? trustService, ILogger log)
+    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
     {
         MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
         log.LogTrace("Importing skill name: {0}. Potential methods found: {1}", skillName, methods.Length);
@@ -380,7 +363,7 @@ public sealed class Kernel : IKernel, IDisposable
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
-                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, trustService, log);
+                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, log);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new KernelException(
