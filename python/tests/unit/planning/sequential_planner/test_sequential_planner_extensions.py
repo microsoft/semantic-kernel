@@ -1,4 +1,3 @@
-from logging import Logger
 from unittest.mock import Mock
 
 import pytest
@@ -28,7 +27,6 @@ async def _async_generator(query_result):
 async def test_can_call_get_available_functions_with_no_functions_async():
     variables = ContextVariables()
     skills = SkillCollection()
-    logger = Logger("")
 
     memory = Mock(spec=SemanticTextMemoryBase)
     memory_query_result = MemoryQueryResult(
@@ -46,7 +44,7 @@ async def test_can_call_get_available_functions_with_no_functions_async():
     memory.search_async.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = SKContext(variables, memory, skills.read_only_skill_collection, logger)
+    context = SKContext(variables, memory, skills.read_only_skill_collection, Mock())
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
@@ -63,7 +61,6 @@ async def test_can_call_get_available_functions_with_no_functions_async():
 @pytest.mark.asyncio
 async def test_can_call_get_available_functions_with_functions_async():
     variables = ContextVariables()
-    logger = Logger("")
 
     function_mock = Mock(spec=SKFunctionBase)
     functions_view = FunctionsView()
@@ -108,7 +105,7 @@ async def test_can_call_get_available_functions_with_functions_async():
     memory.search_async.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = SKContext(variables, memory, skills, logger)
+    context = SKContext(variables, memory, skills, Mock())
     config = SequentialPlannerConfig()
     semantic_query = "test"
 
@@ -141,7 +138,6 @@ async def test_can_call_get_available_functions_with_functions_async():
 async def test_can_call_get_available_functions_with_functions_and_relevancy_async():
     # Arrange
     variables = ContextVariables()
-    logger = Logger("")
 
     # Arrange FunctionView
     function_mock = Mock(spec=SKFunctionBase)
@@ -187,7 +183,7 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
     skills.read_only_skill_collection = skills
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = SKContext(variables, memory, skills, logger)
+    context = SKContext(variables, memory, skills, Mock())
     config = SequentialPlannerConfig(relevancy_threshold=0.78)
     semantic_query = "test"
 
@@ -221,7 +217,6 @@ async def test_can_call_get_available_functions_with_functions_and_relevancy_asy
 async def test_can_call_get_available_functions_async_with_default_relevancy_async():
     # Arrange
     variables = ContextVariables()
-    logger = Logger("")
     skills = SkillCollection()
 
     # Arrange Mock Memory and Result
@@ -240,7 +235,7 @@ async def test_can_call_get_available_functions_async_with_default_relevancy_asy
     memory.search_async.return_value = async_enumerable
 
     # Arrange GetAvailableFunctionsAsync parameters
-    context = SKContext(variables, memory, skills, logger)
+    context = SKContext(variables, memory, skills, Mock())
     config = SequentialPlannerConfig(relevancy_threshold=0.78)
     semantic_query = "test"
 
