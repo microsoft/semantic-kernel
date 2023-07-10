@@ -477,4 +477,5 @@ playwright-report/
 # Static Web App deployment config
 swa-cli.config.json
 **/copilot-chat-app/webapp/build
-/samples/apps/copilot-chat-app/webapi/data/eng.traineddata
+**/copilot-chat-app/webapp/node_modules
+**/copilot-chat-app/webapi/data/eng.traineddata

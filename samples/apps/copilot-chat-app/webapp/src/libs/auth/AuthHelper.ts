@@ -5,7 +5,7 @@ import {
     EndSessionRequest,
     IPublicClientApplication,
     InteractionStatus,
-    LogLevel
+    LogLevel,
 } from '@azure/msal-browser';
 import debug from 'debug';
 import { Constants } from '../../Constants';
@@ -54,7 +54,10 @@ const logoutRequest: EndSessionRequest = {
 };
 
 const ssoSilentRequest = async (msalInstance: IPublicClientApplication) => {
-    await msalInstance.ssoSilent({ account: msalInstance.getActiveAccount() || undefined, scopes: Constants.msal.semanticKernelScopes });
+    await msalInstance.ssoSilent({
+        account: msalInstance.getActiveAccount() ?? undefined,
+        scopes: Constants.msal.semanticKernelScopes,
+    });
 };
 
 const loginAsync = async (instance: IPublicClientApplication) => {
@@ -65,7 +68,7 @@ const loginAsync = async (instance: IPublicClientApplication) => {
     }
 };
 
-const logoutAsync = async (instance: IPublicClientApplication) => {
+const logoutAsync = (instance: IPublicClientApplication) => {
     if (Constants.msal.method === 'popup') {
         void instance.logoutPopup(logoutRequest);
     }

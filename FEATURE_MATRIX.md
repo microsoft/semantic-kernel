@@ -39,21 +39,21 @@
 |-----------------------------------|:---:|:------:|:----:|-------|
 | TextMemory Skill                  | ✅  | ✅     | 🔄   |       |
 | ConversationSummary Skill         | ✅  | ✅     | ❌   |       |
-| FileIO Skill                      | ✅  | ✅     | ❌   |       |
-| Http Skill                        | ✅  | ✅     | ❌   |       |
-| Math Skill                        | ✅  | ✅     | ❌   |       |
+| FileIO Skill                      | ✅  | ✅     | ✅   |       |
+| Http Skill                        | ✅  | ✅     | ✅   |       |
+| Math Skill                        | ✅  | ✅     | ✅   |       |
 | Text Skill                        | ✅  | ✅     | 🔄   |       |
-| Time Skill                        | ✅  | ✅     | 🔄   |       |
-| Wait Skill                        | ✅  | ❌     | ❌   |       |
+| Time Skill                        | ✅  | ✅     | ✅   |       |
+| Wait Skill                        | ✅  | ❌     | ✅   |       |
 
 ## Planning
 
 |                                   | C#  | Python | Java | Notes |
 |-----------------------------------|:---:|:------:|:----:|-------|
-| Plan                              | ✅  | 🔄     | ❌   | Plan object model to be completed |
-| BasicPlanner                      | ❌  | ✅     | ❌   |                                   |
-| ActionPlanner                     | ✅  | ❌     | ❌   |                                   |
-| SequentialPlanner                 | ✅  | ❌     | ❌   |                                   |
+| Plan                              | ✅  | 🔄     |  ❌   | Plan object model to be completed |
+| BasicPlanner                      | ❌  | ✅     |  ❌   |                                   |
+| ActionPlanner                     | ✅  | ❌     |  🔄   |                                   |
+| SequentialPlanner                 | ✅  | ❌     |  🔄   |                                   |
 
 ## Memory Connectors, Vector storage
 
