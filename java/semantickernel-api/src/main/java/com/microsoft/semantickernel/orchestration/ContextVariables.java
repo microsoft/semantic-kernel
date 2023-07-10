@@ -5,7 +5,6 @@ package com.microsoft.semantickernel.orchestration;
 
 import java.util.Map;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
 /**
@@ -14,18 +13,39 @@ import javax.annotation.Nullable;
  */
 public interface ContextVariables {
 
+    /** Default key for the main input */
     String MAIN_KEY = "input";
 
+    /**
+     * Get variables as a map
+     *
+     * @return Map of variables
+     */
     Map<String, String> asMap();
 
-    @CheckReturnValue
+    /**
+     * Get a clone of the variables that can be modified
+     *
+     * @return Writable clone of the variables
+     */
     WritableContextVariables writableClone();
 
+    /**
+     * Get the input (entry in the MAIN_KEY slot)
+     *
+     * @return input
+     */
     @Nullable
     String getInput();
 
+    /**
+     * Create formatted string of the variables
+     *
+     * @return formatted string
+     */
     String prettyPrint();
 
+    /** Builder for ContextVariables */
     interface Builder {
         ContextVariables build();
 

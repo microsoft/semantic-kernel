@@ -1,6 +1,7 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
+import com.microsoft.semantickernel.syntaxexamples.SampleSkillsUtil;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class Example02_RunnningPromptsFromFile {
      */
     public static CompletionSKFunction getJokeFunction(Kernel kernel) {
         ReadOnlyFunctionCollection skill = kernel
-                .importSkillFromDirectory("FunSkill", "samples/skills", "FunSkill");
+                .importSkillFromDirectory("FunSkill", SampleSkillsUtil.detectSkillDirLocation(), "FunSkill");
 
         return skill.getFunction("Joke", CompletionSKFunction.class);
     }

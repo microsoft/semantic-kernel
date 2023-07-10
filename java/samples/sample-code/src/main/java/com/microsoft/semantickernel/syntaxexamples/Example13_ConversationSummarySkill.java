@@ -127,16 +127,16 @@ public class Example13_ConversationSummarySkill {
                     """.stripIndent();
 
     public static void main(String[] args) throws IOException {
-        Config.ClientType clientType = Config.ClientType.AZURE_OPEN_AI;
+        OpenAIAsyncClient client = Config.getClient();
 
-        conversationSummarySkillAsync(clientType);
-        getConversationActionItemsAsync(clientType);
-        getConversationTopicsAsync(clientType);
+        conversationSummarySkillAsync(client);
+        getConversationActionItemsAsync(client);
+        getConversationTopicsAsync(client);
     }
 
-    private static void conversationSummarySkillAsync(Config.ClientType clientType) throws IOException {
+    private static void conversationSummarySkillAsync(OpenAIAsyncClient client) {
         System.out.println("======== SampleSkills - Conversation Summary Skill - Summarize ========");
-        Kernel kernel = initializeKernel(clientType);
+        Kernel kernel = initializeKernel(client);
 
         ReadOnlyFunctionCollection conversationSummarySkill =
                 kernel.importSkill(new ConversationSummarySkill(kernel), null);
@@ -150,9 +150,9 @@ public class Example13_ConversationSummarySkill {
     }
 
 
-    private static void getConversationActionItemsAsync(Config.ClientType clientType) throws IOException {
+    private static void getConversationActionItemsAsync(OpenAIAsyncClient client) {
         System.out.println("======== SampleSkills - Conversation Summary Skill - Action Items ========");
-        Kernel kernel = initializeKernel(clientType);
+        Kernel kernel = initializeKernel(client);
 
         ReadOnlyFunctionCollection conversationSummarySkill =
                 kernel.importSkill(new ConversationSummarySkill(kernel), null);
@@ -165,8 +165,8 @@ public class Example13_ConversationSummarySkill {
         System.out.println(summary.block().getResult());
     }
 
-    private static void getConversationTopicsAsync(Config.ClientType clientType) throws IOException {
-        Kernel kernel = initializeKernel(clientType);
+    private static void getConversationTopicsAsync(OpenAIAsyncClient client) {
+        Kernel kernel = initializeKernel(client);
 
         ReadOnlyFunctionCollection conversationSummarySkill =
                 kernel.importSkill(new ConversationSummarySkill(kernel), null);
@@ -179,9 +179,7 @@ public class Example13_ConversationSummarySkill {
         System.out.println(summary.block().getResult());
     }
 
-    private static Kernel initializeKernel(Config.ClientType clientType) throws IOException {
-        OpenAIAsyncClient client = clientType.getClient();
-
+    private static Kernel initializeKernel(OpenAIAsyncClient client) {
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
         KernelConfig kernelConfig =

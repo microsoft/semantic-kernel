@@ -58,4 +58,25 @@ public class OpenAISettings extends ClientSettings<OpenAISettings> {
                         path, Property.OPEN_AI_ORGANIZATION_ID.label(), clientSettingsId);
         return this;
     }
+
+    @Override
+    public boolean isValid() {
+        return key != null && organizationId != null;
+    }
+
+    @Override
+    public OpenAISettings fromSystemProperties() {
+        return fromSystemProperties(DEFAULT_CLIENT_ID);
+    }
+
+    @Override
+    public OpenAISettings fromSystemProperties(String clientSettingsId) {
+        this.key =
+                getSettingsValueFromSystemProperties(
+                        Property.OPEN_AI_KEY.label(), clientSettingsId);
+        this.organizationId =
+                getSettingsValueFromSystemProperties(
+                        Property.OPEN_AI_ORGANIZATION_ID.label(), clientSettingsId);
+        return this;
+    }
 }

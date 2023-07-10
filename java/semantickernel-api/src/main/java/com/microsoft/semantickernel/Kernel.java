@@ -63,18 +63,21 @@ public interface Kernel extends SkillExecutor {
      */
     Mono<SKContext> runAsync(ContextVariables variables, SKFunction<?>... pipeline);
 
+    /**
+     * Get a completion function builder, functions created with this builder will be registered on
+     * the kernel
+     */
     CompletionSKFunction.Builder getSemanticFunctionBuilder();
 
     /** Obtains the service with the given name and type */
     <T> T getService(@Nullable String name, Class<T> clazz) throws KernelException;
 
-    /** Registers a semantic functon on this kernel */
+    /** Registers a semantic function on this kernel */
     <RequestConfiguration, FunctionType extends SKFunction<RequestConfiguration>>
             FunctionType registerSemanticFunction(FunctionType semanticFunctionDefinition);
 
+    /** Obtains a semantic function with the given name */
     SKFunction getFunction(String skill, String function);
-
-    // <T extends ReadOnlySKContext<T>> T createNewContext();
 
     class Builder {
         @Nullable private KernelConfig kernelConfig = null;
@@ -82,26 +85,55 @@ public interface Kernel extends SkillExecutor {
         @Nullable private MemoryStore memoryStore = null;
         @Nullable private SemanticTextMemory memory = null;
 
+        /**
+         * Set the kernel configuration
+         *
+         * @param kernelConfig Kernel configuration
+         * @return Builder
+         */
         public Builder setKernelConfig(KernelConfig kernelConfig) {
             this.kernelConfig = kernelConfig;
             return this;
         }
 
+        /**
+         * Set the prompt template engine
+         *
+         * @param promptTemplateEngine Prompt template engine
+         * @return Builder
+         */
         public Builder setPromptTemplateEngine(PromptTemplateEngine promptTemplateEngine) {
             this.promptTemplateEngine = promptTemplateEngine;
             return this;
         }
 
+        /**
+         * Set the memory store
+         *
+         * @param memoryStore Memory store
+         * @return Builder
+         */
         public Builder withMemoryStore(MemoryStore memoryStore) {
             this.memoryStore = memoryStore;
             return this;
         }
 
+        /**
+         * Set the memory
+         *
+         * @param memory Memory
+         * @return Builder
+         */
         public Builder withMemory(SemanticTextMemory memory) {
             this.memory = memory;
             return this;
         }
 
+        /**
+         * Build the kernel
+         *
+         * @return Kernel
+         */
         public Kernel build() {
             if (kernelConfig == null) {
                 throw new IllegalStateException("Must provide a kernel configuration");

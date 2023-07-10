@@ -242,6 +242,8 @@
                     <configuration>
                         <!-- TODO: Tighten this up when we go GA -->
                         <failOnError>false</failOnError>
+                        <nohelp>true</nohelp>
+                        <show>public</show>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -424,10 +426,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
             <plugin>
@@ -595,6 +593,9 @@
                 <maven.compiler.source>17</maven.compiler.source>
                 <maven.compiler.target>17</maven.compiler.target>
             </properties>
+            <modules>
+                <module>samples</module>
+            </modules>
         </profile>
         <profile>
             <id>bug-check</id>

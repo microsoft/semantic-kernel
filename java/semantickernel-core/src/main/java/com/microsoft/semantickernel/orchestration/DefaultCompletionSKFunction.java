@@ -46,7 +46,6 @@ public class DefaultCompletionSKFunction
     @Nullable private DefaultTextCompletionSupplier aiService;
 
     public DefaultCompletionSKFunction(
-            DelegateTypes delegateTypes,
             List<ParameterView> parameters,
             String skillName,
             String functionName,
@@ -54,13 +53,7 @@ public class DefaultCompletionSKFunction
             CompletionRequestSettings requestSettings,
             SemanticFunctionConfig functionConfig,
             @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
-        super(
-                delegateTypes,
-                parameters,
-                skillName,
-                functionName,
-                description,
-                kernelSkillsSupplier);
+        super(parameters, skillName, functionName, description, kernelSkillsSupplier);
         // TODO
         // Verify.NotNull(delegateFunction, "The function delegate is empty");
         // Verify.ValidSkillName(skillName);
@@ -103,6 +96,14 @@ public class DefaultCompletionSKFunction
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     */
+
+    private SKContext buildContext() {
+        assertSkillSupplierRegistered();
+        return SKBuilders.context()
+                .with(SKBuilders.variables().build())
+                .with(getSkillsSupplier() == null ? null : getSkillsSupplier().get())
+                .build();
+    }
 
     /**
      * Method to aggregate partitioned results of a semantic function
@@ -306,7 +307,6 @@ public class DefaultCompletionSKFunction
         PromptTemplate promptTemplate = functionConfig.getTemplate();
 
         return new DefaultCompletionSKFunction(
-                DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
                 promptTemplate.getParameters(),
                 skillName,
                 functionName,
