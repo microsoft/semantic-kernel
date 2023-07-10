@@ -20,14 +20,14 @@ pytestmark = pytest.mark.skipif(
     not pinecone_installed, reason="pinecone is not installed"
 )
 
-async def retry(func, retries=20):
+async def retry(func, retries=5):
     for i in range(retries):
         try:
-            return await (func)
+            return await (func())
         except pinecone.core.client.exceptions.ForbiddenException as e:
             print(e)
             time.sleep(i * 2)
-        except pinecone.core.client.exceptions.ForbiddenException as e:
+        except pinecone.core.client.exceptions.ServiceException as e:
             print(e)
             time.sleep(i * 2)
 
