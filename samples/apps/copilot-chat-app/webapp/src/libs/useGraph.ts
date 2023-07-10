@@ -49,6 +49,7 @@ export const useGraph = () => {
                     }
                 }
             });
+
             if (usersToLoad.length > 0) {
                 await makeBatchGetUsersRequest(usersToLoad, loadedUsers, usersToRetry);
 
