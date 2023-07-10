@@ -1,3 +1,4 @@
+import os
 from typing import TYPE_CHECKING
 
 from semantic_kernel.kernel import Kernel
@@ -25,10 +26,16 @@ SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
     + "fulfill the request using functions. This ability is also known as decision making and function flow"
 )
 
+CUR_DIR = os.path.dirname(os.path.realpath(__file__))
+PROMPT_CONFIG_FILE_PATH = os.path.join(CUR_DIR, "Skills/SequentialPlanning/config.json")
+PROMPT_TEMPLATE_FILE_PATH = os.path.join(
+    CUR_DIR, "Skills/SequentialPlanning/skprompt.txt"
+)
 
-def read_prompt_file(prompt_path: str) -> str:
-    with open(prompt_path, "r") as prompt_file:
-        return prompt_file.read()
+
+def read_file(file_path: str) -> str:
+    with open(file_path, "r") as file:
+        return file.read()
 
 
 class SequentialPlanner:
@@ -44,7 +51,7 @@ class SequentialPlanner:
         assert isinstance(kernel, Kernel)
         self.config = config or SequentialPlannerConfig()
 
-        self.config.excluded_skills.add(self.RESTRICTED_SKILL_NAME)
+        self.config.excluded_skills.append(self.RESTRICTED_SKILL_NAME)
 
         self._function_flow_function = self._init_flow_function(prompt, kernel)
 
@@ -52,11 +59,9 @@ class SequentialPlanner:
 
     def _init_flow_function(self, prompt: str, kernel: Kernel):
         prompt_config = PromptTemplateConfig.from_json(
-            "Skills.SequentialPlanning.config.json"
+            read_file(PROMPT_CONFIG_FILE_PATH)
         )
-        prompt_template = prompt or read_prompt_file(
-            "Skills.SequentialPlanning.skprompt.txt"
-        )
+        prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
         prompt_config.completion.max_tokens = self.config.max_tokens
 
         prompt_template = PromptTemplate(
