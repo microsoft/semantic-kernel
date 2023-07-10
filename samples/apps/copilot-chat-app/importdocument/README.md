@@ -45,9 +45,9 @@ Importing documents enables Copilot Chat to have up-to-date knowledge of specifi
 
    Importing may take some time to generate embeddings for each piece/chunk of a document.
 
-   To import multiple files, specify multiple `--files` options. For example:
+   To import multiple files, specify multiple files. For example:
 
-   `dotnet run --files .\sample-docs\ms10k.txt --files .\sample-docs\Microsoft-Responsible-AI-Standard-v2-General-Requirements.pdf`
+   `dotnet run --files .\sample-docs\ms10k.txt .\sample-docs\Microsoft-Responsible-AI-Standard-v2-General-Requirements.pdf`
 
 5. Chat with the bot.
 

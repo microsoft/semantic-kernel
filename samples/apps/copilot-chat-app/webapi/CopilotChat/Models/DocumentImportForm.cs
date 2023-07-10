@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 
 namespace SemanticKernel.Service.CopilotChat.Models;
@@ -23,7 +24,7 @@ public class DocumentImportForm
     /// <summary>
     /// The file to import.
     /// </summary>
-    public IEnumerable<IFormFile> FormFiles { get; set; } = new List<IFormFile>();
+    public IEnumerable<IFormFile> FormFiles { get; set; } = Enumerable.Empty<IFormFile>();
 
     /// <summary>
     /// Scope of the document. This determines the collection name in the document memory.

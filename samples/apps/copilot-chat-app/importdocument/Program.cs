@@ -26,9 +26,10 @@ public static class Program
             return;
         }
 
-        var filesOption = new Option<List<FileInfo>>(name: "--files", description: "The files to import to document memory store.")
+        var filesOption = new Option<IEnumerable<FileInfo>>(name: "--files", description: "The files to import to document memory store.")
         {
-            IsRequired = true
+            IsRequired = true,
+            AllowMultipleArgumentsPerToken = true,
         };
 
         var chatCollectionOption = new Option<Guid>(
@@ -101,7 +102,7 @@ public static class Program
     /// <param name="files">A list of files to import.</param>
     /// <param name="config">Configuration.</param>
     /// <param name="chatCollectionId">Save the extracted context to an isolated chat collection.</param>
-    private static async Task ImportFilesAsync(List<FileInfo> files, Config config, Guid chatCollectionId)
+    private static async Task ImportFilesAsync(IEnumerable<FileInfo> files, Config config, Guid chatCollectionId)
     {
         foreach (var file in files)
         {
@@ -126,7 +127,7 @@ public static class Program
         List<StreamContent> filesContent = files.Select(file => new StreamContent(file.OpenRead())).ToList();
         for (int i = 0; i < filesContent.Count; i++)
         {
-            formContent.Add(filesContent[i], "formFiles", files[i].Name);
+            formContent.Add(filesContent[i], "formFiles", files.ElementAt(i).Name);
         }
 
         var userId = userAccount!.HomeAccountId.Identifier;

@@ -16,7 +16,7 @@ public class DocumentMessageContent
     /// List of documents contained in the message.
     /// </summary>
     [JsonPropertyName("documents")]
-    public IEnumerable<DocumentData> Documents { get; private set; } = new List<DocumentData>();
+    public IEnumerable<DocumentData> Documents { get; private set; } = Enumerable.Empty<DocumentData>();
 
     /// <summary>
     /// Add a document to the list of documents.
