@@ -23,7 +23,7 @@ pytestmark = pytest.mark.skipif(
 async def retry(func, retries=20):
     for i in range(retries):
         try:
-            return func
+            return await (func)
         except pinecone.core.client.exceptions.ForbiddenException as e:
             print(e)
             time.sleep(i * 2)
