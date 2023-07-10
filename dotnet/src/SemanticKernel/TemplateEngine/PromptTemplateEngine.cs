@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -66,23 +65,16 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     public async Task<string> RenderAsync(IList<Block> blocks, SKContext context)
     {
         this._log.LogTrace("Rendering list of {0} blocks", blocks.Count);
-
-        var result = new StringBuilder();
         var tasks = new List<Task<string>>();
-        var guids = new List<Guid>();
-
         foreach (var block in blocks)
         {
             switch (block)
             {
                 case ITextRendering staticBlock:
-                    result.Append(staticBlock.Render(context.Variables));
+                    tasks.Add(Task.FromResult<string>(staticBlock.Render(context.Variables)));
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    var guid = Guid.NewGuid();
-                    result.Append(guid);
-                    guids.Add(guid);
                     tasks.Add(dynamicBlock.RenderCodeAsync(context));
                     break;
 
@@ -93,10 +85,10 @@ public class PromptTemplateEngine : IPromptTemplateEngine
             }
         }
 
-        var codeBlocks = await Task.WhenAll(tasks).ConfigureAwait(false);
-        for (var i = 0; i < guids.Count; i++)
+        var result = new StringBuilder();
+        foreach (Task<string> t in tasks)
         {
-            result.Replace(guids[i].ToString(), codeBlocks[i]);
+            result.Append(await t.ConfigureAwait(false));
         }
 
         // TODO: remove PII, allow tracing prompts differently
@@ -120,20 +112,19 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     {
         this._log.LogTrace("Rendering code");
 
-        var result = new List<Block?>();
-        List<Task<string>> tasks = new();
-        List<int> indexes = new();
+        var result = new Block[blocks.Count];
+        var tasks = new List<Task<string>>();
+        var indexes = new List<int>();
 
         for (var i = 0; i < blocks.Count; i++)
         {
             var block = blocks[i];
             if (block.Type != BlockTypes.Code)
             {
-                result.Add(block);
+                result[i] = block;
             }
             else
             {
-                result.Add(null);
                 indexes.Add(i);
                 tasks.Add(((ICodeRendering)block).RenderCodeAsync(executionContext));
             }
@@ -145,6 +136,6 @@ public class PromptTemplateEngine : IPromptTemplateEngine
             result[indexes[i]] = new TextBlock(codeBlocks[i], this._log);
         }
 
-        return (IList<Block>)result;
+        return result.ToList();
     }
 }
