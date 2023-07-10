@@ -108,7 +108,7 @@ public class InlineFunctionWithPreBuiltSkillExample {
                         .addTextCompletionService(MODEL, kernel -> textCompletion)
                         .build();
 
-        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
 
         CompletionSKFunction summarize =
                 SKBuilders.completionFunctions(kernel)

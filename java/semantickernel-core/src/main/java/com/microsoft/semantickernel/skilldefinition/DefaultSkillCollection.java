@@ -124,7 +124,7 @@ public class DefaultSkillCollection implements ReadOnlySkillCollection {
         return addSemanticFunction(functionInstance);
     }
 
-    public DefaultSkillCollection merge(DefaultSkillCollection in) {
+    public DefaultSkillCollection merge(ReadOnlySkillCollection in) {
         in.asMap()
                 .entrySet()
                 .forEach(

@@ -186,9 +186,10 @@ public class Example13_ConversationSummarySkill {
 
         KernelConfig kernelConfig =
                 new KernelConfig.Builder()
-                        .addTextCompletionService("text-davinci-003", kernel -> textCompletion)
                         .build();
 
-        return SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+        return SKBuilders.kernel()
+                .withKernelConfig(kernelConfig)
+                .withAIService("text-davinci-003", textCompletion, true, TextCompletion.class).build();
     }
 }

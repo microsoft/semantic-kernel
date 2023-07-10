@@ -16,7 +16,7 @@ public class Example06_MemoryAndEmbeddings {
     // TODO: Add Volatile memory
 
     Kernel kernel = SKBuilders.kernel()
-        .setKernelConfig(config)
+        .withKernelConfig(config)
         .build();
 
     return kernel;

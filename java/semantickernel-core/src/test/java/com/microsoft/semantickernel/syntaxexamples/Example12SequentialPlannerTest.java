@@ -80,7 +80,7 @@ public class Example12SequentialPlannerTest {
     private static Kernel getKernel(OpenAIAsyncClient client) {
         Kernel kernel =
                 SKBuilders.kernel()
-                        .setKernelConfig(
+                        .withKernelConfig(
                                 SKBuilders.kernelConfig()
                                         .addTextCompletionService(
                                                 "text-davinci-002",
