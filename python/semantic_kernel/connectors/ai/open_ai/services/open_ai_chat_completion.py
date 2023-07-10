@@ -208,10 +208,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 max_tokens=request_settings.max_tokens,
                 n=request_settings.number_of_responses,
                 stream=stream,
+                logit_bias=request_settings.token_selection_biases.copy()
             )
-            for key, value in request_settings.token_selection_biases.items():
-                response.token_selection_biases[key]=value
-                
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
