@@ -25,31 +25,30 @@ export const useGraph = () => {
         const loadedUsers: UserData[] = [];
         const usersToRetry: string[] = [];
 
-        // Copy current state of user data
-        const userData = { ...users };
-
-        // Filter user Ids list to optimize fetch
-        userIds.forEach((userId) => {
-            const ids = userId.split('.');
-            const objectId = ids[0]; // Unique GUID assigned to each user in their home tenant
-            const tenantId = ids[1]; // Home tenant id
-
-            // Active user can only access user data within their own tenant
-            // Mark chat users outside of tenant as External
-            if (activeUserInfo && tenantId !== activeUserInfo.id.split('.')[1]) {
-                userData[objectId] = {
-                    id: objectId,
-                    displayName: 'External User',
-                };
-            } else {
-                // Only fetch users that haven't already been loaded
-                if (!(objectId in users)) {
-                    usersToLoad.push(objectId);
-                }
-            }
-        });
-
         try {
+            // Copy current state of user data
+            const userData = { ...users };
+
+            // Filter user Ids list to optimize fetch
+            userIds.forEach((userId) => {
+                const ids = userId.split('.');
+                const objectId = ids[0]; // Unique GUID assigned to each user in their home tenant
+                const tenantId = ids[1]; // Home tenant id
+
+                // Active user can only access user data within their own tenant
+                // Mark chat users outside of tenant as External
+                if (activeUserInfo && tenantId !== activeUserInfo.id.split('.')[1]) {
+                    userData[objectId] = {
+                        id: objectId,
+                        displayName: 'External User',
+                    };
+                } else {
+                    // Only fetch users that haven't already been loaded
+                    if (!(objectId in users)) {
+                        usersToLoad.push(objectId);
+                    }
+                }
+            });
             if (usersToLoad.length > 0) {
                 await makeBatchGetUsersRequest(usersToLoad, loadedUsers, usersToRetry);
 
