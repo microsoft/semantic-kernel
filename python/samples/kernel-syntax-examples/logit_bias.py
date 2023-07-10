@@ -80,6 +80,15 @@ async def main() -> None:
             passed = False
     if passed == True:
         print("None of the banned words were found in the answer")
+    banned_words = ["apple", " apple", "Apple", " Apple", "pumpkin", " pumpkin",
+                    " Pumpkin", "pecan", " pecan", " Pecan", "Pecan"]
+    passed = True
+    for word in banned_words:
+        if word in chat["chat_bot_ans"]:
+            print(f"The banned word \"{word}\" was found in the answer")
+            passed = False
+    if passed == True:
+        print("None of the banned words were found in the answer")
     print("\n", "Text completion example:")
     print("------------------------")
     await text_complete_request_example()
@@ -93,8 +102,11 @@ async def text_complete_request_example():
     openai_text_completion = sk_oai.OpenAITextCompletion("text-davinci-002", api_key, org_id)
     kernel.add_text_completion_service("dv", openai_text_completion)
 
-    # apple chocolate pecan pumpkin
-    keys = [18040, 354, 9140, 431, 5171, 79, 931, 5116]
+    # spaces and capitalization affect the token ids.
+    # "apple", " apple", "Apple", " Apple", "pumpkin", " pumpkin", " Pumpkin",
+    # "pecan", " pecan", " Pecan", "Pecan"
+    keys = [18040, 17180, 16108, 4196, 79, 931, 5116, 30089, 36724, 47, 931, 5116,
+            431, 5171, 613, 5171, 350, 721, 272, 47, 721, 272]
 
     # This will make the model try its best to avoid any of the above related words.
     settings = CompleteRequestSettings()
