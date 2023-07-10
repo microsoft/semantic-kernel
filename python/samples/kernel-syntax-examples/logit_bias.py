@@ -4,6 +4,7 @@ from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSetti
 import semantic_kernel as sk
 import asyncio
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+import os
 
 
 async def chat_request_example():
@@ -60,6 +61,7 @@ async def chat_request_example():
 
     return context_vars
 
+
 async def chat_request_example_2():
     # To use Logit Bias you will need to know the token ids of the words you want to use.
     # Getting the token ids using the GPT Tokenizer: https: // platform.openai.com/tokenizer
@@ -106,7 +108,7 @@ async def chat_request_example_2():
 
 async def main() -> None:
     chat = await chat_request_example()
-    print("Chat content:")
+    print("Chat completion example:")
     print("------------------------")
     print(chat["chat_history"])
     banned_words = ["novel", "literature", "reading", "author", "library",
@@ -123,7 +125,7 @@ async def main() -> None:
             passed = False
     if passed == True:
         print("None of the banned words were found in the answer")
-
+    
     chat = await chat_request_example_2()
     print("Chat content:")
     print("------------------------")
@@ -138,6 +140,63 @@ async def main() -> None:
             passed = False
     if passed == True:
         print("None of the banned words were found in the answer")    
+    
+    print("\n", "Text completion example:")
+    print("------------------------")
+    await text_complete_request_example()
+    print("------------------------")    
+    print("\n", "Text completion example:")
+    print("------------------------")
+    await text_complete_request_example()
+    print("------------------------")
+    return
+
+
+async def text_complete_request_example():
+    kernel = sk.Kernel()
+    api_key, org_id = sk.openai_settings_from_dot_env()
+    openai_text_completion = sk_oai.OpenAITextCompletion("text-davinci-002", api_key, org_id)
+    kernel.add_text_completion_service("dv", openai_text_completion)
+
+    # apple chocolate pecan pumpkin
+    keys = [18040, 354, 9140, 431, 5171, 79, 931, 5116]
+
+    # This will make the model try its best to avoid any of the above related words.
+    settings = CompleteRequestSettings()
+
+    # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
+    for key in keys:
+        # -100 to potentially ban all the tokens from the list.
+        settings.token_selection_biases[key] = -100
+
+    user_mssg = "The best pie flavor to have in autumn is"
+    answer = await openai_text_completion.complete_async(user_mssg, settings)
+    print(answer)
+    return
+
+
+async def text_complete_request_example():
+    kernel = sk.Kernel()
+    api_key, org_id = sk.openai_settings_from_dot_env()
+    openai_text_completion = sk_oai.OpenAITextCompletion("text-davinci-002", api_key, org_id)
+    kernel.add_text_completion_service("dv", openai_text_completion)
+
+    # apple chocolate pecan pumpkin
+    keys = [18040, 354, 9140, 431, 5171, 79, 931, 5116]
+
+    # This will make the model try its best to avoid any of the above related words.
+    settings = CompleteRequestSettings()
+
+    # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
+    for key in keys:
+        # -100 to potentially ban all the tokens from the list.
+        settings.token_selection_biases[key] = -100
+
+    user_mssg = "The best pie flavor to have in autumn is"
+    answer = await openai_text_completion.complete_async(user_mssg, settings)
+    print(answer)
+    return
+
 
 
 if __name__ == "__main__":
