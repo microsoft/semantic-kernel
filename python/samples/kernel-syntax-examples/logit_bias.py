@@ -91,18 +91,10 @@ async def text_complete_request_example():
     kernel = sk.Kernel()
     api_key, org_id = sk.openai_settings_from_dot_env()
     openai_text_completion = sk_oai.OpenAITextCompletion("text-davinci-002", api_key, org_id)
+    kernel.add_text_completion_service("dv", openai_text_completion)
 
-    kernel.add_text_completion_service(
-        "dv", sk_oai.OpenAITextCompletion("text-davinci-002", api_key, org_id)
-    )
-    """
-    kernel.add_text_embedding_generation_service(
-        "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
-    )
-    """
-    # "apple banana blueberry cherry chocolate coconut key lime lemon meringue pecan pumpkin raspberry strawberry vanilla"
-    keys = [18040, 25996, 4171, 8396, 23612, 11311, 20132, 1994, 28738,
-            18873, 285, 1586, 518, 613, 5171, 30089, 38973, 41236, 16858]
+    # apple chocolate pecan pumpkin
+    keys = [18040, 354, 9140, 431, 5171, 79, 931, 5116]
 
     # This will make the model try its best to avoid any of the above related words.
     settings = CompleteRequestSettings()
