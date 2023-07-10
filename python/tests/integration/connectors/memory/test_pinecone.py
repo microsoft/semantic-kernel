@@ -113,7 +113,7 @@ async def test_get_collections_async(get_pinecone_config):
     memory = PineconeMemoryStore(api_key, environment, 2)
 
     await retry(lambda: memory.create_collection_async("test-collection", 2))
-    result = retry(lambda: await memory.get_collections_async())
+    result = await retry(lambda: memory.get_collections_async())
     assert "test-collection" in result
 
 
@@ -124,7 +124,7 @@ async def test_delete_collection_async(get_pinecone_config):
 
     await retry(lambda: memory.create_collection_async("test-collection"))
     await retry(lambda: memory.delete_collection_async("test-collection"))
-    result = retry(lambda: await memory.get_collections_async())
+    result = await retry(lambda: memory.get_collections_async())
     assert "test-collection" not in result
 
 
@@ -134,7 +134,7 @@ async def test_does_collection_exist_async(get_pinecone_config):
     memory = PineconeMemoryStore(api_key, environment, 2)
 
     await retry(lambda: memory.create_collection_async("test-collection"))
-    result = retry(lambda: await memory.does_collection_exist_async("test-collection"))
+    result = await retry(lambda: memory.does_collection_exist_async("test-collection"))
     assert result is True
 
 
@@ -230,7 +230,7 @@ async def test_get_nearest_match_async(
     test_embedding = memory_record1.embedding
     test_embedding[0] = test_embedding[0] + 0.01
 
-    result = retry(lambda: await memory.get_nearest_match_async(
+    result = await retry(lambda: memory.get_nearest_match_async(
         "test-collection", test_embedding, min_relevance_score=0.0, with_embedding=True
     ))
 
@@ -253,7 +253,7 @@ async def test_get_nearest_matches_async(
     test_embedding = memory_record2.embedding
     test_embedding[0] = test_embedding[0] + 0.025
 
-    result = retry(lambda: await memory.get_nearest_matches_async(
+    result = await retry(lambda: memory.get_nearest_matches_async(
         "test-collection",
         test_embedding,
         limit=2,
