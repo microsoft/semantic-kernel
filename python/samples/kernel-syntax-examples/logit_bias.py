@@ -4,6 +4,7 @@ from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSetti
 import semantic_kernel as sk
 import asyncio
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+import os
 
 
 async def chat_request_example():
@@ -73,6 +74,45 @@ async def main() -> None:
             passed = False
     if passed == True:
         print("None of the banned words were not found in the answer")
+
+    await text_complete_request_example()
+    return
+
+
+async def text_complete_request_example():
+    kernel = sk.Kernel()
+    api_key, org_id = sk.openai_settings_from_dot_env()
+    kernel.add_text_completion_service(
+        "dv", sk_oai.OpenAITextCompletion("text-davinci-002", api_key, org_id)
+    )
+    kernel.add_text_embedding_generation_service(
+        "ada", sk_oai.OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id)
+    )
+    # "apple banana blueberry cherry chocolate coconut key lime lemon meringue pecan pumpkin raspberry strawberry vanilla"
+    keys = [18040, 25996, 4171, 8396, 23612, 11311, 20132, 1994, 28738,
+            18873, 285, 1586, 518, 613, 5171, 30089, 38973, 41236, 16858]
+
+    # This will make the model try its best to avoid any of the above related words.
+    settings = CompleteRequestSettings()
+
+    # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
+    for key in keys:
+        # -100 to potentially ban all the tokens from the list.
+        settings.token_selection_biases[key] = -100
+
+    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
+        max_tokens=2000, temperature=0.7, top_p=0.8
+    )
+    prompt_template = sk.PromptTemplate(
+        "The best pie flavor to have in autumn is", kernel.prompt_template_engine,
+        prompt_config
+    )
+    function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
+    chat_function = kernel.register_semantic_function("TextComplete", "Text", function_config)
+
+    answer = await kernel.run_async(chat_function, input_vars=None)
+    print(answer)
+    return
 
 
 if __name__ == "__main__":
