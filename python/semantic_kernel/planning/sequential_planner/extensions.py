@@ -1,3 +1,4 @@
+import itertools
 from typing import AsyncIterable, List
 
 from semantic_kernel.kernel_exception import KernelException
@@ -91,14 +92,11 @@ class SequentialPlannerSKContextExtension:
 
         functions_view = context.skills.get_functions_view()
 
-        available_functions_dict = {
-            **functions_view._semantic_functions,
-            **functions_view._native_functions,
-        }
-
-        available_functions: List[FunctionView] = []
-        for _, v in available_functions_dict.items():
-            available_functions.extend(v)
+        available_functions: List[FunctionView] = [
+            *functions_view._semantic_functions.values(),
+            *functions_view._native_functions.values(),
+        ]
+        available_functions = itertools.chain.from_iterable(available_functions)
 
         available_functions = [
             func
