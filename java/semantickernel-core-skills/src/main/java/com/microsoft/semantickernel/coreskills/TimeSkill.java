@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
 
+import static com.microsoft.semantickernel.util.LocaleParser.parseLocale;
+
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
+import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
-import java.util.Locale;
 
 /**
  * Description: TimeSkill provides a set of functions to get the current time and date.
@@ -65,9 +67,16 @@ public class TimeSkill {
      * @return The current date.
      */
     @DefineSKFunction(name = "date", description = "Get the current date")
-    public String date() {
+    public String date(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
         // Example: Sunday, 12 January, 2025
-        return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR).format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR)
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -78,9 +87,16 @@ public class TimeSkill {
      * @return The current time.
      */
     @DefineSKFunction(name = "time", description = "Get the current time")
-    public String time() {
+    public String time(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
         // Example: 09:15:07 PM
-        return DateTimeFormatter.ofPattern("hh:mm:ss a").format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("hh:mm:ss a")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -91,8 +107,14 @@ public class TimeSkill {
      * @return The current UTC date and time.
      */
     @DefineSKFunction(name = "utcNow", description = "Get the current UTC date and time")
-    public String utcNow() {
+    public String utcNow(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR + " h:mm a")
+                .withLocale(parseLocale(locale))
                 .format(ZonedDateTime.now().withZoneSameInstant(ZoneOffset.UTC));
     }
 
@@ -104,8 +126,13 @@ public class TimeSkill {
      * @return The current date.
      */
     @DefineSKFunction(name = "today", description = "Get the current date")
-    public String today() {
-        return date();
+    public String today(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return date(locale);
     }
 
     /**
@@ -118,8 +145,14 @@ public class TimeSkill {
     @DefineSKFunction(
             name = "now",
             description = "Get the current date and time in the local time zone")
-    public String now() {
+    public String now(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR + " h:mm a")
+                .withLocale(parseLocale(locale))
                 .format(ZonedDateTime.now());
     }
 
@@ -131,8 +164,15 @@ public class TimeSkill {
      * @return The current year.
      */
     @DefineSKFunction(name = "year", description = "Get the current year")
-    public String year() {
-        return DateTimeFormatter.ofPattern("yyyy").format(ZonedDateTime.now());
+    public String year(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return DateTimeFormatter.ofPattern("yyyy")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -143,8 +183,15 @@ public class TimeSkill {
      * @return The current month name.
      */
     @DefineSKFunction(name = "month", description = "Get the current month name")
-    public String month() {
-        return DateTimeFormatter.ofPattern("MMMM").format(ZonedDateTime.now());
+    public String month(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return DateTimeFormatter.ofPattern("MMMM")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -155,8 +202,15 @@ public class TimeSkill {
      * @return The current month number.
      */
     @DefineSKFunction(name = "monthNumber", description = "Get the current month number")
-    public String monthNumber() {
-        return DateTimeFormatter.ofPattern("MM").format(ZonedDateTime.now());
+    public String monthNumber(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return DateTimeFormatter.ofPattern("MM")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -167,8 +221,15 @@ public class TimeSkill {
      * @return The current day of the month.
      */
     @DefineSKFunction(name = "day", description = "Get the current day of the month")
-    public String day() {
-        return DateTimeFormatter.ofPattern("d").format(ZonedDateTime.now());
+    public String day(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return DateTimeFormatter.ofPattern("d")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -179,8 +240,15 @@ public class TimeSkill {
      * @return The current day of the week.
      */
     @DefineSKFunction(name = "dayOfWeek", description = "Get the current day of the week")
-    public String dayOfWeek() {
-        return DateTimeFormatter.ofPattern("EEEE").format(ZonedDateTime.now());
+    public String dayOfWeek(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return DateTimeFormatter.ofPattern("EEEE")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -191,8 +259,15 @@ public class TimeSkill {
      * @return The current clock hour.
      */
     @DefineSKFunction(name = "hour", description = "Get the current clock hour")
-    public String hour() {
-        return DateTimeFormatter.ofPattern("h a").format(ZonedDateTime.now());
+    public String hour(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return DateTimeFormatter.ofPattern("h a")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -203,8 +278,15 @@ public class TimeSkill {
      * @return The current clock 24-hour number.
      */
     @DefineSKFunction(name = "hourNumber", description = "Get the current clock 24-hour number")
-    public String hourNumber() {
-        return DateTimeFormatter.ofPattern("HH").format(ZonedDateTime.now());
+    public String hourNumber(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return DateTimeFormatter.ofPattern("HH")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -219,9 +301,16 @@ public class TimeSkill {
     @DefineSKFunction(
             name = "daysAgo",
             description = "Get the date of offset from today by a provided number of days")
-    public static String daysAgo(String days) {
+    public static String daysAgo(
+            String days,
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
         int offsetDays = Integer.parseInt(days);
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR)
+                .withLocale(parseLocale(locale))
                 .format(ZonedDateTime.now().minusDays(offsetDays));
     }
 
@@ -236,16 +325,23 @@ public class TimeSkill {
     @DefineSKFunction(
             name = "dateMatchingLastDayName",
             description = "Get the date of the last day matching the supplied week day name")
-    public static String dateMatchingLastDayName(String dayName) {
+    public static String dateMatchingLastDayName(
+            String dayName,
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
         ZonedDateTime currentDate = ZonedDateTime.now();
-        Locale systemLocale = Locale.getDefault();
         for (int i = 1; i <= 7; i++) {
             currentDate = currentDate.minusDays(1);
             String currentDayName =
-                    currentDate.getDayOfWeek().getDisplayName(TextStyle.FULL, systemLocale);
+                    currentDate.getDayOfWeek().getDisplayName(TextStyle.FULL, parseLocale(locale));
 
             if (currentDayName.equalsIgnoreCase(dayName)) {
-                return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR).format(currentDate);
+                return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR)
+                        .withLocale(parseLocale(locale))
+                        .format(currentDate);
             }
         }
         throw new IllegalArgumentException("dayName is not recognized");
@@ -259,8 +355,15 @@ public class TimeSkill {
      * @return The minutes on the current hour.
      */
     @DefineSKFunction(name = "minute", description = "Get the minutes on the current hour")
-    public String minute() {
-        return DateTimeFormatter.ofPattern("mm").format(ZonedDateTime.now());
+    public String minute(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return DateTimeFormatter.ofPattern("mm")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -271,8 +374,15 @@ public class TimeSkill {
      * @return The seconds on the current minute.
      */
     @DefineSKFunction(name = "second", description = "Get the seconds on the current minute")
-    public String second() {
-        return DateTimeFormatter.ofPattern("ss").format(ZonedDateTime.now());
+    public String second(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return DateTimeFormatter.ofPattern("ss")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -285,8 +395,15 @@ public class TimeSkill {
     @DefineSKFunction(
             name = "timeZoneOffset",
             description = "Get the local time zone offset from UTC")
-    public String timeZoneOffset() {
-        return DateTimeFormatter.ofPattern("XXX").format(ZonedDateTime.now());
+    public String timeZoneOffset(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
+        return DateTimeFormatter.ofPattern("XXX")
+                .withLocale(parseLocale(locale))
+                .format(ZonedDateTime.now());
     }
 
     /**
@@ -297,8 +414,13 @@ public class TimeSkill {
      * @return The local time zone name.
      */
     @DefineSKFunction(name = "timeZoneName", description = "Get the local time zone name")
-    public String timeZoneName() {
+    public String timeZoneName(
+            @SKFunctionParameters(
+                            name = "locale",
+                            description = "Locale to use when formatting the date",
+                            defaultValue = "en_US")
+                    String locale) {
         ZoneId zoneId = ZoneId.systemDefault();
-        return zoneId.getDisplayName(TextStyle.FULL, Locale.getDefault());
+        return zoneId.getDisplayName(TextStyle.FULL, parseLocale(locale));
     }
 }

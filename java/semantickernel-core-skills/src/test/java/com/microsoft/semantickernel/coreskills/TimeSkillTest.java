@@ -14,6 +14,9 @@ import java.util.Locale;
 
 @SuppressWarnings("ReturnValueIgnored")
 public class TimeSkillTest {
+
+    private static final String defaultLocale = "en-US";
+
     private static final ZonedDateTime mockDateTime;
 
     static {
@@ -27,7 +30,7 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.date();
+            String result = timeSkill.date(defaultLocale);
             assertEquals("Sunday, January 12, 2025", result);
         }
     }
@@ -39,8 +42,8 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.time();
-            assertEqualsIgnoreCase("09:15:07 A.M.", result);
+            String result = timeSkill.time(defaultLocale);
+            assertEqualsIgnoreCase("09:15:07 AM", result);
         }
     }
 
@@ -51,7 +54,7 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.today();
+            String result = timeSkill.today(defaultLocale);
             assertEquals("Sunday, January 12, 2025", result);
         }
     }
@@ -63,8 +66,8 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.now();
-            assertEqualsIgnoreCase("Sunday, January 12, 2025 9:15 A.M.", result);
+            String result = timeSkill.now(defaultLocale);
+            assertEqualsIgnoreCase("Sunday, January 12, 2025 9:15 AM", result);
         }
     }
 
@@ -75,7 +78,7 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.year();
+            String result = timeSkill.year(defaultLocale);
             assertEquals("2025", result);
         }
     }
@@ -87,7 +90,7 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.month();
+            String result = timeSkill.month(defaultLocale);
             assertEquals("January", result);
         }
     }
@@ -99,7 +102,7 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.monthNumber();
+            String result = timeSkill.monthNumber(defaultLocale);
             assertEquals("01", result);
         }
     }
@@ -111,7 +114,7 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.day();
+            String result = timeSkill.day(defaultLocale);
             assertEquals("12", result);
         }
     }
@@ -123,7 +126,7 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.dayOfWeek();
+            String result = timeSkill.dayOfWeek(defaultLocale);
             assertEquals("Sunday", result);
         }
     }
@@ -139,8 +142,8 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.hour();
-            assertEqualsIgnoreCase("9 A.M.", result);
+            String result = timeSkill.hour(defaultLocale);
+            assertEqualsIgnoreCase("9 AM", result);
         }
     }
 
@@ -151,7 +154,7 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.hourNumber();
+            String result = timeSkill.hourNumber(defaultLocale);
             assertEquals("09", result);
         }
     }
@@ -163,7 +166,7 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.minute();
+            String result = timeSkill.minute(defaultLocale);
             assertEquals("15", result);
         }
     }
@@ -175,7 +178,7 @@ public class TimeSkillTest {
         try (MockedStatic<ZonedDateTime> mocked = mockStatic(ZonedDateTime.class)) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            String result = timeSkill.second();
+            String result = timeSkill.second(defaultLocale);
             assertEquals("07", result);
         }
     }
@@ -191,8 +194,8 @@ public class TimeSkillTest {
                                 .defaultAnswer(CALLS_REAL_METHODS))) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            assertEquals("Thursday, January 9, 2025", TimeSkill.daysAgo("3"));
-            assertEquals("Tuesday, January 7, 2025", TimeSkill.daysAgo("5"));
+            assertEquals("Thursday, January 9, 2025", TimeSkill.daysAgo("3", defaultLocale));
+            assertEquals("Tuesday, January 7, 2025", TimeSkill.daysAgo("5", defaultLocale));
         }
     }
 
@@ -207,16 +210,27 @@ public class TimeSkillTest {
                                 .defaultAnswer(CALLS_REAL_METHODS))) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            assertEquals("Sunday, January 5, 2025", TimeSkill.dateMatchingLastDayName("Sunday"));
-            assertEquals("Monday, January 6, 2025", TimeSkill.dateMatchingLastDayName("Monday"));
-            assertEquals("Tuesday, January 7, 2025", TimeSkill.dateMatchingLastDayName("Tuesday"));
             assertEquals(
-                    "Wednesday, January 8, 2025", TimeSkill.dateMatchingLastDayName("wednesday"));
+                    "Sunday, January 5, 2025",
+                    TimeSkill.dateMatchingLastDayName("Sunday", defaultLocale));
             assertEquals(
-                    "Thursday, January 9, 2025", TimeSkill.dateMatchingLastDayName("thursday"));
-            assertEquals("Friday, January 10, 2025", TimeSkill.dateMatchingLastDayName("Friday"));
+                    "Monday, January 6, 2025",
+                    TimeSkill.dateMatchingLastDayName("Monday", defaultLocale));
             assertEquals(
-                    "Saturday, January 11, 2025", TimeSkill.dateMatchingLastDayName("Saturday"));
+                    "Tuesday, January 7, 2025",
+                    TimeSkill.dateMatchingLastDayName("Tuesday", defaultLocale));
+            assertEquals(
+                    "Wednesday, January 8, 2025",
+                    TimeSkill.dateMatchingLastDayName("wednesday", defaultLocale));
+            assertEquals(
+                    "Thursday, January 9, 2025",
+                    TimeSkill.dateMatchingLastDayName("thursday", defaultLocale));
+            assertEquals(
+                    "Friday, January 10, 2025",
+                    TimeSkill.dateMatchingLastDayName("Friday", defaultLocale));
+            assertEquals(
+                    "Saturday, January 11, 2025",
+                    TimeSkill.dateMatchingLastDayName("Saturday", defaultLocale));
         }
     }
 }
