@@ -1,4 +1,5 @@
 import pytest
+
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planning.sequential_planner.config import SequentialPlannerConfig
@@ -9,18 +10,18 @@ from tests.integration.fakes.writer_skill_fake import WriterSkillFake
 
 
 def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=False):
-    _, api_key, endpoint = get_aoai_config
+    deployment_name, api_key, endpoint = get_aoai_config
 
     kernel = Kernel()
     if use_chat_model:
         kernel.add_chat_service(
             "chat_completion",
-            sk_oai.AzureChatCompletion("gpt-35-turbo", endpoint, api_key),
+            sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
         )
     else:
         kernel.add_text_completion_service(
             "text_completion",
-            sk_oai.AzureChatCompletion("gpt-35-turbo", endpoint, api_key),
+            sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
         )
 
     if use_embeddings:

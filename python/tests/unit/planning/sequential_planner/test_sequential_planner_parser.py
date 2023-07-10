@@ -1,6 +1,7 @@
 from unittest.mock import Mock
 
 import pytest
+
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.planning.planning_exception import PlanningException
