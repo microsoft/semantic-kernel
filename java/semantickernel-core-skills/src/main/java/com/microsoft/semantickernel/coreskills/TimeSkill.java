@@ -61,6 +61,15 @@ public class TimeSkill {
     public static final String DAY_MONTH_DAY_YEAR = "EEEE, MMMM d, yyyy";
 
     /**
+     * Get the current date and time for the system default timezone.
+     *
+     * @return a ZonedDateTime object with the current date and time.
+     */
+    public static ZonedDateTime now() {
+        return ZonedDateTime.now(ZoneId.systemDefault());
+    }
+
+    /**
      * Get the current date.
      *
      * <p>Example: {{time.date}} => Sunday, January 12, 2025
@@ -76,7 +85,7 @@ public class TimeSkill {
         // Example: Sunday, 12 January, 2025
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR)
                 .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+                .format(now());
     }
 
     /**
@@ -95,7 +104,7 @@ public class TimeSkill {
         // Example: 09:15:07 PM
         return DateTimeFormatter.ofPattern("hh:mm:ss a")
                 .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+                .format(now());
     }
 
     /**
@@ -113,7 +122,7 @@ public class TimeSkill {
                     String locale) {
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR + " h:mm a")
                 .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now().withZoneSameInstant(ZoneOffset.UTC));
+                .format(now().withZoneSameInstant(ZoneOffset.UTC));
     }
 
     /**
@@ -149,7 +158,7 @@ public class TimeSkill {
                     String locale) {
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR + " h:mm a")
                 .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+                .format(now());
     }
 
     /**
@@ -165,9 +174,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        return DateTimeFormatter.ofPattern("yyyy")
-                .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("yyyy").withLocale(parseLocale(locale)).format(now());
     }
 
     /**
@@ -183,9 +190,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        return DateTimeFormatter.ofPattern("MMMM")
-                .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("MMMM").withLocale(parseLocale(locale)).format(now());
     }
 
     /**
@@ -201,9 +206,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        return DateTimeFormatter.ofPattern("MM")
-                .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("MM").withLocale(parseLocale(locale)).format(now());
     }
 
     /**
@@ -219,9 +222,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        return DateTimeFormatter.ofPattern("d")
-                .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("d").withLocale(parseLocale(locale)).format(now());
     }
 
     /**
@@ -237,9 +238,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        return DateTimeFormatter.ofPattern("EEEE")
-                .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("EEEE").withLocale(parseLocale(locale)).format(now());
     }
 
     /**
@@ -255,9 +254,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        return DateTimeFormatter.ofPattern("h a")
-                .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("h a").withLocale(parseLocale(locale)).format(now());
     }
 
     /**
@@ -273,9 +270,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        return DateTimeFormatter.ofPattern("HH")
-                .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("HH").withLocale(parseLocale(locale)).format(now());
     }
 
     /**
@@ -303,7 +298,7 @@ public class TimeSkill {
         int offsetDays = Integer.parseInt(days);
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR)
                 .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now().minusDays(offsetDays));
+                .format(now().minusDays(offsetDays));
     }
 
     /**
@@ -325,7 +320,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        ZonedDateTime currentDate = ZonedDateTime.now();
+        ZonedDateTime currentDate = now();
         for (int i = 1; i <= 7; i++) {
             currentDate = currentDate.minusDays(1);
             String currentDayName =
@@ -353,9 +348,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        return DateTimeFormatter.ofPattern("mm")
-                .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("mm").withLocale(parseLocale(locale)).format(now());
     }
 
     /**
@@ -371,9 +364,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        return DateTimeFormatter.ofPattern("ss")
-                .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("ss").withLocale(parseLocale(locale)).format(now());
     }
 
     /**
@@ -391,9 +382,7 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date")
                     String locale) {
-        return DateTimeFormatter.ofPattern("XXX")
-                .withLocale(parseLocale(locale))
-                .format(ZonedDateTime.now());
+        return DateTimeFormatter.ofPattern("XXX").withLocale(parseLocale(locale)).format(now());
     }
 
     /**
