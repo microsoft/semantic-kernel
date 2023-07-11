@@ -34,6 +34,11 @@ public sealed class ActionPlanner
     private const string StopSequence = "#END-OF-PLAN";
     private const string SkillName = "this";
 
+    /// <summary>
+    /// The regular expression for extracting serialized plan.
+    /// </summary>
+    private static readonly Regex PlanRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
+
     // Planner semantic function
     private readonly ISKFunction _plannerFunction;
 
@@ -212,11 +217,6 @@ Goal: tell me a joke.
     }
 
     #region private ================================================================================
-
-    /// <summary>
-    /// The regular expression for extracting serialized PLAN.
-    /// </summary>
-    private static readonly Regex PlanRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
 
     /// <summary>
     /// Native function that filters out good JSON from planner result in case additional text is present
