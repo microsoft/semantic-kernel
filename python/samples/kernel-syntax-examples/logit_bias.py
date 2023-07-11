@@ -1,15 +1,29 @@
 # Copyright (c) Microsoft. All rights reserved.
-from semantic_kernel.connectors.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-import semantic_kernel as sk
-import asyncio
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-import os
 
+import asyncio
+
+import semantic_kernel as sk
+import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.complete_request_settings import CompleteRequestSettings
+
+"""
+Logit bias enables prioritizing certain tokens within a given output.
+To utilize the logit bias function, you will need to know the token ids of the words you are using.
+See the GPT Tokenizer to obtain token ids: https://platform.openai.com/tokenizer
+Read more about logit bias and how to configure output: https://help.openai.com/en/articles/5247780-using-logit-bias-to-define-token-probability
+"""
+
+def _config_ban_tokens(settings_type, keys):
+    settings = ChatRequestSettings() if settings_type == "chat" else CompleteRequestSettings()
+    
+    # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
+    for k in keys:
+        # -100 to potentially ban all tokens in the list
+        settings.token_selection_biases[k] = -100
+    return settings
 
 async def chat_request_example():
-    # To use Logit Bias you will need to know the token ids of the words you want to use.
-    # Getting the token ids using the GPT Tokenizer: https://platform.openai.com/tokenizer
     kernel = sk.Kernel()
     api_key, org_id = sk.openai_settings_from_dot_env()
     openai_chat_completion = sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
@@ -19,13 +33,10 @@ async def chat_request_example():
     # The following is the token ids of basketball related words.
     keys = [2032, 680, 9612, 26675, 3438, 42483, 21265, 6057, 11230, 1404, 2484, 12494, 35, 822, 11108]
     banned_words = ["swish", 'screen', 'score', 'dominant', 'basketball', 'game', 'GOAT', 'Shooting', 'Dribbling']
-    # This will make the model try its best to avoid any of the above related words.
-    settings = ChatRequestSettings()
+
+    # Model will try its best to avoid using any of the above words
+    settings = _config_ban_tokens("chat", keys)
     context_vars = sk.ContextVariables()
-    # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
-    for key in keys:
-        # -100 to potentially ban all the tokens from the list.
-        settings.token_selection_biases[key] = -100
 
     prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
         max_tokens=2000, temperature=0.7, top_p=0.8
@@ -34,14 +45,17 @@ async def chat_request_example():
         "{{$user_input}}", kernel.prompt_template_engine, prompt_config
     )
 
+    # Setup chat with prompt
     prompt_template.add_system_message("You are a basketball expert")
-    user_mssg = "I love the LA Lakers, I'd like to learn something new about LeBron James, any suggestion?"
+    user_mssg = "I love the LA Lakers, tell me an interesting fact about LeBron James."
     prompt_template.add_user_message(user_mssg)
     function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-    chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
-    answer = await kernel.run_async(chat_function, input_vars=None)
+    kernel.register_semantic_function("ChatBot", "Chat", function_config)
+
+    answer = await openai_chat_completion.complete_async(user_mssg, settings)
     context_vars["chat_history"] = f"User:> {user_mssg}\nChatBot:> {answer}\n"
     context_vars["chat_bot_ans"] = str(answer)
+
     return context_vars, banned_words
 
 
@@ -58,46 +72,42 @@ async def text_complete_request_example():
     banned_words = ["apple", " apple", "Apple", " Apple", "pumpkin", " pumpkin",
                     " Pumpkin", "pecan", " pecan", " Pecan", "Pecan"]
 
-    # This will make the model try its best to avoid any of the above related words.
-    settings = CompleteRequestSettings()
-
-    # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
-    for key in keys:
-        # -100 to potentially ban all the tokens from the list.
-        settings.token_selection_biases[key] = -100
+    # Model will try its best to avoid using any of the above words
+    settings = _config_ban_tokens("complete", keys)
 
     user_mssg = "The best pie flavor to have in autumn is"
     answer = await openai_text_completion.complete_async(user_mssg, settings)
+
     return answer, user_mssg, banned_words
 
+def _check_banned_words(banned_list, actual_list) -> bool:
+    passed = True
+    for word in banned_list:
+        if word in actual_list:
+            print(f"The banned word \"{word}\" was found in the answer")
+            passed = False
+    return passed
 
 async def main() -> None:
-    chat, banned_words = await chat_request_example()
     print("Chat completion example:")
     print("------------------------")
+    chat, banned_words = await chat_request_example()
     print(chat["chat_history"])
-    passed = True
-    print("------------------------")
     chat_bot_ans_words = chat["chat_bot_ans"].split()
-    for word in banned_words:
-        if word in chat_bot_ans_words:
-            print(f"The banned word \"{word}\" was found in the answer")
-            passed = False
-    if passed == True:
+    if _check_banned_words(banned_words, chat_bot_ans_words):
         print("None of the banned words were found in the answer")
 
-    print("\n", "Text completion example:")
+    print("------------------------")
+
+    print("\nText completion example:")
     print("------------------------")
     answer, user_mssg, banned_words = await text_complete_request_example()
-    print("User:> " + user_mssg)
-    print("ChatBot:> ", answer + "\n")
-    passed = True
-    for word in banned_words:
-        if word in chat_bot_ans_words:
-            print(f"The banned word \"{word}\" was found in the answer")
-            passed = False
-    if passed == True:
+    print(f"User:> {user_mssg}")
+    print(f"ChatBot:> {answer}\n")
+    chat_bot_ans_words = answer.split()
+    if _check_banned_words(banned_words, chat_bot_ans_words):
         print("None of the banned words were found in the answer")
+
     return
 
 if __name__ == "__main__":

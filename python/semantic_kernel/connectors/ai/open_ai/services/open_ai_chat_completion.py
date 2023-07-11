@@ -101,17 +101,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             str -- The completed text.
         """
         prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings(
-            temperature=request_settings.temperature,
-            top_p=request_settings.top_p,
-            presence_penalty=request_settings.presence_penalty,
-            frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens,
-            number_of_responses=request_settings.number_of_responses,
-        )
-        response = await self._send_chat_request(
-            prompt_to_message, chat_settings, False
-        )
+
+        response = await self._send_chat_request(prompt_to_message, request_settings, False)
 
         if len(response.choices) == 1:
             return response.choices[0].message.content
@@ -122,15 +113,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self, prompt: str, request_settings: CompleteRequestSettings
     ):
         prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings(
-            temperature=request_settings.temperature,
-            top_p=request_settings.top_p,
-            presence_penalty=request_settings.presence_penalty,
-            frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens,
-            number_of_responses=request_settings.number_of_responses,
-        )
-        response = await self._send_chat_request(prompt_to_message, chat_settings, True)
+
+        response = await self._send_chat_request(prompt_to_message, request_settings, True)
 
         # parse the completion text(s) and yield them
         async for chunk in response:
@@ -208,7 +192,12 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 max_tokens=request_settings.max_tokens,
                 n=request_settings.number_of_responses,
                 stream=stream,
-                logit_bias=request_settings.token_selection_biases.copy()
+                logit_bias=(
+                    request_settings.token_selection_biases
+                    if request_settings.token_selection_biases is not None
+                    and len(request_settings.token_selection_biases) > 0
+                    else None
+                ),
             )
         except Exception as ex:
             raise AIException(
