@@ -193,7 +193,7 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 context.CancellationToken.ThrowIfCancellationRequested();
-                this.Log.LogDebug($"Kernel execution, Start execute {0}/{1} function: {2}.{3}",
+                this.Log.LogDebug("Kernel execution, Start execute {0}/{1} function: {2}.{3}",
                     pipelineStepCount + 1,
                     pipeline.Length,
                     f.SkillName,
@@ -206,7 +206,7 @@ public sealed class Kernel : IKernel, IDisposable
                         pipelineStepCount, f.SkillName, f.Name, context.LastErrorDescription);
                     return context;
                 }
-                this.Log.LogDebug($"Kernel execution, Finish successfully execute {0}/{1} function: {2}.{3}",
+                this.Log.LogDebug("Kernel execution, Finish successfully execute {0}/{1} function: {2}.{3}",
                     pipelineStepCount + 1,
                     pipeline.Length,
                     f.SkillName,
