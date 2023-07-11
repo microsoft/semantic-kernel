@@ -185,6 +185,8 @@ public class TimeSkillTest {
 
     @Test
     public void daysAgo() {
+        TimeSkill timeSkill = new TimeSkill();
+
         try (MockedStatic<ZonedDateTime> mocked =
                 mockStatic(
                         ZonedDateTime.class,
@@ -194,13 +196,15 @@ public class TimeSkillTest {
                                 .defaultAnswer(CALLS_REAL_METHODS))) {
             mocked.when(ZonedDateTime::now).thenReturn(mockDateTime);
 
-            assertEquals("Thursday, January 9, 2025", TimeSkill.daysAgo("3", defaultLocale));
-            assertEquals("Tuesday, January 7, 2025", TimeSkill.daysAgo("5", defaultLocale));
+            assertEquals("Thursday, January 9, 2025", timeSkill.daysAgo("3", defaultLocale));
+            assertEquals("Tuesday, January 7, 2025", timeSkill.daysAgo("5", defaultLocale));
         }
     }
 
     @Test
     public void testDateMatchingLastDayName() {
+        TimeSkill timeSkill = new TimeSkill();
+
         try (MockedStatic<ZonedDateTime> mocked =
                 mockStatic(
                         ZonedDateTime.class,
@@ -212,25 +216,25 @@ public class TimeSkillTest {
 
             assertEquals(
                     "Sunday, January 5, 2025",
-                    TimeSkill.dateMatchingLastDayName("Sunday", defaultLocale));
+                    timeSkill.dateMatchingLastDayName("Sunday", defaultLocale));
             assertEquals(
                     "Monday, January 6, 2025",
-                    TimeSkill.dateMatchingLastDayName("Monday", defaultLocale));
+                    timeSkill.dateMatchingLastDayName("Monday", defaultLocale));
             assertEquals(
                     "Tuesday, January 7, 2025",
-                    TimeSkill.dateMatchingLastDayName("Tuesday", defaultLocale));
+                    timeSkill.dateMatchingLastDayName("Tuesday", defaultLocale));
             assertEquals(
                     "Wednesday, January 8, 2025",
-                    TimeSkill.dateMatchingLastDayName("wednesday", defaultLocale));
+                    timeSkill.dateMatchingLastDayName("wednesday", defaultLocale));
             assertEquals(
                     "Thursday, January 9, 2025",
-                    TimeSkill.dateMatchingLastDayName("thursday", defaultLocale));
+                    timeSkill.dateMatchingLastDayName("thursday", defaultLocale));
             assertEquals(
                     "Friday, January 10, 2025",
-                    TimeSkill.dateMatchingLastDayName("Friday", defaultLocale));
+                    timeSkill.dateMatchingLastDayName("Friday", defaultLocale));
             assertEquals(
                     "Saturday, January 11, 2025",
-                    TimeSkill.dateMatchingLastDayName("Saturday", defaultLocale));
+                    timeSkill.dateMatchingLastDayName("Saturday", defaultLocale));
         }
     }
 }

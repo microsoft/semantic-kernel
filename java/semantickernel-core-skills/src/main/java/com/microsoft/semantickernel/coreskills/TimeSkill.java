@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.coreskills;
 import static com.microsoft.semantickernel.util.LocaleParser.parseLocale;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
+import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 
 import java.time.ZoneId;
@@ -289,8 +290,12 @@ public class TimeSkill {
     @DefineSKFunction(
             name = "daysAgo",
             description = "Get the date of offset from today by a provided number of days")
-    public static String daysAgo(
-            String days,
+    public String daysAgo(
+            @SKFunctionInputAttribute
+                    @SKFunctionParameters(
+                            name = "input",
+                            description = "Number of days to offset from today.")
+                    String days,
             @SKFunctionParameters(
                             name = "locale",
                             description = "Locale to use when formatting the date")
@@ -312,8 +317,10 @@ public class TimeSkill {
     @DefineSKFunction(
             name = "dateMatchingLastDayName",
             description = "Get the date of the last day matching the supplied week day name")
-    public static String dateMatchingLastDayName(
-            String dayName,
+    public String dateMatchingLastDayName(
+            @SKFunctionInputAttribute
+                    @SKFunctionParameters(name = "input", description = "Week name day.")
+                    String dayName,
             @SKFunctionParameters(
                             name = "locale",
                             description = "Locale to use when formatting the date")
