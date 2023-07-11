@@ -48,7 +48,7 @@ public static class TextCompletionExtensions
     {
         var completionResults = textCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
 
-        await foreach (var completionResult in completionResults.WithCancellation(cancellationToken))
+        await foreach (var completionResult in completionResults)
         {
             await foreach (var word in completionResult.GetCompletionStreamingAsync(cancellationToken).ConfigureAwait(false))
             {
