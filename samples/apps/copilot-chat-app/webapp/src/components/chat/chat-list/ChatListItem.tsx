@@ -1,12 +1,14 @@
 import {
-    makeStyles,
-    mergeClasses,
+    Button,
     Persona,
     Popover,
     PopoverSurface,
     PopoverTrigger,
-    shorthands,
     Text,
+    Tooltip,
+    makeStyles,
+    mergeClasses,
+    shorthands,
     tokens,
 } from '@fluentui/react-components';
 import { FC } from 'react';
@@ -15,6 +17,8 @@ import { useAppDispatch } from '../../../redux/app/hooks';
 import { setSelectedConversation } from '../../../redux/features/conversations/conversationsSlice';
 import { Breakpoints } from '../../../styles';
 import { timestampToDateString } from '../../utils/TextUtils';
+
+import { ArrowDownload16Regular, Delete16Regular, EditRegular, Share20Regular } from '@fluentui/react-icons';
 
 const useClasses = makeStyles({
     root: {
@@ -68,7 +72,7 @@ const useClasses = makeStyles({
         whiteSpace: 'nowrap',
         lineHeight: tokens.lineHeightBase100,
         color: tokens.colorNeutralForeground2,
-        ...shorthands.overflow('hidden')
+        ...shorthands.overflow('hidden'),
     },
     popoverSurface: {
         display: 'none',
@@ -79,7 +83,7 @@ const useClasses = makeStyles({
     },
     selected: {
         backgroundColor: tokens.colorNeutralBackground1,
-    }
+    },
 });
 
 interface IChatListItemProps {
@@ -120,19 +124,47 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                 <div className={mergeClasses(classes.root, isSelected && classes.selected)} onClick={onClick}>
                     <Persona avatar={{ image: { src: botProfilePicture } }} presence={{ status: 'available' }} />
                     <div className={classes.body}>
-                        <div className={classes.header}>
-                            <Text className={classes.title}>
-                                {header}
-                            </Text>
-                            <Text className={classes.timestamp} size={300}>
-                                {time}
-                            </Text>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                            }}
+                            className={classes.header}
+                        >
+                            <Text className={classes.title}>{header}</Text>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            {isSelected && (
+                                <span>
+                                    <Tooltip content={'Edit chat name'} relationship="label">
+                                        <Button icon={<EditRegular />} appearance="transparent" aria-label="Edit" />
+                                    </Tooltip>
+                                    <Tooltip content={'Download chat session'} relationship="label">
+                                        <Button
+                                            icon={<ArrowDownload16Regular />}
+                                            appearance="transparent"
+                                            aria-label="Edit"
+                                        />
+                                    </Tooltip>
+                                    <Tooltip content={'Delete chat session'} relationship="label">
+                                        <Button icon={<Delete16Regular />} appearance="transparent" aria-label="Edit" />
+                                    </Tooltip>
+                                    <Tooltip content={'Share live chat code'} relationship="label">
+                                        <Button icon={<Share20Regular />} appearance="transparent" aria-label="Edit" />
+                                    </Tooltip>
+                                </span>
+                            )}
                         </div>
                         {preview && (
                             <>
                                 {
-                                    <Text id={`message-preview-${id}`} size={200} className={classes.previewText}>
-                                        {preview}
+                                    <Text
+                                        style={{ display: 'none' }}
+                                        id={`message-preview-${id}`}
+                                        size={200}
+                                        //                                        style={{ display: 'none' }}
+                                        className={classes.previewText}
+                                    >
+                                        {time}: {preview}
                                     </Text>
                                 }
                             </>

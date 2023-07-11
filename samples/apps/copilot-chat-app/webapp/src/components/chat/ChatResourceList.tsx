@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import {
+    Button,
     Table,
     TableBody,
     TableCell,
@@ -11,6 +12,7 @@ import {
     TableHeaderCell,
     TableHeaderCellProps,
     TableRow,
+    Tooltip,
     createTableColumn,
     makeStyles,
     shorthands,
@@ -18,7 +20,12 @@ import {
     useTableFeatures,
     useTableSort,
 } from '@fluentui/react-components';
-import { DocumentPdfRegular, DocumentTextRegular, FluentIconsProps } from '@fluentui/react-icons';
+import {
+    DocumentArrowUp20Regular,
+    DocumentPdfRegular,
+    DocumentTextRegular,
+    FluentIconsProps,
+} from '@fluentui/react-icons';
 import * as React from 'react';
 import { ChatMemorySource } from '../../libs/models/ChatMemorySource';
 import { useChat } from '../../libs/useChat';
@@ -73,6 +80,16 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
     const { columns, rows } = useTable(resources);
     return (
         <div className={classes.root}>
+            <Tooltip content="Embed file into session" relationship="label">
+                <Button
+                    style={{ marginBottom: '5px' }}
+                    icon={<DocumentArrowUp20Regular />}
+                    onClick={() => alert('Button clicked')}
+                >
+                    Upload
+                </Button>
+            </Tooltip>
+
             <Table aria-label="External resource table" className={classes.table}>
                 <TableHeader>
                     <TableRow>{columns.map((column) => column.renderHeaderCell())}</TableRow>

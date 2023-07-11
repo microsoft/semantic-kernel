@@ -1,15 +1,48 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+/*import { Button, Tooltip } from '@fluentui/react-components';
+import { AddFilled, AddRegular, bundleIcon } from '@fluentui/react-icons';
+import { FC } from 'react';
+import { useChat } from '../../../libs/useChat';
+
+interface NewBotMenuProps {}
+
+export const NewBotMenu: FC<NewBotMenuProps> = () => {
+    const chat = useChat();
+    const BotAdd20 = bundleIcon(AddFilled, AddRegular);
+
+    const onAddChat = () => {
+        void chat.createChat();
+    };
+
+    return (
+        <div>
+            <Tooltip content="Create new conversation" relationship="label">
+                <Button
+                    data-testid="createNewConversationButton"
+                    icon={<BotAdd20 />}
+                    appearance="transparent"
+                    onClick={onAddChat}
+                />
+            </Tooltip>
+        </div>
+    );
+};
+
+*/
 import { FC, useState } from 'react';
 
-import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tooltip } from '@fluentui/react-components';
 import {
-    ArrowUploadRegular,
-    BotAdd20Filled,
-    BotAdd20Regular,
-    PeopleTeamAddRegular,
-    bundleIcon,
-} from '@fluentui/react-icons';
+    Button,
+    Divider,
+    Menu,
+    MenuItem,
+    MenuList,
+    MenuPopover,
+    MenuTrigger,
+    Tooltip,
+} from '@fluentui/react-components';
+import { AddFilled, AddRegular, bundleIcon } from '@fluentui/react-icons';
 import { useChat } from '../../../libs/useChat';
 import { InvitationJoinDialog } from '../invitation-dialog/InvitationJoinDialog';
 
@@ -23,7 +56,8 @@ export const NewBotMenu: FC<NewBotMenuProps> = ({ onFileUpload }) => {
     // when the file uploader is clicked.
     const [isJoiningBot, setIsJoiningBot] = useState(false);
 
-    const BotAdd20 = bundleIcon(BotAdd20Filled, BotAdd20Regular);
+    const BotAdd20 = bundleIcon(AddFilled, AddRegular);
+    //    const BotAdd20 = bundleIcon(BotAdd20Filled, BotAdd20Regular);
 
     const onAddChat = () => {
         void chat.createChat();
@@ -40,7 +74,7 @@ export const NewBotMenu: FC<NewBotMenuProps> = ({ onFileUpload }) => {
         <div>
             <Menu>
                 <MenuTrigger disableButtonEnhancement>
-                    <Tooltip content="Create new conversation" relationship="label">
+                    <Tooltip content="Add a chat" relationship="label">
                         <Button
                             data-testid="createNewConversationButton"
                             icon={<BotAdd20 />}
@@ -50,18 +84,15 @@ export const NewBotMenu: FC<NewBotMenuProps> = ({ onFileUpload }) => {
                 </MenuTrigger>
                 <MenuPopover>
                     <MenuList>
-                        <MenuItem data-testid="addNewBotMenuItem" icon={<BotAdd20Regular />} onClick={onAddChat}>
-                            Add a new Bot
+                        <MenuItem data-testid="addNewBotMenuItem" onClick={onAddChat}>
+                            New Chat Session
                         </MenuItem>
-                        <MenuItem
-                            data-testid="uploadABotMenuItem"
-                            icon={<ArrowUploadRegular />}
-                            onClick={onFileUpload}
-                        >
-                            <div>Upload a Bot</div>
+                        <Divider></Divider>
+                        <MenuItem data-testid="uploadABotMenuItem" disabled onClick={onFileUpload}>
+                            <div>Upload Saved Chat</div>
                         </MenuItem>
-                        <MenuItem data-testid="joinABotMenuItem" icon={<PeopleTeamAddRegular />} onClick={onJoinClick}>
-                            Join a Bot
+                        <MenuItem data-testid="joinABotMenuItem" disabled onClick={onJoinClick}>
+                            Add Live Chat Code
                         </MenuItem>
                     </MenuList>
                 </MenuPopover>

@@ -1,8 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { useMsal } from '@azure/msal-react';
-import { Button, Spinner, Textarea, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
-import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
+import {
+    Button,
+    Spinner,
+    Textarea,
+    Tooltip,
+    makeStyles,
+    mergeClasses,
+    shorthands,
+    tokens,
+} from '@fluentui/react-components';
+import { MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
 import React, { useRef } from 'react';
@@ -226,12 +235,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             handleImport();
                         }}
                     />
-                    <Button
-                        disabled={documentImporting}
-                        appearance="transparent"
-                        icon={<AttachRegular />}
-                        onClick={() => documentFileRef.current?.click()}
-                    />
+                    {/* <Tooltip content="Embed file into session" relationship="label">
+                        <Button
+                            disabled={documentImporting}
+                            appearance="transparent"
+                            icon={<AttachRegular />}
+                            onClick={() => documentFileRef.current?.click()}
+                        />
+                    </Tooltip> */}
                     {documentImporting && <Spinner size="tiny" />}
                 </div>
                 <div className={classes.essentials}>
@@ -243,13 +254,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             onClick={handleSpeech}
                         />
                     )}
-                    <Button
-                        appearance="transparent"
-                        icon={<SendRegular />}
-                        onClick={() => {
-                            handleSubmit(value);
-                        }}
-                    />
+                    <Tooltip content="Enter" relationship="label">
+                        <Button
+                            appearance="transparent"
+                            icon={<SendRegular />}
+                            onClick={() => {
+                                handleSubmit(value);
+                            }}
+                        />
+                    </Tooltip>
                 </div>
             </div>
         </div>

@@ -21,6 +21,7 @@ export const getAccessTokenUsingMsal = async (
 ) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const account = msalInstance.getActiveAccount()!;
+    //    const account = msalInstance.getAllAccounts()[0];
     const accessTokenRequest: PopupRequest = {
         authority: `https://login.microsoftonline.com/${account.tenantId}`,
         scopes,

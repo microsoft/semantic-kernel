@@ -45,7 +45,7 @@ export const FileUploader: React.FC<FileUploaderProps> = forwardRef<HTMLInputEle
                 className={classes.root}
                 accept={acceptedExtensions?.join(',')}
                 onChange={onChange}
-                title="Upload a .pdf or .txt file"
+                title="Upload a .pdf or .txt file ADD MARKDOWN FILES HERE TOO"
             />
         );
     },

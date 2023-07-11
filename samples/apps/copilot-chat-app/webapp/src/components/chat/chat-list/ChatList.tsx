@@ -180,11 +180,16 @@ export const ChatList: FC = () => {
             <div className={classes.header}>
                 {!isFiltering && (
                     <>
-                        <Text weight="bold" size={500} className={classes.title} as="h2">
+                        <Text weight="bold" size={500} className={classes.title} as="h2" style={{ display: 'none' }}>
                             Conversations
                         </Text>
 
-                        <Button icon={<Filter20 />} appearance="transparent" onClick={onFilterClick} />
+                        <Button
+                            icon={<Filter20 />}
+                            appearance="transparent"
+                            onClick={onFilterClick}
+                            style={{ display: 'none' }}
+                        />
                         <NewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
 
                         <FileUploader
@@ -207,7 +212,7 @@ export const ChatList: FC = () => {
                 )}
             </div>
             <Text as="h3" className={classes.botsHeader}>
-                Your bots
+                Today
             </Text>
             <div aria-label={'chat list'} className={classes.list}>
                 {Object.keys(conversationsView).map((id) => {

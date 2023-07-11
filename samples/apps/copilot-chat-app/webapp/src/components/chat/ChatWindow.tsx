@@ -5,10 +5,8 @@ import {
     Button,
     Input,
     InputOnChangeData,
-    Label,
     makeStyles,
     mergeClasses,
-    Persona,
     Popover,
     PopoverSurface,
     PopoverTrigger,
@@ -32,8 +30,7 @@ import { addAlert, removeAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
-import { ParticipantsList } from './controls/ParticipantsList';
-import { ShareBotMenu } from './controls/ShareBotMenu';
+import { ShareBotMenu } from './ShareBotMenu';
 
 const useClasses = makeStyles({
     root: {
@@ -61,7 +58,6 @@ const useClasses = makeStyles({
     },
     controls: {
         display: 'flex',
-        alignItems: 'center',
     },
     popoverHeader: {
         ...shorthands.margin('0'),
@@ -98,15 +94,14 @@ const useClasses = makeStyles({
 export const ChatWindow: React.FC = () => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
-    const { instance, inProgress } = useMsal();
-    const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
-    const { alerts } = useAppSelector((state: RootState) => state.app);
-
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
-
     const [title = '', setTitle] = useState<string | undefined>(selectedId);
     const [isEditing, setIsEditing] = useState<boolean>(false);
+    const { instance, inProgress } = useMsal();
+    const { alerts } = useAppSelector((state: RootState) => state.app);
+
+    const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
 
     const onSave = async () => {
         if (chatName !== title) {
@@ -158,6 +153,7 @@ export const ChatWindow: React.FC = () => {
 
     return (
         <div className={classes.root}>
+            {/* MOVE THIS TO THE BOTTOM */}
             {alerts.map(({ type, message }, index) => {
                 return (
                     <Alert
@@ -182,19 +178,17 @@ export const ChatWindow: React.FC = () => {
             })}
             <div className={classes.header}>
                 <div className={classes.title}>
-                    <Persona
+                    {/* <Persona
                         key={'Semantic Kernel Bot'}
                         size="medium"
                         avatar={{ image: { src: conversations[selectedId].botProfilePicture } }}
                         presence={{ status: 'available' }}
-                    />
-                    <Label size="large" weight="semibold">
-                        {chatName}
-                    </Label>
+                    /> */}
                     <Popover open={isEditing}>
                         <PopoverTrigger disableButtonEnhancement>
                             <Tooltip content={'Edit conversation name'} relationship="label">
                                 <Button
+                                    style={{ display: 'none' }}
                                     data-testid="editChatTitleButton"
                                     icon={isEditing ? <Edit24Filled /> : <EditRegular />}
                                     appearance="transparent"
@@ -215,22 +209,30 @@ export const ChatWindow: React.FC = () => {
                             />
                         </PopoverSurface>
                     </Popover>
+                    {/* <Label size="large" weight="semibold">
+                        {chatName}
+                    </Label> */}
                     <TabList selectedValue={selectedTab} onTabSelect={onTabSelect}>
                         <Tab data-testid="chatTab" id="chat" value="chat">
                             Chat
                         </Tab>
                         <Tab data-testid="filesTab" id="files" value="files">
-                            Files
+                            Documents
                         </Tab>
                     </TabList>
                 </div>
                 <div className={classes.controls}>
-                    <ParticipantsList participants={conversations[selectedId].users} />
+                    {/* <AvatarGroupPopover>
+                        {conversations[selectedId].users.map((user) => (
+                            <AvatarGroupItem name={user.id} key={user.id} />
+                        ))}
+                    </AvatarGroupPopover> */}
                     <ShareBotMenu chatId={selectedId} chatTitle={title} />
                 </div>
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
             {selectedTab === 'files' && <ChatResourceList chatId={selectedId} />}
+            {<div>Move Alert items down here</div>}
         </div>
     );
 };
