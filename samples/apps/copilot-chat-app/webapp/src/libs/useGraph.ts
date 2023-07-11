@@ -74,6 +74,8 @@ export const useGraph = () => {
             }
 
             dispatch(setUsers(userData));
+
+            return userData;
         } catch (e: unknown) {
             dispatch(
                 addAlert({
@@ -81,12 +83,14 @@ export const useGraph = () => {
                     message: e as string,
                 }),
             );
+
+            return;
         }
     };
 
     // Helper function to fetch user data in batches of up to 20
     const makeBatchGetUsersRequest = async (userIds: string[], loadedUsers: UserData[], usersToRetry: string[]) => {
-        const getUserScope = 'User.Read';
+        const getUserScope = 'User.ReadBasic.All';
 
         const token = await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, [getUserScope]);
 
