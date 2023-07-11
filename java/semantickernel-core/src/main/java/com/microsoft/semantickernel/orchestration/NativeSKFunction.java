@@ -271,22 +271,9 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
             Method method, SKContext context, Set<Parameter> inputArgs) {
         return parameter -> {
             if (SKContext.class.isAssignableFrom(parameter.getType())) {
-                return context; // .copy();
+                return context;
             } else {
-                String value = getArgumentValue(method, context, parameter, inputArgs);
-                if (value != null) {
-                    return value;
-                } else {
-                    if (parameter.getName().matches("arg\\d")) {
-                        throw new AIException(
-                                AIException.ErrorCodes.InvalidConfiguration,
-                                formErrorMessage(method, parameter));
-                    } else {
-                        throw new AIException(
-                                AIException.ErrorCodes.InvalidConfiguration,
-                                "Unknown arg " + parameter.getName());
-                    }
-                }
+                return getArgumentValue(method, context, parameter, inputArgs);
             }
         };
     }
@@ -332,6 +319,10 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                     arg = annotation.defaultValue();
 
                     if (NO_DEFAULT_VALUE.equals(arg)) {
+                        if (!annotation.required()) {
+                            return null;
+                        }
+
                         throw new AIException(
                                 AIException.ErrorCodes.InvalidConfiguration,
                                 "Attempted to invoke function "
@@ -352,7 +343,15 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
         }
 
         if (NO_DEFAULT_VALUE.equals(arg)) {
-            return null;
+            if (parameter.getName().matches("arg\\d")) {
+                throw new AIException(
+                        AIException.ErrorCodes.InvalidConfiguration,
+                        formErrorMessage(method, parameter));
+            } else {
+                throw new AIException(
+                        AIException.ErrorCodes.InvalidConfiguration,
+                        "Unknown arg " + parameter.getName());
+            }
         }
         return arg;
     }
