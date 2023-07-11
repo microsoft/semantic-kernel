@@ -77,7 +77,7 @@ public class Example08_RetryHandler {
 
         Kernel kernel = SKBuilders
                 .kernel()
-                .setKernelConfig(kernelConfig)
+                .withKernelConfig(kernelConfig)
                 .build();
 
         CompletionSKFunction summarizeFunc = SKBuilders.completionFunctions(kernel)
@@ -88,7 +88,6 @@ public class Example08_RetryHandler {
                         null,
                         new PromptTemplateConfig.CompletionConfig(
                                 0.2, 0.5, 0, 0, 2000));
-
 
         kernel.registerSemanticFunction(summarizeFunc);
 

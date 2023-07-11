@@ -25,7 +25,7 @@ public class Example05_InlineFunctionDefinition {
                 .addTextCompletionService("text-davinci-003", kernel -> textCompletion)
                 .build();
 
-        Kernel kernel = SKBuilders.kernel().setKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
 
         System.out.println("======== Inline Function Definition ========");
 

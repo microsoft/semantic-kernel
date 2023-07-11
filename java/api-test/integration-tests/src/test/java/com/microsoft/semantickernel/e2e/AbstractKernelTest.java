@@ -37,7 +37,7 @@ public class AbstractKernelTest {
                         .build();
 
         return SKBuilders.kernel()
-                .setKernelConfig(kernelConfig)
+                .withKernelConfig(kernelConfig)
                 .withMemoryStore(new VolatileMemoryStore())
                 .build();
     }

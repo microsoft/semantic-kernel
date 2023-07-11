@@ -37,7 +37,7 @@ public class Example00_GettingStarted {
                 .build();
 
         Kernel kernel = SKBuilders.kernel()
-                .setKernelConfig(config)
+                .withKernelConfig(config)
                 .build();
 
         return kernel;
