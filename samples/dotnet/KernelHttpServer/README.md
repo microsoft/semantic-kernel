@@ -46,4 +46,4 @@ Sample app learning examples:
     semantic functions can be used in your app
 -   [Authentication and APIs](../../apps/auth-api-webapp-react/README.md) – learn how to connect to external
     API's with authentication while using Semantic Kernel
--   GitHub Repo Q&A (coming soon) – learn how Memories and Embeddings can be used in your app
+-   [GitHub Repo Q&A](../../apps//github-qna-webapp-react/README.md) – learn how Memories and Embeddings can be used in your app

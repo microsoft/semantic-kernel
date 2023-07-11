@@ -59,7 +59,7 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
                         { key: 'searchPattern', value: '*.md' },
                     ],
                 },
-                'GitHubSkill',
+                'GitHubPlugin',
                 'SummarizeRepository',
             );
             setDownloadState(DownloadState.Loaded);
