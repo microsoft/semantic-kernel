@@ -3,9 +3,7 @@ package com.microsoft.semantickernel.util;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Locale parser to support Java 8 and Java 9+ due to JEP 252.
@@ -14,8 +12,6 @@ import java.util.Map;
  * styles.
  */
 public final class LocaleParser {
-
-    private static final Map<String, Locale> localeCache = new HashMap<>();
 
     private LocaleParser() {}
 
@@ -30,10 +26,6 @@ public final class LocaleParser {
      * @return
      */
     public static final Locale parseLocale(String locale) {
-        if (localeCache.containsKey(locale)) {
-            return localeCache.get(locale);
-        }
-
         Locale parsedLocale = null;
 
         if (locale == null
@@ -48,8 +40,6 @@ public final class LocaleParser {
         } else {
             parsedLocale = new Locale(locale);
         }
-
-        localeCache.put(locale, parsedLocale);
 
         return parsedLocale;
     }
