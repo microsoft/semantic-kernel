@@ -129,7 +129,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
             modalType="alert"
         >
             <DialogTrigger>
-                <Button aria-label="Enable plugin" appearance="primary">
+                <Button data-testid="openPluginDialogButton" aria-label="Enable plugin" appearance="primary">
                     Enable
                 </Button>
             </DialogTrigger>
@@ -287,7 +287,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                             <DialogTrigger>
                                 <Button appearance="secondary">Cancel</Button>
                             </DialogTrigger>
-                            <Button type="submit" appearance="primary" disabled={!!errorMessage}>
+                            <Button data-testid="enablePluginButton" type="submit" appearance="primary" disabled={!!errorMessage}>
                                 Enable
                             </Button>
                         </DialogActions>
