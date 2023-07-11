@@ -10,9 +10,9 @@ import { Breakpoints } from '../../../styles';
 import { timestampToDateString } from '../../utils/TextUtils';
 import { PlanViewer } from '../plan-viewer/PlanViewer';
 import { PromptDetails } from '../prompt-details/PromptDetails';
+import * as utils from './../../utils/TextUtils';
 import { ChatHistoryDocumentContent } from './ChatHistoryDocumentContent';
 import { ChatHistoryTextContent } from './ChatHistoryTextContent';
-import * as utils from './../../utils/TextUtils';
 
 const useClasses = makeStyles({
     root: {
@@ -41,7 +41,7 @@ const useClasses = makeStyles({
         ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalL),
     },
     me: {
-        backgroundColor: "#e8ebf9",
+        backgroundColor: '#e8ebf9',
     },
     time: {
         color: tokens.colorNeutralForeground3,
@@ -75,8 +75,8 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
 
     const isMe = message.authorRole === AuthorRoles.User && message.userId === activeUserInfo?.id;
     const isBot = message.authorRole === AuthorRoles.Bot;
-    const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
-    const fullName = user?.fullName ?? message.userName;
+    const user = chat.getChatUserById(message.userId, selectedId);
+    const fullName = user?.displayName ?? 'External User';
 
     const avatar = isBot
         ? { image: { src: conversations[selectedId].botProfilePicture } }

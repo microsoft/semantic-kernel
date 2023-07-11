@@ -52,8 +52,8 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
                 {
                     <Avatar
                         className={classes.root}
-                        key={activeUserInfo?.username}
-                        name={activeUserInfo?.username}
+                        key={activeUserInfo?.displayName as string}
+                        name={activeUserInfo?.displayName as string}
                         size={28}
                         badge={{ status: 'available' }}
                     />
@@ -63,14 +63,16 @@ export const UserSettings: FC<IUserSettingsProps> = ({ setLoadingState }) => {
                 <MenuList>
                     <MenuItem className={classes.persona}>
                         <Persona
-                            name={activeUserInfo?.username}
-                            secondaryText={activeUserInfo?.email}
+                            name={activeUserInfo?.displayName as string}
+                            secondaryText={activeUserInfo?.userPrincipalName as string}
                             presence={{ status: 'available' }}
                             avatar={{ color: 'colorful' }}
                         />
                     </MenuItem>
                     <MenuDivider />
-                    <MenuItem data-testid="logOutMenuButton" onClick={onLogout}>Sign out</MenuItem>
+                    <MenuItem data-testid="logOutMenuButton" onClick={onLogout}>
+                        Sign out
+                    </MenuItem>
                 </MenuList>
             </MenuPopover>
         </Menu>

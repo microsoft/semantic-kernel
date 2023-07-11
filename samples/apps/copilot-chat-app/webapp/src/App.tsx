@@ -16,6 +16,7 @@ import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { addAlert, setActiveUserInfo } from './redux/features/app/appSlice';
+import { addUser } from './redux/features/users/usersSlice';
 
 export const useClasses = makeStyles({
     container: {
@@ -77,8 +78,15 @@ const App: FC = () => {
                     dispatch(
                         setActiveUserInfo({
                             id: account.homeAccountId,
-                            email: account.username, // username in an AccountInfo object is the email address
-                            username: account.name ?? account.username,
+                            userPrincipalName: account.username, // username in an AccountInfo object is the email address
+                            displayName: account.name ?? account.username,
+                        }),
+                    );
+                    dispatch(
+                        addUser({
+                            id: account.localAccountId,
+                            displayName: account.name ?? account.username,
+                            userPrincipalName: account.username,
                         }),
                     );
                 }

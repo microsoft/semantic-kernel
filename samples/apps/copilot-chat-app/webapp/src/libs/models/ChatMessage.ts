@@ -33,8 +33,7 @@ export enum ChatMessageType {
 export interface IChatMessage {
     type: ChatMessageType;
     timestamp: number;
-    userName: 'bot' | string;
-    userId: string;
+    userId: 'bot' | string;
     content: string;
     id?: string;
     prompt?: string;

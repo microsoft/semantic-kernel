@@ -159,7 +159,6 @@ export const registerSignalREvents = (store: Store) => {
         const message = {
             type: messageType,
             timestamp: new Date().getTime(),
-            userName: 'bot',
             userId: 'bot',
             content: askResult.value,
             prompt: askResult.variables.find((v) => v.key === 'prompt')?.value,
@@ -178,10 +177,7 @@ export const registerSignalREvents = (store: Store) => {
         const user: IChatUser = {
             id: userId,
             online: false,
-            fullName: '',
-            emailAddress: '',
             isTyping: false,
-            photo: '',
         };
         store.dispatch({ type: 'conversations/addUserToConversation', payload: { user, chatId } });
     });
@@ -200,8 +196,8 @@ export const registerSignalREvents = (store: Store) => {
         store.dispatch({ type: 'conversations/updateBotIsTypingFromServer', payload: { chatId, isTyping } });
     });
 
-    hubConnection.on(SignalRCallbackMethods.GlobalDocumentUploaded, (fileName: string, userName: string) => {
-        store.dispatch(addAlert({ message: `${userName} uploaded ${fileName} to all chats`, type: AlertType.Info }));
+    hubConnection.on(SignalRCallbackMethods.GlobalDocumentUploaded, (fileName: string) => {
+        store.dispatch(addAlert({ message: `${fileName} uploaded to all chats`, type: AlertType.Info }));
     });
 
     hubConnection.on(SignalRCallbackMethods.ChatDocumentUploaded, (message: IChatMessage, chatId: string) => {

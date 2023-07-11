@@ -17,13 +17,13 @@ export const Constants = {
         },
         semanticKernelScopes: ['openid', 'offline_access', 'profile'],
         // MS Graph scopes required for loading user information
-        msGraphAppScopes: ['User.Read'],
+        msGraphAppScopes: ['User.ReadBasic.All'],
     },
     bot: {
         profile: {
             id: 'bot',
-            fullName: 'Copilot',
-            emailAddress: '',
+            displayName: 'Copilot',
+            userPrincipalName: '',
             photo: botIcon1,
         },
         fileExtension: 'skcb',

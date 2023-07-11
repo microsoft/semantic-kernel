@@ -68,7 +68,7 @@ const useClasses = makeStyles({
         whiteSpace: 'nowrap',
         lineHeight: tokens.lineHeightBase100,
         color: tokens.colorNeutralForeground2,
-        ...shorthands.overflow('hidden')
+        ...shorthands.overflow('hidden'),
     },
     popoverSurface: {
         display: 'none',
@@ -79,7 +79,7 @@ const useClasses = makeStyles({
     },
     selected: {
         backgroundColor: tokens.colorNeutralBackground1,
-    }
+    },
 });
 
 interface IChatListItemProps {
@@ -121,9 +121,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                     <Persona avatar={{ image: { src: botProfilePicture } }} presence={{ status: 'available' }} />
                     <div className={classes.body}>
                         <div className={classes.header}>
-                            <Text className={classes.title}>
-                                {header}
-                            </Text>
+                            <Text className={classes.title}>{header}</Text>
                             <Text className={classes.timestamp} size={300}>
                                 {time}
                             </Text>
@@ -141,7 +139,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                 </div>
             </PopoverTrigger>
             <PopoverSurface className={classes.popoverSurface}>
-                <Text weight="bold">{Constants.bot.profile.fullName}</Text>
+                <Text weight="bold">{Constants.bot.profile.displayName}</Text>
                 <Text>{time}</Text>
             </PopoverSurface>
         </Popover>

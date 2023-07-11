@@ -86,9 +86,9 @@ export const useGraph = () => {
 
     // Helper function to fetch user data in batches of up to 20
     const makeBatchGetUsersRequest = async (userIds: string[], loadedUsers: UserData[], usersToRetry: string[]) => {
-        const getUserScope = 'User.Read';
+        const listUsersScope = 'User.ReadBasic.All';
 
-        const token = await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, [getUserScope]);
+        const token = await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, [listUsersScope]);
 
         // Loop through the user ids in chunks of the maximum batch size
         for (let i = 0; i < userIds.length; i += Constants.BATCH_REQUEST_LIMIT) {

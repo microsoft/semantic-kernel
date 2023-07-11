@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { useMsal } from '@azure/msal-react';
-import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
 import { RootState } from '../redux/app/store';
 import { addAlert } from '../redux/features/app/appSlice';
@@ -29,6 +28,7 @@ import botIcon2 from '../assets/bot-icons/bot-icon-2.png';
 import botIcon3 from '../assets/bot-icons/bot-icon-3.png';
 import botIcon4 from '../assets/bot-icons/bot-icon-4.png';
 import botIcon5 from '../assets/bot-icons/bot-icon-5.png';
+import { UserData } from '../redux/features/users/UsersState';
 
 export interface GetResponseOptions {
     messageType: ChatMessageType;
@@ -42,6 +42,7 @@ export const useChat = () => {
     const { instance, inProgress } = useMsal();
     const { conversations } = useAppSelector((state: RootState) => state.conversations);
     const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { users } = useAppSelector((state: RootState) => state.users);
 
     const botService = new BotService(process.env.REACT_APP_BACKEND_URI as string);
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
@@ -49,23 +50,21 @@ export const useChat = () => {
 
     const botProfilePictures: string[] = [botIcon1, botIcon2, botIcon3, botIcon4, botIcon5];
 
+    // Populate user details for view state
     const userId = activeUserInfo?.id ?? '';
-    const fullName = activeUserInfo?.username ?? '';
-    const emailAddress = activeUserInfo?.email ?? '';
     const loggedInUser: IChatUser = {
         id: userId,
-        fullName,
-        emailAddress,
-        photo: undefined, // TODO: Make call to Graph /me endpoint to load photo
         online: true,
         isTyping: false,
     };
 
     const plugins = useAppSelector((state: RootState) => state.plugins);
 
-    const getChatUserById = (id: string, chatId: string, users: IChatUser[]) => {
-        if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') return Constants.bot.profile;
-        return users.find((user) => user.id === id);
+    const getChatUserById = (id: string, chatId: string): UserData | null => {
+        if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') id = 'bot';
+        // falsy lint check, users[userId] can be null if user data hasn't been loaded
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        return users[id.split('.')[0]] ?? null;
     };
 
     const createChat = async () => {
@@ -102,10 +101,6 @@ export const useChat = () => {
                 {
                     key: 'userId',
                     value: userId,
-                },
-                {
-                    key: 'userName',
-                    value: fullName,
                 },
                 {
                     key: 'chatId',
@@ -231,7 +226,6 @@ export const useChat = () => {
         try {
             await documentImportService.importDocumentAsync(
                 userId,
-                fullName,
                 chatId,
                 file,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),

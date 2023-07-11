@@ -2,7 +2,8 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AlertType } from '../../../libs/models/AlertType';
-import { ActiveUserInfo, Alert, AppState } from './AppState';
+import { UserData } from '../users/UsersState';
+import { Alert, AppState } from './AppState';
 
 const initialState: AppState = {
     alerts: [
@@ -30,7 +31,7 @@ export const appSlice = createSlice({
         removeAlert: (state: AppState, action: PayloadAction<number>) => {
             state.alerts.splice(action.payload, 1);
         },
-        setActiveUserInfo: (state: AppState, action: PayloadAction<ActiveUserInfo>) => {
+        setActiveUserInfo: (state: AppState, action: PayloadAction<UserData>) => {
             state.activeUserInfo = action.payload;
         },
     },
