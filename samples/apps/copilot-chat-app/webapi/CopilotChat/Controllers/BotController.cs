@@ -128,7 +128,6 @@ public class BotController : ControllerBase
         {
             var chatMessage = new ChatMessage(
                 message.UserId,
-                message.UserName,
                 chatId,
                 message.Content,
                 message.Prompt,

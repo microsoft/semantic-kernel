@@ -68,12 +68,6 @@ public class ChatMessage : IStorageEntity
     public string UserId { get; set; }
 
     /// <summary>
-    /// Name of the user who sent this message.
-    /// </summary>
-    [JsonPropertyName("userName")]
-    public string UserName { get; set; }
-
-    /// <summary>
     /// Id of the chat this message belongs to.
     /// </summary>
     [JsonPropertyName("chatId")]
@@ -114,17 +108,15 @@ public class ChatMessage : IStorageEntity
     /// Create a new chat message. Timestamp is automatically generated.
     /// </summary>
     /// <param name="userId">Id of the user who sent this message</param>
-    /// <param name="userName">Name of the user who sent this message</param>
     /// <param name="chatId">The chat ID that this message belongs to</param>
     /// <param name="content">The message</param>
     /// <param name="prompt">The prompt used to generate the message</param>
     /// <param name="authorRole">Role of the author</param>
     /// <param name="type">Type of the message</param>
-    public ChatMessage(string userId, string userName, string chatId, string content, string prompt = "", AuthorRoles authorRole = AuthorRoles.User, ChatMessageType type = ChatMessageType.Message)
+    public ChatMessage(string userId, string chatId, string content, string prompt = "", AuthorRoles authorRole = AuthorRoles.User, ChatMessageType type = ChatMessageType.Message)
     {
         this.Timestamp = DateTimeOffset.Now;
         this.UserId = userId;
-        this.UserName = userName;
         this.ChatId = chatId;
         this.Content = content;
         this.Id = Guid.NewGuid().ToString();
@@ -141,7 +133,7 @@ public class ChatMessage : IStorageEntity
     /// <param name="prompt">The prompt used to generate the message</param>
     public static ChatMessage CreateBotResponseMessage(string chatId, string content, string prompt)
     {
-        return new ChatMessage("bot", "bot", chatId, content, prompt, AuthorRoles.Bot, IsPlan(content) ? ChatMessageType.Plan : ChatMessageType.Message);
+        return new ChatMessage("bot", chatId, content, prompt, AuthorRoles.Bot, IsPlan(content) ? ChatMessageType.Plan : ChatMessageType.Message);
     }
 
     /// <summary>
@@ -157,7 +149,7 @@ public class ChatMessage : IStorageEntity
             content = $"Sent a file named \"{documentDetails?.Name}\" with a size of {documentDetails?.Size}.";
         }
 
-        return $"[{this.Timestamp.ToString("G", CultureInfo.CurrentCulture)}] {this.UserName}: {content}";
+        return $"[{this.Timestamp.ToString("G", CultureInfo.CurrentCulture)}]: {content}";
     }
 
     /// <summary>

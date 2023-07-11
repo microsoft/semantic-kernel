@@ -159,7 +159,7 @@ public class DocumentImportController : ControllerBase
         }
 
         await messageRelayHubContext.Clients.All
-            .SendAsync(GlobalDocumentUploadedClientCall, formFile.FileName, documentImportForm.UserName);
+            .SendAsync(GlobalDocumentUploadedClientCall, formFile.FileName);
 
         return this.Ok();
     }
@@ -212,7 +212,6 @@ public class DocumentImportController : ControllerBase
 
         var chatMessage = new ChatMessage(
             memorySource.SharedBy,
-            documentImportForm.UserName,
             memorySource.ChatId,
             content.ToString(),
             "",

@@ -241,7 +241,6 @@ public class ChatSkill
     public async Task<SKContext> ChatAsync(
         [Description("The new message")] string message,
         [Description("Unique and persistent identifier for the user")] string userId,
-        [Description("Name of the user")] string userName,
         [Description("Unique and persistent identifier for the chat")] string chatId,
         [Description("Type of the message")] string messageType,
         [Description("Previously proposed plan that is approved"), DefaultValue(null), SKName("proposedPlan")] string? planJson,
@@ -249,7 +248,7 @@ public class ChatSkill
         SKContext context)
     {
         // Save this new message to memory such that subsequent chat responses can use it
-        await this.SaveNewMessageAsync(message, userId, userName, chatId, messageType);
+        await this.SaveNewMessageAsync(message, userId, chatId, messageType);
 
         // Clone the context to avoid modifying the original context variables.
         var chatContext = Utilities.CopyContextWithVariablesClone(context);
@@ -436,7 +435,6 @@ public class ChatSkill
         {
             var contextVariables = new ContextVariables();
             contextVariables.Set("chatId", context["chatId"]);
-            contextVariables.Set("audience", context["userName"]);
 
             var intentContext = new SKContext(
                 contextVariables,
@@ -507,10 +505,9 @@ public class ChatSkill
     /// </summary>
     /// <param name="message">The message</param>
     /// <param name="userId">The user ID</param>
-    /// <param name="userName"></param>
     /// <param name="chatId">The chat ID</param>
     /// <param name="type">Type of the message</param>
-    private async Task<ChatMessage> SaveNewMessageAsync(string message, string userId, string userName, string chatId, string type)
+    private async Task<ChatMessage> SaveNewMessageAsync(string message, string userId, string chatId, string type)
     {
         // Make sure the chat exists.
         if (!await this._chatSessionRepository.TryFindByIdAsync(chatId, v => _ = v))
@@ -520,7 +517,6 @@ public class ChatSkill
 
         var chatMessage = new ChatMessage(
             userId,
-            userName,
             chatId,
             message,
             "",
