@@ -176,7 +176,7 @@ public sealed class Kernel : IKernel, IDisposable
             this.Log,
             cancellationToken);
 
-        this.Log.LogDebug("Executing kernel, Executing {0} functions in pipleine", pipeline.Length);
+        this.Log.LogDebug("Executing kernel, Executing {0} functions in pipeline", pipeline.Length);
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
         {
