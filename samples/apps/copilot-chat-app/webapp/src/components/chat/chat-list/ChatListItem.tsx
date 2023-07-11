@@ -140,16 +140,25 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                                     </Tooltip>
                                     <Tooltip content={'Download chat session'} relationship="label">
                                         <Button
+                                            disabled
                                             icon={<ArrowDownload16Regular />}
                                             appearance="transparent"
                                             aria-label="Edit"
                                         />
                                     </Tooltip>
-                                    <Tooltip content={'Delete chat session'} relationship="label">
-                                        <Button icon={<Delete16Regular />} appearance="transparent" aria-label="Edit" />
-                                    </Tooltip>
                                     <Tooltip content={'Share live chat code'} relationship="label">
-                                        <Button icon={<Share20Regular />} appearance="transparent" aria-label="Edit" />
+                                        <Button
+                                            disabled
+                                            icon={<Share20Regular />}
+                                            appearance="transparent"
+                                            aria-label="Edit"
+                                        />
+                                    </Tooltip>
+                                    <Tooltip
+                                        content={'Delete chat session (show alert with ok/cancel)'}
+                                        relationship="label"
+                                    >
+                                        <Button icon={<Delete16Regular />} appearance="transparent" aria-label="Edit" />
                                     </Tooltip>
                                 </span>
                             )}

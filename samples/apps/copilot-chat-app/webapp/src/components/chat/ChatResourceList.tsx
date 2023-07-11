@@ -80,7 +80,7 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
     const { columns, rows } = useTable(resources);
     return (
         <div className={classes.root}>
-            <Tooltip content="Embed file into session" relationship="label">
+            <Tooltip content="Embed file into chat session" relationship="label">
                 <Button
                     style={{ marginBottom: '5px' }}
                     icon={<DocumentArrowUp20Regular />}

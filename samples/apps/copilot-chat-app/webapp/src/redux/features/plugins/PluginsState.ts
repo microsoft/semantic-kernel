@@ -1,6 +1,5 @@
-// Copyright (c) Microsoft. All rights reserved.
-
 import { Constants } from '../../../Constants';
+import CustomIcon from '../../../assets/plugin-icons/custom.png';
 import GithubIcon from '../../../assets/plugin-icons/github.png';
 import JiraIcon from '../../../assets/plugin-icons/jira.png';
 import KlarnaIcon from '../../../assets/plugin-icons/klarna.png';
@@ -15,6 +14,7 @@ export const enum Plugins {
     Jira = 'Jira',
     GitHub = 'GitHub',
     Klarna = 'Klarna Shopping',
+    Custom = 'Custom Plugin',
 }
 
 export const enum AuthHeaderTags {
@@ -22,6 +22,7 @@ export const enum AuthHeaderTags {
     Jira = 'jira',
     GitHub = 'github',
     Klarna = 'klarna',
+    Custom = 'developer',
 }
 
 export interface PluginAuthRequirements {
@@ -130,6 +131,15 @@ export const initialState: PluginsState = {
         authRequirements: {},
         icon: KlarnaIcon,
         headerTag: AuthHeaderTags.Klarna,
+    },
+    Custom: {
+        name: Plugins.Custom,
+        publisher: 'AI Developer',
+        description: 'Add your own ChatGPT compatible plugin.',
+        enabled: false,
+        authRequirements: {},
+        icon: CustomIcon,
+        headerTag: AuthHeaderTags.Custom,
     },
 };
 

@@ -26,6 +26,10 @@ export const pluginsState = createSlice({
                     plugin = state.Klarna;
                     authData = 'klarna-auth-data';
                     break;
+                case Plugins.Custom:
+                    plugin = state.Custom;
+                    authData = 'klarna-auth-data';
+                    break;
             }
 
             plugin.enabled = true;

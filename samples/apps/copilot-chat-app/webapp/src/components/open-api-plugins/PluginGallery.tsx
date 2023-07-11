@@ -1,5 +1,4 @@
 import {
-    Body1,
     Button,
     Dialog,
     DialogBody,
@@ -59,7 +58,12 @@ export const PluginGallery: React.FC = () => {
     const [open, setOpen] = useState(false);
 
     return (
-        <Dialog open={open} onOpenChange={(_event, data) => { setOpen(data.open); }}>
+        <Dialog
+            open={open}
+            onOpenChange={(_event, data) => {
+                setOpen(data.open);
+            }}
+        >
             <DialogTrigger>
                 <Button appearance="transparent" icon={<AppsAddIn24Regular color="white" />} />
             </DialogTrigger>
@@ -68,20 +72,25 @@ export const PluginGallery: React.FC = () => {
                     <DialogTitle
                         action={
                             <DialogTrigger action="close">
-                                <Button data-testid="closeEnableCCPluginsPopUp" appearance="subtle" aria-label="close" icon={<Dismiss24Regular />} />
+                                <Button
+                                    data-testid="closeEnableCCPluginsPopUp"
+                                    appearance="subtle"
+                                    aria-label="close"
+                                    icon={<Dismiss24Regular />}
+                                />
                             </DialogTrigger>
                         }
                     >
                         <Subtitle1 block className={classes.title}>
-                            Enable Copilot Chat Plugins
+                            Plugins Settings
                         </Subtitle1>
-                        <Body1 as="p" block className={classes.description}>
+                        {/* <Body1 as="p" block className={classes.description}>
                             Authorize plugins and have more powerful bots!
-                        </Body1>
+                        </Body1> */}
                     </DialogTitle>
                     <DialogContent className={classes.dialogContent}>
                         <Subtitle2 block className={classes.title}>
-                            Available Plugins
+                            Currently Available Plugins:
                         </Subtitle2>{' '}
                         <div className={classes.content}>
                             {Object.entries(plugins).map((entry) => {
