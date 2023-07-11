@@ -80,7 +80,8 @@ public class TimeSkill {
     public String date(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         // Example: Sunday, 12 January, 2025
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR)
@@ -99,7 +100,8 @@ public class TimeSkill {
     public String time(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         // Example: 09:15:07 PM
         return DateTimeFormatter.ofPattern("hh:mm:ss a")
@@ -118,7 +120,8 @@ public class TimeSkill {
     public String utcNow(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR + " h:mm a")
                 .withLocale(parseLocale(locale))
@@ -136,7 +139,8 @@ public class TimeSkill {
     public String today(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return date(locale);
     }
@@ -154,7 +158,8 @@ public class TimeSkill {
     public String now(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR + " h:mm a")
                 .withLocale(parseLocale(locale))
@@ -172,7 +177,8 @@ public class TimeSkill {
     public String year(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern("yyyy").withLocale(parseLocale(locale)).format(now());
     }
@@ -188,7 +194,8 @@ public class TimeSkill {
     public String month(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern("MMMM").withLocale(parseLocale(locale)).format(now());
     }
@@ -204,7 +211,8 @@ public class TimeSkill {
     public String monthNumber(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern("MM").withLocale(parseLocale(locale)).format(now());
     }
@@ -220,7 +228,8 @@ public class TimeSkill {
     public String day(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern("d").withLocale(parseLocale(locale)).format(now());
     }
@@ -236,7 +245,8 @@ public class TimeSkill {
     public String dayOfWeek(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern("EEEE").withLocale(parseLocale(locale)).format(now());
     }
@@ -252,7 +262,8 @@ public class TimeSkill {
     public String hour(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern("h a").withLocale(parseLocale(locale)).format(now());
     }
@@ -268,7 +279,8 @@ public class TimeSkill {
     public String hourNumber(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern("HH").withLocale(parseLocale(locale)).format(now());
     }
@@ -293,7 +305,8 @@ public class TimeSkill {
                     String days,
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         int offsetDays = Integer.parseInt(days);
         return DateTimeFormatter.ofPattern(DAY_MONTH_DAY_YEAR)
@@ -318,7 +331,8 @@ public class TimeSkill {
                     String dayName,
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         ZonedDateTime currentDate = now();
         for (int i = 1; i <= 7; i++) {
@@ -346,7 +360,8 @@ public class TimeSkill {
     public String minute(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern("mm").withLocale(parseLocale(locale)).format(now());
     }
@@ -362,7 +377,8 @@ public class TimeSkill {
     public String second(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern("ss").withLocale(parseLocale(locale)).format(now());
     }
@@ -380,7 +396,8 @@ public class TimeSkill {
     public String timeZoneOffset(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         return DateTimeFormatter.ofPattern("XXX").withLocale(parseLocale(locale)).format(now());
     }
@@ -396,7 +413,8 @@ public class TimeSkill {
     public String timeZoneName(
             @SKFunctionParameters(
                             name = "locale",
-                            description = "Locale to use when formatting the date")
+                            description = "Locale to use when formatting the date",
+                            required = false)
                     String locale) {
         ZoneId zoneId = ZoneId.systemDefault();
         return zoneId.getDisplayName(TextStyle.FULL, parseLocale(locale));
