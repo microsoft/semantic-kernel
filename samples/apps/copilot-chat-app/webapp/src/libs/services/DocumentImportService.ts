@@ -8,7 +8,7 @@ export class DocumentImportService extends BaseService {
         userId: string,
         userName: string,
         chatId: string,
-        document: File,
+        documents: File[],
         accessToken: string,
     ) => {
         const formData = new FormData();
@@ -16,11 +16,13 @@ export class DocumentImportService extends BaseService {
         formData.append('userName', userName);
         formData.append('chatId', chatId);
         formData.append('documentScope', 'Chat');
-        formData.append('formFile', document);
+        for (const document of documents) {
+            formData.append('formFiles', document);
+        }
 
         return await this.getResponseAsync<IChatMessage>(
             {
-                commandPath: 'importDocument',
+                commandPath: 'importDocuments',
                 method: 'POST',
                 body: formData,
             },
