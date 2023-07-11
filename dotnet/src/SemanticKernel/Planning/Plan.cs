@@ -253,12 +253,22 @@ public sealed class Plan : ISKFunction
             var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
             var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
-
             if (result.ErrorOccurred)
             {
+                result.Log.LogDebug("Executing pipeline, Step {0}/{1}: {2}.{3}, Failed, Error description: {4}",
+                  this.NextStepIndex,
+                  this.Steps.Count,
+                  this.Name,
+                  this.SkillName,
+                  result.LastErrorDescription);
                 throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
                     $"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
             }
+            result.Log.LogDebug("Executing pipeline, Step {0}/{1}: {2}.{3} Finished successfully",
+                this.NextStepIndex,
+                this.Steps.Count,
+                this.Name,
+                this.SkillName);
 
             #region Update State
 

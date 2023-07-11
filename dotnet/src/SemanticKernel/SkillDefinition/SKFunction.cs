@@ -239,7 +239,22 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             try
             {
+                this._log.LogDebug($"Executing function {0}.{1}",
+                    SkillName,
+                    Name);
                 context = await this._function(null, settings, context).ConfigureAwait(false);
+                if (context.ErrorOccurred)
+                {
+                    this._log.LogDebug($"Executing function {0}.{1} finished successfully",
+                        SkillName,
+                        Name);
+                } else
+                {
+                    this._log.LogDebug($"Executing function {0}.{1} finished failed, Error Description: {2}",
+                        SkillName,
+                        Name,
+                        context.LastErrorDescription);
+                }
             }
             catch (Exception e) when (!e.IsCriticalException())
             {

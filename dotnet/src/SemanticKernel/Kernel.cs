@@ -176,6 +176,7 @@ public sealed class Kernel : IKernel, IDisposable
             this.Log,
             cancellationToken);
 
+        this.Log.LogDebug("Executing kernel, Executing {0} functions in pipleine", pipeline.Length);
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
         {
@@ -192,6 +193,11 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 context.CancellationToken.ThrowIfCancellationRequested();
+                this.Log.LogDebug($"Kernel execution, Start execute {0}/{1} function: {2}.{3}",
+                    pipelineStepCount + 1,
+                    pipeline.Length,
+                    f.SkillName,
+                    f.Name);
                 context = await f.InvokeAsync(context).ConfigureAwait(false);
 
                 if (context.ErrorOccurred)
@@ -200,6 +206,11 @@ public sealed class Kernel : IKernel, IDisposable
                         pipelineStepCount, f.SkillName, f.Name, context.LastErrorDescription);
                     return context;
                 }
+                this.Log.LogDebug($"Kernel execution, Finish successfully execute {0}/{1} function: {2}.{3}",
+                    pipelineStepCount + 1,
+                    pipeline.Length,
+                    f.SkillName,
+                    f.Name);
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
