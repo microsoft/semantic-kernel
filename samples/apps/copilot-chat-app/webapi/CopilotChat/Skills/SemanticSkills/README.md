@@ -1,5 +1,9 @@
 # Copilot Chat Semantic Skills
 
+## prompt.txt
+
+These files contain the prompt template that is completed by filling out the variables and function calls in the template to generate a prompt that is sent to the LLM model for completion when that particular Semantic function is called.
+
 ## Config.json
 
 These files accompany the promp.txt files. They configure the completion settings for the LLM model that gets called; They also define the variables used inside the prompt.
