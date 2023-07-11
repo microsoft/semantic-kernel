@@ -97,10 +97,10 @@ Follow these guidelines:
 
 | Folder                           | Description |
 |----------------------------------|-------------|
-| `connectors`                     | Containing: `connectors-ai-openai`, `connectors-ai-huggingface`, `connectors-memory-qadrant`, ...  |
-| `extensions`                     | Containing: `planning-action-planner`, `planning-sequential-planner` |
+| `connectors`                     | Containing: `semantickernel-connectors-ai-openai`, `semantickernel-connectors-ai-huggingface`, `semantickernel-connectors-memory-qadrant`, ...  |
+| `extensions`                     | Containing: `semantickernel-planning-action-planner`, `semantickernel-planning-sequential-planner` |
 | `integration-tests`              | Integration tests |
 | `semantickernel-api`             | SK API definitions |
 | `semantickernel-bom`             | SK common package collection |
 | `semantickernel-core`            | SK core implementation |
-| `plugins`                        | Containing: `plugins-core`, `plugins-document`, `plugins-msgraph`, ... |
+| `plugins`                        | Containing: `semantickernel-plugins-core`, `semantickernel-plugins-document`, `semantickernel-plugins-msgraph`, ... |
