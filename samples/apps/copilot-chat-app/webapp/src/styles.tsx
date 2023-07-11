@@ -1,25 +1,26 @@
-import { BrandVariants, GriffelStyle, createLightTheme, tokens } from '@fluentui/react-components';
+import { BrandVariants, GriffelStyle, createDarkTheme, createLightTheme, tokens } from '@fluentui/react-components';
 
 const semanticKernelBrandRamp: BrandVariants = {
-    10: "#060103",
-    20: "#261018",
-    30: "#431426",
-    40: "#591732",
-    50: "#701A3E",
-    60: "#861F4B",
-    70: "#982C57",
-    80: "#A53E63",
-    90: "#B15070",
-    100: "#BC627E",
-    110: "#C6748B",
-    120: "#CF869A",
-    130: "#D898A8",
-    140: "#E0AAB7",
-    150: "#E8BCC6",
-    160: "#EFCFD6"
+    10: '#060103',
+    20: '#261018',
+    30: '#431426',
+    40: '#591732',
+    50: '#701A3E',
+    60: '#861F4B',
+    70: '#982C57',
+    80: '#A53E63',
+    90: '#B15070',
+    100: '#BC627E',
+    110: '#C6748B',
+    120: '#CF869A',
+    130: '#D898A8',
+    140: '#E0AAB7',
+    150: '#E8BCC6',
+    160: '#EFCFD6',
 };
 
 export const semanticKernelLightTheme = createLightTheme(semanticKernelBrandRamp);
+export const semanticKernelDarkTheme = createDarkTheme(semanticKernelBrandRamp);
 
 export const Breakpoints = {
     small: (style: GriffelStyle): Record<string, GriffelStyle> => {

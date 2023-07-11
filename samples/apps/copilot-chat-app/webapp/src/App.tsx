@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated, useMsal } from '@azure/msal-react';
-import { Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Button, FluentProvider, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 
+import { WeatherSunny24Filled, WeatherSunny24Regular } from '@fluentui/react-icons';
 import * as React from 'react';
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { UserSettings } from './components/header/UserSettings';
 import { PluginGallery } from './components/open-api-plugins/PluginGallery';
 import BackendProbe from './components/views/BackendProbe';
@@ -16,6 +17,7 @@ import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { addAlert, setActiveUserInfo } from './redux/features/app/appSlice';
+import { semanticKernelDarkTheme, semanticKernelLightTheme } from './styles';
 
 export const useClasses = makeStyles({
     container: {
@@ -56,6 +58,7 @@ enum AppState {
 
 const App: FC = () => {
     const classes = useClasses();
+    const [darkMode, setDarkMode] = useState(false);
 
     const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const dispatch = useAppDispatch();
@@ -100,7 +103,7 @@ const App: FC = () => {
 
     // TODO: handle error case of missing account information
     return (
-        <div>
+        <FluentProvider className="app-container" theme={darkMode ? semanticKernelDarkTheme : semanticKernelLightTheme}>
             <UnauthenticatedTemplate>
                 <div className={classes.container}>
                     <div className={classes.header}>
@@ -115,6 +118,20 @@ const App: FC = () => {
                     <div className={classes.header}>
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <div className={classes.cornerItems}>
+                            <Button
+                                appearance="transparent"
+                                icon={
+                                    darkMode ? (
+                                        <WeatherSunny24Regular color="white" />
+                                    ) : (
+                                        <WeatherSunny24Filled color="white" />
+                                    )
+                                }
+                                onClick={() => {
+                                    setDarkMode(!darkMode);
+                                }}
+                            />
+
                             <PluginGallery />
                             <UserSettings
                                 setLoadingState={() => {
@@ -135,7 +152,7 @@ const App: FC = () => {
                     {appState === AppState.Chat && <ChatView />}
                 </div>
             </AuthenticatedTemplate>
-        </div>
+        </FluentProvider>
     );
 };
 
