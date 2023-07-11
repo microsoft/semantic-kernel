@@ -24,9 +24,14 @@ internal static class GrpcOperationExtensions
         var parameters = new List<ParameterView>
         {
             // Register the "address" parameter so that it's possible to override it if needed.
-            new ParameterView(GrpcOperation.AddressArgumentName, "Address for gRPC channel to use.", string.Empty),
+            new ParameterView(GrpcOperation.AddressArgumentName,
+                "Address for gRPC channel to use.",
+                string.Empty),
+
             // Register the "payload" parameter to be used as gRPC operation request message.
-            new ParameterView(GrpcOperation.PayloadArgumentName, "gRPC request message.", string.Empty)
+            new ParameterView(GrpcOperation.PayloadArgumentName,
+                "gRPC request message.",
+                string.Empty)
         };
 
         return parameters;
