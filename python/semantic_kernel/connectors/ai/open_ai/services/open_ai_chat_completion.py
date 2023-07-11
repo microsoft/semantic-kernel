@@ -101,8 +101,16 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             str -- The completed text.
         """
         prompt_to_message = [("user", prompt)]
-
-        response = await self._send_chat_request(prompt_to_message, request_settings, False)
+        chat_settings = ChatRequestSettings(
+            temperature=request_settings.temperature,
+            top_p=request_settings.top_p,
+            presence_penalty=request_settings.presence_penalty,
+            frequency_penalty=request_settings.frequency_penalty,
+            max_tokens=request_settings.max_tokens,
+            number_of_responses=request_settings.number_of_responses,
+            token_selection_biases=request_settings.token_selection_biases
+        )
+        response = await self._send_chat_request(prompt_to_message, chat_settings, False)
 
         if len(response.choices) == 1:
             return response.choices[0].message.content
@@ -113,8 +121,16 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self, prompt: str, request_settings: CompleteRequestSettings
     ):
         prompt_to_message = [("user", prompt)]
-
-        response = await self._send_chat_request(prompt_to_message, request_settings, True)
+        chat_settings = ChatRequestSettings(
+            temperature=request_settings.temperature,
+            top_p=request_settings.top_p,
+            presence_penalty=request_settings.presence_penalty,
+            frequency_penalty=request_settings.frequency_penalty,
+            max_tokens=request_settings.max_tokens,
+            number_of_responses=request_settings.number_of_responses,
+            token_selection_biases=request_settings.token_selection_biases
+        )
+        response = await self._send_chat_request(prompt_to_message, chat_settings, True)
 
         # parse the completion text(s) and yield them
         async for chunk in response:
