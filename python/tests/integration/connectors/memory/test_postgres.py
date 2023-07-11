@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+import time
 from datetime import datetime
 
 import numpy as np
@@ -33,10 +34,17 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+# Needed because the test service may not support a high volume of requests
+@pytest.fixture(scope="module")
+def wait_between_tests():
+    time.sleep(0.5)
+    return 0
+
+
 @pytest.fixture(scope="session")
 def connection_string():
     if "Python_Integration_Tests" in os.environ:
-        connection_string = os.environ["Postgres__ApiKey"]
+        connection_string = os.environ["Postgres__Connectionstr"]
     else:
         # Load credentials from .env file
         connection_string = sk.postgres_settings_from_dot_env()
