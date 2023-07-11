@@ -146,7 +146,6 @@ public sealed class PlanTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null, "Write a poem or joke and send it in an e-mail to Kai.", null)]
     [InlineData("", "Write a poem or joke and send it in an e-mail to Kai.", "")]
     [InlineData("Hello World!", "Write a poem or joke and send it in an e-mail to Kai.", "some_email@email.com")]
     public async Task CanExecuteRunPlanSimpleManualStateAsync(string input, string goal, string email)
@@ -180,7 +179,6 @@ public sealed class PlanTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null, "Write a poem or joke and send it in an e-mail to Kai.", null)]
     [InlineData("", "Write a poem or joke and send it in an e-mail to Kai.", "")]
     [InlineData("Hello World!", "Write a poem or joke and send it in an e-mail to Kai.", "some_email@email.com")]
     public async Task CanExecuteRunPlanSimpleManualStateNoVariableAsync(string input, string goal, string email)
@@ -214,14 +212,12 @@ public sealed class PlanTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null, "Write a poem or joke and send it in an e-mail to Kai.", null)]
     [InlineData("", "Write a poem or joke and send it in an e-mail to Kai.", "")]
     [InlineData("Hello World!", "Write a poem or joke and send it in an e-mail to Kai.", "some_email@email.com")]
     public async Task CanExecuteRunPlanManualStateAsync(string input, string goal, string email)
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-
         var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.

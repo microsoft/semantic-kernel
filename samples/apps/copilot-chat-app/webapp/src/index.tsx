@@ -1,6 +1,6 @@
 import { IPublicClientApplication, PublicClientApplication } from '@azure/msal-browser';
 import { MsalProvider } from '@azure/msal-react';
-import { FluentProvider, webLightTheme } from '@fluentui/react-components';
+import { FluentProvider } from '@fluentui/react-components';
 import ReactDOM from 'react-dom/client';
 import { Provider as ReduxProvider } from 'react-redux';
 import App from './App';
@@ -12,6 +12,7 @@ import { store } from './redux/app/store';
 
 import React from 'react';
 import { getMissingEnvVariables } from './checkEnv';
+import { semanticKernelLightTheme } from './styles';
 
 if (!localStorage.getItem('debug')) {
     localStorage.setItem('debug', `${Constants.debug.root}:*`);
@@ -48,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <ReduxProvider store={store}>
                         {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
                         <MsalProvider instance={msalInstance!}>
-                            <FluentProvider className="app-container" theme={webLightTheme}>
+                            <FluentProvider className="app-container" theme={semanticKernelLightTheme}>
                                 <App />
                             </FluentProvider>
                         </MsalProvider>

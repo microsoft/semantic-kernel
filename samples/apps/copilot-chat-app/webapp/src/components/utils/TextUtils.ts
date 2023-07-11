@@ -38,3 +38,22 @@ export function timestampToDateString(timestamp: number, alwaysShowTime = false)
             : dateString // if the date is not today and we are not always showing the time, only show the date
         : timeString; // if the date is today, only show the time
 }
+
+/*
+ * Function to create a command link
+ */
+export function createCommandLink(command: string) {
+    const escapedCommand = encodeURIComponent(command);
+    const createCommandLink = `<span style="text-decoration: underline; cursor: pointer" data-command="${escapedCommand}" onclick="(function(){ let chatInput = document.getElementById('chat-input'); chatInput.value = decodeURIComponent('${escapedCommand}'); chatInput.focus(); return false; })();return false;">${command}</span>`;
+    return createCommandLink;
+}
+
+/*
+ * Function to format chat text content to remove any html tags from it.
+ */
+export function formatChatTextContent(messageContent: string) {
+    const contentAsString = messageContent.trim()
+                            .replace(/^sk:\/\/.*$/gm, (match: string) => createCommandLink(match))
+                            .replace(/^!sk:.*$/gm, (match: string) => createCommandLink(match));
+    return contentAsString;
+}
