@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
@@ -50,7 +49,7 @@ the chamber. He came like a protecting spirit to the poor girl, who committed he
 interment of his friend he conducted her to Geneva and placed her under the protection of a relation.Two years
 after this event Caroline became his wife.""";
 
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         await GroundednessCheckingSkill();
         await PlanningWithGroundedness();
@@ -62,9 +61,9 @@ after this event Caroline became his wife.""";
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                config.GetValue<string>("AzureOpenAI__DeploymentName"),
-                config.GetValue<string>("AzureOpenAI__Endpoint"),
-                config.GetValue<string>("AzureOpenAI__ApiKey"))
+                TestConfiguration.AzureOpenAI.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -127,9 +126,9 @@ which are not grounded in the original.
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                config.GetValue<string>("AzureOpenAI__DeploymentName"),
-                config.GetValue<string>("AzureOpenAI__Endpoint"),
-                config.GetValue<string>("AzureOpenAI__ApiKey"))
+                TestConfiguration.AzureOpenAI.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -139,8 +138,8 @@ which are not grounded in the original.
 
         kernel.ImportSkill(new TextSkill());
 
-        var config = new SequentialPlannerConfig { };
-        var planner = new SequentialPlanner(kernel, config);
+        var plannerConfig = new SequentialPlannerConfig { };
+        var planner = new SequentialPlanner(kernel, plannerConfig);
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanString());
 

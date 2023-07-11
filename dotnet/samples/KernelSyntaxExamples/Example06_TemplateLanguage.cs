@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Skills.Core;
@@ -15,12 +14,12 @@ public static class Example06_TemplateLanguage
     /// Show how to invoke a Native Function written in C#
     /// from a Semantic Function written in natural language
     /// </summary>
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         Console.WriteLine("======== TemplateLanguage ========");
 
-        string? openAIModelId = config.GetValue<string>("OpenAI__ModelId");
-        string? openAIApiKey = config.GetValue<string>("OpenAI__ApiKey");
+        string openAIModelId = TestConfiguration.OpenAI.ModelId;
+        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
         {

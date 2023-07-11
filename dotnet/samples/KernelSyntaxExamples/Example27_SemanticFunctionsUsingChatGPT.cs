@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
@@ -13,7 +12,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example27_SemanticFunctionsUsingChatGPT
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         Console.WriteLine("======== Using Chat GPT model for text completion ========");
 

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -20,10 +19,10 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example07_BingAndGoogleSkills
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
-        string? openAIModelId = config.GetValue<string>("OpenAI__ModelId");
-        string? openAIApiKey = config.GetValue<string>("OpenAI__ApiKey");
+        string openAIModelId = TestConfiguration.OpenAI.ModelId;
+        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
         {
@@ -39,7 +38,7 @@ public static class Example07_BingAndGoogleSkills
             .Build();
 
         // Load Bing skill
-        string? bingApiKey = config.GetValue<string>("Bing__ApiKey");
+        string bingApiKey = TestConfiguration.Bing.ApiKey;
 
         if (bingApiKey == null)
         {
@@ -55,8 +54,8 @@ public static class Example07_BingAndGoogleSkills
         }
 
         // Load Google skill
-        string? googleApiKey = config.GetValue<string>("GOOGLE_API_KEY");
-        string? googleSearchEngineId = config.GetValue<string>("GOOGLE_SEARCH_ENGINE_ID");
+        string googleApiKey = TestConfiguration.Google.ApiKey;
+        string googleSearchEngineId = TestConfiguration.Google.SearchEngineId;
 
         if (googleApiKey == null || googleSearchEngineId == null)
         {
@@ -124,7 +123,7 @@ Answer:
 * The smallest positive number is 1.
 
 [EXAMPLE 3]
-Question: what's Ferrari stock price ? Who is the current number one female tennis player in the world?
+Question: what's Ferrari stock price? Who is the current number one female tennis player in the world?
 Answer:
 {{ '{{' }} bing.search ""what\\'s Ferrari stock price?"" {{ '}}' }}.
 {{ '{{' }} bing.search ""Who is the current number one female tennis player in the world?"" {{ '}}' }}.

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -16,13 +15,13 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example22_OpenApiSkill_AzureKeyVault
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         // To run this example, you must register a client application with the Microsoft identity platform.
         // Instructions here: https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
         var authenticationProvider = new InteractiveMsalAuthenticationProvider(
-            config.GetValue<string>("KeyVault__ClientId"),
-            config.GetValue<string>("KeyVault__TenantId"),
+            TestConfiguration.KeyVault.ClientId,
+            TestConfiguration.KeyVault.TenantId,
             new[] { "https://vault.azure.net/.default" },
             new Uri("http://localhost"));
 
@@ -50,7 +49,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
-        contextVariables.Set("server-url", config.GetValue<string>("KeyVault__Endpoint"));
+        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
         contextVariables.Set("secret-name", "<secret-name>");
         contextVariables.Set("api-version", "7.0");
 
@@ -74,7 +73,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
-        contextVariables.Set("server-url", config.GetValue<string>("KeyVault__Endpoint"));
+        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
         contextVariables.Set("secret-name", "<secret-name>");
         contextVariables.Set("api-version", "7.0");
         contextVariables.Set("payload", JsonSerializer.Serialize(new { value = "<secret>", attributes = new { enabled = true } }));

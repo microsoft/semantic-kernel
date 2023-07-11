@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
@@ -14,7 +12,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example44_MultiChatCompletion
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         await AzureOpenAIMultiChatCompletionAsync();
         await OpenAIMultiChatCompletionAsync();
@@ -25,9 +23,9 @@ public static class Example44_MultiChatCompletion
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
         AzureChatCompletion azureChatCompletion = new(
-            config.GetValue<string>("AzureOpenAI__ChatDeploymentName"),
-            config.GetValue<string>("AzureOpenAI__Endpoint"),
-            config.GetValue<string>("AzureOpenAI__ApiKey"));
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey);
 
         await RunChatAsync(azureChatCompletion);
     }
@@ -36,7 +34,7 @@ public static class Example44_MultiChatCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new(modelId: config.GetValue<string>("OpenAI__ChatModelId"), config.GetValue<string>("OpenAI__ApiKey"));
+        OpenAIChatCompletion openAIChatCompletion = new(modelId: TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         await RunChatAsync(openAIChatCompletion);
     }

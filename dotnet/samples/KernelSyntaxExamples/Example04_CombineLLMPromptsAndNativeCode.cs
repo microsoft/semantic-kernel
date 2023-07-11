@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -11,11 +10,11 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example04_CombineLLMPromptsAndNativeCode
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         Console.WriteLine("======== LLMPrompts ========");
 
-        string? openAIApiKey = config.GetValue<string>("OpenAI__ApiKey");
+        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIApiKey == null)
         {
@@ -30,7 +29,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
             .Build();
 
         // Load native skill
-        string? bingApiKey = config.GetValue<string>("Bing__ApiKey");
+        string bingApiKey = TestConfiguration.Bing.ApiKey;
 
         if (bingApiKey == null)
         {
@@ -50,7 +49,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
             "SummarizeSkill");
 
         // Run
-        var ask = "What's the tallest building in South America?";
+        var ask = "What's the tallest building in South America";
 
         var result1 = await kernel.RunAsync(
             ask,

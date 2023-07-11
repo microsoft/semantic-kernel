@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -22,7 +21,7 @@ public static class Example14_SemanticMemory
 {
     private const string MemoryCollectionName = "SKGitHub";
 
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         Console.WriteLine("==============================================================");
         Console.WriteLine("======== Semantic Memory using Azure Cognitive Search ========");
@@ -36,7 +35,7 @@ public static class Example14_SemanticMemory
 
         var kernelWithACS = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithAzureCognitiveSearchMemory(config.GetValue<string>("ACS__Endpoint"), config.GetValue<string>("ACS__ApiKey"))
+            .WithAzureCognitiveSearchMemory(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey)
             .Build();
 
         await RunExampleAsync(kernelWithACS);
@@ -56,7 +55,7 @@ public static class Example14_SemanticMemory
 
         var kernelWithCustomDb = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", config.GetValue<string>("OpenAI__ApiKey"))
+            .WithOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 

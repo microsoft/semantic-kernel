@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -27,7 +26,7 @@ using Microsoft.SemanticKernel.Memory.Collections;
 /// </summary>
 public static class Example25_ReadOnlyMemoryStore
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         var store = new ReadOnlyMemoryStore(s_jsonVectorEntries);
 

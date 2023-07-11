@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
@@ -14,7 +12,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example17_ChatGPT
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         await AzureOpenAIChatSampleAsync();
         await OpenAIChatSampleAsync();
@@ -52,7 +50,7 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== Open AI - ChatGPT ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", config.GetValue<string>("OpenAI__ApiKey"));
+        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", TestConfiguration.OpenAI.ApiKey);
 
         await StartChatAsync(openAIChatCompletion);
     }
@@ -62,9 +60,9 @@ public static class Example17_ChatGPT
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
         AzureChatCompletion azureChatCompletion = new(
-            config.GetValue<string>("AzureOpenAI__ChatDeploymentName"),
-            config.GetValue<string>("AzureOpenAI__Endpoint"),
-            config.GetValue<string>("AzureOpenAI__ApiKey"));
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey);
 
         await StartChatAsync(azureChatCompletion);
     }
@@ -86,7 +84,7 @@ public static class Example17_ChatGPT
         await MessageOutputAsync(chatHistory);
 
         // Second user message
-        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
+        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         await MessageOutputAsync(chatHistory);
 
         // Second bot assistant message

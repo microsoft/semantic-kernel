@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
@@ -13,19 +12,19 @@ public static class Example46_Weaviate
 {
     private const string MemoryCollectionName = "weaviate-test";
 
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
-        string endpoint = config.GetValue<string>("Weaviate__Endpoint");
-        string apiKey = config.GetValue<string>("Weaviate__ApiKey");
+        string endpoint = TestConfiguration.Weaviate.Endpoint;
+        string apiKey = TestConfiguration.Weaviate.ApiKey;
         using WeaviateMemoryStore memoryStore = new(endpoint, apiKey, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService(
-                modelId: config.GetValue<string>("OpenAI__ModelId"),
-                apiKey: config.GetValue<string>("OpenAI__ApiKey"))
+                modelId: TestConfiguration.OpenAI.ModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(
-                modelId: config.GetValue<string>("OpenAI__EmbeddingModelId"),
-                apiKey: config.GetValue<string>("OpenAI__ApiKey"))
+                modelId: TestConfiguration.OpenAI.EmbeddingModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(memoryStore)
             //.WithWeaviateMemoryStore(endpoint, apiKey) // This method offers an alternative approach to registering Weaviate memory store.
             .Build();

@@ -11,164 +11,165 @@ public static class Program
     public static async Task Main()
     {
         // Load configuration
-        IConfigurationRoot config = new ConfigurationBuilder()
+        IConfigurationRoot configRoot = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<Env>()
             .Build();
+        TestConfiguration.Initialize(configRoot);
 
-        Example01_NativeFunctions.Run(config);
+        Example01_NativeFunctions.Run();
         Console.WriteLine("== DONE ==");
 
-        await Example02_Pipeline.RunAsync(config);
+        await Example02_Pipeline.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example03_Variables.RunAsync(config);
+        await Example03_Variables.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example04_CombineLLMPromptsAndNativeCode.RunAsync(config);
+        await Example04_CombineLLMPromptsAndNativeCode.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example05_InlineFunctionDefinition.RunAsync(config);
+        await Example05_InlineFunctionDefinition.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example06_TemplateLanguage.RunAsync(config);
+        await Example06_TemplateLanguage.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example07_BingAndGoogleSkills.RunAsync(config);
+        await Example07_BingAndGoogleSkills.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example08_RetryHandler.RunAsync(config);
+        await Example08_RetryHandler.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example09_FunctionTypes.RunAsync(config);
+        await Example09_FunctionTypes.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        Example10_DescribeAllSkillsAndFunctions.Run(config);
+        Example10_DescribeAllSkillsAndFunctions.Run();
         Console.WriteLine("== DONE ==");
 
-        await Example11_WebSearchQueries.RunAsync(config);
+        await Example11_WebSearchQueries.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example12_SequentialPlanner.RunAsync(config);
+        await Example12_SequentialPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example13_ConversationSummarySkill.RunAsync(config);
+        await Example13_ConversationSummarySkill.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example14_SemanticMemory.RunAsync(config);
+        await Example14_SemanticMemory.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example15_MemorySkill.RunAsync(config);
+        await Example15_MemorySkill.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example16_CustomLLM.RunAsync(config);
+        await Example16_CustomLLM.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example17_ChatGPT.RunAsync(config);
+        await Example17_ChatGPT.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example18_DallE.RunAsync(config);
+        await Example18_DallE.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example19_Qdrant.RunAsync(config);
+        await Example19_Qdrant.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example20_HuggingFace.RunAsync(config);
+        await Example20_HuggingFace.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example21_ChatGptPlugins.RunAsync(config);
+        await Example21_ChatGptPlugins.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example22_OpenApiSkill_AzureKeyVault.RunAsync(config);
+        await Example22_OpenApiSkill_AzureKeyVault.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example23_OpenApiSkill_GitHub.RunAsync(config);
+        await Example23_OpenApiSkill_GitHub.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example24_OpenApiSkill_Jira.RunAsync(config);
+        await Example24_OpenApiSkill_Jira.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example25_ReadOnlyMemoryStore.RunAsync(config);
+        await Example25_ReadOnlyMemoryStore.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example26_AADAuth.RunAsync(config);
+        await Example26_AADAuth.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example27_SemanticFunctionsUsingChatGPT.RunAsync(config);
+        await Example27_SemanticFunctionsUsingChatGPT.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example28_ActionPlanner.RunAsync(config);
+        await Example28_ActionPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        Example29_Tokenizer.Run(config);
+        Example29_Tokenizer.Run();
         Console.WriteLine("== DONE ==");
 
-        await Example30_ChatWithPrompts.RunAsync(config);
+        await Example30_ChatWithPrompts.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example31_CustomPlanner.RunAsync(config);
+        await Example31_CustomPlanner.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example32_StreamingCompletion.RunAsync(config);
+        await Example32_StreamingCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example33_StreamingChat.RunAsync(config);
+        await Example33_StreamingChat.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example34_CustomChatModel.RunAsync(config);
+        await Example34_CustomChatModel.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example35_GrpcSkills.RunAsync(config);
+        await Example35_GrpcSkills.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example36_MultiCompletion.RunAsync(config);
+        await Example36_MultiCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example37_MultiStreamingCompletion.RunAsync(config);
+        await Example37_MultiStreamingCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example38_Pinecone.RunAsync(config);
+        await Example38_Pinecone.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example39_Postgres.RunAsync(config);
+        await Example39_Postgres.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example40_DIContainer.RunAsync(config);
+        await Example40_DIContainer.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        Example41_HttpClientUsage.Run(config);
+        Example41_HttpClientUsage.Run();
         Console.WriteLine("== DONE ==");
 
-        Example42_KernelBuilder.Run(config);
+        Example42_KernelBuilder.Run();
         Console.WriteLine("== DONE ==");
 
-        await Example43_GetModelResult.RunAsync(config);
+        await Example43_GetModelResult.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example44_MultiChatCompletion.RunAsync(config);
+        await Example44_MultiChatCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example45_MultiStreamingChatCompletion.RunAsync(config);
+        await Example45_MultiStreamingChatCompletion.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example46_Weaviate.RunAsync(config);
+        await Example46_Weaviate.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example47_Redis.RunAsync(config);
+        await Example47_Redis.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example48_GroundednessChecks.RunAsync(config);
+        await Example48_GroundednessChecks.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example49_LogitBias.RunAsync(config);
+        await Example49_LogitBias.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example50_Chroma.RunAsync(config);
+        await Example50_Chroma.RunAsync();
         Console.WriteLine("== DONE ==");
 
-        await Example51_StepwisePlanner.RunAsync(config);
+        await Example51_StepwisePlanner.RunAsync();
         Console.WriteLine("== DONE ==");
     }
 }

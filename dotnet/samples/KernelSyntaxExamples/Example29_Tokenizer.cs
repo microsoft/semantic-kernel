@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 
 // ReSharper disable once InconsistentNaming
@@ -15,7 +14,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 /// </summary>
 public static class Example29_Tokenizer
 {
-    public static void Run(IConfigurationRoot config)
+    public static void Run()
     {
         // Example 1
         string sentence = "Some text on one line";

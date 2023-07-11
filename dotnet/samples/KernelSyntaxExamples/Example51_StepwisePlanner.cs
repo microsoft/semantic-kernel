@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -20,7 +19,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example51_StepwisePlanner
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         string[] questions = new string[]
         {
@@ -37,23 +36,23 @@ public static class Example51_StepwisePlanner
         }
     }
 
-    public static async Task RunTextCompletion(string question)
+    private static async Task RunTextCompletion(string question)
     {
         Console.WriteLine("RunTextCompletion");
         var kernel = GetKernel();
         await RunWithQuestion(kernel, question);
     }
 
-    public static async Task RunChatCompletion(string question)
+    private static async Task RunChatCompletion(string question)
     {
         Console.WriteLine("RunChatCompletion");
         var kernel = GetKernel(true);
         await RunWithQuestion(kernel, question);
     }
 
-    public static async Task RunWithQuestion(IKernel kernel, string question)
+    private static async Task RunWithQuestion(IKernel kernel, string question)
     {
-        using var bingConnector = new BingConnector(config.GetValue<string>("BING_API_KEY"));
+        using var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
@@ -65,12 +64,12 @@ public static class Example51_StepwisePlanner
         Stopwatch sw = new();
         Console.WriteLine("Question: " + question);
 
-        var config = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig();
-        config.ExcludedFunctions.Add("TranslateMathProblem");
-        config.MinIterationTimeMs = 1500;
-        config.MaxTokens = 4000;
+        var plannerConfig = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig();
+        plannerConfig.ExcludedFunctions.Add("TranslateMathProblem");
+        plannerConfig.MinIterationTimeMs = 1500;
+        plannerConfig.MaxTokens = 4000;
 
-        StepwisePlanner planner = new(kernel, config);
+        StepwisePlanner planner = new(kernel, plannerConfig);
         sw.Start();
         var plan = planner.CreatePlan(question);
 
@@ -90,24 +89,24 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("*****************************************************");
     }
 
-    private static IKernel GetKernel(bool useChat = false)
+    private static IKernel GetKernel( bool useChat = false)
     {
         var builder = new KernelBuilder();
         if (useChat)
         {
             builder.WithAzureChatCompletionService(
-                config.GetValue<string>("AzureOpenAI__ChatDeploymentName"),
-                config.GetValue<string>("AzureOpenAI__Endpoint"),
-                config.GetValue<string>("AzureOpenAI__ApiKey"),
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey,
                 alsoAsTextCompletion: true,
                 setAsDefault: true);
         }
         else
         {
             builder.WithAzureTextCompletionService(
-                config.GetValue<string>("AzureOpenAI__DeploymentName"),
-                config.GetValue<string>("AzureOpenAI__Endpoint"),
-                config.GetValue<string>("AzureOpenAI__ApiKey"));
+                TestConfiguration.AzureOpenAI.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
         }
 
         var kernel = builder

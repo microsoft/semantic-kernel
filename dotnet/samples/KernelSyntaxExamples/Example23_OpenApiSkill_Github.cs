@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -15,16 +14,16 @@ using RepoUtils;
 /// <summary>
 /// Import and run GitHub Functions using OpenAPI Skill.
 /// To use this example, run:
-/// dotnet user-secrets set "Github__PAT" "github_pat_..."
+/// dotnet user-secrets set "Github.PAT" "github_pat_..."
 /// Make sure your GitHub PAT has read permissions set for Pull Requests.
 /// Creating a PAT: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 /// </summary>
 // ReSharper disable once InconsistentNaming
 public static class Example23_OpenApiSkill_GitHub
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
-        var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(config.GetValue<string>("Github__PAT")); });
+        var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(TestConfiguration.Github.PAT); });
         Console.WriteLine("== Example22_c_OpenApiSkill_GitHub ==");
         var firstPRNumber = await ListPullRequestsFromGitHubAsync(authenticationProvider);
         await GetPullRequestFromGitHubAsync(authenticationProvider, firstPRNumber);

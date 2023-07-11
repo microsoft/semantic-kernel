@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -14,7 +13,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example08_RetryHandler
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         var kernel = InitializeKernel();
         var retryHandlerFactory = new RetryThreeTimesWithBackoffFactory();
@@ -34,12 +33,12 @@ public static class Example08_RetryHandler
         await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
     }
 
-    private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? config = null)
+    private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? httpConfig = null)
     {
         var kernelBuilder = Kernel.Builder.WithLogger(InfoLogger.Log);
-        if (config != null)
+        if (httpConfig != null)
         {
-            kernelBuilder = kernelBuilder.Configure(c => c.SetDefaultHttpRetryConfig(config));
+            kernelBuilder = kernelBuilder.Configure(c => c.SetDefaultHttpRetryConfig(httpConfig));
         }
 
         // Add 401 to the list of retryable status codes
@@ -47,7 +46,7 @@ public static class Example08_RetryHandler
         // purposes we are doing so as it's easy to trigger when using an invalid key.
         kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized));
 
-        // OpenAI settings - you can set the OpenAI__ApiKey to an invalid value to see the retry policy in play
+        // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
         kernelBuilder = kernelBuilder.WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY");
 
         var kernel = kernelBuilder.Build();
@@ -59,7 +58,7 @@ public static class Example08_RetryHandler
     {
         var kernel = Kernel.Builder
             .WithLogger(InfoLogger.Log)
-            // OpenAI settings - you can set the OpenAI__ApiKey to an invalid value to see the retry policy in play
+            // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
             .WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY")
             .Build();
 
@@ -76,7 +75,7 @@ public static class Example08_RetryHandler
     {
         var kernel = Kernel.Builder.WithLogger(InfoLogger.Log)
             .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
-            // OpenAI settings - you can set the OpenAI__ApiKey to an invalid value to see the retry policy in play
+            // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
             .WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY")
             .Build();
 
@@ -97,7 +96,7 @@ public static class Example08_RetryHandler
         var question = "How popular is Polly library?";
 
         InfoLogger.Log.LogInformation("Question: {0}", question);
-        // To see the retry policy in play, you can set the OpenAI__ApiKey to an invalid value
+        // To see the retry policy in play, you can set the OpenAI.ApiKey to an invalid value
         var answer = await kernel.RunAsync(question, qaSkill["Question"]);
         InfoLogger.Log.LogInformation("Answer: {0}", answer);
     }

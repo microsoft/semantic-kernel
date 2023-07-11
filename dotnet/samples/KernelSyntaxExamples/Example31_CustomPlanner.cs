@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -21,7 +20,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 internal static class Example31_CustomPlanner
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         Console.WriteLine("======== Custom Planner - Create and Execute Markup Plan ========");
         IKernel kernel = InitializeKernel();
@@ -115,7 +114,7 @@ internal static class Example31_CustomPlanner
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSkill(new TimeSkill(), "time");
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        var bing = new WebSearchEngineSkill(new BingConnector(config.GetValue<string>("BING_API_KEY")));
+        var bing = new WebSearchEngineSkill(new BingConnector(TestConfiguration.Bing.ApiKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
         var search = kernel.ImportSkill(bing, "bing");
 
@@ -127,13 +126,13 @@ internal static class Example31_CustomPlanner
         return new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                config.GetValue<string>("AzureOpenAI__DeploymentName"),
-                config.GetValue<string>("AzureOpenAI__Endpoint"),
-                config.GetValue<string>("AzureOpenAI__ApiKey"))
+                TestConfiguration.AzureOpenAI.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .WithAzureTextEmbeddingGenerationService(
-                config.GetValue<string>("AzureOpenAIEmbeddings__DeploymentName"),
-                config.GetValue<string>("AzureOpenAI__Endpoint"),
-                config.GetValue<string>("AzureOpenAI__ApiKey"))
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
     }

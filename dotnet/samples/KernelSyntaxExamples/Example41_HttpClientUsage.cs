@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using RepoUtils;
 
 /**
  * These examples show how to use HttpClient and HttpClientFactory within SK SDK.
@@ -13,51 +11,51 @@ using RepoUtils;
 
 public static class Example41_HttpClientUsage
 {
-    private static string openAIApiKey = config.GetValue<string>("OpenAI__ApiKey");
-    private static string openAIModelId = config.GetValue<string>("OpenAI__ModelId");
-
-    public static void Run(IConfigurationRoot config)
+    public static void Run()
     {
         //Examples showing how to use HttpClient.
-        UseDefaultHttpClientAsync();
+        UseDefaultHttpClient();
 
-        UseCustomHttpClientAsync();
+        UseCustomHttpClient();
 
         //Examples showing how to use HttpClientFactory.
-        UseBasicRegistrationWithHttpClientFactoryAsync();
+        UseBasicRegistrationWithHttpClientFactory();
 
-        UseNamedRegistrationWitHttpClientFactoryAsync();
+        UseNamedRegistrationWitHttpClientFactory();
     }
 
     /// <summary>
     /// Demonstrates the usage of the default HttpClient provided by the SK SDK.
     /// </summary>
-    private static void UseDefaultHttpClientAsync()
+    private static void UseDefaultHttpClient()
     {
         var kernel = Kernel.Builder
             .WithOpenAITextCompletionService(
-                modelId: openAIModelId,
-                apiKey: openAIApiKey) // If you need to use the default HttpClient from the SK SDK, simply omit the argument for the httpMessageInvoker parameter.
+                modelId: TestConfiguration.OpenAI.ModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey) // If you need to use the default HttpClient from the SK SDK, simply omit the argument for the httpMessageInvoker parameter.
             .Build();
     }
 
     /// <summary>
     /// Demonstrates the usage of a custom HttpClient.
     /// </summary>
-    private static void UseCustomHttpClientAsync()
+    private static void UseCustomHttpClient()
     {
         using var httpClient = new HttpClient();
 
         // If you need to use a custom HttpClient, simply pass it as an argument for the httpClient parameter.
         var kernel = Kernel.Builder
-            .WithOpenAITextCompletionService(openAIModelId, openAIApiKey, httpClient: httpClient)
+            .WithOpenAITextCompletionService(
+                modelId: TestConfiguration.OpenAI.ModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey,
+                httpClient: httpClient)
             .Build();
     }
 
     /// <summary>
     /// Demonstrates the "basic usage" approach for HttpClientFactory.
     /// </summary>
-    private static void UseBasicRegistrationWithHttpClientFactoryAsync()
+    private static void UseBasicRegistrationWithHttpClientFactory()
     {
         //More details - https://learn.microsoft.com/en-us/dotnet/core/extensions/httpclient-factory#basic-usage
         var serviceCollection = new ServiceCollection();
@@ -69,8 +67,8 @@ public static class Example41_HttpClientUsage
 
             var kernel = Kernel.Builder
             .WithOpenAITextCompletionService(
-                modelId: openAIModelId,
-                apiKey: openAIApiKey,
+                modelId: TestConfiguration.OpenAI.ModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey,
                 httpClient: factory.CreateClient())
             .Build();
 
@@ -81,7 +79,7 @@ public static class Example41_HttpClientUsage
     /// <summary>
     /// Demonstrates the "named clients" approach for HttpClientFactory.
     /// </summary>
-    private static void UseNamedRegistrationWitHttpClientFactoryAsync()
+    private static void UseNamedRegistrationWitHttpClientFactory()
     {
         // More details https://learn.microsoft.com/en-us/dotnet/core/extensions/httpclient-factory#named-clients
 
@@ -100,8 +98,8 @@ public static class Example41_HttpClientUsage
 
             var kernel = Kernel.Builder
             .WithOpenAITextCompletionService(
-                modelId: openAIModelId,
-                apiKey: openAIApiKey,
+                modelId: TestConfiguration.OpenAI.ModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey,
                 httpClient: factory.CreateClient("test-client"))
             .Build();
 

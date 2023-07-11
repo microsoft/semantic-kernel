@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with Text Completion as streaming
@@ -14,7 +12,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example33_StreamingChat
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         await AzureOpenAIChatStreamSampleAsync();
         await OpenAIChatStreamSampleAsync();
@@ -24,7 +22,7 @@ public static class Example33_StreamingChat
     {
         Console.WriteLine("======== Open AI - ChatGPT Streaming ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", config.GetValue<string>("OpenAI__ApiKey"));
+        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", TestConfiguration.OpenAI.ApiKey);
 
         await StartStreamingChatAsync(openAIChatCompletion);
     }
@@ -34,9 +32,9 @@ public static class Example33_StreamingChat
         Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
         AzureChatCompletion azureChatCompletion = new(
-           config.GetValue<string>("AzureOpenAI__ChatDeploymentName"),
-           config.GetValue<string>("AzureOpenAI__Endpoint"),
-           config.GetValue<string>("AzureOpenAI__ApiKey"));
+           TestConfiguration.AzureOpenAI.ChatDeploymentName,
+           TestConfiguration.AzureOpenAI.Endpoint,
+           TestConfiguration.AzureOpenAI.ApiKey);
 
         await StartStreamingChatAsync(azureChatCompletion);
     }

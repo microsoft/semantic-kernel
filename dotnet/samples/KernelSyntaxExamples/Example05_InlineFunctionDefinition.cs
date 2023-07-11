@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
@@ -9,12 +8,12 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example05_InlineFunctionDefinition
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         Console.WriteLine("======== Inline Function Definition ========");
 
-        string? openAIModelId = config.GetValue<string>("OpenAI__ModelId");
-        string? openAIApiKey = config.GetValue<string>("OpenAI__ApiKey");
+        string openAIModelId = TestConfiguration.OpenAI.ModelId;
+        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
         {

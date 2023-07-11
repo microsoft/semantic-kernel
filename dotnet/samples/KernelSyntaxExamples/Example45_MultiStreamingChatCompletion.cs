@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
@@ -18,7 +16,7 @@ public static class Example45_MultiStreamingChatCompletion
 {
     private static readonly object s_lockObject = new();
 
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         await AzureOpenAIMultiStreamingChatCompletionAsync();
         await OpenAIMultiStreamingChatCompletionAsync();
@@ -29,9 +27,9 @@ public static class Example45_MultiStreamingChatCompletion
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion - Raw Streaming ========");
 
         AzureChatCompletion azureChatCompletion = new(
-            config.GetValue<string>("AzureOpenAI__ChatDeploymentName"),
-            config.GetValue<string>("AzureOpenAI__Endpoint"),
-            config.GetValue<string>("AzureOpenAI__ApiKey"));
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey);
 
         await StreamingChatCompletionAsync(azureChatCompletion);
     }
@@ -41,8 +39,8 @@ public static class Example45_MultiStreamingChatCompletion
         Console.WriteLine("======== Open AI - Multiple Text Completion - Raw Streaming ========");
 
         OpenAIChatCompletion openAIChatCompletion = new(
-            modelId: config.GetValue<string>("OpenAI__ChatModelId"),
-            apiKey: config.GetValue<string>("OpenAI__ApiKey"));
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
 
         await StreamingChatCompletionAsync(openAIChatCompletion);
     }

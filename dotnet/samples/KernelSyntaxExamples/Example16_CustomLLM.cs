@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -83,7 +82,7 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
 // ReSharper disable once InconsistentNaming
 public static class Example16_CustomLLM
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         await CustomTextCompletionWithSKFunctionAsync();
 

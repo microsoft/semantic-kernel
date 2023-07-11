@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using RepoUtils;
@@ -13,15 +12,15 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example20_HuggingFace
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         Console.WriteLine("======== HuggingFace text completion AI ========");
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithHuggingFaceTextCompletionService(
-                model: config.GetValue<string>("HuggingFace__ApiKey"),
-                apiKey: config.GetValue<string>("HuggingFace__ApiKey"))
+                model: TestConfiguration.HuggingFace.ApiKey,
+                apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
         const string FunctionDefinition = "Question: {{$input}}; Answer:";

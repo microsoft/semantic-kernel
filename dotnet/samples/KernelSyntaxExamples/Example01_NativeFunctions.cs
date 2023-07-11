@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Skills.Core;
 
 // ReSharper disable once InconsistentNaming
 public static class Example01_NativeFunctions
 {
-    public static void Run(IConfigurationRoot config)
+    public static void Run()
     {
         Console.WriteLine("======== Functions ========");
 

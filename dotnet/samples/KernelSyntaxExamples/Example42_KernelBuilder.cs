@@ -7,7 +7,6 @@
 #pragma warning disable CA1852
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,17 +24,16 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Polly;
 using Polly.Retry;
-using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
 {
-    public static void Run(IConfigurationRoot config)
+    public static void Run()
     {
-        string azureOpenAIKey = config.GetValue<string>("AzureOpenAI__ApiKey");
-        string azureOpenAIEndpoint = config.GetValue<string>("AzureOpenAI__Endpoint");
-        string azureOpenAITextCompletionDeployment = config.GetValue<string>("AzureOpenAI__DeploymentName");
-        string azureOpenAIEmbeddingDeployment = config.GetValue<string>("AzureOpenAIEmbeddings__DeploymentName");
+        string azureOpenAIKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string azureOpenAIEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string azureOpenAITextCompletionDeployment = TestConfiguration.AzureOpenAI.DeploymentName;
+        string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAIEmbeddings.DeploymentName;
 
 #pragma warning disable CA1852 // Seal internal types
         IKernel kernel1 = Kernel.Builder.Build();
@@ -80,7 +78,7 @@ public static class Example42_KernelBuilder
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var skills = new SkillCollection();
         var templateEngine = new PromptTemplateEngine(logger);
-        var config = new KernelConfig();
+        var kernelConfig = new KernelConfig();
 
         using var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), logger);
         using var httpClient = new HttpClient(httpHandler);
@@ -95,7 +93,7 @@ public static class Example42_KernelBuilder
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, config, logger);
+        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, kernelConfig, logger);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -21,19 +20,19 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example24_OpenApiSkill_Jira
 {
-    public static async Task RunAsync(IConfigurationRoot config)
+    public static async Task RunAsync()
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         var contextVariables = new ContextVariables();
 
         // Change <your-domain> to a jira instance you have access to with your authentication credentials
-        string serverUrl = "https://<your-domain>.atlassian.net/rest/api/latest/";
+        string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
         contextVariables.Set("server-url", serverUrl);
 
         IDictionary<string, ISKFunction> jiraSkills;
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
-            string s = config.GetValue<string>("MY_EMAIL_ADDRESS") + ":" + config.GetValue<string>("Jira__ApiKey");
+            string s = $"{TestConfiguration.Jira.Email}:{TestConfiguration.Jira.ApiKey}";
             return Task.FromResult(s);
         });
 

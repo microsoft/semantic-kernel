@@ -28,9 +28,10 @@ dotnet user-secrets set "AzureOpenAI:DeploymentName" "..."
 dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "..."
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://... .openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
+
 dotnet user-secrets set "AzureOpenAIEmbeddings:DeploymentName" "..."
-dotnet user-secrets set "AzureOpenAI:Endpoint" "https://... .openai.azure.com/"
-dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
+dotnet user-secrets set "AzureOpenAIEmbeddings:Endpoint" "https://... .openai.azure.com/"
+dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
 
 dotnet user-secrets set "ACS:Endpoint" "https://... .search.windows.net"
 dotnet user-secrets set "ACS:ApiKey" "..."
@@ -53,11 +54,19 @@ dotnet user-secrets set "HuggingFace:ModelId" "..."
 dotnet user-secrets set "Pinecone:ApiKey" "..."
 dotnet user-secrets set "Pinecone:Environment" "..."
 
+dotnet user-secrets set "Jira:ApiKey" "..."
+dotnet user-secrets set "Jira:Email" "..."
+dotnet user-secrets set "Jira:Domain" "..."
+
 dotnet user-secrets set "Bing:ApiKey" "..."
+
+dotnet user-secrets set "Google:ApiKey" "..."
+dotnet user-secrets set "Google:SearchEngineId" "..."
+
 dotnet user-secrets set "Github:PAT" "github_pat_..."
+
 dotnet user-secrets set "Postgres:ConnectionString" "..."
 dotnet user-secrets set "Redis:Configuration" "..."
-dotnet user-secrets set "Jira:ApiKey" "..."
 ```
 
 To set your secrets with environment variables, use these names:
@@ -75,7 +84,10 @@ AzureOpenAI__DeploymentName
 AzureOpenAI__ChatDeploymentName
 AzureOpenAI__Endpoint
 AzureOpenAI__ApiKey
+
 AzureOpenAIEmbeddings__DeploymentName
+AzureOpenAIEmbeddings__Endpoint
+AzureOpenAIEmbeddings__ApiKey
 
 # Azure Cognitive Search
 ACS__Endpoint
@@ -104,10 +116,22 @@ HuggingFace__ModelId
 Pinecone__ApiKey
 Pinecone__Environment
 
-# Other
+# Jira
+Jira__ApiKey
+Jira__Email
+Jira__Domain
+
+# Bing
 Bing__ApiKey
+
+# Google
+Google__ApiKey
+Google__SearchEngineId
+
+# Github
 Github__PAT
+
+# Other
 Postgres__ConnectionString
 Redis__Configuration
-Jira__ApiKey
 ```
