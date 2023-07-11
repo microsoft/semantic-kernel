@@ -107,7 +107,7 @@ First, let’s set up and verify the back-end API server is running.
       REACT_APP_SK_API_KEY={Your API Key, should be the same as Authorization:ApiKey from appsettings.json}
       ```
 
-   3. To build and run the front-end application
+   3. To build and run the front-end application, open a terminal and navigate to `samples/apps/copilot-chat-app/webapp` if not already, then run:
       ```bash
       yarn install
       yarn start
