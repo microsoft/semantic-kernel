@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 import { Constants } from '../../../Constants';
 import GithubIcon from '../../../assets/plugin-icons/github.png';
 import JiraIcon from '../../../assets/plugin-icons/jira.png';
@@ -68,7 +70,7 @@ export const initialState: PluginsState = {
         enabled: false,
         authRequirements: {
             Msal: true,
-            scopes: Constants.msGraphScopes,
+            scopes: Constants.msGraphPluginScopes,
         },
         headerTag: AuthHeaderTags.MsGraph,
         icon: GraphIcon,
