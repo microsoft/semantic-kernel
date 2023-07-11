@@ -93,6 +93,11 @@ const useClasses = makeStyles({
         lineHeight: tokens.lineHeightBase200,
         ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
     },
+    buttons: {
+        display: 'flex',
+        alignSelf: 'end',
+        ...shorthands.gap(tokens.spacingVerticalS),
+    },
 });
 
 export const ChatWindow: React.FC = () => {
@@ -138,14 +143,18 @@ export const ChatWindow: React.FC = () => {
         setTitle(data.value);
     };
 
+    const handleSave = () => {
+        onSave().catch((e: any) => {
+            const errorMessage = `Unable to retrieve chat to change title. Details: ${
+                e instanceof Error ? e.message : String(e)
+            }`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        });
+    };
+
     const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
         if (event.key === 'Enter') {
-            onSave().catch((e: any) => {
-                const errorMessage = `Unable to retrieve chat to change title. Details: ${
-                    e instanceof Error ? e.message : String(e)
-                }`;
-                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
-            });
+            handleSave();
         }
     };
 
@@ -194,7 +203,7 @@ export const ChatWindow: React.FC = () => {
                         <PopoverTrigger disableButtonEnhancement>
                             <Tooltip content={'Edit conversation name'} relationship="label">
                                 <Button
-                                    data-testid='editChatTitleButton'
+                                    data-testid="editChatTitleButton"
                                     icon={isEditing ? <Edit24Filled /> : <EditRegular />}
                                     appearance="transparent"
                                     onClick={onClose}
@@ -212,6 +221,14 @@ export const ChatWindow: React.FC = () => {
                                 className={classes.input}
                                 onKeyDown={handleKeyDown}
                             />
+                            <div className={classes.buttons}>
+                                <Button appearance="secondary" onClick={onClose}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit" appearance="primary" onClick={handleSave}>
+                                    Save
+                                </Button>
+                            </div>
                         </PopoverSurface>
                     </Popover>
                     <TabList selectedValue={selectedTab} onTabSelect={onTabSelect}>
