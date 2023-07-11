@@ -89,7 +89,7 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("*****************************************************");
     }
 
-    private static IKernel GetKernel( bool useChat = false)
+    private static IKernel GetKernel(bool useChat = false)
     {
         var builder = new KernelBuilder();
         if (useChat)

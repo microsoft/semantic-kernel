@@ -57,9 +57,4 @@
     <EmbeddedResource Include="Resources\30-system-prompt.txt" />
     <EmbeddedResource Include="Resources\30-user-context.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Update="testsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

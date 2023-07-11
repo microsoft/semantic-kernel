@@ -218,7 +218,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine(plan.ToPlanString());
     }
 
-    private static IKernel InitializeKernelAndPlanner( out SequentialPlanner planner, int maxTokens = 1024)
+    private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
     {
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)

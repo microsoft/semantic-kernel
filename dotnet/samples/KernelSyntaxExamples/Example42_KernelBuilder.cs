@@ -28,7 +28,7 @@ using Polly.Retry;
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
 {
-    public static void Run()
+    public static Task RunAsync()
     {
         string azureOpenAIKey = TestConfiguration.AzureOpenAI.ApiKey;
         string azureOpenAIEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
@@ -163,6 +163,8 @@ public static class Example42_KernelBuilder
             .Build();
 
         var kernel10 = Kernel.Builder.WithRetryHandlerFactory(new RetryThreeTimesFactory()).Build();
+
+        return Task.CompletedTask;
     }
 
     // Example of a basic custom retry handler

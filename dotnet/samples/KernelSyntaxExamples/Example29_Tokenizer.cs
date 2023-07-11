@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 
 // ReSharper disable once InconsistentNaming
@@ -14,7 +15,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 /// </summary>
 public static class Example29_Tokenizer
 {
-    public static void Run()
+    public static Task RunAsync()
     {
         // Example 1
         string sentence = "Some text on one line";
@@ -85,5 +86,7 @@ public static class Example29_Tokenizer
         Tokens: 7
         ---
          */
+
+        return Task.CompletedTask;
     }
 }

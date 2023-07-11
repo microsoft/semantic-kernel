@@ -3,6 +3,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
+using Reliability;
 
 public sealed class TestConfiguration
 {
@@ -48,8 +49,8 @@ public sealed class TestConfiguration
         {
             throw new ArgumentNullException(nameof(caller));
         }
-
-        return s_instance._configRoot.GetRequiredSection(caller).Get<T>()!;
+        return s_instance._configRoot.GetSection(caller).Get<T>() ??
+            throw new ConfigurationNotFoundException(section: caller);
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.

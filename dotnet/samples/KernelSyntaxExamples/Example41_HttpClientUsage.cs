@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
@@ -11,7 +12,7 @@ using Microsoft.SemanticKernel;
 
 public static class Example41_HttpClientUsage
 {
-    public static void Run()
+    public static Task RunAsync()
     {
         //Examples showing how to use HttpClient.
         UseDefaultHttpClient();
@@ -22,6 +23,8 @@ public static class Example41_HttpClientUsage
         UseBasicRegistrationWithHttpClientFactory();
 
         UseNamedRegistrationWitHttpClientFactory();
+
+        return Task.CompletedTask;
     }
 
     /// <summary>
