@@ -37,7 +37,7 @@ internal static class ConfigExtensions
                 reloadOnChange: true);
 
             // For settings from Key Vault, see https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-8.0
-            string? keyVaultUri = builderContext.Configuration["KeyVaultUri"];
+            string? keyVaultUri = builderContext.Configuration["Service:KeyVault"];
             if (!string.IsNullOrWhiteSpace(keyVaultUri))
             {
                 configBuilder.AddAzureKeyVault(

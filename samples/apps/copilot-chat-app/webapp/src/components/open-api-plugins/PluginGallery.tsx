@@ -59,7 +59,7 @@ export const PluginGallery: React.FC = () => {
     const [open, setOpen] = useState(false);
 
     return (
-        <Dialog open={open} onOpenChange={(_event, data) => setOpen(data.open)}>
+        <Dialog open={open} onOpenChange={(_event, data) => { setOpen(data.open); }}>
             <DialogTrigger>
                 <Button appearance="transparent" icon={<AppsAddIn24Regular color="white" />} />
             </DialogTrigger>
@@ -68,7 +68,7 @@ export const PluginGallery: React.FC = () => {
                     <DialogTitle
                         action={
                             <DialogTrigger action="close">
-                                <Button appearance="subtle" aria-label="close" icon={<Dismiss24Regular />} />
+                                <Button data-testid="closeEnableCCPluginsPopUp" appearance="subtle" aria-label="close" icon={<Dismiss24Regular />} />
                             </DialogTrigger>
                         }
                     >

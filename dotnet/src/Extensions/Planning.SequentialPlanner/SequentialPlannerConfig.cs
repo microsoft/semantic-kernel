@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
@@ -48,7 +52,7 @@ public sealed class SequentialPlannerConfig
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
     /// </summary>
-    public int MaxTokens { get; set; } = 1024;
+    public int? MaxTokens { get; set; }
 
     /// <summary>
     /// Whether to allow missing functions in the plan on creation.
@@ -56,4 +60,14 @@ public sealed class SequentialPlannerConfig
     /// If set to false (default), the plan creation will fail if any functions are missing.
     /// </summary>
     public bool AllowMissingFunctions { get; set; } = false;
+
+    /// <summary>
+    /// Optional callback to get the available functions for planning.
+    /// </summary>
+    public Func<SequentialPlannerConfig, string?, Task<IOrderedEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
+
+    /// <summary>
+    /// Optional callback to get a function by name.
+    /// </summary>
+    public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
 }

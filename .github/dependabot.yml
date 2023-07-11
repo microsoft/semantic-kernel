@@ -7,27 +7,55 @@ version: 2
 updates:
   # Maintain dependencies for nuget
   - package-ecosystem: "nuget"
+    directory: "samples/apps/copilot-chat-app/webapi"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "copilot chat"
+      - "dependencies"
+
+  # Maintain dependencies for nuget
+  - package-ecosystem: "nuget"
     directory: "dotnet/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+    ignore:
+      # For all System.* and Microsoft.Extensions/Bcl.* packages, ignore all major version updates
+      - dependency-name: "System.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.Bcl.*"
+        update-types: ["version-update:semver-major"]      
+    labels:
+      - ".NET"
+      - "dependencies"
       
   # Maintain dependencies for nuget
   - package-ecosystem: "nuget"
-    directory: "samples/"
+    directory: "samples/dotnet"
     schedule:
-      interval: "daily"
-      
+      interval: "weekly"
+      day: "monday"
+
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "samples/apps"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
       
   # Maintain dependencies for pip
   - package-ecosystem: "pip"
     directory: "python/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "python"
+      - "dependencies"
       
   # Maintain dependencies for github-actions
   - package-ecosystem: "github-actions"
@@ -35,4 +63,5 @@ updates:
     # default location of `.github/workflows`
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
