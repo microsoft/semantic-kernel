@@ -19,5 +19,11 @@ public @interface SKFunctionParameters {
 
     String defaultValue() default NO_DEFAULT_VALUE;
 
+    /**
+     * If required is false, no value is set, and no default value is provided, null will be passed
+     * as this argument.
+     */
+    boolean required() default true;
+
     Class<?> type() default String.class;
 }
