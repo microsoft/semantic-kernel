@@ -47,4 +47,10 @@ public class DocumentMemoryOptions
     /// </summary>
     [Range(0, int.MaxValue)]
     public int FileSizeLimit { get; set; } = 1000000;
+
+    /// <summary>
+    /// Maximum number of files to be allowed for importing in a single request.
+    /// </summary>
+    [Range(0, int.MaxValue)]
+    public int FileCountLimit { get; set; } = 10;
 }
