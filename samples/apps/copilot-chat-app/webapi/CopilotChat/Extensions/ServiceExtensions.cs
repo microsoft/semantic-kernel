@@ -91,7 +91,7 @@ public static class CopilotChatServiceExtensions
         {
             case OcrSupportOptions.OcrSupportType.Tesseract:
             {
-                services.AddSingleton<ITesseractEngine>(sp => new TesseractEngineWrapper(new TesseractEngine(ocrSupportConfig.Tesseract.FilePath, ocrSupportConfig.Tesseract.Language, EngineMode.Default)));
+                services.AddSingleton<ITesseractEngine>(sp => new TesseractEngineWrapper(new TesseractEngine(ocrSupportConfig.Tesseract!.FilePath, ocrSupportConfig.Tesseract!.Language, EngineMode.Default)));
                 break;
             }
 

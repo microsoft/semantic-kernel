@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -73,7 +72,6 @@ public class DocumentImportController : ControllerBase
     private const string GlobalDocumentUploadedClientCall = "GlobalDocumentUploaded";
     private const string ChatDocumentUploadedClientCall = "ChatDocumentUploaded";
     private readonly ITesseractEngine _tesseractEngine;
-    
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -285,7 +283,7 @@ public class DocumentImportController : ControllerBase
             case SupportedFileType.Png:
             case SupportedFileType.Tiff:
             {
-                fileContent = await this.ReadTextFromImageFileAsync(formFile);
+                documentContent = await this.ReadTextFromImageFileAsync(formFile);
                 break;
             }
 
@@ -445,7 +443,7 @@ public class DocumentImportController : ControllerBase
 
             using var img = Pix.LoadFromMemory(imgStream.ToArray());
 
-            using var page = _tesseractEngine.Process(img);
+            using var page = this._tesseractEngine.Process(img);
             return page.GetText();
         }
     }
