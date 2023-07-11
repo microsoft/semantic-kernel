@@ -118,6 +118,7 @@ class ActionPlanner:
             self._logger.info(f"Parameter {key}: val")
             if val:
                 plan.parameters[key] = str(val)
+                plan.state[key] = str(val)
 
         return plan
 
