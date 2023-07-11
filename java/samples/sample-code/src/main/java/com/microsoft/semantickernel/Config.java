@@ -5,10 +5,10 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
 import com.azure.core.credential.AzureKeyCredential;
-import com.microsoft.semantickernel.util.AIProviderSettings;
-import com.microsoft.semantickernel.util.AzureOpenAISettings;
-import com.microsoft.semantickernel.util.ClientSettings;
-import com.microsoft.semantickernel.util.OpenAISettings;
+import com.microsoft.semantickernel.connectors.ai.openai.util.AIProviderSettings;
+import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISettings;
+import com.microsoft.semantickernel.connectors.ai.openai.util.ClientSettings;
+import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAISettings;
 import org.slf4j.Logger;
 
 import java.io.FileNotFoundException;

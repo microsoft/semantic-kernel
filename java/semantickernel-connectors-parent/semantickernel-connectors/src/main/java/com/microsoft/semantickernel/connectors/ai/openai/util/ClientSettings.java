@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.util;
+package com.microsoft.semantickernel.connectors.ai.openai.util;
 
 import java.io.File;
 import java.io.FileInputStream;
