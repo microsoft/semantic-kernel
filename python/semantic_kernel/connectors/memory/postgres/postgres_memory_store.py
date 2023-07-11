@@ -2,14 +2,13 @@
 
 import atexit
 import json
-import time
 from logging import Logger
 from typing import List, Optional, Tuple
 
 import numpy as np
 from numpy import ndarray
 from psycopg import Cursor
-from psycopg.sql import SQL, Identifier, Literal
+from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
 
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -411,7 +410,8 @@ class PostgresMemoryStore(MemoryStoreBase):
                             cosine_similarity,
                             timestamp
                         FROM (
-                            SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') AS cosine_similarity, timestamp
+                            SELECT key, embedding, metadata, 1 - (embedding <=> '[{emb}]') \
+                                AS cosine_similarity, timestamp
                             FROM {scm}.{tbl}
                         ) AS subquery
                         WHERE cosine_similarity >= {mrs}
@@ -465,7 +465,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        
+
         results = await self.get_nearest_matches_async(
             collection_name=collection_name,
             embedding=embedding,

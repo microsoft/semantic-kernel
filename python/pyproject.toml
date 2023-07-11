@@ -38,8 +38,8 @@ weaviate-client = "^3.18.0"
 pinecone-client = "^2.2.2"
 
 [tool.poetry.group.postgres.dependencies]
-psycopg-binary = "^3.1.9"
 psycopg-pool = "^3.1.7"
+psycopg = "^3.1.9"
 
 [tool.isort]
 profile = "black"
