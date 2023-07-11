@@ -62,9 +62,15 @@ const ssoSilentRequest = async (msalInstance: IPublicClientApplication) => {
 
 const loginAsync = async (instance: IPublicClientApplication) => {
     if (Constants.msal.method === 'redirect') {
-        await instance.loginRedirect({ scopes: Constants.msal.semanticKernelScopes });
+        await instance.loginRedirect({
+            scopes: Constants.msal.semanticKernelScopes,
+            extraScopesToConsent: Constants.msal.msGraphAppScopes,
+        });
     } else {
-        await instance.loginPopup({ scopes: Constants.msal.semanticKernelScopes });
+        await instance.loginPopup({
+            scopes: Constants.msal.semanticKernelScopes,
+            extraScopesToConsent: Constants.msal.msGraphAppScopes,
+        });
     }
 };
 
