@@ -322,7 +322,7 @@ public class DefaultCompletionSKFunction
                 super.getName(),
                 super.getSkillName(),
                 super.getDescription(),
-                super.getParameters(),
+                super.getParametersView(),
                 true,
                 false);
     }

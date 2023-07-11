@@ -116,11 +116,12 @@ public abstract class AbstractSkFunction<RequestConfiguration>
         return functionName;
     }
 
-    public DelegateTypes getDelegateType() {
-        return delegateType;
-    }
-
-    public List<ParameterView> getParameters() {
+    /**
+     * The parameters of the function.
+     *
+     * @return The parameters of the function.
+     */
+    public List<ParameterView> getParametersView() {
         return Collections.unmodifiableList(parameters);
     }
 

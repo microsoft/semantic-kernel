@@ -63,7 +63,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                 super.getName(),
                 super.getSkillName(),
                 super.getDescription(),
-                super.getParameters(),
+                super.getParametersView(),
                 false,
                 false);
     }
