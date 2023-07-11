@@ -11,8 +11,8 @@ from azure.core.exceptions import HttpResponseError
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
+    CorsOptions,
     SearchIndex,
-    VectorSearch,
     VectorSearchAlgorithmConfiguration,
 )
 from azure.search.documents.models import Vector
@@ -98,7 +98,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection_async(
         self,
         collection_name: str,
-        vector_size: int,
+        vector_size: Optional[int] = 1536,
         vector_config: Optional[VectorSearchAlgorithmConfiguration] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
@@ -110,39 +110,17 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
 
-        if vector_config:
-            vector_search = VectorSearch(algorithm_configurations=[vector_config])
-        else:
-            vector_search = VectorSearch(
-                algorithm_configurations=[
-                    VectorSearchAlgorithmConfiguration(
-                        name="az-vector-config",
-                        kind="hnsw",
-                        hnsw_parameters={
-                            "m": 4,
-                            "efConstruction": 400,
-                            "efSearch": 500,
-                            "metric": "cosine",
-                        },
-                    )
-                ]
-            )
-
-        # Check to see if collection exists
-        collection_index = await self._cogsearch_indexclient.get_index(collection_name)
-
-        if collection_index:
-            return
-
         # Create the search index
+        cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
+
         index = SearchIndex(
             name=collection_name,
             fields=acs_schema(vector_size),
-            vector_search=vector_search,
+            cors_options=cors_options,
         )
 
         try:
-            await self._cogsearch_indexclient.create_or_update_index(index=index)
+            self._cogsearch_indexclient.create_or_update_index(index=index)
         except HttpResponseError:
             raise ValueError("Error: Unable to create ACS search index for collection.")
 
@@ -168,9 +146,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         Returns:
             SearchIndex -- Collection Information from ACS about collection.
         """
-        collection_result = await self._cogsearch_indexclient.get_index(
-            name=collection_name
-        )
+        collection_result = self._cogsearch_indexclient.get_index(name=collection_name)
 
         return collection_result
 
