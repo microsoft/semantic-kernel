@@ -2,56 +2,27 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Text;
 
-namespace GitHubSkills;
+namespace KernelHttpServer.Plugins;
 
 /// <summary>
-/// Skill for interacting with a GitHub repository.
+/// Plugin for interacting with a GitHub repository.
 /// </summary>
-public class GitHubSkill
+public class GitHubPlugin
 {
-    /// <summary>
-    /// Name of the repository repositoryBranch which will be downloaded and summarized.
-    /// </summary>
-    public const string RepositoryBranchParamName = "repositoryBranch";
-
-    /// <summary>
-    /// The search string to match against the names of files in the repository.
-    /// </summary>
-    public const string SearchPatternParamName = "searchPattern";
-
-    /// <summary>
-    /// Document file path.
-    /// </summary>
-    public const string FilePathParamName = "filePath";
-
-    /// <summary>
-    /// Personal access token for private repositories.
-    /// </summary>
-    public const string PatTokenParamName = "patToken";
-
-    /// <summary>
-    /// Directory to which to extract compressed file's data.
-    /// </summary>
-    public const string DestinationDirectoryPathParamName = "destinationDirectoryPath";
-
-    /// <summary>
-    /// Name of the memory collection used to store the code summaries.
-    /// </summary>
-    public const string MemoryCollectionNameParamName = "memoryCollectionName";
-
     /// <summary>
     /// The max tokens to process in a single semantic function call.
     /// </summary>
@@ -64,7 +35,7 @@ public class GitHubSkill
 
     private readonly ISKFunction _summarizeCodeFunction;
     private readonly IKernel _kernel;
-    private readonly ILogger<GitHubSkill> _logger;
+    private readonly ILogger<GitHubPlugin> _logger;
     private static readonly char[] s_trimChars = new char[] { ' ', '/' };
 
     internal const string SummarizeCodeSnippetDefinition =
@@ -80,19 +51,18 @@ BEGIN SUMMARY:
 ";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GitHubSkill"/> class.
+    /// Initializes a new instance of the <see cref="GitHubPlugin"/> class.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
-    /// <param name="downloadSkill">Instance of WebFileDownloadSkill used to download web files</param>
     /// <param name="logger">Optional logger</param>
-    public GitHubSkill(IKernel kernel, ILogger<GitHubSkill>? logger = null)
+    public GitHubPlugin(IKernel kernel, ILogger<GitHubPlugin>? logger = null)
     {
         this._kernel = kernel;
-        this._logger = logger ?? NullLogger<GitHubSkill>.Instance;
+        this._logger = logger ?? NullLogger<GitHubPlugin>.Instance;
 
         this._summarizeCodeFunction = kernel.CreateSemanticFunction(
             SummarizeCodeSnippetDefinition,
-            skillName: nameof(GitHubSkill),
+            skillName: nameof(GitHubPlugin),
             description: "Given a snippet of code, summarize the part of the file.",
             maxTokens: MaxTokens,
             temperature: 0.1,
@@ -102,55 +72,48 @@ BEGIN SUMMARY:
     /// <summary>
     /// Summarize the code downloaded from the specified URI.
     /// </summary>
-    /// <param name="source">URI to download the repository content to be summarized</param>
-    /// <param name="context">Semantic kernel context</param>
-    /// <returns>Task</returns>
-    [SKFunction("Downloads a repository and summarizes the content")]
-    [SKFunctionName("SummarizeRepository")]
-    [SKFunctionInput(Description = "URL of the GitHub repository to summarize")]
-    [SKFunctionContextParameter(Name = RepositoryBranchParamName,
-        Description = "Name of the repository repositoryBranch which will be downloaded and summarized")]
-    [SKFunctionContextParameter(Name = SearchPatternParamName, Description = "The search string to match against the names of files in the repository")]
-    public async Task SummarizeRepositoryAsync(string source, SKContext context)
+    /// <param name="input">URI to download the repository content to be summarized</param>
+    /// <param name="repositoryBranch">Name of the repository repositoryBranch which will be downloaded and summarized</param>
+    /// <param name="searchPattern">The search string to match against the names of files in the repository</param>
+    /// <param name="patToken">Personal access token for private repositories</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Name of the memory collection used to store the code summaries.</returns>
+    [SKFunction, SKName("SummarizeRepository"), Description("Downloads a repository and summarizes the content")]
+    public async Task<string?> SummarizeRepositoryAsync(
+        [Description("URL of the GitHub repository to summarize")] string input,
+        [Description("Name of the repository repositoryBranch which will be downloaded and summarized"), DefaultValue("main")] string repositoryBranch,
+        [Description("The search string to match against the names of files in the repository"), DefaultValue("*.md")] string searchPattern,
+        [Description("Personal access token for private repositories"), Optional] string? patToken,
+        CancellationToken cancellationToken = default)
     {
-        if (!context.Variables.TryGetValue(RepositoryBranchParamName, out string? repositoryBranch) || string.IsNullOrEmpty(repositoryBranch))
-        {
-            repositoryBranch = "main";
-        }
-
-        if (!context.Variables.TryGetValue(SearchPatternParamName, out string? searchPattern) || string.IsNullOrEmpty(searchPattern))
-        {
-            searchPattern = "*.md";
-        }
-
         string tempPath = Path.GetTempPath();
         string directoryPath = Path.Combine(tempPath, $"SK-{Guid.NewGuid()}");
         string filePath = Path.Combine(tempPath, $"SK-{Guid.NewGuid()}.zip");
 
         try
         {
-            var repositoryUri = Regex.Replace(source.Trim(s_trimChars), "github.com", "api.github.com/repos", RegexOptions.IgnoreCase);
+            var repositoryUri = Regex.Replace(input.Trim(s_trimChars), "github.com", "api.github.com/repos", RegexOptions.IgnoreCase);
             var repoBundle = $"{repositoryUri}/zipball/{repositoryBranch}";
 
             this._logger.LogDebug("Downloading {RepoBundle}", repoBundle);
 
             var headers = new Dictionary<string, string>();
-            if (context.Variables.TryGetValue(PatTokenParamName, out string? pat))
+            if (!string.IsNullOrEmpty(patToken))
             {
                 this._logger.LogDebug("Access token detected, adding authorization headers");
-                headers.Add("Authorization", $"Bearer {pat}");
+                headers.Add("Authorization", $"Bearer {patToken}");
                 headers.Add("X-GitHub-Api-Version", "2022-11-28");
                 headers.Add("Accept", "application/vnd.github+json");
                 headers.Add("User-Agent", "msft-semantic-kernel-sample");
             }
 
-            await this.DownloadToFileAsync(repoBundle, headers, filePath, context.CancellationToken);
+            await this.DownloadToFileAsync(repoBundle, headers, filePath, cancellationToken);
 
             ZipFile.ExtractToDirectory(filePath, directoryPath);
 
-            await this.SummarizeCodeDirectoryAsync(directoryPath, searchPattern, repositoryUri, repositoryBranch, context);
+            await this.SummarizeCodeDirectoryAsync(directoryPath, searchPattern, repositoryUri, repositoryBranch, cancellationToken);
 
-            context.Variables.Set(MemoryCollectionNameParamName, $"{repositoryUri}-{repositoryBranch}");
+            return $"{repositoryUri}-{repositoryBranch}";
         }
         finally
         {
@@ -167,7 +130,7 @@ BEGIN SUMMARY:
         }
     }
 
-    private async Task DownloadToFileAsync(string uri, IDictionary<string, string> headers, string filePath, CancellationToken cancellationToken)
+    private async Task DownloadToFileAsync(string uri, IDictionary<string, string> headers, string filePath, CancellationToken cancellationToken = default)
     {
         // Download URI to file.
         using HttpClient client = new();
@@ -181,7 +144,7 @@ BEGIN SUMMARY:
         using HttpResponseMessage response = await client.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        using Stream contentStream = await response.Content.ReadAsStreamAsync();
+        using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using FileStream fileStream = File.Create(filePath);
         await contentStream.CopyToAsync(fileStream, 81920, cancellationToken);
         await fileStream.FlushAsync(cancellationToken);
@@ -190,7 +153,7 @@ BEGIN SUMMARY:
     /// <summary>
     /// Summarize a code file into an embedding
     /// </summary>
-    private async Task SummarizeCodeFileAsync(string filePath, string repositoryUri, string repositoryBranch, string fileUri)
+    private async Task SummarizeCodeFileAsync(string filePath, string repositoryUri, string repositoryBranch, string fileUri, CancellationToken cancellationToken = default)
     {
         string code = File.ReadAllText(filePath);
 
@@ -226,7 +189,8 @@ BEGIN SUMMARY:
                     await this._kernel.Memory.SaveInformationAsync(
                         $"{repositoryUri}-{repositoryBranch}",
                         text: $"{paragraphs[i]} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
-                        id: $"{fileUri}_{i}");
+                        id: $"{fileUri}_{i}",
+                        cancellationToken: cancellationToken);
                 }
             }
             else
@@ -234,7 +198,8 @@ BEGIN SUMMARY:
                 await this._kernel.Memory.SaveInformationAsync(
                     $"{repositoryUri}-{repositoryBranch}",
                     text: $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
-                    id: fileUri);
+                    id: fileUri,
+                    cancellationToken: cancellationToken);
             }
         }
     }
@@ -242,7 +207,7 @@ BEGIN SUMMARY:
     /// <summary>
     /// Summarize the code found under a directory into embeddings (one per file)
     /// </summary>
-    private async Task SummarizeCodeDirectoryAsync(string directoryPath, string searchPattern, string repositoryUri, string repositoryBranch, SKContext context)
+    private async Task SummarizeCodeDirectoryAsync(string directoryPath, string searchPattern, string repositoryUri, string repositoryBranch, CancellationToken cancellationToken = default)
     {
         string[] filePaths = Directory.GetFiles(directoryPath, searchPattern, SearchOption.AllDirectories);
 
@@ -253,7 +218,7 @@ BEGIN SUMMARY:
             foreach (string filePath in filePaths)
             {
                 var fileUri = this.BuildFileUri(directoryPath, filePath, repositoryUri, repositoryBranch);
-                await this.SummarizeCodeFileAsync(filePath, repositoryUri, repositoryBranch, fileUri);
+                await this.SummarizeCodeFileAsync(filePath, repositoryUri, repositoryBranch, fileUri, cancellationToken);
             }
         }
     }
