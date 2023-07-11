@@ -14,14 +14,16 @@ See the GPT Tokenizer to obtain token ids: https://platform.openai.com/tokenizer
 Read more about logit bias and how to configure output: https://help.openai.com/en/articles/5247780-using-logit-bias-to-define-token-probability
 """
 
+
 def _config_ban_tokens(settings_type, keys):
     settings = ChatRequestSettings() if settings_type == "chat" else CompleteRequestSettings()
-    
+
     # Map each token in the keys list to a bias value from -100 (a potential ban) to 100 (exclusive selection)
     for k in keys:
         # -100 to potentially ban all tokens in the list
         settings.token_selection_biases[k] = -100
     return settings
+
 
 async def chat_request_example(kernel, api_key, org_id):
     openai_chat_completion = sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
@@ -72,6 +74,7 @@ async def chat_request_example(kernel, api_key, org_id):
     kernel.remove_chat_service("chat_service")
     return context_vars, banned_words
 
+
 async def text_complete_request_example(kernel, api_key, org_id):
     openai_text_completion = sk_oai.OpenAITextCompletion("text-davinci-002", api_key, org_id)
     kernel.add_text_completion_service("text_service", openai_text_completion)
@@ -92,6 +95,7 @@ async def text_complete_request_example(kernel, api_key, org_id):
     kernel.remove_text_completion_service("text_service")
     return answer, user_mssg, banned_words
 
+
 def _check_banned_words(banned_list, actual_list) -> bool:
     passed = True
     for word in banned_list:
@@ -99,6 +103,7 @@ def _check_banned_words(banned_list, actual_list) -> bool:
             print(f"The banned word \"{word}\" was found in the answer")
             passed = False
     return passed
+
 
 async def main() -> None:
     kernel = sk.Kernel()
