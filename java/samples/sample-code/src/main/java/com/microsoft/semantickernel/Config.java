@@ -9,7 +9,9 @@ import com.microsoft.semantickernel.util.AIProviderSettings;
 import com.microsoft.semantickernel.util.AzureOpenAISettings;
 import com.microsoft.semantickernel.util.ClientSettings;
 import com.microsoft.semantickernel.util.OpenAISettings;
+import org.slf4j.Logger;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +20,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class Config {
+
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Config.class);
 
     private static final List<String> DEFAULT_PROPERTIES_LOCATIONS = Arrays.asList(
             "java/samples/conf.properties",
@@ -59,7 +63,7 @@ public class Config {
         return ClientType.valueOf(OPENAI_CLIENT_TYPE).getClient();
     }
 
-    private static Supplier<ClientSettings<?>> getOpenaiClientFromDefaultPropertiesLocations(ClientType type) {
+    private static Supplier<ClientSettings<?>> getOpenAIClientFromDefaultPropertiesLocations(ClientType type) {
         return () -> {
             try {
                 for (String location : DEFAULT_PROPERTIES_LOCATIONS) {
@@ -70,8 +74,10 @@ public class Config {
                         };
                     }
                 }
+            } catch (FileNotFoundException e) {
+                // Ignore
             } catch (IOException e) {
-                //IGNORE
+                LOGGER.error("Failed to read properties file", e);
             }
             return null;
         };
@@ -91,7 +97,7 @@ public class Config {
                         },
                         AIProviderSettings::getOpenAISettingsFromSystemProperties,
                         AIProviderSettings::getOpenAISettingsFromEnv,
-                        getOpenaiClientFromDefaultPropertiesLocations(OPEN_AI));
+                        getOpenAIClientFromDefaultPropertiesLocations(OPEN_AI));
             }
 
             @Override
@@ -129,7 +135,7 @@ public class Config {
                         },
                         AIProviderSettings::getAzureOpenAISettingsFromSystemProperties,
                         AIProviderSettings::getAzureOpenAISettingsFromEnv,
-                        getOpenaiClientFromDefaultPropertiesLocations(AZURE_OPEN_AI));
+                        getOpenAIClientFromDefaultPropertiesLocations(AZURE_OPEN_AI));
             }
 
             @Override

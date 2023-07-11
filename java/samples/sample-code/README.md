@@ -38,8 +38,8 @@ By default, the samples will use the Open AI client, but you can also use the Az
 
 ## Open AI client type
 
-You can define the provider of Open Ai (openai.com or Azure), this can be done by setting the `OPENAI_CLIENT_TYPE`
-property or environment variable to either `OPENAI` or `AZURE_OPEN_AI`, ie:
+You can define the provider of Open AI (openai.com or Azure), this can be done by setting the `OPENAI_CLIENT_TYPE`
+property or environment variable to either `OPENAI` or `AZURE_OPEN_AI`, i.e.:
 
 ```shell
 OPENAI_CLIENT_TYPE=OPENAI ../../mvnw exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
@@ -58,7 +58,7 @@ The tests search for the client settings in the following order:
 1. Properties file at `~/.sk/conf.properties`.
 
 
-## Properties file
+## Properties File
 
 You can set the location of a properties file, by setting the `CONF_PROPERTIES` property or environment variable, ie:
 
