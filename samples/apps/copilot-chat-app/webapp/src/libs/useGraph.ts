@@ -25,10 +25,10 @@ export const useGraph = () => {
         const loadedUsers: UserData[] = [];
         const usersToRetry: string[] = [];
 
-        try {
-            // Copy current state of user data
-            const userData = { ...users };
+        // Copy current state of user data
+        const userData = { ...users };
 
+        try {
             // Filter user Ids list to optimize fetch
             userIds.forEach((userId) => {
                 const ids = userId.split('.');
@@ -82,6 +82,8 @@ export const useGraph = () => {
                 }),
             );
         }
+
+        return userData;
     };
 
     // Helper function to fetch user data in batches of up to 20

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useState } from 'react';
 
 import {
     Avatar,
@@ -18,6 +18,7 @@ import { useGraph } from '../../../libs/useGraph';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { setUsersLoaded } from '../../../redux/features/conversations/conversationsSlice';
+import { Users } from '../../../redux/features/users/UsersState';
 import { ScrollBarStyles } from '../../../styles';
 
 interface ShareBotMenuProps {
@@ -50,11 +51,13 @@ export const ParticipantsList: FC<ShareBotMenuProps> = ({ participants }) => {
     const msGraph = useGraph();
 
     const chatUsers = conversations[selectedId].users;
+    const [loadedParticipants, setLoadedParticipants] = useState(mapParticipantsNames(participants, users));
 
     useEffect(() => {
         if (!conversations[selectedId].userDataLoaded) {
-            void msGraph.loadUsers(chatUsers.map((user: IChatUser) => user.id)).then(() => {
+            void msGraph.loadUsers(chatUsers.map((user: IChatUser) => user.id)).then((loadedUsers: Users) => {
                 dispatch(setUsersLoaded(selectedId));
+                setLoadedParticipants(mapParticipantsNames(participants, loadedUsers));
             });
         }
 
@@ -71,14 +74,10 @@ export const ParticipantsList: FC<ShareBotMenuProps> = ({ participants }) => {
             </PopoverTrigger>
             <PopoverSurface className={classes.root}>
                 <div className={classes.list}>
-                    {participants.map((participant) => (
+                    {loadedParticipants.map((participant) => (
                         <Persona
                             textAlignment="center"
-                            name={
-                                // falsy lint check, users[userId] can be null if user data hasn't been loaded
-                                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                                users[participant.id.split('.')[0]]?.displayName ?? participant.id
-                            }
+                            name={participant.name}
                             key={participant.id}
                             avatar={{ color: 'colorful' }}
                         />
@@ -87,4 +86,13 @@ export const ParticipantsList: FC<ShareBotMenuProps> = ({ participants }) => {
             </PopoverSurface>
         </Popover>
     );
+};
+
+const mapParticipantsNames = (participants: IChatUser[], usersData: Users) => {
+    return participants.map((participant) => ({
+        ...participant,
+        // falsy lint check, users[userId] can be null if user data hasn't been loaded
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        name: usersData[participant.id.split('.')[0]]?.displayName ?? participant.id,
+    }));
 };
