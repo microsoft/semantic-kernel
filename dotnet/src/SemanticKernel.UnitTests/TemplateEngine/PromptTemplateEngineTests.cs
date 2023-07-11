@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -210,35 +209,53 @@ public sealed class PromptTemplateEngineTests
     }
 
     [Fact]
-    public async Task ItRendersCodeInParallelAsync()
+    public async Task ItRendersAsyncCodeUsingImmutableVariablesAsync()
     {
         // Arrange
-        ISKFunction func1 = SKFunction.FromNativeFunction(() => "F(OUTPUT-FOO)", "", "func1");
-        ISKFunction func2 = SKFunction.FromNativeFunction(() => "F(OUTPUT-BAR)", "", "func2");
+        var template = "{{func1}} {{func2}} {{func3 $myVar}}";
+        this._variables.Update("BAR");
+        this._variables.Set("myVar", "BAZ");
+
+        string MyFunction1Async(SKContext cx)
+        {
+            this._logger.WriteLine("MyFunction1 call received, input: {0}", cx.Variables.Input);
+            cx.Variables.Update("foo");
+            return "F(OUTPUT-FOO)";
+        }
+        string MyFunction2Async(SKContext cx)
+        {
+            // Input value should be "BAR" because the variable $input is immutable in MyFunction1
+            this._logger.WriteLine("MyFunction2 call received, input: {0}", cx.Variables.Input);
+            cx.Variables.Set("myVar", "bar");
+            return cx.Variables.Input;
+        }
+        string MyFunction3Async(SKContext cx)
+        {
+            // Input value should be "BAZ" because the variable $myVar is immutable in MyFunction2
+            this._logger.WriteLine("MyFunction3 call received, input: {0}", cx.Variables.Input);
+            return cx.Variables.TryGetValue("myVar", out string? value) ? value : "";
+        }
 
         var functions = new List<ISKFunction>()
         {
-            func1,
-            func2
+            SKFunction.FromNativeMethod(Method(MyFunction1Async), this, "func1"),
+            SKFunction.FromNativeMethod(Method(MyFunction2Async), this, "func2"),
+            SKFunction.FromNativeMethod(Method(MyFunction3Async), this, "func3")
         };
 
-        var blocks = new List<Block>();
         foreach (var func in functions)
         {
-            blocks.Add(new CodeBlock(new List<Block> { new FunctionIdBlock(func.Name) }, "", NullLogger.Instance));
-
+            Assert.NotNull(func);
             ISKFunction? outFunc = func;
-            this._skills.Setup(x => x.GetFunction(It.Is<string>(s => s == func.Name))).Returns(func);
-            this._skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == func.Name), out outFunc)).Returns(true);
+            this._skills.Setup(x => x.GetFunction(It.Is<string>(s => s == func.SkillName))).Returns(func);
+            this._skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == func.SkillName), out outFunc)).Returns(true);
         }
 
         // Act
-        var result = await this._target.RenderCodeAsync(blocks, this.MockContext());
+        var result = await this._target.RenderAsync(template, this.MockContext());
 
         // Assert
-        Assert.Equal(2, result.Count);
-        Assert.Equal("F(OUTPUT-FOO)", result[0].Content);
-        Assert.Equal("F(OUTPUT-BAR)", result[1].Content);
+        Assert.Equal("F(OUTPUT-FOO) BAR BAZ", result);
     }
 
     private static MethodInfo Method(Delegate method)

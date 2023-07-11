@@ -65,13 +65,13 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     public async Task<string> RenderAsync(IList<Block> blocks, SKContext context)
     {
         this._log.LogTrace("Rendering list of {0} blocks", blocks.Count);
-        var tasks = new List<Task<string>>();
+        var tasks = new List<Task<string>>(blocks.Count);
         foreach (var block in blocks)
         {
             switch (block)
             {
                 case ITextRendering staticBlock:
-                    tasks.Add(Task.FromResult<string>(staticBlock.Render(context.Variables)));
+                    tasks.Add(Task.FromResult(staticBlock.Render(context.Variables)));
                     break;
 
                 case ICodeRendering dynamicBlock:
@@ -96,6 +96,11 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         return result.ToString();
     }
 
+    public Task<IList<Block>> RenderCodeAsync(IList<Block> blocks, SKContext executionContext)
+    {
+        throw new System.NotImplementedException();
+    }
+
     /// <inheritdoc/>
     public IList<Block> RenderVariables(IList<Block> blocks, ContextVariables? variables)
     {
@@ -103,39 +108,5 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         return blocks.Select(block => block.Type != BlockTypes.Variable
             ? block
             : new TextBlock(((ITextRendering)block).Render(variables), this._log)).ToList();
-    }
-
-    /// <inheritdoc/>
-    public async Task<IList<Block>> RenderCodeAsync(
-        IList<Block> blocks,
-        SKContext executionContext)
-    {
-        this._log.LogTrace("Rendering code");
-
-        var result = new Block[blocks.Count];
-        var tasks = new List<Task<string>>();
-        var indexes = new List<int>();
-
-        for (var i = 0; i < blocks.Count; i++)
-        {
-            var block = blocks[i];
-            if (block.Type != BlockTypes.Code)
-            {
-                result[i] = block;
-            }
-            else
-            {
-                indexes.Add(i);
-                tasks.Add(((ICodeRendering)block).RenderCodeAsync(executionContext));
-            }
-        }
-
-        var codeBlocks = await Task.WhenAll(tasks).ConfigureAwait(false);
-        for (var i = 0; i < indexes.Count; i++)
-        {
-            result[indexes[i]] = new TextBlock(codeBlocks[i], this._log);
-        }
-
-        return result.ToList();
     }
 }
