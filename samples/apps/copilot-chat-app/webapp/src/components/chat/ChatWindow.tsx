@@ -232,7 +232,6 @@ export const ChatWindow: React.FC = () => {
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
             {selectedTab === 'files' && <ChatResourceList chatId={selectedId} />}
-            {<div>Move Alert items down here</div>}
         </div>
     );
 };

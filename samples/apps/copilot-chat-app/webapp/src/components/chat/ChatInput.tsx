@@ -174,6 +174,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
 
     return (
         <div className={classes.root}>
+            {
+                <div style={{ marginBottom: '10px' }}>
+                    Move Alert items over here with the same width as the thingy below
+                </div>
+            }
+
             <div className={classes.typingIndicator}>
                 <ChatStatus />
             </div>
