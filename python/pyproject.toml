@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.3.1.dev"
+version = "0.3.2.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -30,6 +30,12 @@ torch = "2.0.0"
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.3.23"
 
+[tool.poetry.group.weaviate.dependencies]
+weaviate-client = "^3.18.0"
+
+[tool.poetry.group.pinecone.dependencies]
+pinecone-client = "^2.2.2"
+
 [[tool.poetry.source]]
 name = "azure-sdk-dev"
 url = "https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-python/pypi/simple/"
@@ -37,12 +43,7 @@ priority = "supplemental"
 
 [tool.poetry.group.azure_cognitive_search.dependencies]
 azure-search-documents = {version = "11.4.0a20230509004", source = "azure-sdk-dev"}
-
-[tool.poetry.group.weaviate.dependencies]
-weaviate-client = "^3.18.0"
-
-[tool.poetry.group.pinecone.dependencies]
-pinecone-client = "^2.2.2"
+azure-identity = "^1.13.0"
 
 [tool.isort]
 profile = "black"
@@ -54,4 +55,3 @@ line-length = 120
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-

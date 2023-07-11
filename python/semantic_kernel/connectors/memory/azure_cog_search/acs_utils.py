@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import datetime
 import os
+from datetime import datetime
 from typing import List, Optional, Union
 
 from azure.core.credentials import AzureKeyCredential
@@ -15,7 +15,8 @@ from azure.search.documents.indexes.models import (
 )
 from dotenv import load_dotenv
 from numpy import array, linalg, ndarray
-from python.semantic_kernel.memory.memory_record import MemoryRecord
+
+from semantic_kernel.memory.memory_record import MemoryRecord
 
 
 def create_credentials(
@@ -25,9 +26,11 @@ def create_credentials(
     acs_key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
 
     if azsearch_api_key:
-        credential = (
-            DefaultAzureCredential() if use_async else DefaultAzureCredentialSync()
-        )
+        credential = AzureKeyCredential(azsearch_api_key)
+        if credential is None:
+            credential = (
+                DefaultAzureCredential() if use_async else DefaultAzureCredentialSync()
+            )
     else:
         if acs_key is None:
             raise ValueError(
