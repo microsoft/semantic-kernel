@@ -50,27 +50,34 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
     return deployment or "", api_key, endpoint
 
 
-def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+def postgres_settings_from_dot_env() -> str:
+    """Reads the Postgres connection string from the .env file.
+
+    Returns:
+        str: The Postgres connection string
     """
-    Reads the Pinecone API key and Environment from the .env file.
+    connection_string = None
+    config = dotenv_values(".env")
+    connection_string = config.get("POSTGRES_CONNECTION_STRING", None)
+
+    assert (
+        connection_string is not None
+    ), "Postgres connection string not found in .env file"
+
+    return connection_string
+
+
+def pinecone_settings_from_dot_env() -> Tuple[str, str]:
+    """Reads the Pinecone API key and Environment from the .env file.
+
     Returns:
         Tuple[str, str]: The Pinecone API key, the Pinecone Environment
     """
 
     api_key, environment = None, None
-    with open(".env", "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
-            if line.startswith("PINECONE_API_KEY"):
-                parts = line.split("=")[1:]
-                api_key = "=".join(parts).strip().strip('"')
-                continue
-
-            if line.startswith("PINECONE_ENVIRONMENT"):
-                parts = line.split("=")[1:]
-                environment = "=".join(parts).strip().strip('"')
-                continue
+    config = dotenv_values(".env")
+    api_key = config.get("PINECONE_API_KEY", None)
+    environment = config.get("PINECONE_ENVIRONMENT", None)
 
     assert api_key is not None, "Pinecone API key not found in .env file"
     assert environment is not None, "Pinecone environment not found in .env file"
