@@ -55,7 +55,6 @@
         <dependency>
             <groupId>com.microsoft.semantickernel</groupId>
             <artifactId>semantickernel-gpt3-tokenizer</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
