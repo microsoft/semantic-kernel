@@ -113,9 +113,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         # Create configuration for Vector Search
         if vector_config:
-            VectorSearch(algorithm_configurations=[vector_config])
+            vector_config = VectorSearch(algorithm_configurations=[vector_config])
         else:
-            VectorSearch(
+            vector_config = VectorSearch(
                 algorithm_configurations=[
                     VectorSearchAlgorithmConfiguration(
                         name="az-vector-config",
@@ -138,6 +138,8 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             name=collection_name,
             fields=acs_schema(vector_size),
             cors_options=cors_options,
+            vector_search=vector_config,
+            
         )
 
         try:
