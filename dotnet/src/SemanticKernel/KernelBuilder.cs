@@ -22,7 +22,8 @@ public sealed class KernelBuilder
     private KernelConfig _config = new();
     private Func<ISemanticTextMemory> _memoryFactory = () => NullMemory.Instance;
     private ILogger _logger = NullLogger.Instance;
-    private Meter _meter = new("SemanticKernel", "1.0.0");
+    private Meter? _meter = null;
+    private Func<Meter> _meterFactory = () => new("SemanticKernel", "1.0.0");
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
@@ -49,9 +50,9 @@ public sealed class KernelBuilder
             this._config.SetHttpRetryHandlerFactory(this._httpHandlerFactory);
         }
 
-        if (this._meter == null)
+        if (this._meter is null)
         {
-            this._meter = new Meter("Microsoft.SemanticKernel", "1.0.0");
+            this._meter = this._meterFactory();
         }
 
         var instance = new Kernel(
