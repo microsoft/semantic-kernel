@@ -67,10 +67,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeMethod(
         MethodInfo method,
-        Meter? meter = null,
         object? target = null,
         string? skillName = null,
-        ILogger? log = null)
+        ILogger? log = null,
+        Meter? meter = null)
     {
         if (!method.IsStatic && target is null)
         {

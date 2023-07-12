@@ -129,8 +129,8 @@ public sealed class Kernel : IKernel, IDisposable
         Dictionary<string, ISKFunction> skill = ImportSkill(
             skillInstance,
             skillName!,
-            this.Meter,
-            this.Log
+            this.Log,
+            this.Meter
         );
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
@@ -366,7 +366,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="meter">Application meter</param>
     /// <param name="log">Application logger</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, Meter meter, ILogger log)
+    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log, Meter? meter = null)
     {
         MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
         log.LogTrace("Importing skill name: {0}. Potential methods found: {1}", skillName, methods.Length);
@@ -377,7 +377,7 @@ public sealed class Kernel : IKernel, IDisposable
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
-                ISKFunction function = SKFunction.FromNativeMethod(method, meter, skillInstance, skillName, log);
+                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, log, meter);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new KernelException(
