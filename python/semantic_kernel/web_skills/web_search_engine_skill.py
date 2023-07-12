@@ -1,6 +1,6 @@
-from semantic_kernel.web_skills.connectors import ConnectorBase
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.web_skills.connectors import ConnectorBase
 
 
 class WebSearchEngineSkill:
@@ -12,7 +12,10 @@ class WebSearchEngineSkill:
         kernel.import_skill(WebSearchEngineSkill(connector), skill_name="WebSearch")
 
     Examples:
-        {{WebSearch.SearchAsync "What is semantic kernel?"}}         => Returns the first `num_results` number of results for the given search query and ignores the first `offset` number of results (num_results and offset are specified in SKContext)
+        {{WebSearch.SearchAsync "What is semantic kernel?"}}
+        =>  Returns the first `num_results` number of results for the given search query
+            and ignores the first `offset` number of results
+            (num_results and offset are specified in SKContext)
     """
 
     _connector: ConnectorBase
@@ -43,7 +46,7 @@ class WebSearchEngineSkill:
         :return: stringified list of search results
         """
 
-        _num_results= context.variables["num_results"]
-        offset = context.variables["offset"]
+        _, _num_results = context.variables.get("num_results")
+        _, _offset = context.variables.get("offset")
         result = await self._connector.search_async(query, _num_results, _offset)
         return str(result)

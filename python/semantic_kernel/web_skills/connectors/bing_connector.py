@@ -1,9 +1,11 @@
 import urllib
-import aiohttp
 from logging import Logger
-from typing import Optional, List
-from semantic_kernel.web_skills.connectors import Connector
+from typing import List, Optional
+
+import aiohttp
+
 from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.web_skills.connectors import ConnectorBase
 
 
 class BingConnector(ConnectorBase):
@@ -17,13 +19,16 @@ class BingConnector(ConnectorBase):
         self._api_key = api_key
         self._logger = logger if logger else NullLogger()
 
-    async def search_async(self, query: str, count: str, offset: str) -> List[str]:
+    async def search_async(
+        self, query: str, num_results: str, offset: str
+    ) -> List[str]:
         """
         Returns the search results of the query provided by pinging the Bing web search API.
         Returns `num_results` results and ignores the first `offset`.
 
         :param query: search query
-        :param context: contains the context of count and offset parameters
+        :param num_results: the number of search results to return
+        :param offset: the number of search results to ignore
         :return: list of search results
         """
         if not query:
@@ -46,7 +51,8 @@ class BingConnector(ConnectorBase):
             raise ValueError("offset must be greater than 0.")
 
         self._logger.info(
-            f"Received request for bing web search with params:\nquery: {query}\ncount: {count}\noffset: {offset}"
+            f"Received request for bing web search with \
+                params:\nquery: {query}\nnum_results: {num_results}\noffset: {offset}"
         )
 
         _base_url = "https://api.bing.microsoft.com/v7.0/search"
