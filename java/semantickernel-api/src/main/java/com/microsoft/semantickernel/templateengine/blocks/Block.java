@@ -6,11 +6,12 @@ public abstract class Block {
     private final String content;
     private final BlockTypes type;
 
-    /// <summary>
-    /// Base constructor
-    /// </summary>
-    /// <param name="content">Block content</param>
-    /// <param name="log">App logger</param>
+    /**
+     * Base constructor
+     *
+     * @param content Block content
+     * @param type Block type
+     */
     public Block(String content, BlockTypes type) {
         if (content == null) {
             content = "";
@@ -20,18 +21,27 @@ public abstract class Block {
         this.type = type;
     }
 
+    /**
+     * Get the block content
+     *
+     * @return Block content
+     */
     public String getContent() {
         return content;
     }
 
-    /// <summary>
-    /// Check if the block content is valid.
-    /// </summary>
-    /// <param name="errorMsg">Error message in case the content is not valid</param>
-    /// <returns>True if the block content is valid</returns>
-    // TODO ERROR MESSAGE
+    /**
+     * Check if the block content is valid.
+     *
+     * @return True if the block content is valid
+     */
     public abstract boolean isValid();
 
+    /**
+     * Get the block type
+     *
+     * @return Block type
+     */
     public BlockTypes getType() {
         return type;
     }

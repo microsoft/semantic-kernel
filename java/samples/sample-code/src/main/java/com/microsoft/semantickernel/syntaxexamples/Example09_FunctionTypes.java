@@ -17,7 +17,7 @@ import java.time.Duration;
 
 public class Example09_FunctionTypes {
     public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
+        OpenAIAsyncClient client = Config.getClient();
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
@@ -33,7 +33,7 @@ public class Example09_FunctionTypes {
         var test = kernel
                 .importSkill(new LocalExampleSkill(), "test");
 
-        kernel.importSkillsFromDirectory("./samples/skills", "SummarizeSkill");
+        kernel.importSkillsFromDirectory(SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");
 
 
         var fakeContext = SKBuilders.context()

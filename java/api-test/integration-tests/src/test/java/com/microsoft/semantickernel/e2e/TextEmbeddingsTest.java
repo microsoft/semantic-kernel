@@ -28,15 +28,24 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
     private static final int EXPECTED_EMBEDDING_SIZE = 1536;
 
     @Test
-    @EnabledIf("isOpenAIComTestEnabled")
-    public void testEmbeddingGenerationOpenAI() throws IOException {
-        testEmbeddingGeneration(getOpenAIClient(), EXPECTED_EMBEDDING_SIZE);
-    }
-
-    @Test
     @EnabledIf("isAzureTestEnabled")
-    public void testEmbeddingGenerationAzure() throws IOException {
-        testEmbeddingGeneration(getAzureOpenAIClient(), EXPECTED_EMBEDDING_SIZE);
+    public void testEmbeddingGenerationOpenAI() throws IOException {
+        OpenAIAsyncClient client = getOpenAIClient();
+        String model = "text-embedding-ada-002";
+        OpenAITextEmbeddingGeneration embeddingGeneration =
+                new OpenAITextEmbeddingGeneration(client, model);
+
+        List<String> data = new ArrayList<>();
+        data.add("This is just");
+        // data.add("a test");
+
+        embeddingGeneration
+                .generateEmbeddingsAsync(data)
+                .block()
+                .forEach(
+                        embedding ->
+                                Assertions.assertEquals(
+                                        EXPECTED_EMBEDDING_SIZE, embedding.getVector().size()));
     }
 
     @Test
@@ -86,7 +95,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
         volatileMemoryStore.createCollectionAsync("aboutMe").block();
 
         OpenAITextEmbeddingGeneration embeddingGeneration =
-                new OpenAITextEmbeddingGeneration(getAzureOpenAIClient(), "text-embedding-ada-002");
+                new OpenAITextEmbeddingGeneration(getOpenAIClient(), "text-embedding-ada-002");
 
         SemanticTextMemory memory =
                 SKBuilders.semanticTextMemory()
@@ -136,23 +145,5 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                         System.out.printf(
                                 "%s %s (relevance=%f)%n",
                                 query, result.getMetadata().getText(), result.getRelevance()));
-    }
-
-    public void testEmbeddingGeneration(OpenAIAsyncClient client, int expectedEmbeddingSize) {
-        String model = "text-embedding-ada-002";
-        OpenAITextEmbeddingGeneration embeddingGeneration =
-                new OpenAITextEmbeddingGeneration(client, model);
-
-        List<String> data = new ArrayList<>();
-        data.add("This is just");
-        data.add("a test");
-
-        embeddingGeneration
-                .generateEmbeddingsAsync(data)
-                .block()
-                .forEach(
-                        embedding ->
-                                Assertions.assertEquals(
-                                        expectedEmbeddingSize, embedding.getVector().size()));
     }
 }

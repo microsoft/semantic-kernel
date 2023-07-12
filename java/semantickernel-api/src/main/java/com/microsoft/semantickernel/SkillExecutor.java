@@ -15,10 +15,10 @@ public interface SkillExecutor {
     /**
      * Import a set of skills
      *
-     * @param skillName
-     * @param skills
-     * @return
-     * @throws SkillsNotFoundException
+     * @param skillName name of the skill
+     * @param skills map of skill names to skill configs
+     * @return the function collection
+     * @throws SkillsNotFoundException if the skill is not found
      */
     ReadOnlyFunctionCollection importSkill(
             String skillName, Map<String, SemanticFunctionConfig> skills)
@@ -27,17 +27,17 @@ public interface SkillExecutor {
     /**
      * Get function collection with the skill name
      *
-     * @param skillName
-     * @return
-     * @throws SkillsNotFoundException
+     * @param skillName name of the skill
+     * @return the function collection
+     * @throws SkillsNotFoundException if the skill is not found
      */
     ReadOnlyFunctionCollection getSkill(String skillName) throws SkillsNotFoundException;
 
     /**
      * Imports the native functions annotated on the given object as a skill.
      *
-     * @param skillName
-     * @return
+     * @param skillName name of the skill
+     * @return the function collection
      */
     ReadOnlyFunctionCollection importSkillFromDirectory(
             String skillName, String parentDirectory, String skillDirectoryName);
@@ -49,17 +49,18 @@ public interface SkillExecutor {
      * Imports the native functions annotated on the given object as a skill. Assumes that the
      * directory that contains the skill is the same as skillName
      *
-     * @param skillName
-     * @return
+     * @param skillName name of the skill
+     * @param parentDirectory directory that contains the skill
+     * @return the function collection
      */
     ReadOnlyFunctionCollection importSkillFromDirectory(String skillName, String parentDirectory);
 
     /**
      * Imports the native functions annotated on the given object as a skill.
      *
-     * @param nativeSkill
-     * @param skillName
-     * @return
+     * @param nativeSkill object containing the native functions
+     * @param skillName name of the skill
+     * @return the function collection
      */
     ReadOnlyFunctionCollection importSkill(Object nativeSkill, @Nullable String skillName);
 

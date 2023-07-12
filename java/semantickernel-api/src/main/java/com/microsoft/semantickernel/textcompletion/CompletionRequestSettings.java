@@ -52,6 +52,19 @@ public class CompletionRequestSettings {
      */
     private final String user;
 
+    /**
+     * Create a new settings object with the given values.
+     *
+     * @param temperature Temperature controls the randomness of the completion.
+     * @param topP TopP controls the diversity of the completion.
+     * @param presencePenalty Number between -2.0 and 2.0. Positive values penalize new tokens based
+     *     on whether they appear in the text so far, increasing the model's likelihood to talk
+     *     about new topics.
+     * @param frequencyPenalty Number between -2.0 and 2.0. Positive values penalize new tokens
+     *     based on their existing frequency in the text so far, decreasing the model's likelihood
+     *     to repeat the same line verbatim.
+     * @param maxTokens The maximum number of tokens to generate in the completion.
+     */
     public CompletionRequestSettings(
             double temperature,
             double topP,
@@ -69,6 +82,24 @@ public class CompletionRequestSettings {
                 Collections.emptyList());
     }
 
+    /**
+     * Create a new settings object with the given values.
+     *
+     * @param temperature Temperature controls the randomness of the completion.
+     * @param topP TopP controls the diversity of the completion.
+     * @param presencePenalty Number between -2.0 and 2.0. Positive values penalize new tokens based
+     *     on whether they appear in the text so far, increasing the model's likelihood to talk
+     *     about new topics.
+     * @param frequencyPenalty Number between -2.0 and 2.0. Positive values penalize new tokens
+     *     based on their existing frequency in the text so far, decreasing the model's likelihood
+     *     to repeat the same line verbatim.
+     * @param maxTokens The maximum number of tokens to generate in the completion.
+     * @param bestOf The maximum number of completions to generate for each prompt. This is used by
+     *     the CompletionService to generate multiple completions for a single prompt.
+     * @param user A unique identifier representing your end-user, which can help OpenAI to monitor
+     *     and detect abuse
+     * @param stopSequences Sequences where the completion will stop generating further tokens.
+     */
     public CompletionRequestSettings(
             double temperature,
             double topP,
@@ -88,15 +119,16 @@ public class CompletionRequestSettings {
         this.stopSequences = new ArrayList<>(stopSequences);
     }
 
+    /** Create a new settings object with default values. */
     public CompletionRequestSettings() {
         this(0, 0, 0, 0, 256, 1, "", new ArrayList<>());
     }
 
-    /// <summary>
-    /// Create a new settings object with the values from another settings object.
-    /// </summary>
-    /// <param name="config"></param>
-    /// <returns>An instance of <see cref="CompleteRequestSettings"/> </returns>
+    /**
+     * Create a new settings object with the values from another settings object.
+     *
+     * @param config The config to copy values from
+     */
     public static CompletionRequestSettings fromCompletionConfig(
             PromptTemplateConfig.CompletionConfig config) {
         return new CompletionRequestSettings(

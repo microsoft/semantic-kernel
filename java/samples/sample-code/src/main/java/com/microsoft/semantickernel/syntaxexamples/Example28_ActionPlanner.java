@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class Example28_ActionPlanner {
     public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
+        OpenAIAsyncClient client = Config.getClient();
 
         System.out.println("======== Action Planner ========");
 
@@ -23,9 +23,9 @@ public class Example28_ActionPlanner {
                         .build())
                 .build();
 
-        kernel.importSkillFromDirectory("SummarizeSkill", "./samples/skills", "SummarizeSkill");
+        kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");
 
-        kernel.importSkillFromDirectory("WriterSkill", "./samples/skills", "WriterSkill");
+        kernel.importSkillFromDirectory("WriterSkill", SampleSkillsUtil.detectSkillDirLocation(), "WriterSkill");
 
         kernel.importSkill(new TextSkill(), "TextSkill");
 

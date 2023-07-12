@@ -6,9 +6,9 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.microsoft.semantickernel</groupId>
+    <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
-    <version>0.2.2-beta-SNAPSHOT</version>
+    <version>0.2.3-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>https://www.github.com/microsoft/semantic-kernel</url>
 
@@ -75,7 +75,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.microsoft.semantickernel</groupId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-bom</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
@@ -123,17 +123,17 @@
                 <version>${azure-ai-openai.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.microsoft.semantickernel.connectors</groupId>
+                <groupId>com.microsoft.semantic-kernel.connectors</groupId>
                 <artifactId>semantickernel-connectors</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.microsoft.semantickernel.extensions</groupId>
+                <groupId>com.microsoft.semantic-kernel.extensions</groupId>
                 <artifactId>sequentialplanner-extensions</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.microsoft.semantickernel.extensions</groupId>
+                <groupId>com.microsoft.semantic-kernel.extensions</groupId>
                 <artifactId>actionplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -243,6 +243,8 @@
                     <configuration>
                         <!-- TODO: Tighten this up when we go GA -->
                         <failOnError>false</failOnError>
+                        <nohelp>true</nohelp>
+                        <show>public</show>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -422,10 +424,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -610,6 +608,9 @@
                 <maven.compiler.source>17</maven.compiler.source>
                 <maven.compiler.target>17</maven.compiler.target>
             </properties>
+            <modules>
+                <module>samples</module>
+            </modules>
         </profile>
         <profile>
             <id>bug-check</id>
@@ -736,18 +737,6 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <executions>
                             <execution>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>

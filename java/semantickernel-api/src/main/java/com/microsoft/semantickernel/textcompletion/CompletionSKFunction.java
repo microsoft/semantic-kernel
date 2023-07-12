@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+/** Semantic function for text completion */
 public interface CompletionSKFunction extends SKFunction<CompletionRequestSettings> {
 
     /**
@@ -24,21 +25,45 @@ public interface CompletionSKFunction extends SKFunction<CompletionRequestSettin
     Mono<SKContext> aggregatePartitionedResultsAsync(
             List<String> partitionedInput, @Nullable SKContext context);
 
+    /** Builder for completion functions */
     abstract class Builder {
 
         protected Builder() {}
 
+        /**
+         * Create a new completion function
+         *
+         * @param promptTemplate Prompt template
+         * @param config Prompt template config
+         * @param functionName Function name
+         * @param skillName Skill name
+         * @return Completion function
+         */
         public abstract CompletionSKFunction createFunction(
                 String promptTemplate,
                 PromptTemplateConfig config,
                 String functionName,
                 @Nullable String skillName);
 
+        /**
+         * Create a new completion function
+         *
+         * @param prompt Prompt
+         * @param functionConfig Function config
+         * @return Completion function
+         */
         public abstract CompletionSKFunction createFunction(
                 String prompt, PromptTemplateConfig.CompletionConfig functionConfig);
 
+        /**
+         * Create a new completion function
+         *
+         * @param functionName Function name
+         * @param skillName Skill name
+         * @return Completion function
+         */
         public abstract CompletionSKFunction createFunction(
-                @Nullable String skillNameFinal,
+                @Nullable String skillName,
                 String functionName,
                 SemanticFunctionConfig functionConfig);
 

@@ -18,7 +18,7 @@ public class PromptTemplateConfig {
     /**
      * A returns the configuration for the text completion
      *
-     * @return
+     * @return CompletionConfig
      */
     public CompletionConfig getCompletionConfig() {
         return completionConfig;

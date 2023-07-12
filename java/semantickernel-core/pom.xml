@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.microsoft.semantickernel</groupId>
+        <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
-        <version>0.2.2-beta-SNAPSHOT</version>
+        <version>0.2.3-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -67,26 +67,26 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel.connectors</groupId>
+            <groupId>com.microsoft.semantic-kernel.connectors</groupId>
             <artifactId>semantickernel-connectors</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-core-skills</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel.extensions</groupId>
+            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
             <artifactId>sequentialplanner-extensions</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel.extensions</groupId>
+            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
             <artifactId>actionplanner-extension</artifactId>
             <scope>test</scope>
         </dependency>

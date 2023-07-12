@@ -1,14 +1,15 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
+import com.microsoft.semantickernel.syntaxexamples.SampleSkillsUtil;
 
 import java.io.IOException;
 
 public class Example05_UsingThePlanner {
 
     public static SequentialPlanner getPlanner(Kernel kernel) {
-        kernel.importSkillFromDirectory("SummarizeSkill", "samples/skills", "SummarizeSkill");
-        kernel.importSkillFromDirectory("WriterSkill", "samples/skills", "WriterSkill");
+        kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");
+        kernel.importSkillFromDirectory("WriterSkill", SampleSkillsUtil.detectSkillDirLocation(), "WriterSkill");
 
         return new SequentialPlanner(kernel, null, null);
     }

@@ -108,4 +108,8 @@ public class SequentialPlanner {
                     PlanningException.ErrorCodes.InvalidPlan, "Plan parsing error, invalid XML", e);
         }
     }
+
+    public SKContext getContext() {
+        return context;
+    }
 }

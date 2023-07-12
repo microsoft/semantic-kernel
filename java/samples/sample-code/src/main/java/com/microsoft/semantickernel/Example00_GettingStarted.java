@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
+import com.microsoft.semantickernel.syntaxexamples.SampleSkillsUtil;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import reactor.core.publisher.Mono;
@@ -27,7 +28,7 @@ public class Example00_GettingStarted {
      * Returns a Semantic Kernel with Text Completion.
      *
      * @param client Client that will handle requests to AzureOpenAI or OpenAI.
-     * @return
+     * @return Kernel.
      */
     public static Kernel getKernel(OpenAIAsyncClient client) {
         KernelConfig config = SKBuilders.kernelConfig()
@@ -50,7 +51,7 @@ public class Example00_GettingStarted {
      */
     public static void joke(Kernel kernel) {
 
-        ReadOnlyFunctionCollection skill = kernel.importSkillFromDirectory("FunSkill", "samples/skills", "FunSkill");
+        ReadOnlyFunctionCollection skill = kernel.importSkillFromDirectory("FunSkill", SampleSkillsUtil.detectSkillDirLocation(), "FunSkill");
 
         CompletionSKFunction function = skill.getFunction("Joke",
                 CompletionSKFunction.class);
