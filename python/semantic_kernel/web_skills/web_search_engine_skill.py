@@ -44,6 +44,6 @@ class WebSearchEngineSkill:
         """
 
         _num_results= context.variables["num_results"]
-        _, _offset = context.variables.get("offset")
+        offset = context.variables["offset"]
         result = await self._connector.search_async(query, _num_results, _offset)
         return str(result)
