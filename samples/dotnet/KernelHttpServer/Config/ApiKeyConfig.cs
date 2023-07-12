@@ -4,7 +4,7 @@ namespace KernelHttpServer.Config;
 
 public class ApiKeyConfig
 {
-    public AIServiceConfig CompletionConfig { get; set; } = new();
+    public AIServiceConfig CompletionConfig { get; } = new();
 
-    public AIServiceConfig EmbeddingConfig { get; set; } = new();
+    public AIServiceConfig EmbeddingConfig { get; } = new();
 }
