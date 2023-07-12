@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -86,8 +85,7 @@ public class SequentialPlanParserTests
                 kernelMock.Setup(x => x.RegisterSemanticFunction(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<SemanticFunctionConfig>(),
-                    It.IsAny<ITrustService?>()
+                    It.IsAny<SemanticFunctionConfig>()
                 )).Returns(mockFunction.Object);
             }
             else

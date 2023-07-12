@@ -1,9 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
@@ -12,15 +22,6 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VolatileMemoryStoreTests {
     private VolatileMemoryStore _db;
@@ -298,8 +299,8 @@ class VolatileMemoryStoreTests {
         int numCollections = 3;
         String[] testCollections =
                 IntStream.range(this._collectionNum, this._collectionNum += numCollections)
-                .mapToObj(i -> "test_collection" + i)
-                .toArray(String[]::new);
+                        .mapToObj(i -> "test_collection" + i)
+                        .toArray(String[]::new);
 
         Flux.fromArray(testCollections)
                 .flatMap(collection -> this._db.createCollectionAsync(collection))
@@ -311,7 +312,7 @@ class VolatileMemoryStoreTests {
         // Assert
         assertNotNull(collections);
         assertEquals(numCollections, collections.size());
-        for(String collection : testCollections) {
+        for (String collection : testCollections) {
             assertTrue(
                     collections.contains(collection),
                     "Collections does not contain the newly-created collection " + collection);
@@ -407,8 +408,6 @@ class VolatileMemoryStoreTests {
         }
     }
 
-
-
     @Test
     void getNearestMatchesReturnsLimit() {
         // Arrange
@@ -481,12 +480,12 @@ class VolatileMemoryStoreTests {
         Collection<Tuple2<MemoryRecord, Number>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
-                                collection, compareEmbedding, i/2, threshold, false)
+                                collection, compareEmbedding, i / 2, threshold, false)
                         .block();
 
         // Assert
         assertNotNull(topNResults);
-        assertEquals(i/2, topNResults.size());
+        assertEquals(i / 2, topNResults.size());
     }
 
     @Test
@@ -560,8 +559,7 @@ class VolatileMemoryStoreTests {
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Number>> topNResults =
                 this._db
-                        .getNearestMatchesAsync(
-                                collection, compareEmbedding, 0, threshold, false)
+                        .getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
                         .block();
 
         // Assert
@@ -774,8 +772,7 @@ class VolatileMemoryStoreTests {
         double threshold = -1;
         Tuple2<MemoryRecord, ? extends Number> topNResults =
                 this._db
-                        .getNearestMatchAsync(
-                                collection, compareEmbedding, threshold, false)
+                        .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
                         .block();
 
         // Assert
@@ -949,5 +946,4 @@ class VolatileMemoryStoreTests {
         // Act
         assertFalse(this._db.doesCollectionExistAsync(collection).block());
     }
-
 }

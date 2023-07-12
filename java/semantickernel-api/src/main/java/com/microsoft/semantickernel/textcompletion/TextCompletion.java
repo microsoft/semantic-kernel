@@ -2,13 +2,14 @@
 package com.microsoft.semantickernel.textcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.services.AIService;
 
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 /** Interface for text completion services */
-public interface TextCompletion {
+public interface TextCompletion extends AIService {
     // TODO: Support Cancellation Token
 
     /**
