@@ -23,13 +23,12 @@ public abstract class DefaultSemanticSKFunction<RequestConfiguration>
         implements SKFunction<RequestConfiguration> {
 
     public DefaultSemanticSKFunction(
-            DelegateTypes delegateType,
             List<ParameterView> parameters,
             String skillName,
             String functionName,
             String description,
             @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
-        super(delegateType, parameters, skillName, functionName, description, kernelSkillsSupplier);
+        super(parameters, skillName, functionName, description, kernelSkillsSupplier);
     }
 
     @Override

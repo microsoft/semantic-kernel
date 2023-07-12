@@ -28,7 +28,7 @@ public class Example04_CombineLLMPromptsAndNativeCode {
     }
 
     public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
+        OpenAIAsyncClient client = Config.getClient();
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
@@ -38,7 +38,7 @@ public class Example04_CombineLLMPromptsAndNativeCode {
 
         Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
         kernel.importSkill(new SearchEngineSkill(), null);
-        kernel.importSkillFromDirectory("SummarizeSkill", "./samples/skills", "SummarizeSkill");
+        kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");
 
         // Run
         String ask = "What's the tallest building in South America?";

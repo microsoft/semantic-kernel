@@ -10,7 +10,7 @@ public class EmbeddedResource {
     // private static readonly string? s_namespace = typeof(EmbeddedResource).Namespace;
 
     public static String read(String name) {
-        try (InputStream stream = SequentialPlanner.class.getResourceAsStream("skprompt.txt")) {
+        try (InputStream stream = SequentialPlanner.class.getResourceAsStream(name)) {
             byte[] buffer = new byte[stream.available()];
             stream.read(buffer);
             return new String(buffer, StandardCharsets.UTF_8);

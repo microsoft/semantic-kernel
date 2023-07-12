@@ -243,6 +243,8 @@
                     <configuration>
                         <!-- TODO: Tighten this up when we go GA -->
                         <failOnError>false</failOnError>
+                        <nohelp>true</nohelp>
+                        <show>public</show>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -422,10 +424,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -610,6 +608,9 @@
                 <maven.compiler.source>17</maven.compiler.source>
                 <maven.compiler.target>17</maven.compiler.target>
             </properties>
+            <modules>
+                <module>samples</module>
+            </modules>
         </profile>
         <profile>
             <id>bug-check</id>
@@ -736,18 +737,6 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <executions>
                             <execution>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>

@@ -64,5 +64,10 @@
             <artifactId>semantickernel-core-skills</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantickernel</groupId>
+            <artifactId>sample-code</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

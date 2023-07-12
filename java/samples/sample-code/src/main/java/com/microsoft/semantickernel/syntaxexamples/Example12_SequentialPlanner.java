@@ -191,9 +191,9 @@ public class Example12_SequentialPlanner {
 
 
         // Load additional skills to enable planner to do non-trivial asks.
-        kernel.importSkillFromDirectory("SummarizeSkill", "samples/skills", "SummarizeSkill");
-        kernel.importSkillFromDirectory("WriterSkill", "samples/skills", "WriterSkill");
-        kernel.importSkillFromDirectory("MiscSkill", "samples/skills", "MiscSkill");
+        kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");
+        kernel.importSkillFromDirectory("WriterSkill", SampleSkillsUtil.detectSkillDirLocation(), "WriterSkill");
+        kernel.importSkillFromDirectory("MiscSkill", SampleSkillsUtil.detectSkillDirLocation(), "MiscSkill");
 
         return kernel;
     }

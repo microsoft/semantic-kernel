@@ -13,8 +13,8 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import com.microsoft.semantickernel.util.AIProviderSettings;
-import com.microsoft.semantickernel.util.AzureOpenAISettings;
+import com.microsoft.semantickernel.connectors.ai.openai.util.AIProviderSettings;
+import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISettings;
 
 import java.io.IOException;
 import java.time.Duration;
