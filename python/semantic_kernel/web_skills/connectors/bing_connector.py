@@ -46,7 +46,7 @@ class BingConnector(Connector):
             raise ValueError("offset must be greater than 0.")
 
         self._logger.info(
-            f"Recieved request for bing web search with params:\nquery: {query}\ncount: {count}\noffset: {offset}"
+            f"Received request for bing web search with params:\nquery: {query}\ncount: {count}\noffset: {offset}"
         )
 
         _base_url = "https://api.bing.microsoft.com/v7.0/search"
