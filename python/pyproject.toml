@@ -34,6 +34,9 @@ chromadb = "^0.4.0"
 pymilvus = "^2.2.11"
 milvus = "^2.2.11"
 
+[tool.poetry.group.azure_credential.dependencies]
+azure-identity = "^1.13.0"
+
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = "^3.18.0"
 
