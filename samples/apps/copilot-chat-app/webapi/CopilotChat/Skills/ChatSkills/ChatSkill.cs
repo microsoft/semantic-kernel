@@ -294,7 +294,7 @@ public class ChatSkill
             chatContextText = $"{chatContextText}\n{chatHistory}";
         }
 
-        //Get the prompt.txt text
+        // Get the prompt.txt text
         var skillDir = Path.GetFullPath(Path.Combine(System.IO.Directory.GetCurrentDirectory(), "..", "..", "..", "CopilotChat", "Skills", "SemanticSkills"));
         var chatPromptText = this.GetPromptTemplateText(this._chatPlugin, skillDir, "Chat");
 
