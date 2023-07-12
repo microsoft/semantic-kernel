@@ -15,9 +15,9 @@ class WebSearchEngineSkill:
         {{WebSearch.SearchAsync "What is semantic kernel?"}}         => Returns the first `count` number of results for the given search query and ignores the first `offset` number of results (count and offset are specified in SKContext)
     """
 
-    _connector: Connector
+    _connector: ConnectorBase
 
-    def __init__(self, connector: Connector) -> None:
+    def __init__(self, connector: ConnectorBase) -> None:
         self._connector = connector
 
     @sk_function(
