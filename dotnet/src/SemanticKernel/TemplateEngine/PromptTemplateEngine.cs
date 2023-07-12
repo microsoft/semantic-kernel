@@ -96,11 +96,6 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         return result.ToString();
     }
 
-    public Task<IList<Block>> RenderCodeAsync(IList<Block> blocks, SKContext executionContext)
-    {
-        throw new System.NotImplementedException();
-    }
-
     /// <inheritdoc/>
     public IList<Block> RenderVariables(IList<Block> blocks, ContextVariables? variables)
     {
