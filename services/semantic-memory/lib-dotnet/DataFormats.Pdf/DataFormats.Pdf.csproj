@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <AssemblyName>Microsoft.SemanticKernel.Services.DataFormats.Pdf</AssemblyName>
+        <RootNamespace>Microsoft.SemanticKernel.Services.DataFormats.Pdf</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="PdfPig" Version="0.1.8" />
+        <PackageReference Include="System.Memory.Data" Version="1.0.2" />
+    </ItemGroup>
+
+</Project>
