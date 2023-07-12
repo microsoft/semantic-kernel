@@ -76,10 +76,14 @@ public sealed class Kernel : IKernel, IDisposable
         ISemanticTextMemory memory,
         KernelConfig config,
         ILogger log,
-        Meter meter)
+        Meter? meter = null)
     {
         this.Log = log;
-        this.Meter = meter;
+        if (meter is null)
+        {
+            this.Meter = new Meter("Microsoft.SemanticKernel");
+        }
+        else { this.Meter = meter; }
         this.Config = config;
         this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
