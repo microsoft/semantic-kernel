@@ -16,6 +16,6 @@ internal static class SpanExtensions
 
     internal static ReadOnlySpan<TNumber> AsReadOnlySpan<TNumber>(this Span<TNumber> span)
     {
-        return (ReadOnlySpan<TNumber>)span;
+        return span;
     }
 }
