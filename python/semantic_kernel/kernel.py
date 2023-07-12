@@ -184,6 +184,8 @@ class Kernel:
                     self._skill_collection.read_only_skill_collection,
                     self._log,
                 )
+        else:
+            raise ValueError("No functions passed to run")
 
         try:
             client: ChatCompletionClientBase | TextCompletionClientBase
