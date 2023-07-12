@@ -17,7 +17,8 @@ import { AppsAddIn24Regular, Dismiss24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { PluginCard } from './PluginCard';
+import { AddPluginCard } from './cards/AddPluginCard';
+import { PluginCard } from './cards/PluginCard';
 
 const useClasses = makeStyles({
     root: {
@@ -59,7 +60,12 @@ export const PluginGallery: React.FC = () => {
     const [open, setOpen] = useState(false);
 
     return (
-        <Dialog open={open} onOpenChange={(_event, data) => { setOpen(data.open); }}>
+        <Dialog
+            open={open}
+            onOpenChange={(_event, data) => {
+                setOpen(data.open);
+            }}
+        >
             <DialogTrigger>
                 <Button appearance="transparent" icon={<AppsAddIn24Regular color="white" />} />
             </DialogTrigger>
@@ -68,7 +74,12 @@ export const PluginGallery: React.FC = () => {
                     <DialogTitle
                         action={
                             <DialogTrigger action="close">
-                                <Button data-testid="closeEnableCCPluginsPopUp" appearance="subtle" aria-label="close" icon={<Dismiss24Regular />} />
+                                <Button
+                                    data-testid="closeEnableCCPluginsPopUp"
+                                    appearance="subtle"
+                                    aria-label="close"
+                                    icon={<Dismiss24Regular />}
+                                />
                             </DialogTrigger>
                         }
                     >
@@ -80,6 +91,7 @@ export const PluginGallery: React.FC = () => {
                         </Body1>
                     </DialogTitle>
                     <DialogContent className={classes.dialogContent}>
+                        <AddPluginCard />
                         <Subtitle2 block className={classes.title}>
                             Available Plugins
                         </Subtitle2>{' '}
