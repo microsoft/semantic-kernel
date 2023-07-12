@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { useMsal } from '@azure/msal-react';
 import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
 import { AuthorRoles, ChatMessageType, IChatMessage } from '../../../libs/models/ChatMessage';
@@ -13,6 +12,7 @@ import { PlanViewer } from '../plan-viewer/PlanViewer';
 import { PromptDetails } from '../prompt-details/PromptDetails';
 import { ChatHistoryDocumentContent } from './ChatHistoryDocumentContent';
 import { ChatHistoryTextContent } from './ChatHistoryTextContent';
+import * as utils from './../../utils/TextUtils';
 
 const useClasses = makeStyles({
     root: {
@@ -41,11 +41,11 @@ const useClasses = makeStyles({
         ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalL),
     },
     me: {
-        backgroundColor: tokens.colorBrandBackground2,
+        backgroundColor: "#e8ebf9",
     },
     time: {
         color: tokens.colorNeutralForeground3,
-        fontSize: '12px',
+        fontSize: tokens.fontSizeBase200,
         fontWeight: 400,
     },
     header: {
@@ -69,20 +69,18 @@ interface ChatHistoryItemProps {
 export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getResponse, messageIndex }) => {
     const classes = useClasses();
 
-    const { instance } = useMsal();
-    const account = instance.getActiveAccount();
-
     const chat = useChat();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
 
-    const isMe = message.authorRole === AuthorRoles.User && message.userId === account?.homeAccountId!;
+    const isMe = message.authorRole === AuthorRoles.User && message.userId === activeUserInfo?.id;
     const isBot = message.authorRole === AuthorRoles.Bot;
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
     const fullName = user?.fullName ?? message.userName;
 
     const avatar = isBot
         ? { image: { src: conversations[selectedId].botProfilePicture } }
-        : { name: fullName, color: 'colorful' as 'colorful' };
+        : { name: fullName, color: 'colorful' as const };
 
     let content: JSX.Element;
     if (isBot && message.type === ChatMessageType.Plan) {
@@ -96,8 +94,10 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     return (
         <div
             className={isMe ? mergeClasses(classes.root, classes.alignEnd) : classes.root}
-            data-testid={`chat-history-item-${messageIndex}`} // needed for testing
-            data-username={fullName} // needed for testing
+            // The following data attributes are needed for CI and testing
+            data-testid={`chat-history-item-${messageIndex}`}
+            data-username={fullName}
+            data-content={utils.formatChatTextContent(message.content)}
         >
             {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
             <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>

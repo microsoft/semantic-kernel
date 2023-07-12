@@ -5,7 +5,7 @@ import {
     EndSessionRequest,
     IPublicClientApplication,
     InteractionStatus,
-    LogLevel
+    LogLevel,
 } from '@azure/msal-browser';
 import debug from 'debug';
 import { Constants } from '../../Constants';
@@ -54,18 +54,27 @@ const logoutRequest: EndSessionRequest = {
 };
 
 const ssoSilentRequest = async (msalInstance: IPublicClientApplication) => {
-    await msalInstance.ssoSilent({ account: msalInstance.getActiveAccount() || undefined, scopes: Constants.msal.semanticKernelScopes });
+    await msalInstance.ssoSilent({
+        account: msalInstance.getActiveAccount() ?? undefined,
+        scopes: Constants.msal.semanticKernelScopes,
+    });
 };
 
 const loginAsync = async (instance: IPublicClientApplication) => {
     if (Constants.msal.method === 'redirect') {
-        await instance.loginRedirect({ scopes: Constants.msal.semanticKernelScopes });
+        await instance.loginRedirect({
+            scopes: Constants.msal.semanticKernelScopes,
+            extraScopesToConsent: Constants.msal.msGraphAppScopes,
+        });
     } else {
-        await instance.loginPopup({ scopes: Constants.msal.semanticKernelScopes });
+        await instance.loginPopup({
+            scopes: Constants.msal.semanticKernelScopes,
+            extraScopesToConsent: Constants.msal.msGraphAppScopes,
+        });
     }
 };
 
-const logoutAsync = async (instance: IPublicClientApplication) => {
+const logoutAsync = (instance: IPublicClientApplication) => {
     if (Constants.msal.method === 'popup') {
         void instance.logoutPopup(logoutRequest);
     }
