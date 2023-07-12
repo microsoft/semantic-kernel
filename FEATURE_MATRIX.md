@@ -39,21 +39,21 @@
 |-----------------------------------|:---:|:------:|:----:|-------|
 | TextMemory Skill                  | ✅  | ✅     | 🔄   |       |
 | ConversationSummary Skill         | ✅  | ✅     | ❌   |       |
-| FileIO Skill                      | ✅  | ✅     | ❌   |       |
-| Http Skill                        | ✅  | ✅     | ❌   |       |
-| Math Skill                        | ✅  | ✅     | ❌   |       |
+| FileIO Skill                      | ✅  | ✅     | ✅   |       |
+| Http Skill                        | ✅  | ✅     | ✅   |       |
+| Math Skill                        | ✅  | ✅     | ✅   |       |
 | Text Skill                        | ✅  | ✅     | 🔄   |       |
-| Time Skill                        | ✅  | ✅     | 🔄   |       |
-| Wait Skill                        | ✅  | ❌     | ❌   |       |
+| Time Skill                        | ✅  | ✅     | ✅   |       |
+| Wait Skill                        | ✅  | ✅     | ✅   |       |
 
 ## Planning
 
 |                                   | C#  | Python | Java | Notes |
 |-----------------------------------|:---:|:------:|:----:|-------|
-| Plan                              | ✅  | 🔄     | ❌   | Plan object model to be completed |
-| BasicPlanner                      | ❌  | ✅     | ❌   |                                   |
-| ActionPlanner                     | ✅  | ❌     | ❌   |                                   |
-| SequentialPlanner                 | ✅  | ❌     | ❌   |                                   |
+| Plan                              | ✅  | 🔄     |  ❌   | Plan object model to be completed |
+| BasicPlanner                      | ❌  | ✅     |  ❌   |                                   |
+| ActionPlanner                     | ✅  | ❌     |  🔄   |                                   |
+| SequentialPlanner                 | ✅  | ❌     |  🔄   |                                   |
 
 ## Memory Connectors, Vector storage
 
@@ -63,10 +63,10 @@
 | Weaviate      | ✅  | ✅     | ❌   | Currently supported on Python 3.9+, 3.8 coming soon                             |
 | Chroma        | ✅  | ✅     | ❌   |                                                                                 |
 | Qdrant        | ✅  | ❌     | ❌   |                                                                                 |
-| Pinecone      | ✅  | ❌     | ❌   |                                                                                 |
+| Pinecone      | ✅  | ✅     | ❌   |                                                                                 |
 | Milvus        | ❌  | ❌     | ❌   | Coming soon                                                                     |
 | Sqlite        | ✅  | ❌     | ❌   | Vector optimization requires [sqlite-vss](https://github.com/asg017/sqlite-vss) |
-| Postgres      | ✅  | ❌     | ❌   | Vector optimization requires [pgvector](https://github.com/pgvector/pgvector)   |
+| Postgres      | ✅  | ✅     | ❌   | Vector optimization requires [pgvector](https://github.com/pgvector/pgvector)   |
 | CosmosDB      | ✅  | ❌     | ❌   | CosmosDB is not optimized for vector storage                                    |
 | Redis         | ✅  | ❌     | ❌   | Vector optimization requires [RediSearch](https://redis.io/docs/stack/search)   |
 
