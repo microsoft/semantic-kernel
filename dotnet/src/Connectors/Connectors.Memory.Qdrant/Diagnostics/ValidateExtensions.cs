@@ -10,7 +10,7 @@ internal static class ValidateExtensions
 {
     public static void Validate(IValidatable target)
     {
-        target?.Validate();
+        target.Validate();
     }
 
     public static void Validate(params IValidatable[] targets)

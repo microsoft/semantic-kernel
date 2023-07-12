@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -37,19 +36,6 @@ public interface ISKFunction
     /// so when this property is False, executing the function might still involve AI calls.
     /// </summary>
     bool IsSemantic { get; }
-
-    /// <summary>
-    /// Whether the function is set to be sensitive (default false).
-    /// When a function is sensitive, the default trust service will throw an exception
-    /// if the function is invoked passing in some untrusted input (or context, or prompt).
-    /// </summary>
-    bool IsSensitive { get; }
-
-    /// <summary>
-    /// Service used for trust check events.
-    /// This can be provided at function creation, if not, the TrustService.DefaultTrusted implementation will be used.
-    /// </summary>
-    ITrustService TrustServiceInstance { get; }
 
     /// <summary>
     /// AI service settings
