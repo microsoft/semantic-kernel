@@ -20,7 +20,7 @@ class BingConnector(ConnectorBase):
     async def search_async(self, query: str, count: str, offset: str) -> List[str]:
         """
         Returns the search results of the query provided by pinging the Bing web search API.
-        Returns `count` results and ignores the first `offset`.
+        Returns `num_results` results and ignores the first `offset`.
 
         :param query: search query
         :param context: contains the context of count and offset parameters
@@ -29,18 +29,18 @@ class BingConnector(ConnectorBase):
         if not query:
             raise ValueError("query cannot be 'None' or empty.")
 
-        if not count:
-            count = 1
+        if not num_results:
+            num_results = 1
         if not offset:
             offset = 0
 
-        count = int(count)
+        num_results = int(num_results)
         offset = int(offset)
 
-        if count <= 0:
-            raise ValueError("count value must be greater than 0.")
-        if count >= 50:
-            raise ValueError("count value must be less than 50.")
+        if num_results <= 0:
+            raise ValueError("num_results value must be greater than 0.")
+        if num_results >= 50:
+            raise ValueError("num_results value must be less than 50.")
 
         if offset < 0:
             raise ValueError("offset must be greater than 0.")
@@ -50,7 +50,7 @@ class BingConnector(ConnectorBase):
         )
 
         _base_url = "https://api.bing.microsoft.com/v7.0/search"
-        _request_url = f"{_base_url}?q={urllib.parse.quote_plus(query)}&count={count}&offset={offset}"
+        _request_url = f"{_base_url}?q={urllib.parse.quote_plus(query)}&count={num_results}&offset={offset}"
 
         self._logger.info(f"Sending GET request to {_request_url}")
 

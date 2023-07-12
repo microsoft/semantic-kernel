@@ -12,7 +12,7 @@ class WebSearchEngineSkill:
         kernel.import_skill(WebSearchEngineSkill(connector), skill_name="WebSearch")
 
     Examples:
-        {{WebSearch.SearchAsync "What is semantic kernel?"}}         => Returns the first `count` number of results for the given search query and ignores the first `offset` number of results (count and offset are specified in SKContext)
+        {{WebSearch.SearchAsync "What is semantic kernel?"}}         => Returns the first `num_results` number of results for the given search query and ignores the first `offset` number of results (num_results and offset are specified in SKContext)
     """
 
     _connector: ConnectorBase
@@ -24,7 +24,7 @@ class WebSearchEngineSkill:
         description="Performs a web search for a given query", name="searchAsync"
     )
     @sk_function_context_parameter(
-        name="count",
+        name="num_results",
         description="The number of search results to return",
         default_value="1",
     )
@@ -36,14 +36,14 @@ class WebSearchEngineSkill:
     async def search_async(self, query: str, context: SKContext) -> str:
         """
         Returns the search results of the query provided.
-        Returns `count` results and ignores the first `offset`.
+        Returns `num_results` results and ignores the first `offset`.
 
         :param query: search query
         :param context: contains the context of count and offset parameters
         :return: stringified list of search results
         """
 
-        _, _count = context.variables.get("count")
+        _num_results= context.variables["num_results"]
         _, _offset = context.variables.get("offset")
-        result = await self._connector.search_async(query, _count, _offset)
+        result = await self._connector.search_async(query, _num_results, _offset)
         return str(result)
