@@ -35,7 +35,7 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-                <artifactId>sequentialplanner-extensions</artifactId>
+                <artifactId>semantickernel-sequentialplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -45,7 +45,7 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-                <artifactId>actionplanner-extension</artifactId>
+                <artifactId>semantickernel-actionplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

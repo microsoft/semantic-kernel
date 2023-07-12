@@ -16,7 +16,7 @@
     <artifactId>semantickernel-extensions-parent</artifactId>
 
     <modules>
-        <module>sequentialplanner-extensions</module>
-        <module>actionplanner-extension</module>
+        <module>semantickernel-sequentialplanner-extension</module>
+        <module>semantickernel-actionplanner-extension</module>
     </modules>
 </project>
