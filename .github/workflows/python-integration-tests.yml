@@ -63,6 +63,7 @@ jobs:
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
           Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
           Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
+          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
         run: |
           cd python
           poetry run pytest ./tests/integration

@@ -2,8 +2,6 @@
 
 import { useMsal } from '@azure/msal-react';
 import {
-    AvatarGroupItem,
-    AvatarGroupPopover,
     Button,
     Input,
     InputOnChangeData,
@@ -34,7 +32,8 @@ import { addAlert, removeAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
-import { ShareBotMenu } from './ShareBotMenu';
+import { ParticipantsList } from './controls/ParticipantsList';
+import { ShareBotMenu } from './controls/ShareBotMenu';
 
 const useClasses = makeStyles({
     root: {
@@ -62,6 +61,7 @@ const useClasses = makeStyles({
     },
     controls: {
         display: 'flex',
+        alignItems: 'center',
     },
     popoverHeader: {
         ...shorthands.margin('0'),
@@ -98,14 +98,15 @@ const useClasses = makeStyles({
 export const ChatWindow: React.FC = () => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
-    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const chatName = conversations[selectedId].title;
-    const [title = '', setTitle] = useState<string | undefined>(selectedId);
-    const [isEditing, setIsEditing] = useState<boolean>(false);
     const { instance, inProgress } = useMsal();
+    const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
     const { alerts } = useAppSelector((state: RootState) => state.app);
 
-    const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const chatName = conversations[selectedId].title;
+
+    const [title = '', setTitle] = useState<string | undefined>(selectedId);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
 
     const onSave = async () => {
         if (chatName !== title) {
@@ -194,7 +195,7 @@ export const ChatWindow: React.FC = () => {
                         <PopoverTrigger disableButtonEnhancement>
                             <Tooltip content={'Edit conversation name'} relationship="label">
                                 <Button
-                                    data-testid='editChatTitleButton'
+                                    data-testid="editChatTitleButton"
                                     icon={isEditing ? <Edit24Filled /> : <EditRegular />}
                                     appearance="transparent"
                                     onClick={onClose}
@@ -224,11 +225,7 @@ export const ChatWindow: React.FC = () => {
                     </TabList>
                 </div>
                 <div className={classes.controls}>
-                    <AvatarGroupPopover>
-                        {conversations[selectedId].users.map((user) => (
-                            <AvatarGroupItem name={user.id} key={user.id} />
-                        ))}
-                    </AvatarGroupPopover>
+                    <ParticipantsList participants={conversations[selectedId].users} />
                     <ShareBotMenu chatId={selectedId} chatTitle={title} />
                 </div>
             </div>
