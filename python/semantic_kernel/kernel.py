@@ -136,51 +136,61 @@ class Kernel:
 
     async def run_stream_async(
         self,
-        func: SKFunction,
+        *functions: Any,
         input_context: Optional[SKContext] = None,
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
     ):
-        assert isinstance(func, SKFunction)
+        if len(functions) > 1:
+            pipeline_functions = functions[:-1]
+            stream_function = functions[-1]
 
-        # if the user passed in a context, prioritize it, but merge with any other inputs
-        if input_context is not None:
-            context = input_context
-            if input_vars is not None:
-                context._variables = input_vars.merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
-                )
-
-            if input_str is not None:
-                context._variables = ContextVariables(input_str).merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
-                )
-
-        # if the user did not pass in a context, prioritize an input string, and merge that with input context variables
-        else:
-            if input_str is not None and input_vars is None:
-                variables = ContextVariables(input_str)
-            elif input_str is None and input_vars is not None:
-                variables = input_vars
-            elif input_str is not None and input_vars is not None:
-                variables = ContextVariables(input_str)
-                variables = variables.merge_or_overwrite(
-                    new_vars=input_vars, overwrite=False
-                )
-            else:
-                variables = ContextVariables()
-            context = SKContext(
-                variables,
-                self._memory,
-                self._skill_collection.read_only_skill_collection,
-                self._log,
+            # run pipeline functions
+            context = await self.run_async(
+                pipeline_functions, input_context, input_vars, input_str
             )
+
+        elif len(functions) == 1:
+            stream_function = functions[0]
+            # if the user passed in a context, prioritize it, but merge with any other inputs
+            if input_context is not None:
+                context = input_context
+                if input_vars is not None:
+                    context._variables = input_vars.merge_or_overwrite(
+                        new_vars=context._variables, overwrite=False
+                    )
+
+                if input_str is not None:
+                    context._variables = ContextVariables(input_str).merge_or_overwrite(
+                        new_vars=context._variables, overwrite=False
+                    )
+
+            # if the user did not pass in a context, prioritize an input string, and merge that with input context variables
+            else:
+                if input_str is not None and input_vars is None:
+                    variables = ContextVariables(input_str)
+                elif input_str is None and input_vars is not None:
+                    variables = input_vars
+                elif input_str is not None and input_vars is not None:
+                    variables = ContextVariables(input_str)
+                    variables = variables.merge_or_overwrite(
+                        new_vars=input_vars, overwrite=False
+                    )
+                else:
+                    variables = ContextVariables()
+                context = SKContext(
+                    variables,
+                    self._memory,
+                    self._skill_collection.read_only_skill_collection,
+                    self._log,
+                )
+
         try:
             client: ChatCompletionClientBase | TextCompletionClientBase
-            client = func._ai_service
+            client = stream_function._ai_service
 
             # Get the closure variables from function for finding function_config
-            closure_vars = func._function.__closure__
+            closure_vars = stream_function._function.__closure__
             for var in closure_vars:
                 if isinstance(var.cell_contents, SemanticFunctionConfig):
                     function_config = var.cell_contents
@@ -196,7 +206,7 @@ class Kernel:
                 completion = ""
                 messages = await as_chat_prompt.render_messages_async(context)
                 async for steam_message in client.complete_chat_stream_async(
-                    messages, func._chat_request_settings
+                    messages, stream_function._chat_request_settings
                 ):
                     completion += steam_message
                     yield steam_message
@@ -215,7 +225,7 @@ class Kernel:
                 completion = ""
                 prompt = await function_config.prompt_template.render_async(context)
                 async for stream_message in client.complete_stream_async(
-                    prompt, func._ai_request_settings
+                    prompt, stream_function._ai_request_settings
                 ):
                     completion += stream_message
                     yield stream_message
