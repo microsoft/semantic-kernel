@@ -439,9 +439,10 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         selection_fields = acs_field_selection(include_embedding=with_embedding)
 
-        acs_result = await acs_search_client.search(
+        acs_result = acs_search_client.search(
             vector=Vector(value=embedding, k=limit, fields="vector"),
             select=selection_fields,
+            search_text='*',
             top=limit,
         )
 
@@ -489,9 +490,10 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         selection_fields = acs_field_selection(include_embedding=with_embeddings)
 
-        results = await acs_search_client.search(
+        results = acs_search_client.search(
             vector=Vector(value=embedding, k=limit, fields="vector"),
             select=selection_fields,
+            search_text='*',
             top=limit,
         )
 
