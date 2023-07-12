@@ -40,6 +40,7 @@ import javax.annotation.Nullable;
 public class ActionPlanner {
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionPlanner.class);
 
+    // Extracts the json portion of a plan between the braces, stripping off any non-json content
     private static final Pattern CLEAN_PLAN =
             Pattern.compile("[^{]*(\\{.*})[^}]*", Pattern.MULTILINE | Pattern.DOTALL);
     private static final String StopSequence = "#END-OF-PLAN";
