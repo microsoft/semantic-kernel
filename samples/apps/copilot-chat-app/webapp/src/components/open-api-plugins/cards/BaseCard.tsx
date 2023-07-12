@@ -1,7 +1,7 @@
 import { Caption1, Card, CardHeader, Text, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { ReactElement } from 'react';
 
-const useStyles = makeStyles({
+const useClasses = makeStyles({
     main: {
         ...shorthands.gap('36px'),
         display: 'flex',
@@ -41,7 +41,7 @@ interface IBaseCardProps {
 }
 
 export const BaseCard: React.FC<IBaseCardProps> = ({ image, header, secondaryText, description, action }) => {
-    const styles = useStyles();
+    const styles = useClasses();
 
     return (
         <Card className={styles.card}>

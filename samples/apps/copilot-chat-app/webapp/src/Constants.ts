@@ -41,4 +41,7 @@ export const Constants = {
     // Your application registration will need to be granted these permissions in Azure Active Directory.
     msGraphScopes: ['Calendars.Read', 'Mail.Read', 'Mail.Send', 'Tasks.ReadWrite', 'User.Read'],
     adoScopes: ['vso.work'],
+    // All OpenAI plugin manifest files should be located at this path per OpenAI requirements
+    // https://platform.openai.com/docs/plugins/getting-started/plugin-manifest
+    PLUGIN_MANIFEST_PATH: '/.well-known/ai-plugin.json',
 };

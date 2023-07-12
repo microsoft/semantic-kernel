@@ -8,7 +8,6 @@ import { BaseCard } from './BaseCard';
 
 interface PluginCardProps {
     plugin: Plugin;
-    actionOverride?: React.Component;
 }
 
 export const PluginCard: React.FC<PluginCardProps> = ({ plugin }) => {
@@ -23,7 +22,7 @@ export const PluginCard: React.FC<PluginCardProps> = ({ plugin }) => {
     return (
         <BaseCard
             image={icon}
-            header={`Plugin ${name}`}
+            header={`${name}`}
             secondaryText={publisher}
             description={description}
             action={
