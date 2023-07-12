@@ -19,7 +19,7 @@ import {
     Tooltip,
 } from '@fluentui/react-components';
 import { Alert } from '@fluentui/react-components/unstable';
-import { Dismiss16Regular, Edit24Filled, EditRegular } from '@fluentui/react-icons';
+import { Dismiss16Regular, Edit24Filled, EditRegular, Map16Regular, Person16Regular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
@@ -28,6 +28,8 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert, removeAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
+import { ChatPersona } from './ChatPersona';
+import { ChatPlanList } from './ChatPlanList';
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
 import { ShareBotMenu } from './ShareBotMenu';
@@ -219,6 +221,12 @@ export const ChatWindow: React.FC = () => {
                         <Tab data-testid="filesTab" id="files" value="files">
                             Documents
                         </Tab>
+                        <Tab data-testid="plansTab" id="plans" value="plans" icon={<Map16Regular />}>
+                            Plans
+                        </Tab>
+                        <Tab data-testid="personaTab" id="persona" value="persona" icon={<Person16Regular />}>
+                            Persona
+                        </Tab>
                     </TabList>
                 </div>
                 <div className={classes.controls}>
@@ -232,6 +240,8 @@ export const ChatWindow: React.FC = () => {
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
             {selectedTab === 'files' && <ChatResourceList chatId={selectedId} />}
+            {selectedTab === 'plans' && <ChatPlanList chatId={selectedId} />}
+            {selectedTab === 'persona' && <ChatPersona chatId={selectedId} />}
         </div>
     );
 };

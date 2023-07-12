@@ -80,6 +80,7 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
     const { columns, rows } = useTable(resources);
     return (
         <div className={classes.root}>
+            <h2>Documents</h2>
             <Tooltip content="Embed file into chat session" relationship="label">
                 <Button
                     style={{ marginBottom: '5px' }}
@@ -89,7 +90,12 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
                     Upload
                 </Button>
             </Tooltip>
-
+            <br />
+            Ideally when you click upload ... 1/ after it lets you load a .txt, .pdf, .json, or .md file, 2/ there
+            should be an indication of which embedding model it is using, 3/ and how it is progressing in the chunking
+            of the document with a progress bar. Give a rando estimate of how long it will take that is 5X longer than
+            expected. Underpromise, overdeliver :+).
+            <br />
             <Table aria-label="External resource table" className={classes.table}>
                 <TableHeader>
                     <TableRow>{columns.map((column) => column.renderHeaderCell())}</TableRow>
