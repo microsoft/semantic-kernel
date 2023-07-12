@@ -2,6 +2,7 @@
 
 import os
 import time
+
 import numpy as np
 import pytest
 
@@ -20,10 +21,11 @@ pytestmark = pytest.mark.skipif(
     not pinecone_installed, reason="pinecone is not installed"
 )
 
+
 async def retry(func, retries=5):
     for i in range(retries):
         try:
-            return await (func())
+            return await func()
         except pinecone.core.client.exceptions.ForbiddenException as e:
             print(e)
             time.sleep(i * 2)
@@ -31,10 +33,12 @@ async def retry(func, retries=5):
             print(e)
             time.sleep(i * 2)
 
+
 @pytest.fixture(autouse=True, scope="module")
 def slow_down_tests():
     yield
     time.sleep(1)
+
 
 @pytest.fixture(scope="session")
 def get_pinecone_config():
@@ -146,11 +150,13 @@ async def test_upsert_async_and_get_async(get_pinecone_config, memory_record1):
     await retry(lambda: memory.create_collection_async("test-collection"))
     await retry(lambda: memory.upsert_async("test-collection", memory_record1))
 
-    result = await retry(lambda: memory.get_async(
-        "test-collection",
-        memory_record1._id,
-        with_embedding=True,
-    ))
+    result = await retry(
+        lambda: memory.get_async(
+            "test-collection",
+            memory_record1._id,
+            with_embedding=True,
+        )
+    )
 
     assert result is not None
     assert result._id == memory_record1._id
@@ -167,13 +173,19 @@ async def test_upsert_batch_async_and_get_batch_async(
     memory = PineconeMemoryStore(api_key, environment, 2)
 
     await retry(lambda: memory.create_collection_async("test-collection"))
-    await retry(lambda: memory.upsert_batch_async("test-collection", [memory_record1, memory_record2]))
+    await retry(
+        lambda: memory.upsert_batch_async(
+            "test-collection", [memory_record1, memory_record2]
+        )
+    )
 
-    results = await retry(lambda: memory.get_batch_async(
-        "test-collection",
-        [memory_record1._id, memory_record2._id],
-        with_embeddings=True,
-    ))
+    results = await retry(
+        lambda: memory.get_batch_async(
+            "test-collection",
+            [memory_record1._id, memory_record2._id],
+            with_embeddings=True,
+        )
+    )
 
     assert len(results) >= 2
     assert results[0]._id in [memory_record1._id, memory_record2._id]
@@ -201,10 +213,16 @@ async def test_remove_batch_async(get_pinecone_config, memory_record1, memory_re
     memory = PineconeMemoryStore(api_key, environment, 2)
 
     await retry(lambda: memory.create_collection_async("test-collection"))
-    await retry(lambda: memory.upsert_batch_async("test-collection", [memory_record1, memory_record2]))
-    await retry(lambda: memory.remove_batch_async(
-        "test-collection", [memory_record1._id, memory_record2._id]
-    ))
+    await retry(
+        lambda: memory.upsert_batch_async(
+            "test-collection", [memory_record1, memory_record2]
+        )
+    )
+    await retry(
+        lambda: memory.remove_batch_async(
+            "test-collection", [memory_record1._id, memory_record2._id]
+        )
+    )
 
     with pytest.raises(KeyError):
         _ = await memory.get_async(
@@ -225,14 +243,23 @@ async def test_get_nearest_match_async(
     memory = PineconeMemoryStore(api_key, environment, 2)
 
     await retry(lambda: memory.create_collection_async("test-collection"))
-    await retry(lambda: memory.upsert_batch_async("test-collection", [memory_record1, memory_record2]))
+    await retry(
+        lambda: memory.upsert_batch_async(
+            "test-collection", [memory_record1, memory_record2]
+        )
+    )
 
     test_embedding = memory_record1.embedding
     test_embedding[0] = test_embedding[0] + 0.01
 
-    result = await retry(lambda: memory.get_nearest_match_async(
-        "test-collection", test_embedding, min_relevance_score=0.0, with_embedding=True
-    ))
+    result = await retry(
+        lambda: memory.get_nearest_match_async(
+            "test-collection",
+            test_embedding,
+            min_relevance_score=0.0,
+            with_embedding=True,
+        )
+    )
 
     assert result is not None
     assert result[0]._id == memory_record1._id
@@ -246,20 +273,24 @@ async def test_get_nearest_matches_async(
     memory = PineconeMemoryStore(api_key, environment, 2)
 
     await retry(lambda: memory.create_collection_async("test-collection"))
-    await retry(lambda: memory.upsert_batch_async(
-        "test-collection", [memory_record1, memory_record2, memory_record3]
-    ))
+    await retry(
+        lambda: memory.upsert_batch_async(
+            "test-collection", [memory_record1, memory_record2, memory_record3]
+        )
+    )
 
     test_embedding = memory_record2.embedding
     test_embedding[0] = test_embedding[0] + 0.025
 
-    result = await retry(lambda: memory.get_nearest_matches_async(
-        "test-collection",
-        test_embedding,
-        limit=2,
-        min_relevance_score=0.0,
-        with_embeddings=True,
-    ))
+    result = await retry(
+        lambda: memory.get_nearest_matches_async(
+            "test-collection",
+            test_embedding,
+            limit=2,
+            min_relevance_score=0.0,
+            with_embeddings=True,
+        )
+    )
 
     assert len(result) == 2
     assert result[0][0]._id in [memory_record3._id, memory_record2._id]
