@@ -1,4 +1,4 @@
-class Connector:
+class ConnectorBase:
     """
     Base class for search engine connectors
     """
