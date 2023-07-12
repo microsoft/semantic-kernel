@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,11 @@ public interface IKernel
     /// Settings required to execute functions, including details about AI dependencies, e.g. endpoints and API keys.
     /// </summary>
     KernelConfig Config { get; }
+
+    /// <summary>
+    /// App metter
+    /// </summary>
+    Meter? Meter { get; }
 
     /// <summary>
     /// App logger

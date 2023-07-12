@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +40,9 @@ public sealed class Kernel : IKernel, IDisposable
     public KernelConfig Config { get; }
 
     /// <inheritdoc/>
+    public Meter Meter { get; }
+
+    /// <inheritdoc/>
     public ILogger Log { get; }
 
     /// <inheritdoc/>
@@ -64,15 +68,18 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="memory"></param>
     /// <param name="config"></param>
     /// <param name="log"></param>
+    /// <param name="meter"></param>
     public Kernel(
         ISkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         KernelConfig config,
-        ILogger log)
+        ILogger log,
+        Meter meter)
     {
         this.Log = log;
+        this.Meter = meter;
         this.Config = config;
         this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
@@ -118,6 +125,7 @@ public sealed class Kernel : IKernel, IDisposable
         Dictionary<string, ISKFunction> skill = ImportSkill(
             skillInstance,
             skillName!,
+            this.Meter,
             this.Log
         );
         foreach (KeyValuePair<string, ISKFunction> f in skill)
@@ -330,7 +338,8 @@ public sealed class Kernel : IKernel, IDisposable
             skillName,
             functionName,
             functionConfig,
-            this.Log
+            this.Log,
+            this.Meter
         );
 
         // Connect the function to the current kernel skill collection, in case the function
@@ -350,9 +359,10 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     /// <param name="skillInstance">Skill class instance</param>
     /// <param name="skillName">Skill name, used to group functions under a shared namespace</param>
+    /// <param name="meter">Application meter</param>
     /// <param name="log">Application logger</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
+    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, Meter meter, ILogger log)
     {
         MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
         log.LogTrace("Importing skill name: {0}. Potential methods found: {1}", skillName, methods.Length);
@@ -363,7 +373,7 @@ public sealed class Kernel : IKernel, IDisposable
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
-                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, log);
+                ISKFunction function = SKFunction.FromNativeMethod(method, meter, skillInstance, skillName, log);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new KernelException(

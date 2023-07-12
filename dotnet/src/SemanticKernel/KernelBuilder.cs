@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -21,6 +22,7 @@ public sealed class KernelBuilder
     private KernelConfig _config = new();
     private Func<ISemanticTextMemory> _memoryFactory = () => NullMemory.Instance;
     private ILogger _logger = NullLogger.Instance;
+    private Meter _meter = new("SemanticKernel", "1.0.0");
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
@@ -47,13 +49,19 @@ public sealed class KernelBuilder
             this._config.SetHttpRetryHandlerFactory(this._httpHandlerFactory);
         }
 
+        if (this._meter == null)
+        {
+            this._meter = new Meter("Microsoft.SemanticKernel", "1.0.0");
+        }
+
         var instance = new Kernel(
             new SkillCollection(this._logger),
             this._aiServices.Build(),
             this._promptTemplateEngine ?? new PromptTemplateEngine(this._logger),
             this._memoryFactory.Invoke(),
             this._config,
-            this._logger
+            this._logger,
+            this._meter
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -74,6 +82,12 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(log);
         this._logger = log;
+        return this;
+    }
+
+    public KernelBuilder WithMeter(Meter meter)
+    {
+        this._meter = meter;
         return this;
     }
 

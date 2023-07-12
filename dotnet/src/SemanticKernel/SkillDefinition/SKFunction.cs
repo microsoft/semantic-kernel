@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -59,12 +60,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// Create a native function instance, wrapping a native object method
     /// </summary>
     /// <param name="method">Signature of the method to invoke</param>
+    /// <param name="meter">Application Meter</param>
     /// <param name="target">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeMethod(
         MethodInfo method,
+        Meter? meter = null,
         object? target = null,
         string? skillName = null,
         ILogger? log = null)
@@ -88,7 +91,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
             functionName: methodDetails.Name,
             isSemantic: false,
             description: methodDetails.Description,
-            log: log);
+            log: log,
+            meter: meter);
     }
 
     /// <summary>
@@ -100,6 +104,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
     /// <param name="log">Application logger</param>
+    /// <param name="meter">Application meter</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
         Delegate nativeFunction,
@@ -107,7 +112,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
-        ILogger? log = null)
+        ILogger? log = null,
+        Meter? meter = null)
     {
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, log);
 
@@ -126,7 +132,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
             skillName: skillName!,
             functionName: functionName,
             isSemantic: false,
-            log: log);
+            log: log,
+            meter: meter);
     }
 
     /// <summary>
@@ -136,12 +143,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="functionConfig">Semantic function configuration.</param>
     /// <param name="log">Optional logger for the function.</param>
+    /// <param name="meter">Application meter</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
         string skillName,
         string functionName,
         SemanticFunctionConfig functionConfig,
-        ILogger? log = null)
+        ILogger? log = null,
+        Meter? meter = null)
     {
         Verify.NotNull(functionConfig);
 
@@ -163,7 +172,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
             skillName: skillName,
             functionName: functionName,
             isSemantic: true,
-            log: log
+            log: log,
+            meter: meter
         );
 
         async Task<SKContext> LocalFunc(
@@ -239,10 +249,19 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             try
             {
+                this._counter_total.Add(1);
                 context = await this._function(null, settings, context).ConfigureAwait(false);
+                if (context.ErrorOccurred)
+                {
+                    this._counter_failed.Add(1);
+                } else
+                {
+                    this._counter_success.Add(1);
+                }
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
+                this._counter_failed.Add(1);
                 const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
                 this._log.LogError(e, Message, this._function.Method.Name, e.Message);
                 context.Fail(e.Message, e);
@@ -324,6 +343,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Task<SKContext>> _function;
     private readonly ILogger _log;
+    private readonly Counter<int> _counter_total;
+    private readonly Counter<int> _counter_success;
+    private readonly Counter<int> _counter_failed;
     private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
@@ -348,6 +370,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         string skillName,
         string functionName,
         string description,
+        Meter meter,
         bool isSemantic = false,
         ILogger? log = null)
     {
@@ -357,6 +380,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
         Verify.ParametersUniqueness(parameters);
 
         this._log = log ?? NullLogger.Instance;
+        this._counter_total = meter.CreateCounter<int>($"{skillName}.{functionName} total");
+        this._counter_success = meter.CreateCounter<int>($"{skillName}.{functionName} success");
+        this._counter_failed = meter.CreateCounter<int>($"{skillName}.{functionName} failed");
 
         this._function = delegateFunction;
         this.Parameters = parameters;
