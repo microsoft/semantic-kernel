@@ -41,7 +41,7 @@ public interface MemoryStore {
      * Deletes a collection from the data store.
      *
      * @param collectionName The name associated with a collection of embeddings.
-     * @return
+     * @return A future that completes when the collection is deleted.
      */
     Mono<Void> deleteCollectionAsync(@Nonnull String collectionName);
 

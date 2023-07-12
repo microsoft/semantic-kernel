@@ -20,15 +20,22 @@ public interface WritableContextVariables extends ContextVariables {
 
     ContextVariables appendToVariable(String key, String content);
 
-    /// <summary>
-    /// Updates the main input text with the new value after a function is complete.
-    /// </summary>
-    /// <param name="content">The new input value, for the next function in the pipeline, or as a
-    // result for the user
-    /// if the pipeline reached the end.</param>
-    /// <returns>The current instance</returns>
+    /**
+     * Updates the main input text with the new value after a function is complete.
+     *
+     * @param content The new input value, for the next function in the pipeline, or as a result for
+     *     the user if the pipeline reached the end.
+     * @return The current instance
+     */
     ContextVariables update(String content);
 
+    /**
+     * Updates the variables merging or overwriting in the new values.
+     *
+     * @param newData Data to merge or overwrite.
+     * @param merge Whether to merge the new data with the existing data or to replace it
+     * @return The current instance
+     */
     ContextVariables update(ContextVariables newData, boolean merge);
 
     ContextVariables remove(String key);

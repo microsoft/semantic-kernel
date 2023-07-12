@@ -22,7 +22,7 @@ public class WaitSkill {
      * <p>{{wait.seconds $input}}
      *
      * @param seconds The number of seconds to wait as a string.
-     * @return A Mono<Void> that completes after the specified delay.
+     * @return A Mono that completes after the specified delay.
      * @throws IllegalArgumentException If the input is not a valid number.
      */
     @DefineSKFunction(name = "seconds", description = "Wait a given amount of seconds")

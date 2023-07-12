@@ -52,13 +52,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
             String goal,
             ContextVariables state,
             @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
-        super(
-                DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
-                new ArrayList<>(),
-                Plan.class.getName(),
-                "",
-                goal,
-                kernelSkillsSupplier);
+        super(new ArrayList<>(), Plan.class.getName(), "", goal, kernelSkillsSupplier);
         this.state = state;
     }
 
@@ -72,7 +66,6 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
             List<String> functionOutputs,
             KernelSkillsSupplier kernelSkillsSupplier) {
         super(
-                DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
                 function.describe().getParameters(),
                 function.getSkillName(),
                 function.getName(),
@@ -92,7 +85,6 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
             List<String> functionOutputs,
             KernelSkillsSupplier kernelSkillsSupplier) {
         super(
-                DelegateTypes.ContextSwitchInSKContextOutTaskSKContext,
                 function.describe().getParameters(),
                 function.getSkillName(),
                 function.getName(),
