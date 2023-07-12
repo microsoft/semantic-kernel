@@ -363,8 +363,8 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     /// <param name="skillInstance">Skill class instance</param>
     /// <param name="skillName">Skill name, used to group functions under a shared namespace</param>
-    /// <param name="meter">Application meter</param>
     /// <param name="log">Application logger</param>
+    /// <param name="meter">Application meter</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
     private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log, Meter? meter = null)
     {

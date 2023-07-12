@@ -60,10 +60,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// Create a native function instance, wrapping a native object method
     /// </summary>
     /// <param name="method">Signature of the method to invoke</param>
-    /// <param name="meter">Application Meter</param>
     /// <param name="target">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
     /// <param name="log">Application logger</param>
+    /// <param name="meter">Application Meter</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeMethod(
         MethodInfo method,
