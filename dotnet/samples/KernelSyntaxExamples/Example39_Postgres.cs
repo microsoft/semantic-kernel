@@ -18,7 +18,7 @@ public static class Example39_Postgres
     {
         NpgsqlDataSourceBuilder dataSourceBuilder = new(Env.Var("POSTGRES_CONNECTIONSTRING"));
         dataSourceBuilder.UseVector();
-        using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
+        await using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 
         PostgresMemoryStore memoryStore = new(dataSource, vectorSize: 1536, schema: "public");
 
