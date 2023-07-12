@@ -6,7 +6,7 @@ from semantic_kernel.web_skills.connectors import Connector
 from semantic_kernel.utils.null_logger import NullLogger
 
 
-class BingConnector(Connector):
+class BingConnector(ConnectorBase):
     """
     A search engine connector that uses the Bing Search API to perform a web search
     """
