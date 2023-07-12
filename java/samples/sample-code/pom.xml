@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>samples</artifactId>
-        <version>0.2.3-alpha-SNAPSHOT</version>
+        <version>0.2.4-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>sequentialplanner-extensions</artifactId>
+            <artifactId>semantickernel-sequentialplanner-extension</artifactId>
             <scope>compile</scope>
         </dependency>
     </dependencies>
