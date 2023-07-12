@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.tokenizers.settings;
+package com.microsoft.semantickernel.settings;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +41,8 @@ public class GPT3Settings {
             return objectMapper.readValue(
                     encodingTableJson, new TypeReference<Map<String, Integer>>() {});
         } catch (IOException e) {
+            System.out.println(e.getMessage());
+
             throw new AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
                     "Encoding table deserialization returned NULL");

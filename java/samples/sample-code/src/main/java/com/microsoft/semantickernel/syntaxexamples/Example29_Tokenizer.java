@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel.syntaxexamples;
 
-import com.microsoft.semantickernel.tokenizers.GPT3Tokenizer;
+import com.microsoft.semantickernel.GPT3Tokenizer;
 public class Example29_Tokenizer {
     /**
      * This sample shows how to count tokens using GPT tokenizer. The number of tokens affects

@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.tokenizers.settings;
+package com.microsoft.semantickernel.settings;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.tokenizers;
+package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.tokenizers.settings.GPT3Settings;
+import com.microsoft.semantickernel.settings.GPT3Settings;
 
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -86,12 +86,30 @@ public class GPT3Tokenizer {
                         (char) 0x00FD, (char) 0x00FE, (char) 0x00FF
             };
 
+    // Regex for English contractions, e.g. "he's", "we'll", "I'm" etc.
     private static final Pattern encodingRegex =
             Pattern.compile(
                     "'s|'t|'re|'ve|'m|'ll|'d| ?\\p{L}+| ?\\p{N}+|"
                             + " ?[^\\s\\p{L}\\p{N}]+|\\s+(?!\\S)|\\s+");
 
-    private static final Map<String, List<String>> bpeCache = new HashMap<>();
+    private static final Map<String, List<String>> bpeCache;
+    private static final String MAX_TOKENIZER_CACHE_SIZE_KEY = "MAX_TOKENIZER_CACHE_SIZE";
+    private static final String MAX_TOKENIZER_CACHE_SIZE_DEFAULT = "100000";
+
+    static {
+        // Limit the maximum cache size
+        int cacheSize =
+                Integer.parseInt(
+                        System.getProperty(
+                                MAX_TOKENIZER_CACHE_SIZE_KEY, MAX_TOKENIZER_CACHE_SIZE_DEFAULT));
+        bpeCache =
+                new LinkedHashMap<String, List<String>>() {
+                    @Override
+                    protected boolean removeEldestEntry(Map.Entry<String, List<String>> eldest) {
+                        return size() > cacheSize;
+                    }
+                };
+    }
 
     /**
      * The tokenizer uses a byte-pair encoding (BPE) algorithm to split words into sub-words based

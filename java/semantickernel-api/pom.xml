@@ -38,12 +38,4 @@
             <artifactId>jsr305</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/java/com/microsoft/semantickernel/tokenizers/settings/resources</directory>
-            </resource>
-        </resources>
-    </build>
 </project>
