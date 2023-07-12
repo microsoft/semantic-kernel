@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
-    <version>0.2.3-alpha-SNAPSHOT</version>
+    <version>0.2.4-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>
@@ -35,7 +34,7 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-                <artifactId>sequentialplanner-extensions</artifactId>
+                <artifactId>semantickernel-sequentialplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -45,7 +44,7 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-                <artifactId>actionplanner-extension</artifactId>
+                <artifactId>semantickernel-actionplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

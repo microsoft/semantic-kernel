@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel.extensions</groupId>
         <artifactId>semantickernel-extensions-parent</artifactId>
-        <version>0.2.3-alpha-SNAPSHOT</version>
+        <version>0.2.4-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>actionplanner-extension</artifactId>
+    <artifactId>semantickernel-sequentialplanner-extension</artifactId>
 
 
     <dependencies>
@@ -19,9 +19,8 @@
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <scope>compile</scope>
+            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
+            <artifactId>semantickernel-actionplanner-extension</artifactId>
         </dependency>
     </dependencies>
 
