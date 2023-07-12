@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import time
 from typing import Union, TYPE_CHECKING
 
