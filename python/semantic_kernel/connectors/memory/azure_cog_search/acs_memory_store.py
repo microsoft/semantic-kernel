@@ -129,7 +129,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
                     )
                 ]
             )
-    
+
         # Create configuration for CORS
         cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
 
@@ -139,7 +139,6 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             fields=acs_schema(vector_size),
             cors_options=cors_options,
             vector_search=vector_config,
-            
         )
 
         try:
@@ -194,9 +193,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             bool -- True if the collection exists; otherwise, False.
         """
 
-        collection_result = await self._cogsearch_indexclient.get_index(
-            name=collection_name
-        )
+        collection_result = self._cogsearch_indexclient.get_index(name=collection_name)
 
         if collection_result:
             return True
