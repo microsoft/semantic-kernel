@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel.connectors</groupId>
         <artifactId>semantickernel-connectors-parent</artifactId>
-        <version>0.2.4-alpha</version>
+        <version>0.2.5-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
