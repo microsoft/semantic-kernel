@@ -154,8 +154,9 @@ async def test_azure_chat_completion_call_with_parameters() -> None:
             frequency_penalty=complete_request_settings.frequency_penalty,
             n=complete_request_settings.number_of_responses,
             stream=False,
-            logit_bias=None
+            logit_bias=None,
         )
+
 
 @pytest.mark.asyncio
 async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined() -> None:
@@ -174,8 +175,8 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         messages = [{"role": "user", "content": prompt}]
         complete_request_settings = CompleteRequestSettings()
 
-        token_bias= {1:-100, }
-        complete_request_settings.token_selection_biases= token_bias
+        token_bias = {1: -100}
+        complete_request_settings.token_selection_biases = token_bias
 
         azure_chat_completion = AzureChatCompletion(
             deployment_name=deployment_name,
@@ -183,7 +184,6 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
             api_key=api_key,
             api_version=api_version,
             logger=logger,
-            
         )
 
         await azure_chat_completion.complete_async(prompt, complete_request_settings)
@@ -203,5 +203,5 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
             frequency_penalty=complete_request_settings.frequency_penalty,
             n=complete_request_settings.number_of_responses,
             stream=False,
-            logit_bias = token_bias
+            logit_bias=token_bias,
         )

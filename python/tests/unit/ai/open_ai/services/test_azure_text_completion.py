@@ -153,7 +153,7 @@ async def test_azure_text_completion_call_with_parameters() -> None:
             stop=None,
             n=complete_request_settings.number_of_responses,
             stream=False,
-            logit_bias=None
+            logit_bias=None,
         )
 
 
@@ -172,7 +172,9 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none() 
         logger = Logger("test_logger")
         prompt = "hello world"
         complete_request_settings = CompleteRequestSettings()
-        complete_request_settings.token_selection_biases = {200: 100}
+
+        token_bias = {200: 100}
+        complete_request_settings.token_selection_biases = token_bias
 
         azure_text_completion = AzureTextCompletion(
             deployment_name=deployment_name,
@@ -200,5 +202,5 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none() 
             stop=None,
             n=complete_request_settings.number_of_responses,
             stream=False,
-            logit_bias={200: 100}
+            logit_bias=token_bias,
         )

@@ -108,9 +108,11 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             frequency_penalty=request_settings.frequency_penalty,
             max_tokens=request_settings.max_tokens,
             number_of_responses=request_settings.number_of_responses,
-            token_selection_biases=request_settings.token_selection_biases
+            token_selection_biases=request_settings.token_selection_biases,
         )
-        response = await self._send_chat_request(prompt_to_message, chat_settings, False)
+        response = await self._send_chat_request(
+            prompt_to_message, chat_settings, False
+        )
 
         if len(response.choices) == 1:
             return response.choices[0].message.content
@@ -128,7 +130,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             frequency_penalty=request_settings.frequency_penalty,
             max_tokens=request_settings.max_tokens,
             number_of_responses=request_settings.number_of_responses,
-            token_selection_biases=request_settings.token_selection_biases
+            token_selection_biases=request_settings.token_selection_biases,
         )
         response = await self._send_chat_request(prompt_to_message, chat_settings, True)
 
