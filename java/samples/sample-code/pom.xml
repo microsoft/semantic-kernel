@@ -53,7 +53,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-gpt3-tokenizer</artifactId>
             <scope>compile</scope>
         </dependency>
