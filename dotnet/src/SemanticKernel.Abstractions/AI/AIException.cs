@@ -13,15 +13,6 @@ namespace Microsoft.SemanticKernel.AI;
 public class AIException : SKException
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AIException"/> class with a provided error code.
-    /// </summary>
-    /// <param name="errorCode">The error code.</param>
-    public AIException(ErrorCodes errorCode)
-        : this(errorCode, message: null, detail: null, innerException: null)
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="AIException"/> class with a provided error code and message.
     /// </summary>
     /// <param name="errorCode">The error code.</param>
@@ -60,7 +51,7 @@ public class AIException : SKException
     /// <param name="message">A string that describes the error.</param>
     /// <param name="detail">A string that provides additional details about the error.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    public AIException(ErrorCodes errorCode, string? message, string? detail, Exception? innerException)
+    public AIException(ErrorCodes errorCode, string? message = null, string? detail = null, Exception? innerException = null)
         : base(GetDefaultMessage(errorCode, message), innerException)
     {
         this.ErrorCode = errorCode;

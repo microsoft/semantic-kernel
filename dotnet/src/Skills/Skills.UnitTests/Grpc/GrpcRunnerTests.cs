@@ -133,7 +133,7 @@ public sealed class GrpcRunnerTests : IDisposable
         var contentProperty = result["content"]?.ToString();
         Assert.NotNull(contentProperty);
 
-        var jsonContent = JsonObject.Parse(contentProperty);
+        var jsonContent = JsonNode.Parse(contentProperty);
         Assert.NotNull(jsonContent);
 
         var messageProperty = jsonContent["message"]?.ToString();
