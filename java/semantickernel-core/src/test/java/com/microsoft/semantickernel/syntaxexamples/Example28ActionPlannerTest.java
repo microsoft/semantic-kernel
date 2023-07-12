@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import reactor.util.function.Tuples;
 
-public class Example28ActionPlanner {
+public class Example28ActionPlannerTest {
 
     @Test
     public void functionsArePassedToRequest() {
@@ -120,7 +120,7 @@ public class Example28ActionPlanner {
                 });
     }
 
-    private static ActionPlanner createPlanner(OpenAIAsyncClient client) {
+    public static ActionPlanner createPlanner(OpenAIAsyncClient client) {
         Kernel kernel =
                 SKBuilders.kernel()
                         .withKernelConfig(

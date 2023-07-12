@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -36,7 +37,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
         List<String> data = new ArrayList<>();
         data.add("This is just");
-        //data.add("a test");
+        // data.add("a test");
 
         embeddingGeneration
                 .generateEmbeddingsAsync(data)
@@ -145,5 +146,4 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
                                 "%s %s (relevance=%f)%n",
                                 query, result.getMetadata().getText(), result.getRelevance()));
     }
-
 }

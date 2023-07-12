@@ -11,7 +11,6 @@ import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import reactor.core.publisher.Mono;
 
@@ -62,7 +61,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     }
 
     public Plan(
-            CompletionSKFunction function,
+            SKFunction<?> function,
             ContextVariables state,
             List<String> functionOutputs,
             KernelSkillsSupplier kernelSkillsSupplier) {
@@ -98,18 +97,26 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     }
 
     public Plan(
-            CompletionSKFunction function,
+            SKFunction<?> function,
             List<String> functionOutputs,
             KernelSkillsSupplier kernelSkillsSupplier) {
         this(function, SKBuilders.variables().build(), functionOutputs, kernelSkillsSupplier);
     }
 
-    public Plan(CompletionSKFunction function, KernelSkillsSupplier kernelSkillsSupplier) {
+    public Plan(SKFunction<?> function, KernelSkillsSupplier kernelSkillsSupplier) {
         this(function, SKBuilders.variables().build(), new ArrayList<>(), kernelSkillsSupplier);
     }
 
     public Plan(
-            String goal, KernelSkillsSupplier kernelSkillsSupplier, CompletionSKFunction... steps) {
+            String goal,
+            ContextVariables parameters,
+            KernelSkillsSupplier kernelSkillsSupplier,
+            SKFunction... steps) {
+        this(goal, parameters, kernelSkillsSupplier);
+        this.addSteps(steps);
+    }
+
+    public Plan(String goal, KernelSkillsSupplier kernelSkillsSupplier, SKFunction... steps) {
         this(goal, kernelSkillsSupplier);
         this.addSteps(steps);
     }
@@ -160,7 +167,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
      *
      * @param steps The steps to add to the current plan.
      */
-    public void addSteps(CompletionSKFunction... steps) {
+    public void addSteps(SKFunction<?>... steps) {
         List<Plan> plans =
                 Arrays.stream(steps)
                         .map(step -> new Plan(step, getSkillsSupplier()))
@@ -320,6 +327,18 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         if (input != null) {
             this.state = state.writableClone().update(input);
         }
+
+        if (context == null) {
+            context =
+                    SKBuilders.context()
+                            .with(state)
+                            .with(getSkillsSupplier() == null ? null : getSkillsSupplier().get())
+                            .build();
+        } else {
+            ContextVariables variables = context.getVariables().writableClone().update(state, true);
+            context = context.update(variables);
+        }
+
         return super.invokeAsync(input, context, settings);
     }
 
@@ -515,7 +534,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
     }
 
     private String toPlanString(String indent) {
-        String goalHeader = indent + "Goal: " + getDescription() + "\n\n" + indent + "}Steps:\n";
+        String goalHeader = indent + "Goal: " + getDescription() + "\n\n" + indent + "Steps:\n";
 
         String stepItems =
                 String.join(
@@ -535,8 +554,23 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
             String parameters =
                     String.join(
                             " ",
-                            step.getParameters().stream()
-                                    .map(param -> param.getName() + " " + param.getDefaultValue())
+                            step.getParametersView().stream()
+                                    .map(
+                                            param -> {
+                                                String value = param.getDefaultValue();
+                                                if (step.getParameters() != null
+                                                        && step.getParameters().get(param.getName())
+                                                                != null) {
+                                                    value =
+                                                            step.getParameters()
+                                                                    .get(param.getName());
+                                                }
+                                                return "\t"
+                                                        + param.getName()
+                                                        + ": \""
+                                                        + value
+                                                        + "\"";
+                                            })
                                     .collect(Collectors.toList()));
 
             if (!Verify.isNullOrEmpty(parameters)) {
@@ -552,10 +586,16 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                     + indent
                     + "- "
                     + String.join(".", skillName, stepName)
+                    + "\t\t\t"
                     + parameters
                     + outputs;
         }
 
         return step.toPlanString(indent + indent);
+    }
+
+    @Nullable
+    private ContextVariables getParameters() {
+        return parameters;
     }
 }

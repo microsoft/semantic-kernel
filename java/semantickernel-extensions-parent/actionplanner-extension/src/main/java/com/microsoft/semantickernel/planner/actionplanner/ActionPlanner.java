@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.WritableContextVariables;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -21,6 +23,8 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -36,6 +40,9 @@ import javax.annotation.Nullable;
 public class ActionPlanner {
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionPlanner.class);
 
+    // Extracts the json portion of a plan between the braces, stripping off any non-json content
+    private static final Pattern CLEAN_PLAN =
+            Pattern.compile("[^{]*(\\{.*})[^}]*", Pattern.MULTILINE | Pattern.DOTALL);
     private static final String StopSequence = "#END-OF-PLAN";
     private static final String SkillName = "this";
 
@@ -111,9 +118,16 @@ public class ActionPlanner {
 
     private Plan parsePlan(String goal, SKContext result) {
         ActionPlanResponse planData;
+        // Clean up the plan, removing any prompt and the stop sequence
+        Matcher matcher = CLEAN_PLAN.matcher(result.getResult());
+
+        String plan = result.getResult();
+        if (matcher.matches()) {
+            plan = matcher.group(1);
+        }
 
         try {
-            planData = new ObjectMapper().readValue(result.getResult(), ActionPlanResponse.class);
+            planData = new ObjectMapper().readValue(plan, ActionPlanResponse.class);
         } catch (Exception e) {
             throw new PlanningException(
                     PlanningException.ErrorCodes.InvalidPlan,
@@ -127,29 +141,39 @@ public class ActionPlanner {
                     "The plan deserialized to a null object");
         }
 
-        CompletionSKFunction function = getPlanFunction(planData);
+        SKFunction function = getPlanFunction(planData);
+
+        WritableContextVariables variables = SKBuilders.variables().build().writableClone();
+
+        planData.plan
+                .parameters
+                .entrySet()
+                .forEach(
+                        entry -> {
+                            variables.setVariable(entry.getKey(), entry.getValue());
+                        });
 
         if (function == null) {
             // No function was found - return a plan with no steps.
-            return new Plan(goal, () -> kernel.getSkills());
+            return new Plan(goal, variables, () -> kernel.getSkills());
         } else {
-            return new Plan(goal, () -> kernel.getSkills(), function);
+            return new Plan(goal, variables, () -> kernel.getSkills(), function);
         }
     }
 
-    public CompletionSKFunction getPlanFunction(ActionPlanResponse planData) {
+    public SKFunction getPlanFunction(ActionPlanResponse planData) {
 
         if (planData.plan.function.contains(".")) {
             String[] parts = planData.plan.function.split("\\.", -1);
-            CompletionSKFunction skill =
-                    context.getSkills().getFunction(parts[0], parts[1], CompletionSKFunction.class);
+            SKFunction function =
+                    context.getSkills().getFunction(parts[0], parts[1], SKFunction.class);
 
-            if (skill == null) {
+            if (function == null) {
                 throw new PlanningException(
                         PlanningException.ErrorCodes.InvalidPlan,
-                        "Unknown skill " + planData.plan.function);
+                        "Unknown function " + planData.plan.function);
             }
-            return skill;
+            return function;
 
         } else if (!planData.plan.function.isEmpty()) {
             CompletionSKFunction function =
