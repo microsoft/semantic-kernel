@@ -45,6 +45,7 @@ priority = "supplemental"
 azure-search-documents = {version = "11.4.0a20230509004", source = "azure-sdk-dev"}
 azure-identity = "^1.13.0"
 
+
 [tool.isort]
 profile = "black"
 

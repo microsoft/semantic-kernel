@@ -13,6 +13,7 @@ from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
     CorsOptions,
     SearchIndex,
+    VectorSearch,
     VectorSearchAlgorithmConfiguration,
 )
 from azure.search.documents.models import Vector
@@ -110,9 +111,29 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
 
-        # Create the search index
+        # Create configuration for Vector Search
+        if vector_config:
+            VectorSearch(algorithm_configurations=[vector_config])
+        else:
+            VectorSearch(
+                algorithm_configurations=[
+                    VectorSearchAlgorithmConfiguration(
+                        name="az-vector-config",
+                        kind="hnsw",
+                        hnsw_parameters={
+                            "m": 4,
+                            "efConstruction": 400,
+                            "efSearch": 500,
+                            "metric": "cosine",
+                        },
+                    )
+                ]
+            )
+    
+        # Create configuration for CORS
         cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
 
+        # Create the search index
         index = SearchIndex(
             name=collection_name,
             fields=acs_schema(vector_size),
