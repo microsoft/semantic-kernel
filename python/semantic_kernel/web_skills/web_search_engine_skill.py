@@ -1,4 +1,4 @@
-from semantic_kernel.web_skills.connectors import Connector
+from semantic_kernel.web_skills.connectors import ConnectorBase
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
