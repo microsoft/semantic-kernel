@@ -12,4 +12,5 @@ export interface ChatState {
     lastUpdatedTimestamp?: number;
     input: string;
     isBotTyping: boolean;
+    userDataLoaded: boolean;
 }
