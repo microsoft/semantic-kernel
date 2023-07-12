@@ -5,7 +5,10 @@ import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -30,6 +33,12 @@ public final class KernelConfig {
         this.chatCompletionServices = new HashMap<>(chatCompletionServices);
     }
 
+    /**
+     * Get the text completion services with the given id
+     *
+     * @param serviceId Service id
+     * @return Map of text completion services
+     */
     @Nullable
     public Function<Kernel, TextCompletion> getTextCompletionService(String serviceId) {
         return textCompletionServices.get(serviceId);

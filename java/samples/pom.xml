@@ -2,9 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.microsoft.semantickernel</groupId>
+    <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>samples</artifactId>
-    <version>0.2.2-beta-SNAPSHOT</version>
+    <version>0.2.3-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -26,7 +26,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.microsoft.semantickernel</groupId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-bom</artifactId>
                 <version>${project.version}</version>
                 <scope>import</scope>
@@ -52,20 +52,20 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel.connectors</groupId>
+            <groupId>com.microsoft.semantic-kernel.connectors</groupId>
             <artifactId>semantickernel-connectors</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-core</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-core-skills</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -85,12 +85,12 @@
             <version>${log4j2.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel.extensions</groupId>
+            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
             <artifactId>sequentialplanner-extensions</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel.extensions</groupId>
+            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
             <artifactId>actionplanner-extension</artifactId>
             <scope>compile</scope>
         </dependency>

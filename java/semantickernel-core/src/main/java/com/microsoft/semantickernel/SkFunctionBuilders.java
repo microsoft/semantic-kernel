@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
 import javax.annotation.Nullable;
 
+/** Provides various builders for completion functions */
 public class SkFunctionBuilders implements FunctionBuilders {
     public SkFunctionBuilders() {}
 

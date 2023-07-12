@@ -35,14 +35,18 @@ public interface SKContext {
      */
     ContextVariables getVariables();
 
-    /** Provides access to the contexts semantic memory */
+    /**
+     * Provides access to the contexts semantic memory
+     *
+     * @return the semantic memory
+     */
     @Nullable
     SemanticTextMemory getSemanticMemory();
 
     /**
      * Provides access to the skills within this context
      *
-     * @return
+     * @return the skills
      */
     ReadOnlySkillCollection getSkills();
 
@@ -50,7 +54,7 @@ public interface SKContext {
      * Sets the given variable
      *
      * @param key if null defaults to the "input" key
-     * @param content
+     * @param content value to set
      * @return Context for fluent calls
      */
     SKContext setVariable(String key, String content);
@@ -58,8 +62,8 @@ public interface SKContext {
     /**
      * Appends data to the given key
      *
-     * @param key
-     * @param content
+     * @param key key to set
+     * @param content value to set
      * @return Context for fluent calls
      */
     SKContext appendToVariable(String key, String content);
@@ -67,7 +71,7 @@ public interface SKContext {
     /**
      * Updates the input entry with the given data
      *
-     * @param content
+     * @param content value to set
      * @return Context for fluent calls
      */
     @CheckReturnValue
@@ -77,12 +81,17 @@ public interface SKContext {
      * Merges in the given variables. Duplicate keys provided by newData will overwrite existing
      * entries.
      *
-     * @param newData
+     * @param newData variables to merge in
      * @return Context for fluent calls
      */
     @CheckReturnValue
     SKContext update(ContextVariables newData);
 
+    /**
+     * Clones the context
+     *
+     * @return a copy of this context
+     */
     SKContext copy();
 
     interface BuilderSupplier extends Supplier<Builder> {}
@@ -118,8 +127,8 @@ public interface SKContext {
          * Builds a context from the given kernel. If not explicitly set, the skills and memory will
          * be used from the kernel.
          *
-         * @param kernel
-         * @return
+         * @param kernel Kernel to use
+         * @return Context
          */
         SKContext build(Kernel kernel);
     }

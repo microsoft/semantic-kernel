@@ -59,7 +59,7 @@ public class Example14_SemanticMemory
          * You can replace VolatileMemoryStore with Qdrant (see QdrantMemoryStore connector)
          * or implement your connectors for Pinecone, Vespa, Postgres + pgvector, SQLite VSS, etc.
          */
-        var openAIAsyncClient = Config.ClientType.AZURE_OPEN_AI.getClient();
+        var openAIAsyncClient = Config.getClient();
 
         var kernelConfigWithTextEmbedding = SKBuilders.kernelConfig()
                 .addTextEmbeddingsGenerationService(
