@@ -7,7 +7,6 @@ import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
-import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.memory.MemoryConfiguration;
@@ -16,6 +15,8 @@ import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.*;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
+import com.microsoft.semantickernel.services.AIService;
+import com.microsoft.semantickernel.services.AIServiceProvider;
 import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
@@ -41,18 +42,21 @@ public class DefaultKernel implements Kernel {
     private final KernelConfig kernelConfig;
     private final DefaultSkillCollection defaultSkillCollection;
     private final PromptTemplateEngine promptTemplateEngine;
+    private final AIServiceProvider aiServiceProvider;
     private SemanticTextMemory memory;
 
     @Inject
     public DefaultKernel(
             KernelConfig kernelConfig,
             PromptTemplateEngine promptTemplateEngine,
-            @Nullable SemanticTextMemory memoryStore) {
+            @Nullable SemanticTextMemory memoryStore,
+            AIServiceProvider aiServiceProvider) {
         if (kernelConfig == null) {
             throw new IllegalArgumentException();
         }
 
         this.kernelConfig = kernelConfig;
+        this.aiServiceProvider = aiServiceProvider;
         this.promptTemplateEngine = promptTemplateEngine;
         this.defaultSkillCollection = new DefaultSkillCollection();
 
@@ -64,7 +68,14 @@ public class DefaultKernel implements Kernel {
     }
 
     @Override
-    public <T> T getService(@Nullable String serviceId, Class<T> clazz) {
+    public <T extends AIService> T getService(String serviceId, Class<T> clazz) {
+
+        T service = aiServiceProvider.getService(serviceId, clazz);
+
+        if (service != null) {
+            return service;
+        }
+
         if (TextCompletion.class.isAssignableFrom(clazz)) {
             Function<Kernel, TextCompletion> factory =
                     kernelConfig.getTextCompletionServiceOrDefault(serviceId);
@@ -95,10 +106,24 @@ public class DefaultKernel implements Kernel {
             }
 
             return (T) factory.apply(this);
+        } else if (EmbeddingGeneration.class.isAssignableFrom(clazz)) {
+            Function<Kernel, EmbeddingGeneration<String, Float>> factory =
+                    kernelConfig.getTextEmbeddingGenerationServiceOrDefault(serviceId);
+            if (factory == null) {
+                throw new KernelException(
+                        KernelException.ErrorCodes.ServiceNotFound,
+                        "No chat completion service available");
+            }
+
+            return (T) factory.apply(this);
         } else {
-            // TODO correct exception
-            throw new NotSupportedException(
-                    "The kernel service collection doesn't support the type " + clazz.getName());
+            throw new KernelException(
+                    KernelException.ErrorCodes.ServiceNotFound,
+                    "Service of type "
+                            + clazz.getName()
+                            + " and name "
+                            + serviceId
+                            + " not registered");
         }
     }
 
@@ -311,7 +336,8 @@ public class DefaultKernel implements Kernel {
                 KernelConfig kernelConfig,
                 @Nullable PromptTemplateEngine promptTemplateEngine,
                 @Nullable SemanticTextMemory memory,
-                @Nullable MemoryStore memoryStore) {
+                @Nullable MemoryStore memoryStore,
+                @Nullable AIServiceProvider aiServiceProvider) {
             if (promptTemplateEngine == null) {
                 promptTemplateEngine = new DefaultPromptTemplateEngine();
             }
@@ -322,7 +348,9 @@ public class DefaultKernel implements Kernel {
                         "It is required to set a kernelConfig to build a kernel");
             }
 
-            DefaultKernel kernel = new DefaultKernel(kernelConfig, promptTemplateEngine, memory);
+            DefaultKernel kernel =
+                    new DefaultKernel(
+                            kernelConfig, promptTemplateEngine, memory, aiServiceProvider);
 
             if (memoryStore != null) {
                 MemoryConfiguration.useMemory(kernel, memoryStore, null);

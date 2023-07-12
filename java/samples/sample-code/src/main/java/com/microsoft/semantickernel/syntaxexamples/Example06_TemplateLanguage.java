@@ -29,7 +29,7 @@ public class Example06_TemplateLanguage {
                 .build();
 
         Kernel kernel = SKBuilders.kernel()
-                .setKernelConfig(kernelConfig)
+                .withKernelConfig(kernelConfig)
                 .build();
 
         // Load native skill into the kernel skill collection, sharing its functions

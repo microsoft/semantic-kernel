@@ -1,42 +1,43 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-class MemoryRecordTests
-{
+class MemoryRecordTests {
     private static final boolean _isReference = false;
     private static final String _id = "Id";
     private static final String _text = "text";
     private static final String _description = "description";
     private static final String _externalSourceName = "externalSourceName";
     private static final String _additionalMetadata = "value";
-    private static final Embedding<Float> _embedding = new Embedding<>(Arrays.asList( 1f, 2f, 3f ));
+    private static final Embedding<Float> _embedding = new Embedding<>(Arrays.asList(1f, 2f, 3f));
 
     @Test
-    void itCanBeConstructedFromMetadataAndVector()
-    {
+    void itCanBeConstructedFromMetadataAndVector() {
         // Arrange
-        MemoryRecordMetadata metadata = new MemoryRecordMetadata(
-            _isReference,
-            _id,
-            _text,
-            _description,
-            _externalSourceName,
-            _additionalMetadata);
+        MemoryRecordMetadata metadata =
+                new MemoryRecordMetadata(
+                        _isReference,
+                        _id,
+                        _text,
+                        _description,
+                        _externalSourceName,
+                        _additionalMetadata);
 
         // Act
-        MemoryRecord memoryRecord = new MemoryRecord(metadata, _embedding, "key", ZonedDateTime.now());
+        MemoryRecord memoryRecord =
+                new MemoryRecord(metadata, _embedding, "key", ZonedDateTime.now());
 
         // Assert
         assertEquals(_isReference, memoryRecord.getMetadata().isReference());
@@ -48,19 +49,20 @@ class MemoryRecordTests
     }
 
     @Test
-    void itCanBeConstructedFromMetadata()
-    {
+    void itCanBeConstructedFromMetadata() {
         // Arrange
-        MemoryRecordMetadata metadata = new MemoryRecordMetadata(
-                _isReference,
-                _id,
-                _text,
-                _description,
-                _externalSourceName,
-                _additionalMetadata);
+        MemoryRecordMetadata metadata =
+                new MemoryRecordMetadata(
+                        _isReference,
+                        _id,
+                        _text,
+                        _description,
+                        _externalSourceName,
+                        _additionalMetadata);
 
         // Act
-        MemoryRecord memoryRecord = MemoryRecord.fromMetadata(metadata, _embedding, "key", ZonedDateTime.now());
+        MemoryRecord memoryRecord =
+                MemoryRecord.fromMetadata(metadata, _embedding, "key", ZonedDateTime.now());
 
         // Assert
         assertEquals(_isReference, memoryRecord.getMetadata().isReference());
@@ -72,16 +74,16 @@ class MemoryRecordTests
     }
 
     @Test
-    void itCanBeConstructedFromMetadataAndNulls()
-    {
+    void itCanBeConstructedFromMetadataAndNulls() {
         // Arrange
-        MemoryRecordMetadata metadata = new MemoryRecordMetadata(
-                _isReference,
-                _id,
-                _text,
-                _description,
-                _externalSourceName,
-                _additionalMetadata);
+        MemoryRecordMetadata metadata =
+                new MemoryRecordMetadata(
+                        _isReference,
+                        _id,
+                        _text,
+                        _description,
+                        _externalSourceName,
+                        _additionalMetadata);
 
         // Act
         MemoryRecord memoryRecord = MemoryRecord.fromMetadata(metadata, null, null, null);
@@ -98,17 +100,10 @@ class MemoryRecordTests
     }
 
     @Test
-    void itCanBeCreatedToRepresentLocalData()
-    {
+    void itCanBeCreatedToRepresentLocalData() {
         // Arrange
-        MemoryRecord memoryRecord = MemoryRecord.localRecord(
-            _id,
-            _text,
-            _description,
-            _embedding,
-            null,
-            null,
-            null);
+        MemoryRecord memoryRecord =
+                MemoryRecord.localRecord(_id, _text, _description, _embedding, null, null, null);
 
         // Assert
         assertFalse(memoryRecord.getMetadata().isReference());
@@ -120,17 +115,11 @@ class MemoryRecordTests
     }
 
     @Test
-    void itCanBeCreatedToRepresentExternalData()
-    {
+    void itCanBeCreatedToRepresentExternalData() {
         // Arrange
-        MemoryRecord memoryRecord = MemoryRecord.referenceRecord(
-            _id,
-            _externalSourceName,
-            _description,
-            _embedding,
-                null,
-                null,
-                null);
+        MemoryRecord memoryRecord =
+                MemoryRecord.referenceRecord(
+                        _id, _externalSourceName, _description, _embedding, null, null, null);
 
         // Assert
         assertTrue(memoryRecord.getMetadata().isReference());
@@ -141,21 +130,22 @@ class MemoryRecordTests
         assertEquals(_embedding.getVector(), memoryRecord.getEmbedding().getVector());
     }
 
-    @Test @Disabled("fromJsonMetadata is not implemented")
-    void itCanBeCreatedFromSerializedMetadata()
-    {
+    @Test
+    @Disabled("fromJsonMetadata is not implemented")
+    void itCanBeCreatedFromSerializedMetadata() {
         // Arrange
-        String jsonString = "{"
-                + "\"is_reference\" : false"
-                + "\"id\" : \"Id\""
-                + "\"text\" : \"text\""
-                + "\"description\" : \"description\""
-                + "\"external_source_name\" : \"externalSourceName\""
-                + "\"additional_metadata\" : \"value\""
-                + "}";
+        String jsonString =
+                "{"
+                        + "\"is_reference\" : false"
+                        + "\"id\" : \"Id\""
+                        + "\"text\" : \"text\""
+                        + "\"description\" : \"description\""
+                        + "\"external_source_name\" : \"externalSourceName\""
+                        + "\"additional_metadata\" : \"value\""
+                        + "}";
 
         // Act
-        MemoryRecord memoryRecord = null; //MemoryRecord.fromJsonMetadata(jsonString, _embedding);
+        MemoryRecord memoryRecord = null; // MemoryRecord.fromJsonMetadata(jsonString, _embedding);
 
         // Assert
         assertEquals(_isReference, memoryRecord.getMetadata().isReference());
@@ -167,26 +157,27 @@ class MemoryRecordTests
         assertEquals(_embedding.getVector(), memoryRecord.getEmbedding().getVector());
     }
 
-    @Test @Disabled("JSON deserialization is not implemented")
-    void itCanBeDeserializedFromJson()
-    {
+    @Test
+    @Disabled("JSON deserialization is not implemented")
+    void itCanBeDeserializedFromJson() {
         // Arrange
-        String jsonString = "{"
-                + "  \"metadata\" : {"
-                + "    \"is_reference\" : false"
-                + "    \"id\" : \"Id\""
-                + "    \"text\" : \"text\""
-                + "    \"description\" : \"description\""
-                + "    \"external_source_name\" : \"externalSourceName\""
-                + "    \"additional_metadata\" : \"value\""
-                + "  }"
-                + "  \"embedding\" : {"
-                + "    \"vector\" : [ 1, 2, 3 ]"
-                + "  }"
-                + "}";
+        String jsonString =
+                "{"
+                        + "  \"metadata\" : {"
+                        + "    \"is_reference\" : false"
+                        + "    \"id\" : \"Id\""
+                        + "    \"text\" : \"text\""
+                        + "    \"description\" : \"description\""
+                        + "    \"external_source_name\" : \"externalSourceName\""
+                        + "    \"additional_metadata\" : \"value\""
+                        + "  }"
+                        + "  \"embedding\" : {"
+                        + "    \"vector\" : [ 1, 2, 3 ]"
+                        + "  }"
+                        + "}";
 
         // Act
-        MemoryRecord memoryRecord = null; //JsonSerializer.Deserialize<MemoryRecord>(jsonString);
+        MemoryRecord memoryRecord = null; // JsonSerializer.Deserialize<MemoryRecord>(jsonString);
 
         // Assert
         assertNotNull(memoryRecord);
@@ -199,37 +190,40 @@ class MemoryRecordTests
         assertEquals(_embedding.getVector(), memoryRecord.getEmbedding().getVector());
     }
 
-    @Test @Disabled("JSON serialization is not implemented")
-    void itCanBeSerialized()
-    {
+    @Test
+    @Disabled("JSON serialization is not implemented")
+    void itCanBeSerialized() {
         // Arrange
-        String jsonString = "{"
-                + "  \"metadata\" : {"
-                + "    \"is_reference\" : false"
-                + "    \"id\" : \"Id\""
-                + "    \"text\" : \"text\""
-                + "    \"description\" : \"description\""
-                + "    \"external_source_name\" : \"externalSourceName\""
-                + "    \"additional_metadata\" : \"value\""
-                + "  }"
-                + "  \"embedding\" : {"
-                + "    \"vector\" : [ 1, 2, 3 ]"
-                + "  }"
-                + "\"key\" : \"key\""
-                + "\"timestamp\": null"
-                + "}";
+        String jsonString =
+                "{"
+                        + "  \"metadata\" : {"
+                        + "    \"is_reference\" : false"
+                        + "    \"id\" : \"Id\""
+                        + "    \"text\" : \"text\""
+                        + "    \"description\" : \"description\""
+                        + "    \"external_source_name\" : \"externalSourceName\""
+                        + "    \"additional_metadata\" : \"value\""
+                        + "  }"
+                        + "  \"embedding\" : {"
+                        + "    \"vector\" : [ 1, 2, 3 ]"
+                        + "  }"
+                        + "\"key\" : \"key\""
+                        + "\"timestamp\": null"
+                        + "}";
 
-        MemoryRecordMetadata metadata = new MemoryRecordMetadata(
-            _isReference,
-            _id,
-            _text,
-            _description,
-            _externalSourceName,
-            _additionalMetadata);
-        MemoryRecord memoryRecord = new MemoryRecord(metadata, _embedding, "key", ZonedDateTime.now());
+        MemoryRecordMetadata metadata =
+                new MemoryRecordMetadata(
+                        _isReference,
+                        _id,
+                        _text,
+                        _description,
+                        _externalSourceName,
+                        _additionalMetadata);
+        MemoryRecord memoryRecord =
+                new MemoryRecord(metadata, _embedding, "key", ZonedDateTime.now());
 
         // Act
-        String serializedRecord = null;//JsonSerializer.Serialize(memoryRecord);
+        String serializedRecord = null; // JsonSerializer.Serialize(memoryRecord);
         jsonString = jsonString.replaceAll("\n", "");
         jsonString = jsonString.replaceAll(" ", "");
 
@@ -237,31 +231,34 @@ class MemoryRecordTests
         assertEquals(jsonString, serializedRecord);
     }
 
-    @Test @Disabled("JSON serialization is not implemented")
-    void itsMetadataCanBeSerialized()
-    {
+    @Test
+    @Disabled("JSON serialization is not implemented")
+    void itsMetadataCanBeSerialized() {
         // Arrange
-        String jsonString = "{"
-                + "  \"is_reference\" : false"
-                + "  \"id\" : \"Id\""
-                + "  \"text\" : \"text\""
-                + "  \"description\" : \"description\""
-                + "  \"external_source_name\" : \"externalSourceName\""
-                + "  \"additional_metadata\" : \"value\""
-                + "}";
+        String jsonString =
+                "{"
+                        + "  \"is_reference\" : false"
+                        + "  \"id\" : \"Id\""
+                        + "  \"text\" : \"text\""
+                        + "  \"description\" : \"description\""
+                        + "  \"external_source_name\" : \"externalSourceName\""
+                        + "  \"additional_metadata\" : \"value\""
+                        + "}";
 
-        MemoryRecordMetadata metadata = new MemoryRecordMetadata(
-            _isReference,
-            _id,
-            _text,
-            _description,
-            _externalSourceName,
-            _additionalMetadata);
-        MemoryRecord memoryRecord = new MemoryRecord(metadata, _embedding, "key", ZonedDateTime.now());
+        MemoryRecordMetadata metadata =
+                new MemoryRecordMetadata(
+                        _isReference,
+                        _id,
+                        _text,
+                        _description,
+                        _externalSourceName,
+                        _additionalMetadata);
+        MemoryRecord memoryRecord =
+                new MemoryRecord(metadata, _embedding, "key", ZonedDateTime.now());
 
         // Act
-        String serializedMetadata = //memoryRecord.getSerializedMetadata();
-        jsonString = jsonString.replaceAll("\n", "");
+        String serializedMetadata = // memoryRecord.getSerializedMetadata();
+                jsonString = jsonString.replaceAll("\n", "");
         jsonString = jsonString.replaceAll(" ", "");
 
         // Assert

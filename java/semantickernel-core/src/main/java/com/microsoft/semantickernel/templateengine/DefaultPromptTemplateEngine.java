@@ -69,7 +69,7 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
     /// <inheritdoc/>
     public Mono<String> renderAsync(List<Block> blocks, SKContext context) {
         return Flux.fromIterable(blocks)
-                .flatMap(
+                .concatMap(
                         block -> {
                             if (block instanceof TextRendering) {
                                 return Mono.just(
