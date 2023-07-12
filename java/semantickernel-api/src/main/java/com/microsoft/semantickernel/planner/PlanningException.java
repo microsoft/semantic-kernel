@@ -26,8 +26,8 @@ public class PlanningException extends SKException {
     }
 
     /**
-     * Initializes a new instance of the <see cref="PlanningException"/> class with a provided error
-     * code, message, and inner exception.
+     * Initializes a new instance of the PlanningException class with a provided error code,
+     * message, and inner exception.
      *
      * @param errorCode The error code
      * @param message A string that describes the error

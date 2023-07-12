@@ -12,9 +12,7 @@ import java.util.Collections;
 
 import javax.annotation.CheckReturnValue;
 
-/// <summary>
-/// Semantic Kernel context.
-/// </summary>memory
+/** Semantic Kernel context */
 public abstract class AbstractSKContext implements SKContext {
     private final ReadOnlySkillCollection skills;
     private final WritableContextVariables variables;
@@ -38,15 +36,13 @@ public abstract class AbstractSKContext implements SKContext {
         this(variables, null, null);
     }
 
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="memory">Semantic text memory unit to include in context.</param>
-    /// <param name="skills">Skills to include in context.</param>
-    /// <param name="logger">Logger for operations in context.</param>
-    /// <param name="cancellationToken">Optional cancellation token for operations in
-    // context.</param>
+    /**
+     * Constructor for the context.
+     *
+     * @param variables Context variables to include in context.
+     * @param memory Semantic text memory unit to include in context.
+     * @param skills Skills to include in context.
+     */
     protected AbstractSKContext(
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
@@ -101,13 +97,6 @@ public abstract class AbstractSKContext implements SKContext {
         return getThis();
     }
 
-    /// <summary>
-    /// Updates the main input text with the new value after a function is complete.
-    /// </summary>
-    /// <param name="content">The new input value, for the next function in the pipeline, or as a
-    // result for the user
-    /// if the pipeline reached the end.</param>
-    /// <returns>The current instance</returns>
     @Override
     public SKContext update(@NonNull String content) {
         variables.update(content);

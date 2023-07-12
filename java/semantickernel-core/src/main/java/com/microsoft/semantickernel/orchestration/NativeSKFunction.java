@@ -43,14 +43,13 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
     private final SKNativeTask<SKContext> function;
 
     public NativeSKFunction(
-            AbstractSkFunction.DelegateTypes delegateType,
             SKNativeTask<SKContext> delegateFunction,
             List<ParameterView> parameters,
             String skillName,
             String functionName,
             String description,
             KernelSkillsSupplier skillCollection) {
-        super(delegateType, parameters, skillName, functionName, description, skillCollection);
+        super(parameters, skillName, functionName, description, skillCollection);
         // TODO
         // Verify.NotNull(delegateFunction, "The function delegate is empty");
         // Verify.ValidSkillName(skillName);
@@ -83,7 +82,6 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
 
     private static class MethodDetails {
         public final boolean hasSkFunctionAttribute;
-        public final AbstractSkFunction.DelegateTypes type;
         public final SKNativeTask<SKContext> function;
         public final List<ParameterView> parameters;
         public final String name;
@@ -91,13 +89,11 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
 
         private MethodDetails(
                 boolean hasSkFunctionAttribute,
-                AbstractSkFunction.DelegateTypes type,
                 SKNativeTask<SKContext> function,
                 List<ParameterView> parameters,
                 String name,
                 String description) {
             this.hasSkFunctionAttribute = hasSkFunctionAttribute;
-            this.type = type;
             this.function = function;
             this.parameters = parameters;
             this.name = name;
@@ -122,7 +118,6 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
         }
 
         return new NativeSKFunction(
-                methodDetails.type,
                 methodDetails.function,
                 methodDetails.parameters,
                 skillName,
@@ -149,7 +144,6 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
         if (!hasSkFunctionAttribute) {
             throw new RuntimeException("method is not annotated with DefineSKFunction");
         }
-        DelegateTypes type = getDelegateType(methodSignature);
         SKNativeTask<SKContext> function = getFunction(methodSignature, methodContainerInstance);
 
         // boolean hasStringParam =
@@ -165,8 +159,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
 
         List<ParameterView> parameters = getParameters(methodSignature);
 
-        return new MethodDetails(
-                hasSkFunctionAttribute, type, function, parameters, name, description);
+        return new MethodDetails(hasSkFunctionAttribute, function, parameters, name, description);
     }
 
     private static List<ParameterView> getParameters(Method method) {
@@ -437,23 +430,5 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
         }
 
         return params;
-    }
-
-    // Inspect a method and returns the corresponding delegate and related info
-    private static AbstractSkFunction.DelegateTypes getDelegateType(Method method) {
-        // TODO ALL TYPES
-        if (method.getReturnType().equals(String.class)) {
-            return AbstractSkFunction.DelegateTypes.OutString;
-        }
-
-        if (method.getReturnType().getName().equals("void")) {
-            return DelegateTypes.Void;
-        }
-
-        if (method.getReturnType().equals(Mono.class)) {
-            return AbstractSkFunction.DelegateTypes.InSKContextOutTaskString;
-        }
-
-        throw new RuntimeException("Unknown function type");
     }
 }

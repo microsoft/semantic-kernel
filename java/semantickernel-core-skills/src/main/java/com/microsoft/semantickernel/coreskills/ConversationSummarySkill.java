@@ -81,7 +81,7 @@ public class ConversationSummarySkill {
      *
      * @param input A long conversation transcript
      * @param context The SKContext for function execution
-     * @return
+     * @return A context containing the summarized conversation
      */
     @DefineSKFunction(
             description = "Given a long conversation transcript, summarize the conversation.",
@@ -112,7 +112,7 @@ public class ConversationSummarySkill {
      *
      * @param input A long conversation transcript
      * @param context The SKContext for function execution
-     * @return
+     * @return A context containing the action items
      */
     @DefineSKFunction(
             description = "Given a long conversation transcript, identify action items.",
@@ -138,7 +138,7 @@ public class ConversationSummarySkill {
      *
      * @param input A long conversation transcript
      * @param context The SKContext for function execution
-     * @return
+     * @return A context containing the topics
      */
     @DefineSKFunction(
             description =

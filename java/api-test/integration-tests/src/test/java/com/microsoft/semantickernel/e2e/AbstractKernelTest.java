@@ -2,16 +2,12 @@
 package com.microsoft.semantickernel.e2e;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.azure.ai.openai.OpenAIClientBuilder;
-import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
-import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
 import org.junit.jupiter.api.condition.EnabledIf;
 
 import java.io.File;
@@ -27,7 +23,7 @@ public class AbstractKernelTest {
 
     public static Kernel buildTextCompletionKernel() throws IOException {
         String model = "text-davinci-003";
-        final OpenAIAsyncClient openAIClient = getAzureOpenAIClient();
+        final OpenAIAsyncClient openAIClient = getOpenAIClient();
         TextCompletion textCompletion = new OpenAITextCompletion(openAIClient, model);
 
         KernelConfig kernelConfig =
@@ -47,33 +43,11 @@ public class AbstractKernelTest {
     }
 
     public static OpenAIAsyncClient getOpenAIClient() throws IOException {
-        String apiKey = getToken(CONF_OPENAI_PROPERTIES);
-        NonAzureOpenAIKeyCredential credential = new NonAzureOpenAIKeyCredential(apiKey);
-        return new OpenAIClientBuilder().credential(credential).buildAsyncClient();
-    }
-
-    public static OpenAIAsyncClient getAzureOpenAIClient() throws IOException {
-        String apiKey = getToken(AZURE_CONF_PROPERTIES);
-
-        OpenAIAsyncClient client =
-                new OpenAIClientBuilder()
-                        .endpoint(getEndpoint(AZURE_CONF_PROPERTIES))
-                        .credential(new AzureKeyCredential(apiKey))
-                        .buildAsyncClient();
-
-        return client;
-    }
-
-    public static String getAzureModel() throws IOException {
-        return getConfigValue(AZURE_CONF_PROPERTIES, "model");
+        return com.microsoft.semantickernel.Config.getClient();
     }
 
     public static String getOpenAIModel() throws IOException {
         return getConfigValue(CONF_OPENAI_PROPERTIES, "model");
-    }
-
-    public static String getModel(String configName) throws IOException {
-        return getConfigValue(configName, "model");
     }
 
     public static String getToken(String configName) throws IOException {

@@ -106,50 +106,111 @@ public enum BuildersSingleton {
         return (T) builders.get(clazz).get();
     }
 
+    /**
+     * Builder for creating a {@link
+     * com.microsoft.semantickernel.textcompletion.CompletionSKFunction}
+     *
+     * @return a {@link FunctionBuilders}
+     */
     public FunctionBuilders getFunctionBuilders() {
         return getInstance(FunctionBuilders.class);
     }
 
+    /**
+     * Builder for creating a {@link Kernel}
+     *
+     * @return a {@link Kernel.InternalBuilder}
+     */
     public Kernel.InternalBuilder getKernelBuilder() {
         return getInstance(Kernel.InternalBuilder.class);
     }
 
+    /**
+     * Builder for creating a {@link TextCompletion}
+     *
+     * @return a {@link TextCompletion.Builder}
+     */
     public TextCompletion.Builder getTextCompletionBuilder() {
         return getInstance(TextCompletion.Builder.class);
     }
 
+    /**
+     * Builder for creating a {@link EmbeddingGeneration}
+     *
+     * @return a {@link EmbeddingGeneration.Builder}
+     */
     public EmbeddingGeneration.Builder<String, Float> getTextEmbeddingGenerationBuilder() {
         return getInstance(EmbeddingGeneration.Builder.class);
     }
 
+    /**
+     * Builder for creating a {@link ReadOnlySkillCollection}
+     *
+     * @return a {@link ReadOnlySkillCollection.Builder}
+     */
     public ReadOnlySkillCollection.Builder getReadOnlySkillCollection() {
         return getInstance(ReadOnlySkillCollection.Builder.class);
     }
 
+    /**
+     * Builder for creating a {@link PromptTemplate}
+     *
+     * @return a {@link PromptTemplate.Builder}
+     */
     public PromptTemplate.Builder getPromptTemplateBuilder() {
         return getInstance(PromptTemplate.Builder.class);
     }
 
+    /**
+     * Builder for creating a {@link PromptTemplateEngine}
+     *
+     * @return a {@link PromptTemplateEngine.Builder}
+     */
     public PromptTemplateEngine.Builder getPromptTemplateEngineBuilder() {
         return getInstance(PromptTemplateEngine.Builder.class);
     }
 
+    /**
+     * Builder for creating a {@link ContextVariables}
+     *
+     * @return a {@link ContextVariables.Builder}
+     */
     public ContextVariables.Builder variables() {
         return getInstance(ContextVariables.Builder.class);
     }
 
+    /**
+     * Builder for creating a {@link SKContext}
+     *
+     * @return a {@link SKContext.Builder}
+     */
     public SKContext.Builder context() {
         return getInstance(SKContext.Builder.class);
     }
 
+    /**
+     * Builder for creating a {@link SemanticTextMemory}
+     *
+     * @return a {@link SemanticTextMemory.Builder}
+     */
     public SemanticTextMemory.Builder getSemanticTextMemoryBuilder() {
         return getInstance(SemanticTextMemory.Builder.class);
     }
 
+    /**
+     * Builder for creating a {@link ChatCompletion}
+     *
+     * @return a {@link ChatCompletion.Builder}
+     */
     public ChatCompletion.Builder getChatCompletion() {
         return getInstance(ChatCompletion.Builder.class);
     }
 
+    /**
+     * Builder for creating a {@link MemoryStore}
+     *
+     * @return a {@link MemoryStore.Builder}
+     */
     public MemoryStore.Builder getMemoryStoreBuilder() {
         return getInstance(MemoryStore.Builder.class);
     }

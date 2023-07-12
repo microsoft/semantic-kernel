@@ -53,7 +53,7 @@ public class EmbeddingVector<TEmbedding extends Number>
      * Calculates the dot product of this vector with another.
      *
      * @param other The other vector to compute the dot product with
-     * @return
+     * @return Dot product between vectors
      */
     @Override
     public double dot(EmbeddingVector<TEmbedding> other) {

@@ -36,6 +36,11 @@ public interface SKFunction<RequestConfiguration> {
     @CheckReturnValue
     Mono<SKContext> invokeAsync(String input, SKContext context, RequestConfiguration settings);
 
+    /**
+     * Invokes the function
+     *
+     * @return an updated context with the result of the request
+     */
     Mono<SKContext> invokeAsync();
 
     /**
@@ -47,6 +52,11 @@ public interface SKFunction<RequestConfiguration> {
     @CheckReturnValue
     Mono<SKContext> invokeAsync(String input);
 
+    /**
+     * The type of the configuration argument that will be provided when the function is invoked
+     *
+     * @return The type
+     */
     @Nullable
     Class<RequestConfiguration> getType();
 
@@ -91,12 +101,30 @@ public interface SKFunction<RequestConfiguration> {
      */
     String getDescription();
 
+    /**
+     * Create a string for generating an embedding for a function.
+     *
+     * @return A string for generating an embedding for a function.
+     */
     String toEmbeddingString();
 
+    /**
+     * Create a manual-friendly string for a function.
+     *
+     * @return A manual-friendly string for a function.
+     */
     String toManualString();
 
+    /**
+     * Invokes the function with the given input, context and settings
+     *
+     * @param variables variables to be used in the function
+     * @param semanticMemory semantic memory to be used in the function
+     * @param skills skills to be used in the function
+     * @return an updated context with the result of the request
+     */
     Mono<SKContext> invokeWithCustomInputAsync(
-            ContextVariables variablesClone,
+            ContextVariables variables,
             @Nullable SemanticTextMemory semanticMemory,
             @Nullable ReadOnlySkillCollection skills);
 }

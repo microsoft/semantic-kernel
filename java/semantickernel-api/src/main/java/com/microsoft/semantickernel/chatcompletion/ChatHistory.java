@@ -16,6 +16,8 @@ public class ChatHistory {
     }
 
     /**
+     * Get the chat history
+     *
      * @return List of messages in the chat
      */
     public List<Message> getMessages() {
@@ -23,6 +25,8 @@ public class ChatHistory {
     }
 
     /**
+     * Get last message
+     *
      * @return The most recent message in chat
      */
     public Optional<Message> getLastMessage() {
@@ -32,6 +36,7 @@ public class ChatHistory {
         return Optional.of(messages.get(messages.size() - 1));
     }
 
+    /** Role of the author of a chat message */
     public enum AuthorRoles {
         Unknown,
         System,
@@ -57,6 +62,8 @@ public class ChatHistory {
         }
 
         /**
+         * Get the role of the message author
+         *
          * @return Role of the message author, e.g. user/assistant/system
          */
         public AuthorRoles getAuthorRoles() {
@@ -64,6 +71,8 @@ public class ChatHistory {
         }
 
         /**
+         * Get the message content
+         *
          * @return Message content
          */
         public String getContent() {

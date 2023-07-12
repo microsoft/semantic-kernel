@@ -28,7 +28,7 @@ import java.math.BigDecimal;
  *
  * </blockquote>
  *
- * @implNote This skill uses BigDecimal to perform the number conversion and the calculations.
+ * <p>This skill uses BigDecimal to perform the number conversion and the calculations.
  */
 public class MathSkill {
 

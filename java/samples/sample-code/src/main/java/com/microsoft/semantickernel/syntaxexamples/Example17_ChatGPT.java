@@ -18,7 +18,7 @@ import java.io.IOException;
 public class Example17_ChatGPT {
 
     public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.ClientType.AZURE_OPEN_AI.getClient();
+        OpenAIAsyncClient client = Config.getClient();
 
         Kernel kernel = SKBuilders.kernel()
                 .withKernelConfig(SKBuilders.kernelConfig()

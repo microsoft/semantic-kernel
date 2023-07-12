@@ -60,27 +60,35 @@ public class AIException extends SKException {
         return String.format("%s: %s", errorCode.getMessage(), message);
     }
 
+    /** Error codes */
     public enum ErrorCodes {
+        /** Unknown error. */
         UnknownError("Unknown error"),
 
+        /** No response. */
         NoResponse("No response"),
-
+        /** Access denied. */
         AccessDenied("Access is denied"),
 
+        /** Invalid request. */
         InvalidRequest("The request was invalid"),
-
+        /** Invalid response. */
         InvalidResponseContent("The content of the response was invalid"),
 
+        /** Throttling. */
         Throttling("The request was throttled"),
-
+        /** Request timeout. */
         RequestTimeout("The request timed out"),
 
+        /** Service error. */
         ServiceError("There was an error in the service"),
 
+        /** Model not available. */
         ModelNotAvailable("The requested model is not available"),
 
+        /** Invalid configuration. */
         InvalidConfiguration("The supplied configuration was invalid"),
-
+        /** Function type not supported. */
         FunctionTypeNotSupported("The function is not supported");
         private final String message;
 
@@ -88,6 +96,11 @@ public class AIException extends SKException {
             this.message = message;
         }
 
+        /**
+         * Gets the error message.
+         *
+         * @return The error message.
+         */
         public String getMessage() {
             return message;
         }

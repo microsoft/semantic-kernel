@@ -63,7 +63,7 @@ public class KernelTest extends AbstractKernelTest {
     @Test
     @EnabledIf("isAzureTestEnabled")
     public void endToEndTextGenerationTestAzureOpenAI() throws IOException {
-        Kernel kernel = buildKernel(getAzureOpenAIClient(), "text-davinci-003");
+        Kernel kernel = buildKernel(getOpenAIClient(), "text-davinci-003");
         executeCompletion(kernel);
     }
 
