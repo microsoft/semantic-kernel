@@ -4,13 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.microsoft.semantickernel</groupId>
+        <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
-        <version>0.2.2-beta-SNAPSHOT</version>
+        <version>0.2.3-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.microsoft.semantickernel.test</groupId>
+    <groupId>com.microsoft.semantic-kernel.test</groupId>
     <artifactId>api-test</artifactId>
     <packaging>pom</packaging>
 
@@ -27,7 +27,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.microsoft.semantickernel</groupId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-bom</artifactId>
                 <version>${project.version}</version>
                 <scope>import</scope>

@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.microsoft.semantickernel.connectors</groupId>
+        <groupId>com.microsoft.semantic-kernel.connectors</groupId>
         <artifactId>semantickernel-connectors-parent</artifactId>
-        <version>0.2.2-beta-SNAPSHOT</version>
+        <version>0.2.3-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -40,7 +40,7 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>

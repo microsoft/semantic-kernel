@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.microsoft.semantickernel.extensions</groupId>
+        <groupId>com.microsoft.semantic-kernel.extensions</groupId>
         <artifactId>semantickernel-extensions-parent</artifactId>
-        <version>0.2.2-beta-SNAPSHOT</version>
+        <version>0.2.3-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -15,7 +15,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
