@@ -48,6 +48,11 @@
                 <artifactId>actionplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantickernel</groupId>
+                <artifactId>semantickernel-gpt3-tokenizer</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
 
             <dependency>
