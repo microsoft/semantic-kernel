@@ -150,7 +150,7 @@ public abstract class AbstractSkFunction<RequestConfiguration>
      *
      * @return The parameters of the function.
      */
-    public List<ParameterView> getParameters() {
+    public List<ParameterView> getParametersView() {
         return Collections.unmodifiableList(parameters);
     }
 

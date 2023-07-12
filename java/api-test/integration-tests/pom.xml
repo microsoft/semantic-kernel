@@ -65,7 +65,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantickernel</groupId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>sample-code</artifactId>
             <version>${project.version}</version>
         </dependency>
