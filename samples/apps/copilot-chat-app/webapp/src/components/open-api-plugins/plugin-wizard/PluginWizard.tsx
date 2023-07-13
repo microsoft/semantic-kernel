@@ -64,14 +64,14 @@ export const PluginWizard: React.FC = () => {
     }, []);
 
     const onAddPlugin = useCallback(() => {
-        if (pluginManifest) {
-            plugins.addCustomPlugin(pluginManifest);
+        if (pluginManifest && manifestDomain) {
+            plugins.addCustomPlugin(pluginManifest, manifestDomain);
             setActiveStep(CreatePluginSteps.Confirmation);
         } else {
             setPluginVerified(false);
             // TODO: add error handling
         }
-    }, [pluginManifest, plugins]);
+    }, [pluginManifest, manifestDomain, plugins]);
 
     const onPluginVerified = useCallback(() => {
         setPluginVerified(true);

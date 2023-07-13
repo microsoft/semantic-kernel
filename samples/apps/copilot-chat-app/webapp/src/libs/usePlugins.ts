@@ -6,9 +6,10 @@ import { PluginManifest } from './models/PluginManifest';
 export const usePlugins = () => {
     const dispatch = useAppDispatch();
 
-    const addCustomPlugin = (manifest: PluginManifest) => {
+    const addCustomPlugin = (manifest: PluginManifest, manifestDomain: string) => {
         const newPlugin: Plugin = {
             name: manifest.name_for_human,
+            nameForModel: manifest.name_for_model,
             publisher: 'Custom Plugin',
             description: manifest.description_for_human,
             enabled: false,
@@ -17,6 +18,7 @@ export const usePlugins = () => {
             },
             headerTag: manifest.name_for_model,
             icon: manifest.logo_url,
+            manifestDomain: manifestDomain,
         };
 
         dispatch(addPlugin(newPlugin));

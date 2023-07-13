@@ -8,6 +8,7 @@ import { IChatSession } from '../models/ChatSession';
 import { IChatUser } from '../models/ChatUser';
 import { IAsk, IAskVariables } from '../semantic-kernel/model/Ask';
 import { IAskResult } from '../semantic-kernel/model/AskResult';
+import { ICustomPlugin } from '../semantic-kernel/model/CustomPlugin';
 import { BaseService } from './BaseService';
 
 export class ChatService extends BaseService {
@@ -97,6 +98,7 @@ export class ChatService extends BaseService {
         // If skill requires any additional api properties, append to context
         if (enabledPlugins && enabledPlugins.length > 0) {
             const openApiSkillVariables: IAskVariables[] = [];
+            const customPlugins: ICustomPlugin[] = [];
 
             for (const plugin of enabledPlugins) {
                 if (plugin.apiProperties) {
@@ -117,7 +119,22 @@ export class ChatService extends BaseService {
                         }
                     }
                 }
+
+                if (plugin.manifestDomain) {
+                    customPlugins.push({
+                        nameForHuman: plugin.name,
+                        nameForModel: plugin.nameForModel as string,
+                        authHeaderTag: plugin.headerTag,
+                        authType: plugin.authRequirements.personalAccessToken ? 'user_http' : 'none',
+                        manifestDomain: plugin.manifestDomain,
+                    });
+                }
             }
+
+            openApiSkillVariables.push({
+                key: `customPlugins`,
+                value: JSON.stringify(customPlugins),
+            });
 
             ask.variables = ask.variables ? ask.variables.concat(openApiSkillVariables) : openApiSkillVariables;
         }

@@ -48,6 +48,7 @@ export type AdditionalApiProperties = Record<
 
 export interface Plugin {
     name: BuiltInPlugins | string;
+    nameForModel?: string;
     publisher: string;
     description: string;
     enabled: boolean;
@@ -56,7 +57,7 @@ export interface Plugin {
     icon: string; // Can be imported as shown above or direct URL
     authData?: string; // token or encoded auth header value
     apiProperties?: AdditionalApiProperties;
-    manifestFile?: string; // OpenAI Plugin Manifest files for custom plugins
+    manifestDomain?: string; // Website domain hosting the OpenAI Plugin Manifest file for custom plugins
 }
 
 export interface PluginsState {
