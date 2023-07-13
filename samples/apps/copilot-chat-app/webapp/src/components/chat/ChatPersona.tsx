@@ -1,4 +1,4 @@
-import { Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { Label, Slider, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import * as React from 'react';
 import { SharedStyles } from '../../styles';
 interface ChatPersonaProps {
@@ -30,20 +30,25 @@ export const ChatPersona: React.FC<ChatPersonaProps> = ({ chatId }) => {
                 of it as a way to give the chat session a *lobotomy* ...
             </p>
             <h3>Meta Prompt</h3>
-            <p>Extend this box so it is wide please</p>
+            <p>Extend this box so it is wider please</p>
             <Textarea placeholder="I am a well-behaved chat bot that will not go out off on tangents." />
             <h3>Short Term Memory</h3>
-            <p>
-                Explanation: We maintain a summary of the most recent N chat exchanges. Based upon intent, this memory
-                will be preferred based upon the meta-prompt.
-            </p>
+            <p>Explanation: We maintain a summary of the most recent N chat exchanges.</p>
             <Textarea placeholder="The things that I'm holding on to from our chat that's most recent and salient." />
             <h3>Long Term Memory</h3>
-            <p>
-                Explanation: We maintain a summary of the least recent N chat exchanges. Based upon intent, this memory
-                will be preferred based upon the meta-prompt.
-            </p>
+            <p>Explanation: We maintain a summary of the least recent N chat exchanges.</p>
             <Textarea placeholder="Things that I'll need in the future but don't need now." />
+            <h3>Memory Bias</h3>
+            <p>
+                {' '}
+                Explanation: This is a slider that allows the user to bias the chat bot towards short or long term
+                memory.
+            </p>
+            <div>
+                <Label aria-hidden>Short Term</Label>
+                <Slider min={0} max={100} defaultValue={50} />
+                <Label aria-hidden>Long Term</Label>
+            </div>
         </div>
     );
 };

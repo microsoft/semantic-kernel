@@ -5,6 +5,7 @@ import { Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-compo
 
 import * as React from 'react';
 import { FC, useEffect } from 'react';
+import { SettingsDialog } from './components/chat/settings-dialog/SettingsDialog';
 import { UserSettings } from './components/header/UserSettings';
 import { PluginGallery } from './components/open-api-plugins/PluginGallery';
 import BackendProbe from './components/views/BackendProbe';
@@ -116,6 +117,7 @@ const App: FC = () => {
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <div className={classes.cornerItems}>
                             <PluginGallery />
+                            <SettingsDialog />
                             <UserSettings
                                 setLoadingState={() => {
                                     setAppState(AppState.SigningOut);
