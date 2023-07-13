@@ -37,8 +37,8 @@ export async function shareAndJoinChatSessionTest(page) {
 
     await page.waitForTimeout(util.ChatStateChangeWait);
     
-    await page.getByTestId('ChatParticipantsView').click();    
-    const numPeople = await page.getByTestId('ChatParticipantsView').textContent();
+    await page.getByTestId('chatParticipantsView').click();    
+    const numPeople = await page.getByTestId('chatParticipantsView').textContent();
     await expect(numPeople).toEqual("+2");
 
     await util.postUnitTest(page);
