@@ -176,7 +176,10 @@ def _split_text_paragraph(
 
 
 def _split_markdown_lines(
-    text: str, max_token_per_line: int, trim: bool, token_counter: Callable = _token_counter
+    text: str,
+    max_token_per_line: int,
+    trim: bool,
+    token_counter: Callable = _token_counter,
 ) -> List[str]:
     """
     Split markdown into lines.
@@ -192,7 +195,10 @@ def _split_markdown_lines(
 
 
 def _split_text_lines(
-    text: str, max_token_per_line: int, trim: bool, token_counter: Callable = _token_counter
+    text: str,
+    max_token_per_line: int,
+    trim: bool,
+    token_counter: Callable = _token_counter,
 ) -> List[str]:
     """
     Split text into lines.
