@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -148,11 +149,12 @@ internal static class SemanticKernelExtensions
                     var endPointBuilder = new UriBuilder(config.Chroma.Host);
                     endPointBuilder.Port = config.Chroma.Port;
 
-                    return new ChromaMemoryStore(
+                    var unsafeMemoryStore = new ChromaMemoryStore(
                         httpClient: httpClient,
                         endpoint: endPointBuilder.ToString(),
                         logger: sp.GetRequiredService<ILogger<IChromaClient>>()
                     );
+                    return new CollectionSafeMemoryStore(unsafeMemoryStore);
                 });
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
                     sp.GetRequiredService<IMemoryStore>(),
@@ -179,6 +181,7 @@ internal static class SemanticKernelExtensions
         services.AddSingleton<OptionalIMemoryStore>(sp => new OptionalIMemoryStore() { MemoryStore = sp.GetService<IMemoryStore>() });
     }
 
+  
     /// <summary>
     /// Add the completion backend to the kernel config
     /// </summary>
