@@ -62,6 +62,11 @@ export const SettingsDialog: React.FC = () => {
                         <p>The Plans and Persona tab are hidden until you turn this on</p>
                         <Switch label="Activate All" />
                         <Divider />
+                        <h3>Azure AI</h3>
+                        <Switch label="Azure Content Safety" />
+                        <Button>Learn how to activate ACS in code</Button>
+                        <Switch disabled label="Azure Cognitive Search" />
+                        <Divider />
                         <h3>Experimental</h3>
                         <p>The related icons and menu options are hidden until you turn this on</p>
                         <Switch label="Save/Load Chat Sessions" />
