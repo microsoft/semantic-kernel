@@ -39,6 +39,7 @@
     "@types/node": "^18.11.9",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "better-vsts-npm-auth": "^7.0.0",
     "depcheck": "^1.4.3",
     "eslint": "^8.42.0",

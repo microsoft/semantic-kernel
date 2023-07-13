@@ -114,7 +114,7 @@ const App: FC = () => {
                 <div className={classes.container}>
                     <div className={classes.header}>
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
-                        <div className={classes.cornerItems}>
+                        <div data-testid="logOutMenuList" className={classes.cornerItems}>
                             <PluginGallery />
                             <UserSettings
                                 setLoadingState={() => {
