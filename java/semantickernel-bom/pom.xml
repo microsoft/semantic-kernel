@@ -10,7 +10,7 @@
 
     <name>Semantic Kernel Java BOM</name>
     <description>Bill of Materials for all Semantic Kernel (Java) modules</description>
-
+    <url>https://www.github.com/microsoft/semantic-kernel</url>
     <properties>
         <com.fasterxml.jackson.core.version>2.15.1</com.fasterxml.jackson.core.version>
     </properties>
