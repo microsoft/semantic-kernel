@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Text.Json.Serialization;
 
 namespace SemanticKernel.Service.CopilotChat.Models;
