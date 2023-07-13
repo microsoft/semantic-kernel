@@ -6,6 +6,9 @@ import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tooltip } f
 import { ArrowDownloadRegular, PeopleTeamAddRegular, ShareRegular } from '@fluentui/react-icons';
 import { useChat } from '../../../libs/useChat';
 import { useFile } from '../../../libs/useFile';
+import { useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
+import { FeatureKeys } from '../../../redux/features/app/AppState';
 import { InvitationCreateDialog } from '../invitation-dialog/InvitationCreateDialog';
 
 interface ShareBotMenuProps {
@@ -17,6 +20,7 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
     const chat = useChat();
     const { downloadFile } = useFile();
     const [isGettingInvitationId, setIsGettingInvitationId] = React.useState(false);
+    const { features } = useAppSelector((state: RootState) => state.app);
 
     const onDownloadBotClick = useCallback(() => {
         // TODO: Add a loading indicator
@@ -39,13 +43,15 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
                 </MenuTrigger>
                 <MenuPopover>
                     <MenuList>
-                        <MenuItem
-                            data-testid="downloadBotMenuItem"
-                            icon={<ArrowDownloadRegular />}
-                            onClick={onDownloadBotClick}
-                        >
-                            Download your Bot
-                        </MenuItem>
+                        {features[FeatureKeys.BotAsDocs].enabled && (
+                            <MenuItem
+                                data-testid="downloadBotMenuItem"
+                                icon={<ArrowDownloadRegular />}
+                                onClick={onDownloadBotClick}
+                            >
+                                Download your Bot
+                            </MenuItem>
+                        )}
                         <MenuItem
                             data-testid="inviteOthersMenuItem"
                             icon={<PeopleTeamAddRegular />}

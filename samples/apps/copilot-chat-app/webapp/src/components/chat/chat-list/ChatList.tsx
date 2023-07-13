@@ -24,8 +24,8 @@ import { addAlert } from '../../../redux/features/app/appSlice';
 import { Conversations } from '../../../redux/features/conversations/ConversationsState';
 import { Breakpoints } from '../../../styles';
 import { FileUploader } from '../../FileUploader';
+import { NewBotMenu } from './bot-menu/NewBotMenu';
 import { ChatListItem } from './ChatListItem';
-import { NewBotMenu } from './NewBotMenu';
 
 const useClasses = makeStyles({
     root: {

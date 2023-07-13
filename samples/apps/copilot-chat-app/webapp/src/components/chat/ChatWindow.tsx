@@ -29,6 +29,7 @@ import { ChatService } from '../../libs/services/ChatService';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert, removeAlert } from '../../redux/features/app/appSlice';
+import { FeatureKeys } from '../../redux/features/app/AppState';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
@@ -105,7 +106,9 @@ export const ChatWindow: React.FC = () => {
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
-    const { alerts } = useAppSelector((state: RootState) => state.app);
+    const { alerts, features } = useAppSelector((state: RootState) => state.app);
+
+    const showShareBotMenu = features[FeatureKeys.BotAsDocs].enabled || features[FeatureKeys.MultiUserChat].enabled;
 
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
@@ -242,10 +245,14 @@ export const ChatWindow: React.FC = () => {
                     </TabList>
                 </div>
                 <div className={classes.controls}>
-                    <div data-testid='chatParticipantsView'> 
+                    <div data-testid="chatParticipantsView">
                         <ParticipantsList participants={conversations[selectedId].users} />
                     </div>
-                    <div> <ShareBotMenu chatId={selectedId} chatTitle={title} /></div>
+                    {showShareBotMenu && (
+                        <div>
+                            <ShareBotMenu chatId={selectedId} chatTitle={title} />
+                        </div>
+                    )}
                 </div>
             </div>
             {selectedTab === 'chat' && <ChatRoom />}

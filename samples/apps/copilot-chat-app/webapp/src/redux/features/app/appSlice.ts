@@ -1,18 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AlertType } from '../../../libs/models/AlertType';
-import { ActiveUserInfo, Alert, AppState } from './AppState';
-
-const initialState: AppState = {
-    alerts: [
-        {
-            message:
-                'Copilot chat is designed for internal use only. By using this chat bot, you agree to not to share confidential or customer information or store sensitive information in chat history. Further, you agree that Copilot chat can collect and retain your chat history for service improvement.',
-            type: AlertType.Info,
-        },
-    ],
-};
+import { ActiveUserInfo, Alert, AppState, FeatureKeys, initialState } from './AppState';
 
 export const appSlice = createSlice({
     name: 'app',
@@ -33,9 +22,19 @@ export const appSlice = createSlice({
         setActiveUserInfo: (state: AppState, action: PayloadAction<ActiveUserInfo>) => {
             state.activeUserInfo = action.payload;
         },
+        setFeatureFlag: (state: AppState, action: PayloadAction<FeatureKeys>) => {
+            const feature = state.features[action.payload];
+            state.features = {
+                ...state.features,
+                [action.payload]: {
+                    ...feature,
+                    enabled: !feature.enabled,
+                },
+            };
+        },
     },
 });
 
-export const { addAlert, removeAlert, setAlerts, setActiveUserInfo } = appSlice.actions;
+export const { addAlert, removeAlert, setAlerts, setActiveUserInfo, setFeatureFlag } = appSlice.actions;
 
 export default appSlice.reducer;

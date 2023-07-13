@@ -67,7 +67,9 @@ export const PluginGallery: React.FC = () => {
             }}
         >
             <DialogTrigger>
-                <Button appearance="transparent" icon={<AppsAddIn24Regular color="white" />} />
+                <Button style={{ color: 'white' }} appearance="transparent" icon={<AppsAddIn24Regular color="white" />}>
+                    Plugins
+                </Button>
             </DialogTrigger>
             <DialogSurface className={classes.root}>
                 <DialogBody>

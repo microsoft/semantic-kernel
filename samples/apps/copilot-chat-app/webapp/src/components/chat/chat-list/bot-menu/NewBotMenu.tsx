@@ -10,8 +10,11 @@ import {
     PeopleTeamAddRegular,
     bundleIcon,
 } from '@fluentui/react-icons';
-import { useChat } from '../../../libs/useChat';
-import { InvitationJoinDialog } from '../invitation-dialog/InvitationJoinDialog';
+import { useChat } from '../../../../libs/useChat';
+import { useAppSelector } from '../../../../redux/app/hooks';
+import { RootState } from '../../../../redux/app/store';
+import { FeatureKeys } from '../../../../redux/features/app/AppState';
+import { InvitationJoinDialog } from '../../invitation-dialog/InvitationJoinDialog';
 
 interface NewBotMenuProps {
     onFileUpload: () => void;
@@ -19,6 +22,8 @@ interface NewBotMenuProps {
 
 export const NewBotMenu: FC<NewBotMenuProps> = ({ onFileUpload }) => {
     const chat = useChat();
+    const { features } = useAppSelector((state: RootState) => state.app);
+
     // It needs to keep the menu open to keep the FileUploader reference
     // when the file uploader is clicked.
     const [isJoiningBot, setIsJoiningBot] = useState(false);
@@ -55,12 +60,18 @@ export const NewBotMenu: FC<NewBotMenuProps> = ({ onFileUpload }) => {
                         </MenuItem>
                         <MenuItem
                             data-testid="uploadABotMenuItem"
+                            disabled={!features[FeatureKeys.BotAsDocs].enabled}
                             icon={<ArrowUploadRegular />}
                             onClick={onFileUpload}
                         >
                             <div>Upload a Bot</div>
                         </MenuItem>
-                        <MenuItem data-testid="joinABotMenuItem" icon={<PeopleTeamAddRegular />} onClick={onJoinClick}>
+                        <MenuItem
+                            data-testid="joinABotMenuItem"
+                            disabled={!features[FeatureKeys.MultiUserChat].enabled}
+                            icon={<PeopleTeamAddRegular />}
+                            onClick={onJoinClick}
+                        >
                             Join a Bot
                         </MenuItem>
                     </MenuList>

@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated, useMsal } from '@azure/msal-react';
-import { Button, FluentProvider, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
+import { FluentProvider, Subtitle1, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 
-import { WeatherSunny24Filled, WeatherSunny24Regular } from '@fluentui/react-icons';
 import * as React from 'react';
-import { FC, useEffect, useState } from 'react';
-import { UserSettings } from './components/header/UserSettings';
+import { FC, useEffect } from 'react';
+import { UserSettingsMenu } from './components/header/UserSettingsMenu';
 import { PluginGallery } from './components/open-api-plugins/PluginGallery';
 import BackendProbe from './components/views/BackendProbe';
 import { ChatView } from './components/views/ChatView';
@@ -16,6 +15,7 @@ import { AlertType } from './libs/models/AlertType';
 import { useChat } from './libs/useChat';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
+import { FeatureKeys } from './redux/features/app/AppState';
 import { addAlert, setActiveUserInfo } from './redux/features/app/appSlice';
 import { semanticKernelDarkTheme, semanticKernelLightTheme } from './styles';
 
@@ -58,13 +58,12 @@ enum AppState {
 
 const App: FC = () => {
     const classes = useClasses();
-    const [darkMode, setDarkMode] = useState(false);
 
     const [appState, setAppState] = React.useState(AppState.ProbeForBackend);
     const dispatch = useAppDispatch();
 
     const { instance, inProgress } = useMsal();
-    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
     const isAuthenticated = useIsAuthenticated();
 
     const chat = useChat();
@@ -103,7 +102,10 @@ const App: FC = () => {
 
     // TODO: handle error case of missing account information
     return (
-        <FluentProvider className="app-container" theme={darkMode ? semanticKernelDarkTheme : semanticKernelLightTheme}>
+        <FluentProvider
+            className="app-container"
+            theme={features[FeatureKeys.DarkMode].enabled ? semanticKernelDarkTheme : semanticKernelLightTheme}
+        >
             <UnauthenticatedTemplate>
                 <div className={classes.container}>
                     <div className={classes.header}>
@@ -119,21 +121,8 @@ const App: FC = () => {
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <div className={classes.cornerItems}>
                             <div data-testid="logOutMenuList" className={classes.cornerItems}>
-                                <Button
-                                    appearance="transparent"
-                                    icon={
-                                        darkMode ? (
-                                            <WeatherSunny24Regular color="white" />
-                                        ) : (
-                                            <WeatherSunny24Filled color="white" />
-                                        )
-                                    }
-                                    onClick={() => {
-                                        setDarkMode(!darkMode);
-                                    }}
-                                />
                                 <PluginGallery />
-                                <UserSettings
+                                <UserSettingsMenu
                                     setLoadingState={() => {
                                         setAppState(AppState.SigningOut);
                                     }}
