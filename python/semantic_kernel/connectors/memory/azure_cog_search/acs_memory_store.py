@@ -323,7 +323,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         acs_result = await acs_search_client.get_document(key=search_id)
 
         ## Create Memory record from document
-        acs_mem_record = convert_to_memory_record(acs_result)
+        acs_mem_record = convert_to_memory_record(acs_data=acs_result, include_embedding=with_embedding)
 
         return acs_mem_record
 
@@ -413,7 +413,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         limit: int = 1,
         min_relevance_score: float = 0.0,
-        with_embedding: bool = False,
+        with_embedding: bool = True,
     ) -> Tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using vector configuration parameters.
 
@@ -421,7 +421,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             collection_name {str} -- The name of the collection to get the nearest match from.
             embedding {ndarray} -- The embedding to find the nearest match to.
             min_relevance_score {float} -- The minimum relevance score of the match. (default: {0.0})
-            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+            with_embedding {bool} -- Whether to include the embedding in the result. (default: {True})
 
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
@@ -451,7 +451,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             return None
 
         # Convert to MemoryRecord
-        vector_result = convert_to_memory_record(acs_result)
+        vector_result = convert_to_memory_record(acs_data=acs_result, include_embedding=with_embedding)
 
         return tuple(vector_result, acs_result["@search.score"])
 
@@ -504,7 +504,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             if acs_result["@search.score"] < min_relevance_score:
                 continue
 
-            vector_result = convert_to_memory_record(acs_result)
+            vector_result = convert_to_memory_record(acs_data=acs_result, include_embedding=with_embeddings)
 
             nearest_results.append(tuple(vector_result, acs_result["@search.score"]))
 
