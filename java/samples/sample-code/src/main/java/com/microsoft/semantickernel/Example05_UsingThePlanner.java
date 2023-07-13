@@ -20,7 +20,7 @@ public class Example05_UsingThePlanner {
         SequentialPlanner planner = getPlanner(kernel);
         System.out.println(planner.createPlanAsync(
                 "Write a poem about John Doe, then translate it into Italian.")
-                .block().invokeAsync().block());
+                .block().invokeAsync().block().getResult());
 
         // TODO: execute the plan
     }
