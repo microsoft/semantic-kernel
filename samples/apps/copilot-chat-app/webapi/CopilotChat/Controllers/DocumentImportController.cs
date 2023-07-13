@@ -18,6 +18,8 @@ using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
+using SemanticKernel.Service.Services;
+using Tesseract;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 using static SemanticKernel.Service.CopilotChat.Models.MemorySource;
@@ -44,6 +46,21 @@ public class DocumentImportController : ControllerBase
         /// .pdf
         /// </summary>
         Pdf,
+
+        /// <summary>
+        /// .jpg
+        /// </summary>
+        Jpg,
+
+        /// <summary>
+        /// .png
+        /// </summary>
+        Png,
+
+        /// <summary>
+        /// .tif or .tiff
+        /// </summary>
+        Tiff
     };
 
     private readonly ILogger<DocumentImportController> _logger;
@@ -54,6 +71,7 @@ public class DocumentImportController : ControllerBase
     private readonly ChatParticipantRepository _participantRepository;
     private const string GlobalDocumentUploadedClientCall = "GlobalDocumentUploaded";
     private const string ChatDocumentUploadedClientCall = "ChatDocumentUploaded";
+    private readonly ITesseractEngine _tesseractEngine;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentImportController"/> class.
@@ -64,7 +82,8 @@ public class DocumentImportController : ControllerBase
         ChatSessionRepository sessionRepository,
         ChatMemorySourceRepository sourceRepository,
         ChatMessageRepository messageRepository,
-        ChatParticipantRepository participantRepository)
+        ChatParticipantRepository participantRepository,
+        ITesseractEngine tesseractEngine)
     {
         this._logger = logger;
         this._options = documentMemoryOptions.Value;
@@ -72,6 +91,7 @@ public class DocumentImportController : ControllerBase
         this._sourceRepository = sourceRepository;
         this._messageRepository = messageRepository;
         this._participantRepository = participantRepository;
+        this._tesseractEngine = tesseractEngine;
     }
 
     /// <summary>
@@ -259,6 +279,14 @@ public class DocumentImportController : ControllerBase
             case SupportedFileType.Pdf:
                 documentContent = this.ReadPdfFile(formFile);
                 break;
+            case SupportedFileType.Jpg:
+            case SupportedFileType.Png:
+            case SupportedFileType.Tiff:
+            {
+                documentContent = await this.ReadTextFromImageFileAsync(formFile);
+                break;
+            }
+
             default:
                 // This should never happen. Validation should have already caught this.
                 return ImportResult.Fail();
@@ -391,8 +419,33 @@ public class DocumentImportController : ControllerBase
         {
             ".txt" => SupportedFileType.Txt,
             ".pdf" => SupportedFileType.Pdf,
+            ".jpg" => SupportedFileType.Jpg,
+            ".jpeg" => SupportedFileType.Jpg,
+            ".png" => SupportedFileType.Png,
+            ".tif" => SupportedFileType.Tiff,
+            ".tiff" => SupportedFileType.Tiff,
             _ => throw new ArgumentOutOfRangeException($"Unsupported file type: {extension}"),
         };
+    }
+
+    /// <summary>
+    /// Reads the text content from an image file.
+    /// </summary>
+    /// <param name="file">An IFormFile object.</param>
+    /// <returns>A string of the content of the file.</returns>
+    private async Task<string> ReadTextFromImageFileAsync(IFormFile file)
+    {
+        await using (var ms = new MemoryStream())
+        {
+            await file.CopyToAsync(ms);
+            var fileBytes = ms.ToArray();
+            await using var imgStream = new MemoryStream(fileBytes);
+
+            using var img = Pix.LoadFromMemory(imgStream.ToArray());
+
+            using var page = this._tesseractEngine.Process(img);
+            return page.GetText();
+        }
     }
 
     /// <summary>
