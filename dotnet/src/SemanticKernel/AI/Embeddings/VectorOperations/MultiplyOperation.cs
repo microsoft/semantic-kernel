@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
@@ -32,7 +33,7 @@ public static class MultiplyOperation
         }
         else
         {
-            SupportedTypes.ThrowTypeNotSupported(typeof(TNumber));
+            EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
         }
     }
 
@@ -56,10 +57,23 @@ public static class MultiplyOperation
         fixed (float* pxBuffer = x)
         {
             float* px = pxBuffer;
-            float* pxMax = px + x.Length;
-            while (px < pxMax)
+            float* pxEnd = px + x.Length;
+
+            if (Vector.IsHardwareAccelerated &&
+                x.Length >= Vector<float>.Count)
             {
-                *px = *px * multiplier;
+                Vector<float> multiplierVec = new(multiplier);
+                float* pxOneVectorFromEnd = pxEnd - Vector<float>.Count;
+                do
+                {
+                    *(Vector<float>*)px *= multiplierVec;
+                    px += Vector<float>.Count;
+                } while (px <= pxOneVectorFromEnd);
+            }
+
+            while (px < pxEnd)
+            {
+                *px *= multiplier;
                 px++;
             }
         }
@@ -70,10 +84,23 @@ public static class MultiplyOperation
         fixed (double* pxBuffer = x)
         {
             double* px = pxBuffer;
-            double* pxMax = px + x.Length;
-            while (px < pxMax)
+            double* pxEnd = px + x.Length;
+
+            if (Vector.IsHardwareAccelerated &&
+                x.Length >= Vector<double>.Count)
             {
-                *px = *px * multiplier;
+                Vector<double> multiplierVec = new(multiplier);
+                double* pxOneVectorFromEnd = pxEnd - Vector<double>.Count;
+                do
+                {
+                    *(Vector<double>*)px *= multiplierVec;
+                    px += Vector<double>.Count;
+                } while (px <= pxOneVectorFromEnd);
+            }
+
+            while (px < pxEnd)
+            {
+                *px *= multiplier;
                 px++;
             }
         }

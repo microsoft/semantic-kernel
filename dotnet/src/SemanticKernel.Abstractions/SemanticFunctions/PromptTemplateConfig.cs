@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.SemanticFunctions;
@@ -56,7 +56,7 @@ public class PromptTemplateConfig
         /// </summary>
         [JsonPropertyName("max_tokens")]
         [JsonPropertyOrder(5)]
-        public int MaxTokens { get; set; } = 256;
+        public int? MaxTokens { get; set; }
 
         /// <summary>
         /// Stop sequences are optional sequences that tells the AI model when to stop generating tokens.
@@ -179,7 +179,6 @@ public class PromptTemplateConfig
     public static PromptTemplateConfig FromJson(string json)
     {
         var result = Json.Deserialize<PromptTemplateConfig>(json);
-        Verify.NotNull(result, "Unable to deserialize prompt template config. The deserialized returned NULL.");
-        return result;
+        return result ?? throw new ArgumentException("Unable to deserialize prompt template config from argument. The deserialization returned null.", nameof(json));
     }
 }

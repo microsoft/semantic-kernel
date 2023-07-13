@@ -1,26 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
-    </PropertyGroup>
-    <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Qdrant</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  
+  <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
-    <PropertyGroup>
-        <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Qdrant</AssemblyName>
-        <RootNamespace>Microsoft.SemanticKernel.Connectors.Memory.Qdrant</RootNamespace>
-        <TargetFramework>netstandard2.0</TargetFramework>
-    </PropertyGroup>
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Qdrant Connector</Title>
+    <Description>Qdrant connector for Semantic Kernel skills and semantic memory</Description>
+  </PropertyGroup>
 
-    <PropertyGroup>
-      <!-- NuGet Package Settings -->
-        <PackageId>Microsoft.SemanticKernel.Connectors.Memory.Qdrant</PackageId>
-        <Title>Semantic Kernel - Qdrant Connector</Title>
-    </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="System.Text.Json" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
-    </ItemGroup>
 </Project>

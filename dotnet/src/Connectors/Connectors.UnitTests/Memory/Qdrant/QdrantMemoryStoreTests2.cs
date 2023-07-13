@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
@@ -27,16 +29,17 @@ public class QdrantMemoryStoreTests2
     private readonly string _description = "description";
     private readonly string _description2 = "description2";
     private readonly string _description3 = "description3";
-    private readonly Embedding<float> _embedding = new Embedding<float>(new float[] { 1, 1, 1 });
-    private readonly Embedding<float> _embedding2 = new Embedding<float>(new float[] { 2, 2, 2 });
-    private readonly Embedding<float> _embedding3 = new Embedding<float>(new float[] { 3, 3, 3 });
+    private readonly Embedding<float> _embedding = new(new float[] { 1, 1, 1 });
+    private readonly Embedding<float> _embedding2 = new(new float[] { 2, 2, 2 });
+    private readonly Embedding<float> _embedding3 = new(new float[] { 3, 3, 3 });
+    private readonly Mock<ILogger<PineconeMemoryStore>> _mockLogger = new();
 
     [Fact]
     public async Task GetAsyncCallsDoNotRequestVectorsUnlessSpecifiedAsync()
     {
         // Arrange
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         var guidString = Guid.NewGuid().ToString();
         var guidString2 = Guid.NewGuid().ToString();
@@ -104,7 +107,7 @@ public class QdrantMemoryStoreTests2
             .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((QdrantVectorRecord?)null);
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         var getResult = await vectorStore.GetAsync("test_collection", this._id, false);
@@ -137,7 +140,7 @@ public class QdrantMemoryStoreTests2
             .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(qdrantVectorRecord);
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         var getResult = await vectorStore.GetAsync("test_collection", this._id, true);
@@ -202,7 +205,7 @@ public class QdrantMemoryStoreTests2
             .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(qdrantVectorRecord3);
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         var getBatchResult = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id, this._id2, this._id3 }, false).ToListAsync();
@@ -267,7 +270,7 @@ public class QdrantMemoryStoreTests2
             .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((QdrantVectorRecord?)null);
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         var getBatchResult = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id, this._id2, this._id3 }, false).ToListAsync();
@@ -306,7 +309,7 @@ public class QdrantMemoryStoreTests2
             .Setup<Task<QdrantVectorRecord?>>(x => x.GetVectorByPayloadIdAsync(It.IsAny<string>(), this._id3, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((QdrantVectorRecord?)null);
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         var getBatchResult = await vectorStore.GetBatchAsync("test_collection", new List<string> { this._id, this._id2, this._id3 }, false).ToListAsync();
@@ -337,7 +340,7 @@ public class QdrantMemoryStoreTests2
                 x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<QdrantVectorRecord>());
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         var getResult = await vectorStore.GetWithPointIdAsync("test_collection", key, false);
@@ -372,7 +375,7 @@ public class QdrantMemoryStoreTests2
                 x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { qdrantVectorRecord }.ToAsyncEnumerable());
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         var getResult = await vectorStore.GetWithPointIdAsync("test_collection", memoryRecord.Key, true);
@@ -434,7 +437,7 @@ public class QdrantMemoryStoreTests2
                 x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(new[] { qdrantVectorRecord, qdrantVectorRecord2, qdrantVectorRecord3 }.ToAsyncEnumerable());
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         var getBatchResult = await vectorStore.GetWithPointIdBatchAsync("test_collection", new List<string> { key, key2, key3 }, false).ToListAsync();
@@ -468,7 +471,7 @@ public class QdrantMemoryStoreTests2
                 x.GetVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<QdrantVectorRecord>());
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         var getBatchResult = await vectorStore.GetWithPointIdBatchAsync("test_collection", new List<string> { key, key2, key3 }, false).ToListAsync();
@@ -490,7 +493,7 @@ public class QdrantMemoryStoreTests2
                 x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         await vectorStore.RemoveAsync("test_collection", this._id);
@@ -510,7 +513,7 @@ public class QdrantMemoryStoreTests2
                 x.DeleteVectorByPayloadIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Act
         await vectorStore.RemoveBatchAsync("test_collection", new[] { this._id, this._id2, this._id3 });
@@ -536,7 +539,7 @@ public class QdrantMemoryStoreTests2
                 x.DeleteVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
         var key = Guid.NewGuid().ToString();
 
         // Act
@@ -557,7 +560,7 @@ public class QdrantMemoryStoreTests2
                 x.DeleteVectorsByIdAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
         var key = Guid.NewGuid().ToString();
         var key2 = Guid.NewGuid().ToString();
         var key3 = Guid.NewGuid().ToString();

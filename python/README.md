@@ -5,7 +5,7 @@ Install the latest package:
     python -m pip install --upgrade semantic-kernel
 
 
-# AI backends
+# AI Services
 
 ## OpenAI / Azure OpenAI API keys
 
@@ -27,17 +27,17 @@ AZURE_OPENAI_API_KEY=""
 
 ```python
 import semantic_kernel as sk
-from semantic_kernel.ai.open_ai import OpenAITextCompletion, AzureTextCompletion
+from semantic_kernel.connectors.ai.open_ai import OpenAITextCompletion, AzureTextCompletion
 
-kernel = sk.create_kernel()
+kernel = sk.Kernel()
 
-# Prepare OpenAI backend using credentials stored in the `.env` file
+# Prepare OpenAI service using credentials stored in the `.env` file
 api_key, org_id = sk.openai_settings_from_dot_env()
-kernel.config.add_text_backend("dv", OpenAITextCompletion("text-davinci-003", api_key, org_id))
+kernel.add_text_completion_service("dv", OpenAITextCompletion("text-davinci-003", api_key, org_id))
 
 # Alternative using Azure:
 # deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-# kernel.config.add_text_backend("dv", AzureTextCompletion(deployment, endpoint, api_key))
+# kernel.add_text_completion_service("dv", AzureTextCompletion(deployment, endpoint, api_key))
 
 # Wrap your prompt in a function
 prompt = kernel.create_semantic_function("""
@@ -56,7 +56,7 @@ Give me the TLDR in exactly 5 words.""")
 print(prompt()) # => Robots must not harm humans.
 ```
 
-# Prompts are **semantic functions** with input parameters
+# **Semantic functions** are Prompts with input parameters
 
 ```python
 # Create a reusable function with one input parameter
@@ -97,16 +97,17 @@ Python notebooks:
 * [Running AI prompts from file](../samples/notebooks/python/02-running-prompts-from-file.ipynb)
 * [Creating Semantic Functions at runtime (i.e. inline functions)](../samples/notebooks/python/03-semantic-function-inline.ipynb)
 * [Using Context Variables to Build a Chat Experience](../samples/notebooks/python/04-context-variables-chat.ipynb)
+* [Introduction to planners](../samples/notebooks/python/05-using-the-planner.ipynb)
 * [Building Memory with Embeddings](../samples/notebooks/python/06-memory-and-embeddings.ipynb)
 
-# Frequently asked questions
+# SK Frequently Asked Questions
 
-* How does Python SK compare to the C# version of Semantic Kernel?
+## How does Python SK compare to the C# version of Semantic Kernel?
 
-  The two SDKs are compatible and at the core they follow the same design principles.
-  Some features are still available only in the C# version, and being ported
-  Refer to the [FEATURE PARITY](FEATURE_PARITY.md) doc to see where
-  things stand in matching the features and functionality of the main SK branch.
-  Over time there will be some features available only in the Python version, and
-  others only in the C# version, for example adapters to external services,
-  scientific libraries, etc.
+The two SDKs are compatible and at the core they follow the same design principles.
+Some features are still available only in the C# version, and being ported
+Refer to the [FEATURE MATRIX](../FEATURE_MATRIX.md) doc to see where
+things stand in matching the features and functionality of the main SK branch.
+Over time there will be some features available only in the Python version, and
+others only in the C# version, for example adapters to external services,
+scientific libraries, etc.

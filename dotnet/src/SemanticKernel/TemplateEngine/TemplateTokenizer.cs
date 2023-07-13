@@ -32,7 +32,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 /// [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
 /// [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 /// </summary>
-internal class TemplateTokenizer
+internal sealed class TemplateTokenizer
 {
     /// <summary>
     /// Create a new instance of SK tokenizer
@@ -52,9 +52,9 @@ internal class TemplateTokenizer
     public IList<Block> Tokenize(string? text)
     {
         // An empty block consists of 4 chars: "{{}}"
-        const int EMPTY_CODE_BLOCK_LENGTH = 4;
+        const int EmptyCodeBlockLength = 4;
         // A block shorter than 5 chars is either empty or invalid, e.g. "{{ }}" and "{{$}}"
-        const int MIN_CODE_BLOCK_LENGTH = EMPTY_CODE_BLOCK_LENGTH + 1;
+        const int MinCodeBlockLength = EmptyCodeBlockLength + 1;
 
         // Render NULL to ""
         if (text.IsNullOrEmpty())
@@ -63,7 +63,7 @@ internal class TemplateTokenizer
         }
 
         // If the template is "empty" return the content as a text block
-        if (text.Length < MIN_CODE_BLOCK_LENGTH)
+        if (text.Length < MinCodeBlockLength)
         {
             return new List<Block> { new TextBlock(text, this._log) };
         }
@@ -141,7 +141,7 @@ internal class TemplateTokenizer
 
                         // Remove "{{" and "}}" delimiters and trim empty chars
                         var contentWithoutDelimiters = contentWithDelimiters
-                            .Substring(2, contentWithDelimiters.Length - EMPTY_CODE_BLOCK_LENGTH)
+                            .Substring(2, contentWithDelimiters.Length - EmptyCodeBlockLength)
                             .Trim();
 
                         if (contentWithoutDelimiters.Length == 0)

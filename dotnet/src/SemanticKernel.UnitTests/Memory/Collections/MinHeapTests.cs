@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory.Collections;
 using Xunit;
 
@@ -19,55 +19,54 @@ public class MinHeapTests
     public void ItThrowsExceptionWhenCapacityIsInvalid()
     {
         // Arrange
-        const int invalidCapacity = -1;
+        const int InvalidCapacity = -1;
 
-        var action = () =>
+        void Action()
         {
-            var minHeap = new MinHeap<int>(MinValue, invalidCapacity);
-        };
+            var minHeap = new MinHeap<int>(MinValue, InvalidCapacity);
+        }
 
         // Act
-        var exception = Assert.Throws<ValidationException>(() => action());
+        var exception = Assert.Throws<ArgumentOutOfRangeException>("capacity", Action);
 
         // Assert
-        Assert.Equal(ValidationException.ErrorCodes.OutOfRange, exception.ErrorCode);
-        Assert.Equal("OutOfRange: MinHeap capacity must be greater than 0.", exception.Message);
+        Assert.Equal(-1, exception.ActualValue);
     }
 
     [Fact]
     public void ItAddsItemsInCorrectOrder()
     {
         // Arrange
-        const int expectedTopItem = 1;
-        const int expectedCount = 3;
+        const int ExpectedTopItem = 1;
+        const int ExpectedCount = 3;
 
         // Act
         var minHeap = new MinHeap<int>(MinValue) { 3, 1, 2 };
 
         // Assert
-        Assert.Equal(expectedTopItem, minHeap.Top);
-        Assert.Equal(expectedCount, minHeap.Count);
+        Assert.Equal(ExpectedTopItem, minHeap.Top);
+        Assert.Equal(ExpectedCount, minHeap.Count);
     }
 
     [Fact]
     public void ItErasesItemsCorrectly()
     {
         // Arrange
-        const int expectedCount = 0;
+        const int ExpectedCount = 0;
         var minHeap = new MinHeap<int>(MinValue) { 3, 1, 2 };
 
         // Act
         minHeap.Erase();
 
         // Assert
-        Assert.Equal(expectedCount, minHeap.Count);
+        Assert.Equal(ExpectedCount, minHeap.Count);
     }
 
     [Fact]
     public void ItReturnsItemsOnBufferDetaching()
     {
         // Arrange
-        const int expectedHeapCount = 0;
+        const int ExpectedHeapCount = 0;
 
         var minHeap = new MinHeap<int>(MinValue) { 3, 1, 2 };
 
@@ -76,34 +75,33 @@ public class MinHeapTests
 
         // Assert
         Assert.True(items.Length > 0);
-        Assert.Equal(expectedHeapCount, minHeap.Count);
+        Assert.Equal(ExpectedHeapCount, minHeap.Count);
     }
 
     [Fact]
     public void ItThrowsExceptionOnAddingItemsAtInvalidIndex()
     {
         // Arrange
-        const int startIndex = 4;
+        const int StartIndex = 4;
 
         var items = new List<int> { 3, 1, 2 };
         var minHeap = new MinHeap<int>(MinValue);
 
-        var action = () => { minHeap.Add(items, startIndex); };
+        var action = () => { minHeap.Add(items, StartIndex); };
 
         // Act
-        var exception = Assert.Throws<ValidationException>(() => action());
+        var exception = Assert.Throws<ArgumentOutOfRangeException>("startAt", () => action());
 
         // Assert
-        Assert.Equal(ValidationException.ErrorCodes.OutOfRange, exception.ErrorCode);
-        Assert.Equal("OutOfRange: startAt value must be less than items count.", exception.Message);
+        Assert.Equal(StartIndex, exception.ActualValue);
     }
 
     [Fact]
     public void ItRemovesTopItemCorrectly()
     {
         // Arrange
-        const int expectedTopItem = 2;
-        const int expectedHeapCount = 2;
+        const int ExpectedTopItem = 2;
+        const int ExpectedHeapCount = 2;
 
         var minHeap = new MinHeap<int>(MinValue) { 3, 1, 2 };
 
@@ -111,15 +109,15 @@ public class MinHeapTests
         minHeap.RemoveTop();
 
         // Assert
-        Assert.Equal(expectedTopItem, minHeap.Top);
-        Assert.Equal(expectedHeapCount, minHeap.Count);
+        Assert.Equal(ExpectedTopItem, minHeap.Top);
+        Assert.Equal(ExpectedHeapCount, minHeap.Count);
     }
 
     [Fact]
     public void ItRemovesAllItemsCorrectly()
     {
         // Arrange
-        const int expectedHeapCount = 0;
+        const int ExpectedHeapCount = 0;
 
         var minHeap = new MinHeap<int>(MinValue) { 3, 1, 2 };
 
@@ -131,21 +129,21 @@ public class MinHeapTests
         Assert.Equal(2, items[1]);
         Assert.Equal(3, items[2]);
 
-        Assert.Equal(expectedHeapCount, minHeap.Count);
+        Assert.Equal(ExpectedHeapCount, minHeap.Count);
     }
 
     [Fact]
     public void ItEnsuresCapacityToExpectedValue()
     {
         // Arrange
-        const int expectedCapacity = 16;
+        const int ExpectedCapacity = 16;
 
         var minHeap = new MinHeap<int>(MinValue);
 
         // Act
-        minHeap.EnsureCapacity(expectedCapacity);
+        minHeap.EnsureCapacity(ExpectedCapacity);
 
         // Assert
-        Assert.Equal(expectedCapacity, minHeap.Capacity);
+        Assert.Equal(ExpectedCapacity, minHeap.Capacity);
     }
 }

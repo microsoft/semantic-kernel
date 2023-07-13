@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 namespace Microsoft.SemanticKernel.SemanticFunctions;
 
 /// <summary>
-/// Prompt template. 
+/// Prompt template.
 /// </summary>
 public sealed class PromptTemplate : IPromptTemplate
 {
@@ -107,6 +107,6 @@ public sealed class PromptTemplate : IPromptTemplate
     /// <returns>Prompt rendered to string</returns>
     public async Task<string> RenderAsync(SKContext executionContext)
     {
-        return await this._templateEngine.RenderAsync(this._template, executionContext);
+        return await this._templateEngine.RenderAsync(this._template, executionContext).ConfigureAwait(false);
     }
 }

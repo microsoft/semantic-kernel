@@ -136,11 +136,11 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken);
     }
 
-    internal class TaskDelayProvider : IDelayProvider
+    internal sealed class TaskDelayProvider : IDelayProvider
     {
-        public async Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken)
+        public Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken)
         {
-            await Task.Delay(delay, cancellationToken);
+            return Task.Delay(delay, cancellationToken);
         }
     }
 
@@ -152,7 +152,7 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         DateTimeOffset GetCurrentTime();
     }
 
-    internal class DefaultTimeProvider : ITimeProvider
+    internal sealed class DefaultTimeProvider : ITimeProvider
     {
         public DateTimeOffset GetCurrentTime()
         {

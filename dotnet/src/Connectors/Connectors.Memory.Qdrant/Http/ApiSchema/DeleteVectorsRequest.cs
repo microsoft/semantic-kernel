@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-internal class DeleteVectorsRequest : IValidatable
+internal sealed class DeleteVectorsRequest : IValidatable
 {
     [JsonPropertyName("points")]
     public List<string> Ids { get; set; }
@@ -27,6 +27,13 @@ internal class DeleteVectorsRequest : IValidatable
     {
         Verify.NotNull(qdrantPointId, "The point ID is NULL");
         this.Ids.Add(qdrantPointId);
+        return this;
+    }
+
+    public DeleteVectorsRequest DeleteRange(IEnumerable<string> qdrantPointIds)
+    {
+        Verify.NotNull(qdrantPointIds, "The point ID collection is NULL");
+        this.Ids.AddRange(qdrantPointIds);
         return this;
     }
 

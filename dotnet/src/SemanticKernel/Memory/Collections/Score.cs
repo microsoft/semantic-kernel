@@ -8,15 +8,20 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// <summary>
 /// Structure for storing score value.
 /// </summary>
-public struct Score : IComparable<Score>, IEquatable<Score>
+public readonly struct Score : IComparable<Score>, IEquatable<Score>
 {
-    public double Value { get; set; }
+    public double Value { get; }
 
-    public static Score Min => double.MinValue;
+    public Score(double value)
+    {
+        this.Value = value;
+    }
+
+    internal static Score Min => double.MinValue;
 
     public static implicit operator Score(double score)
     {
-        return new Score { Value = score };
+        return new Score(score);
     }
 
     public static implicit operator double(Score src)
@@ -41,7 +46,7 @@ public struct Score : IComparable<Score>, IEquatable<Score>
 
     public bool Equals(Score other)
     {
-        return (other != null) && (this.Value == other.Value);
+        return this.Value == other.Value;
     }
 
     public override int GetHashCode()

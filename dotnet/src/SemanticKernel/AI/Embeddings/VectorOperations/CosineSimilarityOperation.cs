@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
@@ -35,7 +36,7 @@ public static class CosineSimilarityOperation
             return CosineSimilarityImplementation(doubleSpanX, doubleSpanY);
         }
 
-        SupportedTypes.ThrowTypeNotSupported(typeof(TNumber));
+        EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
         return default;
     }
 
@@ -72,34 +73,47 @@ public static class CosineSimilarityOperation
             throw new ArgumentException("Array lengths must be equal");
         }
 
-        double dotSum = 0;
-        double lenXSum = 0;
-        double lenYSum = 0;
-        fixed (double* pxBuffer = x)
+        fixed (double* pxBuffer = x, pyBuffer = y)
         {
-            fixed (double* pyBuffer = y)
-            {
-                double* px = pxBuffer;
-                double* pxMax = px + x.Length;
-                double* py = pyBuffer;
-                while (px < pxMax)
-                {
-                    double xVal = *px;
-                    double yVal = *py;
-                    // Dot product
-                    dotSum += xVal * yVal;
-                    // For magnitude of x
-                    lenXSum += xVal * xVal;
-                    // For magnitude of y
-                    lenYSum += yVal * yVal;
-                    ++px;
-                    ++py;
-                }
+            double dotSum = 0, lenXSum = 0, lenYSum = 0;
 
-                // Cosine Similarity of X, Y
-                // Sum(X * Y) / |X| * |Y|
-                return dotSum / (Math.Sqrt(lenXSum) * Math.Sqrt(lenYSum));
+            double* px = pxBuffer, py = pyBuffer;
+            double* pxEnd = px + x.Length;
+
+            if (Vector.IsHardwareAccelerated &&
+                x.Length >= Vector<double>.Count)
+            {
+                double* pxOneVectorFromEnd = pxEnd - Vector<double>.Count;
+                do
+                {
+                    Vector<double> xVec = *(Vector<double>*)px;
+                    Vector<double> yVec = *(Vector<double>*)py;
+
+                    dotSum += Vector.Dot(xVec, yVec); // Dot product
+                    lenXSum += Vector.Dot(xVec, xVec); // For magnitude of x
+                    lenYSum += Vector.Dot(yVec, yVec); // For magnitude of y
+
+                    px += Vector<double>.Count;
+                    py += Vector<double>.Count;
+                } while (px <= pxOneVectorFromEnd);
             }
+
+            while (px < pxEnd)
+            {
+                double xVal = *px;
+                double yVal = *py;
+
+                dotSum += xVal * yVal; // Dot product
+                lenXSum += xVal * xVal; // For magnitude of x
+                lenYSum += yVal * yVal; // For magnitude of y
+
+                ++px;
+                ++py;
+            }
+
+            // Cosine Similarity of X, Y
+            // Sum(X * Y) / |X| * |Y|
+            return dotSum / (Math.Sqrt(lenXSum) * Math.Sqrt(lenYSum));
         }
     }
 
@@ -110,34 +124,47 @@ public static class CosineSimilarityOperation
             throw new ArgumentException("Array lengths must be equal");
         }
 
-        double dotSum = 0;
-        double lenXSum = 0;
-        double lenYSum = 0;
-        fixed (float* pxBuffer = x)
+        fixed (float* pxBuffer = x, pyBuffer = y)
         {
-            fixed (float* pyBuffer = y)
-            {
-                float* px = pxBuffer;
-                float* pxMax = px + x.Length;
-                float* py = pyBuffer;
-                while (px < pxMax)
-                {
-                    float xVal = *px;
-                    float yVal = *py;
-                    // Dot product
-                    dotSum += xVal * yVal;
-                    // For magnitude of x
-                    lenXSum += xVal * xVal;
-                    // For magnitude of y
-                    lenYSum += yVal * yVal;
-                    ++px;
-                    ++py;
-                }
+            double dotSum = 0, lenXSum = 0, lenYSum = 0;
 
-                // Cosine Similarity of X, Y
-                // Sum(X * Y) / |X| * |Y|
-                return dotSum / (Math.Sqrt(lenXSum) * Math.Sqrt(lenYSum));
+            float* px = pxBuffer, py = pyBuffer;
+            float* pxEnd = px + x.Length;
+
+            if (Vector.IsHardwareAccelerated &&
+                x.Length >= Vector<float>.Count)
+            {
+                float* pxOneVectorFromEnd = pxEnd - Vector<float>.Count;
+                do
+                {
+                    Vector<float> xVec = *(Vector<float>*)px;
+                    Vector<float> yVec = *(Vector<float>*)py;
+
+                    dotSum += Vector.Dot(xVec, yVec); // Dot product
+                    lenXSum += Vector.Dot(xVec, xVec); // For magnitude of x
+                    lenYSum += Vector.Dot(yVec, yVec); // For magnitude of y
+
+                    px += Vector<float>.Count;
+                    py += Vector<float>.Count;
+                } while (px <= pxOneVectorFromEnd);
             }
+
+            while (px < pxEnd)
+            {
+                float xVal = *px;
+                float yVal = *py;
+
+                dotSum += xVal * yVal; // Dot product
+                lenXSum += xVal * xVal; // For magnitude of x
+                lenYSum += yVal * yVal; // For magnitude of y
+
+                ++px;
+                ++py;
+            }
+
+            // Cosine Similarity of X, Y
+            // Sum(X * Y) / |X| * |Y|
+            return dotSum / (Math.Sqrt(lenXSum) * Math.Sqrt(lenYSum));
         }
     }
 

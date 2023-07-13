@@ -6,6 +6,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace AIPlugins.AzureFunctions.Extensions;
 
@@ -29,8 +30,10 @@ public class KernelAIPluginRunner : IAIPluginRunner
         // Assuming operation ID is of the format "skill/function"
         string[] parts = operationId.Split('/');
 
-        var function = this._kernel.Skills.GetSemanticFunction(parts[0], parts[1]);
-        if (function == null)
+        if (!this._kernel.Skills.TryGetFunction(
+            skillName: parts[0],
+            functionName: parts[1],
+            out ISKFunction? function))
         {
             HttpResponseData errorResponse = req.CreateResponse(HttpStatusCode.NotFound);
             await errorResponse.WriteStringAsync($"Function {operationId} not found");

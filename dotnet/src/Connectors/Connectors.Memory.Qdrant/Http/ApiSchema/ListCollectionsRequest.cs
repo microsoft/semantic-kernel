@@ -4,7 +4,7 @@ using System.Net.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-internal class ListCollectionsRequest
+internal sealed class ListCollectionsRequest
 {
     public static ListCollectionsRequest Create()
     {
@@ -13,6 +13,6 @@ internal class ListCollectionsRequest
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateGetRequest($"collections");
+        return HttpRequest.CreateGetRequest("collections");
     }
 }

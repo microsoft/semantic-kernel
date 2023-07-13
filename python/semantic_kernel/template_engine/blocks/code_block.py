@@ -96,8 +96,8 @@ class CodeBlock(Block, CodeRenderer):
             input_value = self._tokens[1].render(variables_clone)
             variables_clone.update(input_value)
 
-        result = await function.invoke_with_vars_async(
-            variables_clone, context.memory, self.log
+        result = await function.invoke_async(
+            variables=variables_clone, memory=context.memory, log=self.log
         )
 
         if result.error_occurred:

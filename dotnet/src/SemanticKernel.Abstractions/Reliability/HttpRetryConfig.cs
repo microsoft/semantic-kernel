@@ -59,7 +59,8 @@ public sealed class HttpRetryConfig
         (HttpStatusCode)HttpStatusCodeType.RequestTimeout,
         (HttpStatusCode)HttpStatusCodeType.ServiceUnavailable,
         (HttpStatusCode)HttpStatusCodeType.GatewayTimeout,
-        (HttpStatusCode)HttpStatusCodeType.TooManyRequests
+        (HttpStatusCode)HttpStatusCodeType.TooManyRequests,
+        (HttpStatusCode)HttpStatusCodeType.BadGateway,
     };
 
     /// <summary>

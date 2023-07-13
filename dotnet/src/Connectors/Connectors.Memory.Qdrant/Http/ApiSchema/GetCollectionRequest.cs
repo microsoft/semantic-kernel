@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-internal class GetCollectionsRequest
+internal sealed class GetCollectionsRequest
 {
     /// <summary>
     /// Name of the collection to request vectors from

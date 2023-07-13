@@ -5,11 +5,92 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.AI;
 
+#pragma warning disable RCS1194 // Implement exception constructors
+
 /// <summary>
-/// AI logic exception
+/// Exception thrown for errors related to AI logic.
 /// </summary>
-public class AIException : Exception<AIException.ErrorCodes>
+public class AIException : SKException
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AIException"/> class with a provided error code and message.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">The exception message.</param>
+    public AIException(ErrorCodes errorCode, string? message)
+        : this(errorCode, message, detail: null, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AIException"/> class with a provided error code, message, and inner exception.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">A string that describes the error.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.</param>
+    public AIException(ErrorCodes errorCode, string? message, Exception? innerException)
+        : this(errorCode, message, detail: null, innerException)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AIException"/> class with a provided error code, message, and inner exception.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">A string that describes the error.</param>
+    /// <param name="detail">A string that provides additional details about the error.</param>
+    public AIException(ErrorCodes errorCode, string? message, string? detail)
+        : this(errorCode, message, detail, innerException: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AIException"/> class with a provided error code, message, additional details, and inner exception.
+    /// </summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="message">A string that describes the error.</param>
+    /// <param name="detail">A string that provides additional details about the error.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.</param>
+    public AIException(ErrorCodes errorCode, string? message = null, string? detail = null, Exception? innerException = null)
+        : base(GetDefaultMessage(errorCode, message), innerException)
+    {
+        this.ErrorCode = errorCode;
+        this.Detail = detail;
+    }
+
+    /// <summary>
+    /// Gets the error code for this exception.
+    /// </summary>
+    public ErrorCodes ErrorCode { get; }
+
+    /// <summary>
+    /// Gets the extended details for this exception.
+    /// </summary>
+    public string? Detail { get; }
+
+    /// <summary>Translate the error code into a default message.</summary>
+    /// <param name="errorCode">The error code.</param>
+    /// <param name="defaultMessage">Default error message if nothing available.</param>
+    private static string GetDefaultMessage(ErrorCodes errorCode, string? defaultMessage)
+    {
+        string description = errorCode switch
+        {
+            ErrorCodes.NoResponse => "No response",
+            ErrorCodes.AccessDenied => "Access denied",
+            ErrorCodes.InvalidRequest => "Invalid request",
+            ErrorCodes.InvalidResponseContent => "Invalid response content",
+            ErrorCodes.Throttling => "Throttling",
+            ErrorCodes.RequestTimeout => "Request timeout",
+            ErrorCodes.ServiceError => "Service error",
+            ErrorCodes.ModelNotAvailable => "Model not available",
+            ErrorCodes.InvalidConfiguration => "Invalid configuration",
+            ErrorCodes.FunctionTypeNotSupported => "Function type not supported",
+            _ => $"Unknown error ({errorCode:G})",
+        };
+
+        return defaultMessage is not null ? $"{description}: {defaultMessage}" : description;
+    }
+
     /// <summary>
     /// Possible error codes for exceptions
     /// </summary>
@@ -70,65 +151,4 @@ public class AIException : Exception<AIException.ErrorCodes>
         /// </summary>
         FunctionTypeNotSupported,
     }
-
-    /// <summary>
-    /// The exception's error code.
-    /// </summary>
-    public ErrorCodes ErrorCode { get; set; }
-
-    /// <summary>
-    /// The exception's detail.
-    /// </summary>
-    public string? Detail { get; set; }
-
-    /// <summary>
-    /// Construct an exception with an error code and message.
-    /// </summary>
-    /// <param name="errCode">Error code of the exception.</param>
-    /// <param name="message">Message of the exception</param>
-    public AIException(ErrorCodes errCode, string? message = null) : base(errCode, message)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    /// <summary>
-    /// Construct an exception with an error code, message, and existing exception.
-    /// </summary>
-    /// <param name="errCode">Error code of the exception.</param>
-    /// <param name="message">Message of the exception.</param>
-    /// <param name="e">An exception that was thrown.</param>
-    public AIException(ErrorCodes errCode, string message, Exception? e) : base(errCode, message, e)
-    {
-        this.ErrorCode = errCode;
-    }
-
-    /// <summary>
-    /// Construct an exception with an error code, message, and existing exception.
-    /// </summary>
-    /// <param name="errCode">Error code of the exception.</param>
-    /// <param name="message">Message of the exception.</param>
-    /// <param name="detail">More details about the exception</param>
-    public AIException(ErrorCodes errCode, string message, string? detail) : this(errCode, message)
-    {
-        this.Detail = detail;
-    }
-
-    #region private ================================================================================
-
-    private AIException()
-    {
-        // Not allowed, error code is required
-    }
-
-    private AIException(string message) : base(message)
-    {
-        // Not allowed, error code is required
-    }
-
-    private AIException(string message, Exception innerException) : base(message, innerException)
-    {
-        // Not allowed, error code is required
-    }
-
-    #endregion
 }

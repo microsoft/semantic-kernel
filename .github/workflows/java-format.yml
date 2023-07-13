@@ -1,0 +1,88 @@
+name: Java format automation
+on:
+  issue_comment:
+    types: [ created ]
+
+jobs:
+  comment-driven-automation:
+    if: |
+      github.event.issue.pull_request &&
+      (
+        startsWith(github.event.comment.body, '/spotless') ||
+        startsWith(github.event.comment.body, '/help')
+      )
+
+    runs-on: ubuntu-latest
+    
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Check for command
+        id: command
+        uses: xt0rted/slash-command-action@v2
+        continue-on-error: true
+        with:
+          command: spotless
+          reaction-type: "eyes"
+    
+      - name: Get command
+        env:
+          BODY: ${{ github.event.comment.body }}
+        run: |
+          # intentionally only looking at the first line of the body
+          command=$(echo "$BODY" | head -1 | sed "s;^/;;")
+          echo "COMMAND=$command" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v3
+
+      - name: Check out PR branch
+        env:
+          NUMBER: ${{ github.event.issue.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr checkout $NUMBER
+        if: env.COMMAND == 'spotless' 
+
+      - name: Set up Maven cache
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: microsoft
+          cache: maven
+        if: env.COMMAND == 'spotless'
+
+      - name: Set git user
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-action[bot]@users.noreply.github.com
+        if: env.COMMAND == 'spotless'
+
+      - name: Run command
+        env:
+          NUMBER: ${{ github.event.issue.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          available_commands="Available commands:
+            * \`/spotless\` - runs \`./mvnw process-sources -DskipTests -Pbug-check\`
+            * \`/help\` - displays available commands
+          "
+          if [[ "$COMMAND" == "spotless" ]]; then
+            ./mvnw process-sources -DskipTests -Pbug-check
+            if git diff --quiet; then
+              gh pr comment $NUMBER --body "Already up-to-date"
+              exit 0 # success
+            fi
+            git commit -a -m "./mvnw process-sources -DskipTests -Pbug-check"
+            git push
+          elif [[ "$COMMAND" == "help" ]]; then
+            gh pr comment $NUMBER --body "$available_commands"
+          else
+            body="Unknown command: \`$COMMAND\`
+
+            $available_commands
+            "
+            gh pr comment $NUMBER --body "$body"
+          fi
+        working-directory: java

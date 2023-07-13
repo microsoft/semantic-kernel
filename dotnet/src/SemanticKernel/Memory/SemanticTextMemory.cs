@@ -15,12 +15,12 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </summary>
 public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
 {
-    private readonly IEmbeddingGeneration<string, float> _embeddingGenerator;
+    private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly IMemoryStore _storage;
 
     public SemanticTextMemory(
         IMemoryStore storage,
-        IEmbeddingGeneration<string, float> embeddingGenerator)
+        ITextEmbeddingGeneration embeddingGenerator)
     {
         this._embeddingGenerator = embeddingGenerator;
         this._storage = storage;
@@ -33,18 +33,18 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string id,
         string? description = null,
         string? additionalMetadata = null,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
-        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken: cancel);
+        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
         MemoryRecord data = MemoryRecord.LocalRecord(
             id: id, text: text, description: description, additionalMetadata: additionalMetadata, embedding: embedding);
 
-        if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
+        if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
         {
-            await this._storage.CreateCollectionAsync(collection, cancel);
+            await this._storage.CreateCollectionAsync(collection, cancellationToken).ConfigureAwait(false);
         }
 
-        return await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
+        return await this._storage.UpsertAsync(collection, data, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -55,18 +55,18 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string externalSourceName,
         string? description = null,
         string? additionalMetadata = null,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
-        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken: cancel);
+        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
         var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description: description,
             additionalMetadata: additionalMetadata, embedding: embedding);
 
-        if (!(await this._storage.DoesCollectionExistAsync(collection, cancel)))
+        if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
         {
-            await this._storage.CreateCollectionAsync(collection, cancel);
+            await this._storage.CreateCollectionAsync(collection, cancellationToken).ConfigureAwait(false);
         }
 
-        return await this._storage.UpsertAsync(collection, record: data, cancel: cancel);
+        return await this._storage.UpsertAsync(collection, data, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -74,9 +74,9 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string collection,
         string key,
         bool withEmbedding = false,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
-        MemoryRecord? record = await this._storage.GetAsync(collection, key, withEmbedding, cancel);
+        MemoryRecord? record = await this._storage.GetAsync(collection, key, withEmbedding, cancellationToken).ConfigureAwait(false);
 
         if (record == null) { return null; }
 
@@ -87,9 +87,9 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
     public async Task RemoveAsync(
         string collection,
         string key,
-        CancellationToken cancel = default)
+        CancellationToken cancellationToken = default)
     {
-        await this._storage.RemoveAsync(collection, key, cancel);
+        await this._storage.RemoveAsync(collection, key, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -97,11 +97,11 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string collection,
         string query,
         int limit = 1,
-        double minRelevanceScore = 0.7,
+        double minRelevanceScore = 0.0,
         bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancel = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken: cancel);
+        Embedding<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken).ConfigureAwait(false);
 
         IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
             collectionName: collection,
@@ -109,18 +109,18 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
             limit: limit,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbeddings,
-            cancel: cancel);
+            cancellationToken: cancellationToken);
 
-        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancel))
+        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken))
         {
             yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
         }
     }
 
     /// <inheritdoc/>
-    public async Task<IList<string>> GetCollectionsAsync(CancellationToken cancel = default)
+    public async Task<IList<string>> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
-        return await this._storage.GetCollectionsAsync(cancel).ToListAsync(cancel);
+        return await this._storage.GetCollectionsAsync(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public void Dispose()

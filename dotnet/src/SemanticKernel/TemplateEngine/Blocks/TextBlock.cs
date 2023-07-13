@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
-internal class TextBlock : Block, ITextRendering
+internal sealed class TextBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Text;
 

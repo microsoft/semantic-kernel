@@ -32,29 +32,19 @@ const TaskButton: FC<IData> = ({ taskDescription, onTaskComplete, keyConfig, uri
         setIsBusy(true);
 
         try {
-            var createPlanResult = await sk.invokeAsync(
-                keyConfig,
-                {
-                    value: `${input}\n${taskDescription}`,
-                    skills: skills,
-                },
-                'plannerskill',
-                'createplanasync',
-            );
+            var createPlanResult = await sk.createPlanAsync(keyConfig, {
+                value: `${input}\n${taskDescription}`,
+                skills: skills,
+            });
 
             console.log(createPlanResult);
 
             var inputs: IAskInput[] = [...createPlanResult.state];
 
-            var executePlanResult = await sk.invokeAsync(
-                keyConfig,
-                {
-                    inputs: inputs,
-                    value: createPlanResult.value,
-                },
-                'plannerskill',
-                'executeplanasync',
-            );
+            var executePlanResult = await sk.executePlanAsync(keyConfig, {
+                inputs: inputs,
+                value: createPlanResult.value,
+            });
 
             onTaskComplete(executePlanResult);
         } catch (e) {

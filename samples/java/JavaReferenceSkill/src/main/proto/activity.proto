@@ -1,0 +1,30 @@
+﻿syntax = "proto3";
+
+package reference_skill;
+
+// GetRandomActivityRequest is a message that contains input for the GetRandomActivity RPC method.
+message GetRandomActivityRequest {
+  string input = 1; // Input is a hobby that is use to generate a random activity.
+}
+
+// GetRandomActivityResponse is a message that contains the activity returned by the GetRandomActivity RPC method.
+message GetRandomActivityResponse {
+  string activity = 1; // Activity is a description of the random activity.
+}
+
+// RandomActivitySkill is a service that provides methods related to random activities.
+service RandomActivitySkill {
+  // GetRandomActivity is an RPC method that retrieves a random activity from an API.
+  rpc GetRandomActivity (GetRandomActivityRequest) returns (GetRandomActivityResponse);
+}
+
+// Activity is a message that represents an activity with its various properties.
+message Activity {
+  string activity = 1;       // A description of the activity.
+  string type = 2;           // The type or category of the activity.
+  int32 participants = 3;    // The number of participants required for the activity.
+  double price = 4;          // The cost associated with the activity, from 0 (free) to 1 (most expensive).
+  string link = 5;           // A URL providing more information about the activity.
+  string key = 6;            // A unique identifier for the activity.
+  float accessibility = 7;   // The accessibility of the activity, from 0 (most accessible) to 1 (least accessible).
+}

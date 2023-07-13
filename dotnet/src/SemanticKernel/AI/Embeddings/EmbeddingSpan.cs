@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings;
@@ -10,7 +9,7 @@ namespace Microsoft.SemanticKernel.AI.Embeddings;
 /// A view of a vector that allows for low-level, optimized, read-write mathematical operations.
 /// </summary>
 /// <typeparam name="TEmbedding">The unmanaged data type (<see cref="float"/>, <see cref="double"/> currently supported).</typeparam>
-public ref struct EmbeddingSpan<TEmbedding>
+public readonly ref struct EmbeddingSpan<TEmbedding>
     where TEmbedding : unmanaged
 {
     /// <summary>
@@ -19,10 +18,16 @@ public ref struct EmbeddingSpan<TEmbedding>
     /// <param name="vector">A a vector of contiguous, unmanaged data.</param>
     public EmbeddingSpan(Span<TEmbedding> vector)
     {
-        SupportedTypes.VerifyTypeSupported(typeof(TEmbedding));
+        if (!Embedding.IsSupported<TEmbedding>())
+        {
+            ThrowTEmbeddingNotSupported();
+        }
 
         this.Span = vector;
     }
+
+    internal static void ThrowTEmbeddingNotSupported() =>
+        throw new NotSupportedException($"Embeddings do not support type '{typeof(TEmbedding).Name}'. Supported types include: [ Single, Double ]");
 
     /// <summary>
     /// Constructor
@@ -36,7 +41,7 @@ public ref struct EmbeddingSpan<TEmbedding>
     /// <summary>
     /// Gets the underlying <see cref="Span{T}"/> of unmanaged data.
     /// </summary>
-    public Span<TEmbedding> Span { get; internal set; }
+    public Span<TEmbedding> Span { get; }
 
     /// <summary>
     /// Normalizes the underlying vector in-place, such that the Euclidean length is 1.
@@ -78,10 +83,4 @@ public ref struct EmbeddingSpan<TEmbedding>
     {
         return this.Span.CosineSimilarity(other.Span);
     }
-
-    /// <summary>
-    /// Gets a value that indicates whether <typeparamref name="TEmbedding"/> is supported.
-    /// </summary>
-    [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Following 'IsSupported' pattern of System.Numerics.")]
-    public static bool IsSupported => SupportedTypes.IsSupported(typeof(TEmbedding));
 }

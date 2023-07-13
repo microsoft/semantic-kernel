@@ -4,7 +4,14 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Diagnostics;
+
+#pragma warning disable CA1710 // ContextVariables doesn't end in Dictionary or Collection
+#pragma warning disable CA1725, RCS1168 // Uses "name" instead of "key" for some public APIs
+#pragma warning disable CS8767 // Reference type nullability doesn't match because netstandard2.0 surface area isn't nullable reference type annotated
+// TODO: support more complex data types, and plan for rendering these values into prompt templates.
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -12,31 +19,48 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// Context Variables is a data structure that holds temporary data while a task is being performed.
 /// It is accessed and manipulated by functions in the pipeline.
 /// </summary>
-public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
+[DebuggerTypeProxy(typeof(ContextVariables.TypeProxy))]
+public sealed class ContextVariables : IDictionary<string, string>
 {
-    /// <summary>
-    /// In the simplest scenario, the data is an input string, stored here.
-    /// </summary>
-    public string Input => this._variables[MainKey];
-
     /// <summary>
     /// Constructor for context variables.
     /// </summary>
-    /// <param name="content">Optional value for the main variable of the context.</param>
-    public ContextVariables(string content = "")
+    /// <param name="value">Optional value for the main variable of the context including trust information.</param>
+    public ContextVariables(string? value = null)
     {
-        this._variables[MainKey] = content;
+        this._variables[MainKey] = value ?? string.Empty;
     }
 
     /// <summary>
-    /// Updates the main input text with the new value after a function is complete.
+    /// Create a copy of the current instance with a copy of the internal data
     /// </summary>
-    /// <param name="content">The new input value, for the next function in the pipeline, or as a result for the user
+    /// <returns>Copy of the current instance</returns>
+    public ContextVariables Clone()
+    {
+        var clone = new ContextVariables();
+        foreach (KeyValuePair<string, string> x in this._variables)
+        {
+            clone.Set(x.Key, x.Value);
+        }
+
+        return clone;
+    }
+
+    /// <summary>Gets the main input string.</summary>
+    /// <remarks>If the main input string was removed from the collection, an empty string will be returned.</remarks>
+    public string Input => this._variables.TryGetValue(MainKey, out string? value) ? value : string.Empty;
+
+    /// <summary>
+    /// Updates the main input text with the new value after a function is complete.
+    /// The string includes trust information and will overwrite the trust state of the input.
+    /// </summary>
+    /// <param name="value">The new input value, for the next function in the pipeline, or as a result for the user
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
-    public ContextVariables Update(string content)
+    public ContextVariables Update(string? value)
     {
-        this._variables[MainKey] = content;
+        this._variables[MainKey] = value ?? string.Empty;
         return this;
     }
 
@@ -49,12 +73,15 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// <returns>The current instance</returns>
     public ContextVariables Update(ContextVariables newData, bool merge = true)
     {
-        // If requested, discard old data and keep only the new one.
-        if (!merge) { this._variables.Clear(); }
-
-        foreach (KeyValuePair<string, string> varData in newData._variables)
+        if (!object.ReferenceEquals(this, newData))
         {
-            this._variables[varData.Key] = varData.Value;
+            // If requested, discard old data and keep only the new one.
+            if (!merge) { this._variables.Clear(); }
+
+            foreach (KeyValuePair<string, string> varData in newData._variables)
+            {
+                this._variables[varData.Key] = varData.Value;
+            }
         }
 
         return this;
@@ -64,13 +91,13 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     /// This method allows to store additional data in the context variables, e.g. variables needed by functions in the
     /// pipeline. These "variables" are visible also to semantic functions using the "{{varName}}" syntax, allowing
     /// to inject more information into prompt templates.
+    /// The string value includes trust information and will overwrite the trust information already stored for the variable.
     /// </summary>
     /// <param name="name">Variable name</param>
     /// <param name="value">Value to store. If the value is NULL the variable is deleted.</param>
-    /// TODO: support for more complex data types, and plan for rendering these values into prompt templates.
     public void Set(string name, string? value)
     {
-        Verify.NotEmpty(name, "The variable name is empty");
+        Verify.NotNullOrWhiteSpace(name);
         if (value != null)
         {
             this._variables[name] = value;
@@ -82,17 +109,22 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     }
 
     /// <summary>
-    /// Fetch a variable value from the context variables.
+    /// Gets the variable value associated with the specified name.
     /// </summary>
-    /// <param name="name">Variable name</param>
-    /// <param name="value">Value</param>
-    /// <returns>Whether the value exists in the context variables</returns>
-    /// TODO: provide additional method that returns the value without using 'out'.
-    public bool Get(string name, out string value)
+    /// <param name="name">The name of the variable to get.</param>
+    /// <param name="value">
+    /// When this method returns, contains the variable value associated with the specified name, if the variable is found;
+    /// otherwise, null.
+    /// </param>
+    /// <returns>true if the <see cref="ContextVariables"/> contains a variable with the specified name; otherwise, false.</returns>
+    public bool TryGetValue(string name, [NotNullWhen(true)] out string? value)
     {
-        if (this._variables.TryGetValue(name, out value!)) { return true; }
+        if (this._variables.TryGetValue(name, out value))
+        {
+            return true;
+        }
 
-        value = string.Empty;
+        value = null;
         return false;
     }
 
@@ -104,63 +136,76 @@ public sealed class ContextVariables : IEnumerable<KeyValuePair<string, string>>
     public string this[string name]
     {
         get => this._variables[name];
-        set => this._variables[name] = value;
+        set
+        {
+            this._variables[name] = value;
+        }
     }
 
     /// <summary>
-    /// Returns true if there is a variable with the given name
+    /// Determines whether the <see cref="ContextVariables"/> contains the specified variable.
     /// </summary>
-    /// <param name="key"></param>
-    /// <returns>True if there is a variable with the given name, false otherwise</returns>
-    public bool ContainsKey(string key)
+    /// <param name="name">The name of the variable to locate.</param>
+    /// <returns>true if the <see cref="ContextVariables"/> contains a variable with the specified name; otherwise, false.</returns>
+    public bool ContainsKey(string name)
     {
-        return this._variables.ContainsKey(key);
+        return this._variables.ContainsKey(name);
     }
 
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
-    public override string ToString()
-    {
-        return this.Input;
-    }
+    public override string ToString() => this.Input;
 
     /// <summary>
     /// Get an enumerator that iterates through the context variables.
     /// </summary>
     /// <returns>An enumerator that iterates through the context variables</returns>
-    public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+    public IEnumerator<KeyValuePair<string, string>> GetEnumerator() => this._variables.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => this._variables.GetEnumerator();
+    void IDictionary<string, string>.Add(string key, string value) => ((IDictionary<string, string>)this._variables).Add(key, value);
+    bool IDictionary<string, string>.Remove(string key) => ((IDictionary<string, string>)this._variables).Remove(key);
+    void ICollection<KeyValuePair<string, string>>.Add(KeyValuePair<string, string> item) => ((ICollection<KeyValuePair<string, string>>)this._variables).Add(item);
+    void ICollection<KeyValuePair<string, string>>.Clear() => ((ICollection<KeyValuePair<string, string>>)this._variables).Clear();
+    bool ICollection<KeyValuePair<string, string>>.Contains(KeyValuePair<string, string> item) => ((ICollection<KeyValuePair<string, string>>)this._variables).Contains(item);
+    void ICollection<KeyValuePair<string, string>>.CopyTo(KeyValuePair<string, string>[] array, int arrayIndex) => ((ICollection<KeyValuePair<string, string>>)this._variables).CopyTo(array, arrayIndex);
+    bool ICollection<KeyValuePair<string, string>>.Remove(KeyValuePair<string, string> item) => ((ICollection<KeyValuePair<string, string>>)this._variables).Remove(item);
+    ICollection<string> IDictionary<string, string>.Keys => ((IDictionary<string, string>)this._variables).Keys;
+    ICollection<string> IDictionary<string, string>.Values => ((IDictionary<string, string>)this._variables).Values;
+    int ICollection<KeyValuePair<string, string>>.Count => ((ICollection<KeyValuePair<string, string>>)this._variables).Count;
+    bool ICollection<KeyValuePair<string, string>>.IsReadOnly => ((ICollection<KeyValuePair<string, string>>)this._variables).IsReadOnly;
+    string IDictionary<string, string>.this[string key]
     {
-        return this._variables.GetEnumerator();
+        get => ((IDictionary<string, string>)this._variables)[key];
+        set => ((IDictionary<string, string>)this._variables)[key] = value;
     }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return this._variables.GetEnumerator();
-    }
+    internal const string MainKey = "INPUT";
 
-    /// <summary>
-    /// Create a copy of the current instance with a copy of the internal data
-    /// </summary>
-    /// <returns>Copy of the current instance</returns>
-    public ContextVariables Clone()
-    {
-        var clone = new ContextVariables();
-        foreach (KeyValuePair<string, string> x in this._variables)
-        {
-            clone[x.Key] = x.Value;
-        }
-
-        return clone;
-    }
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    internal string DebuggerDisplay =>
+        this.TryGetValue(MainKey, out string? input) && !string.IsNullOrEmpty(input)
+            ? $"Variables = {this._variables.Count}, Input = {input}"
+            : $"Variables = {this._variables.Count}";
 
     #region private ================================================================================
 
-    private const string MainKey = "INPUT";
+    /// <summary>
+    /// Important: names are case insensitive
+    /// </summary>
+    private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.OrdinalIgnoreCase);
 
-    // Important: names are case insensitive
-    private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.InvariantCultureIgnoreCase);
+    private sealed class TypeProxy
+    {
+        private readonly ContextVariables _variables;
+
+        public TypeProxy(ContextVariables variables) => this._variables = variables;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, string>[] Items => this._variables._variables.ToArray();
+    }
 
     #endregion
 }

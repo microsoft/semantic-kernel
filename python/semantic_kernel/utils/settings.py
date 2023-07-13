@@ -2,6 +2,8 @@
 
 from typing import Optional, Tuple
 
+from dotenv import dotenv_values
+
 
 def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     """
@@ -11,20 +13,9 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
         Tuple[str, str]: The OpenAI API key, the OpenAI organization ID
     """
 
-    api_key, org_id = None, None
-    with open(".env", "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
-            if line.startswith("OPENAI_API_KEY"):
-                parts = line.split("=")[1:]
-                api_key = "=".join(parts).strip().strip('"')
-                continue
-
-            if line.startswith("OPENAI_ORG_ID"):
-                parts = line.split("=")[1:]
-                org_id = "=".join(parts).strip().strip('"')
-                continue
+    config = dotenv_values(".env")
+    api_key = config.get("OPENAI_API_KEY", None)
+    org_id = config.get("OPENAI_ORG_ID", None)
 
     assert api_key is not None, "OpenAI API key not found in .env file"
 
@@ -42,24 +33,10 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
     """
 
     deployment, api_key, endpoint = None, None, None
-    with open(".env", "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
-            if include_deployment and line.startswith("AZURE_OPENAI_DEPLOYMENT_NAME"):
-                parts = line.split("=")[1:]
-                deployment = "=".join(parts).strip().strip('"')
-                continue
-
-            if line.startswith("AZURE_OPENAI_API_KEY"):
-                parts = line.split("=")[1:]
-                api_key = "=".join(parts).strip().strip('"')
-                continue
-
-            if line.startswith("AZURE_OPENAI_ENDPOINT"):
-                parts = line.split("=")[1:]
-                endpoint = "=".join(parts).strip().strip('"')
-                continue
+    config = dotenv_values(".env")
+    deployment = config.get("AZURE_OPENAI_DEPLOYMENT_NAME", None)
+    api_key = config.get("AZURE_OPENAI_API_KEY", None)
+    endpoint = config.get("AZURE_OPENAI_ENDPOINT", None)
 
     # Azure requires the deployment name, the API key and the endpoint URL.
     if include_deployment:
@@ -71,3 +48,38 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
     assert endpoint is not None, "Azure OpenAI endpoint not found in .env file"
 
     return deployment or "", api_key, endpoint
+
+
+def postgres_settings_from_dot_env() -> str:
+    """Reads the Postgres connection string from the .env file.
+
+    Returns:
+        str: The Postgres connection string
+    """
+    connection_string = None
+    config = dotenv_values(".env")
+    connection_string = config.get("POSTGRES_CONNECTION_STRING", None)
+
+    assert (
+        connection_string is not None
+    ), "Postgres connection string not found in .env file"
+
+    return connection_string
+
+
+def pinecone_settings_from_dot_env() -> Tuple[str, str]:
+    """Reads the Pinecone API key and Environment from the .env file.
+
+    Returns:
+        Tuple[str, str]: The Pinecone API key, the Pinecone Environment
+    """
+
+    api_key, environment = None, None
+    config = dotenv_values(".env")
+    api_key = config.get("PINECONE_API_KEY", None)
+    environment = config.get("PINECONE_ENVIRONMENT", None)
+
+    assert api_key is not None, "Pinecone API key not found in .env file"
+    assert environment is not None, "Pinecone environment not found in .env file"
+
+    return api_key, environment

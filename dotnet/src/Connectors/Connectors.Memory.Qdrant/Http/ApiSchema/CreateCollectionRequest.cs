@@ -33,7 +33,7 @@ internal sealed class CreateCollectionRequest
             payload: this);
     }
 
-    internal class VectorSettings : IValidatable
+    internal sealed class VectorSettings : IValidatable
     {
         [JsonPropertyName("size")]
         public int? Size { get; set; }

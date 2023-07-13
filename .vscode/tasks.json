@@ -1,42 +1,49 @@
 {
   "version": "2.0.0",
   "tasks": [
+    // *****************************
+    // Contributing (dotnet) - Setup
+    // *****************************
     {
-      "label": "build (KernelSyntaxExamples)",
+      "label": "setup (contributing-R#)",
+      "detail": "",
+      "group": "build",
+      "dependsOn": ["new tool-manifest", "# Setup"],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "new tool-manifest",
+      "detail": "Install ReSharper Global Tools",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["new", "tool-manifest"],
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet"
+      }
+    },
+    {
+      "label": "R# Setup",
+      "detail": "Install ReSharper Global Tools",
       "command": "dotnet",
       "type": "process",
       "args": [
-        "build",
-        "${workspaceFolder}/samples/dotnet/kernel-syntax-examples/KernelSyntaxExamples.csproj",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary",
-        "/property:DebugType=portable"
+        "tool",
+        "install",
+        "JetBrains.ReSharper.GlobalTools",
+        "--global"
       ],
-      "problemMatcher": "$msCompile",
-      "group": "build"
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet"
+      }
     },
+    // Code Formatting
     {
-      "label": "watch (KernelSyntaxExamples)",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "watch",
-        "run",
-        "--project",
-        "${workspaceFolder}/samples/dotnet/kernel-syntax-examples/KernelSyntaxExamples.csproj"
-      ],
-      "problemMatcher": "$msCompile",
-      "group": "build"
-    },
-    // If R# commands fails run:
-    // - dotnet new tool-manifest
-    // - dotnet tool install JetBrains.ReSharper.GlobalTools
-    {
+      // Requires 'R# Install' to be run first
       // r# inspect - dotnet jb inspectcode -o="inspectcode.log" --no-build -s=".\SK-dotnet.sln.DotSettings" -f=Text ".\SK-dotnet.sln"
-      "label": "R# check",
+      "label": "format-check (contributing-R#)",
       "command": "dotnet",
       "type": "process",
-      "group": "test",
+      "group": "build",
       "args": [
         "jb",
         "inspectcode",
@@ -52,10 +59,10 @@
     },
     {
       // r# cleanup - dotnet jb cleanupcode --no-build -p="Built-in: Reformat Code" -s=SK-dotnet.sln.DotSettings SK-dotnet.sln
-      "label": "R# cleanup",
+      "label": "format (contributing-R#)",
       "command": "dotnet",
       "type": "process",
-      "group": "test",
+      "group": "build",
       "args": [
         "jb",
         "cleanupcode",
@@ -70,19 +77,23 @@
       }
     },
     {
-      "label": "PR - Validate",
+      "label": "validate - (contributing-Format-Build-Test-Run)",
       "detail": "Runs tasks to validate changes before checking in.",
-      "group": "test",
+      "group": "build",
       "dependsOn": [
         "R# cleanup",
-        "Build - Semantic-Kernel",
-        "Test - Semantic-Kernel",
-        "Run - Kernel-Demo"
+        "build (Semantic-Kernel)",
+        "test (Semantic-Kernel",
+        "run (Kernel-Demo)"
       ],
       "dependsOrder": "sequence"
     },
+    // ***************
+    // Kernel (dotnet)
+    // ***************
+    // Build
     {
-      "label": "Build - Semantic-Kernel",
+      "label": "build (Semantic-Kernel)",
       "command": "dotnet",
       "type": "process",
       "args": [
@@ -99,8 +110,9 @@
         "group": "PR-Validate"
       }
     },
+    // Test
     {
-      "label": "Test - Semantic-Kernel",
+      "label": "test (Semantic-Kernel)",
       "command": "dotnet",
       "type": "process",
       "args": ["test", "SemanticKernel.UnitTests.csproj"],
@@ -116,11 +128,13 @@
       }
     },
     {
-      "label": "Test - Semantic-Kernel (Code Coverage)",
+      "label": "test (Semantic-Kernel (Code Coverage))",
       "command": "dotnet",
       "type": "process",
       "args": [
         "test",
+        "--results-directory",
+        "${workspaceFolder}/dotnet/TestResults/",
         "--collect",
         "XPlat Code Coverage;Format=lcov",
         "--filter",
@@ -138,16 +152,18 @@
       }
     },
     {
-      "label": "Test - Semantic-Kernel Integration (Code Coverage)",
+      "label": "test (Extensions (Code Coverage))",
       "command": "dotnet",
       "type": "process",
       "args": [
         "test",
+        "--results-directory",
+        "${workspaceFolder}/dotnet/TestResults/",
         "--collect",
         "XPlat Code Coverage;Format=lcov",
         "--filter",
         "${input:filter}",
-        "SemanticKernel.IntegrationTests.csproj"
+        "Extensions.UnitTests.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -156,17 +172,220 @@
         "panel": "shared"
       },
       "options": {
-        "cwd": "${workspaceFolder}/dotnet/src/SemanticKernel.IntegrationTests/"
+        "cwd": "${workspaceFolder}/dotnet/src/Extensions/Extensions.UnitTests/"
       }
     },
     {
-      "label": "Run - Kernel-Demo",
+      "label": "test (ALL (Code Coverage))",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "--results-directory",
+        "${workspaceFolder}/dotnet/TestResults/",
+        "--collect",
+        "XPlat Code Coverage;Format=lcov",
+        "--filter",
+        "${input:filter}"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/"
+      }
+    },
+    {
+      "label": "test (Semantic-Kernel Integration (Code Coverage))",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "--results-directory",
+        "${workspaceFolder}/dotnet/TestResults/",
+        "--collect",
+        "XPlat Code Coverage;Format=lcov",
+        "--filter",
+        "${input:filter}",
+        "IntegrationTests.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
+      }
+    },
+    // ****************
+    // Samples (dotnet)
+    // ****************
+    // Copilot Chat
+    {
+      "label": "run (Copilot Chat)",
+      "detail": "Run all copilot chat components",
+      "group": "test",
+      "dependsOn": ["run (CopilotChatWebApi)", "run (CopilotChatApp)"],
+      "dependsOrder": "parallel"
+    },
+    // Copilot Setup
+    {
+      "label": "install (CopilotChatApp)",
+      "detail": "Install all copilot chat app dependencies",
+      "type": "shell",
+      "group": "build",
+      "command": "yarn",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "showReuseMessage": false,
+        "panel": "shared",
+        "group": "buildTasks"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/samples/apps/copilot-chat-app/webapp"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "setup (Copilot Chat)",
+      "detail": "Setup (like setting secrets) for copilot chat app and api",
+      "group": "test",
+      "dependsOn": ["GetSecret (AIService:Key)"],
+      "dependsOrder": "sequence"
+      // TODO -- add tasks for configuring environment variables
+    },
+    {
+      "label": "GetSecret (AIService:Key)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "user-secrets",
+        "set",
+        "AIService:Key",
+        "${input:aiServiceSecret}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/samples/apps/copilot-chat-app/webapi"
+      }
+    },
+    // Copilot Chat App
+    {
+      "label": "build (CopilotChatApp)",
+      "type": "shell",
+      "group": "build",
+      "command": "yarn build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "panel": "shared",
+        "group": "buildTasks"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/samples/apps/copilot-chat-app/webapp"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run (CopilotChatApp)",
+      "type": "shell",
+      "group": "test",
+      "command": "yarn start",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "copilot"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/samples/apps/copilot-chat-app/webapp"
+      }
+    },
+    // Copilot Chat Api
+    {
+      "label": "build (CopilotChatWebApi)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "/property:DebugType=portable"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "run (CopilotChatWebApi)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "run",
         "--project",
-        "${workspaceFolder}/samples/dotnet/kernel-syntax-examples/KernelSyntaxExamples.csproj"
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "copilot"
+      }
+    },
+    {
+      "label": "watch (CopilotChatWebApi)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/samples/apps/copilot-chat-app/webapi/CopilotChatWebApi.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    // Kernel Syntax Examples
+    {
+      "label": "build (KernelSyntaxExamples)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "/property:DebugType=portable"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "watch (KernelSyntaxExamples)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "run (KernelSyntaxExamples)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -176,8 +395,9 @@
         "group": "PR-Validate"
       }
     },
+    // KernelHttpServer
     {
-      "label": "Run - Kernel HTTP Server",
+      "label": "run (KernelHttpServer)",
       "command": "func",
       "type": "shell",
       "args": ["start", "--csharp"],
@@ -191,8 +411,9 @@
         "group": "Run-Samples"
       }
     },
+    // chat-summary-webapp-react
     {
-      "label": "Run - Starter Chat WebApp React",
+      "label": "run (Starter Chat WebApp React)",
       "command": "yarn",
       "type": "shell",
       "args": ["start"],
@@ -206,8 +427,9 @@
         "group": "Run-Samples"
       }
     },
+    // book-creator-webapp-react
     {
-      "label": "Run - Book Creator WebApp React",
+      "label": "run (Book Creator WebApp React)",
       "command": "yarn",
       "type": "shell",
       "args": ["start"],
@@ -221,8 +443,9 @@
         "group": "Run-Samples"
       }
     },
+    // auth-api-webapp-react
     {
-      "label": "Run - Auth API WebApp React",
+      "label": "run (Auth API WebApp React)",
       "command": "yarn",
       "type": "shell",
       "args": ["start"],
@@ -243,6 +466,13 @@
       "type": "promptString",
       "default": "",
       "description": "Enter a filter for the tests"
+    },
+    {
+      "id": "aiServiceSecret",
+      "type": "promptString",
+      "default": "",
+      "description": "Enter a secret for Copilot Chat AIService:Key",
+      "password": true
     }
   ]
 }

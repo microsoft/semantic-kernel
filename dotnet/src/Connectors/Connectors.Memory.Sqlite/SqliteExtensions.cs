@@ -3,6 +3,7 @@
 using Microsoft.Data.Sqlite;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+
 internal static class SqliteExtensions
 {
     public static T GetFieldValue<T>(this SqliteDataReader reader, string fieldName)

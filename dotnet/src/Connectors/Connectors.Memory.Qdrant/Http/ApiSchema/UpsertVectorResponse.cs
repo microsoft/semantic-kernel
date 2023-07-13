@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
-internal class UpsertVectorResponse : QdrantResponse
+internal sealed class UpsertVectorResponse : QdrantResponse
 {
     /// <summary>
     /// Upsert result information object
@@ -23,12 +23,11 @@ internal class UpsertVectorResponse : QdrantResponse
         this.Result = result;
     }
 
-    internal class UpdateResult
+    internal sealed class UpdateResult
     {
         /// <summary>
         /// Sequential Number of the Operation
         /// </summary>
-
         [JsonPropertyName("operation_id")]
         public int OperationId { get; set; }
 

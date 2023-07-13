@@ -9,7 +9,7 @@
     "presence_penalty": 0.0,
     "frequency_penalty": 2.0
   },
-  "default_backends": [
-    "test-completion-backend"
+  "default_services": [
+    "test-completion-service"
   ]
 }

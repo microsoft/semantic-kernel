@@ -25,12 +25,12 @@ class ContextVariables:
         return self
 
     def merge_or_overwrite(
-        self, new_context: "ContextVariables", merge: bool = True
+        self, new_vars: "ContextVariables", overwrite: bool = False
     ) -> "ContextVariables":
-        if not merge:
-            self._variables = {}
-
-        self._variables.update(new_context._variables)
+        if overwrite:
+            self._variables = new_vars._variables
+        else:
+            self._variables.update(new_vars._variables)
         return self
 
     def set(self, name: str, value: str) -> "ContextVariables":

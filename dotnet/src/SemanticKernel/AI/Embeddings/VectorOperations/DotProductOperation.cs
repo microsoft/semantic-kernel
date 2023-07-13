@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
@@ -36,7 +37,7 @@ public static class DotProductOperation
             return DotProductImplementation(doubleSpanX, doubleSpanY);
         }
 
-        SupportedTypes.ThrowTypeNotSupported(typeof(TNumber));
+        EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
         return default;
     }
 
@@ -75,35 +76,35 @@ public static class DotProductOperation
             throw new ArgumentException("Array lengths must be equal");
         }
 
-        if (x.Length % 4 == 0)
+        fixed (double* pxBuffer = x, pyBuffer = y)
         {
-            return DotProduct_Len4(x, y);
-        }
+            double* px = pxBuffer, py = pyBuffer;
+            double* pxEnd = px + x.Length;
 
-        if (x.Length % 2 == 0)
-        {
-            return DotProduct_Len2(x, y);
-        }
+            double dotSum = 0;
 
-        // Vanilla Dot Product
-        fixed (double* pxBuffer = x)
-        {
-            fixed (double* pyBuffer = y)
+            if (Vector.IsHardwareAccelerated &&
+                x.Length >= Vector<double>.Count)
             {
-                double dotSum = 0;
-                double* px = pxBuffer;
-                double* pxMax = px + x.Length;
-                double* py = pyBuffer;
-                while (px < pxMax)
+                double* pxOneVectorFromEnd = pxEnd - Vector<double>.Count;
+                do
                 {
-                    // Dot product
-                    dotSum += *px * *py;
-                    ++px;
-                    ++py;
-                }
+                    dotSum += Vector.Dot(*(Vector<double>*)px, *(Vector<double>*)py); // Dot product
 
-                return dotSum;
+                    px += Vector<double>.Count;
+                    py += Vector<double>.Count;
+                } while (px <= pxOneVectorFromEnd);
             }
+
+            while (px < pxEnd)
+            {
+                dotSum += *px * *py; // Dot product
+
+                ++px;
+                ++py;
+            }
+
+            return dotSum;
         }
     }
 
@@ -114,198 +115,35 @@ public static class DotProductOperation
             throw new ArgumentException("Array lengths must be equal");
         }
 
-        if (x.Length % 4 == 0)
+        fixed (float* pxBuffer = x, pyBuffer = y)
         {
-            return DotProduct_Len4(x, y);
-        }
+            float* px = pxBuffer, py = pyBuffer;
+            float* pxEnd = px + x.Length;
 
-        if (x.Length % 2 == 0)
-        {
-            // Twice as fast
-            return DotProduct_Len2(x, y);
-        }
+            double dotSum = 0;
 
-        // Vanilla dot product
-        double dotSum = 0;
-        fixed (float* pxBuffer = x)
-        {
-            fixed (float* pyBuffer = y)
+            if (Vector.IsHardwareAccelerated &&
+                x.Length >= Vector<float>.Count)
             {
-                float* px = pxBuffer;
-                float* pxMax = px + x.Length;
-                float* py = pyBuffer;
-                while (px < pxMax)
+                float* pxOneVectorFromEnd = pxEnd - Vector<float>.Count;
+                do
                 {
-                    // Dot product
-                    dotSum += *px * *py;
-                    ++px;
-                    ++py;
-                }
+                    dotSum += Vector.Dot(*(Vector<float>*)px, *(Vector<float>*)py); // Dot product
 
-                return dotSum;
+                    px += Vector<float>.Count;
+                    py += Vector<float>.Count;
+                } while (px <= pxOneVectorFromEnd);
             }
-        }
-    }
 
-    /// <summary>
-    /// Unrolled Dot Product for even length arrays. Should typically be twice as fast.
-    /// </summary>
-    /// <returns>Accumulates to <see cref="double"/>.</returns>
-    private static unsafe double DotProduct_Len2(ReadOnlySpan<float> x, ReadOnlySpan<float> y)
-    {
-        if (x.Length != y.Length)
-        {
-            throw new ArgumentException("Array lengths must be equal");
-        }
-
-        if (x.Length % 4 != 0)
-        {
-            throw new ArgumentException("Array length must be a multiple of 2");
-        }
-
-        double dotSum1 = 0;
-        double dotSum2 = 0;
-        fixed (float* pxBuffer = x)
-        {
-            fixed (float* pyBuffer = y)
+            while (px < pxEnd)
             {
-                float* px = pxBuffer;
-                float* pxMax = px + x.Length;
-                float* py = pyBuffer;
-                while (px < pxMax)
-                {
-                    // Dot product
-                    dotSum1 += *px * *py;
-                    dotSum2 += *(px + 1) * *(py + 1);
-                    px += 2;
-                    py += 2;
-                }
+                dotSum += *px * *py; // Dot product
 
-                return dotSum1 + dotSum2;
+                ++px;
+                ++py;
             }
-        }
-    }
 
-    /// <summary>
-    /// Unrolled Dot Product for length of multiple of 4.
-    /// </summary>
-    /// <returns>Accumulates to <see cref="double"/>.</returns>
-    private static unsafe double DotProduct_Len4(ReadOnlySpan<float> x, ReadOnlySpan<float> y)
-    {
-        if (x.Length != y.Length)
-        {
-            throw new ArgumentException("Array lengths must be equal");
-        }
-
-        if (x.Length % 4 != 0)
-        {
-            throw new ArgumentException("Array length must be a multiple of 4");
-        }
-
-        double dotSum1 = 0;
-        double dotSum2 = 0;
-        double dotSum3 = 0;
-        double dotSum4 = 0;
-        fixed (float* pxBuffer = x)
-        {
-            fixed (float* pyBuffer = y)
-            {
-                float* px = pxBuffer;
-                float* pxMax = px + x.Length;
-                float* py = pyBuffer;
-                while (px < pxMax)
-                {
-                    // Dot product
-                    dotSum1 += *px * *py;
-                    dotSum2 += *(px + 1) * *(py + 1);
-                    dotSum3 += *(px + 2) * *(py + 2);
-                    dotSum4 += *(px + 3) * *(py + 3);
-                    px += 4;
-                    py += 4;
-                }
-
-                return dotSum1 + dotSum2 + dotSum3 + dotSum4;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Unrolled Dot Product for even length arrays. Should typically be twice as fast.
-    /// </summary>
-    private static unsafe double DotProduct_Len2(ReadOnlySpan<double> x, ReadOnlySpan<double> y)
-    {
-        if (x.Length != y.Length)
-        {
-            throw new ArgumentException("Array lengths must be equal");
-        }
-
-        if (x.Length % 4 != 0)
-        {
-            throw new ArgumentException("Array length must be a multiple of 2");
-        }
-
-        fixed (double* pxBuffer = x)
-        {
-            fixed (double* pyBuffer = y)
-            {
-                double dotSum1 = 0;
-                double dotSum2 = 0;
-                double* px = pxBuffer;
-                double* pxMax = px + x.Length;
-                double* py = pyBuffer;
-                while (px < pxMax)
-                {
-                    // Dot product
-                    dotSum1 += *px * *py;
-                    dotSum2 += *(px + 1) * *(py + 1);
-                    px += 2;
-                    py += 2;
-                }
-
-                return dotSum1 + dotSum2;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Unrolled Dot Product for length of multiple of 4.
-    /// </summary>
-    private static unsafe double DotProduct_Len4(ReadOnlySpan<double> x, ReadOnlySpan<double> y)
-    {
-        if (x.Length != y.Length)
-        {
-            throw new ArgumentException("Array lengths must be equal");
-        }
-
-        if (x.Length % 4 != 0)
-        {
-            throw new ArgumentException("Array length must be a multiple of 4");
-        }
-
-        fixed (double* pxBuffer = x)
-        {
-            fixed (double* pyBuffer = y)
-            {
-                double dotSum1 = 0;
-                double dotSum2 = 0;
-                double dotSum3 = 0;
-                double dotSum4 = 0;
-                double* px = pxBuffer;
-                double* pxMax = px + x.Length;
-                double* py = pyBuffer;
-                while (px < pxMax)
-                {
-                    // Dot product
-                    dotSum1 += *px * *py;
-                    dotSum2 += *(px + 1) * *(py + 1);
-                    dotSum3 += *(px + 2) * *(py + 2);
-                    dotSum4 += *(px + 3) * *(py + 3);
-                    px += 4;
-                    py += 4;
-                }
-
-                return dotSum1 + dotSum2 + dotSum3 + dotSum4;
-            }
+            return dotSum;
         }
     }
 

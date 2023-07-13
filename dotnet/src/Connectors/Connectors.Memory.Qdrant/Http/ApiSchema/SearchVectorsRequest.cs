@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-internal class SearchVectorsRequest : IValidatable
+internal sealed class SearchVectorsRequest : IValidatable
 {
     [JsonPropertyName("vector")]
     public IEnumerable<float> StartingVector { get; set; } = System.Array.Empty<float>();
@@ -119,9 +119,9 @@ internal class SearchVectorsRequest : IValidatable
             payload: this);
     }
 
-    internal class Filter : IValidatable
+    internal sealed class Filter : IValidatable
     {
-        internal class Match : IValidatable
+        internal sealed class Match : IValidatable
         {
             [JsonPropertyName("value")]
             public object Value { get; set; }
@@ -136,7 +136,7 @@ internal class SearchVectorsRequest : IValidatable
             }
         }
 
-        internal class Must : IValidatable
+        internal sealed class Must : IValidatable
         {
             [JsonPropertyName("key")]
             public string Key { get; set; }

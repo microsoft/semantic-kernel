@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// Implements the classic 'heap' data structure. By default, the item with the lowest value is at the top of the heap.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
+internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 {
     private const int DefaultCapacity = 7;
     private const int MinCapacity = 0;
@@ -21,14 +21,12 @@ public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     private T[] _items;
     private int _count;
 
-    public MinHeap(T minValue)
-        : this(minValue, DefaultCapacity)
+    public MinHeap(T minValue, int capacity = DefaultCapacity)
     {
-    }
-
-    public MinHeap(T minValue, int capacity)
-    {
-        Verify.GreaterThan(capacity, MinCapacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+        if (capacity < MinCapacity)
+        {
+            Verify.ThrowArgumentOutOfRangeException(nameof(capacity), capacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+        }
 
         this._items = new T[capacity + 1];
         //
@@ -106,11 +104,13 @@ public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
     public void Add(IList<T> items, int startAt = 0)
     {
-        Verify.NotNull(items, nameof(items));
+        Verify.NotNull(items);
 
         int newItemCount = items.Count;
-
-        Verify.LessThan(startAt, newItemCount, $"{nameof(startAt)} value must be less than {nameof(items)} count.");
+        if (startAt >= newItemCount)
+        {
+            Verify.ThrowArgumentOutOfRangeException(nameof(startAt), startAt, $"{nameof(startAt)} value must be less than {nameof(items)}.{nameof(items.Count)}.");
+        }
 
         this.EnsureCapacity(this._count + (newItemCount - startAt));
         for (int i = startAt; i < newItemCount; ++i)
@@ -148,7 +148,10 @@ public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
 
     public void EnsureCapacity(int capacity)
     {
-        Verify.GreaterThan(capacity, MinCapacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+        if (capacity < MinCapacity)
+        {
+            Verify.ThrowArgumentOutOfRangeException(nameof(capacity), capacity, $"MinHeap capacity must be greater than {MinCapacity}.");
+        }
 
         // 0th item is always a sentinel
         capacity++;
@@ -219,7 +222,7 @@ public class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         items[i] = item;
     }
 
-    public virtual IEnumerator<T> GetEnumerator()
+    public IEnumerator<T> GetEnumerator()
     {
         // The 0'th item in the queue is a sentinel. i is 1 based.
         for (int i = 1; i <= this._count; ++i)

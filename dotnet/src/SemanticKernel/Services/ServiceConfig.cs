@@ -18,7 +18,7 @@ public abstract class ServiceConfig : IServiceConfig
     /// <param name="serviceId">An identifier used to map semantic functions to AI services and models.</param>
     protected ServiceConfig(string serviceId)
     {
-        Verify.NotEmpty(serviceId, "The service Id is empty");
+        Verify.NotNullOrWhiteSpace(serviceId);
         this.ServiceId = serviceId;
     }
 }

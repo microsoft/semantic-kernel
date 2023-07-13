@@ -13,8 +13,9 @@ using System.Net.Http;
 using System.Linq;
 using Microsoft.SemanticKernel.Orchestration;
 using System;
+using AIPlugins.AzureFunctions.LinkedIn.Models;
 
-namespace AIPlugins.AzureFunctions;
+namespace AIPlugins.AzureFunctions.LinkedIn;
 
 /// <summary>
 /// Represents a host for managing and interacting with LinkedIn skills.
@@ -88,13 +89,13 @@ public class LinkedInSkillHost
         }
 
         var body = await req.ReadFromJsonAsync<PostModel>();
-        if (body == null)
+        if (body == null || body.Text == null || body.ImageUrl == null)
         {
             this._logger.LogError("Invalid request: Unsupported payload schema.");
             throw new BadRequestException("Invalid request: Unsupported payload schema.");
         }
 
-        var image = await this.LoadImageAsync(body.ImageUrl);
+        string image = await this.LoadImageAsync(body.ImageUrl);
 
         return (body.Text, image);
     }
@@ -104,9 +105,9 @@ public class LinkedInSkillHost
     /// </summary>
     /// <param name="imageUrl">The URL of the image to load.</param>
     /// <returns>A Task representing the asynchronous operation, with a string as the result containing the loaded image data.</returns>
-    private async Task<string> LoadImageAsync(string imageUrl)
+    private async Task<string> LoadImageAsync(Uri imageUrl)
     {
-        using (HttpClient httpClient = new HttpClient())
+        using (HttpClient httpClient = new())
         {
             byte[] imageBytes = await httpClient.GetByteArrayAsync(imageUrl);
 
@@ -128,7 +129,7 @@ public class LinkedInSkillHost
         var contextVariables = new ContextVariables();
         contextVariables.Set(LinkedInSkill.Parameters.AuthToken, authToken);
 
-        var personUpnResult = await this._kernel.RunAsync(contextVariables, this._kernel.Skills.GetFunction("LI", "GetPersonUpn"));
+        var personUpnResult = await this._kernel.RunAsync(contextVariables, this._kernel.Skills.GetFunction(nameof(LinkedInSkill), "GetPersonUpn"));
 
         var personUpn = personUpnResult.Result;
 
@@ -136,7 +137,7 @@ public class LinkedInSkillHost
         contextVariables.Set(LinkedInSkill.Parameters.AuthToken, authToken);
         contextVariables.Set(LinkedInSkill.Parameters.PersonURN, personUpn);
         contextVariables.Set(LinkedInSkill.Parameters.Image, encodedImage);
-        var uploadImageResult = await this._kernel.RunAsync(contextVariables, this._kernel.Skills.GetFunction("LI", "UploadImageV2"));
+        var uploadImageResult = await this._kernel.RunAsync(contextVariables, this._kernel.Skills.GetFunction(nameof(LinkedInSkill), "UploadImageV2"));
 
         //write the LI post which has the reference to the image included
         contextVariables = new ContextVariables(text);
@@ -144,6 +145,6 @@ public class LinkedInSkillHost
         contextVariables.Set(LinkedInSkill.Parameters.PersonURN, personUpn);
         contextVariables.Set(LinkedInSkill.Parameters.ImageAsset, uploadImageResult.Result); //the image asset is optional, if it's not included it will just be text
 
-        var result = await this._kernel.RunAsync(contextVariables, this._kernel.Skills.GetFunction("LI", "PostContent"));
+        var result = await this._kernel.RunAsync(contextVariables, this._kernel.Skills.GetFunction(nameof(LinkedInSkill), "PostContent"));
     }
 }

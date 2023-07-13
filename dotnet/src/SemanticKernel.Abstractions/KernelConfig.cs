@@ -2,14 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Reliability;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -32,76 +29,57 @@ public sealed class KernelConfig
     /// <summary>
     /// Text completion service factories
     /// </summary>
+    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
     public Dictionary<string, Func<IKernel, ITextCompletion>> TextCompletionServices { get; } = new();
 
     /// <summary>
     /// Chat completion service factories
     /// </summary>
+    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
     public Dictionary<string, Func<IKernel, IChatCompletion>> ChatCompletionServices { get; } = new();
 
     /// <summary>
     /// Text embedding generation service factories
     /// </summary>
+    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
     public Dictionary<string, Func<IKernel, IEmbeddingGeneration<string, float>>> TextEmbeddingGenerationServices { get; } = new();
 
     /// <summary>
     /// Image generation service factories
     /// </summary>
+    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
     public Dictionary<string, Func<IKernel, IImageGeneration>> ImageGenerationServices { get; } = new();
 
     /// <summary>
-    /// Default text completion service.
+    /// Default name used when binding services if the user doesn't provide a custom value
     /// </summary>
-    public string? DefaultTextCompletionServiceId { get; private set; }
-
-    /// <summary>
-    /// Default chat completion service.
-    /// </summary>
-    public string? DefaultChatCompletionServiceId { get; private set; }
-
-    /// <summary>
-    /// Default text embedding generation service.
-    /// </summary>
-    public string? DefaultTextEmbeddingGenerationServiceId { get; private set; }
-
-    /// <summary>
-    /// Default image generation service.
-    /// </summary>
-    public string? DefaultImageGenerationServiceId { get; private set; }
-
-    /// <summary>
-    /// Get all text completion services.
-    /// </summary>
-    /// <returns>IEnumerable of all completion service Ids in the kernel configuration.</returns>
-    public IEnumerable<string> AllTextCompletionServiceIds => this.TextCompletionServices.Keys;
-
-    /// <summary>
-    /// Get all chat completion services.
-    /// </summary>
-    /// <returns>IEnumerable of all completion service Ids in the kernel configuration.</returns>
-    public IEnumerable<string> AllChatCompletionServiceIds => this.ChatCompletionServices.Keys;
-
-    /// <summary>
-    /// Get all text embedding generation services.
-    /// </summary>
-    /// <returns>IEnumerable of all embedding service Ids in the kernel configuration.</returns>
-    public IEnumerable<string> AllTextEmbeddingGenerationServiceIds => this.TextEmbeddingGenerationServices.Keys;
+    internal string DefaultServiceId => "__SK_DEFAULT";
 
     /// <summary>
     /// Add to the list a service for text completion, e.g. Azure OpenAI Text Completion.
     /// </summary>
-    /// <param name="serviceId">Id used to identify the service</param>
     /// <param name="serviceFactory">Function used to instantiate the service object</param>
+    /// <param name="serviceId">Id used to identify the service</param>
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig AddTextCompletionService(
-        string serviceId, Func<IKernel, ITextCompletion> serviceFactory)
+        Func<IKernel, ITextCompletion> serviceFactory,
+        string? serviceId = null)
     {
-        Verify.NotEmpty(serviceId, "The service id provided is empty");
+        if (serviceId != null && serviceId.Equals(this.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.InvalidServiceConfiguration,
+                $"The service id '{serviceId}' is reserved, please use a different name");
+        }
+
+        serviceId ??= this.DefaultServiceId;
+
         this.TextCompletionServices[serviceId] = serviceFactory;
         if (this.TextCompletionServices.Count == 1)
         {
-            this.DefaultTextCompletionServiceId = serviceId;
+            this.TextCompletionServices[this.DefaultServiceId] = serviceFactory;
         }
 
         return this;
@@ -110,18 +88,28 @@ public sealed class KernelConfig
     /// <summary>
     /// Add to the list a service for chat completion, e.g. OpenAI ChatGPT.
     /// </summary>
-    /// <param name="serviceId">Id used to identify the service</param>
     /// <param name="serviceFactory">Function used to instantiate the service object</param>
+    /// <param name="serviceId">Id used to identify the service</param>
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig AddChatCompletionService(
-        string serviceId, Func<IKernel, IChatCompletion> serviceFactory)
+        Func<IKernel, IChatCompletion> serviceFactory,
+        string? serviceId = null)
     {
-        Verify.NotEmpty(serviceId, "The service id provided is empty");
+        if (serviceId != null && serviceId.Equals(this.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.InvalidServiceConfiguration,
+                $"The service id '{serviceId}' is reserved, please use a different name");
+        }
+
+        serviceId ??= this.DefaultServiceId;
+
         this.ChatCompletionServices[serviceId] = serviceFactory;
         if (this.ChatCompletionServices.Count == 1)
         {
-            this.DefaultChatCompletionServiceId = serviceId;
+            this.ChatCompletionServices[this.DefaultServiceId] = serviceFactory;
         }
 
         return this;
@@ -130,19 +118,28 @@ public sealed class KernelConfig
     /// <summary>
     /// Add to the list a service for text embedding generation, e.g. Azure OpenAI Text Embedding.
     /// </summary>
-    /// <param name="serviceId">Id used to identify the service</param>
     /// <param name="serviceFactory">Function used to instantiate the service object</param>
-    /// <param name="overwrite">Whether to overwrite a service having the same id</param>
+    /// <param name="serviceId">Id used to identify the service</param>
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig AddTextEmbeddingGenerationService(
-        string serviceId, Func<IKernel, IEmbeddingGeneration<string, float>> serviceFactory, bool overwrite = false)
+        Func<IKernel, IEmbeddingGeneration<string, float>> serviceFactory,
+        string? serviceId = null)
     {
-        Verify.NotEmpty(serviceId, "The service id provided is empty");
+        if (serviceId != null && serviceId.Equals(this.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.InvalidServiceConfiguration,
+                $"The service id '{serviceId}' is reserved, please use a different name");
+        }
+
+        serviceId ??= this.DefaultServiceId;
+
         this.TextEmbeddingGenerationServices[serviceId] = serviceFactory;
         if (this.TextEmbeddingGenerationServices.Count == 1)
         {
-            this.DefaultTextEmbeddingGenerationServiceId = serviceId;
+            this.TextEmbeddingGenerationServices[this.DefaultServiceId] = serviceFactory;
         }
 
         return this;
@@ -151,18 +148,28 @@ public sealed class KernelConfig
     /// <summary>
     /// Add to the list a service for image generation, e.g. OpenAI DallE.
     /// </summary>
-    /// <param name="serviceId">Id used to identify the service</param>
     /// <param name="serviceFactory">Function used to instantiate the service object</param>
+    /// <param name="serviceId">Id used to identify the service</param>
     /// <returns>Current object instance</returns>
     /// <exception cref="KernelException">Failure if a service with the same id already exists</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig AddImageGenerationService(
-        string serviceId, Func<IKernel, IImageGeneration> serviceFactory)
+        Func<IKernel, IImageGeneration> serviceFactory,
+        string? serviceId = null)
     {
-        Verify.NotEmpty(serviceId, "The service id provided is empty");
+        if (serviceId != null && serviceId.Equals(this.DefaultServiceId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new KernelException(
+                KernelException.ErrorCodes.InvalidServiceConfiguration,
+                $"The service id '{serviceId}' is reserved, please use a different name");
+        }
+
+        serviceId ??= this.DefaultServiceId;
+
         this.ImageGenerationServices[serviceId] = serviceFactory;
         if (this.ImageGenerationServices.Count == 1)
         {
-            this.DefaultImageGenerationServiceId = serviceId;
+            this.ImageGenerationServices[this.DefaultServiceId] = serviceFactory;
         }
 
         return this;
@@ -202,6 +209,7 @@ public sealed class KernelConfig
     /// <param name="serviceId">Identifier of completion service to use.</param>
     /// <returns>The updated kernel configuration.</returns>
     /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithDefaultAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig SetDefaultTextCompletionService(string serviceId)
     {
         if (!this.TextCompletionServices.ContainsKey(serviceId))
@@ -211,7 +219,7 @@ public sealed class KernelConfig
                 $"A text completion service id '{serviceId}' doesn't exist");
         }
 
-        this.DefaultTextCompletionServiceId = serviceId;
+        this.TextCompletionServices[this.DefaultServiceId] = this.TextCompletionServices[serviceId];
         return this;
     }
 
@@ -221,6 +229,7 @@ public sealed class KernelConfig
     /// <param name="serviceId">Identifier of text embedding service to use.</param>
     /// <returns>The updated kernel configuration.</returns>
     /// <exception cref="KernelException">Thrown if the requested service doesn't exist.</exception>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Please use one of the WithDefaultAIService extension methods in the KernelBuilder class instead.")]
     public KernelConfig SetDefaultTextEmbeddingGenerationService(string serviceId)
     {
         if (!this.TextEmbeddingGenerationServices.ContainsKey(serviceId))
@@ -230,96 +239,8 @@ public sealed class KernelConfig
                 $"A text embedding generation service id '{serviceId}' doesn't exist");
         }
 
-        this.DefaultTextEmbeddingGenerationServiceId = serviceId;
+        this.TextEmbeddingGenerationServices[this.DefaultServiceId] = this.TextEmbeddingGenerationServices[serviceId];
         return this;
-    }
-
-    #endregion
-
-    #region Get
-
-    /// <summary>
-    /// Get the text completion service configuration matching the given id or the default if an id is not provided or not found.
-    /// </summary>
-    /// <param name="serviceId">Optional identifier of the desired service.</param>
-    /// <returns>The text completion service id matching the given id or the default.</returns>
-    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
-    public string GetTextCompletionServiceIdOrDefault(string? serviceId = null)
-    {
-        if (serviceId.IsNullOrEmpty() || !this.TextCompletionServices.ContainsKey(serviceId!))
-        {
-            serviceId = this.DefaultTextCompletionServiceId;
-        }
-
-        if (serviceId.IsNullOrEmpty()) // Explicit null check for netstandard2.0
-        {
-            throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text completion service not available");
-        }
-
-        return serviceId;
-    }
-
-    /// <summary>
-    /// Get the chat completion service configuration matching the given id or the default if an id is not provided or not found.
-    /// </summary>
-    /// <param name="serviceId">Optional identifier of the desired service.</param>
-    /// <returns>The completion service id matching the given id or the default.</returns>
-    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
-    public string GetChatCompletionServiceIdOrDefault(string? serviceId = null)
-    {
-        if (serviceId.IsNullOrEmpty() || !this.ChatCompletionServices.ContainsKey(serviceId!))
-        {
-            serviceId = this.DefaultChatCompletionServiceId;
-        }
-
-        if (serviceId.IsNullOrEmpty()) // Explicit null check for netstandard2.0
-        {
-            throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Chat completion service not available");
-        }
-
-        return serviceId;
-    }
-
-    /// <summary>
-    /// Get the text embedding service configuration matching the given id or the default if an id is not provided or not found.
-    /// </summary>
-    /// <param name="serviceId">Optional identifier of the desired service.</param>
-    /// <returns>The embedding service id matching the given id or the default.</returns>
-    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
-    public string GetTextEmbeddingGenerationServiceIdOrDefault(string? serviceId = null)
-    {
-        if (serviceId.IsNullOrEmpty() || !this.TextEmbeddingGenerationServices.ContainsKey(serviceId!))
-        {
-            serviceId = this.DefaultTextEmbeddingGenerationServiceId;
-        }
-
-        if (serviceId.IsNullOrEmpty())
-        {
-            throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text embedding generation service not available");
-        }
-
-        return serviceId;
-    }
-
-    /// <summary>
-    /// Get the image generation service id matching the given id or the default if an id is not provided or not found.
-    /// </summary>
-    /// <param name="serviceId">Optional identifier of the desired service.</param>
-    /// <returns>The image generation service id matching the given id or the default.</returns>
-    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
-    public string GetImageGenerationServiceIdOrDefault(string? serviceId = null)
-    {
-        if (serviceId.IsNullOrEmpty() || !this.ImageGenerationServices.ContainsKey(serviceId!))
-        {
-            serviceId = this.DefaultImageGenerationServiceId;
-        }
-
-        if (serviceId.IsNullOrEmpty())
-        {
-            throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Image generation service not available");
-        }
-
-        return serviceId;
     }
 
     #endregion
@@ -327,61 +248,13 @@ public sealed class KernelConfig
     #region Remove
 
     /// <summary>
-    /// Remove the text completion service with the given id.
-    /// </summary>
-    /// <param name="serviceId">Identifier of service to remove.</param>
-    /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig RemoveTextCompletionService(string serviceId)
-    {
-        this.TextCompletionServices.Remove(serviceId);
-        if (this.DefaultTextCompletionServiceId == serviceId)
-        {
-            this.DefaultTextCompletionServiceId = this.TextCompletionServices.Keys.FirstOrDefault();
-        }
-
-        return this;
-    }
-
-    /// <summary>
-    /// Remove the chat completion service with the given id.
-    /// </summary>
-    /// <param name="serviceId">Identifier of service to remove.</param>
-    /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig RemoveChatCompletionService(string serviceId)
-    {
-        this.ChatCompletionServices.Remove(serviceId);
-        if (this.DefaultChatCompletionServiceId == serviceId)
-        {
-            this.DefaultChatCompletionServiceId = this.ChatCompletionServices.Keys.FirstOrDefault();
-        }
-
-        return this;
-    }
-
-    /// <summary>
-    /// Remove the text embedding generation service with the given id.
-    /// </summary>
-    /// <param name="serviceId">Identifier of service to remove.</param>
-    /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig RemoveTextEmbeddingGenerationService(string serviceId)
-    {
-        this.TextEmbeddingGenerationServices.Remove(serviceId);
-        if (this.DefaultTextEmbeddingGenerationServiceId == serviceId)
-        {
-            this.DefaultTextEmbeddingGenerationServiceId = this.TextEmbeddingGenerationServices.Keys.FirstOrDefault();
-        }
-
-        return this;
-    }
-
-    /// <summary>
     /// Remove all text completion services.
     /// </summary>
     /// <returns>The updated kernel configuration.</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public KernelConfig RemoveAllTextCompletionServices()
     {
         this.TextCompletionServices.Clear();
-        this.DefaultTextCompletionServiceId = null;
         return this;
     }
 
@@ -389,10 +262,10 @@ public sealed class KernelConfig
     /// Remove all chat completion services.
     /// </summary>
     /// <returns>The updated kernel configuration.</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public KernelConfig RemoveAllChatCompletionServices()
     {
         this.ChatCompletionServices.Clear();
-        this.DefaultChatCompletionServiceId = null;
         return this;
     }
 
@@ -400,10 +273,10 @@ public sealed class KernelConfig
     /// Remove all text embedding generation services.
     /// </summary>
     /// <returns>The updated kernel configuration.</returns>
+    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
     public KernelConfig RemoveAllTextEmbeddingGenerationServices()
     {
         this.TextEmbeddingGenerationServices.Clear();
-        this.DefaultTextEmbeddingGenerationServiceId = null;
         return this;
     }
 

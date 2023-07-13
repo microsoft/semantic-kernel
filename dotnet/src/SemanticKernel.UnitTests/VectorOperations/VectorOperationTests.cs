@@ -21,7 +21,7 @@ public class VectorOperationTests
     public void ItOnlySupportsFPDataTypes()
     {
         // Arrange
-        var target = SupportedTypes.Types;
+        var target = Embedding.SupportedTypes;
 
         // Assert
         Assert.Equal(2, target.Count());
@@ -56,14 +56,7 @@ public class VectorOperationTests
         var shortVector = new float[] { -1.0F, 4.0F };
 
         // Assert
-        try
-        {
-            shortVector.CosineSimilarity(this._floatV2);
-        }
-        catch (ArgumentException target)
-        {
-            Assert.IsType<ArgumentException>(target);
-        }
+        Assert.Throws<ArgumentException>(() => shortVector.CosineSimilarity(this._floatV2));
     }
 
     [Fact]
@@ -73,14 +66,7 @@ public class VectorOperationTests
         var shortVector = new double[] { -1.0, 4.0 };
 
         // Assert
-        try
-        {
-            shortVector.CosineSimilarity(this._doubleV2);
-        }
-        catch (ArgumentException target)
-        {
-            Assert.IsType<ArgumentException>(target);
-        }
+        Assert.Throws<ArgumentException>(() => shortVector.CosineSimilarity(this._doubleV2));
     }
 
     [Fact]
@@ -103,24 +89,34 @@ public class VectorOperationTests
         Assert.Equal(11.0, target, 5);
     }
 
-    [Fact]
-    public void ItComputesDotProductFloat()
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(1, 3.0)]
+    [InlineData(2, -11.0)]
+    [InlineData(3, -15.0)]
+    [InlineData(4, 45.0)]
+    public void ItComputesDotProductFloat(int length, double expectedResult)
     {
         // Arrange
-        var target = this._floatV1.DotProduct(this._floatV2);
+        var target = this._floatV1.AsSpan(0, length).DotProduct(this._floatV2.AsSpan(0, length));
 
         // Assert
-        Assert.Equal(45.0, target, 5);
+        Assert.Equal(expectedResult, target, 5);
     }
 
-    [Fact]
-    public void ItComputesDotProductDouble()
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(1, 3.0)]
+    [InlineData(2, -11.0)]
+    [InlineData(3, -15.0)]
+    [InlineData(4, 45.0)]
+    public void ItComputesDotProductDouble(int length, double expectedResult)
     {
         // Arrange
-        var target = this._doubleV1.DotProduct(this._doubleV2);
+        var target = this._doubleV1.AsSpan(0, length).DotProduct(this._doubleV2.AsSpan(0, length));
 
         // Assert
-        Assert.Equal(45.0, target, 5);
+        Assert.Equal(expectedResult, target, 5);
     }
 
     [Fact]

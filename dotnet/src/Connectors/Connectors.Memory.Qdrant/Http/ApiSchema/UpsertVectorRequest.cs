@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-internal class UpsertVectorRequest
+internal sealed class UpsertVectorRequest
 {
     public static UpsertVectorRequest Create(string collectionName)
     {
@@ -18,6 +18,16 @@ internal class UpsertVectorRequest
         this.Batch.Ids.Add(vectorRecord.PointId);
         this.Batch.Vectors.Add(vectorRecord.Embedding);
         this.Batch.Payloads.Add(vectorRecord.Payload);
+        return this;
+    }
+
+    public UpsertVectorRequest UpsertRange(IEnumerable<QdrantVectorRecord> vectorRecords)
+    {
+        foreach (var vectorRecord in vectorRecords)
+        {
+            this.UpsertVector(vectorRecord);
+        }
+
         return this;
     }
 
@@ -34,7 +44,7 @@ internal class UpsertVectorRequest
     [JsonPropertyName("batch")]
     public BatchRequest Batch { get; set; }
 
-    internal class BatchRequest
+    internal sealed class BatchRequest
     {
         [JsonPropertyName("ids")]
         public IList<string> Ids { get; set; }

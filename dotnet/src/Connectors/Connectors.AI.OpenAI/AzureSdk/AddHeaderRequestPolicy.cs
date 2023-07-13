@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Helper class to inject headers into Azure SDK HTTP pipeline
 /// </summary>
-internal class AddHeaderRequestPolicy : HttpPipelineSynchronousPolicy
+internal sealed class AddHeaderRequestPolicy : HttpPipelineSynchronousPolicy
 {
     private readonly string _headerName;
     private readonly string _headerValue;

@@ -4,7 +4,7 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Cosmos;
+namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCosmosDb;
 
 /// <summary>
 /// A Cosmos memory record.
@@ -37,4 +37,3 @@ public class CosmosMemoryRecord
     /// </summary>
     public string MetadataString { get; set; } = string.Empty;
 }
-

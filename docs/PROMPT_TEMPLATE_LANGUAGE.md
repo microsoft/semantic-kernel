@@ -1,4 +1,4 @@
-Prompts are the inputs or queries that a user or a program gives to an LLM AI,
+Prompts are the inputs or queries that a user or a program gives to a Large Learning Model ([LLM](https://en.wikipedia.org/wiki/Wikipedia:Large_language_models)) AI,
 in order to elicit a specific response from the model.
 
 Prompts can be natural
@@ -22,7 +22,7 @@ expressed with text.
 The language supports three basic features that allow you to (**#1**) include
 variables, (**#2**) call external functions, and (**#3**) pass parameters to functions.
 
-You don't need to write any code or import any external libraries, just use the
+It is not required to write any code or import any external libraries, just use the
 curly braces `{{...}}` to embed expressions in your prompts.
 Semantic Kernel will parse your template and execute the logic behind it.
 This way, you can easily integrate AI into your apps with minimal effort and
@@ -76,8 +76,8 @@ location **value** hardcoded in the prompt template.
 ## Design Principles
 
 The template language is designed to be simple and fast to render, allowing
-to create functions with a simple text editor, reducing special syntax to a
-minimum, and minimizing edge cases.
+to create functions with a simple text editor, using natural language, reducing
+special syntax to a minimum, and minimizing edge cases.
 
 The template language uses the **«`$`»** symbol on purpose, to clearly distinguish
 between function calls that retrieve content executing some code, from variables,
@@ -92,8 +92,7 @@ external dependencies, resulting in a fast and memory efficient processing.
 
 ## Semantic function example
 
-Here's a very simple example of a semantic function defined with a prompt
-template, using the syntax described.
+A Semantic Function is a function written in a natural language in a text file (i.e., "skprompt.txt") using SK's Prompt Template language. The following is a  simple example of a semantic function defined with a prompt template, using the syntax described.
 
 `== File: skprompt.txt ==`
 

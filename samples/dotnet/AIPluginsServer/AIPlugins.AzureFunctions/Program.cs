@@ -2,6 +2,7 @@
 
 using System;
 using AIPlugins.AzureFunctions.Extensions;
+using AIPlugins.AzureFunctions.LinkedIn;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -32,7 +33,7 @@ var host = new HostBuilder()
                 var kernel = builder.Build();
 
                 // Load your skills...
-                kernel.ImportSkill(new LinkedInSkill(), "LI");
+                kernel.ImportSkill(new LinkedInSkill());
                 //kernel.RegisterSemanticSkills(semanticSkillsFolder, logger);
 
                 return kernel;

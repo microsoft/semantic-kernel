@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
-internal class DeleteCollectionRequest : IValidatable
+internal sealed class DeleteCollectionRequest : IValidatable
 {
     public static DeleteCollectionRequest Create(string collectionName)
     {

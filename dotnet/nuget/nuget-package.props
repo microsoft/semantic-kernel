@@ -1,18 +1,18 @@
 <Project>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <IsPackable>true</IsPackable>
-    <!-- Central version prefix - applies to all nuget packages -->
-    <Version>0.12</Version>
-  </PropertyGroup>
-
   <PropertyGroup>
+    <!-- Central version prefix - applies to all nuget packages. -->
+    <Version>0.17</Version>
+
+    <Configurations>Debug;Release;Publish</Configurations>
+    <IsPackable>true</IsPackable>
+
     <!-- Default description and tags. Packages can override. -->
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <Product>Semantic Kernel</Product>
     <Description>Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
     <PackageTags>AI, Artificial Intelligence, SDK</PackageTags>
+    <PackageId>$(AssemblyName)</PackageId>
 
     <!-- Required license, copyright, and repo information. Packages can override. -->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -29,6 +29,9 @@
     <!-- Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- Include the XML documentation file in the NuGet package. -->
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,4 +45,8 @@
     <None Include="$(RepoRoot)/dotnet/nuget/icon.png" Link="icon.png" Pack="true" PackagePath="." />
     <None Include="$(RepoRoot)/dotnet/nuget/NUGET.md" Link="NUGET.md" Pack="true" PackagePath="." />
   </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
 </Project>

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
@@ -31,7 +32,7 @@ public static class DivideOperation
         }
         else
         {
-            SupportedTypes.ThrowTypeNotSupported(typeof(TNumber));
+            EmbeddingSpan<TNumber>.ThrowTEmbeddingNotSupported();
         }
     }
 
@@ -54,10 +55,23 @@ public static class DivideOperation
         fixed (float* pxBuffer = x)
         {
             float* px = pxBuffer;
-            float* pxMax = px + x.Length;
-            while (px < pxMax)
+            float* pxEnd = px + x.Length;
+
+            if (Vector.IsHardwareAccelerated &&
+                x.Length >= Vector<float>.Count)
             {
-                *px = *px / divisor;
+                Vector<float> divisorVec = new(divisor);
+                float* pxOneVectorFromEnd = pxEnd - Vector<float>.Count;
+                do
+                {
+                    *(Vector<float>*)px /= divisorVec;
+                    px += Vector<float>.Count;
+                } while (px <= pxOneVectorFromEnd);
+            }
+
+            while (px < pxEnd)
+            {
+                *px /= divisor;
                 px++;
             }
         }
@@ -68,10 +82,23 @@ public static class DivideOperation
         fixed (double* pxBuffer = x)
         {
             double* px = pxBuffer;
-            double* pxMax = px + x.Length;
-            while (px < pxMax)
+            double* pxEnd = px + x.Length;
+
+            if (Vector.IsHardwareAccelerated &&
+                x.Length >= Vector<double>.Count)
             {
-                *px = *px / divisor;
+                Vector<double> divisorVec = new(divisor);
+                double* pxOneVectorFromEnd = pxEnd - Vector<double>.Count;
+                do
+                {
+                    *(Vector<double>*)px /= divisorVec;
+                    px += Vector<double>.Count;
+                } while (px <= pxOneVectorFromEnd);
+            }
+
+            while (px < pxEnd)
+            {
+                *px /= divisor;
                 px++;
             }
         }

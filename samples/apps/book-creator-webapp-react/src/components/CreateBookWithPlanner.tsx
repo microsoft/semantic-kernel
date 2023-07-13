@@ -11,7 +11,7 @@ import {
     Spinner,
     Subtitle1,
     Subtitle2,
-    Title3
+    Title3,
 } from '@fluentui/react-components';
 import { Book24Regular, Code24Regular, Thinking24Regular } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
@@ -154,12 +154,13 @@ const CreateBookWithPlanner: FC<IData> = ({ uri, title, description, keyConfig, 
             functionName: 'createplan',
             input: JSON.stringify(ask),
             timestamp: new Date().toTimeString(),
-            uri: '/api/skills/plannerskill/invoke/createplanasync',
+            uri: '/api/planner/createplan',
         };
         setProcessHistory((processHistory) => [...processHistory, historyItem]);
     };
 
-    const onTaskCompleted = (ask: IAsk, result: string) => {
+    // TODO: refactor to support ambiguous return types (required to enable SequentialPlanner)
+    const onTaskCompleted = (ask: IAsk, result: string, variables?: IAskInput[]) => {
         var historyItem = {
             functionName: 'executeplan',
             input: JSON.stringify(ask),
@@ -168,7 +169,7 @@ const CreateBookWithPlanner: FC<IData> = ({ uri, title, description, keyConfig, 
         };
         setProcessHistory((processHistory) => [...processHistory, historyItem]);
 
-        var jsonValue = result.substring(result.indexOf('['));
+        var jsonValue = result.substring(result.indexOf('['), result.indexOf(']') + 1);
         var results = JSON.parse(jsonValue);
 
         var pages: IPage[] = [];

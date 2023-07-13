@@ -23,21 +23,19 @@ Copy and paste the following code into your project, with your Azure OpenAI key 
 ```csharp
 using Microsoft.SemanticKernel;
 
-var kernel = Kernel.Builder.Build();
+var builder = new KernelBuilder();
 
-// Azure OpenAI
-kernel.Config.AddAzureOpenAITextCompletionService(
-    "davinci-azure",                     // Alias used by the kernel
-    "text-davinci-003",                  // Azure OpenAI Deployment Name
-    "https://contoso.openai.azure.com/", // Azure OpenAI Endpoint
-    "...your Azure OpenAI Key..."        // Azure OpenAI Key
-);
+builder.WithAzureTextCompletionService(
+         "text-davinci-003",                  // Azure OpenAI Deployment Name
+         "https://contoso.openai.azure.com/", // Azure OpenAI Endpoint
+         "...your Azure OpenAI Key...");      // Azure OpenAI Key
 
 // Alternative using OpenAI
-// kernel.Config.AddOpenAITextCompletionService("davinci-openai",
-//     "text-davinci-003",               // OpenAI Model name
-//     "...your OpenAI API Key..."       // OpenAI API Key
-// );
+//builder.WithOpenAITextCompletionService(
+//         "text-davinci-003",               // OpenAI Model name
+//         "...your OpenAI API Key...");     // OpenAI API Key
+
+var kernel = builder.Build();
 
 var prompt = @"{{$input}}
 
@@ -68,7 +66,7 @@ Console.WriteLine(await summarize.InvokeAsync(text2));
 
 The previous code shows how to invoke individual semantic functions, but you can
 also chain functions (aka prompt chaining) to process the initial input with multiple
-operations. 
+operations.
 
 The following code for example, translates an initial text to math symbols and
 then generates a summary:
@@ -115,3 +113,39 @@ requirements and setup instructions.
 7. [Building Memory with Embeddings](../samples/notebooks//dotnet/06-memory-and-embeddings.ipynb)
 8. [Creating images with DALL-E 2](../samples/notebooks//dotnet/07-DALL-E-2.ipynb)
 9. [Chatting with ChatGPT and Images](../samples/notebooks//dotnet/08-chatGPT-with-DALL-E-2.ipynb)
+
+# Nuget packages
+
+Semantic Kernel provides a set of nuget packages to allow extending the core with
+more features, such as connectors to services and Skills to perform specific actions.
+Unless you need to optimize which packages to include in your app, you will usually
+start by installing this meta-package first:
+
+* **Microsoft.SemanticKernel**
+
+This meta package includes core packages and OpenAI connectors, allowing to run
+most samples and build apps with OpenAI and Azure OpenAI.
+
+Packages included in **Microsoft.SemanticKernel**:
+
+1. **Microsoft.SemanticKernel.Abstractions**: contains common interfaces and classes
+  used by the core and other SK components.
+1. **Microsoft.SemanticKernel.Core**: contains the core logic of SK, such as prompt
+  engineering, semantic memory and semantic functions definition and orchestration.
+1. **Microsoft.SemanticKernel.Connectors.AI.OpenAI**: connectors to OpenAI and Azure
+  OpenAI, allowing to run semantic functions, chats, image generation with GPT3,
+  GPT3.5, GPT4, DALL-E2. Includes also GPT tokenizers.
+
+Other SK packages available at nuget.org:
+
+1. **Microsoft.SemanticKernel.Connectors.Memory.Qdrant**: Qdrant connector for
+   skills and semantic memory.
+2. **Microsoft.SemanticKernel.Connectors.Memory.Sqlite**: SQLite connector for
+   skills and semantic memory
+3. **Microsoft.SemanticKernel.Skills.Document**: Document Skill: Word processing,
+   OpenXML, etc.
+4. **Microsoft.SemanticKernel.Skills.MsGraph**: Microsoft Graph Skill: access your
+   tenant data, schedule meetings, send emails, etc.
+5. **Microsoft.SemanticKernel.Skills.OpenAPI**: OpenAPI skill.
+6. **Microsoft.SemanticKernel.Skills.Web**: Web Skill: search the web, download
+   files, etc.
