@@ -527,9 +527,10 @@ public class ChatSkill
     /// <returns>The remaining token limit.</returns>
     private int GetChatContextTokenLimit(string userIntent)
     {
-        var remainingToken =
+        int maxTokenCount = this._chatPluginPromptOptions["Chat"].CompletionSettings.MaxTokens ?? 256;
+        int remainingToken =
             this._promptOptions.CompletionTokenLimit -
-            this._chatPluginPromptOptions["Chat"].CompletionSettings.MaxTokens -
+            maxTokenCount -
             Utilities.TokenCount(userIntent) -
             this._chatPluginPromptOptions["Chat"].PromptTokenCount;
 
@@ -541,9 +542,10 @@ public class ChatSkill
     /// </summary>
     private string GetHistoryTokenBudgetForFunc(string funcName)
     {
-        var historyTokenBudget =
+        int maxTokens = this._chatPluginPromptOptions[funcName].CompletionSettings.MaxTokens ?? 512;
+        int historyTokenBudget =
                 this._promptOptions.CompletionTokenLimit -
-                this._chatPluginPromptOptions[funcName].CompletionSettings.MaxTokens -
+                maxTokens -
                 this._chatPluginPromptOptions[funcName].PromptTokenCount;
 
         return historyTokenBudget.ToString(new NumberFormatInfo());

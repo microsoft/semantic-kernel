@@ -92,9 +92,10 @@ internal static class SemanticChatMemoryExtractor
         }
 
         // Token limit for chat history
+        int maxTokens = skillPromptOptions.CompletionSettings.MaxTokens ?? 512;
         int remainingToken =
             options.CompletionTokenLimit -
-            skillPromptOptions.CompletionSettings.MaxTokens -
+            maxTokens -
             skillPromptOptions.PromptTokenCount;
 
         memoryExtractionContext.Variables.Set("tokenLimit", remainingToken.ToString(new NumberFormatInfo()));
