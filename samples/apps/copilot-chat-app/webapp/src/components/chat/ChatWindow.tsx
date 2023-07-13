@@ -225,8 +225,10 @@ export const ChatWindow: React.FC = () => {
                     </TabList>
                 </div>
                 <div className={classes.controls}>
-                    <ParticipantsList participants={conversations[selectedId].users} />
-                    <ShareBotMenu chatId={selectedId} chatTitle={title} />
+                    <div data-testid='chatParticipantsView'> 
+                        <ParticipantsList participants={conversations[selectedId].users} />
+                    </div>
+                    <div> <ShareBotMenu chatId={selectedId} chatTitle={title} /></div>
                 </div>
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
