@@ -28,20 +28,24 @@ export const Breakpoints = {
     },
 };
 
+export const ScrollBarStyles: GriffelStyle = {
+    overflowY: 'scroll',
+    '&:hover': {
+        '&::-webkit-scrollbar-thumb': {
+            backgroundColor: tokens.colorScrollbarOverlay,
+            visibility: 'visible',
+        },
+        '&::-webkit-scrollbar-track': {
+            backgroundColor: tokens.colorNeutralBackground1,
+            WebkitBoxShadow: 'inset 0 0 5px rgba(0, 0, 0, 0.1)',
+            visibility: 'visible',
+        },
+    },
+};
+
 export const SharedStyles: Record<string, GriffelStyle> = {
     scroll: {
-        overflowY: 'scroll',
-        '&:hover': {
-            '&::-webkit-scrollbar-thumb': {
-                backgroundColor: tokens.colorScrollbarOverlay,
-                visibility: 'visible',
-            },
-            '&::-webkit-scrollbar-track': {
-                backgroundColor: tokens.colorNeutralBackground1,
-                WebkitBoxShadow: 'inset 0 0 5px rgba(0, 0, 0, 0.1)',
-                visibility: 'visible',
-            },
-        },
         height: '100%',
+        ...ScrollBarStyles,
     },
 };

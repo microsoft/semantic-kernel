@@ -118,26 +118,27 @@ const App: FC = () => {
                     <div className={classes.header}>
                         <Subtitle1 as="h1">Copilot Chat</Subtitle1>
                         <div className={classes.cornerItems}>
-                            <Button
-                                appearance="transparent"
-                                icon={
-                                    darkMode ? (
-                                        <WeatherSunny24Regular color="white" />
-                                    ) : (
-                                        <WeatherSunny24Filled color="white" />
-                                    )
-                                }
-                                onClick={() => {
-                                    setDarkMode(!darkMode);
-                                }}
-                            />
-
-                            <PluginGallery />
-                            <UserSettings
-                                setLoadingState={() => {
-                                    setAppState(AppState.SigningOut);
-                                }}
-                            />
+                            <div data-testid="logOutMenuList" className={classes.cornerItems}>
+                                <Button
+                                    appearance="transparent"
+                                    icon={
+                                        darkMode ? (
+                                            <WeatherSunny24Regular color="white" />
+                                        ) : (
+                                            <WeatherSunny24Filled color="white" />
+                                        )
+                                    }
+                                    onClick={() => {
+                                        setDarkMode(!darkMode);
+                                    }}
+                                />
+                                <PluginGallery />
+                                <UserSettings
+                                    setLoadingState={() => {
+                                        setAppState(AppState.SigningOut);
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
                     {appState === AppState.ProbeForBackend && (

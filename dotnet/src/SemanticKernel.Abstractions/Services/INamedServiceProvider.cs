@@ -2,7 +2,7 @@
 
 namespace Microsoft.SemanticKernel.Services;
 
-public interface INamedServiceProvider<TService>
+public interface INamedServiceProvider<in TService>
 {
     /// <summary>
     /// Gets the service of the specified type and name, or null if not found.
