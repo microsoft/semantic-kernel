@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 [DebuggerDisplay("Count = 0")]
 internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
 {
-    public static NullReadOnlySkillCollection Instance = new();
+    public static readonly NullReadOnlySkillCollection Instance = new();
 
     public ISKFunction GetFunction(string functionName)
     {
