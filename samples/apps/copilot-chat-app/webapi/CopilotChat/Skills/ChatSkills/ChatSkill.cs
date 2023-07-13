@@ -99,7 +99,8 @@ public class ChatSkill
             promptOptions,
             planner);
 
-        var parentDir = Path.GetFullPath(Path.Combine(System.IO.Directory.GetCurrentDirectory(), "..", "..", "..", "CopilotChat", "Skills"));
+        var projectDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
+        var parentDir = Path.GetFullPath(Path.Combine(projectDir, "CopilotChat", "Skills"));
         this._chatPlugin = this._kernel.ImportSemanticSkillFromDirectory(parentDir, "SemanticSkills");
 
         var skillDir = Path.Combine(parentDir, "SemanticSkills");
@@ -295,7 +296,8 @@ public class ChatSkill
         }
 
         // Get the prompt.txt text
-        var skillDir = Path.GetFullPath(Path.Combine(System.IO.Directory.GetCurrentDirectory(), "..", "..", "..", "CopilotChat", "Skills", "SemanticSkills"));
+        var projectDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
+        var skillDir = Path.GetFullPath(Path.Combine(projectDir, "CopilotChat", "Skills", "SemanticSkills"));
         var chatPromptText = this.GetPromptTemplateText(this._chatPlugin, skillDir, "Chat");
 
         // Invoke the model
