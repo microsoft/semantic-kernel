@@ -323,7 +323,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         acs_result = await acs_search_client.get_document(key=search_id)
 
         ## Create Memory record from document
-        acs_mem_record = convert_to_memory_record(acs_data=acs_result, include_embedding=with_embedding)
+        acs_mem_record = convert_to_memory_record(
+            acs_data=acs_result, include_embedding=with_embedding
+        )
 
         return acs_mem_record
 
@@ -442,7 +444,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         acs_result = acs_search_client.search(
             vector=Vector(value=embedding, k=limit, fields="vector"),
             select=selection_fields,
-            search_text='*',
+            search_text="*",
             top=limit,
         )
 
@@ -451,7 +453,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             return None
 
         # Convert to MemoryRecord
-        vector_result = convert_to_memory_record(acs_data=acs_result, include_embedding=with_embedding)
+        vector_result = convert_to_memory_record(
+            acs_data=acs_result, include_embedding=with_embedding
+        )
 
         return tuple(vector_result, acs_result["@search.score"])
 
@@ -493,7 +497,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         results = acs_search_client.search(
             vector=Vector(value=embedding, k=limit, fields="vector"),
             select=selection_fields,
-            search_text='*',
+            search_text="*",
             top=limit,
         )
 
@@ -504,7 +508,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             if acs_result["@search.score"] < min_relevance_score:
                 continue
 
-            vector_result = convert_to_memory_record(acs_data=acs_result, include_embedding=with_embeddings)
+            vector_result = convert_to_memory_record(
+                acs_data=acs_result, include_embedding=with_embeddings
+            )
 
             nearest_results.append(tuple(vector_result, acs_result["@search.score"]))
 
