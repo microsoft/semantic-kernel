@@ -370,7 +370,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         string skillName,
         string functionName,
         string description,
-        Meter meter,
+        Meter? meter,
         bool isSemantic = false,
         ILogger? log = null)
     {
@@ -380,6 +380,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         Verify.ParametersUniqueness(parameters);
 
         this._log = log ?? NullLogger.Instance;
+        meter?.Dispose(
+        if (meter is null)
+        {
+            meter = new Meter("Microsoft.SemanticKernel");
+        }
         this._counter_total = meter.CreateCounter<int>($"{skillName}.{functionName} total");
         this._counter_success = meter.CreateCounter<int>($"{skillName}.{functionName} success");
         this._counter_failed = meter.CreateCounter<int>($"{skillName}.{functionName} failed");
