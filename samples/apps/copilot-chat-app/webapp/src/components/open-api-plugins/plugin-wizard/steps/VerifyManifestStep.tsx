@@ -46,16 +46,22 @@ enum VerificationState {
 
 interface IVerifyManifestStepProps {
     manifestDomain?: string;
-    setPluginVerified: () => void;
+    onPluginVerified: () => void;
+    pluginManifest?: PluginManifest;
+    onManifestVerified: (manifest: PluginManifest) => void;
 }
 
-export const VerifyManifestStep: React.FC<IVerifyManifestStepProps> = ({ manifestDomain, setPluginVerified }) => {
+export const VerifyManifestStep: React.FC<IVerifyManifestStepProps> = ({
+    manifestDomain,
+    onPluginVerified,
+    pluginManifest,
+    onManifestVerified,
+}) => {
     const classes = useClasses();
     const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
     const [manifestVerificationState, setManifestVerificationState] = useState(VerificationState.Loading);
     const [openApiSpecVerificationState, setOpenApiSpecVerificationState] = useState(VerificationState.InputRequired);
-    const [pluginManifest, setPluginManifest] = useState<PluginManifest | undefined>();
 
     const setManifestFailedState = (errorMessage: string) => {
         setManifestVerificationState(VerificationState.Failed);
@@ -74,11 +80,11 @@ export const VerifyManifestStep: React.FC<IVerifyManifestStepProps> = ({ manifes
                     if (isValidPluginManifest(pluginManifest)) {
                         setManifestVerificationState(VerificationState.Success);
                         setOpenApiSpecVerificationState(VerificationState.Loading);
-                        setPluginManifest(pluginManifest);
+                        onManifestVerified(pluginManifest);
 
                         try {
                             if (isValidOpenAPISpec(pluginManifest.api.url)) {
-                                setPluginVerified();
+                                onPluginVerified();
                             }
                             setOpenApiSpecVerificationState(VerificationState.Success);
                         } catch (e: any) {
@@ -93,7 +99,7 @@ export const VerifyManifestStep: React.FC<IVerifyManifestStepProps> = ({ manifes
         } catch (e: unknown) {
             setManifestFailedState((e as Error).message);
         }
-    }, [manifestDomain, errorMessage, setErrorMessage, setPluginVerified]);
+    }, [manifestDomain, onManifestVerified, onPluginVerified]);
 
     const statusComponent = (type: FileType, status: VerificationState) => {
         const fileType = type;

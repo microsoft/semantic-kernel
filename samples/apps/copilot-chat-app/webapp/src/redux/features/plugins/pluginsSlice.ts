@@ -1,56 +1,50 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { EnablePluginPayload, initialState, Plugin, Plugins, PluginsState } from './PluginsState';
+import { BuiltInPlugins, EnablePluginPayload, initialState, Plugin, PluginsState } from './PluginsState';
 
 export const pluginsState = createSlice({
     name: 'plugins',
     initialState,
     reducers: {
         connectPlugin: (state: PluginsState, action: PayloadAction<EnablePluginPayload>) => {
-            let plugin: Plugin;
+            const plugin: Plugin = state.plugins[action.payload.plugin];
             let authData = action.payload.accessToken;
 
             switch (action.payload.plugin) {
-                case Plugins.MsGraph:
-                    plugin = state.MsGraph;
-                    break;
-                case Plugins.Jira:
-                    plugin = state.Jira;
+                case BuiltInPlugins.Jira:
                     authData = `${action.payload.email as string}:${action.payload.accessToken as string}`;
                     break;
-                case Plugins.GitHub:
-                    plugin = state.GitHub;
-                    break;
-                case Plugins.Klarna:
-                    plugin = state.Klarna;
-                    authData = 'klarna-auth-data';
-                    break;
+                default:
+                    // Custom plugins requiring no auth
+                    if (!authData || authData === '') {
+                        authData = `${plugin.headerTag}-auth-data`;
+                    }
             }
 
             plugin.enabled = true;
             plugin.authData = authData;
             plugin.apiProperties = action.payload.apiProperties;
         },
-        disconnectPlugin: (state: PluginsState, action: PayloadAction<Plugins>) => {
-            switch (action.payload) {
-                case Plugins.MsGraph:
-                    state.MsGraph = initialState.Jira;
-                    break;
-                case Plugins.Jira:
-                    state.Jira = initialState.MsGraph;
-                    break;
-                case Plugins.GitHub:
-                    state.GitHub = initialState.GitHub;
-                    break;
-                case Plugins.Klarna:
-                    state.Klarna = initialState.Klarna;
-                    break;
+        disconnectPlugin: (state: PluginsState, action: PayloadAction<string>) => {
+            const plugin = state.plugins[action.payload];
+            plugin.enabled = false;
+            plugin.authData = undefined;
+            if (plugin.apiProperties) {
+                Object.keys(plugin.apiProperties).forEach((key) => {
+                    // False, just checked above
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    plugin.apiProperties![key].value = undefined;
+                });
             }
+        },
+        addPlugin: (state: PluginsState, action: PayloadAction<Plugin>) => {
+            const newId = action.payload.name;
+            state.plugins = { ...state.plugins, [newId]: action.payload };
         },
     },
 });
 
-export const { connectPlugin, disconnectPlugin } = pluginsState.actions;
+export const { connectPlugin, disconnectPlugin, addPlugin } = pluginsState.actions;
 
 export default pluginsState.reducer;

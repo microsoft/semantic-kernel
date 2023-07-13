@@ -1,11 +1,51 @@
-import { Body1, Body2, Input, Subtitle2, Text } from '@fluentui/react-components';
-import { Dispatch, SetStateAction } from 'react';
+import {
+    Body1,
+    Body2,
+    Input,
+    InputOnChangeData,
+    Subtitle2,
+    Text,
+    makeStyles,
+    tokens,
+} from '@fluentui/react-components';
+import { ErrorCircle16Regular } from '@fluentui/react-icons';
+import { useCallback, useState } from 'react';
+
+export const useClasses = makeStyles({
+    error: {
+        display: 'flex',
+        color: tokens.colorPaletteRedBorderActive,
+        columnGap: tokens.spacingHorizontalS,
+        alignItems: 'center',
+    },
+});
+
 interface IEnterManifestStepProps {
     manifestDomain?: string;
-    setManifestDomain: Dispatch<SetStateAction<string | undefined>>;
+    setValidManifestDomain: (domain: string) => void;
 }
 
-export const EnterManifestStep: React.FC<IEnterManifestStepProps> = ({ manifestDomain, setManifestDomain }) => {
+export const EnterManifestStep: React.FC<IEnterManifestStepProps> = ({ manifestDomain, setValidManifestDomain }) => {
+    const classes = useClasses();
+
+    const [input, setInput] = useState<string>(manifestDomain ?? '');
+    const [validationError, setValidationError] = useState<string | undefined>();
+
+    const onInputChange = useCallback(
+        (ev: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
+            ev.preventDefault();
+            setInput(data.value);
+
+            try {
+                const validUrl = new URL(data.value);
+                setValidManifestDomain(validUrl.toString());
+            } catch (e) {
+                setValidationError('Domain is an invalid URL.');
+            }
+        },
+        [setValidManifestDomain],
+    );
+
     return (
         <>
             <Body2>Connect an OpenAI Plugin to expose Copilot Chat to third-party applications.</Body2>
@@ -29,10 +69,16 @@ export const EnterManifestStep: React.FC<IEnterManifestStepProps> = ({ manifestD
                 required
                 type="text"
                 id={'plugin-domain-input'}
-                value={manifestDomain}
-                onChange={(_: any, data?: { value: string }) => setManifestDomain(data?.value)}
+                value={input}
+                onChange={onInputChange}
                 placeholder={`yourdomain.com`}
             />
+            {validationError && (
+                <div className={classes.error}>
+                    <ErrorCircle16Regular />
+                    <Body1>{validationError}</Body1>
+                </div>
+            )}
             <Body1 italic>
                 Note: Copilot Chat currently only supports plugins requiring{' '}
                 <a

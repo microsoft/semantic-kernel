@@ -18,12 +18,12 @@ import { Dismiss20Regular } from '@fluentui/react-icons';
 import { FormEvent, useState } from 'react';
 import { TokenHelper } from '../../libs/auth/TokenHelper';
 import { useAppDispatch } from '../../redux/app/hooks';
-import { AdditionalApiProperties, PluginAuthRequirements, Plugins } from '../../redux/features/plugins/PluginsState';
+import { AdditionalApiProperties, PluginAuthRequirements } from '../../redux/features/plugins/PluginsState';
 import { connectPlugin } from '../../redux/features/plugins/pluginsSlice';
 import { useDialogClasses } from './styles';
 
 interface PluginConnectorProps {
-    name: Plugins;
+    name: string;
     icon: string;
     publisher: string;
     authRequirements: PluginAuthRequirements;

@@ -12,17 +12,19 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import { CheckmarkCircle48Regular, Dismiss24Regular } from '@fluentui/react-icons';
-import React, { ReactElement, useCallback, useMemo, useState } from 'react';
+import React, { ReactElement, useCallback, useState } from 'react';
+import { PluginManifest } from '../../../libs/models/PluginManifest';
+import { usePlugins } from '../../../libs/usePlugins';
 import { useDialogClasses } from '../styles';
 import { EnterManifestStep } from './steps/EnterManifestStep';
 import { VerifyManifestStep } from './steps/VerifyManifestStep';
 
 export const useClasses = makeStyles({
     root: {
-        zIndex: 5,
         height: '400px',
     },
     center: {
+        paddingTop: '75px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -48,10 +50,12 @@ enum CreatePluginSteps {
 export const PluginWizard: React.FC = () => {
     const classes = useClasses();
     const dialogClasses = useDialogClasses();
+    const plugins = usePlugins();
 
     const [activeStep, setActiveStep] = useState(CreatePluginSteps.EnterManifest);
     const [manifestDomain, setManifestDomain] = useState<string | undefined>();
     const [pluginVerified, setPluginVerified] = useState(false);
+    const [pluginManifest, setPluginManifest] = useState<PluginManifest | undefined>();
 
     const resetLocalState = useCallback(() => {
         setManifestDomain(undefined);
@@ -59,81 +63,101 @@ export const PluginWizard: React.FC = () => {
         setPluginVerified(false);
     }, []);
 
-    const wizardSteps: IWizardStep[] = useMemo(() => {
-        return [
-            {
-                id: CreatePluginSteps.EnterManifest,
-                header: 'Plugin manifest',
-                body: <EnterManifestStep manifestDomain={manifestDomain} setManifestDomain={setManifestDomain} />,
-                buttons: (
-                    <>
-                        <DialogTrigger>
-                            <Button appearance="secondary">Cancel</Button>
-                        </DialogTrigger>
-                        <Button
-                            data-testid="find-manifest-button"
-                            appearance="primary"
-                            disabled={!manifestDomain}
-                            onClick={() => {
-                                setActiveStep(CreatePluginSteps.VerifyManifest);
-                            }}
-                        >
-                            Find manifest file
+    const onAddPlugin = useCallback(() => {
+        if (pluginManifest) {
+            plugins.addCustomPlugin(pluginManifest);
+            setActiveStep(CreatePluginSteps.Confirmation);
+        } else {
+            setPluginVerified(false);
+            // TODO: add error handling
+        }
+    }, [pluginManifest, plugins]);
+
+    const onPluginVerified = useCallback(() => {
+        setPluginVerified(true);
+    }, []);
+
+    const onManifestVerified = useCallback((manifest: PluginManifest) => {
+        setPluginManifest(manifest);
+    }, []);
+
+    const setValidManifestDomain = useCallback((domain: string) => {
+        setManifestDomain(domain);
+    }, []);
+
+    const wizardSteps: IWizardStep[] = [
+        {
+            id: CreatePluginSteps.EnterManifest,
+            header: 'Plugin manifest',
+            body: <EnterManifestStep manifestDomain={manifestDomain} setValidManifestDomain={setValidManifestDomain} />,
+            buttons: (
+                <>
+                    <DialogTrigger>
+                        <Button appearance="secondary">Cancel</Button>
+                    </DialogTrigger>
+                    <Button
+                        data-testid="find-manifest-button"
+                        appearance="primary"
+                        disabled={!manifestDomain}
+                        onClick={() => {
+                            setActiveStep(CreatePluginSteps.VerifyManifest);
+                        }}
+                    >
+                        Find manifest file
+                    </Button>
+                </>
+            ),
+        },
+        {
+            id: CreatePluginSteps.VerifyManifest,
+            header: 'Verify Plugin',
+            body: (
+                <VerifyManifestStep
+                    manifestDomain={manifestDomain}
+                    onPluginVerified={onPluginVerified}
+                    pluginManifest={pluginManifest}
+                    onManifestVerified={onManifestVerified}
+                />
+            ),
+            buttons: (
+                <>
+                    <Button
+                        data-testid="find-manifest-button"
+                        appearance="secondary"
+                        onClick={() => {
+                            setActiveStep(CreatePluginSteps.EnterManifest);
+                        }}
+                    >
+                        Back
+                    </Button>
+                    <Button
+                        data-testid="find-manifest-button"
+                        appearance="primary"
+                        disabled={!pluginVerified}
+                        onClick={onAddPlugin}
+                    >
+                        Add Plugin
+                    </Button>
+                </>
+            ),
+        },
+        {
+            id: CreatePluginSteps.Confirmation,
+            body: (
+                <div className={classes.center}>
+                    <CheckmarkCircle48Regular color="green" />
+                    <Text size={600} align="center">
+                        Your plugin has been added successfully! Navigate back to the Gallery to enable it.
+                    </Text>
+                    <DialogTrigger>
+                        <Button data-testid="close-plugin-wizard" aria-label="Close Wizard" appearance="secondary">
+                            Close
                         </Button>
-                    </>
-                ),
-            },
-            {
-                id: CreatePluginSteps.VerifyManifest,
-                header: 'Verify Plugin',
-                body: (
-                    <VerifyManifestStep
-                        manifestDomain={manifestDomain}
-                        setPluginVerified={() => setPluginVerified(true)}
-                    />
-                ),
-                buttons: (
-                    <>
-                        <Button
-                            data-testid="find-manifest-button"
-                            appearance="secondary"
-                            onClick={() => {
-                                setActiveStep(CreatePluginSteps.EnterManifest);
-                            }}
-                        >
-                            Back
-                        </Button>
-                        <Button
-                            data-testid="find-manifest-button"
-                            appearance="primary"
-                            disabled={!pluginVerified}
-                            onClick={() => {
-                                setActiveStep(CreatePluginSteps.Confirmation);
-                            }}
-                        >
-                            Add Plugin
-                        </Button>
-                    </>
-                ),
-            },
-            {
-                id: CreatePluginSteps.Confirmation,
-                body: (
-                    <div className={classes.center}>
-                        <CheckmarkCircle48Regular color="green" />
-                        <Text size={600} align="center">
-                            Your plugin has been added successfully! Navigate back to the Gallery to enable it.
-                        </Text>
-                        <DialogTrigger>
-                            <Button data-testid="close-plugin-wizard" aria-label="Close Wizard" appearance="secondary">
-                                Close
-                            </Button>
-                        </DialogTrigger>
-                    </div>
-                ),
-            },
-        ];
-    }, [manifestDomain, pluginVerified, setPluginVerified, classes.center]);
+                    </DialogTrigger>
+                </div>
+            ),
+        },
+    ];
 
     const currentStep = wizardSteps[activeStep];
 
@@ -153,14 +177,16 @@ export const PluginWizard: React.FC = () => {
                 <DialogBody className={classes.root}>
                     <DialogTitle
                         action={
-                            <DialogTrigger action="close">
-                                <Button
-                                    data-testid="closeEnableCCPluginsPopUp"
-                                    appearance="subtle"
-                                    aria-label="close"
-                                    icon={<Dismiss24Regular />}
-                                />
-                            </DialogTrigger>
+                            currentStep.id < CreatePluginSteps.Confirmation ? (
+                                <DialogTrigger action="close">
+                                    <Button
+                                        data-testid="closeEnableCCPluginsPopUp"
+                                        appearance="subtle"
+                                        aria-label="close"
+                                        icon={<Dismiss24Regular />}
+                                    />
+                                </DialogTrigger>
+                            ) : undefined
                         }
                     >
                         {currentStep.header}

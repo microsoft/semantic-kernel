@@ -61,7 +61,7 @@ export const useChat = () => {
         isTyping: false,
     };
 
-    const plugins = useAppSelector((state: RootState) => state.plugins);
+    const { plugins } = useAppSelector((state: RootState) => state.plugins);
 
     const getChatUserById = (id: string, chatId: string, users: IChatUser[]) => {
         if (id === `${chatId}-bot` || id.toLocaleLowerCase() === 'bot') return Constants.bot.profile;
