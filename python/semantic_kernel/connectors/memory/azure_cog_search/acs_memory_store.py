@@ -90,7 +90,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         if not service_endpoint:
             raise ValueError(
-                "Error: A valid azure cognitive search client endpoint is required."
+                "Error: A valid Azure Cognitive Search client endpoint is required."
             )
 
         self._cogsearch_indexclient = SearchIndexClient(
