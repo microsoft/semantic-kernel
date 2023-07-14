@@ -14,7 +14,7 @@ from semantic_kernel.utils.null_logger import NullLogger
 def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict:
     """Convert a memoryrecord into a dict.
     Args:
-        mem (MemoryRecord): MemoryRecrod to convert.
+        mem (MemoryRecord): MemoryRecord to convert.
 
     Returns:
         dict: Dict result.
