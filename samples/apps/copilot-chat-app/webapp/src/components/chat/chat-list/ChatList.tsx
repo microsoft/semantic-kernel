@@ -21,10 +21,12 @@ import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { addAlert } from '../../../redux/features/app/appSlice';
+import { FeatureKeys } from '../../../redux/features/app/AppState';
 import { Conversations } from '../../../redux/features/conversations/ConversationsState';
 import { Breakpoints } from '../../../styles';
 import { FileUploader } from '../../FileUploader';
 import { NewBotMenu } from './bot-menu/NewBotMenu';
+import { SimplifiedNewBotMenu } from './bot-menu/SimplifiedNewBotMenu';
 import { ChatListItem } from './ChatListItem';
 
 const useClasses = makeStyles({
@@ -94,6 +96,7 @@ const useClasses = makeStyles({
 
 export const ChatList: FC = () => {
     const classes = useClasses();
+    const { features } = useAppSelector((state: RootState) => state.app);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     const [isFiltering, setIsFiltering] = useState(false);
@@ -178,31 +181,37 @@ export const ChatList: FC = () => {
     return (
         <div className={classes.root}>
             <div className={classes.header}>
-                {!isFiltering && (
+                {features[FeatureKeys.SimplifiedExperience].enabled ? (
+                    <SimplifiedNewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
+                ) : (
                     <>
-                        <Text weight="bold" size={500} className={classes.title} as="h2">
-                            Conversations
-                        </Text>
+                        {!isFiltering && (
+                            <>
+                                <Text weight="bold" size={500} className={classes.title} as="h2">
+                                    Conversations
+                                </Text>
 
-                        <Button icon={<Filter20 />} appearance="transparent" onClick={onFilterClick} />
-                        <NewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
+                                <Button icon={<Filter20 />} appearance="transparent" onClick={onFilterClick} />
+                                <NewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
 
-                        <FileUploader
-                            ref={fileUploaderRef}
-                            acceptedExtensions={['.txt', '.json']}
-                            onSelectedFile={onUpload}
-                        />
-                    </>
-                )}
-                {isFiltering && (
-                    <>
-                        <Input
-                            placeholder="Filter by name"
-                            className={mergeClasses(classes.input, classes.title)}
-                            onChange={onSearch}
-                            autoFocus
-                        />
-                        <Button icon={<Dismiss20 />} appearance="transparent" onClick={onFilterCancel} />
+                                <FileUploader
+                                    ref={fileUploaderRef}
+                                    acceptedExtensions={['.txt', '.json']}
+                                    onSelectedFile={onUpload}
+                                />
+                            </>
+                        )}
+                        {isFiltering && (
+                            <>
+                                <Input
+                                    placeholder="Filter by name"
+                                    className={mergeClasses(classes.input, classes.title)}
+                                    onChange={onSearch}
+                                    autoFocus
+                                />
+                                <Button icon={<Dismiss20 />} appearance="transparent" onClick={onFilterCancel} />
+                            </>
+                        )}
                     </>
                 )}
             </div>

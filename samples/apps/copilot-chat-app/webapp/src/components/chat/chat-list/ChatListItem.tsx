@@ -9,12 +9,16 @@ import {
     Text,
     tokens,
 } from '@fluentui/react-components';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Constants } from '../../../Constants';
-import { useAppDispatch } from '../../../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
+import { FeatureKeys } from '../../../redux/features/app/AppState';
 import { setSelectedConversation } from '../../../redux/features/conversations/conversationsSlice';
 import { Breakpoints } from '../../../styles';
 import { timestampToDateString } from '../../utils/TextUtils';
+import { EditChatName } from '../shared/EditChatName';
+import { ListItemActions } from './ListItemActions';
 
 const useClasses = makeStyles({
     root: {
@@ -34,12 +38,14 @@ const useClasses = makeStyles({
     },
     body: {
         minWidth: 0,
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
         marginLeft: tokens.spacingHorizontalXS,
         ...Breakpoints.small({
             display: 'none',
         }),
+        alignSelf: 'center',
     },
     header: {
         flexGrow: 1,
@@ -68,7 +74,7 @@ const useClasses = makeStyles({
         whiteSpace: 'nowrap',
         lineHeight: tokens.lineHeightBase100,
         color: tokens.colorNeutralForeground2,
-        ...shorthands.overflow('hidden')
+        ...shorthands.overflow('hidden'),
     },
     popoverSurface: {
         display: 'none',
@@ -79,7 +85,7 @@ const useClasses = makeStyles({
     },
     selected: {
         backgroundColor: tokens.colorNeutralBackground1,
-    }
+    },
 });
 
 interface IChatListItemProps {
@@ -101,6 +107,12 @@ export const ChatListItem: FC<IChatListItemProps> = ({
 }) => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
+    const { features } = useAppSelector((state: RootState) => state.app);
+
+    const showPreview = !features[FeatureKeys.SimplifiedExperience].enabled && preview;
+    const showActions = features[FeatureKeys.SimplifiedExperience].enabled && isSelected;
+
+    const [editingTitle, setEditingTitle] = useState(false);
 
     const onClick = (_ev: any) => {
         dispatch(setSelectedConversation(id));
@@ -119,25 +131,42 @@ export const ChatListItem: FC<IChatListItemProps> = ({
             <PopoverTrigger disableButtonEnhancement>
                 <div className={mergeClasses(classes.root, isSelected && classes.selected)} onClick={onClick}>
                     <Persona avatar={{ image: { src: botProfilePicture } }} presence={{ status: 'available' }} />
-                    <div className={classes.body}>
-                        <div className={classes.header}>
-                            <Text className={classes.title}>
-                                {header}
-                            </Text>
-                            <Text className={classes.timestamp} size={300}>
-                                {time}
-                            </Text>
-                        </div>
-                        {preview && (
-                            <>
-                                {
-                                    <Text id={`message-preview-${id}`} size={200} className={classes.previewText}>
-                                        {preview}
-                                    </Text>
-                                }
-                            </>
-                        )}
-                    </div>
+                    {editingTitle ? (
+                        <EditChatName name={header} chatId={id} exitEdits={() => setEditingTitle(false)} />
+                    ) : (
+                        <>
+                            <div className={classes.body}>
+                                <div className={classes.header}>
+                                    <Text className={classes.title}>{header}</Text>
+                                    {!features[FeatureKeys.SimplifiedExperience].enabled && (
+                                        <Text className={classes.timestamp} size={300}>
+                                            {time}
+                                        </Text>
+                                    )}
+                                </div>
+                                {showPreview && (
+                                    <>
+                                        {
+                                            <Text
+                                                id={`message-preview-${id}`}
+                                                size={200}
+                                                className={classes.previewText}
+                                            >
+                                                {preview}
+                                            </Text>
+                                        }
+                                    </>
+                                )}
+                            </div>
+                            {showActions && (
+                                <ListItemActions
+                                    chatId={id}
+                                    chatTitle={header}
+                                    onEditTitleClick={() => setEditingTitle(true)}
+                                />
+                            )}
+                        </>
+                    )}
                 </div>
             </PopoverTrigger>
             <PopoverSurface className={classes.popoverSurface}>
