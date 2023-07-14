@@ -6,13 +6,14 @@ import { AuthorRoles, ChatMessageType, IChatMessage } from '../../../libs/models
 import { GetResponseOptions, useChat } from '../../../libs/useChat';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { FeatureKeys } from '../../../redux/features/app/AppState';
 import { Breakpoints } from '../../../styles';
 import { timestampToDateString } from '../../utils/TextUtils';
 import { PlanViewer } from '../plan-viewer/PlanViewer';
 import { PromptDetails } from '../prompt-details/PromptDetails';
+import * as utils from './../../utils/TextUtils';
 import { ChatHistoryDocumentContent } from './ChatHistoryDocumentContent';
 import { ChatHistoryTextContent } from './ChatHistoryTextContent';
-import * as utils from './../../utils/TextUtils';
 
 const useClasses = makeStyles({
     root: {
@@ -41,7 +42,7 @@ const useClasses = makeStyles({
         ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalL),
     },
     me: {
-        backgroundColor: "#e8ebf9",
+        backgroundColor: '#e8ebf9',
     },
     time: {
         color: tokens.colorNeutralForeground3,
@@ -71,7 +72,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
 
     const chat = useChat();
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
 
     const isMe = message.authorRole === AuthorRoles.User && message.userId === activeUserInfo?.id;
     const isBot = message.authorRole === AuthorRoles.Bot;
@@ -99,7 +100,17 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
             data-username={fullName}
             data-content={utils.formatChatTextContent(message.content)}
         >
-            {!isMe && <Persona className={classes.persona} avatar={avatar} presence={{ status: 'available' }} />}
+            {
+                <Persona
+                    className={classes.persona}
+                    avatar={avatar}
+                    presence={
+                        !features[FeatureKeys.SimplifiedExperience].enabled && !isMe
+                            ? { status: 'available' }
+                            : undefined
+                    }
+                />
+            }
             <div className={isMe ? mergeClasses(classes.item, classes.me) : classes.item}>
                 <div className={classes.header}>
                     {!isMe && <Text weight="semibold">{fullName}</Text>}

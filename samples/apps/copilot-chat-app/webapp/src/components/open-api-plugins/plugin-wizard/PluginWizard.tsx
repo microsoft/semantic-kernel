@@ -149,7 +149,7 @@ export const PluginWizard: React.FC = () => {
                     <Text size={600} align="center">
                         Your plugin has been added successfully! Navigate back to the Gallery to enable it.
                     </Text>
-                    <DialogTrigger>
+                    <DialogTrigger disableButtonEnhancement>
                         <Button data-testid="close-plugin-wizard" aria-label="Close Wizard" appearance="secondary">
                             Close
                         </Button>
@@ -178,7 +178,7 @@ export const PluginWizard: React.FC = () => {
                     <DialogTitle
                         action={
                             currentStep.id < CreatePluginSteps.Confirmation ? (
-                                <DialogTrigger action="close">
+                                <DialogTrigger action="close" disableButtonEnhancement>
                                     <Button
                                         data-testid="closeEnableCCPluginsPopUp"
                                         appearance="subtle"

@@ -10,7 +10,6 @@ import {
     Text,
     tokens,
 } from '@fluentui/react-components';
-import { bundleIcon, Dismiss20Filled, Dismiss20Regular, Filter20Filled, Filter20Regular } from '@fluentui/react-icons';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { AlertType } from '../../../libs/models/AlertType';
 import { Bot } from '../../../libs/models/Bot';
@@ -21,11 +20,14 @@ import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { addAlert } from '../../../redux/features/app/appSlice';
+import { FeatureKeys } from '../../../redux/features/app/AppState';
 import { Conversations } from '../../../redux/features/conversations/ConversationsState';
 import { Breakpoints } from '../../../styles';
 import { FileUploader } from '../../FileUploader';
+import { Dismiss20, Filter20 } from '../../shared/BundledIcons';
+import { NewBotMenu } from './bot-menu/NewBotMenu';
+import { SimplifiedNewBotMenu } from './bot-menu/SimplifiedNewBotMenu';
 import { ChatListItem } from './ChatListItem';
-import { NewBotMenu } from './NewBotMenu';
 
 const useClasses = makeStyles({
     root: {
@@ -94,6 +96,7 @@ const useClasses = makeStyles({
 
 export const ChatList: FC = () => {
     const classes = useClasses();
+    const { features } = useAppSelector((state: RootState) => state.app);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     const [isFiltering, setIsFiltering] = useState(false);
@@ -103,9 +106,6 @@ export const ChatList: FC = () => {
     const chat = useChat();
     const fileHandler = useFile();
     const dispatch = useAppDispatch();
-
-    const Dismiss20 = bundleIcon(Dismiss20Filled, Dismiss20Regular);
-    const Filter20 = bundleIcon(Filter20Filled, Filter20Regular);
 
     const sortConversations = (conversations: Conversations): Conversations => {
         // sort conversations by last activity
@@ -178,31 +178,35 @@ export const ChatList: FC = () => {
     return (
         <div className={classes.root}>
             <div className={classes.header}>
-                {!isFiltering && (
+                {features[FeatureKeys.SimplifiedExperience].enabled ? (
+                    <SimplifiedNewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
+                ) : (
                     <>
-                        <Text weight="bold" size={500} className={classes.title} as="h2">
-                            Conversations
-                        </Text>
-
-                        <Button icon={<Filter20 />} appearance="transparent" onClick={onFilterClick} />
-                        <NewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
-
-                        <FileUploader
-                            ref={fileUploaderRef}
-                            acceptedExtensions={['.txt', '.json']}
-                            onSelectedFile={onUpload}
-                        />
-                    </>
-                )}
-                {isFiltering && (
-                    <>
-                        <Input
-                            placeholder="Filter by name"
-                            className={mergeClasses(classes.input, classes.title)}
-                            onChange={onSearch}
-                            autoFocus
-                        />
-                        <Button icon={<Dismiss20 />} appearance="transparent" onClick={onFilterCancel} />
+                        {!isFiltering && (
+                            <>
+                                <Text weight="bold" size={500} className={classes.title} as="h2">
+                                    Conversations
+                                </Text>
+                                <Button icon={<Filter20 />} appearance="transparent" onClick={onFilterClick} />
+                                <NewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
+                                <FileUploader
+                                    ref={fileUploaderRef}
+                                    acceptedExtensions={['.txt', '.json']}
+                                    onSelectedFile={onUpload}
+                                />
+                            </>
+                        )}
+                        {isFiltering && (
+                            <>
+                                <Input
+                                    placeholder="Filter by name"
+                                    className={mergeClasses(classes.input, classes.title)}
+                                    onChange={onSearch}
+                                    autoFocus
+                                />
+                                <Button icon={<Dismiss20 />} appearance="transparent" onClick={onFilterCancel} />
+                            </>
+                        )}
                     </>
                 )}
             </div>
