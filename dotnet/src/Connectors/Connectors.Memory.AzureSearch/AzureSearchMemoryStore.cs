@@ -21,6 +21,9 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.AzureSearch;
 
 public class AzureSearchMemoryStore : IMemoryStore
 {
+    // Note: Azure max length 24 chars
+    private const string UserAgent = "Semantic-Kernel";
+
     /// <summary>
     /// Create a new instance of memory storage using Azure Cognitive Search.
     /// </summary>
@@ -29,7 +32,7 @@ public class AzureSearchMemoryStore : IMemoryStore
     public AzureSearchMemoryStore(string endpoint, string apiKey)
     {
         AzureKeyCredential credentials = new(apiKey);
-        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials);
+        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, ClientOptions());
     }
 
     /// <summary>
@@ -39,7 +42,7 @@ public class AzureSearchMemoryStore : IMemoryStore
     /// <param name="credentials">Azure service</param>
     public AzureSearchMemoryStore(string endpoint, TokenCredential credentials)
     {
-        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials);
+        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, ClientOptions());
     }
 
     /// <inheritdoc />
@@ -380,6 +383,50 @@ public class AzureSearchMemoryStore : IMemoryStore
         }
 
         return client;
+    }
+
+    /// <summary>
+    /// Options used by the Azure Search client, e.g. User Agent.
+    /// See also https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
+    /// </summary>
+    private static SearchClientOptions ClientOptions()
+    {
+        return new SearchClientOptions
+        {
+            Diagnostics =
+            {
+                IsTelemetryEnabled = IsTelemetryEnabled(),
+                ApplicationId = UserAgent,
+            },
+        };
+    }
+
+    /// <summary>
+    /// Source: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
+    /// </summary>
+    private static bool IsTelemetryEnabled()
+    {
+        return !EnvironmentVariableToBool(Environment.GetEnvironmentVariable("AZURE_TELEMETRY_DISABLED")) ?? true;
+    }
+
+    /// <summary>
+    /// Source: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
+    /// </summary>
+    private static bool? EnvironmentVariableToBool(string? value)
+    {
+        if (string.Equals(bool.TrueString, value, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals("1", value, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (string.Equals(bool.FalseString, value, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals("0", value, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return null;
     }
 
     #endregion

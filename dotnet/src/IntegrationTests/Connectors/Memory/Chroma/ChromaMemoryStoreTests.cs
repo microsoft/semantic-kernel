@@ -327,7 +327,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var nearestMatch = await this._chromaMemoryStore.GetNearestMatchAsync(collectionName, searchEmbedding, withEmbedding: true);
 
         // Assert
-        Assert.Null(nearestMatch.Value.Item1);
+        Assert.Null(nearestMatch?.Item1);
     }
 
     [Fact(Skip = SkipReason)]
