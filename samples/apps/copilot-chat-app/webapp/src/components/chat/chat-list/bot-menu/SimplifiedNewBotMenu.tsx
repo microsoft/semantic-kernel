@@ -12,11 +12,11 @@ import {
     MenuTrigger,
     Tooltip,
 } from '@fluentui/react-components';
-import { AddFilled, AddRegular, bundleIcon } from '@fluentui/react-icons';
 import { useChat } from '../../../../libs/useChat';
 import { useAppSelector } from '../../../../redux/app/hooks';
 import { RootState } from '../../../../redux/app/store';
 import { FeatureKeys } from '../../../../redux/features/app/AppState';
+import { Add20 } from '../../../shared/BundledIcons';
 import { InvitationJoinDialog } from '../../invitation-dialog/InvitationJoinDialog';
 
 interface SimplifiedNewBotMenuProps {
@@ -30,8 +30,6 @@ export const SimplifiedNewBotMenu: FC<SimplifiedNewBotMenuProps> = ({ onFileUplo
     // It needs to keep the menu open to keep the FileUploader reference
     // when the file uploader is clicked.
     const [isJoiningBot, setIsJoiningBot] = useState(false);
-
-    const BotAdd20 = bundleIcon(AddFilled, AddRegular);
 
     const onAddChat = () => {
         void chat.createChat();
@@ -49,11 +47,7 @@ export const SimplifiedNewBotMenu: FC<SimplifiedNewBotMenuProps> = ({ onFileUplo
             <Menu>
                 <MenuTrigger disableButtonEnhancement>
                     <Tooltip content="Add a chat" relationship="label">
-                        <Button
-                            data-testid="createNewConversationButton"
-                            icon={<BotAdd20 />}
-                            appearance="transparent"
-                        />
+                        <Button data-testid="createNewConversationButton" icon={<Add20 />} appearance="transparent" />
                     </Tooltip>
                 </MenuTrigger>
                 <MenuPopover>
@@ -74,7 +68,7 @@ export const SimplifiedNewBotMenu: FC<SimplifiedNewBotMenuProps> = ({ onFileUplo
                             disabled={!features[FeatureKeys.MultiUserChat].enabled}
                             onClick={onJoinClick}
                         >
-                            Add Live Chat Code
+                            Join Shared Chat
                         </MenuItem>
                     </MenuList>
                 </MenuPopover>

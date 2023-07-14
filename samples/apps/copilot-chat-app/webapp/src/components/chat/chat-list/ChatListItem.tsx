@@ -130,7 +130,12 @@ export const ChatListItem: FC<IChatListItemProps> = ({
         >
             <PopoverTrigger disableButtonEnhancement>
                 <div className={mergeClasses(classes.root, isSelected && classes.selected)} onClick={onClick}>
-                    <Persona avatar={{ image: { src: botProfilePicture } }} presence={{ status: 'available' }} />
+                    <Persona
+                        avatar={{ image: { src: botProfilePicture } }}
+                        presence={
+                            !features[FeatureKeys.SimplifiedExperience].enabled ? { status: 'available' } : undefined
+                        }
+                    />
                     {editingTitle ? (
                         <EditChatName name={header} chatId={id} exitEdits={() => setEditingTitle(false)} />
                     ) : (
@@ -161,7 +166,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                             {showActions && (
                                 <ListItemActions
                                     chatId={id}
-                                    chatTitle={header}
+                                    chatName={header}
                                     onEditTitleClick={() => setEditingTitle(true)}
                                 />
                             )}

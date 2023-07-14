@@ -19,6 +19,7 @@ import {
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState, resetState } from '../../redux/app/store';
+import { FeatureKeys } from '../../redux/features/app/AppState';
 import { SettingsDialog } from './settings-dialog.tsx/SettingsDialog';
 
 export const useClasses = makeStyles({
@@ -38,7 +39,7 @@ export const UserSettingsMenu: FC<IUserSettingsProps> = ({ setLoadingState }) =>
     const classes = useClasses();
     const { instance } = useMsal();
 
-    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
 
     const [openSettingsDialog, setOpenSettingsDialog] = useState(false);
 
@@ -58,7 +59,11 @@ export const UserSettingsMenu: FC<IUserSettingsProps> = ({ setLoadingState }) =>
                             key={activeUserInfo?.username}
                             name={activeUserInfo?.username}
                             size={28}
-                            badge={{ status: 'available' }}
+                            badge={
+                                !features[FeatureKeys.SimplifiedExperience].enabled
+                                    ? { status: 'available' }
+                                    : undefined
+                            }
                         />
                     }
                 </MenuTrigger>
@@ -68,7 +73,11 @@ export const UserSettingsMenu: FC<IUserSettingsProps> = ({ setLoadingState }) =>
                             className={classes.persona}
                             name={activeUserInfo?.username}
                             secondaryText={activeUserInfo?.email}
-                            presence={{ status: 'available' }}
+                            presence={
+                                !features[FeatureKeys.SimplifiedExperience].enabled
+                                    ? { status: 'available' }
+                                    : undefined
+                            }
                             avatar={{ color: 'colorful' }}
                         />
                         <MenuDivider />

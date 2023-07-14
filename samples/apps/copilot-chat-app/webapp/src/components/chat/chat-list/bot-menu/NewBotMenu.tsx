@@ -3,17 +3,12 @@
 import { FC, useState } from 'react';
 
 import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tooltip } from '@fluentui/react-components';
-import {
-    ArrowUploadRegular,
-    BotAdd20Filled,
-    BotAdd20Regular,
-    PeopleTeamAddRegular,
-    bundleIcon,
-} from '@fluentui/react-icons';
+import { ArrowUploadRegular, BotAdd20Regular, PeopleTeamAddRegular } from '@fluentui/react-icons';
 import { useChat } from '../../../../libs/useChat';
 import { useAppSelector } from '../../../../redux/app/hooks';
 import { RootState } from '../../../../redux/app/store';
 import { FeatureKeys } from '../../../../redux/features/app/AppState';
+import { BotAdd20 } from '../../../shared/BundledIcons';
 import { InvitationJoinDialog } from '../../invitation-dialog/InvitationJoinDialog';
 
 interface NewBotMenuProps {
@@ -27,8 +22,6 @@ export const NewBotMenu: FC<NewBotMenuProps> = ({ onFileUpload }) => {
     // It needs to keep the menu open to keep the FileUploader reference
     // when the file uploader is clicked.
     const [isJoiningBot, setIsJoiningBot] = useState(false);
-
-    const BotAdd20 = bundleIcon(BotAdd20Filled, BotAdd20Regular);
 
     const onAddChat = () => {
         void chat.createChat();

@@ -1,22 +1,17 @@
 import { useMsal } from '@azure/msal-react';
 import { Button } from '@fluentui/react-button';
 import { makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
-import {
-    Checkmark20Filled,
-    Checkmark20Regular,
-    Dismiss20Filled,
-    Dismiss20Regular,
-    bundleIcon,
-} from '@fluentui/react-icons';
 import { Input, InputOnChangeData } from '@fluentui/react-input';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AuthHelper } from '../../../libs/auth/AuthHelper';
 import { AlertType } from '../../../libs/models/AlertType';
 import { ChatService } from '../../../libs/services/ChatService';
-import { useAppDispatch } from '../../../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
 import { addAlert } from '../../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../../redux/features/conversations/conversationsSlice';
 import { Breakpoints } from '../../../styles';
+import { Checkmark20, Dismiss20 } from '../../shared/BundledIcons';
 
 const useClasses = makeStyles({
     root: {
@@ -46,11 +41,13 @@ export const EditChatName: React.FC<IEditChatNameProps> = ({ name, chatId, exitE
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
-
-    const Dismiss20 = bundleIcon(Dismiss20Filled, Dismiss20Regular);
-    const Checkmark20 = bundleIcon(Checkmark20Filled, Checkmark20Regular);
+    const { selectedId } = useAppSelector((state: RootState) => state.conversations);
 
     const [title = '', setTitle] = useState<string | undefined>(name);
+
+    useEffect(() => {
+        if (selectedId !== chatId) exitEdits();
+    }, [chatId, exitEdits, selectedId]);
 
     const onSaveTitleChange = async () => {
         if (name !== title) {

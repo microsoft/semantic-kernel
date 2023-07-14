@@ -13,10 +13,11 @@ import {
     shorthands,
     tokens,
 } from '@fluentui/react-components';
-import { AppsAddIn24Regular, Dismiss24Regular } from '@fluentui/react-icons';
+import { Dismiss24Regular } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
+import { AppsAddIn24 } from '../shared/BundledIcons';
 import { AddPluginCard } from './cards/AddPluginCard';
 import { PluginCard } from './cards/PluginCard';
 
@@ -67,7 +68,7 @@ export const PluginGallery: React.FC = () => {
             }}
         >
             <DialogTrigger>
-                <Button style={{ color: 'white' }} appearance="transparent" icon={<AppsAddIn24Regular color="white" />}>
+                <Button style={{ color: 'white' }} appearance="transparent" icon={<AppsAddIn24 color="white" />}>
                     Plugins
                 </Button>
             </DialogTrigger>

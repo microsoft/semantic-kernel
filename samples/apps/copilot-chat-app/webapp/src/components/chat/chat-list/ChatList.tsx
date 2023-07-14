@@ -10,7 +10,6 @@ import {
     Text,
     tokens,
 } from '@fluentui/react-components';
-import { bundleIcon, Dismiss20Filled, Dismiss20Regular, Filter20Filled, Filter20Regular } from '@fluentui/react-icons';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { AlertType } from '../../../libs/models/AlertType';
 import { Bot } from '../../../libs/models/Bot';
@@ -25,6 +24,7 @@ import { FeatureKeys } from '../../../redux/features/app/AppState';
 import { Conversations } from '../../../redux/features/conversations/ConversationsState';
 import { Breakpoints } from '../../../styles';
 import { FileUploader } from '../../FileUploader';
+import { Dismiss20, Filter20 } from '../../shared/BundledIcons';
 import { NewBotMenu } from './bot-menu/NewBotMenu';
 import { SimplifiedNewBotMenu } from './bot-menu/SimplifiedNewBotMenu';
 import { ChatListItem } from './ChatListItem';
@@ -107,9 +107,6 @@ export const ChatList: FC = () => {
     const fileHandler = useFile();
     const dispatch = useAppDispatch();
 
-    const Dismiss20 = bundleIcon(Dismiss20Filled, Dismiss20Regular);
-    const Filter20 = bundleIcon(Filter20Filled, Filter20Regular);
-
     const sortConversations = (conversations: Conversations): Conversations => {
         // sort conversations by last activity
         const sortedIds = Object.keys(conversations).sort((a, b) => {
@@ -190,10 +187,8 @@ export const ChatList: FC = () => {
                                 <Text weight="bold" size={500} className={classes.title} as="h2">
                                     Conversations
                                 </Text>
-
                                 <Button icon={<Filter20 />} appearance="transparent" onClick={onFilterClick} />
                                 <NewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
-
                                 <FileUploader
                                     ref={fileUploaderRef}
                                     acceptedExtensions={['.txt', '.json']}
