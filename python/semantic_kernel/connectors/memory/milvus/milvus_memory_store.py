@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 
 from numpy import array, expand_dims, ndarray
 from pymilvus.milvus_client import milvus_client
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
