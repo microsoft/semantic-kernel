@@ -78,7 +78,7 @@ internal class Nl2SqlConsole : BackgroundService
         // Capture console input with cancellation detection
         async Task<string?> ReadInputAsync()
         {
-            this.Write(PromptColor, "# ");
+            this.Write(SystemColor, "# ");
 
             var inputTask = Console.In.ReadLineAsync(stoppingToken).AsTask();
             var objective = await inputTask.ConfigureAwait(false);
