@@ -59,6 +59,7 @@ export const SimplifiedNewBotMenu: FC<SimplifiedNewBotMenuProps> = ({ onFileUplo
                         <MenuItem
                             data-testid="uploadABotMenuItem"
                             disabled={!features[FeatureKeys.BotAsDocs].enabled}
+                            // TODO: Fix, not sure if it works right
                             onClick={onFileUpload}
                         >
                             <div>Upload Saved Chat</div>
