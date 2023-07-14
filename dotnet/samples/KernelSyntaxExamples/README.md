@@ -12,7 +12,6 @@ to avoid the risk of leaking secrets into the repository, branches and pull requ
 You can also use environment variables if you prefer.
 
 To set your secrets with Secret Manager:
-
 ```
 cd dotnet/samples/KernelSyntaxExamples
 
@@ -65,12 +64,14 @@ dotnet user-secrets set "Google:SearchEngineId" "..."
 
 dotnet user-secrets set "Github:PAT" "github_pat_..."
 
+dotnet user-secrets set "Apim:Endpoint" "https://apim...azure-api.net/"
+dotnet user-secrets set "Apim:SubscriptionKey" "..."
+
 dotnet user-secrets set "Postgres:ConnectionString" "..."
 dotnet user-secrets set "Redis:Configuration" "..."
 ```
 
 To set your secrets with environment variables, use these names:
-
 ```
 # OpenAI
 OpenAI__ModelId
@@ -130,6 +131,10 @@ Google__SearchEngineId
 
 # Github
 Github__PAT
+
+# Azure API Management (APIM)
+Apim__Endpoint
+Apim__SubscriptionKey
 
 # Other
 Postgres__ConnectionString
