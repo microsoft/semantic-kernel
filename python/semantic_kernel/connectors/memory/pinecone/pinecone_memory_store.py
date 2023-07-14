@@ -25,6 +25,8 @@ MAX_DELETE_BATCH_SIZE = 1000
 
 
 class PineconeMemoryStore(MemoryStoreBase):
+    """A memory store that uses Pinecone as the backend."""
+
     _logger: Logger
     _pinecone_api_key: str
     _pinecone_environment: str
@@ -42,8 +44,8 @@ class PineconeMemoryStore(MemoryStoreBase):
         Arguments:
             pinecone_api_key {str} -- The Pinecone API key.
             pinecone_environment {str} -- The Pinecone environment.
-            logger {Optional[Logger]} -- The logger to use. (default: {None})
             default_dimensionality {int} -- The default dimensionality to use for new collections.
+            logger {Optional[Logger]} -- The logger to use. (default: {None})
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise ValueError(

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.3.1.dev"
+version = "0.3.2.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -28,18 +28,22 @@ sentence-transformers = "^2.2.2"
 torch = "2.0.0"
 
 [tool.poetry.group.chromadb.dependencies]
-chromadb = "^0.3.23"
+chromadb = "^0.3.29"
 
 [tool.poetry.group.milvus.dependencies]
 pymilvus = "^2.2.11"
 milvus = "^2.2.11"
-
 
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = "^3.18.0"
 
 [tool.poetry.group.pinecone.dependencies]
 pinecone-client = "^2.2.2"
+
+[tool.poetry.group.postgres.dependencies]
+psycopg-pool = "^3.1.7"
+psycopg = "^3.1.9"
+psycopg-binary = "^3.1.9"
 
 [tool.isort]
 profile = "black"

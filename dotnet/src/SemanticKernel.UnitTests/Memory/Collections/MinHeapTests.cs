@@ -21,13 +21,13 @@ public class MinHeapTests
         // Arrange
         const int InvalidCapacity = -1;
 
-        var action = () =>
+        void Action()
         {
             var minHeap = new MinHeap<int>(MinValue, InvalidCapacity);
-        };
+        }
 
         // Act
-        var exception = Assert.Throws<ArgumentOutOfRangeException>("capacity", () => action());
+        var exception = Assert.Throws<ArgumentOutOfRangeException>("capacity", Action);
 
         // Assert
         Assert.Equal(-1, exception.ActualValue);
