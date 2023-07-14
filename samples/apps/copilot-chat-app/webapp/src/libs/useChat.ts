@@ -4,7 +4,7 @@ import { useMsal } from '@azure/msal-react';
 import { Constants } from '../Constants';
 import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
 import { RootState } from '../redux/app/store';
-import { addAlert } from '../redux/features/app/appSlice';
+import { addAlert, updateTokenUsage } from '../redux/features/app/appSlice';
 import { ChatState } from '../redux/features/conversations/ChatState';
 import { Conversations } from '../redux/features/conversations/ConversationsState';
 import {
@@ -123,10 +123,20 @@ export const useChat = () => {
         }
 
         try {
-            await chatService.getBotResponseAsync(
+            const askResult = await chatService.getBotResponseAsync(
                 ask,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
                 getEnabledPlugins(),
+            );
+
+            const promptTokenUsage = askResult.variables.find((v) => v.key === 'promptTokenUsage')?.value;
+            const dependencyTokenUsage = askResult.variables.find((v) => v.key === 'dependencyTokenUsage')?.value;
+
+            dispatch(
+                updateTokenUsage({
+                    prompt: promptTokenUsage ? parseInt(promptTokenUsage) : 0,
+                    dependency: dependencyTokenUsage ? parseInt(dependencyTokenUsage) : 0,
+                }),
             );
         } catch (e: any) {
             const errorMessage = `Unable to generate bot response. Details: ${getErrorDetails(e)}`;

@@ -1,9 +1,22 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, DialogTrigger, Tooltip, makeStyles, shorthands } from '@fluentui/react-components';
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
+    DialogTrigger,
+    Tooltip,
+    makeStyles,
+    shorthands,
+} from '@fluentui/react-components';
 import { Info16Regular } from '@fluentui/react-icons';
 import React from 'react';
 import { IChatMessage } from '../../../libs/models/ChatMessage';
+import { TokenUsage } from '../../shared/TokenUsage';
 
 const useClasses = makeStyles({
     infoButton: {
@@ -25,19 +38,22 @@ export const PromptDetails: React.FC<IPromptDetailsProps> = ({ message }) => {
         <Dialog>
             <DialogTrigger disableButtonEnhancement>
                 <Tooltip content={'Show prompt'} relationship="label">
-                    <Button className={ classes.infoButton } icon={<Info16Regular />} appearance="transparent" />
+                    <Button className={classes.infoButton} icon={<Info16Regular />} appearance="transparent" />
                 </Tooltip>
             </DialogTrigger>
             <DialogSurface>
                 <DialogBody>
                     <DialogTitle>Prompt</DialogTitle>
                     <DialogContent>
-                        {(!message.prompt)
+                        <TokenUsage
+                            promptUsage={message.tokenUsage?.prompt ?? 0}
+                            dependencyUsage={message.tokenUsage?.dependency ?? 0}
+                        />
+                        {!message.prompt
                             ? 'No prompt available. The response is either a plan proposal or a hard-coded response.'
-                            : message.prompt.split('\n').map(
-                                (paragraph, idx) => <p key={`prompt-details-${idx}`}>{paragraph}</p>,
-                            )
-                        }
+                            : message.prompt
+                                  .split('\n')
+                                  .map((paragraph, idx) => <p key={`prompt-details-${idx}`}>{paragraph}</p>)}
                     </DialogContent>
                     <DialogActions>
                         <DialogTrigger disableButtonEnhancement>

@@ -153,8 +153,10 @@ export const registerSignalREvents = (store: Store) => {
     hubConnection.on(SignalRCallbackMethods.ReceiveResponse, (askResult: IAskResult, chatId: string) => {
         const loggedInUserId = store.getState().app.activeUserInfo?.id;
         const originalMessageUserId: string | undefined = askResult.variables.find((v) => v.key === 'userId')?.value;
-        const isPlanForLoggedInUser = loggedInUserId === originalMessageUserId;
+        const responseToLoggedInUser = loggedInUserId === originalMessageUserId;
         const messageType = Number(askResult.variables.find((v) => v.key === 'messageType')?.value) as ChatMessageType;
+        const promptTokenUsage = askResult.variables.find((v) => v.key === 'promptTokenUsage')?.value;
+        const dependencyTokenUsage = askResult.variables.find((v) => v.key === 'dependencyTokenUsage')?.value;
 
         const message = {
             type: messageType,
@@ -166,9 +168,17 @@ export const registerSignalREvents = (store: Store) => {
             authorRole: AuthorRoles.Bot,
             id: askResult.variables.find((v) => v.key === 'messageId')?.value,
             state:
-                messageType === ChatMessageType.Plan && isPlanForLoggedInUser
+                messageType === ChatMessageType.Plan && responseToLoggedInUser
                     ? PlanState.PlanApprovalRequired
                     : PlanState.Disabled,
+            tokenUsage: {
+                prompt: responseToLoggedInUser ? (promptTokenUsage ? parseInt(promptTokenUsage) : 0) : undefined,
+                dependency: responseToLoggedInUser
+                    ? dependencyTokenUsage
+                        ? parseInt(dependencyTokenUsage)
+                        : 0
+                    : undefined,
+            },
         } as IChatMessage;
 
         store.dispatch({ type: 'conversations/updateConversationFromServer', payload: { message, chatId } });
