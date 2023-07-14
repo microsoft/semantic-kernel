@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#define DISABLEHOST
+//#define DISABLEHOST
 namespace SemanticKernel.Data.Nl2Sql.Harness.Schema;
 
 using System;
@@ -25,23 +25,16 @@ public sealed class SqlSchemaProviderHarness
     private const string ConnectionStringConfiguration = "AdventureWorks";
 
     private readonly ITestOutputHelper output;
-    private readonly IConfiguration config;
 
     public SqlSchemaProviderHarness(ITestOutputHelper output)
     {
         this.output = output;
-
-        this.config =
-            new ConfigurationBuilder()
-                .AddJsonFile("testsettings.json", optional: true)
-                .AddJsonFile("testsettings.development.json", optional: true)
-                .Build();
     }
 
     [Fact(Skip = SkipReason)]
     public async Task GetSchemaTestAsync()
     {
-        var connectionString = this.config.GetConnectionString(ConnectionStringConfiguration);
+        var connectionString = Harness.Configuration.GetConnectionString(ConnectionStringConfiguration);
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync().ConfigureAwait(false);
 

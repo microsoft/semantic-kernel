@@ -11,17 +11,16 @@ using SemanticKernel.Data.Nl2Sql.Exceptions;
 
 internal static class KernelFactory
 {
+    private const string SettingNameApiKey = "AZURE_OPENAI_KEY";
+    private const string SettingNameEndpoint = "AZURE_OPENAI_ENDPOINT";
+    private const string SettingNameModelCompletion = "AZURE_OPENAI_DEPLOYMENT_NAME";
+    private const string SettingNameModelEmbedding = "AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME";
+
     /// <summary>
     /// Penalty for using any model less than GPT4 for SQL generation.
     /// </summary>
     private const string DefaulChatModel = "gpt-4";
     private const string DefaulEmbedModel = "text-embedding-ada-003";
-
-    private const string SectionName = "AIService";
-    private const string SettingNameApiKey = "Key";
-    private const string SettingNameEndpoint = "Endpoint";
-    private const string SettingNameModelCompletion = "CompletionModel";
-    private const string SettingNameModelEmbedding = "EmbeddingModel";
 
     public static Func<IServiceProvider, IKernel> Create(IConfiguration configuration)
     {
@@ -29,19 +28,16 @@ internal static class KernelFactory
 
         IKernel CreateKernel(IServiceProvider provider)
         {
-            var section =
-                configuration.GetSection(SectionName) ??
-                throw new InvalidConfigurationException("Section 'AIService' not defined.");
-
             var endpoint =
-                section.GetValue<string>(SettingNameEndpoint) ??
+                configuration.GetValue<string>(SettingNameEndpoint) ??
                 throw new InvalidConfigurationException("Setting 'Endpoint' not defined in 'AIService' section.");
 
-            var apikey = section.GetValue<string>(SettingNameApiKey) ??
+            var apikey = configuration.GetValue<string>(SettingNameApiKey) ??
                 throw new InvalidConfigurationException("Setting 'Key' not defined in 'AIService' section.");
 
-            var modelCompletion = section.GetValue<string>(SettingNameModelCompletion);
-            var modelEmbedding = section.GetValue<string>(SettingNameModelEmbedding);
+            var modelCompletion = configuration.GetValue<string>(SettingNameModelCompletion);
+            var modelEmbedding = configuration.GetValue<string>(SettingNameModelEmbedding);
+
             var logger = provider.GetService<ILogger<IKernel>>();
 
             return ConfigureKernel(endpoint, apikey, modelCompletion, modelEmbedding, logger).Build();

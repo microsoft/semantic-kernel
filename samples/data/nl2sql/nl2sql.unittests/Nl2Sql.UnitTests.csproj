@@ -22,13 +22,5 @@
     <ProjectReference Include="..\nl2sql.console\Nl2Sql.Console.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="testsettings.development.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="testsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 
 </Project>

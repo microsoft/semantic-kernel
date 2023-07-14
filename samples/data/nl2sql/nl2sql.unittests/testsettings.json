@@ -1,6 +1,0 @@
-﻿{
-  // Populate this configuration in testsettings.development.json
-  "ConnectionStrings": {
-    "AdventureWorks": ""
-  }
-}

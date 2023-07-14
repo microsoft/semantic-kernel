@@ -2,6 +2,7 @@
 namespace SemanticKernel.Data.Nl2Sql;
 
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,9 @@ internal static class Program
                     {
                         config
                             .AddJsonFile("appsettings.json")
-                            .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true);
+                            .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true)
+                            .AddEnvironmentVariables()
+                            .AddUserSecrets(Assembly.GetExecutingAssembly());
                     })
                 .ConfigureLogging(
                     (context, config) =>
@@ -39,10 +42,10 @@ internal static class Program
                     (context, services) =>
                     {
                         services
-                            .AddHostedService<Nl2SqlConsole>()
                             .AddSingleton(KernelFactory.Create(context.Configuration))
                             .AddSingleton(SqlConnectionProvider.Create(context.Configuration))
-                            .AddSingleton(SchemaProvider.Create(context.Configuration));
+                            .AddSingleton(SchemaProvider.Create(context.Configuration))
+                            .AddHostedService<Nl2SqlConsole>();
                     })
              .UseConsoleLifetime()
              .Build();
