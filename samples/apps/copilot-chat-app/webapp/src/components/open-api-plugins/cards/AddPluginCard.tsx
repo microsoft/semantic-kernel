@@ -16,10 +16,12 @@ export const AddPluginCard: React.FC = () => {
         <div className={classes.root}>
             <BaseCard
                 image={AddPluginIcon}
-                header={'Custom Plugin'}
-                secondaryText={'AI Developer'}
-                description={'Add your own ChatGPT compatible plugin.'}
+                header="Custom Plugin"
+                secondaryText="AI Developer"
+                description="Add your own ChatGPT compatible plugin."
                 action={<PluginWizard />}
+                helpText="Want to learn how to create a custom plugin?"
+                helpLink="https://platform.openai.com/docs/plugins/getting-started/plugin-manifest"
             />
         </div>
     );

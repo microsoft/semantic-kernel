@@ -38,9 +38,19 @@ interface IBaseCardProps {
     secondaryText: string;
     description: string;
     action: ReactElement;
+    helpText?: string;
+    helpLink?: string;
 }
 
-export const BaseCard: React.FC<IBaseCardProps> = ({ image, header, secondaryText, description, action }) => {
+export const BaseCard: React.FC<IBaseCardProps> = ({
+    image,
+    header,
+    secondaryText,
+    description,
+    action,
+    helpText,
+    helpLink,
+}) => {
     const styles = useClasses();
 
     return (
@@ -51,7 +61,23 @@ export const BaseCard: React.FC<IBaseCardProps> = ({ image, header, secondaryTex
                 description={<Caption1 className={styles.caption}>{secondaryText}</Caption1>}
                 action={action}
             />
-            <p className={styles.text}>{description}</p>
+            <p className={styles.text}>
+                {description}{' '}
+                {
+                    <p className={styles.text}>
+                        {helpText}{' '}
+                        {helpLink && (
+                            <>
+                                Click{' '}
+                                <a href={helpLink} target="_blank" rel="noreferrer noopener">
+                                    here
+                                </a>
+                                .
+                            </>
+                        )}
+                    </p>
+                }
+            </p>
         </Card>
     );
 };
