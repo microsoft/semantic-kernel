@@ -21,7 +21,7 @@ public static class Example18_DallE
         await AzureOpenAIDallEAsync();
     }
 
-    public static async Task OpenAIDallEAsync()
+    private static async Task OpenAIDallEAsync()
     {
         Console.WriteLine("======== OpenAI Dall-E 2 Image Generation ========");
 
