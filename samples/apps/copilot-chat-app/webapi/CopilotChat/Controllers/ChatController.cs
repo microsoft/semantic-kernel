@@ -176,7 +176,7 @@ public class ChatController : ControllerBase, IDisposable
         // Register authenticated skills with the planner's kernel only if the request includes an auth header for the skill.
 
         // Klarna Shopping
-        if (openApiSkillsAuthHeaders.TryGetValue("klarna", out string? klarnaAuthHeader))
+        if (openApiSkillsAuthHeaders.TryGetValue("KLARNA", out string? klarnaAuthHeader))
         {
             // Register the Klarna shopping ChatGPT plugin with the planner's kernel.
             using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger)
@@ -193,7 +193,7 @@ public class ChatController : ControllerBase, IDisposable
         }
 
         // GitHub
-        if (openApiSkillsAuthHeaders.TryGetValue("github", out string? GithubAuthHeader))
+        if (openApiSkillsAuthHeaders.TryGetValue("GITHUB", out string? GithubAuthHeader))
         {
             this._logger.LogInformation("Enabling GitHub skill.");
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(GithubAuthHeader));
@@ -207,7 +207,7 @@ public class ChatController : ControllerBase, IDisposable
         }
 
         // Jira
-        if (openApiSkillsAuthHeaders.TryGetValue("jira", out string? JiraAuthHeader))
+        if (openApiSkillsAuthHeaders.TryGetValue("JIRA", out string? JiraAuthHeader))
         {
             this._logger.LogInformation("Registering Jira Skill");
             var authenticationProvider = new BasicAuthenticationProvider(() => { return Task.FromResult(JiraAuthHeader); });
@@ -224,7 +224,7 @@ public class ChatController : ControllerBase, IDisposable
         }
 
         // Microsoft Graph
-        if (openApiSkillsAuthHeaders.TryGetValue("graph", out string? GraphAuthHeader))
+        if (openApiSkillsAuthHeaders.TryGetValue("GRAPH", out string? GraphAuthHeader))
         {
             this._logger.LogInformation("Enabling Microsoft Graph skill(s).");
             BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(GraphAuthHeader));
