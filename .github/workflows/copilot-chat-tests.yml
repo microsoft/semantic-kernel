@@ -2,7 +2,7 @@ name: Copilot Chat Tests
 on:
   workflow_dispatch:
   push:
-    branches: ["main", "feature*"]
+    branches: ["main"]
     paths:
       - "samples/apps/copilot-chat-app/**"
 
