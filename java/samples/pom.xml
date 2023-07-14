@@ -4,7 +4,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>samples</artifactId>
-    <version>0.2.5-alpha</version>
+    <version>0.2.6-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
