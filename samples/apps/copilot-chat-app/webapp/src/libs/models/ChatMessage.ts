@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+import { TokenUsages } from '../../redux/features/app/AppState';
 import { PlanState } from './Plan';
 
 /**
@@ -41,4 +42,5 @@ export interface IChatMessage {
     authorRole: AuthorRoles;
     debug?: string;
     state?: PlanState;
+    tokenUsage?: TokenUsages;
 }
