@@ -130,7 +130,7 @@ def convert_to_memory_record(acs_data: dict, include_embedding: bool) -> MemoryR
         key=None,
         timestamp=acs_data["timestamp"]
         if not acs_data["timestamp"]
-        else datetime.datetime.now().timestamp(),
+        else datetime.now().timestamp(),
         id=acs_data["vector_id"],
         embedding=acs_data["vector"] if include_embedding else None,
         text=acs_data["payload"],
