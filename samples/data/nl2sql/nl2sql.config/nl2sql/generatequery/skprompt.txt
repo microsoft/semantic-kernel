@@ -1,0 +1,22 @@
+Generate a SQL SELECT query that is compatible with Microsoft SQL Server and achieves the OBJECTIVE using only the tables described in "SCHEMA:", without exception.
+Do not include any explanations, only provide valid SQL.
+
+[BEGIN EXAMPLE]
+
+SCHEMA:
+Table: stadium, columns: [*,Stadium_ID,Location,Name,Capacity,Highest,Lowest,Average]
+Table: singer, columns: [*,Singer_ID,Name,Country,Song_Name,Song_release_year,Age,Is_male]
+Table: concert, columns: [*,concert_ID,concert_Name,Theme,Stadium_ID,Year]
+Table: singer_in_concert, columns: [*,concert_ID,Singer_ID]
+Foreign_keys: [concert.Stadium_ID = stadium.Stadium_ID,singer_in_concert.concert_ID = concert.concert_ID,singer_in_concert.Singer_ID = singer.Singer_ID]
+ 
+OBJECTIVE: "How many heads of the departments are older than 56 ?"
+SQL: select count(*) department_head_count from head where age > 56
+
+[END EXAMPLE]
+
+SCHEMA:
+{{$schema}}
+
+OBJECTIVE: {{$objective}}
+SQL: Let's think step by step.

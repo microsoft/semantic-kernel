@@ -1,0 +1,10 @@
+If the OBJECTIVE is a question that can be answered by querying a database with tables descrived in SCHEMA, ANSWER: YES.
+Otherwise ANSWER: NO.
+Do not respond with any other word than YES or NO.
+
+SCHEMA:
+{{$schema}}
+
+OBJECTIVE: {{$objective}}
+
+ANSWER: Let's think step by step.
