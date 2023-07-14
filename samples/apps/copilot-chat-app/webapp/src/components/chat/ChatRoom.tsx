@@ -8,6 +8,7 @@ import { AuthorRoles, IChatMessage } from '../../libs/models/ChatMessage';
 import { GetResponseOptions, useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
+import { FeatureKeys } from '../../redux/features/app/AppState';
 import { updateConversationFromUser } from '../../redux/features/conversations/conversationsSlice';
 import { SharedStyles } from '../../styles';
 import { ChatInput } from './ChatInput';
@@ -41,7 +42,7 @@ const useClasses = makeStyles({
 
 export const ChatRoom: React.FC = () => {
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
 
     const messages = conversations[selectedId].messages;
     const classes = useClasses();
@@ -53,12 +54,16 @@ export const ChatRoom: React.FC = () => {
 
     const [isDraggingOver, setIsDraggingOver] = React.useState(false);
     const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        setIsDraggingOver(true);
+        if (!features[FeatureKeys.SimplifiedExperience].enabled) {
+            e.preventDefault();
+            setIsDraggingOver(true);
+        }
     };
     const onDragLeave = (e: React.DragEvent<HTMLDivElement | HTMLTextAreaElement>) => {
-        e.preventDefault();
-        setIsDraggingOver(false);
+        if (!features[FeatureKeys.SimplifiedExperience].enabled) {
+            e.preventDefault();
+            setIsDraggingOver(false);
+        }
     };
 
     const chat = useChat();

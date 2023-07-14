@@ -70,6 +70,12 @@ public class MemorySource : IStorageEntity
     public long Size { get; set; }
 
     /// <summary>
+    /// The number of tokens in the source.
+    /// </summary>
+    [JsonPropertyName("tokens")]
+    public long Tokens { get; set; } = 0;
+
+    /// <summary>
     /// Empty constructor for serialization.
     /// </summary>
     public MemorySource()

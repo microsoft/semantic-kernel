@@ -4,30 +4,30 @@ import {
     Button,
     Label,
     makeStyles,
-    mergeClasses,
     Persona,
     Popover,
     PopoverSurface,
     PopoverTrigger,
+
+
     SelectTabEventHandler,
     shorthands,
     Tab,
     TabList,
     TabValue,
     tokens,
-    Tooltip,
+    Tooltip
 } from '@fluentui/react-components';
-import { Alert } from '@fluentui/react-components/unstable';
-import { Dismiss16Regular, Edit24Filled, EditRegular } from '@fluentui/react-icons';
+import { Edit24Filled, EditRegular, Map16Regular, Person16Regular } from '@fluentui/react-icons';
 import React, { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
+import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { removeAlert } from '../../redux/features/app/appSlice';
 import { FeatureKeys } from '../../redux/features/app/AppState';
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
 import { ParticipantsList } from './controls/ParticipantsList';
 import { ShareBotMenu } from './controls/ShareBotMenu';
+import { Alerts } from './shared/Alerts';
 import { EditChatName } from './shared/EditChatName';
 
 const useClasses = makeStyles({
@@ -76,18 +76,6 @@ const useClasses = makeStyles({
     input: {
         width: '100%',
     },
-    alert: {
-        ...shorthands.borderRadius(0),
-    },
-    infoAlert: {
-        fontWeight: tokens.fontWeightRegular,
-        color: tokens.colorNeutralForeground1,
-        backgroundColor: tokens.colorNeutralBackground6,
-        ...shorthands.borderRadius(0),
-        fontSize: tokens.fontSizeBase200,
-        lineHeight: tokens.lineHeightBase200,
-        ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
-    },
     buttons: {
         display: 'flex',
         alignSelf: 'end',
@@ -97,8 +85,7 @@ const useClasses = makeStyles({
 
 export const ChatWindow: React.FC = () => {
     const classes = useClasses();
-    const dispatch = useAppDispatch();
-    const { alerts, features } = useAppSelector((state: RootState) => state.app);
+    const { features } = useAppSelector((state: RootState) => state.app);
 
     const showShareBotMenu =
         !features[FeatureKeys.SimplifiedExperience].enabled &&
@@ -114,34 +101,9 @@ export const ChatWindow: React.FC = () => {
         setSelectedTab(data.value);
     };
 
-    const onDismissAlert = (index: number) => {
-        dispatch(removeAlert(index));
-    };
-
     return (
         <div className={classes.root}>
-            {alerts.map(({ type, message }, index) => {
-                return (
-                    <Alert
-                        intent={type}
-                        action={{
-                            icon: (
-                                <Dismiss16Regular
-                                    aria-label="dismiss message"
-                                    onClick={() => {
-                                        onDismissAlert(index);
-                                    }}
-                                    color="black"
-                                />
-                            ),
-                        }}
-                        key={`${index}-${type}`}
-                        className={mergeClasses(classes.alert, classes.infoAlert)}
-                    >
-                        {message}
-                    </Alert>
-                );
-            })}
+            {selectedTab !== 'chat' && <Alerts />}
             <div className={classes.header}>
                 <div className={classes.title}>
                     {!features[FeatureKeys.SimplifiedExperience].enabled && (
@@ -184,8 +146,14 @@ export const ChatWindow: React.FC = () => {
                         <Tab data-testid="chatTab" id="chat" value="chat">
                             Chat
                         </Tab>
-                        <Tab data-testid="filesTab" id="files" value="files">
-                            Files
+                        <Tab data-testid="documentsTab" id="documents" value="documents">
+                            Documents
+                        </Tab>
+                        <Tab data-testid="plansTab" id="plans" value="plans" icon={<Map16Regular />}>
+                            Plans
+                        </Tab>
+                        <Tab data-testid="personaTab" id="persona" value="persona" icon={<Person16Regular />}>
+                            Persona
                         </Tab>
                     </TabList>
                 </div>
@@ -203,7 +171,7 @@ export const ChatWindow: React.FC = () => {
                 )}
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
-            {selectedTab === 'files' && <ChatResourceList chatId={selectedId} />}
+            {selectedTab === 'documents' && <ChatResourceList chatId={selectedId} />}
         </div>
     );
 };

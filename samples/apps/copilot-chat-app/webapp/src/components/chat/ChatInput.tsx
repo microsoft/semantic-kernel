@@ -13,11 +13,13 @@ import { ChatMessageType } from '../../libs/models/ChatMessage';
 import { GetResponseOptions, useChat } from '../../libs/useChat';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
+import { FeatureKeys } from '../../redux/features/app/AppState';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationInput } from '../../redux/features/conversations/conversationsSlice';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { updateUserIsTyping } from './../../redux/features/conversations/conversationsSlice';
 import { ChatStatus } from './ChatStatus';
+import { Alerts } from './shared/Alerts';
 
 const log = debug(Constants.debug.root).extend('chat-input');
 
@@ -29,6 +31,13 @@ const useClasses = makeStyles({
     },
     typingIndicator: {
         maxHeight: '28px',
+    },
+    alert: {
+        fontWeight: tokens.fontWeightRegular,
+        color: tokens.colorNeutralForeground1,
+        backgroundColor: tokens.colorNeutralBackground6,
+        fontSize: tokens.fontSizeBase200,
+        lineHeight: tokens.lineHeightBase200,
     },
     content: {
         ...shorthands.gap(tokens.spacingHorizontalM),
@@ -83,7 +92,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const [documentImporting, setDocumentImporting] = React.useState(false);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
-    const { activeUserInfo } = useAppSelector((state: RootState) => state.app);
+    const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
 
     React.useEffect(() => {
         async function initSpeechRecognizer() {
@@ -163,8 +172,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     };
 
     const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
-        onDragLeave(e);
-        handleImport(e.dataTransfer.files);
+        if (!features[FeatureKeys.SimplifiedExperience].enabled) {
+            onDragLeave(e);
+            handleImport(e.dataTransfer.files);
+        }
     };
 
     return (
@@ -172,6 +183,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             <div className={classes.typingIndicator}>
                 <ChatStatus />
             </div>
+            <Alerts />
             <div className={classes.content}>
                 <Textarea
                     id="chat-input"
@@ -218,7 +230,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 />
             </div>
             <div className={classes.controls}>
-                <div className={classes.functional}>
+                {!features[FeatureKeys.SimplifiedExperience].enabled && <div className={classes.functional}>
                     {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
                     <input
                         type="file"
@@ -237,7 +249,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                         onClick={() => documentFileRef.current?.click()}
                     />
                     {documentImporting && <Spinner size="tiny" />}
-                </div>
+                </div>}
                 <div className={classes.essentials}>
                     {recognizer && (
                         <Button
