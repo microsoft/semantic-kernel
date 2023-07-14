@@ -1,6 +1,6 @@
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.web_skills.connectors import ConnectorBase
+from semantic_kernel.web_skills.connectors.connector import ConnectorBase
 
 
 class WebSearchEngineSkill:
@@ -18,9 +18,9 @@ class WebSearchEngineSkill:
             (num_results and offset are specified in SKContext)
     """
 
-    _connector: ConnectorBase
+    _connector: "ConnectorBase"
 
-    def __init__(self, connector: ConnectorBase) -> None:
+    def __init__(self, connector: "ConnectorBase") -> None:
         self._connector = connector
 
     @sk_function(

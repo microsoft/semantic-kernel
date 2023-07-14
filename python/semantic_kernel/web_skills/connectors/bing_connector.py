@@ -5,7 +5,7 @@ from typing import List, Optional
 import aiohttp
 
 from semantic_kernel.utils.null_logger import NullLogger
-from semantic_kernel.web_skills.connectors import ConnectorBase
+from semantic_kernel.web_skills.connectors.connector import ConnectorBase
 
 
 class BingConnector(ConnectorBase):
@@ -18,6 +18,11 @@ class BingConnector(ConnectorBase):
     def __init__(self, api_key: str, logger: Optional[Logger] = None) -> None:
         self._api_key = api_key
         self._logger = logger if logger else NullLogger()
+
+        if not self._api_key:
+            raise ValueError(
+                "Bing API key cannot be null. Please set environment variable BING_API_KEY."
+            )
 
     async def search_async(
         self, query: str, num_results: str, offset: str
