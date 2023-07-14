@@ -13,6 +13,7 @@ from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
     CorsOptions,
     SearchIndex,
+    VectorSearch,
     VectorSearchAlgorithmConfiguration,
 )
 from azure.search.documents.models import Vector
@@ -110,13 +111,34 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             None
         """
 
-        # Create the search index
+        # Create configuration for Vector Search
+        if vector_config:
+            vector_config = VectorSearch(algorithm_configurations=[vector_config])
+        else:
+            vector_config = VectorSearch(
+                algorithm_configurations=[
+                    VectorSearchAlgorithmConfiguration(
+                        name="az-vector-config",
+                        kind="hnsw",
+                        hnsw_parameters={
+                            "m": 4,
+                            "efConstruction": 400,
+                            "efSearch": 500,
+                            "metric": "cosine",
+                        },
+                    )
+                ]
+            )
+
+        # Create configuration for CORS
         cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
 
+        # Create the search index
         index = SearchIndex(
             name=collection_name,
             fields=acs_schema(vector_size),
             cors_options=cors_options,
+            vector_search=vector_config,
         )
 
         try:
@@ -171,9 +193,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             bool -- True if the collection exists; otherwise, False.
         """
 
-        collection_result = await self._cogsearch_indexclient.get_index(
-            name=collection_name
-        )
+        collection_result = self._cogsearch_indexclient.get_index(name=collection_name)
 
         if collection_result:
             return True
@@ -303,7 +323,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         acs_result = await acs_search_client.get_document(key=search_id)
 
         ## Create Memory record from document
-        acs_mem_record = convert_to_memory_record(acs_result)
+        acs_mem_record = convert_to_memory_record(
+            acs_data=acs_result, include_embedding=with_embedding
+        )
 
         return acs_mem_record
 
@@ -393,7 +415,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         limit: int = 1,
         min_relevance_score: float = 0.0,
-        with_embedding: bool = False,
+        with_embedding: bool = True,
     ) -> Tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using vector configuration parameters.
 
@@ -401,7 +423,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             collection_name {str} -- The name of the collection to get the nearest match from.
             embedding {ndarray} -- The embedding to find the nearest match to.
             min_relevance_score {float} -- The minimum relevance score of the match. (default: {0.0})
-            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+            with_embedding {bool} -- Whether to include the embedding in the result. (default: {True})
 
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
@@ -419,9 +441,10 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         selection_fields = acs_field_selection(include_embedding=with_embedding)
 
-        acs_result = await acs_search_client.search(
+        acs_result = acs_search_client.search(
             vector=Vector(value=embedding, k=limit, fields="vector"),
             select=selection_fields,
+            search_text="*",
             top=limit,
         )
 
@@ -430,7 +453,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             return None
 
         # Convert to MemoryRecord
-        vector_result = convert_to_memory_record(acs_result)
+        vector_result = convert_to_memory_record(
+            acs_data=acs_result, include_embedding=with_embedding
+        )
 
         return tuple(vector_result, acs_result["@search.score"])
 
@@ -469,9 +494,10 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         selection_fields = acs_field_selection(include_embedding=with_embeddings)
 
-        results = await acs_search_client.search(
+        results = acs_search_client.search(
             vector=Vector(value=embedding, k=limit, fields="vector"),
             select=selection_fields,
+            search_text="*",
             top=limit,
         )
 
@@ -482,7 +508,9 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
             if acs_result["@search.score"] < min_relevance_score:
                 continue
 
-            vector_result = convert_to_memory_record(acs_result)
+            vector_result = convert_to_memory_record(
+                acs_data=acs_result, include_embedding=with_embeddings
+            )
 
             nearest_results.append(tuple(vector_result, acs_result["@search.score"]))
 
