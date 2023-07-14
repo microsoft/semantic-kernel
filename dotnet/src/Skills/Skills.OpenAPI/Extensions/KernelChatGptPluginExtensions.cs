@@ -168,7 +168,7 @@ public static class KernelChatGptPluginExtensions
 
     private static string ParseOpenApiUrl(string gptPluginJson)
     {
-        JsonNode? gptPlugin = JsonObject.Parse(gptPluginJson);
+        JsonNode? gptPlugin = JsonNode.Parse(gptPluginJson);
 
         string? apiType = gptPlugin?["api"]?["type"]?.ToString();
         if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")

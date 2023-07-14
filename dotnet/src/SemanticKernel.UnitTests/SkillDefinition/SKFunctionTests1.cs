@@ -81,7 +81,7 @@ public sealed class SKFunctionTests1
 
         promptTemplate
             .Setup(x => x.GetParameters())
-            .Returns(new List<ParameterView>()); ;
+            .Returns(new List<ParameterView>());
 
         return promptTemplate;
     }

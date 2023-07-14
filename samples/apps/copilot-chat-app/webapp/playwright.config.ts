@@ -38,6 +38,9 @@ export default defineConfig({
 
     /* Ignore certificate errors. */
     ignoreHTTPSErrors: true,
+
+    /* Add permissions to copy text to clipboard */
+    permissions: ['clipboard-write'],
   },
 
   /* Configure projects for major browsers */

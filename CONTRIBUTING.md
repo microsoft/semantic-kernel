@@ -43,9 +43,12 @@ Project maintainers will merge accepted code changes from contributors.
 
 DO's:
 
-- **DO** follow the standard
-  [.NET coding style](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
-  and [Python code style](https://pypi.org/project/black/)
+- **DO** follow the standard coding conventions
+
+  - [.NET](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
+  - [Python](https://pypi.org/project/black/)
+  - [Typescript](https://typescript-eslint.io/rules/)/[React](https://github.com/jsx-eslint/eslint-plugin-react/tree/master/docs/rules)
+
 - **DO** give priority to the current style of the project or file you're changing
   if it diverges from the general guidelines.
 - **DO** include tests when adding new features. When fixing bugs, start with
@@ -89,14 +92,24 @@ We use and recommend the following workflow:
      "issue-123" or "githubhandle-issue".
 4. Make and commit your changes to your branch.
 5. Add new tests corresponding to your change, if applicable.
-6. Build the repository with your changes.
-   - Make sure that the builds are clean.
-   - Make sure that the tests are all passing, including your new tests.
+6. Run the relevant scripts in [the section below](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md#dev-scripts) to ensure that your build is clean and all tests are passing.
 7. Create a PR against the repository's **main** branch.
    - State in the description what issue or improvement your change is addressing.
    - Verify that all the Continuous Integration checks are passing.
 8. Wait for feedback or approval of your changes from the code maintainers.
 9. When area owners have signed off, and all checks are green, your PR will be merged.
+
+### Development scripts
+
+The scripts below are used to build, test, and lint within the project.
+
+- Python: see [python/DEV_SETUP.md](https://github.com/microsoft/semantic-kernel/blob/main/python/DEV_SETUP.md#pipeline-checks).
+- .NET:
+  - Build/Test: `run build.cmd` or `bash build.sh`
+  - Linting (auto-fix): `dotnet format`
+- Typescript:
+  - Build/Test: `yarn build`
+  - Linting (auto-fix): `yarn lint:fix`
 
 ### PR - CI Process
 
