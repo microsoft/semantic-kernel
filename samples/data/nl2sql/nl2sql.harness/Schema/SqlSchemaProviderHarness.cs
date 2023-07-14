@@ -47,7 +47,8 @@ public sealed class SqlSchemaProviderHarness
 
         var provider = new SqlSchemaProvider(connection);
 
-        // $$$ TABLEFILTER
+        // GetSchemaAsync is able to filter by table name:
+        // var tableNames = new [] { "table1", "table1", ... };
 
         var schema = await provider.GetSchemaAsync("Product, sales, and customer data for the AdentureWorks company.").ConfigureAwait(false);
 

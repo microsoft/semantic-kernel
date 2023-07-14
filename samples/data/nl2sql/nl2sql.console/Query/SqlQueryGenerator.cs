@@ -2,7 +2,6 @@
 namespace SemanticKernel.Data.Nl2Sql.Query;
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -33,10 +32,12 @@ internal sealed class SqlQueryGenerator
         this.promptGenerator = functions["generatequery"];
     }
 
-    public async Task<(string?, string?)> SolveObjectiveAsync(string objective, SKContext context)
+    public async Task<string?> SolveObjectiveAsync(string objective, string? schemaText, SKContext context)
     {
-        var schemaName = this.schemaProvider.Schemas.SingleOrDefault().Item1; // $$$ BROKE
-        var schemaText = await this.schemaProvider.GetSchemaAsync(schemaName).ConfigureAwait(false);
+        if (string.IsNullOrEmpty(schemaText))
+        {
+            return null;
+        }
 
         context[ContextParamObjective] = objective;
         context[ContextParamSchema] = schemaText;
@@ -51,9 +52,9 @@ internal sealed class SqlQueryGenerator
         else
         {
             context.Fail("The objective does not correspond to a data query associated with this schema.");
-            return (null, null);
+            return null;
         }
 
-        return (schemaName, context.GetResult(ContextLabelQuery, require: false));
+        return context.GetResult(ContextLabelQuery, require: false);
     }
 }

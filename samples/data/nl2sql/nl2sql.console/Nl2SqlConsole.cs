@@ -53,6 +53,12 @@ internal class Nl2SqlConsole : BackgroundService
     {
         await Task.Yield(); // Yield to hosting framework prior to blocking console (for input)
 
+        foreach ((var name, var schema) in this.schemaProvider.Schemas) // $$$ HACK
+        {
+            var schemaText = await this.schemaProvider.GetSchemaAsync(name).ConfigureAwait(false);
+            await this.kernel.Memory.SaveInformationAsync("schemas", schemaText, schema.Name, null, null, stoppingToken).ConfigureAwait(false);
+        }
+
         this.WriteIntroduction();
 
         while (!stoppingToken.IsCancellationRequested)
@@ -65,12 +71,23 @@ internal class Nl2SqlConsole : BackgroundService
 
             this.logger.LogInformation($"Objective: {objective}"); // $$$ KERNEL LOGGING ???
 
-            var (schema, query) =
+            var recall = await this.kernel.Memory.SearchAsync("schemas", objective, limit: 1, minRelevanceScore: 0.75, withEmbeddings: true, stoppingToken).ToArrayAsync().ConfigureAwait(false); // $$$ HACK
+
+            if (recall.Length > 0)
+            {
+
+            }
+
+            var schemaName = recall.FirstOrDefault()?.Metadata.Id;
+            var schemaText = recall.FirstOrDefault()?.Metadata.Text;
+
+            var query =
                 await this.queryGenerator.SolveObjectiveAsync(
                     objective,
+                    schemaText,
                     this.kernel.CreateNewContext()).ConfigureAwait(false);
 
-            await ProcessQueryAsync(schema, query).ConfigureAwait(false);
+            await ProcessQueryAsync(schemaName, query).ConfigureAwait(false);
         }
 
         this.WriteLine();
@@ -87,14 +104,19 @@ internal class Nl2SqlConsole : BackgroundService
             if (null == objective)
             {
                 this.WriteLine();
-                this.WriteLine(FocusColor, "$ Cancellation detected...");
+                this.WriteLine(FocusColor, "Cancellation detected...");
 
                 // Yield to sync stoppingToken state
                 await Task.Delay(TimeSpan.FromMilliseconds(300));
             }
             else if (string.IsNullOrWhiteSpace(objective))
             {
-                this.WriteLine(FocusColor, $"$ Please provide a query related to the defined schemas.{Environment.NewLine}");
+                this.WriteLine(FocusColor, $"Please provide a query related to the defined schemas.{Environment.NewLine}");
+            }
+            else
+            {
+                this.ClearLine(previous: true);
+                this.WriteLine(QueryColor, $"# {objective}");
             }
 
             return objective;
@@ -104,10 +126,12 @@ internal class Nl2SqlConsole : BackgroundService
         {
             if (string.IsNullOrWhiteSpace(schema) || string.IsNullOrWhiteSpace(query))
             {
-                this.WriteLine(FocusColor, $"$ Unable to translate request into a query.{Environment.NewLine}");
+                this.WriteLine(FocusColor, $"Unable to translate request into a query.{Environment.NewLine}");
                 return;
             }
 
+            this.WriteLine(SystemColor, $"{Environment.NewLine}SCHEMA:");
+            this.WriteLine(QueryColor, schema);
             this.WriteLine(SystemColor, $"{Environment.NewLine}QUERY:");
             this.WriteLine(QueryColor, query);
 
@@ -182,7 +206,7 @@ internal class Nl2SqlConsole : BackgroundService
 
         var widths = GetWidths().ToArray();
         var isColumnTruncation = widths.Length < reader.FieldCount;
-        var rowFormatter = string.Join('│', widths.Select((width, index) => $"{{{index},-{width}}}"));
+        var rowFormatter = string.Join('│', widths.Select((width, index) => width == -1 ? $"{{{index}}}" : $"{{{index},-{width}}}"));
 
         if (isColumnTruncation)
         {
@@ -240,7 +264,7 @@ internal class Nl2SqlConsole : BackgroundService
                 var width = widths[index];
                 ++index;
 
-                if (field.Length <= width)
+                if (width == -1 || field.Length <= width)
                 {
                     yield return field;
                     continue;
@@ -259,7 +283,9 @@ internal class Nl2SqlConsole : BackgroundService
                     this.Write(SystemColor, "┼");
                 }
 
-                this.Write(SystemColor, new string('─', widths[index]));
+                var width = widths[index];
+
+                this.Write(SystemColor, new string('─', width == -1 ? 24 : width));
             }
 
             if (isColumnTruncation)
@@ -272,6 +298,12 @@ internal class Nl2SqlConsole : BackgroundService
 
         IEnumerable<int> GetWidths()
         {
+            if (reader.FieldCount == 1)
+            {
+                yield return -1;
+                yield break;
+            }
+
             int totalWidth = 0;
 
             for (int index = 0; index < reader.FieldCount; ++index)
@@ -352,11 +384,11 @@ internal class Nl2SqlConsole : BackgroundService
         }
     }
 
-    private void ClearLine(int? top = null)
+    private void ClearLine(bool previous = false)
     {
-        if (top != null)
+        if (previous)
         {
-            Console.CursorTop = (int)top;
+            --Console.CursorTop;
         }
 
         Console.CursorLeft = 0;

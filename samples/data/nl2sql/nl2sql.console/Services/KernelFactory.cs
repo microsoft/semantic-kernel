@@ -67,7 +67,7 @@ internal static class KernelFactory
 
         builder
             .WithMemoryStorage(new VolatileMemoryStore())
-            .WithAzureTextEmbeddingGenerationService(DefaulEmbedModel, endpoint, apikey);
+            .WithAzureTextEmbeddingGenerationService(modelEmbedding, endpoint, apikey);
 
         if (!modelCompletion.StartsWith("gpt", StringComparison.OrdinalIgnoreCase))
         {
