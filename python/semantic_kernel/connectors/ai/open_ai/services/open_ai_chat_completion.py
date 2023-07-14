@@ -108,6 +108,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             frequency_penalty=request_settings.frequency_penalty,
             max_tokens=request_settings.max_tokens,
             number_of_responses=request_settings.number_of_responses,
+            token_selection_biases=request_settings.token_selection_biases,
         )
         response = await self._send_chat_request(
             prompt_to_message, chat_settings, False
@@ -129,6 +130,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             frequency_penalty=request_settings.frequency_penalty,
             max_tokens=request_settings.max_tokens,
             number_of_responses=request_settings.number_of_responses,
+            token_selection_biases=request_settings.token_selection_biases,
         )
         response = await self._send_chat_request(prompt_to_message, chat_settings, True)
 
@@ -208,6 +210,12 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 max_tokens=request_settings.max_tokens,
                 n=request_settings.number_of_responses,
                 stream=stream,
+                logit_bias=(
+                    request_settings.token_selection_biases
+                    if request_settings.token_selection_biases is not None
+                    and len(request_settings.token_selection_biases) > 0
+                    else None
+                ),
             )
         except Exception as ex:
             raise AIException(

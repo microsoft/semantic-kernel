@@ -200,8 +200,8 @@ export const registerSignalREvents = (store: Store) => {
         store.dispatch({ type: 'conversations/updateBotIsTypingFromServer', payload: { chatId, isTyping } });
     });
 
-    hubConnection.on(SignalRCallbackMethods.GlobalDocumentUploaded, (fileName: string, userName: string) => {
-        store.dispatch(addAlert({ message: `${userName} uploaded ${fileName} to all chats`, type: AlertType.Info }));
+    hubConnection.on(SignalRCallbackMethods.GlobalDocumentUploaded, (fileNames: string, userName: string) => {
+        store.dispatch(addAlert({ message: `${userName} uploaded ${fileNames} to all chats`, type: AlertType.Info }));
     });
 
     hubConnection.on(SignalRCallbackMethods.ChatDocumentUploaded, (message: IChatMessage, chatId: string) => {
