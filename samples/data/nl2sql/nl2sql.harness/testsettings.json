@@ -1,6 +1,2 @@
 ﻿{
-  // Populate this configuration in testsettings.development.json
-  "ConnectionStrings": {
-    "AdventureWorks": "Server=tcp:crickman-sqlserver.database.windows.net,1433;Initial Catalog=AdventureWorksLT;Persist Security Info=False;User ID=crickman;Password=Ys#5Q1now;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-  }
 }
