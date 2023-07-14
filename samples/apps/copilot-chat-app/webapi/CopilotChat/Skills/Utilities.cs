@@ -1,5 +1,7 @@
 ﻿//Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -29,4 +31,9 @@ internal static class Utilities
     /// Calculate the number of tokens in a string.
     /// </summary>
     internal static int TokenCount(string text) => GPT3Tokenizer.Encode(text).Count;
+
+    /// <summary>
+    /// Calculate the number of tokens in a string.
+    /// </summary>
+    internal static int GetTokenUsage(SKContext result) => result.ModelResults.First().GetResult<ChatCompletions>().Usage.TotalTokens;
 }
