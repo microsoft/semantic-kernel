@@ -42,7 +42,6 @@ public class ChatController : ControllerBase, IDisposable
     private readonly ILogger<ChatController> _logger;
     private readonly List<IDisposable> _disposables;
     private readonly ITelemetryService _telemetryService;
-    private readonly HttpClient _customPluginClient;
     private const string ChatSkillName = "ChatSkill";
     private const string ChatFunctionName = "Chat";
     private const string ReceiveResponseClientCall = "ReceiveResponse";
@@ -53,7 +52,6 @@ public class ChatController : ControllerBase, IDisposable
         this._logger = logger;
         this._telemetryService = telemetryService;
         this._disposables = new List<IDisposable>();
-        this._customPluginClient = new HttpClient();
     }
 
     /// <summary>
@@ -261,14 +259,11 @@ public class ChatController : ControllerBase, IDisposable
                         // Expected manifest path as defined by OpenAI: https://platform.openai.com/docs/plugins/getting-started/plugin-manifest
                         uriBuilder.Path = "/.well-known/ai-plugin.json";
 
-                        _customPluginClient.DefaultRequestHeaders.Add("azureml-model-deployment", "blue");
-
                         BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(PluginAuthValue));
                         await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync($"{plugin.NameForModel}Skill", uriBuilder.Uri,
                             new OpenApiSkillExecutionParameters
                             {
-                                AuthCallback = requiresAuth ? authenticationProvider.AuthenticateRequestAsync : null,
-                                HttpClient = _customPluginClient
+                                AuthCallback = requiresAuth ? authenticationProvider.AuthenticateRequestAsync : null
                             });
                     }
                 }
