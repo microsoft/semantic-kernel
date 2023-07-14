@@ -48,12 +48,16 @@ public class StepwisePlanner
 
         var promptConfig = promptUserConfig ?? new PromptTemplateConfig();
         var promptTemplate = prompt ?? EmbeddedResource.Read("Skills.StepwiseStep.skprompt.txt");
-        string promptConfigString = EmbeddedResource.Read("Skills.StepwiseStep.config.json");
-        if (!string.IsNullOrEmpty(promptConfigString) && promptUserConfig != null)
-        {
-            promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
-        }
 
+        if (promptUserConfig == null)
+        {
+            string promptConfigString = EmbeddedResource.Read("Skills.StepwiseStep.config.json");
+            if (!string.IsNullOrEmpty(promptConfigString))
+            {
+                promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
+            }
+        }
+        
         promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
 
         this._systemStepFunction = this.ImportSemanticFunction(this._kernel, "StepwiseStep", promptTemplate, promptConfig);
