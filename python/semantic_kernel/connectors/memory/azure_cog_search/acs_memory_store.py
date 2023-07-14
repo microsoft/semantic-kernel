@@ -1,10 +1,10 @@
-# Import required libraries
+# Copyright (c) Microsoft. All rights reserved.
 
 import json
 import os
 import uuid
 from datetime import datetime
-from logging import Logger, NullLogger
+from logging import Logger
 from typing import List, Optional, Tuple
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
@@ -22,14 +22,16 @@ from azure.search.documents.indexes.models import (
 from azure.search.documents.models import Vector
 from dotenv import load_dotenv
 from numpy import ndarray
-from python.semantic_kernel.connectors.memory.azure_cog_search.acs_utils import (
+
+from semantic_kernel.connectors.memory.azure_cog_search.acs_utils import (
     acs_field_selection,
     acs_schema,
     convert_to_memory_record,
     create_credentials,
 )
-from python.semantic_kernel.memory.memory_record import MemoryRecord
-from python.semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.null_logger import NullLogger
 
 
 class CognitiveSearchMemoryStore(MemoryStoreBase):
@@ -88,7 +90,7 @@ class CognitiveSearchMemoryStore(MemoryStoreBase):
 
         if not service_endpoint:
             raise ValueError(
-                "Error: A valid azure cognitive search client endpoint is required."
+                "Error: A valid Azure Cognitive Search client endpoint is required."
             )
 
         self._cogsearch_indexclient = SearchIndexClient(
