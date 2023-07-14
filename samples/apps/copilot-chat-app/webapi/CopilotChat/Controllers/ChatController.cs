@@ -254,19 +254,16 @@ public class ChatController : ControllerBase, IDisposable
                             InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
                         };
 
-                        using HttpClient importHttpClient = new(retryHandler, false);
-
                         UriBuilder uriBuilder = new(plugin.ManifestDomain);
 
                         // Expected manifest path as defined by OpenAI: https://platform.openai.com/docs/plugins/getting-started/plugin-manifest
                         uriBuilder.Path = "/.well-known/ai-plugin.json";
 
-                        importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
+                        BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(PluginAuthValue));
                         await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync($"{plugin.NameForModel}Skill", uriBuilder.Uri,
                             new OpenApiSkillExecutionParameters
                             {
-                                AuthCallback = requiresAuth ? (new BearerAuthenticationProvider(() => Task.FromResult(PluginAuthValue))).AuthenticateRequestAsync : null,
-                                HttpClient = importHttpClient,
+                                AuthCallback = requiresAuth ? authenticationProvider.AuthenticateRequestAsync : null
                             });
                     }
                 }
