@@ -34,6 +34,7 @@ public class StepwisePlanner
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">Optional configuration object</param>
     /// <param name="prompt">Optional prompt override</param>
+    /// <param name="promptUserConfig">Optional prompt config override</param>
     public StepwisePlanner(
         IKernel kernel,
         StepwisePlannerConfig? config = null,
