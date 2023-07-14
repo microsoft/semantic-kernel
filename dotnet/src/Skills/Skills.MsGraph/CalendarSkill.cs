@@ -111,6 +111,7 @@ public sealed class CalendarSkill
             Attendees = attendees is not null ? attendees.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries) : Enumerable.Empty<string>(),
         };
 
+        // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Adding calendar event '{0}'", calendarEvent.Subject);
         await this._connector.AddEventAsync(calendarEvent).ConfigureAwait(false);
     }
