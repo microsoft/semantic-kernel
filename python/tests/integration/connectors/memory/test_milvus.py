@@ -8,20 +8,25 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
     from milvus import default_server  # noqa: F401
-
-    default_server.start()
-    URI = "http://127.0.0.1:" + str(default_server.listen_port)
-    TOKEN = None
+    import pymilvus
     milvus_installed = True
-
-
-except Exception:
+except ImportError:
     milvus_installed = False
 
 pytestmark = pytest.mark.skipif(
     not milvus_installed, reason="local milvus is not installed"
 )
 
+
+@pytest.fixture(scope="module")
+def setup_milvus():
+    default_server.start()
+    host = "http://127.0.0.1:" + str(default_server.listen_port)
+    port = None
+    yield host, port
+    default_server.stop()
+    default_server.cleanup()
+    
 
 @pytest.fixture
 def memory_record1():
@@ -52,7 +57,8 @@ def memory_record2():
 
 
 @pytest.mark.asyncio
-async def test_create_and_get_collection_async():
+async def test_create_and_get_collection_async(setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection", 2)
@@ -61,7 +67,8 @@ async def test_create_and_get_collection_async():
 
 
 @pytest.mark.asyncio
-async def test_get_collections_async():
+async def test_get_collections_async(setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection1", 2)
@@ -72,7 +79,8 @@ async def test_get_collections_async():
 
 
 @pytest.mark.asyncio
-async def test_delete_collection_async():
+async def test_delete_collection_async(setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection", 2)
@@ -87,7 +95,8 @@ async def test_delete_collection_async():
 
 
 @pytest.mark.asyncio
-async def test_does_collection_exist_async():
+async def test_does_collection_exist_async(setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection", 2)
@@ -99,7 +108,8 @@ async def test_does_collection_exist_async():
 
 
 @pytest.mark.asyncio
-async def test_upsert_and_get_async(memory_record1):
+async def test_upsert_and_get_async(memory_record1, setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
 
@@ -118,7 +128,8 @@ async def test_upsert_and_get_async(memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_upsert_and_get_async_with_no_embedding(memory_record1):
+async def test_upsert_and_get_async_with_no_embedding(memory_record1, setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection", 2)
@@ -137,7 +148,8 @@ async def test_upsert_and_get_async_with_no_embedding(memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_upsert_and_get_batch_async(memory_record1, memory_record2):
+async def test_upsert_and_get_batch_async(memory_record1, memory_record2, setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection", 2)
@@ -159,7 +171,8 @@ async def test_upsert_and_get_batch_async(memory_record1, memory_record2):
 
 
 @pytest.mark.asyncio
-async def test_remove_async(memory_record1):
+async def test_remove_async(memory_record1, setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection", 2)
@@ -173,7 +186,8 @@ async def test_remove_async(memory_record1):
 
 
 @pytest.mark.asyncio
-async def test_remove_batch_async(memory_record1, memory_record2):
+async def test_remove_batch_async(memory_record1, memory_record2, setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection", 2)
@@ -188,7 +202,8 @@ async def test_remove_batch_async(memory_record1, memory_record2):
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_matches_async(memory_record1, memory_record2):
+async def test_get_nearest_matches_async(memory_record1, memory_record2, setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection", 2)
@@ -202,7 +217,8 @@ async def test_get_nearest_matches_async(memory_record1, memory_record2):
 
 
 @pytest.mark.asyncio
-async def test_get_nearest_match_async(memory_record1, memory_record2):
+async def test_get_nearest_match_async(memory_record1, memory_record2, setup_milvus):
+    URI, TOKEN = setup_milvus
     memory = MilvusMemoryStore(uri=URI, token=TOKEN)
     await memory.delete_collection_async(all=True)
     await memory.create_collection_async("test_collection", 2)
