@@ -95,6 +95,7 @@ public sealed class EmailSkill
             throw new ArgumentException("Variable was null or whitespace", nameof(subject));
         }
 
+        // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Sending email to '{0}' with subject '{1}'", recipients, subject);
         string[] recipientList = recipients.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
         await this._connector.SendEmailAsync(subject, content, recipientList, cancellationToken).ConfigureAwait(false);
