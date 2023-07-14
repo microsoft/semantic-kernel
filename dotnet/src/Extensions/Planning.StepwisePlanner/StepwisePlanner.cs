@@ -57,7 +57,6 @@ public class StepwisePlanner
                 promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
             }
         }
-        
         promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
 
         this._systemStepFunction = this.ImportSemanticFunction(this._kernel, "StepwiseStep", promptTemplate, promptConfig);
