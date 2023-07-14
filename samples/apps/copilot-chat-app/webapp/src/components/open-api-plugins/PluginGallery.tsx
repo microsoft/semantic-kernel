@@ -61,7 +61,7 @@ export const PluginGallery: React.FC = () => {
     return (
         <Dialog open={open} onOpenChange={(_event, data) => { setOpen(data.open); }}>
             <DialogTrigger>
-                <Button appearance="transparent" icon={<AppsAddIn24Regular color="white" />} />
+                <Button data-testid="pluginButton" appearance="transparent" icon={<AppsAddIn24Regular color="white" />} />
             </DialogTrigger>
             <DialogSurface className={classes.root}>
                 <DialogBody>
