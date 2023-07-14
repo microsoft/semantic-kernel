@@ -37,8 +37,8 @@ public class StepwisePlanner
     public StepwisePlanner(
         IKernel kernel,
         StepwisePlannerConfig? config = null,
-        string? prompt = null.
-        string? config = null)
+        string? prompt = null,
+        string? promptConfig = null)
     {
         Verify.NotNull(kernel);
         this._kernel = kernel;
@@ -48,7 +48,7 @@ public class StepwisePlanner
 
         var promptConfig = new PromptTemplateConfig();
         var promptTemplate = prompt ?? EmbeddedResource.Read("Skills.StepwiseStep.skprompt.txt");
-        string promptConfigString = config ?? EmbeddedResource.Read("Skills.StepwiseStep.config.json");
+        string promptConfigString = promptConfig ?? EmbeddedResource.Read("Skills.StepwiseStep.config.json");
         if (!string.IsNullOrEmpty(promptConfigString))
         {
             promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
