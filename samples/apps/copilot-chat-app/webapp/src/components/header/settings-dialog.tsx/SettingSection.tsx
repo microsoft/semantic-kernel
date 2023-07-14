@@ -20,6 +20,9 @@ export const SettingSection: React.FC<ISettingsSectionProps> = ({ setting }) => 
         [dispatch],
     );
 
+    const disableExperimentalFeatures =
+        setting.title === 'Experimental' && features[FeatureKeys.SimplifiedExperience].enabled;
+
     return (
         <>
             <h3>{setting.title}</h3>
@@ -31,8 +34,8 @@ export const SettingSection: React.FC<ISettingsSectionProps> = ({ setting }) => 
                         <Switch
                             key={key}
                             label={feature.label}
-                            checked={feature.enabled}
-                            disabled={feature.disabled}
+                            checked={!disableExperimentalFeatures && feature.enabled}
+                            disabled={feature.disabled ?? disableExperimentalFeatures}
                             onChange={() => onFeatureChange(key)}
                         />
                     );

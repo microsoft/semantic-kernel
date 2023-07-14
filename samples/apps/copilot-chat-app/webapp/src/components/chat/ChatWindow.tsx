@@ -8,15 +8,13 @@ import {
     Popover,
     PopoverSurface,
     PopoverTrigger,
-
-
     SelectTabEventHandler,
     shorthands,
     Tab,
     TabList,
     TabValue,
     tokens,
-    Tooltip
+    Tooltip,
 } from '@fluentui/react-components';
 import { Edit24Filled, EditRegular, Map16Regular, Person16Regular } from '@fluentui/react-icons';
 import React, { useState } from 'react';
@@ -149,12 +147,16 @@ export const ChatWindow: React.FC = () => {
                         <Tab data-testid="documentsTab" id="documents" value="documents">
                             Documents
                         </Tab>
-                        <Tab data-testid="plansTab" id="plans" value="plans" icon={<Map16Regular />}>
-                            Plans
-                        </Tab>
-                        <Tab data-testid="personaTab" id="persona" value="persona" icon={<Person16Regular />}>
-                            Persona
-                        </Tab>
+                        {features[FeatureKeys.PluginsPlannersAndPersonas].enabled && (
+                            <>
+                                <Tab data-testid="plansTab" id="plans" value="plans" icon={<Map16Regular />}>
+                                    Plans
+                                </Tab>
+                                <Tab data-testid="personaTab" id="persona" value="persona" icon={<Person16Regular />}>
+                                    Persona
+                                </Tab>
+                            </>
+                        )}
                     </TabList>
                 </div>
                 {!features[FeatureKeys.SimplifiedExperience].enabled && (
