@@ -64,6 +64,16 @@ public class ChatSkill
     private readonly ExternalInformationSkill _externalInformationSkill;
 
     /// <summary>
+    /// A skill instance to acquire external information.
+    /// </summary>
+    private static readonly string[] tokenDependencies = {
+        "audienceExtraction",
+        "userIntentExtraction",
+        "planner",
+        "memoryExtraction"
+    };
+
+    /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
     /// </summary>
     public ChatSkill(
@@ -126,6 +136,8 @@ public class ChatSkill
             settings: this.CreateIntentCompletionSettings()
         );
 
+        context.Variables.Set("userIntentTokenUsage", Utilities.GetTokenUsage(result).ToString(CultureInfo.InvariantCulture));
+
         if (result.ErrorOccurred)
         {
             context.Log.LogError("{0}: {1}", result.LastErrorDescription, result.LastException);
@@ -168,6 +180,8 @@ public class ChatSkill
             audienceExtractionContext,
             settings: this.CreateIntentCompletionSettings()
         );
+
+        context.Variables.Set("audienceExtractionTokenUsage", Utilities.GetTokenUsage(result).ToString(CultureInfo.InvariantCulture));
 
         if (result.ErrorOccurred)
         {
@@ -292,6 +306,7 @@ public class ChatSkill
             chatContext,
             this._promptOptions);
 
+        this.GetTokenUsages(context, chatContext);
         context.Variables.Update(response);
         return context;
     }
@@ -386,6 +401,8 @@ public class ChatSkill
             settings: this.CreateChatResponseCompletionSettings()
         );
 
+        chatContext.Variables.Set("promptTokenUsage", Utilities.GetTokenUsage(chatContext).ToString(CultureInfo.InvariantCulture));
+
         // Allow the caller to view the prompt used to generate the response
         chatContext.Variables.Set("prompt", renderedPrompt);
 
@@ -415,6 +432,10 @@ public class ChatSkill
         );
 
         var audience = await this.ExtractAudienceAsync(audienceContext);
+        if (audienceContext.Variables.TryGetValue("audienceExtractionTokenUsage", out string? tokenUsage))
+        {
+            context.Variables.Set("audienceExtractionTokenUsage", tokenUsage);
+        }
 
         // Propagate the error
         if (audienceContext.ErrorOccurred)
@@ -447,6 +468,11 @@ public class ChatSkill
             );
 
             userIntent = await this.ExtractUserIntentAsync(intentContext);
+            if (intentContext.Variables.TryGetValue("userIntentExtractionTokenUsage", out string? tokenUsage))
+            {
+                context.Variables.Set("userIntentExtractionTokenUsage", tokenUsage);
+            }
+
             // Propagate the error
             if (intentContext.ErrorOccurred)
             {
@@ -626,6 +652,27 @@ public class ChatSkill
             );
 
         return remainingToken;
+    }
+
+    /// <summary>
+    /// Extracts token usages for dependency functions and final prompt from chatContext.
+    /// </summary>
+    /// <param name="resultContext">Context to return with bot response.</param>
+    /// <param name="chatContext">Context maintained during response generation.</param>
+    private void GetTokenUsages(SKContext resultContext, SKContext chatContext)
+    {
+        int dependencyTokenUsage = 0;
+        foreach (string function in tokenDependencies)
+        {
+            if (chatContext.Variables.TryGetValue($"{function}TokenUsage", out string? tokenUsage))
+            {
+                dependencyTokenUsage += int.Parse(tokenUsage, CultureInfo.InvariantCulture);
+            }
+        }
+
+        string botResponseTokenUsage = chatContext.Variables.TryGetValue("promptTokenUsage", out string? promptTokenUsage) ? promptTokenUsage : "0";
+        resultContext.Variables.Set("promptTokenUsage", botResponseTokenUsage);
+        resultContext.Variables.Set("dependencyTokenUsage", (dependencyTokenUsage).ToString(CultureInfo.InvariantCulture));
     }
 
     # endregion

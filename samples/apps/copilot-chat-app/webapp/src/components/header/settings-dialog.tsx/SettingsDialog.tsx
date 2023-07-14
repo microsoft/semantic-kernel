@@ -15,6 +15,7 @@ import {
 import React from 'react';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { TokenUsage } from '../../shared/TokenUsage';
 import { SettingSection } from './SettingSection';
 
 const useClasses = makeStyles({
@@ -34,7 +35,7 @@ interface ISettingsDialogProps {
 
 export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDialog }) => {
     const classes = useClasses();
-    const { settings } = useAppSelector((state: RootState) => state.app);
+    const { settings, tokenUsage } = useAppSelector((state: RootState) => state.app);
 
     return (
         <Dialog
@@ -47,6 +48,11 @@ export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDial
                 <DialogBody className={classes.root}>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogContent>
+                        <TokenUsage
+                            sessionTotal
+                            promptUsage={tokenUsage.prompt}
+                            dependencyUsage={tokenUsage.dependency}
+                        />
                         {settings.map((setting) => {
                             return <SettingSection key={setting.title} setting={setting} />;
                         })}

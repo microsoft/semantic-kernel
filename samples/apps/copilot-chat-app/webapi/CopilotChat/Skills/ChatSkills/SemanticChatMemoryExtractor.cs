@@ -101,6 +101,9 @@ internal static class SemanticChatMemoryExtractor
             settings: CreateMemoryExtractionSettings(options)
         );
 
+        int tokenUsage = context.Variables.TryGetValue("memoryExtractionTokenUsage", out string? memoryExtractionTokenUsage) ? int.Parse(memoryExtractionTokenUsage, CultureInfo.CurrentCulture) : 0;
+        context.Variables.Set("memoryExtractionTokenUsage", (Utilities.GetTokenUsage(result) + tokenUsage).ToString(CultureInfo.CurrentCulture));
+
         SemanticChatMemory memory = SemanticChatMemory.FromJson(result.ToString());
         return memory;
     }

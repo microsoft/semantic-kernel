@@ -27,11 +27,18 @@ export interface Setting {
     learnMoreLink?: string;
 }
 
+export interface TokenUsages {
+    prompt: number;
+    dependency: number;
+}
+
 export interface AppState {
     alerts: Alert[];
     activeUserInfo?: ActiveUserInfo;
     features: Record<FeatureKeys, Feature>;
     settings: Setting[];
+    // Total usage across all chats by app session
+    tokenUsage: TokenUsages;
 }
 
 export enum FeatureKeys {
@@ -109,4 +116,8 @@ export const initialState: AppState = {
     ],
     features: Features,
     settings: Settings,
+    tokenUsage: {
+        prompt: 0,
+        dependency: 0,
+    },
 };
