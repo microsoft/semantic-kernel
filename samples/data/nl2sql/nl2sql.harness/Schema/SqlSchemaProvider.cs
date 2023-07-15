@@ -19,7 +19,7 @@ internal sealed class SqlSchemaProvider
         this.connection = connection;
     }
 
-    public async Task<SchemaDefinition> GetSchemaAsync(string description, params string[] tableNames)
+    public async Task<SchemaDefinition> GetSchemaAsync(string? description, params string[] tableNames)
     {
         var tableFilter = new HashSet<string>(tableNames ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
 
@@ -37,6 +37,7 @@ internal sealed class SqlSchemaProvider
         var columnMap = new Dictionary<string, LinkedList<SchemaColumn>>(StringComparer.InvariantCultureIgnoreCase);
         var viewMap = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
         var keyMap = await this.QueryReferencesAsync().ConfigureAwait(false);
+        var tableDescription = await this.QueryTableDescriptionsAsync().ConfigureAwait(false);
 
         using var reader = await this.ExecuteQueryAsync(Statements.DescribeColumns).ConfigureAwait(false);
         while (await reader.ReadAsync().ConfigureAwait(false))
@@ -52,6 +53,7 @@ internal sealed class SqlSchemaProvider
             }
 
             var columnName = reader.GetString(Statements.Columns.ColumnName);
+            var columnDesc = reader.IsDBNull(Statements.Columns.ColumnDesc) ? null : reader.GetString(Statements.Columns.ColumnDesc);
             var columnType = reader.GetString(Statements.Columns.ColumnType);
             var isPk = reader.GetBoolean(Statements.Columns.IsPK);
 
@@ -62,12 +64,13 @@ internal sealed class SqlSchemaProvider
 
             keyMap.TryGetValue(FormatName(schemaName, tableName, columnName), out var reference);
 
-            columns.AddLast(new SchemaColumn(columnName, description: null, columnType, isPk, reference.table, reference.column));
+            columns.AddLast(new SchemaColumn(columnName, columnDesc, columnType, isPk, reference.table, reference.column));
         }
 
         foreach (var kvp in columnMap)
         {
-            yield return new SchemaTable(kvp.Key, description: null, viewMap.Contains(kvp.Key), kvp.Value.ToArray());
+            tableDescription.TryGetValue(kvp.Key, out var description);
+            yield return new SchemaTable(kvp.Key, description, viewMap.Contains(kvp.Key), kvp.Value.ToArray());
         }
     }
 
@@ -91,6 +94,24 @@ internal sealed class SqlSchemaProvider
         return keyMap;
     }
 
+    private async Task<Dictionary<string, string?>> QueryTableDescriptionsAsync()
+    {
+        var tableMap = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+
+        using var reader = await this.ExecuteQueryAsync(Statements.DescribeTables).ConfigureAwait(false);
+
+        while (await reader.ReadAsync().ConfigureAwait(false))
+        {
+            var schemaName = reader.GetString(Statements.Columns.SchemaName);
+            var tableName = reader.GetString(Statements.Columns.TableName);
+            var tableDesc = reader.IsDBNull(Statements.Columns.TableDesc) ? null : reader.GetString(Statements.Columns.TableDesc);
+
+            tableMap.Add(FormatName(schemaName, tableName), tableDesc);
+        }
+
+        return tableMap;
+    }
+
     private async Task<SqlDataReader> ExecuteQueryAsync(string statement)
     {
         using var cmd = this.connection.CreateCommand();
@@ -111,7 +132,9 @@ internal sealed class SqlSchemaProvider
         {
             public const string SchemaName = nameof(SchemaName);
             public const string TableName = nameof(TableName);
+            public const string TableDesc = nameof(TableDesc);
             public const string ColumnName = nameof(ColumnName);
+            public const string ColumnDesc = nameof(ColumnDesc);
             public const string ColumnType = nameof(ColumnType);
             public const string IsPK = nameof(IsPK);
             public const string IsView = nameof(IsView);
@@ -119,11 +142,23 @@ internal sealed class SqlSchemaProvider
             public const string ReferencedColumnName = nameof(ReferencedColumnName);
         }
 
+        public const string DescribeTables =
+@"SELECT 
+  S.name AS SchemaName,
+  O.name AS TableName,
+  ep.value AS TableDesc
+FROM sys.extended_properties EP
+JOIN sys.tables O ON ep.major_id = O.object_id
+JOIN sys.schemas S on O.schema_id = S.schema_id
+WHERE ep.name = 'MS_DESCRIPTION'
+AND ep.minor_id = 0";
+
         public const string DescribeColumns =
 @"SELECT
     sch.name AS SchemaName,
     tab.name AS TableName,
     col.name AS ColumnName,
+	ep.value AS ColumnDesc,
     base.name AS ColumnType,
     CAST(IIF(ic.column_id IS NULL, 0, 1) AS bit) IsPK,
     tab.IsView
@@ -140,6 +175,7 @@ INNER JOIN sys.types t ON col.user_type_id = t.user_type_id
 INNER JOIN sys.types base ON t.system_type_id = base.user_type_id
 LEFT OUTER JOIN sys.indexes pk ON tab.object_id = pk.object_id AND pk.is_primary_key = 1
 LEFT OUTER JOIN sys.index_columns ic ON ic.object_id = pk.object_id AND ic.index_id = pk.index_id AND ic.column_id = col.column_id 
+LEFT OUTER JOIN sys.extended_properties ep ON ep.major_id = col.object_id AND ep.minor_id = col.column_id and ep.name = 'MS_DESCRIPTION'
 WHERE sch.name != 'sys'
 ORDER BY SchemaName, TableName, IsPK DESC, ColumnName";
 

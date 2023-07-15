@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nl2Sql.Console", "nl2sql.console\Nl2Sql.Console.csproj", "{D5B6813C-E839-4ECA-A24F-AFB6C7DE70EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nl2Sql.Console", "nl2sql.console\Nl2Sql.Console.csproj", "{D5B6813C-E839-4ECA-A24F-AFB6C7DE70EC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nl2Sql.UnitTests", "nl2sql.unittests\Nl2Sql.UnitTests.csproj", "{08E62A07-D954-4CDE-A62F-9CB0BF6C213C}"
 EndProject

@@ -11,12 +11,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
+    <UserSecretsId>5EE045B0-AEA3-4F08-8D31-32D1A6F8FED0</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="$(RootNamespace).Harness" />
-    <InternalsVisibleTo Include="$(RootNamespace).UnitTests" />
+    <InternalsVisibleTo Include="nl2sql.harness" />
+    <InternalsVisibleTo Include="nl2sql.unittests" />
   </ItemGroup>
 
   <ItemGroup>

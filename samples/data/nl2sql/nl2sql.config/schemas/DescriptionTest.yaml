@@ -1,0 +1,24 @@
+schema: Associates registered users with interest categories
+tables:
+  - dbo.A: Registered users
+    columns:
+      A0: Unique identifier for user
+      A1: first name
+      A2: last name
+      A3: email
+      A4: gender
+      A5: city
+      A6: country
+  - dbo.B: Interest Categories
+    columns:
+      B0: Unique identifier for categories
+      B1: The category name
+      B2: Flag indicating if categories as active/enabled
+  - dbo.C: Associate registered users with interest categories
+    columns:
+      C0: Unique identifier for association
+      C1: References registered users
+      C2: References interest categories
+references:
+  dbo.C.C1: dbo.A.A0
+  dbo.C.C2: dbo.B.B0

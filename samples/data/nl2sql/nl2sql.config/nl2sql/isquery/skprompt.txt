@@ -4,8 +4,8 @@ Otherwise ANSWER: NO.
 Do not answer with any other word than YES or NO.
 
 SCHEMA:
-{{$schema}}
+{{$data_schema}}
 
-OBJECTIVE: {{$objective}}
+OBJECTIVE: {{$data_objective}}
 
 ANSWER: Let's think step by step.

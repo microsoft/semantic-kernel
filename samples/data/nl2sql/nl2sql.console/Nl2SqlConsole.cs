@@ -32,34 +32,27 @@ internal class Nl2SqlConsole : BackgroundService
 
     private readonly IKernel kernel;
     private readonly SqlConnectionProvider sqlProvider;
-    private readonly SchemaProvider schemaProvider;
     private readonly SqlQueryGenerator queryGenerator;
     private readonly ILogger<Nl2SqlConsole> logger;
 
     public Nl2SqlConsole(
         IKernel kernel,
         SqlConnectionProvider sqlProvider,
-        SchemaProvider schemaProvider,
         ILogger<Nl2SqlConsole> logger)
     {
         this.kernel = kernel;
         this.sqlProvider = sqlProvider;
-        this.schemaProvider = schemaProvider;
         this.logger = logger;
-        this.queryGenerator = new SqlQueryGenerator(this.kernel, schemaProvider);
+        this.queryGenerator = new SqlQueryGenerator(this.kernel);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Yield(); // Yield to hosting framework prior to blocking console (for input)
 
-        foreach ((var name, var schema) in this.schemaProvider.Schemas) // $$$ HACK
-        {
-            var schemaText = await this.schemaProvider.GetSchemaAsync(name).ConfigureAwait(false);
-            await this.kernel.Memory.SaveInformationAsync("schemas", schemaText, schema.Name, null, null, stoppingToken).ConfigureAwait(false);
-        }
+        var schemaNames = await SchemaProvider.InitializeAsync(this.kernel).ToArrayAsync().ConfigureAwait(false);
 
-        this.WriteIntroduction();
+        this.WriteIntroduction(schemaNames);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -71,23 +64,15 @@ internal class Nl2SqlConsole : BackgroundService
 
             this.logger.LogInformation($"Objective: {objective}"); // $$$ KERNEL LOGGING ???
 
-            var recall = await this.kernel.Memory.SearchAsync("schemas", objective, limit: 1, minRelevanceScore: 0.75, withEmbeddings: true, stoppingToken).ToArrayAsync().ConfigureAwait(false); // $$$ HACK
-
-            if (recall.Length > 0)
-            {
-
-            }
-
-            var schemaName = recall.FirstOrDefault()?.Metadata.Id;
-            var schemaText = recall.FirstOrDefault()?.Metadata.Text;
-
+            var context = this.kernel.CreateNewContext();
             var query =
                 await this.queryGenerator.SolveObjectiveAsync(
                     objective,
-                    schemaText,
-                    this.kernel.CreateNewContext()).ConfigureAwait(false);
+                    context).ConfigureAwait(false);
 
-            await ProcessQueryAsync(schemaName, query).ConfigureAwait(false);
+            context.Variables.TryGetValue(SqlQueryGenerator.ContextParamSchemaId, out var schemaId);
+
+            await ProcessQueryAsync(schemaId, query).ConfigureAwait(false);
         }
 
         this.WriteLine();
@@ -350,13 +335,13 @@ internal class Nl2SqlConsole : BackgroundService
         }
     }
 
-    private void WriteIntroduction()
+    private void WriteIntroduction(IList<string> schemaNames)
     {
         this.WriteLine(SystemColor, $"I can translate your question into a SQL query for the following data schemas:{Environment.NewLine}");
 
-        foreach ((var name, var schema) in this.schemaProvider.Schemas)
+        foreach (var schemaName in schemaNames)
         {
-            this.WriteLine(SystemColor, $"- {name}");
+            this.WriteLine(SystemColor, $"- {schemaName}");
         }
 
         this.WriteLine(SystemColor, $"{Environment.NewLine}Press CTRL+C to Exit.{Environment.NewLine}");

@@ -10,10 +10,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SemanticKernel.Data.Nl2Sql.Services;
 
+/// <summary>
+/// Entry point for console execution.
+/// </summary>
+/// <remarks>
+/// See https://github.com/microsoft/semantic-kernel/tree/main/samples/data/nl2ql/ReadMe.md for configuration steps.
+/// </remarks>
 internal static class Program
 {
-    public static string ConfigRoot { get; } = $@"{Repo.RootFolder}\samples\data\nl2sql\nl2sql.config";
-
     private static async Task Main(string[] args)
     {
         using var traceListener = new TextWriterTraceListener("nl2sql.log");
@@ -44,7 +48,6 @@ internal static class Program
                         services
                             .AddSingleton(KernelFactory.Create(context.Configuration))
                             .AddSingleton(SqlConnectionProvider.Create(context.Configuration))
-                            .AddSingleton(SchemaProvider.Create(context.Configuration))
                             .AddHostedService<Nl2SqlConsole>();
                     })
              .UseConsoleLifetime()

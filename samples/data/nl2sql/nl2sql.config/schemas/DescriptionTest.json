@@ -1,0 +1,95 @@
+{
+  "Name": "DescriptionTest",
+  "Description": "Associates registered users with interest categories.",
+  "Tables": [
+    {
+      "Name": "dbo.A",
+      "Description": "Registered usres",
+      "Columns": [
+        {
+          "Name": "A0",
+          "Description": "Unique identifier for user",
+          "Type": "int",
+          "IsPrimary": true
+        },
+        {
+          "Name": "A1",
+          "Description": "first name",
+          "Type": "varchar"
+        },
+        {
+          "Name": "A2",
+          "Description": "last name",
+          "Type": "varchar"
+        },
+        {
+          "Name": "A3",
+          "Description": "email",
+          "Type": "varchar"
+        },
+        {
+          "Name": "A4",
+          "Description": "gender",
+          "Type": "varchar"
+        },
+        {
+          "Name": "A5",
+          "Description": "city",
+          "Type": "varchar"
+        },
+        {
+          "Name": "A6",
+          "Description": "country",
+          "Type": "varchar"
+        }
+      ]
+    },
+    {
+      "Name": "dbo.B",
+      "Description": "Interest Categories",
+      "Columns": [
+        {
+          "Name": "B0",
+          "Description": "Unique identifier for categories",
+          "Type": "int",
+          "IsPrimary": true
+        },
+        {
+          "Name": "B1",
+          "Description": "The category name",
+          "Type": "varchar"
+        },
+        {
+          "Name": "B2",
+          "Description": "Flag indicating if categories as active/enabled.",
+          "Type": "bit"
+        }
+      ]
+    },
+    {
+      "Name": "dbo.C",
+      "Description": "Associate registered users with interest categories",
+      "Columns": [
+        {
+          "Name": "C0",
+          "Description": "Unique identifier for association",
+          "Type": "int"
+        },
+        {
+          "Name": "C1",
+          "Description": "References registered users",
+          "Type": "int",
+          "ReferencedTable": "dbo.A",
+          "ReferencedColumn": "A0"
+        },
+        {
+          "Name": "C2",
+          "Description": "References interest categories.",
+          "Type": "int",
+          "ReferencedTable": "dbo.B",
+          "ReferencedColumn": "B0"
+        }
+      ]
+    }
+  ]
+}

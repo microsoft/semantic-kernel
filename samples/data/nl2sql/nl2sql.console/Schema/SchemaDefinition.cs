@@ -8,7 +8,7 @@ public sealed class SchemaDefinition
 {
     public SchemaDefinition(
         string name,
-        string description,
+        string? description,
         IEnumerable<SchemaTable> tables)
     {
         this.Name = name;

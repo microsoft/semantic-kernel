@@ -2,59 +2,83 @@
 namespace SemanticKernel.Data.Nl2Sql.Query;
 
 using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.Data.Nl2Sql.Services;
 
 /// <summary>
 /// Generate SQL query targeting Microsoft SQL Server.
 /// </summary>
 internal sealed class SqlQueryGenerator
 {
-    public const string ContextParamObjective = "objective";
-    public const string ContextParamSchema = "schema";
-    public const string ContextLabelAnswer = "answer";
-    public const string ContextLabelQuery = "sql";
-    public const string ContentAffirmative = "yes";
+    public const string ContextParamObjective = "data_objective";
+    public const string ContextParamSchema = "data_schema";
+    public const string ContextParamSchemaId = "data_schema_id";
 
+    private const string ContentLabelQuery = "sql";
+    private const string ContentLabelAnswer = "answer";
+    private const string ContentAffirmative = "yes";
+
+    private readonly ISemanticTextMemory memory;
     private readonly ISKFunction promptEval;
     private readonly ISKFunction promptGenerator;
-    private readonly SchemaProvider schemaProvider;
 
-    public SqlQueryGenerator(IKernel kernel, SchemaProvider schemaProvider)
+    public SqlQueryGenerator(IKernel kernel)
     {
-        this.schemaProvider = schemaProvider;
-
-        var functions = kernel.ImportSemanticSkillFromDirectory(Program.ConfigRoot, "nl2sql");
+        var functions = kernel.ImportSemanticSkillFromDirectory(Repo.RootConfig, "nl2sql");
         this.promptEval = functions["isquery"];
         this.promptGenerator = functions["generatequery"];
+
+        this.memory = kernel.Memory;
+
+        kernel.ImportSkill(this, "nl2sql");
     }
 
-    public async Task<string?> SolveObjectiveAsync(string objective, string? schemaText, SKContext context)
+    [SKFunction, Description("Generate a data query for a given objective and schema")]
+    [SKName("GenerateQueryFromObjective")]
+    public async Task<string?> SolveObjectiveAsync(string objective, SKContext context)
     {
-        if (string.IsNullOrEmpty(schemaText))
+        var recall =
+            await this.memory.SearchAsync(
+                "schemas",
+                objective,
+                limit: 1,
+                minRelevanceScore: 0.75,
+                withEmbeddings: true).ToArrayAsync().ConfigureAwait(false);
+
+        var best = recall.FirstOrDefault();
+        if (best == null)
         {
             return null;
         }
+
+        var schemaName = best.Metadata.Id;
+        var schemaText = best.Metadata.Text;
 
         context[ContextParamObjective] = objective;
         context[ContextParamSchema] = schemaText;
+        context[ContextParamSchemaId] = schemaName;
 
-        await this.promptEval.InvokeAsync(context).ConfigureAwait(false);
-
-        var answer = context.GetResult(ContextLabelAnswer, require: false);
-        if (answer.Equals(ContentAffirmative, StringComparison.OrdinalIgnoreCase))
+        if (!await this.ScreenObjectiveAsync(context).ConfigureAwait(false))
         {
-            await this.promptGenerator.InvokeAsync(context).ConfigureAwait(false);
-        }
-        else
-        {
-            context.Fail("The objective does not correspond to a data query associated with this schema.");
             return null;
         }
 
-        return context.GetResult(ContextLabelQuery, require: false);
+        await this.promptGenerator.InvokeAsync(context).ConfigureAwait(false);
+
+        return context.GetResult(ContentLabelQuery, require: false);
+    }
+
+    private async Task<bool> ScreenObjectiveAsync(SKContext context)
+    {
+        await this.promptEval.InvokeAsync(context).ConfigureAwait(false);
+
+        var answer = context.GetResult(ContentLabelAnswer, require: false);
+
+        return answer.Equals(ContentAffirmative, StringComparison.OrdinalIgnoreCase);
     }
 }

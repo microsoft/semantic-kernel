@@ -1,0 +1,187 @@
+description: Product, sales, and customer data for the AdentureWorks company.
+tables:
+  - dbo.BuildVersion: 
+    columns:
+      SystemInformationID: 
+      Database Version: 
+      ModifiedDate: 
+      VersionDate: 
+  - dbo.ErrorLog: 
+    columns:
+      ErrorLogID: 
+      ErrorLine: 
+      ErrorMessage: 
+      ErrorNumber: 
+      ErrorProcedure: 
+      ErrorSeverity: 
+      ErrorState: 
+      ErrorTime: 
+      UserName: 
+  - SalesLT.Address: 
+    columns:
+      AddressID: 
+      AddressLine1: 
+      AddressLine2: 
+      City: 
+      CountryRegion: 
+      ModifiedDate: 
+      PostalCode: 
+      rowguid: 
+      StateProvince: 
+  - SalesLT.Customer: 
+    columns:
+      CustomerID: 
+      CompanyName: 
+      EmailAddress: 
+      FirstName: 
+      LastName: 
+      MiddleName: 
+      ModifiedDate: 
+      NameStyle: 
+      PasswordHash: 
+      PasswordSalt: 
+      Phone: 
+      rowguid: 
+      SalesPerson: 
+      Suffix: 
+      Title: 
+  - SalesLT.CustomerAddress: 
+    columns:
+      AddressID: 
+      CustomerID: 
+      AddressType: 
+      ModifiedDate: 
+      rowguid: 
+  - SalesLT.Product: 
+    columns:
+      ProductID: 
+      Color: 
+      DiscontinuedDate: 
+      ListPrice: 
+      ModifiedDate: 
+      Name: 
+      ProductCategoryID: 
+      ProductModelID: 
+      ProductNumber: 
+      rowguid: 
+      SellEndDate: 
+      SellStartDate: 
+      Size: 
+      StandardCost: 
+      ThumbNailPhoto: 
+      ThumbnailPhotoFileName: 
+      Weight: 
+  - SalesLT.ProductCategory: 
+    columns:
+      ProductCategoryID: 
+      ModifiedDate: 
+      Name: 
+      ParentProductCategoryID: 
+      rowguid: 
+  - SalesLT.ProductDescription: 
+    columns:
+      ProductDescriptionID: 
+      Description: 
+      ModifiedDate: 
+      rowguid: 
+  - SalesLT.ProductModel: 
+    columns:
+      ProductModelID: 
+      CatalogDescription: 
+      ModifiedDate: 
+      Name: 
+      rowguid: 
+  - SalesLT.ProductModelProductDescription: 
+    columns:
+      Culture: 
+      ProductDescriptionID: 
+      ProductModelID: 
+      ModifiedDate: 
+      rowguid: 
+  - SalesLT.SalesOrderDetail: 
+    columns:
+      SalesOrderDetailID: 
+      SalesOrderID: 
+      LineTotal: 
+      ModifiedDate: 
+      OrderQty: 
+      ProductID: 
+      rowguid: 
+      UnitPrice: 
+      UnitPriceDiscount: 
+  - SalesLT.SalesOrderHeader: 
+    columns:
+      SalesOrderID: 
+      AccountNumber: 
+      BillToAddressID: 
+      Comment: 
+      CreditCardApprovalCode: 
+      CustomerID: 
+      DueDate: 
+      Freight: 
+      ModifiedDate: 
+      OnlineOrderFlag: 
+      OrderDate: 
+      PurchaseOrderNumber: 
+      RevisionNumber: 
+      rowguid: 
+      SalesOrderNumber: 
+      ShipDate: 
+      ShipMethod: 
+      ShipToAddressID: 
+      Status: 
+      SubTotal: 
+      TaxAmt: 
+      TotalDue: 
+  - SalesLT.vGetAllCategories: 
+    columns:
+      ParentProductCategoryName: 
+      ProductCategoryID: 
+      ProductCategoryName: 
+  - SalesLT.vProductAndDescription: 
+    columns:
+      Culture: 
+      Description: 
+      Name: 
+      ProductID: 
+      ProductModel: 
+  - SalesLT.vProductModelCatalogDescription: 
+    columns:
+      BikeFrame: 
+      Color: 
+      Copyright: 
+      Crankset: 
+      MaintenanceDescription: 
+      Manufacturer: 
+      Material: 
+      ModifiedDate: 
+      Name: 
+      NoOfYears: 
+      Pedal: 
+      PictureAngle: 
+      PictureSize: 
+      ProductLine: 
+      ProductModelID: 
+      ProductPhotoID: 
+      ProductURL: 
+      RiderExperience: 
+      rowguid: 
+      Saddle: 
+      Style: 
+      Summary: 
+      WarrantyDescription: 
+      WarrantyPeriod: 
+      Wheel: 
+references:
+  SalesLT.CustomerAddress.AddressID: SalesLT.Address.AddressID
+  SalesLT.CustomerAddress.CustomerID: SalesLT.Customer.CustomerID
+  SalesLT.Product.ProductCategoryID: SalesLT.ProductCategory.ProductCategoryID
+  SalesLT.Product.ProductModelID: SalesLT.ProductModel.ProductModelID
+  SalesLT.ProductCategory.ParentProductCategoryID: SalesLT.ProductCategory.ProductCategoryID
+  SalesLT.ProductModelProductDescription.ProductDescriptionID: SalesLT.ProductDescription.ProductDescriptionID
+  SalesLT.ProductModelProductDescription.ProductModelID: SalesLT.ProductModel.ProductModelID
+  SalesLT.SalesOrderDetail.SalesOrderID: SalesLT.SalesOrderHeader.SalesOrderID
+  SalesLT.SalesOrderDetail.ProductID: SalesLT.Product.ProductID
+  SalesLT.SalesOrderHeader.BillToAddressID: SalesLT.Address.AddressID
+  SalesLT.SalesOrderHeader.CustomerID: SalesLT.Customer.CustomerID
+  SalesLT.SalesOrderHeader.ShipToAddressID: SalesLT.Address.AddressID

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-//#define DISABLEHOST
+#define DISABLEHOST
 namespace SemanticKernel.Data.Nl2Sql.Harness.Schema;
 
-using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +12,8 @@ using Xunit;
 using Xunit.Abstractions;
 
 /// <summary>
-/// Harness for utilizing SqlSchemaProvider to capture live database schema definition: <see cref="SchemaDefinition"/>.
+/// Harness for utilizing <see cref="SqlSchemaProvider"/> to capture live database schema
+/// definitions: <see cref="SchemaDefinition"/>.
 /// </summary>
 public sealed class SqlSchemaProviderHarness
 {
@@ -22,7 +23,8 @@ public sealed class SqlSchemaProviderHarness
     private const string SkipReason = null;
 #endif
 
-    private const string ConnectionStringConfiguration = "AdventureWorks";
+    private const string DatabaseAdventureWorksLT = "AdventureWorksLT";
+    private const string DatabaseDescriptionTest = "DescriptionTest";
 
     private readonly ITestOutputHelper output;
 
@@ -31,26 +33,57 @@ public sealed class SqlSchemaProviderHarness
         this.output = output;
     }
 
+    /// <summary>
+    /// Reverse engineer live database (design-time task).
+    /// </summary>
+    /// <remarks>
+    /// After testing with the sample data-sources, try one of your own!
+    /// </remarks>
     [Fact(Skip = SkipReason)]
-    public async Task GetSchemaTestAsync()
+    public async Task ReverseEngineerSchemaAsync()
     {
-        var connectionString = Harness.Configuration.GetConnectionString(ConnectionStringConfiguration);
+        await this.CaptureSchemaAsync(
+            DatabaseAdventureWorksLT,
+            "Product, sales, and customer data for the AdentureWorks company.").ConfigureAwait(false);
+
+        await this.CaptureSchemaAsync(
+            DatabaseDescriptionTest,
+            "Associates registered users with interest categories.").ConfigureAwait(false);
+    }
+
+    private async Task CaptureSchemaAsync(string databaseKey, string? description, params string[] tableNames)
+    {
+        var connectionString = Harness.Configuration.GetConnectionString(databaseKey);
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync().ConfigureAwait(false);
 
         var provider = new SqlSchemaProvider(connection);
 
-        // GetSchemaAsync is able to filter by table name:
-        // var tableNames = new [] { "table1", "table1", ... };
-
-        var schema = await provider.GetSchemaAsync("Product, sales, and customer data for the AdentureWorks company.").ConfigureAwait(false);
+        var schema = await provider.GetSchemaAsync(description, tableNames).ConfigureAwait(false);
 
         await connection.CloseAsync().ConfigureAwait(false);
 
-        var schemaText = await schema.FormatAsync(PromptSchemaFormatter.Instance).ConfigureAwait(false);
-        this.output.WriteLine(schemaText);
+        // Capture YAML for inspection
+        var yamlText = await schema.FormatAsync(YamlSchemaFormatter.Instance).ConfigureAwait(false);
+        await this.SaveSchemaAsync("yaml", databaseKey, yamlText).ConfigureAwait(false);
 
-        this.output.WriteLine(schema.ToJson());
-        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+        // Capture json for reserialization
+        await this.SaveSchemaAsync("json", databaseKey, schema.ToJson()).ConfigureAwait(false);
+    }
+
+    private async Task SaveSchemaAsync(string extension, string databaseKey, string schemaText)
+    {
+        var fileName = Path.Combine(Repo.RootConfig, "schemas", $"{databaseKey}.{extension}");
+
+        using var streamCompact =
+            new StreamWriter(
+                fileName,
+                new FileStreamOptions
+                {
+                    Access = FileAccess.Write,
+                    Mode = FileMode.Create,
+                });
+
+        await streamCompact.WriteAsync(schemaText).ConfigureAwait(false);
     }
 }
