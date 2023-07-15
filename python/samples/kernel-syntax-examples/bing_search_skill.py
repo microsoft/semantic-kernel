@@ -1,9 +1,13 @@
 import os
 
+from dotenv import load_dotenv
+
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import OpenAITextCompletion
-from semantic_kernel.web_skills.connectors import BingConnector
-from semantic_kernel.web_skills.web_search_engine_skill import WebSearchEngineSkill
+from semantic_kernel.connectors.search_engine import BingConnector
+from semantic_kernel.core_skills import WebSearchEngineSkill
+
+load_dotenv()
 
 
 async def main():
