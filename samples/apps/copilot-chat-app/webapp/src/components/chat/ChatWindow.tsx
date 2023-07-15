@@ -85,9 +85,7 @@ export const ChatWindow: React.FC = () => {
     const classes = useClasses();
     const { features } = useAppSelector((state: RootState) => state.app);
 
-    const showShareBotMenu =
-        !features[FeatureKeys.SimplifiedExperience].enabled &&
-        (features[FeatureKeys.BotAsDocs].enabled || features[FeatureKeys.MultiUserChat].enabled);
+    const showShareBotMenu = features[FeatureKeys.BotAsDocs].enabled || features[FeatureKeys.MultiUserChat].enabled;
 
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
@@ -159,18 +157,18 @@ export const ChatWindow: React.FC = () => {
                         )}
                     </TabList>
                 </div>
-                {!features[FeatureKeys.SimplifiedExperience].enabled && (
-                    <div className={classes.controls}>
+                <div className={classes.controls}>
+                    {!features[FeatureKeys.SimplifiedExperience].enabled && (
                         <div data-testid="chatParticipantsView">
                             <ParticipantsList participants={conversations[selectedId].users} />
                         </div>
-                        {showShareBotMenu && (
-                            <div>
-                                <ShareBotMenu chatId={selectedId} chatTitle={chatName} />
-                            </div>
-                        )}
-                    </div>
-                )}
+                    )}
+                    {showShareBotMenu && (
+                        <div>
+                            <ShareBotMenu chatId={selectedId} chatTitle={chatName} />
+                        </div>
+                    )}
+                </div>
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
             {selectedTab === 'documents' && <ChatResourceList chatId={selectedId} />}

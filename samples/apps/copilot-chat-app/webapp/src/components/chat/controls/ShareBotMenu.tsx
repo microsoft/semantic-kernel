@@ -43,19 +43,20 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
                 </MenuTrigger>
                 <MenuPopover>
                     <MenuList>
-                        {features[FeatureKeys.BotAsDocs].enabled && (
-                            <MenuItem
-                                data-testid="downloadBotMenuItem"
-                                icon={<ArrowDownloadRegular />}
-                                onClick={onDownloadBotClick}
-                            >
-                                Download your Bot
-                            </MenuItem>
-                        )}
+                        <MenuItem
+                            data-testid="downloadBotMenuItem"
+                            icon={<ArrowDownloadRegular />}
+                            onClick={onDownloadBotClick}
+                            disabled={!features[FeatureKeys.BotAsDocs].enabled}
+                        >
+                            Download your Bot
+                        </MenuItem>
+
                         <MenuItem
                             data-testid="inviteOthersMenuItem"
                             icon={<PeopleTeamAddRegular />}
                             onClick={() => setIsGettingInvitationId(true)}
+                            disabled={!features[FeatureKeys.MultiUserChat].enabled}
                         >
                             Invite others to your Bot
                         </MenuItem>
