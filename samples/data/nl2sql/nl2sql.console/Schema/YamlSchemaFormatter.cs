@@ -24,7 +24,7 @@ public sealed class YamlSchemaFormatter : ISchemaFormatter
 
         if (!string.IsNullOrWhiteSpace(schema.Description))
         {
-            await writer.WriteLineAsync($"schema: {schema.Description}").ConfigureAwait(false);
+            await writer.WriteLineAsync($"description: {schema.Description}").ConfigureAwait(false);
         }
 
         await writer.WriteLineAsync("tables:").ConfigureAwait(false);

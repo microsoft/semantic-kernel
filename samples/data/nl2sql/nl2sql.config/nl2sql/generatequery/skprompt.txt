@@ -7,12 +7,46 @@ Do not include any explanations, only provide valid SQL.
 [BEGIN EXAMPLE]
 
 SCHEMA:
-Table: stadium, columns: [*,Stadium_ID,Location,Name,Capacity,Highest,Lowest,Average]
-Table: singer, columns: [*,Singer_ID,Name,Country,Song_Name,Song_release_year,Age,Is_male]
-Table: concert, columns: [*,concert_ID,concert_Name,Theme,Stadium_ID,Year]
-Table: singer_in_concert, columns: [*,concert_ID,Singer_ID]
-Foreign_keys: [concert.Stadium_ID = stadium.Stadium_ID,singer_in_concert.concert_ID = concert.concert_ID,singer_in_concert.Singer_ID = singer.Singer_ID]
- 
+description: historical record of concerts, stadiums and singers
+tables:
+  - stadium: 
+    columns:
+      *: all columns
+      Stadium_ID: 
+      Location: 
+      Name: 
+      Capacity: 
+      Highest: 
+      Lowest: 
+      Average: 
+  - singer: 
+    columns:
+      *: all columns
+      Singer_ID: 
+      Name: 
+      Country: 
+      Song_Name: 
+      Song_release_year: 
+      Age: 
+      Is_male: 
+  - concert: 
+    columns:
+      *: all columns
+      concert_ID: 
+      concert_Name: 
+      Theme: 
+      Stadium_ID: 
+      Year: 
+  - singer_in_concert: 
+    columns:
+      *: all columns
+      concert_ID: 
+      Singer_ID: 
+references:
+  concert.Stadium_ID: stadium.Stadium_ID
+  singer_in_concert.concert_ID: concert.concert_ID
+  singer_in_concert.Singer_ID: singer.Singer_ID
+
 OBJECTIVE: "How many heads of the departments are older than 56 ?"
 SQL: select count(*) department_head_count from head where age > 56
 

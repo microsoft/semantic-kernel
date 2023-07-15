@@ -1,4 +1,4 @@
-schema: Associates registered users with interest categories
+description: Associates registered users with interest categories
 tables:
   - dbo.A: Registered users
     columns:
