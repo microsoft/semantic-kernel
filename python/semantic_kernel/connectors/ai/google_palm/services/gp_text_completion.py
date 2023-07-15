@@ -41,17 +41,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> str:
-        try:
-            import google.generativeai as palm
-            response = await self._send_completion_request(prompt, request_settings, True)
-        except Exception as e:
-            raise AIException("Please ensure that google.generativeai is installed to use GooglePalmTextCompletion")
-        return
         
-        
-    async def _send_completion_request(
-        self, prompt: str, request_settings: CompleteRequestSettings, stream: bool
-    ):
         if not prompt:
                 raise ValueError("Prompt cannot be `None` or empty")
         if request_settings is None:
@@ -69,7 +59,14 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
                 f"but logprobs={request_settings.logprobs} was requested",
             )
         try:
-            response = await palm.generate_text(
+            palm.configure(api_key=self._api_key)
+        except Exception as ex:
+            raise PermissionError (
+                "Google PaLM service failed to configure. Invalid API key provided.",
+                ex,
+            )
+        try:
+            response = palm.generate_text(
                 model=self._model_id,
                 prompt=prompt, 
                 temperature=request_settings.temperature,
@@ -89,4 +86,9 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
                 ex,
             )
         return response
-
+    
+    async def complete_stream_async(
+        self, prompt: str, request_settings: CompleteRequestSettings
+    ):
+        return
+        
