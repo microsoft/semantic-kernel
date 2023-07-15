@@ -120,7 +120,7 @@ internal class Nl2SqlConsole : BackgroundService
             this.WriteLine(SystemColor, $"{Environment.NewLine}QUERY:");
             this.WriteLine(QueryColor, query);
 
-            if (!this.Confirm("Execute?"))
+            if (!this.Confirm($"{Environment.NewLine}Execute?"))
             {
                 this.WriteLine();
                 this.WriteLine();
@@ -166,7 +166,7 @@ internal class Nl2SqlConsole : BackgroundService
 
     private bool Confirm(string message)
     {
-        this.Write(FocusColor, $"{Environment.NewLine}{message} (y/n) ");
+        this.Write(FocusColor, $"{message} (y/n) ");
 
         while (true)
         {
@@ -218,6 +218,10 @@ internal class Nl2SqlConsole : BackgroundService
             {
                 showData = this.Confirm($"...More?");
                 this.ClearLine();
+                if (!showData)
+                {
+                    this.WriteLine();
+                }
             }
             else
             {
