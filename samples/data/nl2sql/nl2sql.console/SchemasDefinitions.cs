@@ -21,6 +21,7 @@ internal static class SchemasDefinitions
     {
         yield return await GetSchemaAsync("adventureworkslt").ConfigureAwait(false);
         yield return await GetSchemaAsync("descriptiontest").ConfigureAwait(false);
+        // TODO: Load your own schema here (comment-out others for focused exploration)
     }
 
     private static async Task<SchemaDefinition> GetSchemaAsync(string schemaName)

@@ -49,6 +49,8 @@ public sealed class SqlSchemaProviderHarness
         await this.CaptureSchemaAsync(
             DatabaseDescriptionTest,
             "Associates registered users with interest categories.").ConfigureAwait(false);
+
+        // TODO: Reverse engineer your own database (comment-out others)
     }
 
     private async Task CaptureSchemaAsync(string databaseKey, string? description, params string[] tableNames)
