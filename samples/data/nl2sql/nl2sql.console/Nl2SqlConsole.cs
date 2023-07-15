@@ -274,7 +274,7 @@ internal class Nl2SqlConsole : BackgroundService
 
                 var width = widths[index];
 
-                this.Write(SystemColor, new string('─', width == -1 ? 24 : width));
+                this.Write(SystemColor, new string('─', width == -1 ? Console.WindowWidth - 2 : width));
             }
 
             if (isColumnTruncation)
@@ -297,6 +297,13 @@ internal class Nl2SqlConsole : BackgroundService
 
             for (int index = 0; index < reader.FieldCount; ++index)
             {
+                if (index == reader.FieldCount - 1)
+                {
+                    // Last field gets remaining width
+                    yield return -1;
+                    yield break;
+                }
+
                 var width = GetWidth(reader.GetFieldType(index));
 
                 if (totalWidth + width > Console.WindowWidth - 11)
