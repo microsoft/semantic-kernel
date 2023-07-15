@@ -28,8 +28,7 @@ sentence-transformers = "^2.2.2"
 torch = "2.0.0"
 
 [tool.poetry.group.chromadb.dependencies]
-chromadb = "^0.3.23"
-
+chromadb = "^0.3.29"
 
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = "^3.18.0"
@@ -40,6 +39,7 @@ pinecone-client = "^2.2.2"
 [tool.poetry.group.postgres.dependencies]
 psycopg-pool = "^3.1.7"
 psycopg = "^3.1.9"
+psycopg-binary = "^3.1.9"
 
 [tool.isort]
 profile = "black"
