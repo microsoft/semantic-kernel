@@ -37,6 +37,8 @@ dotnet user-secrets set "WEAVIATE_APIKEY" "..."
 dotnet user-secrets set "GITHUB_PERSONAL_ACCESS_TOKEN" "github_pat_..."
 dotnet user-secrets set "POSTGRES_CONNECTIONSTRING" "..."
 dotnet user-secrets set "REDIS_CONFIGURATION" "..."
+dotnet user-secrets set "Apim__Endpoint" "https://apim...azure-api.net/"
+dotnet user-secrets set "Apim__SubscriptionKey" "..."
 ```
 
 To set your secrets with environment variables, use these names:
@@ -61,3 +63,5 @@ To set your secrets with environment variables, use these names:
 * AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME
 * AZURE_OPENAI_EMBEDDINGS_ENDPOINT
 * AZURE_OPENAI_EMBEDDINGS_KEY
+* Apim__Endpoint
+* Apim__SubscriptionKey
