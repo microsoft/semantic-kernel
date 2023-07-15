@@ -214,7 +214,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                     request_settings.token_selection_biases
                     if request_settings.token_selection_biases is not None
                     and len(request_settings.token_selection_biases) > 0
-                    else None
+                    else {}
                 ),
             )
         except Exception as ex:
