@@ -22,11 +22,11 @@ public static class Example21_ChatGptPlugins
         using HttpClient httpClient = new();
 
         //Import a ChatGPT plugin using one of the following Kernel extension methods
-        //kernel.ImportChatGptPluginSkillFromResourceAsync
-        //kernel.ImportChatGptPluginSkillSkillFromDirectory
-        //kernel.ImportChatGptPluginSkillSkillFromFile
-        //kernel.ImportChatGptPluginSkillFromUrlAsync
-        var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("<skill name>", new Uri("<chatGPT-plugin>"), new OpenApiSkillExecutionParameters(httpClient));
+        //kernel.ImportChatGptPluginFromResourceAsync
+        //kernel.ImportChatGptPluginFromDirectoryAsync
+        //kernel.ImportChatGptPluginFromFileAsync
+        //kernel.ImportChatGptPluginFromUrlAsync
+        var skill = await kernel.ImportChatGptPluginFromUrlAsync("<skill name>", new Uri("<chatGPT-plugin>"), new OpenApiSkillExecutionParameters(httpClient));
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
