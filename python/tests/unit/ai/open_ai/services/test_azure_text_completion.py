@@ -153,7 +153,7 @@ async def test_azure_text_completion_call_with_parameters() -> None:
             stop=None,
             n=complete_request_settings.number_of_responses,
             stream=False,
-            logit_bias=None,
+            logit_bias={},
         )
 
 
