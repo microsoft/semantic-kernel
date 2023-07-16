@@ -82,17 +82,9 @@ public class ChromaMemoryStore : IMemoryStore
     {
         Verify.NotNullOrWhiteSpace(collectionName);
 
-        var collections = this.GetCollectionsAsync(cancellationToken);
+        var collection = await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
 
-        await foreach (var collection in collections.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            if (collection == collectionName)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return collection != null;
     }
 
     /// <inheritdoc />

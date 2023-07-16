@@ -37,9 +37,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this._chromaClientMock
             .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
             .ReturnsAsync(new ChromaCollectionModel { Id = CollectionId, Name = CollectionName });
-        this._chromaClientMock
-            .Setup(client => client.ListCollectionsAsync(CancellationToken.None))
-            .Returns(() => new string[] { CollectionName }.ToAsyncEnumerable());
     }
 
     [Fact]
