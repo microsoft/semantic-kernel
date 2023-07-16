@@ -5,8 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CA1510 // Use 'ArgumentNullException.ThrowIfNull' (.NET 8)
 
-namespace System.Linq; // for compatibility with System.Linq.Async.nupkg
+// Used for compatibility with System.Linq.Async Nuget pkg
+namespace System.Linq;
 
 internal static class AsyncEnumerable
 {
@@ -92,6 +94,7 @@ internal static class AsyncEnumerable
         {
             checked { count++; }
         }
+
         return count;
     }
 
