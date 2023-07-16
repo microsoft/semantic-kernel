@@ -12,7 +12,6 @@ from azure.search.documents.indexes.models import (
     SimpleField,
 )
 from dotenv import load_dotenv
-from numpy import array, linalg, ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 
@@ -86,11 +85,17 @@ def get_search_index_async_client(
     if azure_credential is None and token_credential is None:
         raise ValueError("Error: Azure Search credentials not set.")
 
+    sk_headers = {"User-Agent": "Semantic-Kernel"}
+
     if azure_credential:
-        return SearchIndexClient(service_endpoint, azure_credential)
+        return SearchIndexClient(
+            endpoint=service_endpoint, credential=azure_credential, headers=sk_headers
+        )
 
     if token_credential:
-        return SearchIndexClient(service_endpoint, token_credential)
+        return SearchIndexClient(
+            endpoint=service_endpoint, credential=token_credential, headers=sk_headers
+        )
 
     raise ValueError("Error: unable to create Azure Search client.")
 
@@ -253,43 +258,3 @@ def decode_id(base64_id: str) -> str:
     base64_bytes = base64_id.encode("ascii")
     message_bytes = base64.b64decode(base64_bytes)
     return message_bytes.decode("ascii")
-
-
-def compute_similarity_scores(
-    self, embedding_src: ndarray, embeddings_array: ndarray
-) -> ndarray:
-    """Computes the cosine similarity scores between a query embedding and a group of embeddings.
-
-    Arguments:
-        embedding_src {ndarray}    -- The query embedding.
-        embeddings_array {ndarray} -- The group of embeddings.
-
-    Returns:
-        ndarray -- The cosine similarity scores.
-    """
-    query_norm = linalg.norm(embedding_src)
-    collection_norm = linalg.norm(embeddings_array, axis=1)
-
-    # Compute indices for which the similarity scores can be computed
-    valid_indices = (query_norm != 0) & (collection_norm != 0)
-
-    # Initialize the similarity scores with -1 to distinguish the cases
-    # between zero similarity from orthogonal vectors and invalid similarity
-    similarity_scores = array([-1.0] * embeddings_array.shape[0])
-
-    if valid_indices.any():
-        similarity_scores[valid_indices] = embedding_src.dot(
-            embeddings_array[valid_indices].T
-        ) / (query_norm * collection_norm[valid_indices])
-        if not valid_indices.all():
-            self._logger.warning(
-                "Some vectors in the embedding collection are zero vectors."
-                "Ignoring cosine similarity score computation for those vectors."
-            )
-    else:
-        raise ValueError(
-            f"Invalid vectors, cannot compute cosine similarity scores"
-            f"for zero vectors"
-            f"{embeddings_array} or {embedding_src}"
-        )
-    return similarity_scores

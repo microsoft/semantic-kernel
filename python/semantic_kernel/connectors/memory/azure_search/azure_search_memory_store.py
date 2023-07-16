@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import uuid
 from logging import Logger
 from typing import List, Optional, Tuple
@@ -62,11 +63,25 @@ class AzureSearchMemoryStore(MemoryStoreBase):
                 "Error: Unable to import Azure Search client python package. Please install Azure Search client"
             )
 
+        self._logger = logger or NullLogger()
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
             search_endpoint, admin_key, azure_credentials, token_credentials
         )
-        self._logger = logger or NullLogger()
+
+    def __del__(self):
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(self.close())
+            else:
+                loop.run_until_complete(self.close())
+        except Exception:
+            pass
+
+    async def close(self):
+        if self._search_index_client is not None:
+            await self._search_index_client.close()
 
     async def create_collection_async(
         self,
@@ -424,19 +439,16 @@ class AzureSearchMemoryStore(MemoryStoreBase):
             top_k=limit,
         )
 
-        search_results = await search_results.get_answers()
-
         if not search_results or search_results is None:
             return []
 
-        nearest_results = []
-
         # Convert the results to MemoryRecords
-        for search_record in await search_results:
+        nearest_results = []
+        async for search_record in search_results:
             if search_record["@search.score"] < min_relevance_score:
                 continue
 
             memory_record = dict_to_memory_record(search_record, with_embeddings)
-            nearest_results.append(tuple(memory_record, search_record["@search.score"]))
+            nearest_results.append((memory_record, search_record["@search.score"]))
 
         return nearest_results

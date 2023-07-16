@@ -34,4 +34,4 @@ def memory_record1():
 def test_constructor():
     test_endpoint = "https://test-endpoint.search.windows.net"
     memory = AzureSearchMemoryStore(test_endpoint)
-    assert memory._client is not None
+    assert memory._search_index_client is not None
