@@ -24,8 +24,10 @@ class KernelException(Exception):
         ServiceNotFound = 6
         # Skill collection not set.
         SkillCollectionNotSet = 7
+        # Represents an error that occurs when invoking a function.
+        FunctionInvokeError = 8
         # Ambiguous implementation.
-        AmbiguousImplementation = 8
+        AmbiguousImplementation = 9
 
     # The error code.
     _error_code: ErrorCodes
