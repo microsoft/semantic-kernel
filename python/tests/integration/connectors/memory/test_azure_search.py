@@ -3,18 +3,18 @@
 import numpy as np
 import pytest
 
-from semantic_kernel.connectors.memory.azure_cog_search.acs_memory_store import (
-    CognitiveSearchMemoryStore,
+from semantic_kernel.connectors.memory.azure_search.azure_search_memory_store import (
+    AzureSearchMemoryStore,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    az_cog_search_installed = True
+    azure_search_installed = True
 except ImportError:
-    az_cog_search_installed = False
+    azure_search_installed = False
 
 pytestmark = pytest.mark.skipif(
-    not az_cog_search_installed, reason="Azure Cognitve Search is not installed"
+    not azure_search_installed, reason="Azure Search is not installed"
 )
 
 
@@ -33,5 +33,5 @@ def memory_record1():
 
 def test_constructor():
     test_endpoint = "https://test-endpoint.search.windows.net"
-    memory = CognitiveSearchMemoryStore(test_endpoint)
+    memory = AzureSearchMemoryStore(test_endpoint)
     assert memory._client is not None
