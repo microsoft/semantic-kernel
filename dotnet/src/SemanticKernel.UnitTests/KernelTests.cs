@@ -20,35 +20,6 @@ namespace SemanticKernel.UnitTests;
 public class KernelTests
 {
     [Fact]
-    [System.Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
-    public void ItProvidesAccessToFunctionsViaSkillCollectionObsolete()
-    {
-        // Arrange
-        var kernel = KernelBuilder.Create();
-        var factory = new Mock<Func<IKernel, ITextCompletion>>();
-        kernel.Config.AddTextCompletionService(factory.Object);
-
-        var nativeSkill = new MySkill();
-        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
-        kernel.ImportSkill(nativeSkill, "mySk");
-
-        // Act
-        FunctionsView data = kernel.Skills.GetFunctionsView();
-
-        // Assert - 3 functions, var name is not case sensitive
-        Assert.True(data.IsSemantic("jk", "joker"));
-        Assert.True(data.IsSemantic("JK", "JOKER"));
-        Assert.False(data.IsNative("jk", "joker"));
-        Assert.False(data.IsNative("JK", "JOKER"));
-        Assert.True(data.IsNative("mySk", "sayhello"));
-        Assert.True(data.IsNative("MYSK", "SayHello"));
-        Assert.True(data.IsNative("mySk", "ReadSkillCollectionAsync"));
-        Assert.True(data.IsNative("MYSK", "readskillcollectionasync"));
-        Assert.Single(data.SemanticFunctions["Jk"]);
-        Assert.Equal(3, data.NativeFunctions["mySk"].Count);
-    }
-
-    [Fact]
     public void ItProvidesAccessToFunctionsViaSkillCollection()
     {
         // Arrange
