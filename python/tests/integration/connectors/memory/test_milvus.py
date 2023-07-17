@@ -8,7 +8,7 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
     from milvus import default_server  # noqa: F401
-    import pymilvus
+
     milvus_installed = True
 except ImportError:
     milvus_installed = False
@@ -26,7 +26,7 @@ def setup_milvus():
     yield host, port
     default_server.stop()
     default_server.cleanup()
-    
+
 
 @pytest.fixture
 def memory_record1():
