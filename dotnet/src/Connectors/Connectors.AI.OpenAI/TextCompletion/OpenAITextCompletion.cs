@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
@@ -40,7 +41,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        this.Logger.LogInformation("OpenAI Model ID: {ModelId}", this.ModelId);
+        this.LogModelId();
         return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
     }
 
@@ -50,7 +51,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        this.Logger.LogInformation("OpenAI Model ID: {ModelId}", this.ModelId);
+        this.LogModelId();
         return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
     }
 }

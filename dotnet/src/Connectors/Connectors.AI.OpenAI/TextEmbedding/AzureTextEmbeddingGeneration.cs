@@ -60,7 +60,7 @@ public sealed class AzureTextEmbeddingGeneration : AzureOpenAIClientBase, ITextE
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        this.Logger.LogInformation("Azure OpenAI Deployment Name: {DeploymentName}", this.ModelId);
+        this.LogDeploymentName();
         return this.InternalGetEmbeddingsAsync(data, cancellationToken);
     }
 }

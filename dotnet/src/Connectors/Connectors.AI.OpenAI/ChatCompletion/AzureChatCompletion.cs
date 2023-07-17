@@ -72,7 +72,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.Logger.LogInformation("Azure OpenAI Deployment Name: {DeploymentName}", this.ModelId);
+        this.LogDeploymentName();
         return this.InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
     }
 
@@ -82,7 +82,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.Logger.LogInformation("Azure OpenAI Deployment Name: {DeploymentName}", this.ModelId);
+        this.LogDeploymentName();
         return this.InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
     }
 
@@ -98,7 +98,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.Logger.LogInformation("Azure OpenAI Deployment Name: {DeploymentName}", this.ModelId);
+        this.LogDeploymentName();
         return this.InternalGetChatStreamingResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 
@@ -108,7 +108,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.Logger.LogInformation("Azure OpenAI Deployment Name: {DeploymentName}", this.ModelId);
+        this.LogDeploymentName();
         return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
@@ -94,5 +95,14 @@ public abstract class AzureOpenAIClientBase : ClientBase
 
         this.ModelId = modelId;
         this.Client = openAIClient;
+    }
+
+    /// <summary>
+    /// Logs Azure OpenAI deployment name together with caller information.
+    /// </summary>
+    /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
+    private protected void LogDeploymentName([CallerMemberName] string? callerMemberName = default)
+    {
+        this.Logger.LogInformation("Azure OpenAI Deployment Name: {DeploymentName}. Action: {Action}", this.ModelId, callerMemberName);
     }
 }

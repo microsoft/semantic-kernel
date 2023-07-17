@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
@@ -48,5 +49,14 @@ public abstract class OpenAIClientBase : ClientBase
         }
 
         this.Client = new OpenAIClient(apiKey, options);
+    }
+
+    /// <summary>
+    /// Logs OpenAI model ID together with caller information.
+    /// </summary>
+    /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
+    private protected void LogModelId([CallerMemberName] string? callerMemberName = default)
+    {
+        this.Logger.LogInformation("OpenAI Model ID: {ModelId}. Action: {Action}", this.ModelId, callerMemberName);
     }
 }
