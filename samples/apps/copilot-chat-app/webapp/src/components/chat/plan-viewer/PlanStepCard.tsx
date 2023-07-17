@@ -82,10 +82,11 @@ interface PlanStepCardProps {
     step: Plan;
     enableEdits: boolean;
     enableStepDelete: boolean;
+    singleStepPlan: boolean;
     onDeleteStep: (index: number) => void;
 }
 
-export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, enableStepDelete, onDeleteStep }) => {
+export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, enableStepDelete, singleStepPlan, onDeleteStep }) => {
     const classes = useClasses();
     const [openDialog, setOpenDialog] = useState(false);
 
@@ -103,7 +104,7 @@ export const PlanStepCard: React.FC<PlanStepCardProps> = ({ step, enableEdits, e
                     <CardHeader
                         header={
                             <Body1>
-                                <b className={classes.header}>Step {(step.index as number) + 1} •</b> {step.skill_name}.
+                                <b className={classes.header}>Step {singleStepPlan ? '' : (step.index as number) + 1} •</b> {step.skill_name}.
                                 {step.name}
                                 <br />
                             </Body1>

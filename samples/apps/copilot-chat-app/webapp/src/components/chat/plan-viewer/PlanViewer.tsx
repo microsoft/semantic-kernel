@@ -140,6 +140,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
                         step={{ ...step, index }}
                         enableEdits={planState === PlanState.PlanApprovalRequired}
                         enableStepDelete={plan.steps.length > 1}
+                        singleStepPlan={plan.steps.length === 1}
                         onDeleteStep={onDeleteStep}
                     />
                 );
