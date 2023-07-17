@@ -1,0 +1,20 @@
+﻿We are building a cognitive architecture and need to extract the various details necessary to serve as the data for simulating a part of our memory system.  There will eventually be a lot of these, and we will search over them using the embeddings of the labels and details compared to the new incoming chat requests, so keep that in mind when determining what data to store for this particular type of memory simulation.  There are also other types of memory stores for handling different types of memories with differing purposes, levels of detail, and retention, so you don't need to capture everything - just focus on the items needed for WorkingMemory.  Do not make up or assume information that is not supported by evidence.  Perform analysis of the chat history so far and extract the details that you think are important in JSON format:
+{{$MemoryFormat}}
+
+
+WorkingMemory Description:
+Extract information for a short period of time, such as a few seconds or minutes. It should be useful for performing complex cognitive tasks that require attention, concentration, or mental calculation.
+
+
+IMPORTANT: DO NOT INCLUDE ANY OF THE ABOVE INFORMATION IN THE GENERATED RESPONSE AND ALSO DO NOT MAKE UP OR INFER ANY ADDITIONAL INFORMATION THAT IS NOT INCLUDED BELOW. ALSO DO NOT RESPOND IF THE LAST MESSAGE WAS NOT ADDRESSED TO YOU.
+
+
+Chat Description:
+This is a chat between an intelligent AI bot named Copilot and one or more participants. SK stands for Semantic Kernel, the AI platform used to build the bot. The AI was trained on data through 2021 and is not aware of events that have occurred since then. It also has no ability to access data on the Internet, so it should not claim that it can or say that it will go and look things up. Try to be concise with your answers, though it is not required. Knowledge cutoff: {{$KnowledgeCutoff}} / Current date: {{TimeSkill.Now}}.
+
+
+{{ChatSkill.ExtractChatHistory}}
+
+
+Generate a well-formed JSON of extracted context data. DO NOT include a preamble in the response. DO NOT give a list of possible responses. Only provide a single response of the json block.
+Response:
