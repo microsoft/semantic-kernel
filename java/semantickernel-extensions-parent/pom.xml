@@ -7,7 +7,6 @@
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
         <version>0.2.7-alpha-SNAPSHOT</version>
-
         <relativePath>../pom.xml</relativePath>
     </parent>
 
