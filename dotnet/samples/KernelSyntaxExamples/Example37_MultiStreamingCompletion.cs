@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
@@ -26,9 +25,9 @@ public static class Example37_MultiStreamingCompletion
         Console.WriteLine("======== Azure OpenAI - Multiple Text Completion - Raw Streaming ========");
 
         var textCompletion = new AzureTextCompletion(
-            Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
+            TestConfiguration.AzureOpenAI.DeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey);
 
         await TextCompletionStreamAsync(textCompletion);
     }
@@ -39,7 +38,7 @@ public static class Example37_MultiStreamingCompletion
 
         ITextCompletion textCompletion = new OpenAITextCompletion(
             "text-davinci-003",
-            Env.Var("OPENAI_API_KEY"));
+            TestConfiguration.OpenAI.ApiKey);
 
         await TextCompletionStreamAsync(textCompletion);
     }

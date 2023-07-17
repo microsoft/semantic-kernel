@@ -14,14 +14,30 @@ public static class Example04_CombineLLMPromptsAndNativeCode
     {
         Console.WriteLine("======== LLMPrompts ========");
 
+        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
+
+        if (openAIApiKey == null)
+        {
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            return;
+        }
+
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-002")
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-002", openAIApiKey, serviceId: "text-davinci-002")
+            .WithOpenAITextCompletionService("text-davinci-003", openAIApiKey)
             .Build();
 
         // Load native skill
-        var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
+        string bingApiKey = TestConfiguration.Bing.ApiKey;
+
+        if (bingApiKey == null)
+        {
+            Console.WriteLine("Bing credentials not found. Skipping example.");
+            return;
+        }
+
+        var bingConnector = new BingConnector(bingApiKey);
         var bing = new WebSearchEngineSkill(bingConnector);
         var search = kernel.ImportSkill(bing, "bing");
 
@@ -33,7 +49,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
             "SummarizeSkill");
 
         // Run
-        var ask = "What's the tallest building in South America?";
+        var ask = "What's the tallest building in South America";
 
         var result1 = await kernel.RunAsync(
             ask,
