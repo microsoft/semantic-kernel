@@ -36,8 +36,8 @@ public sealed class HuggingFaceTextCompletionTests
         // Arrange
         const string Input = "This is test";
 
-        using var huggingFaceLocal = new HuggingFaceTextCompletion(Model, endpoint: Endpoint);
-        using var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey());
+        var huggingFaceLocal = new HuggingFaceTextCompletion(Model, endpoint: Endpoint);
+        var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey());
 
         // Act
         var localResponse = await huggingFaceLocal.CompleteAsync(Input, new CompleteRequestSettings());
@@ -60,7 +60,7 @@ public sealed class HuggingFaceTextCompletionTests
         using var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri("https://api-inference.huggingface.co/models");
 
-        using var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey(), httpClient: httpClient);
+        var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey(), httpClient: httpClient);
 
         // Act
         var remoteResponse = await huggingFaceRemote.CompleteAsync(Input, new CompleteRequestSettings());

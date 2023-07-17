@@ -21,7 +21,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
             .Build();
 
         // Load native skill
-        using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
+        var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
         var bing = new WebSearchEngineSkill(bingConnector);
         var search = kernel.ImportSkill(bing, "bing");
 

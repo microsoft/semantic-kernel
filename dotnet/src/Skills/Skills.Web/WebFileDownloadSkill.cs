@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Skills.Web;
 /// <summary>
 /// Skill to download web files.
 /// </summary>
-public sealed class WebFileDownloadSkill : IDisposable
+public sealed class WebFileDownloadSkill
 {
     /// <summary>
     /// Skill parameter: where to save file.
@@ -71,13 +71,5 @@ public sealed class WebFileDownloadSkill : IDisposable
         using FileStream outputFileStream = new(Environment.ExpandEnvironmentVariables(filePath), FileMode.Create);
 
         await webStream.CopyToAsync(outputFileStream, 81920 /*same value used by default*/, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Implementation of IDisposable.
-    /// </summary>
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
-    public void Dispose()
-    {
     }
 }

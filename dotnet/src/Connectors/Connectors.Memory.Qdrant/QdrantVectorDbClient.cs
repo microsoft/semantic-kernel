@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -22,46 +21,10 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 /// An implementation of a client for the Qdrant Vector Database. This class is used to
 /// connect, create, delete, and get embeddings data from a Qdrant Vector Database instance.
 /// </summary>
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable. Explanation - In this case, there is no need to dispose because either the NonDisposableHttpClientHandler or a custom HTTP client is being used.
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
-#pragma warning restore CA1001 // Types that own disposable fields should be disposable.  Explanation - In this case, there is no need to dispose because either the NonDisposableHttpClientHandler or a custom HTTP client is being used.
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
-    /// <summary>
-    /// The endpoint for the Qdrant service.
-    /// </summary>
-    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
-    public string BaseAddress => this._httpClient.BaseAddress.ToString();
-
-    /// <summary>
-    /// The port for the Qdrant service.
-    /// </summary>
-    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
-    public int Port => this._httpClient.BaseAddress.Port;
-
-    /// <summary>
-    /// The constructor for the QdrantVectorDbClient.
-    /// </summary>
-    /// <param name="endpoint"></param>
-    /// <param name="vectorSize"></param>
-    /// <param name="port"></param>
-    /// <param name="httpClient"></param>
-    /// <param name="log"></param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
-    public QdrantVectorDbClient(
-        string endpoint,
-        int vectorSize,
-        int? port = null,
-        HttpClient? httpClient = null,
-        ILogger? log = null)
-    {
-        Verify.ArgNotNullOrEmpty(endpoint, "Qdrant endpoint cannot be null or empty");
-
-        this._vectorSize = vectorSize;
-        this._logger = log ?? NullLogger<QdrantVectorDbClient>.Instance;
-        this._httpClient = httpClient ?? new HttpClient(HttpHandlers.CheckCertificateRevocation);
-        this._httpClient.BaseAddress = SanitizeEndpoint(endpoint, port);
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorDbClient"/> class.
     /// </summary>

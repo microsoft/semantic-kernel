@@ -27,7 +27,7 @@ public static class Example07_BingAndGoogleSkills
             .Build();
 
         // Load Bing skill
-        using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
+        var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
         kernel.ImportSkill(new WebSearchEngineSkill(bingConnector), "bing");
 
         // Load Google skill

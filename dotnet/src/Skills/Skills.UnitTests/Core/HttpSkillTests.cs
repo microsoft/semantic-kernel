@@ -28,7 +28,7 @@ public class HttpSkillTests : IDisposable
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
-        using var skill = new HttpSkill();
+        var skill = new HttpSkill();
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class HttpSkillTests : IDisposable
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        using var skill = new HttpSkill();
+        var skill = new HttpSkill();
 
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportSkill(skill, "http");
@@ -48,7 +48,7 @@ public class HttpSkillTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        using var skill = new HttpSkill(client);
+        var skill = new HttpSkill(client);
 
         // Act
         var result = await skill.GetAsync(this._uriString);
@@ -64,7 +64,7 @@ public class HttpSkillTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        using var skill = new HttpSkill(client);
+        var skill = new HttpSkill(client);
 
         // Act
         var result = await skill.PostAsync(this._uriString, this._content);
@@ -80,7 +80,7 @@ public class HttpSkillTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        using var skill = new HttpSkill(client);
+        var skill = new HttpSkill(client);
 
         // Act
         var result = await skill.PutAsync(this._uriString, this._content);
@@ -96,7 +96,7 @@ public class HttpSkillTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        using var skill = new HttpSkill(client);
+        var skill = new HttpSkill(client);
 
         // Act
         var result = await skill.DeleteAsync(this._uriString);

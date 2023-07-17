@@ -49,7 +49,7 @@ public sealed class StepwisePlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        using var bingConnector = new BingConnector(this._bingApiKey);
+        var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
         kernel.ImportSkill(new TimeSkill(), "time");
@@ -75,7 +75,7 @@ public sealed class StepwisePlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        using var bingConnector = new BingConnector(this._bingApiKey);
+        var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
         kernel.ImportSkill(new TimeSkill(), "time");

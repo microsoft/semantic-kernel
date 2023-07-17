@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ComponentModel;
 using System.Net.Http;
 using System.Threading;
@@ -23,7 +22,7 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// </example>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
-public sealed class HttpSkill : IDisposable
+public sealed class HttpSkill
 {
     private readonly HttpClient _client;
 
@@ -106,13 +105,5 @@ public sealed class HttpSkill : IDisposable
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
         using var response = await this._client.SendAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Disposes resources
-    /// </summary>
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
-    public void Dispose()
-    {
     }
 }

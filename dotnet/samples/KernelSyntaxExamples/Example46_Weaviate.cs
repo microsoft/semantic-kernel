@@ -16,7 +16,7 @@ public static class Example46_Weaviate
     {
         string endpoint = Env.Var("WEAVIATE_ENDPOINT");
         string apiKey = Env.Var("WEAVIATE_APIKEY");
-        using WeaviateMemoryStore memoryStore = new(endpoint, apiKey, ConsoleLogger.Log);
+        WeaviateMemoryStore memoryStore = new(endpoint, apiKey, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))

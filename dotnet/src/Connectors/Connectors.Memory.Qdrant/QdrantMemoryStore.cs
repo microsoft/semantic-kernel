@@ -28,20 +28,6 @@ public class QdrantMemoryStore : IMemoryStore
     private readonly ILogger? _logger;
 
     /// <summary>
-    /// Constructor for a memory store backed by a Qdrant Vector Database instance.
-    /// </summary>
-    /// <param name="host"></param>
-    /// <param name="port"></param>
-    /// <param name="vectorSize"></param>
-    /// <param name="logger"></param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
-    public QdrantMemoryStore(string host, int port, int vectorSize, ILogger? logger = null)
-    {
-        this._logger = logger;
-        this._qdrantClient = new QdrantVectorDbClient(endpoint: host, port: port, vectorSize: vectorSize, log: logger);
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="QdrantMemoryStore"/> class.
     /// </summary>
     /// <param name="endpoint">The Qdrant Vector Database endpoint.</param>
@@ -75,15 +61,6 @@ public class QdrantMemoryStore : IMemoryStore
     {
         this._qdrantClient = client;
         this._logger = logger;
-    }
-
-    /// <summary>
-    /// Constructor for a memory store backed by a <see cref="IQdrantVectorDbClient"/>
-    /// </summary>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
-    public QdrantMemoryStore(IQdrantVectorDbClient client)
-    {
-        this._qdrantClient = client;
     }
 
     /// <inheritdoc/>
