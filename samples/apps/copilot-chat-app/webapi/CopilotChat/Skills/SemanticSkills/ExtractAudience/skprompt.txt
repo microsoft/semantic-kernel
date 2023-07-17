@@ -1,6 +1,0 @@
-﻿Below is a chat history between an intelligent AI bot named Copilot with one or more participants.
-
-{{ChatSkill.ExtractChatHistory}}
-
-Using the provided chat history, generate a list of names of the participants of this chat. Do not include 'bot' or 'copilot'. The output should be a single rewritten sentence containing only a comma separated list of names. DO NOT offer additional commentary. DO NOT FABRICATE INFORMATION.
-Participants:
