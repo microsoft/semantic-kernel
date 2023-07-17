@@ -66,8 +66,8 @@ def convert_from_memory_record(
     """
     point_id = str()
 
-    if record.key:
-        point_id = record.key
+    if record._key:
+        point_id = record._key
     else:
         if vector_size == 0:
             collection_info = qdrant_client.get_collection(
@@ -84,7 +84,7 @@ def convert_from_memory_record(
                 must=[
                     FieldCondition(
                         key="id",
-                        match=MatchValue(value=record.metadata.id),
+                        match=MatchValue(value=record._id),
                     )
                 ]
             ),
@@ -108,11 +108,20 @@ def convert_from_memory_record(
                     ids=id,
                 )
 
+    payload_map = dict(
+        id=record._id,
+        description=record._description,
+        text=record._text,
+        additional_metadata=record._additional_metadata,
+        external_source_name=record._external_source_name,
+        timestamp=record._timestamp,
+    )
+
     result = dict(
         collectionname=collection_name,
         pointid=point_id,
         vector=record.embedding,
-        payload=record.payload,
+        payload=payload_map,
     )
 
     return result

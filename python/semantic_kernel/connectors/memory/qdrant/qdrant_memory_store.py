@@ -29,7 +29,7 @@ class QdrantMemoryStore(MemoryStoreBase):
 
     def __init__(
         self,
-        hostip: str,
+        url: Optional[str] = None,
         port: Optional[int] = 6333,
         logger: Optional[Logger] = None,
         local: Optional[bool] = False,
@@ -48,9 +48,12 @@ class QdrantMemoryStore(MemoryStoreBase):
             )
 
         if local:
-            self._qdrantclient = QdrantClient(host=hostip)
+            if url:
+                self._qdrantclient = QdrantClient(location=url)
+            else:
+                self._qdrantclient = QdrantClient(location=":memory:")
         else:
-            self._qdrantclient = QdrantClient(host=hostip, port=port)
+            self._qdrantclient = QdrantClient(url=url, port=port)
 
         self._logger = logger or NullLogger()
 
@@ -80,9 +83,10 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The list of collections.
         """
-        return list(self._qdrantclient.get_collections())
+        collection_info = self._qdrantclient.get_collections()
+        return [collection.name for collection in collection_info.collections]
 
-    async def get_collection(self, collection_name: str) -> CollectionInfo:
+    async def get_collection_async(self, collection_name: str) -> CollectionInfo:
         """Gets the a collections based upon collection name.
 
         Returns:
@@ -114,15 +118,11 @@ class QdrantMemoryStore(MemoryStoreBase):
         Returns:
             bool -- True if the collection exists; otherwise, False.
         """
-
-        collection_info = self._qdrantclient.get_collection(
-            collection_name=collection_name
-        )
-
-        if collection_info.status == CollectionStatus.GREEN:
-            return collection_name
-        else:
-            return ""
+        try:
+            result = await self.get_collection_async(collection_name=collection_name)
+            return result.status == CollectionStatus.GREEN
+        except ValueError:
+            return False
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
@@ -145,6 +145,15 @@ class QdrantMemoryStore(MemoryStoreBase):
         if not collection_info:
             raise Exception(f"Collection '{collection_name}' does not exist")
 
+        payload_map = dict(
+            id=record._id,
+            description=record._description,
+            text=record._text,
+            additional_metadata=record._additional_metadata,
+            external_source_name=record._external_source_name,
+            timestamp=record._timestamp,
+        )
+
         upsert_info = self._qdrantclient.upsert(
             collection_name=collection_name,
             wait=True,
@@ -152,7 +161,7 @@ class QdrantMemoryStore(MemoryStoreBase):
                 PointStruct(
                     id=conv_result["pointid"],
                     vector=record._embedding,
-                    payload=json.dumps(record._payload),
+                    payload=json.dumps(payload_map, default=str),
                 ),
             ],
         )
@@ -189,10 +198,20 @@ class QdrantMemoryStore(MemoryStoreBase):
                 self._qdrantclient, collection_name, record
             )
             record._id = conv_result["pointid"]
+            
+            payload_map = dict(
+                id=record._id,
+                description=record._description,
+                text=record._text,
+                additional_metadata=record._additional_metadata,
+                external_source_name=record._external_source_name,
+                timestamp=record._timestamp,
+            )
+
             pointstruct = PointStruct(
                 id=conv_result["pointid"],
                 vector=record._embedding,
-                payload=json.dumps(record._payload),
+                payload=json.dumps(payload_map, default=str),
             )
             points_rec.append([pointstruct])
             upsert_info = self._qdrantclient.upsert(
