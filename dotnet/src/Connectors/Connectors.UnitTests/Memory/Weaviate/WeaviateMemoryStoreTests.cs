@@ -44,7 +44,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     public async Task NoAuthorizationHeaderShouldBeAddedIfApiKeyIsNotProvidedAsync()
     {
         //Arrange
-        using var sut = new WeaviateMemoryStore(this.httpClient, null, "https://fake-random-test-host/fake-path");
+        var sut = new WeaviateMemoryStore(this.httpClient, null, "https://fake-random-test-host/fake-path");
 
         //Act
         await sut.GetAsync("fake-collection", "fake-key");
@@ -57,7 +57,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     public async Task AuthorizationHeaderShouldBeAddedIfApiKeyIsProvidedAsync()
     {
         //Arrange
-        using var sut = new WeaviateMemoryStore(this.httpClient, "fake-api-key", "https://fake-random-test-host/fake-path");
+        var sut = new WeaviateMemoryStore(this.httpClient, "fake-api-key", "https://fake-random-test-host/fake-path");
 
         //Act
         await sut.GetAsync("fake-collection", "fake-key");
@@ -75,7 +75,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        using var sut = new WeaviateMemoryStore(this.httpClient, "fake-api-key", "https://fake-random-test-host/fake-path/");
+        var sut = new WeaviateMemoryStore(this.httpClient, "fake-api-key", "https://fake-random-test-host/fake-path/");
 
         //Act
         await sut.GetAsync("fake-collection", "fake-key");
@@ -90,7 +90,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         //Arrange
         this.httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path/");
 
-        using var sut = new WeaviateMemoryStore(this.httpClient, "fake-api-key");
+        var sut = new WeaviateMemoryStore(this.httpClient, "fake-api-key");
 
         //Act
         await sut.GetAsync("fake-collection", "fake-key");
