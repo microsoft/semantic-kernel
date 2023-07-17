@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
