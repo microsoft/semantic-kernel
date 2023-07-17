@@ -4,8 +4,8 @@ from typing import List, Optional
 
 import aiohttp
 
-from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
+from semantic_kernel.utils.null_logger import NullLogger
 
 
 class BingConnector(ConnectorBase):
