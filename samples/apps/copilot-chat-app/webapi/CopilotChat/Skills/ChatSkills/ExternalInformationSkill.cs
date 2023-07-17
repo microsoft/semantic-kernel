@@ -65,7 +65,7 @@ public class ExternalInformationSkill
     /// <summary>
     /// Extract relevant additional knowledge using a planner.
     /// </summary>
-    [SKFunction("Acquire external information")]
+    [SKFunction, Description("Acquire external information")]
     public async Task<string> AcquireExternalInformationAsync(
         [Description("Maximum numbzer of tokens")] int tokenLimit,
         [Description("The intent to whether external information is needed")] string userIntent,

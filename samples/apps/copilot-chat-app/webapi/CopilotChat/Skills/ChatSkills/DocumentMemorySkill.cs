@@ -47,7 +47,7 @@ public class DocumentMemorySkill
     /// </summary>
     /// <param name="query">Query to match.</param>
     /// <param name="context">The SkContext.</param>
-    [SKFunction("Query documents in the memory given a user message")]
+    [SKFunction, Description("Query documents in the memory given a user message")]
     public async Task<string> QueryDocumentsAsync(
         [Description("Query to match.")] string query,
         [Description("ID of the chat that owns the documents")] string chatId,

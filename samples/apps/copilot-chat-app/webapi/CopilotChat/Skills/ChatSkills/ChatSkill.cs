@@ -110,7 +110,7 @@ public class ChatSkill
     /// <summary>
     /// Extract chat history.
     /// </summary>
-    [SKFunction("Extract chat history")]
+    [SKFunction, Description("Extract chat history")]
     public async Task<string> ExtractChatHistoryAsync(
         [Description("Chat ID to extract history from")] string chatId,
         [Description("Maximum number of tokens")] int tokenLimit)
@@ -164,7 +164,7 @@ public class ChatSkill
     /// messages to memory, and fill in the necessary context variables for completing the
     /// prompt that will be rendered by the template engine.
     /// </summary>
-    [SKFunction("Get chat response")]
+    [SKFunction, Description("Get chat response")]
     public async Task<SKContext> ChatAsync(
         [Description("The new message")] string message,
         [Description("Unique and persistent identifier for the user")] string userId,

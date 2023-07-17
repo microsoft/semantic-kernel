@@ -37,7 +37,7 @@ public class SemanticChatMemorySkill
     /// <param name="context">The SKContext</param>
     /// <param name="query">Query to match.</param>
     /// <returns>A string containing the relevant memories.</returns>
-    [SKFunction("Query chat memories")]
+    [SKFunction, Description("Query chat memories")]
     public async Task<string> QueryMemoriesAsync(
         SKContext context,
         [Description("Query to match.")] string query,
