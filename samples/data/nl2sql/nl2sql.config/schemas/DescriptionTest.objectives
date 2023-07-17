@@ -1,5 +1,6 @@
+how many records in table a are associated with each b
 how many registered users are there?
-how many registered categories are there?
+how many interest categories are there?
 show how many users are associated with each category
 how many categories are associated with a user that is associated with more than one categories
 how many categories does each user have?
@@ -7,3 +8,5 @@ how many categories does each user have? (show id and name)
 how many categories does each user have? (show id and full name)
 how many categories does each user have? (show id and full name and sort descending by count)
 list all categories
+list all categories (show all fields)
+

@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -23,7 +22,6 @@ internal sealed class SqlQueryGenerator
     private const string ContentLabelAnswer = "answer";
     private const string ContentAffirmative = "yes";
 
-    private readonly ISemanticTextMemory memory;
     private readonly ISKFunction promptEval;
     private readonly ISKFunction promptGenerator;
 
@@ -33,8 +31,6 @@ internal sealed class SqlQueryGenerator
         this.promptEval = functions["isquery"];
         this.promptGenerator = functions["generatequery"];
 
-        this.memory = kernel.Memory;
-
         kernel.ImportSkill(this, "nl2sql");
     }
 
@@ -43,7 +39,7 @@ internal sealed class SqlQueryGenerator
     public async Task<string?> SolveObjectiveAsync(string objective, SKContext context)
     {
         var recall =
-            await this.memory.SearchAsync(
+            await context.Memory.SearchAsync(
                 "schemas",
                 objective,
                 limit: 1,
@@ -65,9 +61,10 @@ internal sealed class SqlQueryGenerator
 
         if (!await this.ScreenObjectiveAsync(context).ConfigureAwait(false))
         {
-            return null;
+            return null; // Objective doesn't pass screen
         }
 
+        // Generate query
         await this.promptGenerator.InvokeAsync(context).ConfigureAwait(false);
 
         return context.GetResult(ContentLabelQuery, require: false);

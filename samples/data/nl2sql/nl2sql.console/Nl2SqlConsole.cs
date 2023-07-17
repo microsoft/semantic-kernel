@@ -265,6 +265,8 @@ internal class Nl2SqlConsole : BackgroundService
 
         void WriteSeparator(int[] widths)
         {
+            int totalWidth = 0;
+
             for (int index = 0; index < widths.Length; index++)
             {
                 if (index > 0)
@@ -274,7 +276,9 @@ internal class Nl2SqlConsole : BackgroundService
 
                 var width = widths[index];
 
-                this.Write(SystemColor, new string('─', width == -1 ? Console.WindowWidth - 2 : width));
+                this.Write(SystemColor, new string('─', width == -1 ? Console.WindowWidth - totalWidth : width));
+
+                totalWidth += width;
             }
 
             if (isColumnTruncation)
@@ -321,7 +325,7 @@ internal class Nl2SqlConsole : BackgroundService
         {
             if (!typeWidths.TryGetValue(type, out var width))
             {
-                return 16;
+                return 16; // Default width
             }
 
             return width;
