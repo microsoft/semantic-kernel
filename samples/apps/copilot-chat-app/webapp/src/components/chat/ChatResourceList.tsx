@@ -270,9 +270,7 @@ function useTable(resources: ChatMemorySource[]) {
                 </TableCell>
             ),
             compare: (a, b) => {
-                const aAccess = getAccessString(a.chatId);
-                const bAccess = getAccessString(b.chatId);
-                const comparison = aAccess.localeCompare(bAccess);
+                const comparison = a.tokens - b.tokens;
                 return getSortDirection('tokenCounts') === 'ascending' ? comparison : comparison * -1;
             },
         }),

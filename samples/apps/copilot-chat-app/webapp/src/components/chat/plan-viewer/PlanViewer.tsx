@@ -117,7 +117,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
         await getResponse({
             value: planState === PlanState.PlanApproved ? 'Yes, proceed' : 'No, cancel',
             contextVariables,
-            messageType: ChatMessageType.Plan,
+            messageType: ChatMessageType.Message,
             chatId: selectedId,
         });
     };
