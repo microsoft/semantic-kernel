@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -49,6 +50,19 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         TokenCredential credentials,
         HttpClient? httpClient = null,
         ILogger? logger = null) : base(modelId, endpoint, credentials, httpClient, logger)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new AzureChatCompletion client instance using the specified OpenAIClient
+    /// </summary>
+    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="logger">Application logger</param>
+    public AzureChatCompletion(
+        string modelId,
+        OpenAIClient openAIClient,
+        ILogger? logger = null) : base(modelId, openAIClient, logger)
     {
     }
 

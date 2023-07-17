@@ -19,7 +19,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     private protected override OpenAIClient Client { get; }
 
     /// <summary>
-    /// Creates a new AzureTextCompletion client instance using API Key auth
+    /// Creates a new Azure OpenAI client instance using API Key auth
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -50,7 +50,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     }
 
     /// <summary>
-    /// Creates a new AzureTextCompletion client instance supporting AAD auth
+    /// Creates a new Azure OpenAI client instance supporting AAD auth
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -76,5 +76,23 @@ public abstract class AzureOpenAIClientBase : ClientBase
 
         this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
+    }
+
+    /// <summary>
+    /// Creates a new Azure OpenAI client instance using the specified OpenAIClient
+    /// </summary>
+    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="logger">Application logger</param>
+    private protected AzureOpenAIClientBase(
+        string modelId,
+        OpenAIClient openAIClient,
+        ILogger? logger = null)
+    {
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(openAIClient);
+
+        this.ModelId = modelId;
+        this.Client = openAIClient;
     }
 }
