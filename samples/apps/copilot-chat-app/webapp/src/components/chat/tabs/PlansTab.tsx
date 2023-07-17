@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import {
-    Label,
     Table,
     TableBody,
     TableCell,
-    TableCellActions,
     TableCellLayout,
     TableColumnDefinition,
     TableColumnId,
@@ -15,24 +13,19 @@ import {
     TableRow,
     createTableColumn,
     makeStyles,
-    shorthands,
     tokens,
     useTableFeatures,
-    useTableSort
+    useTableSort,
 } from '@fluentui/react-components';
-import * as React from 'react';
-import { ChatMessageType, IChatMessage } from '../../libs/models/ChatMessage';
-import { useAppSelector } from '../../redux/app/hooks';
-import { RootState } from '../../redux/app/store';
-import { SharedStyles } from '../../styles';
-import { timestampToDateString } from '../utils/TextUtils';
-import { RawPlanViewer } from './plan-viewer/RawPlanViewer';
+import { ChatMessageType, IChatMessage } from '../../../libs/models/ChatMessage';
+import { useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
+import { TokenUsages } from '../../../redux/features/app/AppState';
+import { timestampToDateString } from '../../utils/TextUtils';
+import { PlanJsonViewer } from '../plan-viewer/PlanJsonViewer';
+import { TabView } from './TabView';
 
 const useClasses = makeStyles({
-    root: {
-        ...shorthands.margin(tokens.spacingVerticalM, tokens.spacingHorizontalM),
-        ...SharedStyles.scroll,
-    },
     table: {
         backgroundColor: tokens.colorNeutralBackground1,
     },
@@ -52,7 +45,7 @@ interface TableItem {
     message: IChatMessage;
 }
 
-export const ChatPlanList: React.FC = () => {
+export const PlansTab: React.FC = () => {
     const classes = useClasses();
 
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
@@ -61,12 +54,8 @@ export const ChatPlanList: React.FC = () => {
 
     const { columns, rows } = useTable(planMessages);
     return (
-        <div className={classes.root}>
-            <h2>Plans</h2>
-            <Table
-                aria-label="Processes plan table"
-                className={classes.table}
-            >
+        <TabView title="Plans" learnMoreDescription="custom plans" learnMoreLink="https://aka.ms/sk-docs-planner">
+            <Table aria-label="Processes plan table" className={classes.table}>
                 <TableHeader>
                     <TableRow>{columns.map((column) => column.renderHeaderCell())}</TableRow>
                 </TableHeader>
@@ -76,10 +65,7 @@ export const ChatPlanList: React.FC = () => {
                     ))}
                 </TableBody>
             </Table>
-            <Label size='small' color='brand'>
-                Want to learn how to create custom plans? Click <a href="https://aka.ms/sk-docs-planner" target="_blank" rel="noreferrer">here</a>.
-            </Label>
-        </div>
+        </TabView>
     );
 };
 
@@ -102,11 +88,12 @@ function useTable(planMessages: IChatMessage[]) {
             renderCell: (item) => (
                 <TableCell key={`plan-${item.index}`}>
                     <TableCellLayout>
-                        {item.ask}
+                        <PlanJsonViewer
+                            goal={item.ask}
+                            tokenUsage={item.message.tokenUsage as TokenUsages}
+                            json={item.message.content}
+                        />
                     </TableCellLayout>
-                    <TableCellActions>
-                        <RawPlanViewer message={item.message} />
-                    </TableCellActions>
                 </TableCell>
             ),
             compare: (a, b) => {
@@ -138,9 +125,7 @@ function useTable(planMessages: IChatMessage[]) {
                     Token Count
                 </TableHeaderCell>
             ),
-            renderCell: (item) => (
-                <TableCell key={`plan-${item.index}-tokens`}>{item.tokens}</TableCell>
-            ),
+            renderCell: (item) => <TableCell key={`plan-${item.index}-tokens`}>{item.tokens}</TableCell>,
             compare: (a, b) => {
                 const comparison = a.tokens - b.tokens;
                 return getSortDirection('tokenCounts') === 'ascending' ? comparison : comparison * -1;
@@ -157,10 +142,12 @@ function useTable(planMessages: IChatMessage[]) {
     const items = planMessages.map((message, index) => {
         const plan = JSON.parse(message.content);
         const planDescription = plan.proposedPlan.description as string;
-        const planAsk = planDescription.split('\n')
-            .find((line: string) => line.startsWith('INPUT:'))
-            ?.replace('INPUT:', '')
-            .trim() ?? 'N/A';
+        const planAsk =
+            planDescription
+                .split('\n')
+                .find((line: string) => line.startsWith('INPUT:'))
+                ?.replace('INPUT:', '')
+                .trim() ?? 'N/A';
         return {
             index: index,
             ask: planAsk,
@@ -170,7 +157,7 @@ function useTable(planMessages: IChatMessage[]) {
             },
             tokens: message.userId.length,
             message: message,
-        }
+        };
     });
 
     const {

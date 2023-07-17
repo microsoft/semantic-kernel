@@ -9,17 +9,17 @@ import {
     makeStyles,
     mergeClasses,
     shorthands,
-    tokens
+    tokens,
 } from '@fluentui/react-components';
 import React from 'react';
 import { IChatMessage } from '../../../libs/models/ChatMessage';
-import { getFileIconByFileExtension } from '../ChatResourceList';
+import { getFileIconByFileExtension } from '../tabs/DocumentsTab';
 
 const useClasses = makeStyles({
     root: {
         display: 'flex',
         flexDirection: 'column',
-        ...shorthands.margin(tokens.spacingVerticalM, 0),        
+        ...shorthands.margin(tokens.spacingVerticalM, 0),
     },
     card: {
         height: 'fit-content',
@@ -94,10 +94,10 @@ export const ChatHistoryDocumentContent: React.FC<ChatHistoryDocumentContentProp
                                 </Caption1>
                             }
                         />
-                        <ProgressBar thickness="large" color={document.isUploaded ? "success" : "error"} value={1} />
+                        <ProgressBar thickness="large" color={document.isUploaded ? 'success' : 'error'} value={1} />
                     </Card>
                     <span className={isMe ? classes.footer : mergeClasses(classes.footer, classes.floatLeft)}>
-                        {document.isUploaded ? "Success: memory established" : "Failed: memory not established"}
+                        {document.isUploaded ? 'Success: memory established' : 'Failed: memory not established'}
                     </span>
                 </div>
             ))}

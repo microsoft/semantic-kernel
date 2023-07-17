@@ -21,7 +21,7 @@ export const AddPluginCard: React.FC = () => {
                 description="Add your own ChatGPT compatible plugin."
                 action={<PluginWizard />}
                 helpText="Want to learn how to create a custom plugin?"
-                helpLink="https://platform.openai.com/docs/plugins/getting-started/plugin-manifest"
+                helpLink="https://aka.ms/sk-plugins-howto"
             />
         </div>
     );

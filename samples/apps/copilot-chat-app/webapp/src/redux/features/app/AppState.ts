@@ -61,7 +61,7 @@ export const Features = {
         label: 'Simplified Chat Experience',
     },
     [FeatureKeys.PluginsPlannersAndPersonas]: {
-        enabled: false,
+        enabled: true,
         label: 'Activate All',
     },
     [FeatureKeys.AzureContentSafety]: {

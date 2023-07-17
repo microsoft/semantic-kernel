@@ -7,6 +7,7 @@ import {
     DialogSurface,
     DialogTitle,
     DialogTrigger,
+    Label,
     Subtitle1,
     Subtitle2,
     makeStyles,
@@ -104,6 +105,13 @@ export const PluginGallery: React.FC = () => {
                                 return <PluginCard key={plugin.name} plugin={plugin} />;
                             })}
                         </div>
+                        <Label size="small" color="brand">
+                            Want to learn more about plugins? Click{' '}
+                            <a href="https://aka.ms/sk-plugins-howto" target="_blank" rel="noreferrer">
+                                here
+                            </a>
+                            .
+                        </Label>
                     </DialogContent>
                 </DialogBody>
             </DialogSurface>

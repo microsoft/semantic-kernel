@@ -1,0 +1,18 @@
+{
+    "schema_version": "v1",
+    "name_for_human": "Ask Wikipedia Question and Answer",
+    "name_for_model": "wikipediaQnA",
+    "description_for_human": "Ask Wikipedia a question and get an answer.",
+    "description_for_model": "Ask Wikipedia a question and get an answer.",
+    "auth": {
+        "type": "user_http",
+        "authorization_type": "bearer"
+    },
+    "api": {
+        "type": "openapi",
+        "url": "http://localhost:3333/openapi.yaml"
+    },
+    "logo_url": "https://renaissancetech.com/wp-content/uploads/2019/11/microsoft-logo-black.png",
+    "contact_email": "support@example.com",
+    "legal_info_url": "http://www.example.com/legal"
+}
