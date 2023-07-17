@@ -1,15 +1,14 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
-)
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
 )
 from typing import Union, List
 from semantic_kernel.connectors.ai.ai_exception import AIException
 import google.generativeai as palm
 
 
-class GooglePalmTextCompletion(TextCompletionClientBase):
+class GooglePalmTextCompletion():
     _model_id: str
     _api_key: str
 
@@ -37,10 +36,9 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
                 "Please ensure that google.generativeai is installed to use GooglePalmTextCompletion"
             )
 
-
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
-    ) -> str:
+    ) -> Union[str, List[str]]:
         
         if not prompt:
                 raise ValueError("Prompt cannot be `None` or empty")
@@ -77,7 +75,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
                     and len(request_settings.stop_sequences) > 0
                     else None
                 ),  
-                candidate_count=request_settings.candidate_count,             
+                candidate_count=request_settings.candidate_count, 
+                top_p=request_settings.top_p,            
             )
         except Exception as ex:
             raise AIException(
@@ -85,10 +84,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
                 "Google PaLM service failed to complete the prompt",
                 ex,
             )
-        return response
-    
-    async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
-    ):
-        return
-        
+        if request_settings.candidate_count > 1:
+            return [candidate['output'] for candidate in response.candidates]
+        else:
+            return response.result
