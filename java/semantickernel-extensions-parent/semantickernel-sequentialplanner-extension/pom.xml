@@ -11,7 +11,8 @@
     </parent>
 
     <artifactId>semantickernel-sequentialplanner-extension</artifactId>
-
+    <name>Semantic Kernel Sequential Planner Extension</name>
+    <description>Sequential Planner implementation for Semantic Kernel</description>
 
     <dependencies>
         <dependency>
