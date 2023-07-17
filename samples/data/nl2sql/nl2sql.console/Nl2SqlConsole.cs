@@ -226,6 +226,7 @@ internal class Nl2SqlConsole : BackgroundService
         IEnumerable<string> TrimValues(IEnumerable<string> fields)
         {
             int index = 0;
+            int totalWidth = 0;
 
             foreach (var field in fields)
             {
@@ -237,7 +238,24 @@ internal class Nl2SqlConsole : BackgroundService
                 var width = widths[index];
                 ++index;
 
-                if (width == -1 || field.Length <= width)
+                if (width == -1)
+                {
+                    var remainingWidth = Console.WindowWidth - totalWidth;
+                    if (field.Length <= remainingWidth)
+                    {
+                        yield return field;
+                    }
+                    else
+                    {
+                        yield return field?.Substring(0, remainingWidth - 4) + "...";
+                    }
+
+                    yield break;
+                }
+
+                totalWidth += width + 1;
+
+                if (field.Length <= width)
                 {
                     yield return field;
                     continue;
@@ -262,7 +280,7 @@ internal class Nl2SqlConsole : BackgroundService
 
                 this.Write(SystemColor, new string('─', width == -1 ? Console.WindowWidth - totalWidth : width));
 
-                totalWidth += width;
+                totalWidth += width + 1;
             }
 
             if (isColumnTruncation)
