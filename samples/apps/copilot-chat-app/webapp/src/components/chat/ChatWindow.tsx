@@ -79,6 +79,11 @@ const useClasses = makeStyles({
         alignSelf: 'end',
         ...shorthands.gap(tokens.spacingVerticalS),
     },
+    alerts: {
+        display: 'flex',
+        flexDirection: 'column',
+        ...shorthands.margin(0, '72px'),
+    },
 });
 
 export const ChatWindow: React.FC = () => {
@@ -99,7 +104,6 @@ export const ChatWindow: React.FC = () => {
 
     return (
         <div className={classes.root}>
-            {selectedTab !== 'chat' && <Alerts />}
             <div className={classes.header}>
                 <div className={classes.title}>
                     {!features[FeatureKeys.SimplifiedExperience].enabled && (
@@ -172,6 +176,9 @@ export const ChatWindow: React.FC = () => {
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
             {selectedTab === 'documents' && <ChatResourceList chatId={selectedId} />}
+            {selectedTab !== 'chat' && <div className={classes.alerts}>
+                <Alerts />
+            </div>}
         </div>
     );
 };
