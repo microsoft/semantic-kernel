@@ -454,7 +454,7 @@ public class StepwisePlanner
     /// <summary>
     /// The Action tag
     /// </summary>
-    private const string Action = "[JSON ACTION]";
+    private const string Action = "[ACTION]";
 
     /// <summary>
     /// The Thought tag
@@ -474,12 +474,12 @@ public class StepwisePlanner
     /// <summary>
     /// The regex for parsing the action response
     /// </summary>
-    private static readonly Regex s_actionRegex = new(@"\[JSON ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
+    private static readonly Regex s_actionRegex = new(@"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
 
     /// <summary>
     /// The regex for parsing the thought response
     /// </summary>
-    private static readonly Regex s_thoughtRegex = new(@"(\[THOUGHT\])?(?<thought>.+?)(?=\[JSON ACTION\]|$)", RegexOptions.Singleline);
+    private static readonly Regex s_thoughtRegex = new(@"(\[THOUGHT\])?(?<thought>.+?)(?=\[ACTION\]|$)", RegexOptions.Singleline);
 
     /// <summary>
     /// The regex for parsing the final answer response
