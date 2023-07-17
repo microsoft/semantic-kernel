@@ -429,7 +429,7 @@ public class DocumentImportController : ControllerBase
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     private SupportedFileType GetFileType(string fileName)
     {
-        string extension = Path.GetExtension(fileName).ToLower();
+        string extension = Path.GetExtension(fileName).ToUpperInvariant();
         return extension switch
         {
             ".txt" => SupportedFileType.Txt,

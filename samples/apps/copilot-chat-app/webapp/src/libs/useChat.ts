@@ -78,6 +78,7 @@ export const useChat = () => {
                 const newChat: ChatState = {
                     id: result.id,
                     title: result.title,
+                    systemDescription: result.systemDescription,
                     messages: chatMessages,
                     users: [loggedInUser],
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
@@ -159,6 +160,7 @@ export const useChat = () => {
                     loadedConversations[chatSession.id] = {
                         id: chatSession.id,
                         title: chatSession.title,
+                        systemDescription: chatSession.systemDescription,
                         users: chatUsers,
                         messages: chatMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
@@ -274,6 +276,7 @@ export const useChat = () => {
                 const newChat: ChatState = {
                     id: result.id,
                     title: result.title,
+                    systemDescription: result.systemDescription,
                     messages: chatMessages,
                     users: chatUsers,
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),

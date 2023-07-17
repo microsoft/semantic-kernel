@@ -29,3 +29,8 @@ export interface ConversationInputChange {
     id: string;
     newInput: string;
 }
+
+export interface ConversationSystemDescriptionChange {
+    id: string;
+    newSystemDescription: string;
+}

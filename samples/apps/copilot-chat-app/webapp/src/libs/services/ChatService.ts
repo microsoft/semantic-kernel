@@ -72,10 +72,11 @@ export class ChatService extends BaseService {
         return result.reverse();
     };
 
-    public editChatAsync = async (chatId: string, title: string, accessToken: string): Promise<any> => {
+    public editChatAsync = async (chatId: string, title: string, systemDescription: string, accessToken: string): Promise<any> => {
         const body: IChatSession = {
             id: chatId,
             title,
+            systemDescription,
         };
 
         const result = await this.getResponseAsync<IChatSession>(

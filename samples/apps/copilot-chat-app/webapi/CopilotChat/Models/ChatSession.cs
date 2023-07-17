@@ -29,10 +29,21 @@ public class ChatSession : IStorageEntity
     [JsonPropertyName("createdOn")]
     public DateTimeOffset CreatedOn { get; set; }
 
-    public ChatSession(string title)
+    /// <summary>
+    /// System description of the chat that is used to generate repsonses.
+    /// </summary>
+    public string SystemDescription { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatSession"/> class.
+    /// </summary>
+    /// <param name="title">The title of the chat.</param>
+    /// <param name="systemDescription">The system description of the chat.</param>
+    public ChatSession(string title, string systemDescription)
     {
         this.Id = Guid.NewGuid().ToString();
         this.Title = title;
         this.CreatedOn = DateTimeOffset.Now;
+        this.SystemDescription = systemDescription;
     }
 }

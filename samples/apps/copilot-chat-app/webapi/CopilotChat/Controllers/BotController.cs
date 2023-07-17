@@ -116,7 +116,7 @@ public class BotController : ControllerBase
         // Upload chat history into chat repository and embeddings into memory.
 
         // 1. Create a new chat and get the chat id.
-        newChat = new ChatSession(chatTitle);
+        newChat = new ChatSession(chatTitle, bot.SystemDescription);
         await this._chatRepository.CreateAsync(newChat);
         await this._chatParticipantRepository.CreateAsync(new ChatParticipant(userId, newChat.Id));
         chatId = newChat.Id;
@@ -253,6 +253,9 @@ public class BotController : ControllerBase
         // get the chat title
         ChatSession chat = await this._chatRepository.FindByIdAsync(chatIdString);
         bot.ChatTitle = chat.Title;
+
+        // get the system description
+        bot.SystemDescription = chat.SystemDescription;
 
         // get the chat history
         bot.ChatHistory = await this.GetAllChatMessagesAsync(chatIdString);

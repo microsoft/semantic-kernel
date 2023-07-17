@@ -156,4 +156,10 @@ public class PromptsOptions
     internal double IntentTopP { get; } = 1;
     internal double IntentPresencePenalty { get; } = 0.5;
     internal double IntentFrequencyPenalty { get; } = 0.5;
+
+    /// <summary>
+    /// Copy the options in case they need to be modified.
+    /// </summary>
+    /// <returns>A shallow copy of the options.</returns>
+    internal PromptsOptions Copy() => (PromptsOptions)this.MemberwiseClone();
 }

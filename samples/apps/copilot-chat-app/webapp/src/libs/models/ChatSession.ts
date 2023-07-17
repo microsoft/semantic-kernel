@@ -3,4 +3,5 @@
 export interface IChatSession {
     id: string;
     title: string;
+    systemDescription: string;
 }

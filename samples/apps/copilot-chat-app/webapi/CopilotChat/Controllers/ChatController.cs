@@ -245,7 +245,7 @@ public class ChatController : ControllerBase, IDisposable
                 {
                     if (openApiSkillsAuthHeaders.TryGetValue(plugin.AuthHeaderTag.ToUpperInvariant(), out string? PluginAuthValue))
                     {
-                        this._logger.LogInformation($"Enabling {plugin.NameForHuman} skill.");
+                        this._logger.LogInformation("Enabling {0} skill.", plugin.NameForHuman);
                         var requiresAuth = !plugin.AuthType.Equals("none", StringComparison.OrdinalIgnoreCase);
 
                         // Register the ChatGPT plugin with the planner's kernel.

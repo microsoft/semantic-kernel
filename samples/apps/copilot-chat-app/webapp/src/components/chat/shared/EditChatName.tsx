@@ -41,7 +41,8 @@ export const EditChatName: React.FC<IEditChatNameProps> = ({ name, chatId, exitE
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
     const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
-    const { selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const chat = conversations[selectedId];
 
     const [title = '', setTitle] = useState<string | undefined>(name);
 
@@ -51,7 +52,11 @@ export const EditChatName: React.FC<IEditChatNameProps> = ({ name, chatId, exitE
 
     const onSaveTitleChange = async () => {
         if (name !== title) {
-            await chatService.editChatAsync(chatId, title, await AuthHelper.getSKaaSAccessToken(instance, inProgress));
+            await chatService.editChatAsync(
+                chatId,
+                title,
+                chat.systemDescription,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress));
             dispatch(editConversationTitle({ id: chatId, newTitle: title }));
         }
         exitEdits();

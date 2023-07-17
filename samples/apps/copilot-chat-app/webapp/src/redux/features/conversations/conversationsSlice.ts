@@ -9,6 +9,7 @@ import {
     ConversationInputChange,
     Conversations,
     ConversationsState,
+    ConversationSystemDescriptionChange,
     ConversationTitleChange,
     initialState,
 } from './ConversationsState';
@@ -30,6 +31,11 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             const id = action.payload.id;
             const newInput = action.payload.newInput;
             state.conversations[id].input = newInput;
+        },
+        editConversationSystemDescription: (state: ConversationsState, action: PayloadAction<ConversationSystemDescriptionChange>) => {
+            const id = action.payload.id;
+            const newSystemDescription = action.payload.newSystemDescription;
+            state.conversations[id].systemDescription = newSystemDescription;
         },
         setSelectedConversation: (state: ConversationsState, action: PayloadAction<string>) => {
             state.selectedId = action.payload;
@@ -119,6 +125,7 @@ export const {
     setConversations,
     editConversationTitle,
     editConversationInput,
+    editConversationSystemDescription,
     setSelectedConversation,
     addConversation,
     updateConversationFromUser,
