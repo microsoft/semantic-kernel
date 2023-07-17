@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <RollForward>LatestMajor</RollForward>
@@ -12,17 +12,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.10.0" OutputItemType="Analyzer" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.14.1" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.11.0" OutputItemType="Analyzer" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.17.0" />
     <PackageReference Include="Microsoft.Graph" Version="4.54.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="0.15.230531.5-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.Document" Version="0.15.230531.5-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.MsGraph" Version="0.15.230531.5-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.15.230531.5-preview" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\github-skills\GitHubSkills.csproj" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="0.17.230704.3-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.Document" Version="0.17.230704.3-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.MsGraph" Version="0.17.230704.3-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.17.230704.3-preview" />
   </ItemGroup>
 
   <ItemGroup>

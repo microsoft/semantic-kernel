@@ -880,4 +880,50 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Assert
         Assert.Equal(expected, result.Result);
     }
+
+    [Fact]
+    public async Task CanExecutePlanWithExpandedAsync()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var log = new Mock<ILogger>();
+        var memory = new Mock<ISemanticTextMemory>();
+        var skills = new Mock<ISkillCollection>();
+
+        var returnContext = new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        );
+
+        var functionMock = new Mock<ISKFunction>();
+        functionMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
+            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+                returnContext.Variables.Update($"Here is a payload '{c.Variables["payload"]}' for " + c.Variables.Input))
+            .Returns(() => Task.FromResult(returnContext));
+
+        var plan = new Plan("A plan with steps that have variables with a $ in them but not associated with an output");
+
+        var planStep = new Plan(functionMock.Object);
+        planStep.Parameters.Set("input",
+            "Function input.");
+        planStep.Parameters.Set("payload", @"{""prop"":""value"", ""$prop"": 3, ""prop2"": ""my name is $pop and $var""}");
+        plan.AddSteps(planStep);
+        plan.State.Set("var", "foobar");
+
+        // Act
+        var result = await plan.InvokeAsync(new SKContext(
+            new ContextVariables(),
+            memory.Object,
+            skills.Object,
+            log.Object
+        ));
+
+        var expected =
+            @"Here is a payload '{""prop"":""value"", ""$prop"": 3, ""prop2"": ""my name is $pop and foobar""}' for Function input.";
+
+        // Assert
+        Assert.Equal(expected, result.Result);
+    }
 }

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Body1, Button, Input, Label, Spinner, Title3 } from '@fluentui/react-components';
+import { Body1, Button, Input, Label, Spinner, Title3, Tooltip } from '@fluentui/react-components';
 import { InfoLabel } from '@fluentui/react-components/unstable';
-import { ArrowDownload16Regular, CheckmarkCircle20Filled, ErrorCircle20Regular } from '@fluentui/react-icons';
+import { ArrowDownload16Regular, CheckmarkCircle20Filled, ErrorCircle20Regular, Info24Regular } from '@fluentui/react-icons';
 import { FC, useEffect, useState } from 'react';
 import { useSemanticKernel } from '../hooks/useSemanticKernel';
 import { IKeyConfig } from '../model/KeyConfig';
@@ -23,9 +23,22 @@ const enum DownloadState {
     Error = 3,
 }
 
+const GitHubTokenInformationButton: React.FC = () => {
+    const openLink = () => {
+        window.open("https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens", '_blank');
+    };
+
+    return (
+        <Tooltip content="More information about GitHub Personal Tokens" relationship="label">
+            <Button size="small" icon={<Info24Regular />} onClick={openLink} />
+        </Tooltip>
+    );
+};
+
 const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBranch, onLoadProject, onBack }) => {
     const [project, setProject] = useState<string>(prevProject);
     const [branch, setBranch] = useState<string>(prevBranch);
+    const [patToken, setToken] = useState<string>('');
     const [downloadState, setDownloadState] = useState<DownloadState>(DownloadState.Setup);
     const sk = useSemanticKernel(uri);
 
@@ -42,10 +55,11 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
                     value: project || '',
                     inputs: [
                         { key: 'repositoryBranch', value: branch || '' },
+                        { key: 'patToken', value: patToken || '' },
                         { key: 'searchPattern', value: '*.md' },
                     ],
                 },
-                'GitHubSkill',
+                'GitHubPlugin',
                 'SummarizeRepository',
             );
             setDownloadState(DownloadState.Loaded);
@@ -96,6 +110,21 @@ const GitHubProjectSelection: FC<IData> = ({ uri, keyConfig, prevProject, prevBr
                         setProject(e.target.value);
                     }}
                     placeholder="https://github.com/microsoft/semantic-kernel"
+                />
+            </div>
+            <Label>
+                <strong>GitHub Personal Access Token (optional)</strong>
+                <GitHubTokenInformationButton />
+            </Label>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+                <Input
+                    style={{ width: '100%' }}
+                    type="password"
+                    value={patToken}
+                    onChange={(e) => {
+                        setToken(e.target.value);
+                    }}
+                    placeholder=""
                 />
             </div>
             <Label>

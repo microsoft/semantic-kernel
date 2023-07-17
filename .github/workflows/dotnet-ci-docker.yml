@@ -9,6 +9,9 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main", "feature*" ]
+    paths: 
+      - 'dotnet/**'
+      - 'samples/dotnet/**'
 
 permissions:
   contents: read

@@ -19,6 +19,14 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Check for command
+        id: command
+        uses: xt0rted/slash-command-action@v2
+        continue-on-error: true
+        with:
+          command: spotless
+          reaction-type: "eyes"
+    
       - name: Get command
         env:
           BODY: ${{ github.event.comment.body }}

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+import { Plugin } from '../../redux/features/plugins/PluginsState';
 
 interface ServiceRequest {
     commandPath: string;
@@ -16,11 +16,7 @@ export class BaseService {
     protected readonly getResponseAsync = async <T>(
         request: ServiceRequest,
         accessToken: string,
-        enabledPlugins?: {
-            headerTag: AuthHeaderTags;
-            authData: string;
-            apiProperties?: AdditionalApiProperties;
-        }[],
+        enabledPlugins?: Plugin[],
     ): Promise<T> => {
         const { commandPath, method, body } = request;
         const isFormData = body instanceof FormData;
@@ -30,20 +26,19 @@ export class BaseService {
         });
 
         if (!isFormData) {
-            headers.append(`Content-Type`, 'application/json');
+            headers.append('Content-Type', 'application/json');
         }
 
         // API key auth for private hosted instances
         if (process.env.REACT_APP_SK_API_KEY) {
-            headers.append(`x-sk-api-key`, process.env.REACT_APP_SK_API_KEY as string);
+            headers.append('x-sk-api-key', process.env.REACT_APP_SK_API_KEY);
         }
 
         if (enabledPlugins && enabledPlugins.length > 0) {
             // For each enabled plugin, pass its auth information as a customer header
             // to the backend so the server can authenticate to the plugin
-            for (var idx in enabledPlugins) {
-                var plugin = enabledPlugins[idx];
-                headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData);
+            for (const plugin of enabledPlugins) {
+                headers.append(`x-sk-copilot-${plugin.headerTag}-auth`, plugin.authData ?? '');
             }
         }
 
@@ -52,26 +47,27 @@ export class BaseService {
             const response = await fetch(requestUrl, {
                 method: method ?? 'GET',
                 body: isFormData ? body : JSON.stringify(body),
-                headers: headers,
+                headers,
             });
 
             if (!response.ok) {
                 const responseText = await response.text();
-                const errorMessage =
-                    `${response.status}: ${response.statusText}` + (responseText ? ` => ${responseText}` : '');
+                const errorMessage = `${response.status}: ${response.statusText}${
+                    responseText ? ` => ${responseText}` : ''
+                }`;
 
                 throw Object.assign(new Error(errorMessage));
             }
 
-            return noResponseBodyStatusCodes.includes(response.status) ? ({} as T) : ((await response.json()) as T);
-        } catch (e) {
-            var additional_error_msg = '';
+            return (noResponseBodyStatusCodes.includes(response.status) ? {} : await response.json()) as T;
+        } catch (e: any) {
+            let additionalErrorMsg = '';
             if (e instanceof TypeError) {
                 // fetch() will reject with a TypeError when a network error is encountered.
-                additional_error_msg =
+                additionalErrorMsg =
                     '\n\nPlease check that your backend is running and that it is accessible by the app';
             }
-            throw Object.assign(new Error(e + additional_error_msg));
+            throw Object.assign(new Error(`${e as string} ${additionalErrorMsg}`));
         }
     };
 }

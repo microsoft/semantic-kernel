@@ -12,7 +12,6 @@ using Moq;
 using SemanticKernel.Skills.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
-using static Microsoft.SemanticKernel.Skills.MsGraph.CloudDriveSkill;
 
 namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
@@ -38,11 +37,10 @@ public class CloudDriveSkillTests : IDisposable
         connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        this._context.Variables.Set(Parameters.DestinationPath, Guid.NewGuid().ToString());
         CloudDriveSkill target = new(connectorMock.Object);
 
         // Act
-        await target.UploadFileAsync(anyFilePath, this._context);
+        await target.UploadFileAsync(anyFilePath, Guid.NewGuid().ToString());
 
         // Assert
         connectorMock.VerifyAll();
@@ -62,7 +60,7 @@ public class CloudDriveSkillTests : IDisposable
         CloudDriveSkill target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.CreateLinkAsync(anyFilePath, this._context);
+        string actual = await target.CreateLinkAsync(anyFilePath);
 
         // Assert
         Assert.Equal(anyLink, actual);
@@ -84,7 +82,7 @@ public class CloudDriveSkillTests : IDisposable
         CloudDriveSkill target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetFileContentAsync(anyFilePath, this._context);
+        string actual = await target.GetFileContentAsync(anyFilePath);
 
         // Assert
         Assert.Equal(expectedContent, actual);

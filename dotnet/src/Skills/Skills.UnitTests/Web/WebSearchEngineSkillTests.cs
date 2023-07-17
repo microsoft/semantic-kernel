@@ -39,7 +39,7 @@ public sealed class WebSearchEngineSkillTests : IDisposable
         string anyQuery = Guid.NewGuid().ToString();
 
         // Act
-        await target.SearchAsync(anyQuery, this._context);
+        await target.SearchAsync(anyQuery);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);

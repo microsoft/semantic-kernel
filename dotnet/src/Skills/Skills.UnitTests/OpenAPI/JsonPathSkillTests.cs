@@ -48,10 +48,9 @@ public class JsonPathSkillTests
         var target = new JsonPathSkill();
 
         ContextVariables variables = new(Json);
-        variables[JsonPathSkill.Parameters.JsonPath] = jsonPath;
         SKContext context = new(variables);
 
-        string actual = target.GetJsonElementValue(Json, context);
+        string actual = target.GetJsonElementValue(Json, jsonPath);
 
         Assert.Equal(expected, actual, StringComparer.OrdinalIgnoreCase);
     }
@@ -65,10 +64,9 @@ public class JsonPathSkillTests
         var target = new JsonPathSkill();
 
         ContextVariables variables = new(Json);
-        variables[JsonPathSkill.Parameters.JsonPath] = jsonPath;
         SKContext context = new(variables);
 
-        string actual = target.GetJsonElements(Json, context);
+        string actual = target.GetJsonElements(Json, jsonPath);
 
         Assert.Equal(expected, actual, StringComparer.OrdinalIgnoreCase);
     }

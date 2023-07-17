@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -80,14 +79,6 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     [JsonIgnore]
     public bool IsSemantic { get; private set; }
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public bool IsSensitive { get; private set; } = false;
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public ITrustService TrustServiceInstance { get; private set; } = TrustService.DefaultTrusted;
 
     /// <inheritdoc/>
     [JsonIgnore]
@@ -173,15 +164,16 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
     /// <param name="context">The context to use for function registrations.</param>
+    /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, SKContext? context = null)
+    public static Plan FromJson(string json, SKContext? context = null, bool requireFunctions = true)
     {
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
         if (context != null)
         {
-            plan = SetAvailableFunctions(plan, context);
+            plan = SetAvailableFunctions(plan, context, requireFunctions);
         }
 
         return plan;
@@ -402,13 +394,14 @@ public sealed class Plan : ISKFunction
     {
         var result = input;
         var matches = s_variablesRegex.Matches(input);
-        var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).OrderByDescending(m => m.Length);
+        var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).Distinct().OrderByDescending(m => m.Length);
 
         foreach (var varName in orderedMatches)
         {
-            result = result.Replace($"${varName}",
-                variables.TryGetValue(varName, out string? value) || this.State.TryGetValue(varName, out value) ? value :
-                string.Empty);
+            if (variables.TryGetValue(varName, out string? value) || this.State.TryGetValue(varName, out value))
+            {
+                result = result.Replace($"${varName}", value);
+            }
         }
 
         return result;
@@ -419,8 +412,9 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="plan">Plan to set functions for.</param>
     /// <param name="context">Context to use.</param>
+    /// <param name="requireFunctions">Whether to throw an exception if a function is not found.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetAvailableFunctions(Plan plan, SKContext context)
+    private static Plan SetAvailableFunctions(Plan plan, SKContext context, bool requireFunctions = true)
     {
         if (plan.Steps.Count == 0)
         {
@@ -435,12 +429,18 @@ public sealed class Plan : ISKFunction
             {
                 plan.SetFunction(skillFunction);
             }
+            else if (requireFunctions)
+            {
+                throw new KernelException(
+                    KernelException.ErrorCodes.FunctionNotAvailable,
+                    $"Function '{plan.SkillName}.{plan.Name}' not found in skill collection");
+            }
         }
         else
         {
             foreach (var step in plan.Steps)
             {
-                SetAvailableFunctions(step, context);
+                SetAvailableFunctions(step, context, requireFunctions);
             }
         }
 
@@ -530,6 +530,7 @@ public sealed class Plan : ISKFunction
         // Priority for remaining stepVariables is:
         // - Function Parameters (pull from variables or state by a key value)
         // - Step Parameters (pull from variables or state by a key value)
+        // - All other variables. These are carried over in case the function wants access to the ambient content.
         var functionParameters = step.Describe();
         foreach (var param in functionParameters.Parameters)
         {
@@ -575,6 +576,14 @@ public sealed class Plan : ISKFunction
             }
         }
 
+        foreach (KeyValuePair<string, string> item in variables)
+        {
+            if (!stepVariables.ContainsKey(item.Key))
+            {
+                stepVariables.Set(item.Key, item.Value);
+            }
+        }
+
         return stepVariables;
     }
 
@@ -585,8 +594,6 @@ public sealed class Plan : ISKFunction
         this.SkillName = function.SkillName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
-        this.IsSensitive = function.IsSensitive;
-        this.TrustServiceInstance = function.TrustServiceInstance;
         this.RequestSettings = function.RequestSettings;
     }
 

@@ -16,7 +16,9 @@ functions that work together to construct each response.
 
 # Automated Setup and Local Deployment
 
-Refer to [./scripts/README.md](./scripts/README.md) for automated configuration and local deployment of CopilotChat.
+Refer to [./scripts/README.md](./scripts/README.md) for local configuration and deployment.
+
+Refer to [./deploy/README.md](./deploy/README.md) for Azure configuration and deployment.
 
 # Manual Setup and Local Deployment
 
@@ -55,6 +57,7 @@ First, let’s set up and verify the back-end API server is running.
        - For `Completion` and `Planner`, CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4.
          > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
        - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effective for generating embeddings.
+       > **Important:** If you are using Azure OpenAI, please use [deployment names](https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource). If you are using OpenAI, please use [model names](https://platform.openai.com/docs/models).
    
    - **(Optional)** To enable speech-to-text for chat input, update the `AzureSpeech` configuration section:
      > If you have not already, you will need to [create an Azure Speech resource](https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices)
@@ -99,12 +102,12 @@ First, let’s set up and verify the back-end API server is running.
       ```
       > For more detail on AAD authorities, see [Client Application Configuration Authorities](https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority).
 
-      > `REACT_APP_SK_API_KEY` is only required if you're using an Semantic Kernel service deployed to Azure. See the [Authorization section of Deploying Semantic Kernel to Azure in a web app service](https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/copilot-chat-app/webapi/DeploymentTemplates/README.md#authorization) for more details and instruction on how to find your API key.
+      > `REACT_APP_SK_API_KEY` is only required if you're using an Semantic Kernel service deployed to Azure. See the [Authorization section of Deploying Semantic Kernel to Azure in a web app service](./deploy/README.md#authorization) for more details and instruction on how to find your API key.
       ```bash
       REACT_APP_SK_API_KEY={Your API Key, should be the same as Authorization:ApiKey from appsettings.json}
       ```
 
-   3. To build and run the front-end application
+   3. To build and run the front-end application, open a terminal and navigate to `samples/apps/copilot-chat-app/webapp` if not already, then run:
       ```bash
       yarn install
       yarn start

@@ -58,7 +58,7 @@ public sealed class PlanTests : IDisposable
         var emailSkill = target.ImportSkill(new EmailSkillFake());
         var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
 
-        var plan = new Plan(emailSkill["SendEmailAsync"]);
+        var plan = new Plan(emailSkill["SendEmail"]);
 
         // Act
         var cv = new ContextVariables();
@@ -80,7 +80,7 @@ public sealed class PlanTests : IDisposable
         var emailSkill = target.ImportSkill(new EmailSkillFake());
         var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
 
-        var plan = new Plan(emailSkill["SendEmailAsync"]);
+        var plan = new Plan(emailSkill["SendEmail"]);
 
         // Act
         var cv = new ContextVariables();
@@ -103,7 +103,7 @@ public sealed class PlanTests : IDisposable
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
         var plan = new Plan(goal);
-        plan.AddSteps(writerSkill["Translate"], emailSkill["SendEmailAsync"]);
+        plan.AddSteps(writerSkill["Translate"], emailSkill["SendEmail"]);
 
         // Act
         var cv = new ContextVariables();
@@ -131,8 +131,8 @@ public sealed class PlanTests : IDisposable
         // Arrange
         var returnContext = target.CreateNewContext();
 
-        subPlan.AddSteps(emailSkill["WritePoemAsync"], emailSkill["WritePoemAsync"], emailSkill["WritePoemAsync"]);
-        plan.AddSteps(subPlan, emailSkill["SendEmailAsync"]);
+        subPlan.AddSteps(emailSkill["WritePoem"], emailSkill["WritePoem"], emailSkill["WritePoem"]);
+        plan.AddSteps(subPlan, emailSkill["SendEmail"]);
         plan.State.Set("email_address", "something@email.com");
 
         // Act
@@ -146,7 +146,6 @@ public sealed class PlanTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null, "Write a poem or joke and send it in an e-mail to Kai.", null)]
     [InlineData("", "Write a poem or joke and send it in an e-mail to Kai.", "")]
     [InlineData("Hello World!", "Write a poem or joke and send it in an e-mail to Kai.", "some_email@email.com")]
     public async Task CanExecuteRunPlanSimpleManualStateAsync(string input, string goal, string email)
@@ -158,7 +157,7 @@ public sealed class PlanTests : IDisposable
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv,
         };
@@ -180,7 +179,6 @@ public sealed class PlanTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null, "Write a poem or joke and send it in an e-mail to Kai.", null)]
     [InlineData("", "Write a poem or joke and send it in an e-mail to Kai.", "")]
     [InlineData("Hello World!", "Write a poem or joke and send it in an e-mail to Kai.", "some_email@email.com")]
     public async Task CanExecuteRunPlanSimpleManualStateNoVariableAsync(string input, string goal, string email)
@@ -192,7 +190,7 @@ public sealed class PlanTests : IDisposable
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
         cv.Set("email_address", string.Empty);
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv,
         };
@@ -214,20 +212,18 @@ public sealed class PlanTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null, "Write a poem or joke and send it in an e-mail to Kai.", null)]
     [InlineData("", "Write a poem or joke and send it in an e-mail to Kai.", "")]
     [InlineData("Hello World!", "Write a poem or joke and send it in an e-mail to Kai.", "some_email@email.com")]
     public async Task CanExecuteRunPlanManualStateAsync(string input, string goal, string email)
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-
         var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv
         };
@@ -279,7 +275,7 @@ public sealed class PlanTests : IDisposable
         {
             "TheEmailFromState"
         };
-        var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
+        var getEmailPlan = new Plan(emailSkill["GetEmailAddress"])
         {
             Parameters = cv,
             Outputs = outputs,
@@ -288,7 +284,7 @@ public sealed class PlanTests : IDisposable
         cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
         cv.Set("input", "$TRANSLATED_SUMMARY");
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv
         };
@@ -353,7 +349,7 @@ public sealed class PlanTests : IDisposable
         {
             "TheEmailFromState"
         };
-        var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
+        var getEmailPlan = new Plan(emailSkill["GetEmailAddress"])
         {
             Parameters = cv,
             Outputs = outputs,
@@ -362,7 +358,7 @@ public sealed class PlanTests : IDisposable
         cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
         cv.Set("input", "$TRANSLATED_SUMMARY");
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv
         };
@@ -412,7 +408,7 @@ public sealed class PlanTests : IDisposable
         {
             "TheEmailFromState"
         };
-        var getEmailPlan = new Plan(emailSkill["GetEmailAddressAsync"])
+        var getEmailPlan = new Plan(emailSkill["GetEmailAddress"])
         {
             Parameters = cv,
             Outputs = outputs,
@@ -421,7 +417,7 @@ public sealed class PlanTests : IDisposable
         cv = new ContextVariables();
         cv.Set("email_address", "$TheEmailFromState");
         cv.Set("input", "$TRANSLATED_SUMMARY");
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"])
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"])
         {
             Parameters = cv
         };
@@ -454,7 +450,7 @@ public sealed class PlanTests : IDisposable
 
         var summarizePlan = new Plan(summarizeSkill["Summarize"]);
         var translatePlan = new Plan(writerSkill["Translate"]);
-        var sendEmailPlan = new Plan(emailSkill["SendEmailAsync"]);
+        var sendEmailPlan = new Plan(emailSkill["SendEmail"]);
 
         var plan = new Plan(goal);
         plan.AddSteps(summarizePlan, translatePlan, sendEmailPlan);

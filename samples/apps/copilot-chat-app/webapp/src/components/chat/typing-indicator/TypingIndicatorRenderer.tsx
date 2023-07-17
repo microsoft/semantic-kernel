@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Persona, makeStyles } from '@fluentui/react-components';
+import { makeStyles } from '@fluentui/react-components';
 import { Animation } from '@fluentui/react-northstar';
 import * as React from 'react';
-import { useAppSelector } from '../../../redux/app/hooks';
-import { RootState } from '../../../redux/app/store';
 import { TypingIndicator } from './TypingIndicator';
 
 const useClasses = makeStyles({
@@ -14,17 +12,39 @@ const useClasses = makeStyles({
     },
 });
 
-export const TypingIndicatorRenderer: React.FC = () => {
-    // TODO: Make this stateless React component. No need to connect to app state.
-    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+interface TypingIndicatorRendererProps {
+    isBotTyping: boolean;
+    numberOfUsersTyping: number;
+}
+
+export const TypingIndicatorRenderer: React.FC<TypingIndicatorRendererProps> = ({ isBotTyping, numberOfUsersTyping }) => {
     const classes = useClasses();
+
+    let message = '';
+    if (isBotTyping) {
+        if (numberOfUsersTyping === 0) {
+            message = 'Bot is typing';
+        } else if (numberOfUsersTyping === 1) {
+            message = 'Bot and 1 user are typing';
+        } else {
+            message = `Bot and ${numberOfUsersTyping} users are typing`;
+        }
+    } else if (numberOfUsersTyping === 1) {
+        message = '1 user is typing';
+    } else if (numberOfUsersTyping > 1) {
+        message = `${numberOfUsersTyping} users are typing`;
+    }
+
+    if (!message) {
+        return null;
+    }
 
     const typingIndicator = (
         <div className={classes.root}>
-            <Persona size="extra-small" avatar={{ image: { src: conversations[selectedId].botProfilePicture } }} />
+            <label>{message}</label>
             <TypingIndicator />
         </div>
     );
 
-    return <Animation name="slideInCubic" keyframeParams={{ distance: '2.4rem' }} children={typingIndicator} />;
+    return <Animation name="slideInCubic" keyframeParams={{ distance: '2.4rem' }}>{typingIndicator}</Animation>;
 };

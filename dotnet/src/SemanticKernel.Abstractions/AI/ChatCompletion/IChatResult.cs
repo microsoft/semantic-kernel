@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
+/// <summary>
+/// Interface for chat completion results
+/// </summary>
 public interface IChatResult
 {
     /// <summary>

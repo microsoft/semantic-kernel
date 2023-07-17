@@ -3,15 +3,14 @@
   "css.lint.validProperties": [
     "composes"
   ],
-  "editor.defaultFormatter": "ms-dotnettools.csharp",
   "editor.formatOnType": true,
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll": true
-  },
   "[csharp]": {
-    "editor.defaultFormatter": "ms-dotnettools.csharp"
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": true
+    }
   },
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": "active",
@@ -58,9 +57,8 @@
     }
   ],
   "eslint.options": {
-    "overrideConfigFile": ".eslintrc.js"
+    "overrideConfigFile": "./package.json"
   },
-  "eslint.packageManager": "yarn",
   "files.associations": {
     "*.json": "jsonc"
   },
@@ -74,5 +72,23 @@
   },
   "cSpell.words": [
     "Partitioner"
-  ]
+  ],
+  "[java]": {
+    "editor.formatOnSave": false,
+    "editor.tabSize": 4,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": false
+    },
+  },
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.java$",
+        "cmd": "java -Xmx128m -jar ${workspaceFolder}/java/utilities/google-java-format-1.17.0-all-deps.jar --replace --aosp ${file}"
+      },
+    ],
+  },
+  "java.debug.settings.onBuildFailureProceed": true,
+  "java.compile.nullAnalysis.mode": "disabled",
+  "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln"
 }

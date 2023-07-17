@@ -9,8 +9,9 @@ while allowing user interfaces to be developed using frontend frameworks such as
 Before you get started, make sure you have the following requirements in place:
 
 1. [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for building and deploying .NET 6 projects.
-2. Update the properties in `./appsettings.json` to configure your Azure OpenAI resource or OpenAI account.
-3. Generate and trust a localhost developer certificate.
+2. **(Optional)** [Visual Studio Code](http://aka.ms/vscode) or [Visual Studio](http://aka.ms/vsdownload).
+3. Update the properties in `./appsettings.json` to configure your Azure OpenAI resource or OpenAI account.
+4. Generate and trust a localhost developer certificate.
    - For Windows and Mac run
      ```bash
      dotnet dev-certs https --trust
@@ -25,7 +26,9 @@ Before you get started, make sure you have the following requirements in place:
 
    > To clean your system of the developer certificate, run `dotnet run dev-certs https --clean`
 
-4. **(Optional)** [Visual Studio Code](http://aka.ms/vscode) or [Visual Studio](http://aka.ms/vsdownload).
+5. **(Optional)** To enable support for uploading image file formats such as png, jpg and tiff, we have included the [Tesseract](https://www.nuget.org/packages/Tesseract) nuget package.  
+   - You will need to obtain one or more [tessdata language data files](https://github.com/tesseract-ocr/tessdata) such as `eng.traineddata` and add them to your `./data` directory or the location specified in the `Tesseract.FilePath` location in `./appsettings.json`.  
+   - Set the `Copy to Output Directory` value to `Copy if newer`.
 
 # Start the WebApi Service
 
@@ -112,3 +115,87 @@ Before you get started, make sure you have the following additional requirements
     docker run --name copilotchat -p 6333:6333 -v "$(pwd)/data/qdrant:/qdrant/storage" qdrant/qdrant
     ```
     > To stop the container, in another terminal window run `docker container stop copilotchat; docker container rm copilotchat;`.
+
+# (Optional) Enable Application Insights telemetry
+
+Enabling telemetry on CopilotChatApi allows you to capture data about requests to and from the API, allowing you to monitor the deployment and monitor how the application is being used.
+
+To use Application Insights, first create an instance in your Azure subscription that you can use for this purpose.
+
+On the resource overview page, in the top right use the copy button to copy the Connection String and paste this into the `APPLICATIONINSIGHTS_CONNECTION_STRING` setting as either a appsettings value, or add it as a secret.
+
+In addition to this there are some custom events that can inform you how users are using the service such as `SkillFunction`.
+
+To access these custom events the suggested method is to use Azure Data Explorer (ADX). To access data from Application Insights in ADX, create a new dashboard and add a new Data Source (use the ellipsis dropdown in the top right).
+
+In the Cluster URI use the following link: `https://ade.applicationinsights.io/subscriptions/<Your subscription Id>`. The subscription id is shown on the resource page for your Applications Insights instance. You can then select the Database for the Application Insights resource.
+
+For more info see [Query data in Azure Monitor using Azure Data Explorer](https://learn.microsoft.com/en-us/azure/data-explorer/query-monitor-data).
+
+CopilotChat specific events are in a table called `customEvents`.
+
+For example to see the most recent 100 skill function invocations:
+
+```kql
+customEvents
+| where timestamp between (_startTime .. _endTime)
+| where name == "SkillFunction"
+| extend skill = tostring(customDimensions.skillName)
+| extend function = tostring(customDimensions.functionName)
+| extend success = tobool(customDimensions.success)
+| extend userId = tostring(customDimensions.userId)
+| extend environment = tostring(customDimensions.AspNetCoreEnvironment)
+| extend skillFunction = strcat(skill, '/', function)
+| project timestamp, skillFunction, success, userId, environment
+| order by timestamp desc
+| limit 100
+```
+
+Or to report the success rate of skill functions against environments, you can first add a parameter to the dashboard to filter the environment.
+
+You can use this query to show the environments available by adding the `Source` as this `Query`:
+
+```kql
+customEvents
+| where timestamp between (['_startTime'] .. ['_endTime']) // Time range filtering
+| extend environment = tostring(customDimensions.AspNetCoreEnvironment)
+| distinct environment
+```
+
+Name the variable `_environment`, select `Multiple Selection` and tick `Add empty "Select all" value`. Finally `Select all` as the `Default value`.
+
+You can then query the success rate with this query:
+
+```kql
+customEvents
+| where timestamp between (_startTime .. _endTime)
+| where name == "SkillFunction"
+| extend skill = tostring(customDimensions.skillName)
+| extend function = tostring(customDimensions.functionName)
+| extend success = tobool(customDimensions.success)
+| extend environment = tostring(customDimensions.AspNetCoreEnvironment)
+| extend skillFunction = strcat(skill, '/', function)
+| summarize Total=count(), Success=countif(success) by skillFunction, environment
+| project skillFunction, SuccessPercentage = 100.0 * Success/Total, environment
+| order by SuccessPercentage asc
+```
+
+You may wish to use the Visual tab to turn on conditional formatting to highlight low success rates or render it as a chart.
+
+Finally you could render this data over time with a query like this:
+
+```kql
+customEvents
+| where timestamp between (_startTime .. _endTime)
+| where name == "SkillFunction"
+| extend skill = tostring(customDimensions.skillName)
+| extend function = tostring(customDimensions.functionName)
+| extend success = tobool(customDimensions.success)
+| extend environment = tostring(customDimensions.AspNetCoreEnvironment)
+| extend skillFunction = strcat(skill, '/', function)
+| summarize Total=count(), Success=countif(success) by skillFunction, environment, bin(timestamp,1m)
+| project skillFunction, SuccessPercentage = 100.0 * Success/Total, environment, timestamp
+| order by timestamp asc
+```
+
+Then use a Time chart on the Visual tab.

@@ -13,15 +13,6 @@ namespace Microsoft.SemanticKernel;
 public class KernelException : SKException
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="KernelException"/> class with a provided error code.
-    /// </summary>
-    /// <param name="errorCode">The error code.</param>
-    public KernelException(ErrorCodes errorCode)
-        : this(errorCode, message: null, innerException: null)
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="KernelException"/> class with a provided error code and message.
     /// </summary>
     /// <param name="errorCode">The error code.</param>
@@ -37,7 +28,7 @@ public class KernelException : SKException
     /// <param name="errorCode">The error code.</param>
     /// <param name="message">A string that describes the error.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    public KernelException(ErrorCodes errorCode, string? message, Exception? innerException)
+    public KernelException(ErrorCodes errorCode, string? message = null, Exception? innerException = null)
         : base(GetDefaultMessage(errorCode, message), innerException)
     {
         this.ErrorCode = errorCode;

@@ -160,7 +160,7 @@ public sealed class Program
 
         // Get file content
         SKContext fileContentResult = await sk.RunAsync(pathToFile,
-            onedrive["GetFileContentAsync"],
+            onedrive["GetFileContent"],
             summarizeSkills["Summarize"]);
         if (fileContentResult.ErrorOccurred)
         {
@@ -170,11 +170,11 @@ public sealed class Program
         string fileSummary = fileContentResult.Result;
 
         // Get my email address
-        SKContext emailAddressResult = await sk.RunAsync(string.Empty, outlook["GetMyEmailAddressAsync"]);
+        SKContext emailAddressResult = await sk.RunAsync(string.Empty, outlook["GetMyEmailAddress"]);
         string myEmailAddress = emailAddressResult.Result;
 
         // Create a link to the file
-        SKContext fileLinkResult = await sk.RunAsync(pathToFile, onedrive["CreateLinkAsync"]);
+        SKContext fileLinkResult = await sk.RunAsync(pathToFile, onedrive["CreateLink"]);
         string fileLink = fileLinkResult.Result;
 
         // Send me an email with the summary and a link to the file.
@@ -182,13 +182,13 @@ public sealed class Program
         emailMemory.Set(EmailSkill.Parameters.Recipients, myEmailAddress);
         emailMemory.Set(EmailSkill.Parameters.Subject, $"Summary of {pathToFile}");
 
-        await sk.RunAsync(emailMemory, outlook["SendEmailAsync"]);
+        await sk.RunAsync(emailMemory, outlook["SendEmail"]);
 
         // Add a reminder to follow-up next week.
         ContextVariables followUpTaskMemory = new($"Follow-up about {pathToFile}.");
         DateTimeOffset nextMonday = TaskListSkill.GetNextDayOfWeek(DayOfWeek.Monday, TimeSpan.FromHours(9));
         followUpTaskMemory.Set(TaskListSkill.Parameters.Reminder, nextMonday.ToString("o"));
-        await sk.RunAsync(followUpTaskMemory, todo["AddTaskAsync"]);
+        await sk.RunAsync(followUpTaskMemory, todo["AddTask"]);
 
         logger.LogInformation("Done!");
     }

@@ -25,7 +25,7 @@ internal static class SemanticKernelFactory
         // must have a completion service
         if (!apiConfig.CompletionConfig.IsValid())
         {
-            logger.LogError("Text completion service has not been supplied");
+            logger.LogError("Chat completion service has not been supplied");
             return null;
         }
 

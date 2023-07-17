@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import os
 
 import aiofiles
@@ -11,7 +13,7 @@ class FileIOSkill:
     Description: Read and write from a file.
 
     Usage:
-        kernel.import_skill("file", FileIOSkill());
+        kernel.import_skill(FileIOSkill(), skill_name="file")
 
     Examples:
 

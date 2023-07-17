@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
@@ -35,13 +36,14 @@ public class OrganizationHierarchySkillTests : IDisposable
         OrganizationHierarchySkill target = new(connectorMock.Object);
 
         // Act
-        IEnumerable<string> actual = await target.GetMyDirectReportsEmailAsync(this._context);
+        string actual = await target.GetMyDirectReportsEmailAsync();
 
         // Assert
-        var set = new HashSet<string>(actual);
+        var emails = JsonSerializer.Deserialize<IEnumerable<string>>(actual);
+        Assert.NotNull(emails);
         foreach (string directReportEmail in anyDirectReportsEmail)
         {
-            Assert.Contains(directReportEmail, set);
+            Assert.Contains(directReportEmail, emails);
         }
 
         connectorMock.VerifyAll();
@@ -57,7 +59,7 @@ public class OrganizationHierarchySkillTests : IDisposable
         OrganizationHierarchySkill target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetMyManagerEmailAsync(this._context);
+        string actual = await target.GetMyManagerEmailAsync();
 
         // Assert
         Assert.Equal(anyManagerEmail, actual);
@@ -74,7 +76,7 @@ public class OrganizationHierarchySkillTests : IDisposable
         OrganizationHierarchySkill target = new(connectorMock.Object);
 
         // Act
-        string actual = await target.GetMyManagerNameAsync(this._context);
+        string actual = await target.GetMyManagerNameAsync();
 
         // Assert
         Assert.Equal(anyManagerName, actual);

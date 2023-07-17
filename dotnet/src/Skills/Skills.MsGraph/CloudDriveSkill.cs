@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.ComponentModel;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -13,7 +16,7 @@ namespace Microsoft.SemanticKernel.Skills.MsGraph;
 /// <summary>
 /// Cloud drive skill (e.g. OneDrive).
 /// </summary>
-public class CloudDriveSkill
+public sealed class CloudDriveSkill
 {
     /// <summary>
     /// <see cref="ContextVariables"/> parameter names.
@@ -40,12 +43,13 @@ public class CloudDriveSkill
     /// <summary>
     /// Get the contents of a file stored in a cloud drive.
     /// </summary>
-    [SKFunction("Get the contents of a file in a cloud drive.")]
-    [SKFunctionInput(Description = "Path to file")]
-    public async Task<string> GetFileContentAsync(string filePath, SKContext context)
+    [SKFunction, Description("Get the contents of a file in a cloud drive.")]
+    public async Task<string> GetFileContentAsync(
+        [Description("Path to file")] string filePath,
+        CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Getting file content for '{0}'", filePath);
-        Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
+        Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
 
         using StreamReader sr = new(fileContentStream);
         string content = await sr.ReadToEndAsync().ConfigureAwait(false);
@@ -56,40 +60,35 @@ public class CloudDriveSkill
     /// <summary>
     /// Upload a small file to OneDrive (less than 4MB).
     /// </summary>
-    [SKFunction("Upload a small file to OneDrive (less than 4MB).")]
-    public async Task UploadFileAsync(string filePath, SKContext context)
+    [SKFunction, Description("Upload a small file to OneDrive (less than 4MB).")]
+    public async Task UploadFileAsync(
+        [Description("Path to file")] string filePath,
+        [Description("Remote path to store the file")] string destinationPath,
+        CancellationToken cancellationToken = default)
     {
-        if (!context.Variables.TryGetValue(Parameters.DestinationPath, out string? destinationPath))
+        if (string.IsNullOrWhiteSpace(destinationPath))
         {
-            context.Fail($"Missing variable {Parameters.DestinationPath}.");
-            return;
+            throw new ArgumentException("Variable was null or whitespace", nameof(destinationPath));
         }
 
         this._logger.LogDebug("Uploading file '{0}'", filePath);
 
         // TODO Add support for large file uploads (i.e. upload sessions)
-
-        try
-        {
-            await this._connector.UploadSmallFileAsync(filePath, destinationPath, context.CancellationToken).ConfigureAwait(false);
-        }
-        catch (IOException ex)
-        {
-            context.Fail(ex.Message, ex);
-        }
+        await this._connector.UploadSmallFileAsync(filePath, destinationPath, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Create a sharable link to a file stored in a cloud drive.
     /// </summary>
-    [SKFunction("Create a sharable link to a file stored in a cloud drive.")]
-    [SKFunctionInput(Description = "Path to file")]
-    public async Task<string> CreateLinkAsync(string filePath, SKContext context)
+    [SKFunction, Description("Create a sharable link to a file stored in a cloud drive.")]
+    public async Task<string> CreateLinkAsync(
+        [Description("Path to file")] string filePath,
+        CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Creating link for '{0}'", filePath);
         const string Type = "view"; // TODO expose this as an SK variable
         const string Scope = "anonymous"; // TODO expose this as an SK variable
 
-        return await this._connector.CreateShareLinkAsync(filePath, Type, Scope, context.CancellationToken).ConfigureAwait(false);
+        return await this._connector.CreateShareLinkAsync(filePath, Type, Scope, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.SemanticKernel.Text;
 using Xunit;
 
@@ -45,6 +46,29 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    public void CanSplitMarkdownParagraphsWithOverlap()
+    {
+        List<string> input = new()
+        {
+            "This is a test of the emergency broadcast system. This is only a test.",
+            "We repeat, this is only a test. A unit test."
+        };
+
+        var expected = new[]
+        {
+            "This is a test of the emergency broadcast system.",
+            "emergency broadcast system. This is only a test.",
+            "This is only a test. We repeat, this is only a test.",
+            "We repeat, this is only a test. A unit test.",
+            "A unit test."
+        };
+
+        var result = TextChunker.SplitMarkdownParagraphs(input, 15, 8);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
     public void CanSplitTextParagraphs()
     {
         List<string> input = new()
@@ -61,6 +85,29 @@ public sealed class TextChunkerTests
         };
 
         var result = TextChunker.SplitPlainTextParagraphs(input, 13);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanSplitTextParagraphsWithOverlap()
+    {
+        List<string> input = new()
+        {
+            "This is a test of the emergency broadcast system. This is only a test.",
+            "We repeat, this is only a test. A unit test."
+        };
+
+        var expected = new[]
+        {
+            "This is a test of the emergency broadcast system.",
+            "emergency broadcast system. This is only a test.",
+            "This is only a test. We repeat, this is only a test.",
+            "We repeat, this is only a test. A unit test.",
+            "A unit test."
+        };
+
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, 8);
 
         Assert.Equal(expected, result);
     }
@@ -408,4 +455,27 @@ public sealed class TextChunkerTests
     }
 
     // a markdown example that does not have any of the above characters
+
+    [Fact]
+    public void CanSplitVeryLargeDocumentsWithoutStackOverflowing()
+    {
+#pragma warning disable CA5394 // this test relies on repeatable pseudo-random numbers
+        var rand = new Random(42);
+        var sb = new StringBuilder(100_000 * 11);
+        for (int wordNum = 0; wordNum < 100_000; wordNum++)
+        {
+            int wordLength = rand.Next(1, 10);
+            for (int charNum = 0; charNum < wordLength; charNum++)
+            {
+                sb.Append((char)('a' + rand.Next(0, 26)));
+            }
+            sb.Append(' ');
+        }
+
+        string text = sb.ToString();
+        List<string> lines = TextChunker.SplitPlainTextLines(text, 20);
+        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 200);
+        Assert.NotEmpty(paragraphs);
+#pragma warning restore CA5394
+    }
 }

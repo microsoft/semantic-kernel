@@ -7,12 +7,11 @@ name: Python Integration Tests
 on:
   workflow_dispatch:
   push:
-    branches: [ "main"]
-    paths: 
-      - 'python/**'
+    branches: ["main"]
+    paths:
+      - "python/**"
   schedule:
-    - cron: '0 */12 * * *' # Run every 12 hours: midnight UTC and noon UTC
-
+    - cron: "0 */12 * * *" # Run every 12 hours: midnight UTC and noon UTC
 
 permissions:
   contents: read
@@ -25,40 +24,48 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies wtih hnswlib native disabled
-      if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
-      run: |
-        export HNSWLIB_NO_NATIVE=1
-        python -m pip install --upgrade pip setuptools wheel
-        python -m pip install poetry pytest
-        cd python && poetry install --with hugging_face --with chromadb --with weaviate --with qdrant
-    - name: Install dependencies wtih hnswlib native enabled
-      if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
-      run: |
-        python -m pip install --upgrade pip setuptools wheel
-        python -m pip install poetry pytest
-    - name: Run Integration Tests
-      shell: bash
-        AzureOpenAI__Label: azure-text-davinci-003
-        AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
-        AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
-        AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
-        AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
-        AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-        AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-        AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-        AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-        Bing__ApiKey: ${{ secrets.BING__APIKEY }}
-        OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
-      run: |
-        cd python
-        poetry run pytest ./tests/integration
-        
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies with hnswlib native disabled
+        if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
+        run: |
+          export HNSWLIB_NO_NATIVE=1
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install poetry pytest
+          cd python && poetry install
+      - name: Install dependencies with hnswlib native enabled
+        if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install poetry pytest
+          cd python && poetry install
+      - name: Run Integration Tests
+        shell: bash
+        env: # Set Azure credentials secret as an input
+          HNSWLIB_NO_NATIVE: 1
+          Python_Integration_Tests: Python_Integration_Tests
+          AzureOpenAI__Label: azure-text-davinci-003
+          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
+          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
+          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
+          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
+          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
+          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_SEARCH_ADMIN_KEY}}
+          AZURE_SEARCH_ENDPOINT: ${{secrets.AZURE_SEARCH_ENDPOINT}}
+        run: |
+          cd python
+          poetry run pytest ./tests/integration

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "configurations": {
+    "webapp": {
+      "appLocation": ".",
+      "outputLocation": "./build",
+      "appBuildCommand": "yarn build",
+      "run": "yarn start",
+      "appDevserverUrl": "{{appDevserverUrl}}",
+      "appName": "{{appName}}",
+      "resourceGroup": "{{resourceGroup}}",
+      "subscription-id": "{{subscription-id}}",
+      "env": "production"
+    }
+  }
+}

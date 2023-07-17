@@ -10,19 +10,18 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class ChatResult : IChatResult, ITextCompletionResult
+internal sealed class ChatResult : IChatResult, ITextResult
 {
-    private readonly ModelResult _modelResult;
     private readonly ChatChoice _choice;
 
     public ChatResult(ChatCompletions resultData, ChatChoice choice)
     {
         Verify.NotNull(choice);
         this._choice = choice;
-        this._modelResult = new ModelResult(resultData);
+        this.ModelResult = new ModelResult(resultData);
     }
 
-    public ModelResult ModelResult => this._modelResult;
+    public ModelResult ModelResult { get; }
 
     public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
         => Task.FromResult<ChatMessageBase>(new SKChatMessage(this._choice.Message));

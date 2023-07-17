@@ -11,8 +11,6 @@ internal sealed class GetObjectRequest
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateGetRequest(
-            $"objects/{this.Id}{(this.Additional == null ? string.Empty : $"?include={string.Join(",", this.Additional)}")}",
-            this);
+        return HttpRequest.CreateGetRequest($"objects/{this.Id}{(this.Additional == null ? string.Empty : $"?include={string.Join(",", this.Additional)}")}");
     }
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -65,11 +66,10 @@ public class ExternalInformationSkill
     /// Extract relevant additional knowledge using a planner.
     /// </summary>
     [SKFunction("Acquire external information")]
-    [SKFunctionName("AcquireExternalInformation")]
-    [SKFunctionInput(Description = "The intent to whether external information is needed")]
-    [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    [SKFunctionContextParameter(Name = "proposedPlan", Description = "Previously proposed plan that is approved")]
-    public async Task<string> AcquireExternalInformationAsync(string userIntent, SKContext context)
+    public async Task<string> AcquireExternalInformationAsync(
+        [Description("Maximum numbzer of tokens")] int tokenLimit,
+        [Description("The intent to whether external information is needed")] string userIntent,
+        SKContext context)
     {
         FunctionsView functions = this._planner.Kernel.Skills.GetFunctionsView(true, true);
         if (functions.NativeFunctions.IsEmpty && functions.SemanticFunctions.IsEmpty)
@@ -97,8 +97,7 @@ public class ExternalInformationSkill
 
             // Invoke plan
             newPlanContext = await plan.InvokeAsync(newPlanContext);
-            int tokenLimit =
-                int.Parse(context["tokenLimit"], new NumberFormatInfo()) -
+            tokenLimit = tokenLimit -
                 Utilities.TokenCount(PromptPreamble) -
                 Utilities.TokenCount(PromptPostamble);
 
@@ -125,13 +124,13 @@ public class ExternalInformationSkill
 
             if (plan.Steps.Count > 0)
             {
-                // Parameters stored in plan's top level state
-                this.MergeContextIntoPlan(context.Variables, plan.State);
+                // Parameters stored in plan's top level
+                this.MergeContextIntoPlan(context.Variables, plan.Parameters);
 
                 // TODO: Improve Kernel to give developers option to skip this override 
                 // (i.e., keep functions regardless of whether they're available in the planner's context or not)
                 Plan sanitizedPlan = this.SanitizePlan(plan, context);
-                sanitizedPlan.State.Update(plan.State);
+                sanitizedPlan.Parameters.Update(plan.Parameters);
 
                 this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner.PlannerOptions!.Type, PlanState.NoOp);
             }

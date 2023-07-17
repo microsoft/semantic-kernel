@@ -31,7 +31,7 @@ public static class SKFunctionExtensions
     /// <param name="skFunction">Semantic function</param>
     /// <param name="maxTokens">Tokens count</param>
     /// <returns>Self instance</returns>
-    public static ISKFunction UseMaxTokens(this ISKFunction skFunction, int maxTokens)
+    public static ISKFunction UseMaxTokens(this ISKFunction skFunction, int? maxTokens)
     {
         skFunction.RequestSettings.MaxTokens = maxTokens;
         return skFunction;
@@ -125,17 +125,14 @@ public static class SKFunctionExtensions
                 function.SkillName, function.Name);
         }
 
-        if (mutableContext)
+        if (!mutableContext)
         {
-            return function.InvokeAsync(context, settings);
+            // Create a copy of the context, to avoid editing the original set of variables
+            context = context.Clone();
         }
 
-        // Create a copy of the context, to avoid editing the original set of variables
-        SKContext contextClone = context.Clone();
-
-        // Store the input in the context clone
-        contextClone.Variables.Update(input);
-
-        return function.InvokeAsync(contextClone, settings);
+        // Store the input in the context
+        context.Variables.Update(input);
+        return function.InvokeAsync(context, settings);
     }
 }

@@ -12,8 +12,8 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
-using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.CopilotChat.Extensions;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -120,8 +120,15 @@ internal static class SemanticKernelExtensions
                         httpClient.DefaultRequestHeaders.Add("api-key", config.Qdrant.Key);
                     }
 
-                    return new QdrantMemoryStore(new QdrantVectorDbClient(
-                        config.Qdrant.Host, config.Qdrant.VectorSize, port: config.Qdrant.Port, httpClient: httpClient, log: sp.GetRequiredService<ILogger<IQdrantVectorDbClient>>()));
+                    var endPointBuilder = new UriBuilder(config.Qdrant.Host);
+                    endPointBuilder.Port = config.Qdrant.Port;
+
+                    return new QdrantMemoryStore(
+                        httpClient: httpClient,
+                        config.Qdrant.VectorSize,
+                        endPointBuilder.ToString(),
+                        logger: sp.GetRequiredService<ILogger<IQdrantVectorDbClient>>()
+                    );
                 });
                 services.AddScoped<ISemanticTextMemory>(sp => new SemanticTextMemory(
                     sp.GetRequiredService<IMemoryStore>(),

@@ -4,15 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Resources;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 
 #pragma warning disable IDE0130
@@ -31,32 +31,37 @@ public static class KernelChatGptPluginExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
     /// <param name="url">Url to in which to retrieve the ChatGPT plugin.</param>
-    /// <param name="httpClient">HttpClient to use for the request.</param>
-    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    /// <param name="userAgent">Optional user agent header value.</param>
-    /// <param name="retryConfiguration">Optional retry configuration.</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromUrlAsync(
         this IKernel kernel,
         string skillName,
         Uri url,
-        HttpClient httpClient,
-        AuthenticateRequestAsyncCallback? authCallback = null,
-        string? userAgent = "Microsoft-Semantic-Kernel",
-        HttpRetryConfig? retryConfiguration = null,
+        OpenApiSkillExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.ValidSkillName(skillName);
 
-        using HttpResponseMessage response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
+#pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+
+        if (!string.IsNullOrEmpty(executionParameters?.UserAgent))
+        {
+            requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
+        }
+
+        using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         string gptPluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
         return await kernel
-            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken: cancellationToken)
+            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), executionParameters, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -65,19 +70,13 @@ public static class KernelChatGptPluginExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
-    /// <param name="httpClient">HttpClient to use for the request.</param>
-    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    /// <param name="userAgent">Optional user agent header value.</param>
-    /// <param name="retryConfiguration">Optional retry configuration.</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromResourceAsync(
         this IKernel kernel,
         string skillName,
-        HttpClient httpClient,
-        AuthenticateRequestAsyncCallback? authCallback = null,
-        string? userAgent = "Microsoft-Semantic-Kernel",
-        HttpRetryConfig? retryConfiguration = null,
+        OpenApiSkillExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.ValidSkillName(skillName);
@@ -95,7 +94,7 @@ public static class KernelChatGptPluginExtensions
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
         return await kernel
-            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), httpClient, authCallback, userAgent, retryConfiguration, cancellationToken: cancellationToken)
+            .ImportOpenApiSkillFromUrlAsync(skillName, new Uri(openApiUrl), executionParameters, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -105,18 +104,14 @@ public static class KernelChatGptPluginExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the skill directory.</param>
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
-    /// <param name="httpClient">Optional HttpClient to use for the request.</param>
-    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    /// <param name="retryConfiguration">Optional retry configuration.</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromDirectoryAsync(
         this IKernel kernel,
         string parentDirectory,
         string skillDirectoryName,
-        HttpClient? httpClient = null,
-        AuthenticateRequestAsyncCallback? authCallback = null,
-        HttpRetryConfig? retryConfiguration = null,
+        OpenApiSkillExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         const string ChatGptPluginFile = "ai-plugin.json";
@@ -137,7 +132,7 @@ public static class KernelChatGptPluginExtensions
         using var stream = File.OpenRead(chatGptPluginPath);
 
         return await kernel
-            .RegisterOpenApiSkillAsync(stream, skillDirectoryName, authCallback, retryConfiguration, cancellationToken: cancellationToken)
+            .RegisterOpenApiSkillAsync(stream, skillDirectoryName, executionParameters, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -147,16 +142,14 @@ public static class KernelChatGptPluginExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Name of the skill to register.</param>
     /// <param name="filePath">File path to the ChatGPT plugin definition.</param>
-    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    /// <param name="retryConfiguration">Optional retry configuration.</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromFileAsync(
         this IKernel kernel,
         string skillName,
         string filePath,
-        AuthenticateRequestAsyncCallback? authCallback = null,
-        HttpRetryConfig? retryConfiguration = null,
+        OpenApiSkillExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         if (!File.Exists(filePath))
@@ -169,13 +162,13 @@ public static class KernelChatGptPluginExtensions
         using var stream = File.OpenRead(filePath);
 
         return await kernel
-            .RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, cancellationToken: cancellationToken)
+            .RegisterOpenApiSkillAsync(stream, skillName, executionParameters, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
     private static string ParseOpenApiUrl(string gptPluginJson)
     {
-        JsonNode? gptPlugin = JsonObject.Parse(gptPluginJson);
+        JsonNode? gptPlugin = JsonNode.Parse(gptPluginJson);
 
         string? apiType = gptPlugin?["api"]?["type"]?.ToString();
         if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")

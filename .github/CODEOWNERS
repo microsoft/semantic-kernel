@@ -1,0 +1,19 @@
+# @microsoft/octo-semantickernel-pr-dotnet owns any files in the dotnet
+# directory at the root of the repository and any of its
+# subdirectories.
+/dotnet/ @microsoft/octo-semantickernel-pr-dotnet
+
+# @microsoft/octo-semantickernel-pr-python owns any files in the python
+# directory at the root of the repository and any of its
+# subdirectories.
+/python/ @microsoft/octo-semantickernel-pr-python
+
+# @microsoft/octo-semantickernel-pr-python owns any files in the java
+# directory at the root of the repository and any of its
+# subdirectories.
+/java/ @microsoft/octo-semantickernel-pr-java
+
+# @microsoft/octo-semantickernel-pr-apps owns any files in the samples
+# directory at the root of the repository and any of its
+# subdirectories.
+/samples/ @microsoft/octo-semantickernel-pr-apps

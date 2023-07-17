@@ -218,6 +218,29 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.Equal(0, properties.Count);
     }
 
+    [Fact]
+    public async Task ItShouldThrowExceptionForNonCompliantDocumentAsync()
+    {
+        // Arrange
+        var nonComplaintOpenApiDocument = ResourceSkillsProvider.LoadFromResource("nonCompliant_documentV3_0.json");
+
+        // Act and Assert
+        await Assert.ThrowsAsync<OpenApiDocumentParsingException>(async () => await this._sut.ParseAsync(nonComplaintOpenApiDocument));
+    }
+
+    [Fact]
+    public async Task ItShouldWorkWithNonCompliantDocumentIfAllowedAsync()
+    {
+        // Arrange
+        var nonComplaintOpenApiDocument = ResourceSkillsProvider.LoadFromResource("nonCompliant_documentV3_0.json");
+
+        // Act
+        await this._sut.ParseAsync(nonComplaintOpenApiDocument, ignoreNonCompliantErrors: true);
+
+        // Assert
+        // The absence of any thrown exceptions serves as evidence of the functionality's success.
+    }
+
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId,
         RestApiOperationParameterLocation location, string name)
     {

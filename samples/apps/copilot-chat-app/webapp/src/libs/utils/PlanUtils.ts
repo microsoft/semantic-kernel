@@ -4,5 +4,5 @@ export const isPlan = (object: string) => {
     // backslash has to be escaped since it's a JSON string
     // eslint-disable-next-line
     const planPrefix = `proposedPlan\":`;
-    return object.indexOf(planPrefix) !== -1;
+    return object.includes(planPrefix);
 };

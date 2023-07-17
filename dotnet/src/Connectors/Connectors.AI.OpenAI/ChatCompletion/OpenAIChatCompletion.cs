@@ -60,7 +60,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<ITextCompletionStreamingResult> GetStreamingCompletionsAsync(
+    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -69,7 +69,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextCompletionResult>> GetCompletionsAsync(
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
