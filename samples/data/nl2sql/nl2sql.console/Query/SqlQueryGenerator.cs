@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using SemanticKernel.Data.Nl2Sql.Services;
 
 /// <summary>
 /// Generate SQL query targeting Microsoft SQL Server.
@@ -34,13 +35,19 @@ internal sealed class SqlQueryGenerator
         kernel.ImportSkill(this, "nl2sql");
     }
 
+    /// <summary>
+    /// Attempt to produce a query for the given objective based on the registerted schemas.
+    /// </summary>
+    /// <param name="objective">A natural language objective</param>
+    /// <param name="context">A <see cref="SKContext"/> object</param>
+    /// <returns>A SQL query (or null if not able)</returns>
     [SKFunction, Description("Generate a data query for a given objective and schema")]
     [SKName("GenerateQueryFromObjective")]
     public async Task<string?> SolveObjectiveAsync(string objective, SKContext context)
     {
         var recall =
             await context.Memory.SearchAsync(
-                "schemas",
+                SchemaProvider.MemoryCollectionName,
                 objective,
                 limit: 1,
                 minRelevanceScore: 0.75,
@@ -70,6 +77,9 @@ internal sealed class SqlQueryGenerator
         return context.GetResult(ContentLabelQuery, require: false);
     }
 
+    /// <summary>
+    /// Screen objective to determine if it can be solved with the selected schema.
+    /// </summary>
     private async Task<bool> ScreenObjectiveAsync(SKContext context)
     {
         await this.promptEval.InvokeAsync(context).ConfigureAwait(false);

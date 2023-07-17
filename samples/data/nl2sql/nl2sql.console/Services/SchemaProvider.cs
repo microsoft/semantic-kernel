@@ -10,13 +10,15 @@ using SemanticKernel.Data.Nl2Sql.Schema;
 /// </summary>
 internal static class SchemaProvider
 {
+    public const string MemoryCollectionName = "data-schemas";
+
     public static async IAsyncEnumerable<string> InitializeAsync(IKernel kernel)
     {
         await foreach (var schema in SchemasDefinitions.GetSchemasAsync())
         {
             var schemaText = await schema.FormatAsync(YamlSchemaFormatter.Instance).ConfigureAwait(false);
 
-            await kernel.Memory.SaveInformationAsync("schemas", schemaText, schema.Name).ConfigureAwait(false);
+            await kernel.Memory.SaveInformationAsync(MemoryCollectionName, schemaText, schema.Name).ConfigureAwait(false);
 
             yield return schema.Name;
         }

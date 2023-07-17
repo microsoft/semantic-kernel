@@ -1,4 +1,4 @@
-If the requested OBJECTIVE be answered by querying a database with tables described in SCHEMA, ANSWER: YES.
+If the requested OBJECTIVE can be answered by querying a database with tables described in SCHEMA, ANSWER: YES.
 Otherwise ANSWER: NO.
 
 Do not answer with any other word than YES or NO.
