@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -26,15 +27,19 @@ public class DocumentMemorySkill
     /// </summary>
     private readonly DocumentMemoryOptions _documentImportOptions;
 
+    private readonly ILogger _logger;
+
     /// <summary>
     /// Create a new instance of DocumentMemorySkill.
     /// </summary>
     public DocumentMemorySkill(
         IOptions<PromptsOptions> promptOptions,
-        IOptions<DocumentMemoryOptions> documentImportOptions)
+        IOptions<DocumentMemoryOptions> documentImportOptions,
+        ILogger logger)
     {
         this._promptOptions = promptOptions.Value;
         this._documentImportOptions = documentImportOptions.Value;
+        this._logger = logger;
     }
 
     /// <summary>
@@ -42,7 +47,7 @@ public class DocumentMemorySkill
     /// </summary>
     /// <param name="query">Query to match.</param>
     /// <param name="context">The SkContext.</param>
-    [SKFunction, Description("Query documents in the memory given a user message")]
+    [SKFunction("Query documents in the memory given a user message")]
     public async Task<string> QueryDocumentsAsync(
         [Description("Query to match.")] string query,
         [Description("ID of the chat that owns the documents")] string chatId,
@@ -79,15 +84,14 @@ public class DocumentMemorySkill
         foreach (var memory in relevantMemories)
         {
             var tokenCount = Utilities.TokenCount(memory.Metadata.Text);
-            if (remainingToken - tokenCount > 0)
+            if (remainingToken - tokenCount <= 0)
             {
-                documentsText += $"\n\nSnippet from {memory.Metadata.Description}: {memory.Metadata.Text}";
-                remainingToken -= tokenCount;
-            }
-            else
-            {
+                this._logger.LogWarning("Not enough tokens to add document memory snippet from {0}", memory.Metadata.Description);
                 break;
             }
+
+            documentsText += $"\n\nSnippet from {memory.Metadata.Description}: {memory.Metadata.Text}";
+            remainingToken -= tokenCount;
         }
 
         if (string.IsNullOrEmpty(documentsText))

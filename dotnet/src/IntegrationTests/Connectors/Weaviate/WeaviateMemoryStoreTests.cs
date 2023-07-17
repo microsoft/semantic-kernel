@@ -291,8 +291,5 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     public void Dispose()
     {
         this.httpClient.Dispose();
-#pragma warning disable CS0618 // Type or member is obsolete
-        this.weaviateMemoryStore.Dispose();
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
