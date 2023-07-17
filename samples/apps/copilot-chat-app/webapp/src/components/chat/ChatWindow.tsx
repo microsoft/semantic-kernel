@@ -21,14 +21,14 @@ import React, { useState } from 'react';
 import { useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
-import { ChatPersona } from './ChatPersona';
-import { ChatPlanList } from './ChatPlanList';
-import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
 import { ParticipantsList } from './controls/ParticipantsList';
 import { ShareBotMenu } from './controls/ShareBotMenu';
 import { Alerts } from './shared/Alerts';
 import { EditChatName } from './shared/EditChatName';
+import { DocumentsTab } from './tabs/DocumentsTab';
+import { PersonaTab } from './tabs/PersonaTab';
+import { PlansTab } from './tabs/PlansTab';
 
 const useClasses = makeStyles({
     root: {
@@ -177,12 +177,14 @@ export const ChatWindow: React.FC = () => {
                 </div>
             </div>
             {selectedTab === 'chat' && <ChatRoom />}
-            {selectedTab === 'documents' && <ChatResourceList chatId={selectedId} />}
-            {selectedTab === 'plans' && <ChatPlanList />}
-            {selectedTab === 'persona' && <ChatPersona />}
-            {selectedTab !== 'chat' && <div className={classes.alerts}>
-                <Alerts />
-            </div>}
+            {selectedTab === 'documents' && <DocumentsTab chatId={selectedId} />}
+            {selectedTab === 'plans' && <PlansTab />}
+            {selectedTab === 'persona' && <PersonaTab />}
+            {selectedTab !== 'chat' && (
+                <div className={classes.alerts}>
+                    <Alerts />
+                </div>
+            )}
         </div>
     );
 };

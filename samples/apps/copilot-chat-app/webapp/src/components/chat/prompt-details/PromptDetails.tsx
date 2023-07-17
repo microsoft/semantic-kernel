@@ -9,6 +9,7 @@ import {
     DialogSurface,
     DialogTitle,
     DialogTrigger,
+    Label,
     Tooltip,
     makeStyles,
     shorthands,
@@ -24,6 +25,12 @@ const useClasses = makeStyles({
         ...shorthands.margin(0),
         minWidth: 'auto',
         marginLeft: 'auto', // align to right
+    },
+    footer: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        minWidth: '175px',
     },
 });
 
@@ -55,7 +62,14 @@ export const PromptDetails: React.FC<IPromptDetailsProps> = ({ message }) => {
                                   .split('\n')
                                   .map((paragraph, idx) => <p key={`prompt-details-${idx}`}>{paragraph}</p>)}
                     </DialogContent>
-                    <DialogActions>
+                    <DialogActions position="start" className={classes.footer}>
+                        <Label size="small" color="brand">
+                            Want to learn more about prompts? Click{' '}
+                            <a href="https://aka.ms/sk-about-prompts" target="_blank" rel="noreferrer">
+                                here
+                            </a>
+                            .
+                        </Label>
                         <DialogTrigger disableButtonEnhancement>
                             <Button appearance="secondary">Close</Button>
                         </DialogTrigger>

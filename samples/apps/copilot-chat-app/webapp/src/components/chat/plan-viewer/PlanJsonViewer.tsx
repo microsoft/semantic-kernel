@@ -9,50 +9,34 @@ import {
     DialogSurface,
     DialogTitle,
     DialogTrigger,
-    Tooltip,
-    makeStyles,
-    shorthands,
+    Link,
 } from '@fluentui/react-components';
-import { Info16Regular } from '@fluentui/react-icons';
 import React from 'react';
-import { IChatMessage } from '../../../libs/models/ChatMessage';
+import { TokenUsages } from '../../../redux/features/app/AppState';
 import { TokenUsage } from '../../shared/TokenUsage';
 
-const useClasses = makeStyles({
-    infoButton: {
-        ...shorthands.padding(0),
-        ...shorthands.margin(0),
-        minWidth: 'auto',
-        marginLeft: 'auto', // align to right
-    },
-});
-
-interface IRawPlanViewerProps {
-    message: IChatMessage;
+interface IPlanJsonViewerProps {
+    goal: string;
+    tokenUsage?: TokenUsages;
+    json: string;
 }
 
-export const RawPlanViewer: React.FC<IRawPlanViewerProps> = ({ message }) => {
-    const classes = useClasses();
-
+export const PlanJsonViewer: React.FC<IPlanJsonViewerProps> = ({ goal, tokenUsage, json }) => {
     return (
         <Dialog>
             <DialogTrigger disableButtonEnhancement>
-                <Tooltip content={'Show plan in Json'} relationship="label">
-                    <Button className={classes.infoButton} icon={<Info16Regular />} appearance="transparent" />
-                </Tooltip>
+                <Link>{goal}</Link>
             </DialogTrigger>
             <DialogSurface>
                 <DialogBody>
                     <DialogTitle>Plan in Json format</DialogTitle>
                     <DialogContent>
                         <TokenUsage
-                            promptUsage={message.tokenUsage?.prompt ?? 0}
-                            dependencyUsage={message.tokenUsage?.dependency ?? 0}
+                            promptUsage={tokenUsage?.prompt ?? 0}
+                            dependencyUsage={tokenUsage?.dependency ?? 0}
                         />
                         <pre>
-                            <code>
-                                {JSON.stringify(JSON.parse(message.content), null, 2)}
-                            </code>
+                            <code>{JSON.stringify(JSON.parse(json), null, 2)}</code>
                         </pre>
                     </DialogContent>
                     <DialogActions>

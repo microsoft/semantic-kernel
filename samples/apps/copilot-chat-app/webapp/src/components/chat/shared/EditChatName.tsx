@@ -56,7 +56,8 @@ export const EditChatName: React.FC<IEditChatNameProps> = ({ name, chatId, exitE
                 chatId,
                 title,
                 chat.systemDescription,
-                await AuthHelper.getSKaaSAccessToken(instance, inProgress));
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
             dispatch(editConversationTitle({ id: chatId, newTitle: title }));
         }
         exitEdits();
