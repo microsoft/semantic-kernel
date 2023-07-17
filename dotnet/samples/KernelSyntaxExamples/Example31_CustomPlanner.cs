@@ -114,7 +114,7 @@ internal static class Example31_CustomPlanner
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSkill(new TimeSkill(), "time");
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        var bing = new WebSearchEngineSkill(new BingConnector(Env.Var("BING_API_KEY")));
+        var bing = new WebSearchEngineSkill(new BingConnector(TestConfiguration.Bing.ApiKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
         var search = kernel.ImportSkill(bing, "bing");
 
@@ -126,13 +126,13 @@ internal static class Example31_CustomPlanner
         return new KernelBuilder()
             .AddLogging(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+                TestConfiguration.AzureOpenAI.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .WithAzureTextEmbeddingGenerationService(
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
     }

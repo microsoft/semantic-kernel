@@ -61,9 +61,9 @@ after this event Caroline became his wife.""";
         var kernel = new KernelBuilder()
             .AddLogging(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_API_KEY"))
+                TestConfiguration.AzureOpenAI.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -126,9 +126,9 @@ which are not grounded in the original.
         var kernel = new KernelBuilder()
             .AddLogging(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+                TestConfiguration.AzureOpenAI.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -138,8 +138,8 @@ which are not grounded in the original.
 
         kernel.ImportSkill(new TextSkill());
 
-        var config = new SequentialPlannerConfig { };
-        var planner = new SequentialPlanner(kernel, config);
+        var plannerConfig = new SequentialPlannerConfig { };
+        var planner = new SequentialPlanner(kernel, plannerConfig);
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 

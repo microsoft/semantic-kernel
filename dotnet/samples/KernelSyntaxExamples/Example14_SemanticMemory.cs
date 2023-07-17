@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Memory.AzureSearch;
 using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
@@ -35,7 +36,8 @@ public static class Example14_SemanticMemory
 
         var kernelWithACS = Kernel.Builder
             .AddLogging(ConsoleLogger.Log)
-            .WithAzureCognitiveSearchMemory(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
+            .WithMemoryStorage(new AzureSearchMemoryStore(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey))
             .Build();
 
         await RunExampleAsync(kernelWithACS);
@@ -55,7 +57,7 @@ public static class Example14_SemanticMemory
 
         var kernelWithCustomDb = Kernel.Builder
             .AddLogging(ConsoleLogger.Log)
-            .WithOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextEmbeddingGenerationService("ada", "text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -113,6 +115,7 @@ public static class Example14_SemanticMemory
             Console.WriteLine($"Result {++i}:");
             Console.WriteLine("  URL:     : " + memory.Metadata.Id);
             Console.WriteLine("  Title    : " + memory.Metadata.Description);
+            Console.WriteLine("  Relevance: " + memory.Relevance);
             Console.WriteLine();
         }
 
@@ -136,11 +139,11 @@ public static class Example14_SemanticMemory
         {
             await kernel.Memory.SaveReferenceAsync(
                 collection: MemoryCollectionName,
-                description: entry.Value,
-                text: entry.Value,
+                externalSourceName: "GitHub",
                 externalId: entry.Key,
-                externalSourceName: "GitHub"
-            );
+                description: entry.Value,
+                text: entry.Value);
+
             Console.Write($" #{++i} saved.");
         }
 

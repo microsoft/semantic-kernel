@@ -55,19 +55,4 @@ public sealed class SKFunctionAttribute : Attribute
     public SKFunctionAttribute()
     {
     }
-
-    /// <summary>
-    /// Initializes the attribute with the specified description.
-    /// </summary>
-    /// <param name="description">Description of the function to be used by a planner to auto-discover functions.</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public SKFunctionAttribute(string description)
-    {
-        this.Description = description;
-    }
-
-    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public string Description { get; } = null!;
 }

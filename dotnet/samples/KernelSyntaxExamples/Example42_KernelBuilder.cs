@@ -28,8 +28,13 @@ using Polly.Retry;
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
 {
-    public static void Run()
+    public static Task RunAsync()
     {
+        string azureOpenAIKey = TestConfiguration.AzureOpenAI.ApiKey;
+        string azureOpenAIEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
+        string azureOpenAITextCompletionDeployment = TestConfiguration.AzureOpenAI.DeploymentName;
+        string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAIEmbeddings.DeploymentName;
+
 #pragma warning disable CA1852 // Seal internal types
         IKernel kernel1 = Kernel.Builder.Build();
 #pragma warning restore CA1852 // Seal internal types
@@ -65,21 +70,30 @@ public static class Example42_KernelBuilder
         // Manually setup all the dependencies used internally by the kernel
         var logger = NullLogger.Instance;
         var memoryStorage = new VolatileMemoryStore();
-        var textEmbeddingGenerator = new AzureTextEmbeddingGeneration("modelId", "https://...", "apiKey", logger: logger);
+        var textEmbeddingGenerator = new AzureTextEmbeddingGeneration(
+            modelId: azureOpenAIEmbeddingDeployment,
+            endpoint: azureOpenAIEndpoint,
+            apiKey: azureOpenAIKey,
+            logger: logger);
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var skills = new SkillCollection();
         var templateEngine = new PromptTemplateEngine(logger);
-        var config = new KernelConfig();
+        var kernelConfig = new KernelConfig();
 
         using var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), logger);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
-        ITextCompletion Factory() => new AzureTextCompletion("deploymentName", "https://...", "apiKey", httpClient, logger);
+        ITextCompletion Factory() => new AzureTextCompletion(
+            modelId: azureOpenAITextCompletionDeployment,
+            endpoint: azureOpenAIEndpoint,
+            apiKey: azureOpenAIKey,
+            httpClient,
+            logger);
         aiServices.SetService("foo", Factory);
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, config, logger);
+        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, kernelConfig, logger);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies
@@ -89,7 +103,10 @@ public static class Example42_KernelBuilder
         var kernel4 = Kernel.Builder
             .AddLogging(NullLogger.Instance)
             .WithMemory(memory)
-            .WithAzureTextCompletionService("deploymentName", "https://...", "apiKey")
+            .WithAzureTextCompletionService(
+                deploymentName: azureOpenAITextCompletionDeployment,
+                endpoint: azureOpenAIEndpoint,
+                apiKey: azureOpenAIKey)
             .Build();
 
         // Example: how to use a custom memory storage and custom embedding generator
@@ -102,15 +119,25 @@ public static class Example42_KernelBuilder
         var kernel6 = Kernel.Builder
             .AddLogging(NullLogger.Instance)
             .WithMemoryStorage(memoryStorage) // Custom memory storage
-            .WithAzureTextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey") // This will be used when using AI completions
-            .WithAzureTextEmbeddingGenerationService("myName2", "embeddingsDeploymentName", "https://...", "apiKey") // This will be used when indexing memory records
+            .WithAzureTextCompletionService(
+                deploymentName: azureOpenAITextCompletionDeployment,
+                endpoint: azureOpenAIEndpoint,
+                apiKey: azureOpenAIKey) // This will be used when using AI completions
+            .WithAzureTextEmbeddingGenerationService(
+                deploymentName: azureOpenAIEmbeddingDeployment,
+                endpoint: azureOpenAIEndpoint,
+                apiKey: azureOpenAIKey) // This will be used when indexing memory records
             .Build();
 
         // ==========================================================================================================
         // The AI services are defined with the builder
 
         var kernel7 = Kernel.Builder
-            .WithAzureTextCompletionService("myName1", "completionDeploymentName", "https://...", "apiKey", true)
+            .WithAzureTextCompletionService(
+                deploymentName: azureOpenAITextCompletionDeployment,
+                endpoint: azureOpenAIEndpoint,
+                apiKey: azureOpenAIKey,
+                setAsDefault: true)
             .Build();
 
         // ==========================================================================================================
@@ -136,6 +163,8 @@ public static class Example42_KernelBuilder
             .Build();
 
         var kernel10 = Kernel.Builder.WithRetryHandlerFactory(new RetryThreeTimesFactory()).Build();
+
+        return Task.CompletedTask;
     }
 
     // Example of a basic custom retry handler

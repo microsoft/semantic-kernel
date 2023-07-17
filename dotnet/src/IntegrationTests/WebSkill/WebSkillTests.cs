@@ -46,7 +46,7 @@ public sealed class WebSkillTests : IDisposable
         IKernel kernel = Kernel.Builder.AddLogging(this._logger).Build();
 
         using XunitLogger<BingConnector> connectorLogger = new(this._output);
-        using BingConnector connector = new(this._bingApiKey, connectorLogger);
+        BingConnector connector = new(this._bingApiKey, connectorLogger);
         Assert.NotEmpty(this._bingApiKey);
 
         WebSearchEngineSkill skill = new(connector);
@@ -68,7 +68,7 @@ public sealed class WebSkillTests : IDisposable
         // Arrange
         IKernel kernel = Kernel.Builder.AddLogging(this._logger).Build();
         using XunitLogger<WebFileDownloadSkill> skillLogger = new(this._output);
-        using var skill = new WebFileDownloadSkill(skillLogger);
+        var skill = new WebFileDownloadSkill(skillLogger);
         var download = kernel.ImportSkill(skill, "WebFileDownload");
         string fileWhereToSaveWebPage = Path.GetTempFileName();
         var contextVariables = new ContextVariables("https://www.microsoft.com");

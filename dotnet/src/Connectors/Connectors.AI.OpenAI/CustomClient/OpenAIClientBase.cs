@@ -145,9 +145,9 @@ public abstract class OpenAIClientBase
 
     private protected async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod method, HttpContent? content, CancellationToken cancellationToken = default)
     {
-        HttpResponseMessage? response = null;
         try
         {
+            HttpResponseMessage? response = null;
             using (var request = new HttpRequestMessage(method, url))
             {
                 this.AddRequestHeaders(request);

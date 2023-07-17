@@ -181,9 +181,9 @@ Jane: Goodbye!
         IKernel kernel = Kernel.Builder
             .AddLogging(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+                TestConfiguration.AzureOpenAI.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
         .Build();
 
         return kernel;

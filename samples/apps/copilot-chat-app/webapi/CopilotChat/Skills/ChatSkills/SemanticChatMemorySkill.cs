@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.CopilotChat.Options;
 
@@ -33,11 +34,12 @@ public class SemanticChatMemorySkill
     /// <summary>
     /// Query relevant memories based on the query.
     /// </summary>
-    /// <param name="query">Query to match.</param>
     /// <param name="context">The SKContext</param>
+    /// <param name="query">Query to match.</param>
     /// <returns>A string containing the relevant memories.</returns>
-    [SKFunction, Description("Query chat memories")]
+    [SKFunction("Query chat memories")]
     public async Task<string> QueryMemoriesAsync(
+        SKContext context,
         [Description("Query to match.")] string query,
         [Description("Chat ID to query history from")] string chatId,
         [Description("Maximum number of tokens")] int tokenLimit,
@@ -47,10 +49,10 @@ public class SemanticChatMemorySkill
 
         // Search for relevant memories.
         List<MemoryQueryResult> relevantMemories = new();
-        foreach (var memoryName in this._promptOptions.MemoryMap.Keys)
+        foreach (var memoryName in this._promptOptions.MemoryTypes)
         {
             var results = textMemory.SearchAsync(
-                SemanticChatMemoryExtractor.MemoryCollectionName(chatId, memoryName),
+                SemanticChatMemoryExtractor.MemoryCollectionType(chatId, memoryName),
                 query,
                 limit: 100,
                 minRelevanceScore: this._promptOptions.SemanticMemoryMinRelevance);
