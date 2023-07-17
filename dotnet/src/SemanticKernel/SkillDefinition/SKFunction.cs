@@ -24,7 +24,6 @@ using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
-#pragma warning disable CS0618 // Temporarily suppressing Obsoletion warnings until obsolete attributes for compatibility are removed
 #pragma warning disable format
 
 /// <summary>
@@ -393,7 +392,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         // We don't apply any heuristics to the value supplied by SKName so that it can always be used
         // as a definitive override.
         string? functionName = method.GetCustomAttribute<SKNameAttribute>(inherit: true)?.Name?.Trim();
-        functionName ??= method.GetCustomAttribute<SKFunctionNameAttribute>(inherit: true)?.Name?.Trim(); // TODO: SKFunctionName is deprecated. Remove.
         if (string.IsNullOrEmpty(functionName))
         {
             functionName = SanitizeMetadataName(method.Name!);
@@ -410,7 +408,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKFunctionAttribute? functionAttribute = method.GetCustomAttribute<SKFunctionAttribute>(inherit: true);
 
         string? description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
-        description ??= functionAttribute?.Description; // TODO: SKFunctionAttribute.Description is deprecated. Remove.
 
         var result = new MethodDetails
         {
@@ -493,9 +490,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         stringParameterViews.AddRange(method
             .GetCustomAttributes<SKParameterAttribute>(inherit: true)
             .Select(x => new ParameterView(x.Name ?? string.Empty, x.Description ?? string.Empty, x.DefaultValue ?? string.Empty)));
-        stringParameterViews.AddRange(method
-            .GetCustomAttributes<SKFunctionContextParameterAttribute>(inherit: true)
-            .Select(x => x.ToParameterView())); // TODO: SKFunctionContextParameterAttribute is deprecated. Remove.
 
         // Check for param names conflict
         Verify.ParametersUniqueness(stringParameterViews);
@@ -557,14 +551,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
             bool nameIsInput = name.Equals("input", StringComparison.OrdinalIgnoreCase);
             ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s context attribute defines an invalid name.");
             ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
-
-            // TODO: Remove this if block for SKFunctionInputAttribute. It's deprecated.
-            if (!sawFirstParameter &&
-                method.GetCustomAttribute<SKFunctionInputAttribute>(inherit: true) is SKFunctionInputAttribute inputAttr)
-            {
-                sawFirstParameter = true;
-                return (static (SKContext ctx) => ctx.Variables.Input, inputAttr.ToParameterView());
-            }
 
             // Use either the parameter's optional default value as contained in parameter metadata (e.g. `string s = "hello"`)
             // or an override from an applied SKParameter attribute. Note that a default value may be null.
