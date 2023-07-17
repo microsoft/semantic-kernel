@@ -113,7 +113,7 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(meterListener);
 
-        meterListener.InstrumentPublished = (instrument, listener) =>
+        meterListener.InstrumentPublished += (instrument, listener) =>
         {
             if (instrument.Meter.Name.StartsWith(typeof(Kernel).Namespace, StringComparison.Ordinal))
             {
@@ -135,7 +135,7 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(activityListener);
 
-        activityListener.ShouldListenTo =
+        activityListener.ShouldListenTo +=
             activitySource => activitySource.Name.StartsWith(typeof(Kernel).Namespace, StringComparison.Ordinal);
 
         this._activityListener = activityListener;
