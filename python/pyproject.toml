@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.3.2.dev"
+version = "0.3.3.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -13,6 +13,9 @@ openai = "^0.27.0"
 aiofiles = "^23.1.0"
 python-dotenv = "1.0.0"
 regex = "^2023.6.3"
+azure-search-documents = {version = "11.4.0b6", allow-prereleases = true}
+azure-core = "^1.28.0"
+azure-identity = "^1.13.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "3.3.3"
@@ -28,8 +31,7 @@ sentence-transformers = "^2.2.2"
 torch = "2.0.0"
 
 [tool.poetry.group.chromadb.dependencies]
-chromadb = "^0.3.23"
-
+chromadb = "^0.3.29"
 
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = "^3.18.0"
@@ -40,6 +42,7 @@ pinecone-client = "^2.2.2"
 [tool.poetry.group.postgres.dependencies]
 psycopg-pool = "^3.1.7"
 psycopg = "^3.1.9"
+psycopg-binary = "^3.1.9"
 
 [tool.isort]
 profile = "black"

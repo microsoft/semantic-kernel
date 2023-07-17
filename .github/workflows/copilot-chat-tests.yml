@@ -2,7 +2,7 @@ name: Copilot Chat Tests
 on:
   workflow_dispatch:
   push:
-    branches: ["main", "feature*"]
+    branches: ["main"]
     paths:
       - "samples/apps/copilot-chat-app/**"
 
@@ -69,9 +69,9 @@ jobs:
           REACT_APP_AAD_AUTHORITY: https://login.microsoftonline.com/common
 
           REACT_APP_TEST_USER_ACCOUNT1: ${{ secrets.COPILOT_CHAT_TEST_USER_ACCOUNT1 }}
-          REACT_APP_TEST_USER_ACCOUNT1_INITIALS: ${{ secrets.COPILOT_CHAT_TEST_USER_ACCOUNT1_INITIALS }}
+          REACT_APP_TEST_USER_PASSWORD1: ${{ secrets.COPILOT_CHAT_TEST_USER_PASSWORD1 }}
           REACT_APP_TEST_USER_ACCOUNT2: ${{ secrets.COPILOT_CHAT_TEST_USER_ACCOUNT2 }}
-          REACT_APP_TEST_USER_PASSWORD: ${{ secrets.COPILOT_CHAT_TEST_USER_PASSWORD }}
+          REACT_APP_TEST_USER_PASSWORD2: ${{ secrets.COPILOT_CHAT_TEST_USER_PASSWORD2 }}
 
           REACT_APP_TEST_JIRA_EMAIL: ${{ secrets.COPILOT_CHAT_TEST_JIRA_EMAIL }}
           REACT_APP_TEST_JIRA_ACCESS_TOKEN: ${{ secrets.COPILOT_CHAT_TEST_JIRA_ACCESS_TOKEN }}

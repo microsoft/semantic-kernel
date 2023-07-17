@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import datetime
 
 from semantic_kernel.skill_definition import sk_function

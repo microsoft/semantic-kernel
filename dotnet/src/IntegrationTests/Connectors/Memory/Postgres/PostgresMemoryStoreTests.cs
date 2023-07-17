@@ -662,7 +662,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
             {
                 await command.ExecuteNonQueryAsync();
             }
-        };
+        }
     }
 
     private PostgresMemoryStore CreateMemoryStore()
