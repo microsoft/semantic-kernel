@@ -26,6 +26,21 @@ internal static class Utilities
             context.CancellationToken);
 
     /// <summary>
+    /// Creates a new context with new empty variables.
+    /// This is useful when you want to modify the variables in a context without
+    /// affecting the original context.
+    /// </summary>
+    /// <param name="context">The context to copy.</param>
+    /// <returns>A new context with a clone of the variables.</returns>
+    internal static SKContext CopyContextWithEmptyVariables(SKContext context)
+    => new(
+        new ContextVariables(),
+        context.Memory,
+        context.Skills,
+        context.Log,
+        context.CancellationToken);
+
+    /// <summary>
     /// Calculate the number of tokens in a string.
     /// </summary>
     internal static int TokenCount(string text) => GPT3Tokenizer.Encode(text).Count;
