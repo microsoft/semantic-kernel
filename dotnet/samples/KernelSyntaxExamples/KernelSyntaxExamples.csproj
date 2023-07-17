@@ -28,7 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureSearch\Connectors.Memory.AzureSearch.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
@@ -37,6 +37,7 @@
     <ProjectReference Include="..\..\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
+    <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Skills\Skills.Core\Skills.Core.csproj" />
     <ProjectReference Include="..\..\src\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
     <ProjectReference Include="..\..\src\Skills\Skills.Grpc\Skills.Grpc.csproj" />
