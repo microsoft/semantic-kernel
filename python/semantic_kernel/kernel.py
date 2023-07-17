@@ -165,7 +165,8 @@ class Kernel:
                         new_vars=context._variables, overwrite=False
                     )
 
-            # if the user did not pass in a context, prioritize an input string, and merge that with input context variables
+            # if the user did not pass in a context, prioritize an input string,
+            # and merge that with input context variables
             else:
                 if input_str is not None and input_vars is None:
                     variables = ContextVariables(input_str)
@@ -257,7 +258,8 @@ class Kernel:
                     new_vars=context._variables, overwrite=False
                 )
 
-        # if the user did not pass in a context, prioritize an input string, and merge that with input context variables
+        # if the user did not pass in a context, prioritize an input string,
+        # and merge that with input context variables
         else:
             if input_str is not None and input_vars is None:
                 variables = ContextVariables(input_str)
