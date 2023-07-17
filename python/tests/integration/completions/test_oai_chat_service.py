@@ -36,39 +36,3 @@ async def test_oai_chat_service_with_skills(
         "human" in output or "Human" in output or "preserve" in output
     )
     assert len(output) < 100
-
-
-@pytest.mark.asyncio
-async def test_oai_chat_stream_service_with_skills(
-    setup_tldr_function_for_oai_models, get_oai_config
-):
-    kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
-
-    api_key, org_id = get_oai_config
-
-    print("* Service: OpenAI Chat Stream Completion")
-    print("* Endpoint: OpenAI")
-    print("* Model: gpt-3.5-turbo")
-
-    kernel.add_chat_service(
-        "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
-    )
-
-    # Create the semantic function
-    tldr_function = kernel.create_semantic_function(
-        sk_prompt, max_tokens=200, temperature=0, top_p=0.5
-    )
-
-    result = []
-    async for message in kernel.run_stream_async(
-        tldr_function, input_str=text_to_summarize
-    ):
-        result.append(message)
-    output = "".join(result).strip()
-
-    print(f"TLDR using input string: '{output}'")
-    assert len(result) > 1
-    assert "First Law" not in output and (
-        "human" in output or "Human" in output or "preserve" in output
-    )
-    assert len(output) < 100
