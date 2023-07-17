@@ -251,9 +251,9 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Arrange
         var collectionName = this.GetRandomCollectionName();
 
-        var expectedRecord1 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 10f, 10f, 10f }));
-        var expectedRecord2 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 5f, 5f, 5f }));
-        var expectedRecord3 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 1f, 1f, 1f }));
+        var expectedRecord1 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 10f, 10f, 10f }));
+        var expectedRecord2 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 5f, 5f, 5f }));
+        var expectedRecord3 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 1f, 1f, 1f }));
 
         var searchEmbedding = new Embedding<float>(new[] { 2f, 2f, 2f });
 
@@ -282,9 +282,9 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         // Arrange
         var collectionName = this.GetRandomCollectionName();
 
-        var expectedRecord1 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 10f, 10f, 10f }));
-        var expectedRecord2 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 5f, 5f, 5f }));
-        var expectedRecord3 = this.GetRandomMemoryRecord(new Embedding<float>(new[] { 1f, 1f, 1f }));
+        var expectedRecord1 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 10f, 10f, 10f }));
+        var expectedRecord2 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 5f, 5f, 5f }));
+        var expectedRecord3 = this.GetRandomMemoryRecord(embedding: new Embedding<float>(new[] { 1f, 1f, 1f }));
 
         var searchEmbedding = new Embedding<float>(new[] { 2f, 2f, 2f });
 
@@ -327,7 +327,56 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var nearestMatch = await this._chromaMemoryStore.GetNearestMatchAsync(collectionName, searchEmbedding, withEmbedding: true);
 
         // Assert
-        Assert.Null(nearestMatch.Value.Item1);
+        Assert.Null(nearestMatch?.Item1);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertSameMemoryRecordMultipleTimesAsync()
+    {
+        // Arrange
+        var collectionName = this.GetRandomCollectionName();
+        var expectedRecord = this.GetRandomMemoryRecord();
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+
+        // Act
+        await this._chromaMemoryStore.UpsertAsync(collectionName, expectedRecord);
+        await this._chromaMemoryStore.UpsertAsync(collectionName, expectedRecord);
+        await this._chromaMemoryStore.UpsertAsync(collectionName, expectedRecord);
+
+        // Assert
+        var actualRecord = await this._chromaMemoryStore.GetAsync(collectionName, expectedRecord.Key, true);
+
+        Assert.NotNull(actualRecord);
+
+        this.AssertMemoryRecordEqual(expectedRecord, actualRecord);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertDifferentMemoryRecordsWithSameKeyMultipleTimesAsync()
+    {
+        // Arrange
+        var collectionName = this.GetRandomCollectionName();
+        var expectedRecord1 = this.GetRandomMemoryRecord();
+        var key = expectedRecord1.Key;
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+        await this._chromaMemoryStore.UpsertAsync(collectionName, expectedRecord1);
+
+        var actualRecord1 = await this._chromaMemoryStore.GetAsync(collectionName, key, withEmbedding: true);
+
+        Assert.NotNull(actualRecord1);
+        this.AssertMemoryRecordEqual(expectedRecord1, actualRecord1);
+
+        // Act
+        var expectedRecord2 = this.GetRandomMemoryRecord(key: key);
+        await this._chromaMemoryStore.UpsertAsync(collectionName, expectedRecord2);
+
+        // Assert
+        var actualRecord2 = await this._chromaMemoryStore.GetAsync(collectionName, key, withEmbedding: true);
+
+        Assert.NotNull(actualRecord2);
+        this.AssertMemoryRecordEqual(expectedRecord2, actualRecord2);
     }
 
     public void Dispose()
@@ -366,18 +415,18 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         return "sk-test-" + Guid.NewGuid();
     }
 
-    private MemoryRecord GetRandomMemoryRecord(Embedding<float>? embedding = null)
+    private MemoryRecord GetRandomMemoryRecord(string? key = null, Embedding<float>? embedding = null)
     {
-        var id = Guid.NewGuid().ToString();
-        var memoryEmbedding = embedding ?? new Embedding<float>(new[] { 1f, 3f, 5f });
+        var recordKey = key ?? Guid.NewGuid().ToString();
+        var recordEmbedding = embedding ?? new Embedding<float>(new[] { 1f, 3f, 5f });
 
         return MemoryRecord.LocalRecord(
-            id: id,
+            id: recordKey,
             text: "text-" + Guid.NewGuid().ToString(),
             description: "description-" + Guid.NewGuid().ToString(),
-            embedding: memoryEmbedding,
+            embedding: recordEmbedding,
             additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
-            key: id);
+            key: recordKey);
     }
 
     #endregion

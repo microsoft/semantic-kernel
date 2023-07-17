@@ -90,9 +90,6 @@ cat $SWA_CONFIG_FILE_PATH
 
 pushd "$SCRIPT_ROOT/../webapp"
 
-ORIGIN="https://$WEB_APP_URL"
-echo "Ensuring CORS origin '$ORIGIN' to webapi '$WEB_API_NAME'..."
-
 echo "Installing yarn dependencies..."
 yarn install
 if [ $? -ne 0 ]; then
@@ -114,21 +111,32 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Updating AAD App registration..."
-az ad app update --id $ApplicationClientId --web-redirect-uris "https://$webappUrl"
-if [ $? -ne 0 ]; then
-    echo "update the AAD App registration failed"
-    exit 1
-fi
-
-
-
 ORIGIN="https://$WEB_APP_URL"
 echo "Ensuring CORS origin '$ORIGIN' to webapi '$WEB_API_NAME'..."
 CORS_RESULT=$(az webapp cors show --name $WEB_API_NAME --resource-group $RESOURCE_GROUP --subscription $SUBSCRIPTION | jq '.allowedOrigins | index("$ORIGIN")')
 if [[ "$CORS_RESULT" == "null" ]]; then 
     echo "Adding CORS origin '$ORIGIN' to webapi '$WEB_API_NAME'..."
-    az webapp cors add --name $WEB_API_NAME --resource-group $RESOURCE_GROUP --subscription $SUBSCRIPTION --allowed-origins $origin
+    az webapp cors add --name $WEB_API_NAME --resource-group $RESOURCE_GROUP --subscription $SUBSCRIPTION --allowed-origins $ORIGIN
+fi
+
+echo "Ensuring '$ORIGIN' is included in AAD app registration's redirect URIs..."
+eval OBJECT_ID=$(az ad app show --id $APPLICATION_ID | jq -r '.id')
+
+REDIRECT_URIS=$(az rest --method GET --uri "https://graph.microsoft.com/v1.0/applications/$OBJECT_ID" --headers 'Content-Type=application/json' | jq -r '.spa.redirectUris')
+if [[ ! "$REDIRECT_URIS" =~ "$ORIGIN" ]]; then
+    BODY="{spa:{redirectUris:['"
+    eval BODY+=$(echo $REDIRECT_URIS | jq $'join("\',\'")')
+    BODY+="','$ORIGIN']}}"
+
+    az rest \
+    --method PATCH \
+    --uri "https://graph.microsoft.com/v1.0/applications/$OBJECT_ID" \
+    --headers 'Content-Type=application/json' \
+    --body $BODY
+fi
+if [ $? -ne 0 ]; then
+    echo "Failed to update app registration"
+    exit 1
 fi
 
 popd

@@ -20,12 +20,10 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
-#pragma warning disable CS0618 // Temporarily suppressing Obsoletion warnings until obsolete attributes for compatibility are removed
 #pragma warning disable format
 
 /// <summary>
@@ -49,12 +47,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public bool IsSemantic { get; }
 
     /// <inheritdoc/>
-    public bool IsSensitive { get; }
-
-    /// <inheritdoc/>
-    public ITrustService TrustServiceInstance => this._trustService;
-
-    /// <inheritdoc/>
     public CompleteRequestSettings RequestSettings => this._aiRequestSettings;
 
     /// <summary>
@@ -68,14 +60,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="method">Signature of the method to invoke</param>
     /// <param name="target">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
-    /// <param name="trustService">Service used for trust checks, if null the TrustService.DefaultTrusted implementation will be used</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeMethod(
         MethodInfo method,
         object? target = null,
         string? skillName = null,
-        ITrustService? trustService = null,
         ILogger? log = null)
     {
         if (!method.IsStatic && target is null)
@@ -97,8 +87,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
             functionName: methodDetails.Name,
             isSemantic: false,
             description: methodDetails.Description,
-            isSensitive: methodDetails.IsSensitive,
-            trustService: trustService,
             log: log);
     }
 
@@ -110,8 +98,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
-    /// <param name="isSensitive">Whether the function is set to be sensitive (default false)</param>
-    /// <param name="trustService">Service used for trust checks, if null the TrustService.DefaultTrusted implementation will be used</param>
     /// <param name="log">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
@@ -120,8 +106,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
-        bool isSensitive = false,
-        ITrustService? trustService = null,
         ILogger? log = null)
     {
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, log);
@@ -141,9 +125,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
             skillName: skillName!,
             functionName: functionName,
             isSemantic: false,
-            // For native functions, do not read this from the methodDetails
-            isSensitive: isSensitive,
-            trustService: trustService,
             log: log);
     }
 
@@ -153,14 +134,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="functionConfig">Semantic function configuration.</param>
-    /// <param name="trustService">Service used for trust checks, if null the TrustService.DefaultTrusted implementation will be used</param>
     /// <param name="log">Optional logger for the function.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
         string skillName,
         string functionName,
         SemanticFunctionConfig functionConfig,
-        ITrustService? trustService = null,
         ILogger? log = null)
     {
         Verify.NotNull(functionConfig);
@@ -183,8 +162,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
             skillName: skillName,
             functionName: functionName,
             isSemantic: true,
-            isSensitive: functionConfig.PromptTemplateConfig.IsSensitive,
-            trustService: trustService,
             log: log
         );
 
@@ -199,22 +176,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
             try
             {
                 string renderedPrompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
-
-                // Validates the rendered prompt before executing the completion
-                // The prompt template might have function calls that could result in the context becoming untrusted,
-                // this way this hook should check again if the context became untrusted
-                TrustAwareString prompt = await func.TrustServiceInstance.ValidatePromptAsync(func, context, renderedPrompt).ConfigureAwait(false);
-                var completionResults = await client.GetCompletionsAsync(prompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
+                var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
                 string completion = await GetCompletionsResultContentAsync(completionResults, context.CancellationToken).ConfigureAwait(false);
 
                 // Update the result with the completion
-                context.Variables.UpdateKeepingTrustState(completion);
+                context.Variables.Update(completion);
 
-                // Flag the result as untrusted if the prompt has been considered untrusted
-                if (!prompt.IsTrusted)
-                {
-                    context.UntrustResult();
-                }
                 context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
             }
             catch (AIException ex)
@@ -260,10 +227,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
         // If the function is invoked manually, the user might have left out the skill collection
         context.Skills ??= this._skillCollection;
 
-        var validateContextResult = await this.TrustServiceInstance.ValidateContextAsync(this, context).ConfigureAwait(false);
-
         if (this.IsSemantic)
         {
+            this.AddDefaultValues(context.Variables);
+
             var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context).ConfigureAwait(false);
             context.Variables.Update(resultContext.Variables);
         }
@@ -279,12 +246,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 this._log.LogError(e, Message, this._function.Method.Name, e.Message);
                 context.Fail(e.Message, e);
             }
-        }
-
-        // If the context has been considered untrusted, make sure the output of the function is also untrusted
-        if (!validateContextResult)
-        {
-            context.UntrustResult();
         }
 
         return context;
@@ -365,7 +326,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
-    private readonly ITrustService _trustService;
 
     private struct MethodDetails
     {
@@ -373,7 +333,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public bool IsSensitive { get; set; }
     }
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
@@ -389,8 +348,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         string functionName,
         string description,
         bool isSemantic = false,
-        bool isSensitive = false,
-        ITrustService? trustService = null,
         ILogger? log = null)
     {
         Verify.NotNull(delegateFunction);
@@ -400,14 +357,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         this._log = log ?? NullLogger.Instance;
 
-        // If no trust service is specified, use the default implementation
-        this._trustService = trustService ?? TrustService.DefaultTrusted;
-
         this._function = delegateFunction;
         this.Parameters = parameters;
 
         this.IsSemantic = isSemantic;
-        this.IsSensitive = isSensitive;
         this.Name = functionName;
         this.SkillName = skillName;
         this.Description = description;
@@ -439,7 +392,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         // We don't apply any heuristics to the value supplied by SKName so that it can always be used
         // as a definitive override.
         string? functionName = method.GetCustomAttribute<SKNameAttribute>(inherit: true)?.Name?.Trim();
-        functionName ??= method.GetCustomAttribute<SKFunctionNameAttribute>(inherit: true)?.Name?.Trim(); // TODO: SKFunctionName is deprecated. Remove.
         if (string.IsNullOrEmpty(functionName))
         {
             functionName = SanitizeMetadataName(method.Name!);
@@ -456,13 +408,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         SKFunctionAttribute? functionAttribute = method.GetCustomAttribute<SKFunctionAttribute>(inherit: true);
 
         string? description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
-        description ??= functionAttribute?.Description; // TODO: SKFunctionAttribute.Description is deprecated. Remove.
 
         var result = new MethodDetails
         {
             Name = functionName!,
             Description = description ?? string.Empty,
-            IsSensitive = functionAttribute?.IsSensitive ?? false,
         };
 
         (result.Function, result.Parameters) = GetDelegateInfo(target, method);
@@ -540,9 +490,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         stringParameterViews.AddRange(method
             .GetCustomAttributes<SKParameterAttribute>(inherit: true)
             .Select(x => new ParameterView(x.Name ?? string.Empty, x.Description ?? string.Empty, x.DefaultValue ?? string.Empty)));
-        stringParameterViews.AddRange(method
-            .GetCustomAttributes<SKFunctionContextParameterAttribute>(inherit: true)
-            .Select(x => x.ToParameterView())); // TODO: SKFunctionContextParameterAttribute is deprecated. Remove.
 
         // Check for param names conflict
         Verify.ParametersUniqueness(stringParameterViews);
@@ -605,14 +552,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
             ThrowForInvalidSignatureIf(name.Length == 0, method, $"Parameter {parameter.Name}'s context attribute defines an invalid name.");
             ThrowForInvalidSignatureIf(sawFirstParameter && nameIsInput, method, "Only the first parameter may be named 'input'");
 
-            // TODO: Remove this if block for SKFunctionInputAttribute. It's deprecated.
-            if (!sawFirstParameter &&
-                method.GetCustomAttribute<SKFunctionInputAttribute>(inherit: true) is SKFunctionInputAttribute inputAttr)
-            {
-                sawFirstParameter = true;
-                return (static (SKContext ctx) => ctx.Variables.Input.Value, inputAttr.ToParameterView());
-            }
-
             // Use either the parameter's optional default value as contained in parameter metadata (e.g. `string s = "hello"`)
             // or an override from an applied SKParameter attribute. Note that a default value may be null.
             DefaultValueAttribute defaultValueAttribute = parameter.GetCustomAttribute<DefaultValueAttribute>(inherit: true);
@@ -653,7 +592,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             Func<SKContext, object?> parameterFunc = (SKContext ctx) =>
             {
                 // 1. Use the value of the variable if it exists.
-                if (ctx.Variables.Get(name, out string value))
+                if (ctx.Variables.TryGetValue(name, out string? value))
                 {
                     return Process(value);
                 }
@@ -667,7 +606,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 // 3. Otherwise, use "input" if this is the first (or only) parameter.
                 if (fallBackToInput)
                 {
-                    return Process(ctx.Variables.Input.Value);
+                    return Process(ctx.Variables.Input);
                 }
 
                 // 4. Otherwise, fail.
@@ -761,7 +700,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             return static (result, context) =>
             {
-                context.Variables.UpdateKeepingTrustState((string?)result);
+                context.Variables.Update((string?)result);
                 return Task.FromResult(context);
             };
         }
@@ -770,7 +709,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             return async static (result, context) =>
             {
-                context.Variables.UpdateKeepingTrustState(await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
+                context.Variables.Update(await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
                 return context;
             };
         }
@@ -779,7 +718,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             return async static (result, context) =>
             {
-                context.Variables.UpdateKeepingTrustState(await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
+                context.Variables.Update(await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
                 return context;
             };
         }
@@ -795,7 +734,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
             return (result, context) =>
             {
-                context.Variables.UpdateKeepingTrustState(formatter(result, context.Culture));
+                context.Variables.Update(formatter(result, context.Culture));
                 return Task.FromResult(context);
             };
         }
@@ -811,7 +750,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             return async (result, context) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                context.Variables.UpdateKeepingTrustState(taskResultFormatter(taskResultGetter.Invoke(result!, Array.Empty<object>()), context.Culture));
+                context.Variables.Update(taskResultFormatter(taskResultGetter.Invoke(result!, Array.Empty<object>()), context.Culture));
                 return context;
             };
         }
@@ -920,7 +859,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
                     // If that fails, try with the invariant culture and allow any exception to propagate.
                     try
                     {
-                        return converter.ConvertFromString(context: null, cultureInfo ?? CultureInfo.CurrentCulture, input);
+                        return converter.ConvertFromString(context: null, cultureInfo, input);
                     }
                     catch (Exception e) when (!e.IsCriticalException() && cultureInfo != CultureInfo.InvariantCulture)
                     {
@@ -972,7 +911,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
                         return null!;
                     }
 
-                    return converter.ConvertToString(context: null, cultureInfo ?? CultureInfo.InvariantCulture, input);
+                    return converter.ConvertToString(context: null, cultureInfo, input);
                 };
             }
 
@@ -1032,6 +971,18 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
+
+    /// <summary>Add default values to the context variables if the variable is not defined</summary>
+    private void AddDefaultValues(ContextVariables variables)
+    {
+        foreach (var parameter in this.Parameters)
+        {
+            if (!variables.ContainsKey(parameter.Name) && parameter.DefaultValue != null)
+            {
+                variables[parameter.Name] = parameter.DefaultValue;
+            }
+        }
+    }
 
     #endregion
 }

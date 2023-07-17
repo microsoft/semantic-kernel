@@ -9,8 +9,9 @@ while allowing user interfaces to be developed using frontend frameworks such as
 Before you get started, make sure you have the following requirements in place:
 
 1. [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) for building and deploying .NET 6 projects.
-2. Update the properties in `./appsettings.json` to configure your Azure OpenAI resource or OpenAI account.
-3. Generate and trust a localhost developer certificate.
+2. **(Optional)** [Visual Studio Code](http://aka.ms/vscode) or [Visual Studio](http://aka.ms/vsdownload).
+3. Update the properties in `./appsettings.json` to configure your Azure OpenAI resource or OpenAI account.
+4. Generate and trust a localhost developer certificate.
    - For Windows and Mac run
      ```bash
      dotnet dev-certs https --trust
@@ -25,7 +26,9 @@ Before you get started, make sure you have the following requirements in place:
 
    > To clean your system of the developer certificate, run `dotnet run dev-certs https --clean`
 
-4. **(Optional)** [Visual Studio Code](http://aka.ms/vscode) or [Visual Studio](http://aka.ms/vsdownload).
+5. **(Optional)** To enable support for uploading image file formats such as png, jpg and tiff, we have included the [Tesseract](https://www.nuget.org/packages/Tesseract) nuget package.  
+   - You will need to obtain one or more [tessdata language data files](https://github.com/tesseract-ocr/tessdata) such as `eng.traineddata` and add them to your `./data` directory or the location specified in the `Tesseract.FilePath` location in `./appsettings.json`.  
+   - Set the `Copy to Output Directory` value to `Copy if newer`.
 
 # Start the WebApi Service
 

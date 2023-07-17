@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from semantic_kernel.skill_definition import sk_function
 
 
@@ -6,7 +8,7 @@ class TextSkill:
     TextSkill provides a set of functions to manipulate strings.
 
     Usage:
-        kernel.import_skill("text", TextSkill());
+        kernel.import_skill(TextSkill(), skill_name="text")
 
     Examples:
         SKContext["input"] = "  hello world  "

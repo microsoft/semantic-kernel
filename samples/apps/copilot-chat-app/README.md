@@ -57,6 +57,7 @@ First, let’s set up and verify the back-end API server is running.
        - For `Completion` and `Planner`, CopilotChat is optimized for Chat completion models, such as gpt-3.5-turbo and gpt-4.
          > **Important:** gpt-3.5-turbo is normally labelled as "`gpt-35-turbo`" (no period) in Azure OpenAI and "`gpt-3.5-turbo`" (with a period) in OpenAI.
        - For `Embedding`, `text-embedding-ada-002` is sufficient and cost-effective for generating embeddings.
+       > **Important:** If you are using Azure OpenAI, please use [deployment names](https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource). If you are using OpenAI, please use [model names](https://platform.openai.com/docs/models).
    
    - **(Optional)** To enable speech-to-text for chat input, update the `AzureSpeech` configuration section:
      > If you have not already, you will need to [create an Azure Speech resource](https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices)
@@ -106,7 +107,7 @@ First, let’s set up and verify the back-end API server is running.
       REACT_APP_SK_API_KEY={Your API Key, should be the same as Authorization:ApiKey from appsettings.json}
       ```
 
-   3. To build and run the front-end application
+   3. To build and run the front-end application, open a terminal and navigate to `samples/apps/copilot-chat-app/webapp` if not already, then run:
       ```bash
       yarn install
       yarn start

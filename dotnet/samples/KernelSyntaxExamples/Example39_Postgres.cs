@@ -5,22 +5,33 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Microsoft.SemanticKernel.Memory;
+using Npgsql;
+using Pgvector.Npgsql;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example39_Postgres
 {
-    private const string MemoryCollectionName = "postgres-test";
+    private const string MemoryCollectionName = "postgres_test";
 
     public static async Task RunAsync()
     {
-        string connectionString = Env.Var("POSTGRES_CONNECTIONSTRING");
-        using PostgresMemoryStore memoryStore = await PostgresMemoryStore.ConnectAsync(connectionString, vectorSize: 1536);
+        NpgsqlDataSourceBuilder dataSourceBuilder = new(TestConfiguration.Postgres.ConnectionString);
+        dataSourceBuilder.UseVector();
+        await using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
+
+        PostgresMemoryStore memoryStore = new(dataSource, vectorSize: 1536, schema: "public");
+
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService(
+                modelId: TestConfiguration.OpenAI.ModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAITextEmbeddingGenerationService(
+                modelId: TestConfiguration.OpenAI.EmbeddingModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(memoryStore)
+            //.WithPostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public") // This method offers an alternative approach to registering Postgres memory store.
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");

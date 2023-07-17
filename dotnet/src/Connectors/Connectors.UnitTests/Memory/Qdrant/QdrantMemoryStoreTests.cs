@@ -37,16 +37,6 @@ public class QdrantMemoryStoreTests
     private readonly Mock<ILogger<PineconeMemoryStore>> _mockLogger = new();
 
     [Fact]
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
-    public void ConnectionCanBeInitialized()
-    {
-        // Arrange
-        var httpMock = new Mock<HttpClient>();
-        var qdrantClient = new QdrantVectorDbClient("http://localhost", 3, 1000, httpMock.Object);
-        var db = new QdrantMemoryStore(qdrantClient);
-    }
-
-    [Fact]
     public async Task ItCreatesNewCollectionAsync()
     {
         // Arrange

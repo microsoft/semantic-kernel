@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with Text Completion as streaming
@@ -23,7 +22,7 @@ public static class Example33_StreamingChat
     {
         Console.WriteLine("======== Open AI - ChatGPT Streaming ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", TestConfiguration.OpenAI.ApiKey);
 
         await StartStreamingChatAsync(openAIChatCompletion);
     }
@@ -33,9 +32,9 @@ public static class Example33_StreamingChat
         Console.WriteLine("======== Azure Open AI - ChatGPT Streaming ========");
 
         AzureChatCompletion azureChatCompletion = new(
-           Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-           Env.Var("AZURE_OPENAI_ENDPOINT"),
-           Env.Var("AZURE_OPENAI_KEY"));
+           TestConfiguration.AzureOpenAI.ChatDeploymentName,
+           TestConfiguration.AzureOpenAI.Endpoint,
+           TestConfiguration.AzureOpenAI.ApiKey);
 
         await StartStreamingChatAsync(azureChatCompletion);
     }

@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 export const useFile = () => {
-    function loadFile<T>(file: File, loadCallBack: (data: T) => Promise<void>): Promise<T> {
-        return new Promise((resolve, reject) => {
+    async function loadFile<T>(file: File, loadCallBack: (data: T) => Promise<void>): Promise<T> {
+        return await new Promise((resolve, reject) => {
             const fileReader = new FileReader();
             fileReader.onload = async (event: ProgressEvent<FileReader>) => {
-                const content = event?.target?.result as string;
+                const content = event.target?.result as string;
                 try {
                     const parsedData = JSON.parse(content) as T;
                     await loadCallBack(parsedData);

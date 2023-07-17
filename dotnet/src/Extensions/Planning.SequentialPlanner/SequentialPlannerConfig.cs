@@ -52,7 +52,7 @@ public sealed class SequentialPlannerConfig
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
     /// </summary>
-    public int MaxTokens { get; set; } = 1024;
+    public int? MaxTokens { get; set; }
 
     /// <summary>
     /// Whether to allow missing functions in the plan on creation.
