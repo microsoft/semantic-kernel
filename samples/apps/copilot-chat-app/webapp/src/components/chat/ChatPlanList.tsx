@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import {
+    Label,
     Table,
     TableBody,
     TableCell,
@@ -75,6 +76,9 @@ export const ChatPlanList: React.FC = () => {
                     ))}
                 </TableBody>
             </Table>
+            <Label size='small' color='brand'>
+                Want to learn how to create custom plans? Click <a href="https://aka.ms/sk-docs-planner" target="_blank" rel="noreferrer">here</a>.
+            </Label>
         </div>
     );
 };

@@ -208,6 +208,9 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
                     ))}
                 </TableBody>
             </Table>
+            <Label size='small' color='brand'>
+                Want to learn more about document embeddings? Click <a href="https://aka.ms/sk-docs-vectordb" target="_blank" rel="noreferrer">here</a>.
+            </Label>
         </div>
     );
 };
