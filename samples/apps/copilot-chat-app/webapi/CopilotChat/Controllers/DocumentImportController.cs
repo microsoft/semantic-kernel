@@ -49,6 +49,11 @@ public class DocumentImportController : ControllerBase
         Pdf,
 
         /// <summary>
+        /// .md
+        /// </summary>
+        Md,
+
+        /// <summary>
         /// .jpg
         /// </summary>
         Jpg,
@@ -254,15 +259,7 @@ public class DocumentImportController : ControllerBase
             }
 
             // Make sure the file type is supported.
-            var fileType = this.GetFileType(Path.GetFileName(formFile.FileName));
-            switch (fileType)
-            {
-                case SupportedFileType.Txt:
-                case SupportedFileType.Pdf:
-                    break;
-                default:
-                    throw new ArgumentException($"Unsupported file type: {fileType}");
-            }
+            _ = this.GetFileType(Path.GetFileName(formFile.FileName));
         }
     }
 
@@ -280,6 +277,7 @@ public class DocumentImportController : ControllerBase
         switch (fileType)
         {
             case SupportedFileType.Txt:
+            case SupportedFileType.Md:
                 documentContent = await this.ReadTxtFileAsync(formFile);
                 break;
             case SupportedFileType.Pdf:
@@ -431,10 +429,11 @@ public class DocumentImportController : ControllerBase
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     private SupportedFileType GetFileType(string fileName)
     {
-        string extension = Path.GetExtension(fileName);
+        string extension = Path.GetExtension(fileName).ToLower();
         return extension switch
         {
             ".txt" => SupportedFileType.Txt,
+            ".md" => SupportedFileType.Md,
             ".pdf" => SupportedFileType.Pdf,
             ".jpg" => SupportedFileType.Jpg,
             ".jpeg" => SupportedFileType.Jpg,

@@ -167,7 +167,7 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
                     type="file"
                     ref={documentFileRef}
                     style={{ display: 'none' }}
-                    accept=".txt,.pdf,.jpg,.jpeg,.png,.tif,.tiff"
+                    accept=".txt,.pdf,.md,.jpg,.jpeg,.png,.tif,.tiff"
                     multiple={true}
                     onChange={() => {
                         handleImport();
