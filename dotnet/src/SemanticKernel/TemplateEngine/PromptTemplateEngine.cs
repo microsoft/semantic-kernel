@@ -91,7 +91,6 @@ public class PromptTemplateEngine : IPromptTemplateEngine
             result.Append(await t.ConfigureAwait(false));
         }
 
-        // TODO: allow tracing prompts differently
         // Sensitive data, logging as trace, disabled by default
         this._log.LogTrace("Rendered prompt: {0}", result);
 
