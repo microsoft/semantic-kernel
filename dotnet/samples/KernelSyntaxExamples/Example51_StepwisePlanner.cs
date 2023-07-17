@@ -52,7 +52,7 @@ public static class Example51_StepwisePlanner
 
     private static async Task RunWithQuestion(IKernel kernel, string question)
     {
-        using var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
+        var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");

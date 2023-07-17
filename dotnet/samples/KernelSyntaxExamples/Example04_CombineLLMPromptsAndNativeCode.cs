@@ -37,7 +37,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
             return;
         }
 
-        using var bingConnector = new BingConnector(bingApiKey);
+        var bingConnector = new BingConnector(bingApiKey);
         var bing = new WebSearchEngineSkill(bingConnector);
         var search = kernel.ImportSkill(bing, "bing");
 

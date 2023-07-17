@@ -46,7 +46,7 @@ public static class Example07_BingAndGoogleSkills
         }
         else
         {
-            using var bingConnector = new BingConnector(bingApiKey);
+            var bingConnector = new BingConnector(bingApiKey);
             var bing = new WebSearchEngineSkill(bingConnector);
             var search = kernel.ImportSkill(bing, "bing");
             await Example1Async(kernel, "bing");

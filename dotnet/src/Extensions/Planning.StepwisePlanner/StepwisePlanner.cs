@@ -34,10 +34,12 @@ public class StepwisePlanner
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">Optional configuration object</param>
     /// <param name="prompt">Optional prompt override</param>
+    /// <param name="promptUserConfig">Optional prompt config override</param>
     public StepwisePlanner(
         IKernel kernel,
         StepwisePlannerConfig? config = null,
-        string? prompt = null)
+        string? prompt = null,
+        PromptTemplateConfig? promptUserConfig = null)
     {
         Verify.NotNull(kernel);
         this._kernel = kernel;
@@ -45,12 +47,16 @@ public class StepwisePlanner
         this.Config = config ?? new();
         this.Config.ExcludedSkills.Add(RestrictedSkillName);
 
-        var promptConfig = new PromptTemplateConfig();
+        var promptConfig = promptUserConfig ?? new PromptTemplateConfig();
         var promptTemplate = prompt ?? EmbeddedResource.Read("Skills.StepwiseStep.skprompt.txt");
-        string promptConfigString = EmbeddedResource.Read("Skills.StepwiseStep.config.json");
-        if (!string.IsNullOrEmpty(promptConfigString))
+
+        if (promptUserConfig == null)
         {
-            promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
+            string promptConfigString = EmbeddedResource.Read("Skills.StepwiseStep.config.json");
+            if (!string.IsNullOrEmpty(promptConfigString))
+            {
+                promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
+            }
         }
 
         promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
@@ -448,7 +454,7 @@ public class StepwisePlanner
     /// <summary>
     /// The Action tag
     /// </summary>
-    private const string Action = "[ACTION]";
+    private const string Action = "[JSON ACTION]";
 
     /// <summary>
     /// The Thought tag
@@ -468,12 +474,12 @@ public class StepwisePlanner
     /// <summary>
     /// The regex for parsing the action response
     /// </summary>
-    private static readonly Regex s_actionRegex = new(@"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
+    private static readonly Regex s_actionRegex = new(@"\[JSON ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
 
     /// <summary>
     /// The regex for parsing the thought response
     /// </summary>
-    private static readonly Regex s_thoughtRegex = new(@"(\[THOUGHT\])?(?<thought>.+?)(?=\[ACTION\]|$)", RegexOptions.Singleline);
+    private static readonly Regex s_thoughtRegex = new(@"(\[THOUGHT\])?(?<thought>.+?)(?=\[JSON ACTION\]|$)", RegexOptions.Singleline);
 
     /// <summary>
     /// The regex for parsing the final answer response

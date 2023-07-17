@@ -63,7 +63,7 @@ Semantic Kernel is available to explore AI and build apps with C# and Python:
   </tbody>
 </table>
 
-See the [Feature Matrix](FEATURE_MATRIX.md) to see a breakdown of feature parity between C# and Python.
+See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of feature parity between our currently supported languages.
 
 The quickest way to get started with the basics is to get an API key
 (OpenAI or Azure OpenAI)
