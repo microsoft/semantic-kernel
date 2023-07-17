@@ -34,9 +34,7 @@ test.describe('Copilot Chat App Test Suite', () => {
     });
 
     test.describe('Planner Tests', () => {        
-        // Todo: Klarna running into disposed httpclient error
-        // skipping test for the time being
-        test.skip('Klarna', async ({ page }) => { 
+        test('Klarna', async ({ page }) => { 
             test.setTimeout(util.TestTimeout);
             await plannertests.klarnaTest(page) });
             
