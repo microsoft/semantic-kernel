@@ -12,7 +12,8 @@
 
     <artifactId>semantickernel-core</artifactId>
     <packaging>jar</packaging>
-
+    <name>Semantic Kernel Core</name>
+    <description>Implementation of the Semantic Kernel</description>
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>

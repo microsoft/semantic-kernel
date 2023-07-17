@@ -9,7 +9,8 @@
     </parent>
 
     <artifactId>sample-code</artifactId>
-
+    <name>Semantic Kernel Samples</name>
+    <description>Sample code for using the Semantic Kernel project</description>
     <packaging>jar</packaging>
 
     <dependencies>

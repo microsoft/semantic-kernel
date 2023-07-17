@@ -11,7 +11,8 @@
     </parent>
 
     <artifactId>semantickernel-actionplanner-extension</artifactId>
-
+    <name>Semantic Kernel Action Planner Extension</name>
+    <description>Action Planner implementation for Semantic Kernel</description>
 
     <dependencies>
         <dependency>
