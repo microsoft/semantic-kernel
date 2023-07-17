@@ -186,10 +186,7 @@ public class ChatController : ControllerBase, IDisposable
             using HttpClient importHttpClient = new(retryHandler, false);
             importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
             await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
-                new OpenApiSkillExecutionParameters
-                {
-                    HttpClient = importHttpClient,
-                });
+                new OpenApiSkillExecutionParameters());
         }
 
         // GitHub
@@ -245,15 +242,9 @@ public class ChatController : ControllerBase, IDisposable
                 {
                     if (openApiSkillsAuthHeaders.TryGetValue(plugin.AuthHeaderTag.ToUpperInvariant(), out string? PluginAuthValue))
                     {
+                        // Register the ChatGPT plugin with the planner's kernel.
                         this._logger.LogInformation("Enabling {0} skill.", plugin.NameForHuman);
                         var requiresAuth = !plugin.AuthType.Equals("none", StringComparison.OrdinalIgnoreCase);
-
-                        // Register the ChatGPT plugin with the planner's kernel.
-                        using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger)
-                        {
-                            InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
-                        };
-
                         UriBuilder uriBuilder = new(plugin.ManifestDomain);
 
                         // Expected manifest path as defined by OpenAI: https://platform.openai.com/docs/plugins/getting-started/plugin-manifest
