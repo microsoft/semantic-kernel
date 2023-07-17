@@ -15,6 +15,8 @@
 
     <groupId>com.microsoft.semantic-kernel.extensions</groupId>
     <artifactId>semantickernel-extensions-parent</artifactId>
+    <name>Semantic Kernel Extensions Parent</name>
+    <description>Parent pom for Semantic Kernel extensions</description>
 
     <modules>
         <module>semantickernel-sequentialplanner-extension</module>

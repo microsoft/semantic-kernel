@@ -11,6 +11,8 @@
     </parent>
 
     <artifactId>semantickernel-core-skills</artifactId>
+    <name>Semantic Kernel Core Skills</name>
+    <description>Core skills used by the Semantic Kernel</description>
 
     <dependencies>
         <dependency>

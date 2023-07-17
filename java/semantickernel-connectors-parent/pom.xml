@@ -14,7 +14,8 @@
 
     <groupId>com.microsoft.semantic-kernel.connectors</groupId>
     <artifactId>semantickernel-connectors-parent</artifactId>
-
+    <name>Semantic Kernel Connectors Parent</name>
+    <description>Parent pom for the Semantic Kernel Connectors</description>
     <modules>
         <module>semantickernel-connectors</module>
     </modules>

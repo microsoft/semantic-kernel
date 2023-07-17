@@ -12,7 +12,8 @@
 
     <artifactId>semantickernel-api</artifactId>
     <packaging>jar</packaging>
-
+    <name>Semantic Kernel API</name>
+    <description>Defines the public interface for the Semantic Kernel</description>
     <dependencies>
         <dependency>
             <groupId>com.azure</groupId>

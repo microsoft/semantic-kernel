@@ -9,6 +9,8 @@
     <version>0.2.6-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>https://www.github.com/microsoft/semantic-kernel</url>
+    <name>Semantic Kernel Parent</name>
+    <description>Parent pom for the Semantic Kernel Project</description>
 
     <properties>
         <azure-ai-openai.version>1.0.0-beta.2</azure-ai-openai.version>
