@@ -233,46 +233,6 @@ public class QdrantMemoryStoreTests3
     }
 
     [Fact]
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
-    public async Task ScoredVectorSupportsIntegerIdsObsolete()
-    {
-        // Arrange
-        var payloadId = "payloadId";
-        var metadataId = "metadataId";
-        var expectedId = 100;
-
-        var scoredPointJsonWithIntegerId =
-            "{" +
-                "\"result\": " +
-                "   [{" +
-                        "\"id\": " + expectedId + "," +
-                        "\"version\": 0," +
-                        "\"score\": null," +
-                        "\"payload\": {}," +
-                        "\"vector\": null " +
-                    "}]" +
-            "}";
-
-        using (var httpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(scoredPointJsonWithIntegerId) })
-        {
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(httpResponseMessage);
-
-            //Act
-            using var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-            {
-                var client = new QdrantVectorDbClient("http://localhost", 1536, null, httpClient);
-                var result = await client.GetVectorByPayloadIdAsync(payloadId, metadataId);
-
-                //Assert
-                Assert.Equal<string>(result!.PointId, expectedId.ToString(CultureInfo.InvariantCulture));
-            }
-        }
-    }
-
-    [Fact]
     public async Task ScoredVectorSupportsIntegerIds()
     {
         // Arrange
@@ -307,86 +267,6 @@ public class QdrantMemoryStoreTests3
 
                 //Assert
                 Assert.Equal<string>(result!.PointId, expectedId.ToString(CultureInfo.InvariantCulture));
-            }
-        }
-    }
-
-    [Fact]
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
-    public async Task ScoredVectorSupportsStringIdsObsolete()
-    {
-        // Arrange
-        var payloadId = "payloadId";
-        var metadataId = "metadataId";
-        var expectedId = Guid.NewGuid().ToString();
-
-        var scoredPointJsonWithIntegerId =
-            "{" +
-                "\"result\": " +
-                "   [{" +
-                        "\"id\": \"" + expectedId + "\"," +
-                        "\"version\": 0," +
-                        "\"score\": null," +
-                        "\"payload\": {}," +
-                        "\"vector\": null " +
-                    "}]" +
-            "}";
-
-        using (var httpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(scoredPointJsonWithIntegerId) })
-        {
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(httpResponseMessage);
-
-            //Act
-            using var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-            {
-                var client = new QdrantVectorDbClient("http://localhost", 1536, null, httpClient);
-                var result = await client.GetVectorByPayloadIdAsync(payloadId, metadataId);
-
-                //Assert
-                Assert.Equal<string>(result!.PointId, expectedId);
-            }
-        }
-    }
-
-    [Fact]
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
-    public async Task ScoredVectorSupportsStringIds()
-    {
-        // Arrange
-        var payloadId = "payloadId";
-        var metadataId = "metadataId";
-        var expectedId = Guid.NewGuid().ToString();
-
-        var scoredPointJsonWithIntegerId =
-            "{" +
-                "\"result\": " +
-                "   [{" +
-                        "\"id\": \"" + expectedId + "\"," +
-                        "\"version\": 0," +
-                        "\"score\": null," +
-                        "\"payload\": {}," +
-                        "\"vector\": null " +
-                    "}]" +
-            "}";
-
-        using (var httpResponseMessage = new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(scoredPointJsonWithIntegerId) })
-        {
-            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            mockHttpMessageHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(httpResponseMessage);
-
-            //Act
-            using var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-            {
-                var client = new QdrantVectorDbClient(httpClient, 1536, "https://fake-random-test-host");
-                var result = await client.GetVectorByPayloadIdAsync(payloadId, metadataId);
-
-                //Assert
-                Assert.Equal<string>(result!.PointId, expectedId);
             }
         }
     }

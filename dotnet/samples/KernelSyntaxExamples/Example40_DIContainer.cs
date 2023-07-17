@@ -43,7 +43,7 @@ public static class Example40_DIContainer
         {
             return Kernel.Builder
             .AddLogging(serviceProvider.GetRequiredService<ILogger>())
-            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-002", TestConfiguration.OpenAI.ApiKey)
             .Build();
         });
 
@@ -72,7 +72,7 @@ public static class Example40_DIContainer
 
         //Registering AI services Kernel is going to use
         var aiServicesCollection = new AIServiceCollection();
-        aiServicesCollection.SetService<ITextCompletion>(() => new OpenAITextCompletion("text-davinci-002", Env.Var("OPENAI_API_KEY")));
+        aiServicesCollection.SetService<ITextCompletion>(() => new OpenAITextCompletion("text-davinci-002", TestConfiguration.OpenAI.ApiKey));
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();

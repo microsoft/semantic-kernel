@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Skills.Web.Bing;
 /// <summary>
 /// Bing API connector.
 /// </summary>
-public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
+public sealed class BingConnector : IWebSearchEngineConnector
 {
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
@@ -96,19 +96,6 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
         }
 
         return await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-    }
-
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
-    private void Dispose(bool disposing)
-    {
-    }
-
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 
     [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",

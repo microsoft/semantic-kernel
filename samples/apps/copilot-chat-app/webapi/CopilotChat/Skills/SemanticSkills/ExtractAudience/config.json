@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "description": "Extract list of participants from the conversation history. Note that only those who have spoken will be included.",
+  "type": "completion",
+  "completion": {
+    "max_tokens": 256,
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "presence_penalty": 0.5,
+    "frequency_penalty": 0.5
+  },
+  "input": {
+    "parameters": [
+      {
+        "name": "chatId",
+        "description": "Chat ID to extract history from",
+        "defaultValue": ""
+      },
+      {
+        "name": "tokenLimit",
+        "description": "Maximum number of tokens",
+        "defaultValue": ""
+      }
+    ]
+  }
+}

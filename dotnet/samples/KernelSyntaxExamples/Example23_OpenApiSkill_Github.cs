@@ -14,7 +14,7 @@ using RepoUtils;
 /// <summary>
 /// Import and run GitHub Functions using OpenAPI Skill.
 /// To use this example, run:
-/// dotnet user-secrets set "GITHUB_PERSONAL_ACCESS_TOKEN" "github_pat_..."
+/// dotnet user-secrets set "Github.PAT" "github_pat_..."
 /// Make sure your GitHub PAT has read permissions set for Pull Requests.
 /// Creating a PAT: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 /// </summary>
@@ -23,7 +23,7 @@ public static class Example23_OpenApiSkill_GitHub
 {
     public static async Task RunAsync()
     {
-        var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(Env.Var("GITHUB_PERSONAL_ACCESS_TOKEN")); });
+        var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(TestConfiguration.Github.PAT); });
         Console.WriteLine("== Example22_c_OpenApiSkill_GitHub ==");
         var firstPRNumber = await ListPullRequestsFromGitHubAsync(authenticationProvider);
         await GetPullRequestFromGitHubAsync(authenticationProvider, firstPRNumber);
