@@ -4,6 +4,9 @@ namespace SemanticKernel.Data.Nl2Sql.Exceptions;
 using System;
 using System.Runtime.Serialization;
 
+/// <summary>
+/// Respresents a missing or unexpected configuration setting.
+/// </summary>
 [Serializable]
 public class InvalidConfigurationException : Exception
 {

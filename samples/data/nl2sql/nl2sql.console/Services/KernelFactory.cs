@@ -9,6 +9,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using SemanticKernel.Data.Nl2Sql.Exceptions;
 
+/// <summary>
+/// Responsible for initializing Semantic <see cref="Kernel"/> based on the configuration.
+/// </summary>
 internal static class KernelFactory
 {
     private const string SettingNameApiKey = "AZURE_OPENAI_KEY";
@@ -22,6 +25,9 @@ internal static class KernelFactory
     private const string DefaulChatModel = "gpt-4";
     private const string DefaulEmbedModel = "text-embedding-ada-003";
 
+    /// <summary>
+    /// Factory method for <see cref="IServiceCollection"/>
+    /// </summary>
     public static Func<IServiceProvider, IKernel> Create(IConfiguration configuration)
     {
         return CreateKernel;

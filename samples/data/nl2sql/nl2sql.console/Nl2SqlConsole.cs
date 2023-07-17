@@ -107,6 +107,7 @@ internal class Nl2SqlConsole : BackgroundService
             return objective;
         }
 
+        // Display query result and (optionally) execute.
         async Task ProcessQueryAsync(string? schema, string? query)
         {
             if (string.IsNullOrWhiteSpace(schema) || string.IsNullOrWhiteSpace(query))
@@ -143,6 +144,7 @@ internal class Nl2SqlConsole : BackgroundService
 
         }
 
+        // Execute query and display the resulting data-set.
         async Task ProcessDataAsync(string schema, string query, Action<IDataReader> callback)
         {
             try
@@ -164,27 +166,9 @@ internal class Nl2SqlConsole : BackgroundService
         }
     }
 
-    private bool Confirm(string message)
-    {
-        this.Write(FocusColor, $"{message} (y/n) ");
-
-        while (true)
-        {
-            var choice = Console.ReadKey(intercept: true);
-            switch (char.ToUpperInvariant(choice.KeyChar))
-            {
-                case 'N':
-                    this.Write(FocusColor, "N");
-                    return false;
-                case 'Y':
-                    this.Write(FocusColor, "Y");
-                    return true;
-                default:
-                    break;
-            }
-        }
-    }
-
+    /// <summary>
+    /// Render a data-reader to the console, in pages.
+    /// </summary>
     private void WriteData(IDataReader reader)
     {
         int maxPage = Console.WindowHeight - 10;
@@ -350,6 +334,7 @@ internal class Nl2SqlConsole : BackgroundService
         }
     }
 
+    // Display the introduction when the app-starts.
     private void WriteIntroduction(IList<string> schemaNames)
     {
         this.WriteLine(SystemColor, $"I can translate your question into a SQL query for the following data schemas:{Environment.NewLine}");
@@ -362,6 +347,7 @@ internal class Nl2SqlConsole : BackgroundService
         this.WriteLine(SystemColor, $"{Environment.NewLine}Press CTRL+C to Exit.{Environment.NewLine}");
     }
 
+    // WriteLine to the console with the specified color
     private void WriteLine(ConsoleColor? color = null, string? message = null, params string[] args)
     {
         this.Write(color ?? Console.ForegroundColor, message ?? string.Empty, args);
@@ -369,6 +355,7 @@ internal class Nl2SqlConsole : BackgroundService
         Console.WriteLine();
     }
 
+    // Write to the console with the specified color
     private void Write(ConsoleColor color, string message, params string[] args)
     {
         var currentColor = Console.ForegroundColor;
@@ -384,6 +371,7 @@ internal class Nl2SqlConsole : BackgroundService
         }
     }
 
+    // Clear the current console line so that it may be over-written.
     private void ClearLine(bool previous = false)
     {
         if (previous)
@@ -394,5 +382,29 @@ internal class Nl2SqlConsole : BackgroundService
         Console.CursorLeft = 0;
         Console.Write(new string(' ', Console.WindowWidth));
         Console.CursorLeft = 0;
+    }
+
+    /// <summary>
+    /// Elicit a Y or N response.
+    /// </summary>
+    private bool Confirm(string message)
+    {
+        this.Write(FocusColor, $"{message} (y/n) ");
+
+        while (true)
+        {
+            var choice = Console.ReadKey(intercept: true);
+            switch (char.ToUpperInvariant(choice.KeyChar))
+            {
+                case 'N':
+                    this.Write(FocusColor, "N");
+                    return false;
+                case 'Y':
+                    this.Write(FocusColor, "Y");
+                    return true;
+                default:
+                    break;
+            }
+        }
     }
 }

@@ -4,6 +4,9 @@ namespace SemanticKernel.Data.Nl2Sql.Exceptions;
 using System;
 using System.Runtime.Serialization;
 
+/// <summary>
+/// Respresents a failure reading a serialized schema definition.
+/// </summary>
 [Serializable]
 public class SchemaDefinitionException : Exception
 {

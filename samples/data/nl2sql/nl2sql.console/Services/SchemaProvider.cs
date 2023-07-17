@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Data.Nl2Sql.Schema;
 
+/// <summary>
+/// Responsible for loading the defined schemas into semantic memory.
+/// </summary>
 internal static class SchemaProvider
 {
     public static async IAsyncEnumerable<string> InitializeAsync(IKernel kernel)

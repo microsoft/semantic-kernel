@@ -5,12 +5,19 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using SemanticKernel.Data.Nl2Sql.Exceptions;
 
+/// <summary>
+/// Responsible for producing a connection string for the requested schema.
+/// </summary>
 internal sealed class SqlConnectionProvider
 {
     private readonly IConfiguration configuration;
 
+    /// <summary>
+    /// Factory method for <see cref="IServiceCollection"/>
+    /// </summary>
     public static Func<IServiceProvider, SqlConnectionProvider> Create(IConfiguration configuration)
     {
         return CreateProvider;

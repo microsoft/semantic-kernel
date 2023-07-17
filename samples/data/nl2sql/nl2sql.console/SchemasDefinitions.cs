@@ -24,6 +24,9 @@ internal static class SchemasDefinitions
         // TODO: Load your own schema here (comment-out others for focused exploration)
     }
 
+    /// <summary>
+    /// Helper method to load schema.json
+    /// </summary>
     private static async Task<SchemaDefinition> GetSchemaAsync(string schemaName)
     {
         var filePath = Path.Combine(Repo.RootConfig, "schemas", $"{schemaName}.json");
