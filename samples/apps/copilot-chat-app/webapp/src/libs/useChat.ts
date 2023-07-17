@@ -133,11 +133,13 @@ export const useChat = () => {
 
             const promptTokenUsage = askResult.variables.find((v) => v.key === 'promptTokenUsage')?.value;
             const dependencyTokenUsage = askResult.variables.find((v) => v.key === 'dependencyTokenUsage')?.value;
+            const planExecutionTokenUsage = askResult.variables.find((v) => v.key === 'planExecutionTokenUsage')?.value;
 
             dispatch(
                 updateTokenUsage({
                     prompt: promptTokenUsage ? parseInt(promptTokenUsage) : 0,
                     dependency: dependencyTokenUsage ? parseInt(dependencyTokenUsage) : 0,
+                    planExecution: planExecutionTokenUsage ? parseInt(planExecutionTokenUsage) : 0,
                 }),
             );
         } catch (e: any) {

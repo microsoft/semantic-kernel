@@ -116,13 +116,15 @@ public class ExternalInformationSkill
                 planResult = newPlanContext.Variables.Input;
             }
 
+            // TODO: Get plan execution token usage
+
             return $"{PromptPreamble}\n{planResult.Trim()}\n{PromptPostamble}\n";
         }
         else
         {
             // Create a plan and set it in context for approval.
             var contextString = string.Join("\n", context.Variables.Where(v => v.Key != "userIntent").Select(v => $"{v.Key}: {v.Value}"));
-            Plan plan = await this._planner.CreatePlanAsync($"Given the following context, accomplish the user intent.\nContext:{contextString}\nUser Intent:{userIntent}");
+            Plan plan = await this._planner.CreatePlanAsync($"Given the following context, accomplish the user intent.\nContext:\n{contextString}\n{userIntent}");
 
             if (plan.Steps.Count > 0)
             {
@@ -136,6 +138,8 @@ public class ExternalInformationSkill
 
                 this.ProposedPlan = new ProposedPlan(sanitizedPlan, this._planner.PlannerOptions!.Type, PlanState.NoOp);
             }
+
+            // TODO: Get plan creation token usage
         }
 
         return string.Empty;

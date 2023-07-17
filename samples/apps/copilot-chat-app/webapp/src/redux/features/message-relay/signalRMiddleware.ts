@@ -157,6 +157,7 @@ export const registerSignalREvents = (store: Store) => {
         const messageType = Number(askResult.variables.find((v) => v.key === 'messageType')?.value) as ChatMessageType;
         const promptTokenUsage = askResult.variables.find((v) => v.key === 'promptTokenUsage')?.value;
         const dependencyTokenUsage = askResult.variables.find((v) => v.key === 'dependencyTokenUsage')?.value;
+        const planExecutionTokenUsage = askResult.variables.find((v) => v.key === 'planExecutionTokenUsage')?.value;
 
         const message = {
             type: messageType,
@@ -178,6 +179,9 @@ export const registerSignalREvents = (store: Store) => {
                         ? parseInt(dependencyTokenUsage)
                         : 0
                     : undefined,
+                planExecution: responseToLoggedInUser ?
+                    (planExecutionTokenUsage ? parseInt(planExecutionTokenUsage) : 0) :
+                    undefined,
             },
         } as IChatMessage;
 

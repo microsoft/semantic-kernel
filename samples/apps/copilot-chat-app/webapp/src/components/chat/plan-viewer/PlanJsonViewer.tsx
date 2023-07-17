@@ -34,6 +34,7 @@ export const PlanJsonViewer: React.FC<IPlanJsonViewerProps> = ({ goal, tokenUsag
                         <TokenUsage
                             promptUsage={tokenUsage?.prompt ?? 0}
                             dependencyUsage={tokenUsage?.dependency ?? 0}
+                            planExecutionUsage={tokenUsage?.planExecution ?? 0}
                         />
                         <pre>
                             <code>{JSON.stringify(JSON.parse(json), null, 2)}</code>

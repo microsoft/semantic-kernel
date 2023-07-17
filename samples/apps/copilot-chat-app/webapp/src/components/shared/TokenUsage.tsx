@@ -35,10 +35,16 @@ const useClasses = makeStyles({
 interface ITokenUsage {
     promptUsage: number;
     dependencyUsage: number;
+    planExecutionUsage: number;
     sessionTotal?: boolean;
 }
 
-export const TokenUsage: React.FC<ITokenUsage> = ({ sessionTotal, promptUsage, dependencyUsage }) => {
+export const TokenUsage: React.FC<ITokenUsage> = ({
+    sessionTotal,
+    promptUsage,
+    dependencyUsage,
+    planExecutionUsage,
+}) => {
     // Necessary conversion due to type coercion issues
     promptUsage = Number(promptUsage);
     dependencyUsage = Number(dependencyUsage);
@@ -47,12 +53,14 @@ export const TokenUsage: React.FC<ITokenUsage> = ({ sessionTotal, promptUsage, d
 
     const classes = useClasses();
     const maxWidth = 500;
-    const totalUsage = Number(promptUsage) + Number(dependencyUsage);
+    const totalUsage = Number(promptUsage) + Number(dependencyUsage) + Number(planExecutionUsage);
     const promptPercentage = promptUsage / totalUsage;
     const dependencyPercentage = dependencyUsage / totalUsage;
+    const planExecutionPercentage = planExecutionUsage / totalUsage;
 
     const promptWidth = promptPercentage * maxWidth;
     const dependencyWidth = dependencyPercentage * maxWidth;
+    const planExecutionWidth = planExecutionPercentage * maxWidth;
 
     return (
         <>
@@ -90,6 +98,13 @@ export const TokenUsage: React.FC<ITokenUsage> = ({ sessionTotal, promptUsage, d
                                     width: `${dependencyWidth}px`,
                                 }}
                             />
+                            <div
+                                style={{
+                                    backgroundColor: tokens.colorPaletteRedBackground3,
+                                    height: '10px',
+                                    width: `${planExecutionWidth}px`,
+                                }}
+                            />
                         </div>
                         <div className={classes.horizontal}>
                             <div
@@ -114,6 +129,18 @@ export const TokenUsage: React.FC<ITokenUsage> = ({ sessionTotal, promptUsage, d
                             <Text>
                                 Dependency {'('}
                                 {dependencyUsage}
+                                {')'}
+                            </Text>
+                            <div
+                                style={{
+                                    backgroundColor: tokens.colorPaletteRedBackground3,
+                                    height: '10px',
+                                    width: `10px`,
+                                }}
+                            />
+                            <Text>
+                                Plan Execution {'('}
+                                {planExecutionUsage}
                                 {')'}
                             </Text>
                         </div>

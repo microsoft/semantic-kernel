@@ -36,6 +36,7 @@ export const appSlice = createSlice({
             state.tokenUsage = {
                 prompt: state.tokenUsage.prompt + action.payload.prompt,
                 dependency: state.tokenUsage.dependency + action.payload.dependency,
+                planExecution: state.tokenUsage.planExecution + action.payload.planExecution,
             };
         },
     },

@@ -76,7 +76,7 @@ public class ChatSkill
     private static readonly string[] tokenDependencies = {
         "audienceExtraction",
         "userIntentExtraction",
-        "planner",
+        "plannerExecution",
         "memoryExtraction"
     };
 
@@ -544,6 +544,11 @@ public class ChatSkill
 
         var plan = await this._externalInformationSkill.AcquireExternalInformationAsync(userIntent, planContext);
 
+        if (planContext.Variables.TryGetValue("planExecutionTokenUsage", out string? tokenUsage))
+        {
+            context.Variables.Set("planExecutionTokenUsage", tokenUsage);
+        }
+
         // Propagate the error
         if (planContext.ErrorOccurred)
         {
@@ -695,9 +700,18 @@ public class ChatSkill
             }
         }
 
-        string botResponseTokenUsage = chatContext.Variables.TryGetValue("promptTokenUsage", out string? promptTokenUsage) ? promptTokenUsage : "0";
+        string botResponseTokenUsage =
+            chatContext.Variables.TryGetValue("promptTokenUsage", out string? promptTokenUsage)
+                ? promptTokenUsage
+                : "0";
         resultContext.Variables.Set("promptTokenUsage", botResponseTokenUsage);
         resultContext.Variables.Set("dependencyTokenUsage", (dependencyTokenUsage).ToString(CultureInfo.InvariantCulture));
+
+        string planExecutionTokenUsage =
+            chatContext.Variables.TryGetValue("planExecutionTokenUsage", out string? usage)
+                ? usage
+                : "0";
+        resultContext.Variables.Set("planExecutionTokenUsage", planExecutionTokenUsage);
     }
 
     /// <summary>

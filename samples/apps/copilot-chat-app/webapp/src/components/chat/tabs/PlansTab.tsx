@@ -155,7 +155,7 @@ function useTable(planMessages: IChatMessage[]) {
                 label: timestampToDateString(message.timestamp),
                 timestamp: message.timestamp,
             },
-            tokens: message.userId.length,
+            tokens: message.tokenUsage?.planExecution ?? 0,
             message: message,
         };
     });

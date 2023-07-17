@@ -52,6 +52,7 @@ export const PromptDetails: React.FC<IPromptDetailsProps> = ({ message }) => {
                         <TokenUsage
                             promptUsage={message.tokenUsage?.prompt ?? 0}
                             dependencyUsage={message.tokenUsage?.dependency ?? 0}
+                            planExecutionUsage={message.tokenUsage?.planExecution ?? 0}
                         />
                         {!message.prompt
                             ? 'No prompt available. The response is either a plan proposal or a hard-coded response.'

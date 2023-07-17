@@ -73,6 +73,7 @@ export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDial
                             sessionTotal
                             promptUsage={tokenUsage.prompt}
                             dependencyUsage={tokenUsage.dependency}
+                            planExecutionUsage={tokenUsage.planExecution}
                         />
                         <Accordion collapsible multiple defaultOpenItems={['basic']}>
                             <AccordionItem value="basic">
