@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Dict, List
 
 if TYPE_CHECKING:
     from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -19,6 +19,7 @@ class CompleteRequestSettings:
     stop_sequences: List[str] = field(default_factory=list)
     number_of_responses: int = 1
     logprobs: int = 0
+    token_selection_biases: Dict[int, int] = field(default_factory=dict)
 
     def update_from_completion_config(
         self, completion_config: "PromptTemplateConfig.CompletionConfig"
