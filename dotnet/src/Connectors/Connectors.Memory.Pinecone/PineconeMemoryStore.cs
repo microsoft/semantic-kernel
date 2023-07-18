@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
@@ -65,9 +66,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         if (!await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.IndexNotReady,
-                "Index creation is not supported within memory store. " +
+            throw new SKException("Index creation is not supported within memory store. " +
                 $"It should be created manually or using {nameof(IPineconeClient.CreateIndexAsync)}. " +
                 $"Ensure index state is {IndexState.Ready}.");
         }
@@ -130,10 +129,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
-                ex);
+            throw new SKException($"Failed to upsert due to HttpRequestException: {ex.Message}", ex);
         }
 
         return vectorData.Id;
@@ -213,10 +209,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToUpsertVectors,
-                $"Failed to upsert due to HttpRequestException: {ex.Message}",
-                ex);
+            throw new SKException($"Failed to upsert due to HttpRequestException: {ex.Message}", ex);
         }
 
         foreach (PineconeDocument? v in vectorData)
@@ -261,17 +254,11 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToGetVectorData,
-                $"Failed to get vector data from Pinecone: {ex.Message}",
-                ex);
+            throw new SKException($"Failed to get vector data from Pinecone: {ex.Message}", ex);
         }
         catch (MemoryException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToConvertPineconeDocumentToMemoryRecord,
-                $"Failed deserialize Pinecone response to Memory Record: {ex.Message}",
-                ex);
+            throw new SKException($"Failed deserialize Pinecone response to Memory Record: {ex.Message}", ex);
         }
 
         return null;
@@ -323,7 +310,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
-    /// <exception cref="PineconeMemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public async IAsyncEnumerable<MemoryRecord?> GetWithDocumentIdAsync(string indexName,
         string documentId,
         int limit = 3,
@@ -423,10 +410,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Pinecone {ex.Message}",
-                ex);
+            throw new SKException($"Failed to remove vector data from Pinecone {ex.Message}", ex);
         }
     }
 
@@ -463,10 +447,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Pinecone {ex.Message}",
-                ex);
+            throw new SKException($"Failed to remove vector data from Pinecone {ex.Message}", ex);
         }
     }
 
@@ -478,7 +459,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
-    /// <exception cref="PineconeMemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public async Task RemoveWithDocumentIdAsync(string indexName, string documentId, string indexNamespace, CancellationToken cancellationToken = default)
     {
         try
@@ -490,10 +471,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Failed to remove vector data from Pinecone {ex.Message}",
-                ex);
+            throw new SKException($"Failed to remove vector data from Pinecone {ex.Message}", ex);
         }
     }
 
@@ -505,7 +483,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="indexNamespace">The name associated with a collection of embeddings.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns></returns>
-    /// <exception cref="PineconeMemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public async Task RemoveWithDocumentIdBatchAsync(
         string indexName,
         IEnumerable<string> documentIds,
@@ -522,10 +500,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                $"Error in batch removing data from Pinecone {ex.Message}",
-                ex);
+            throw new SKException($"Error in batch removing data from Pinecone {ex.Message}", ex);
         }
     }
 
