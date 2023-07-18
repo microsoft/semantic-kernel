@@ -79,7 +79,7 @@ await this.CaptureSchemaAsync(
     "A description for your-schema.").ConfigureAwait(false);
 ```
 3. Review YourSchema.json in the [schemas](../nl2sql.config/schemas/) folder.
-1. Replace the default configuration with your own in [SchemaDefinitions.cs](//nl2sql.console/SchemasDefinitions.cs):
+1. Replace the default configuration with your own in [SchemaDefinitions.cs](../nl2sql.console/SchemasDefinitions.cs):
 ```
 public static IEnumerable<string> GetNames()
 {
