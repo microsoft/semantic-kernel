@@ -154,7 +154,7 @@ public class MarkupSkill
         var plan = docString.FromMarkup("Run a piece of xml markup", context);
 
         Console.WriteLine("Markup plan:");
-        Console.WriteLine(plan.ToPlanString());
+        Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
         var result = await plan.InvokeAsync();

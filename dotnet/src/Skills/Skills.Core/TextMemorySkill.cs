@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -81,7 +79,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(key);
         logger ??= NullLogger.Instance;
 
-        logger.LogTrace("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+        logger.LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
 
         var memory = await this._memory.GetAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -115,7 +113,7 @@ public sealed class TextMemorySkill
         relevance ??= DefaultRelevance;
         limit ??= DefaultLimit;
 
-        logger.LogTrace("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
+        logger.LogDebug("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
 
         // Search memory
         List<MemoryQueryResult> memories = await this._memory
@@ -158,7 +156,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(key);
         logger ??= NullLogger.Instance;
 
-        logger.LogTrace("Saving memory to collection '{0}'", collection);
+        logger.LogDebug("Saving memory to collection '{0}'", collection);
 
         await this._memory.SaveInformationAsync(collection, text: text, id: key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
@@ -185,7 +183,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(key);
         logger ??= NullLogger.Instance;
 
-        logger.LogTrace("Removing memory from collection '{0}'", collection);
+        logger.LogDebug("Removing memory from collection '{0}'", collection);
 
         await this._memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
