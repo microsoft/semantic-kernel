@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import time
 from random import randint
 
 import numpy as np
@@ -36,8 +37,16 @@ async def test_collections(memory_store):
     n = randint(1000, 9999)
     collection = f"int-tests-{n}"
     await memory_store.create_collection_async(collection)
-    assert await memory_store.does_collection_exist_async(collection)
+    time.sleep(1)
+    try:
+        assert await memory_store.does_collection_exist_async(collection)
+    except:
+        await memory_store.delete_collection_async(collection)
+        raise
+
     await memory_store.delete_collection_async(collection)
+    time.sleep(1)
+    assert not await memory_store.does_collection_exist_async(collection)
 
 
 @pytest.mark.asyncio
@@ -45,20 +54,27 @@ async def test_upsert(memory_store):
     n = randint(1000, 9999)
     collection = f"int-tests-{n}"
     await memory_store.create_collection_async(collection)
-    assert await memory_store.does_collection_exist_async(collection)
-    rec = MemoryRecord(
-        is_reference=False,
-        external_source_name=None,
-        id=None,
-        description="some description",
-        text="some text",
-        additional_metadata=None,
-        embedding=np.array([0.2, 0.1, 0.2, 0.7]),
-    )
-    await memory_store.upsert_async(collection, rec)
-    result = await memory_store.get_async(collection, rec._id)
-    assert result._id == rec._id
-    assert result._text == rec._text
+    time.sleep(1)
+    try:
+        assert await memory_store.does_collection_exist_async(collection)
+        rec = MemoryRecord(
+            is_reference=False,
+            external_source_name=None,
+            id=None,
+            description="some description",
+            text="some text",
+            additional_metadata=None,
+            embedding=np.array([0.2, 0.1, 0.2, 0.7]),
+        )
+        await memory_store.upsert_async(collection, rec)
+        time.sleep(1)
+        result = await memory_store.get_async(collection, rec._id)
+        assert result._id == rec._id
+        assert result._text == rec._text
+    except:
+        await memory_store.delete_collection_async(collection)
+        raise
+
     await memory_store.delete_collection_async(collection)
 
 
@@ -67,19 +83,26 @@ async def test_search(memory_store):
     n = randint(1000, 9999)
     collection = f"int-tests-{n}"
     await memory_store.create_collection_async(collection)
-    assert await memory_store.does_collection_exist_async(collection)
-    rec = MemoryRecord(
-        is_reference=False,
-        external_source_name=None,
-        id=None,
-        description="some description",
-        text="some text",
-        additional_metadata=None,
-        embedding=np.array([0.1, 0.2, 0.3, 0.4]),
-    )
-    await memory_store.upsert_async(collection, rec)
-    result = await memory_store.get_nearest_match_async(
-        collection, np.array([0.1, 0.2, 0.3, 0.38])
-    )
-    assert result[0]._id == rec._id
+    time.sleep(1)
+    try:
+        assert await memory_store.does_collection_exist_async(collection)
+        rec = MemoryRecord(
+            is_reference=False,
+            external_source_name=None,
+            id=None,
+            description="some description",
+            text="some text",
+            additional_metadata=None,
+            embedding=np.array([0.1, 0.2, 0.3, 0.4]),
+        )
+        await memory_store.upsert_async(collection, rec)
+        time.sleep(1)
+        result = await memory_store.get_nearest_match_async(
+            collection, np.array([0.1, 0.2, 0.3, 0.38])
+        )
+        assert result[0]._id == rec._id
+    except:
+        await memory_store.delete_collection_async(collection)
+        raise
+
     await memory_store.delete_collection_async(collection)

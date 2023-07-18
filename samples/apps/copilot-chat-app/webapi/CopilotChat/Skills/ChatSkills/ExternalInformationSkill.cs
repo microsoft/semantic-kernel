@@ -65,9 +65,10 @@ public class ExternalInformationSkill
     /// <summary>
     /// Extract relevant additional knowledge using a planner.
     /// </summary>
-    [SKFunction("Acquire external information")]
+    [SKFunction, Description("Acquire external information")]
+    [SKParameter("tokenLimit", "Maximum number of tokens")]
+    [SKParameter("proposedPlan", "Previously proposed plan that is approved")]
     public async Task<string> AcquireExternalInformationAsync(
-        [Description("Maximum numbzer of tokens")] int tokenLimit,
         [Description("The intent to whether external information is needed")] string userIntent,
         SKContext context)
     {
@@ -97,7 +98,8 @@ public class ExternalInformationSkill
 
             // Invoke plan
             newPlanContext = await plan.InvokeAsync(newPlanContext);
-            tokenLimit = tokenLimit -
+            int tokenLimit =
+                int.Parse(context["tokenLimit"], new NumberFormatInfo()) -
                 Utilities.TokenCount(PromptPreamble) -
                 Utilities.TokenCount(PromptPostamble);
 
