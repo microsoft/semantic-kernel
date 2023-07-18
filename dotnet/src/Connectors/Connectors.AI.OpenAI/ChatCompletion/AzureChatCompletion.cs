@@ -72,6 +72,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        this.LogActionDetails();
         return this.InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
     }
 
@@ -81,6 +82,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        this.LogActionDetails();
         return this.InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
     }
 
@@ -96,6 +98,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        this.LogActionDetails();
         return this.InternalGetChatStreamingResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 
@@ -105,6 +108,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        this.LogActionDetails();
         return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 }

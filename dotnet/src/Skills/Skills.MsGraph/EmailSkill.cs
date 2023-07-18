@@ -95,7 +95,8 @@ public sealed class EmailSkill
             throw new ArgumentException("Variable was null or whitespace", nameof(subject));
         }
 
-        this._logger.LogInformation("Sending email to '{0}' with subject '{1}'", recipients, subject);
+        // Sensitive data, logging as trace, disabled by default
+        this._logger.LogTrace("Sending email to '{0}' with subject '{1}'", recipients, subject);
         string[] recipientList = recipients.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
         await this._connector.SendEmailAsync(subject, content, recipientList, cancellationToken).ConfigureAwait(false);
     }
@@ -109,7 +110,7 @@ public sealed class EmailSkill
         [Description("Optional number of message to skip before retrieving results.")] int? skip = 0,
         CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Getting email messages with query options top: '{0}', skip:'{1}'.", maxResults, skip);
+        this._logger.LogDebug("Getting email messages with query options top: '{0}', skip:'{1}'.", maxResults, skip);
 
         const string SelectString = "subject,receivedDateTime,bodyPreview";
 
