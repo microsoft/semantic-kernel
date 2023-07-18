@@ -82,6 +82,18 @@ Pros: - Common pattern for handling Pre/Post Setting/Filtering data
 Cons:
 0
 
+## Open Questions
+
+- Post Execution Hooks should execute right after the LLM result or before the end of the function execution itself?
+
+- Setting hooks on top of pre existing hooks should be allowed or throw an error?
+
+- Setting hooks on Plans should automatically cascade this hooks for all the inner steps + overriding existing ones in the process?
+
+- Should we have dedicated method to Set Hooks for all its children steps (working recursively)?
+
+- Pre/Post function Hooks should be one or many (pub/sub) allowing naming/deregistration?
+
 ## Decision Outcome
 
 TBD.
