@@ -6,12 +6,13 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel.connectors</groupId>
         <artifactId>semantickernel-connectors-parent</artifactId>
-        <version>0.2.5-alpha-SNAPSHOT</version>
+        <version>0.2.7-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>semantickernel-connectors</artifactId>
-
+    <name>Semantic Kernel Connectors</name>
+    <description>Defines common connectors to be used with the Semantic Kernel</description>
     <repositories>
         <repository>
             <id>azure-sdk-for-java</id>

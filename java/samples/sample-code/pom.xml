@@ -4,12 +4,13 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>samples</artifactId>
-        <version>0.2.5-alpha-SNAPSHOT</version>
+        <version>0.2.7-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>sample-code</artifactId>
-
+    <name>Semantic Kernel Samples</name>
+    <description>Sample code for using the Semantic Kernel project</description>
     <packaging>jar</packaging>
 
     <dependencies>

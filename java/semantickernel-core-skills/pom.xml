@@ -6,11 +6,13 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
-        <version>0.2.5-alpha-SNAPSHOT</version>
+        <version>0.2.7-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>semantickernel-core-skills</artifactId>
+    <name>Semantic Kernel Core Skills</name>
+    <description>Core skills used by the Semantic Kernel</description>
 
     <dependencies>
         <dependency>

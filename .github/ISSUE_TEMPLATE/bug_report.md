@@ -23,10 +23,11 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. Windows]
+**Platform**
+ - OS: [e.g. Windows, Mac]
  - IDE: [e.g. Visual Studio, VS Code]
- - NuGet Package Version [e.g. 0.1.0]
+ - Language: [e.g. C#, Python]
+ - Source: [e.g. NuGet package version 0.1.0, pip package version 0.1.0, main branch of repository]
 
 **Additional context**
 Add any other context about the problem here.

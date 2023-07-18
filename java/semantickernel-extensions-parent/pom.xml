@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
-        <version>0.2.5-alpha-SNAPSHOT</version>
+        <version>0.2.7-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -14,6 +14,8 @@
 
     <groupId>com.microsoft.semantic-kernel.extensions</groupId>
     <artifactId>semantickernel-extensions-parent</artifactId>
+    <name>Semantic Kernel Extensions Parent</name>
+    <description>Parent pom for Semantic Kernel extensions</description>
 
     <modules>
         <module>semantickernel-sequentialplanner-extension</module>

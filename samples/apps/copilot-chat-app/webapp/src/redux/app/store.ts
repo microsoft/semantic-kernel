@@ -9,6 +9,7 @@ import {
     startSignalRConnection,
 } from '../features/message-relay/signalRMiddleware';
 import { PluginsState } from '../features/plugins/PluginsState';
+import { UsersState } from '../features/users/UsersState';
 import resetStateReducer, { resetApp } from './rootReducer';
 
 export type StoreMiddlewareAPI = MiddlewareAPI<Dispatch, RootState>;
@@ -28,6 +29,7 @@ export interface RootState {
     app: AppState;
     conversations: ConversationsState;
     plugins: PluginsState;
+    users: UsersState;
 }
 
 export const getSelectedChatID = (): string => {

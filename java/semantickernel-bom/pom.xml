@@ -5,12 +5,12 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
-    <version>0.2.5-alpha-SNAPSHOT</version>
+    <version>0.2.7-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>
     <description>Bill of Materials for all Semantic Kernel (Java) modules</description>
-
+    <url>https://www.github.com/microsoft/semantic-kernel</url>
     <properties>
         <com.fasterxml.jackson.core.version>2.15.1</com.fasterxml.jackson.core.version>
     </properties>
@@ -122,6 +122,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>java-0.2.6-alpha</tag>
     </scm>
 </project>

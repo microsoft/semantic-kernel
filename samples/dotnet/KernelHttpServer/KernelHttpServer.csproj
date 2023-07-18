@@ -13,7 +13,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.11.0" OutputItemType="Analyzer" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.16.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.17.0" />
     <PackageReference Include="Microsoft.Graph" Version="4.54.0" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="0.17.230704.3-preview" />
     <PackageReference Include="Microsoft.SemanticKernel.Skills.Document" Version="0.17.230704.3-preview" />

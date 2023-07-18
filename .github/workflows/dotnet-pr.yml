@@ -40,7 +40,7 @@ jobs:
         
     - name: Find solutions
       shell: bash
-      run: echo "solutions=$(find ./ -type f -name "*.sln" | tr '\n' ' ')" >> $GITHUB_ENV
+      run: echo "solutions=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')" >> $GITHUB_ENV
 
     - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
       run: docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}

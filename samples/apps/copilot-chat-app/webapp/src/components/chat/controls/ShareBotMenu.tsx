@@ -4,9 +4,9 @@ import React, { FC, useCallback } from 'react';
 
 import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tooltip } from '@fluentui/react-components';
 import { ArrowDownloadRegular, PeopleTeamAddRegular, ShareRegular } from '@fluentui/react-icons';
-import { useChat } from '../../libs/useChat';
-import { useFile } from '../../libs/useFile';
-import { InvitationCreateDialog } from './invitation-dialog/InvitationCreateDialog';
+import { useChat } from '../../../libs/useChat';
+import { useFile } from '../../../libs/useFile';
+import { InvitationCreateDialog } from '../invitation-dialog/InvitationCreateDialog';
 
 interface ShareBotMenuProps {
     chatId: string;
@@ -39,10 +39,18 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
                 </MenuTrigger>
                 <MenuPopover>
                     <MenuList>
-                        <MenuItem data-testid="downloadBotMenuItem" icon={<ArrowDownloadRegular />} onClick={onDownloadBotClick}>
+                        <MenuItem
+                            data-testid="downloadBotMenuItem"
+                            icon={<ArrowDownloadRegular />}
+                            onClick={onDownloadBotClick}
+                        >
                             Download your Bot
                         </MenuItem>
-                        <MenuItem data-testid="inviteOthersMenuItem" icon={<PeopleTeamAddRegular />} onClick={() => setIsGettingInvitationId(true)}>
+                        <MenuItem
+                            data-testid="inviteOthersMenuItem"
+                            icon={<PeopleTeamAddRegular />}
+                            onClick={() => setIsGettingInvitationId(true)}
+                        >
                             Invite others to your Bot
                         </MenuItem>
                     </MenuList>
