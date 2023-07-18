@@ -2,6 +2,8 @@
 namespace SemanticKernel.Data.Nl2Sql.Services;
 
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Data.Nl2Sql.Schema;
 
@@ -14,7 +16,7 @@ internal static class SchemaProvider
 
     public static async IAsyncEnumerable<string> InitializeAsync(IKernel kernel)
     {
-        await foreach (var schema in SchemasDefinitions.GetSchemasAsync())
+        await foreach (var schema in GetSchemasAsync())
         {
             var schemaText = await schema.FormatAsync(YamlSchemaFormatter.Instance).ConfigureAwait(false);
 
@@ -22,5 +24,26 @@ internal static class SchemaProvider
 
             yield return schema.Name;
         }
+    }
+
+    /// <summary>
+    /// Enumerates the <see cref="SchemaDefinition"/> known to the console.
+    /// </summary>
+    private static async IAsyncEnumerable<SchemaDefinition> GetSchemasAsync()
+    {
+        foreach (var schemaName in SchemasDefinitions.GetNames())
+        {
+            yield return await GetSchemaAsync(schemaName).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Helper method to load schema.json
+    /// </summary>
+    private static async Task<SchemaDefinition> GetSchemaAsync(string schemaName)
+    {
+        var filePath = Path.Combine(Repo.RootConfig, "schemas", $"{schemaName}.json");
+
+        return await SchemaSerializer.ReadAsync(filePath).ConfigureAwait(false);
     }
 }

@@ -2,9 +2,6 @@
 namespace SemanticKernel.Data.Nl2Sql;
 
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using SemanticKernel.Data.Nl2Sql.Schema;
 
 /// <summary>
 /// Defines the schemas initialized by the console.
@@ -12,25 +9,15 @@ using SemanticKernel.Data.Nl2Sql.Schema;
 internal static class SchemasDefinitions
 {
     /// <summary>
-    /// Enumerates the <see cref="SchemaDefinition"/> known to the console.
+    /// Enumerates the names of the schemas to be registered with the console.
     /// </summary>
     /// <remarks>
     /// After testing with the sample data-sources, try one of your own!
     /// </remarks>
-    public static async IAsyncEnumerable<SchemaDefinition> GetSchemasAsync()
+    public static IEnumerable<string> GetNames()
     {
-        yield return await GetSchemaAsync("adventureworkslt").ConfigureAwait(false);
-        yield return await GetSchemaAsync("descriptiontest").ConfigureAwait(false);
-        // TODO: Load your own schema here (comment-out others for focused exploration)
-    }
-
-    /// <summary>
-    /// Helper method to load schema.json
-    /// </summary>
-    private static async Task<SchemaDefinition> GetSchemaAsync(string schemaName)
-    {
-        var filePath = Path.Combine(Repo.RootConfig, "schemas", $"{schemaName}.json");
-
-        return await SchemaSerializer.ReadAsync(filePath).ConfigureAwait(false);
+        yield return "adventureworkslt";
+        yield return "descriptiontest";
+        // TODO: List your own schema here (comment-out others for focused exploration)
     }
 }

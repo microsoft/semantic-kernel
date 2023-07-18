@@ -241,28 +241,27 @@ internal class Nl2SqlConsole : BackgroundService
                 if (width == -1)
                 {
                     var remainingWidth = Console.WindowWidth - totalWidth;
-                    if (field.Length <= remainingWidth)
-                    {
-                        yield return field;
-                    }
-                    else
-                    {
-                        yield return field?.Substring(0, remainingWidth - 4) + "...";
-                    }
 
+                    yield return TrimValue(field, remainingWidth);
                     yield break;
                 }
 
                 totalWidth += width + 1;
 
-                if (field.Length <= width)
-                {
-                    yield return field;
-                    continue;
-                }
-
-                yield return field?.Substring(0, width - 4) + "...";
+                yield return TrimValue(field, width);
             }
+        }
+
+        string TrimValue(string? value, int width)
+        {
+            value ??= string.Empty;
+
+            if (value.Length <= width)
+            {
+                return value;
+            }
+
+            return value.Substring(0, width - 4) + "...";
         }
 
         void WriteSeparator(int[] widths)
