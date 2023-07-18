@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Document.FileSystem;
@@ -16,7 +15,7 @@ namespace SemanticKernel.Skills.UnitTests.Document;
 
 public class DocumentSkillTests
 {
-    private readonly SKContext _context = new(new ContextVariables(), NullMemory.Instance, null, NullLogger.Instance);
+    private readonly SKContext _context = new(new ContextVariables(), null, NullLogger.Instance);
 
     [Fact]
     public async Task ReadTextAsyncSucceedsAsync()

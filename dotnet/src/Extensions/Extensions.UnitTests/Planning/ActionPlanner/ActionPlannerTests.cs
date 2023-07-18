@@ -103,9 +103,7 @@ public sealed class ActionPlannerTests
     {
         var kernel = new Mock<IKernel>();
 
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = mockSkills;
-
         if (mockSkills == null)
         {
             skills = new Mock<ISkillCollection>();
@@ -116,14 +114,12 @@ public sealed class ActionPlannerTests
 
         var returnContext = new SKContext(
             new ContextVariables(testPlanString),
-            memory.Object,
             skills!.Object,
             new Mock<ILogger>().Object
         );
 
         var context = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills!.Object,
             new Mock<ILogger>().Object
         );

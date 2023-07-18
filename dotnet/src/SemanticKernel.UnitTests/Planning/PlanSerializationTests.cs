@@ -86,12 +86,10 @@ public sealed class PlanSerializationTests
         // Arrange Mocks
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -126,12 +124,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -166,12 +162,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -206,12 +200,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -245,12 +237,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -283,12 +273,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -342,12 +330,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -414,12 +400,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -467,7 +451,6 @@ public sealed class PlanSerializationTests
         cv.Update(string.Empty);
         var nextContext = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -502,12 +485,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -561,12 +542,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );

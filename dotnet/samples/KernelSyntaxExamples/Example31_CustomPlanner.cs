@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
@@ -28,6 +29,15 @@ internal static class Example31_CustomPlanner
         // ContextQuery is part of the QASkill
         IDictionary<string, ISKFunction> skills = LoadQASkill(kernel);
         SKContext context = CreateContextQueryContext(kernel);
+
+        // Create a memory store using the VolatileMemoryStore and the embedding generator regsitered in the kernel
+        using var semanticTextMemory = new SemanticTextMemory(
+          storage: new VolatileMemoryStore(),
+          embeddingGenerator: kernel.GetService<ITextEmbeddingGeneration>());
+
+        var memorySkill = new TextMemorySkill(semanticTextMemory);
+
+        kernel.ImportSkill(memorySkill);
 
         // Setup defined memories for recall
         await RememberFactsAsync(kernel);
@@ -84,8 +94,6 @@ internal static class Example31_CustomPlanner
 
     private static async Task RememberFactsAsync(IKernel kernel)
     {
-        kernel.ImportSkill(new TextMemorySkill());
-
         List<string> memoriesToSave = new()
         {
             "I like pizza and chicken wings.",
@@ -133,7 +141,6 @@ internal static class Example31_CustomPlanner
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
-            .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
     }
 }

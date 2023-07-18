@@ -54,12 +54,10 @@ public sealed class PlanTests
         var plan = new Plan(goal);
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var context = new SKContext(
             new ContextVariables("Some input"),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -92,12 +90,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -131,12 +127,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -170,12 +164,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -209,12 +201,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -248,12 +238,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -287,12 +275,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -333,12 +319,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -393,12 +377,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -429,12 +411,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(stepOutput),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -464,12 +444,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -547,12 +525,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -581,12 +557,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -622,12 +596,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -659,7 +631,6 @@ public sealed class PlanTests
 
         var contextOverride = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -681,12 +652,10 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -738,7 +707,6 @@ public sealed class PlanTests
         plan.AddSteps(planStep);
         var contextOverride = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -760,14 +728,12 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
-            log.Object
+           log.Object
         );
 
         var outlineMock = new Mock<ISKFunction>();
@@ -861,7 +827,6 @@ public sealed class PlanTests
         // Act
         var result = await plan.InvokeAsync(new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         ));
@@ -887,12 +852,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Arrange
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         );
@@ -915,7 +878,6 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Act
         var result = await plan.InvokeAsync(new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             log.Object
         ));

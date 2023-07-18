@@ -5,7 +5,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Moq;
@@ -24,7 +23,7 @@ public class CloudDriveSkillTests : IDisposable
     public CloudDriveSkillTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<SKContext>(output);
-        this._context = new SKContext(new ContextVariables(), NullMemory.Instance, null, this._logger, CancellationToken.None);
+        this._context = new SKContext(new ContextVariables(), null, this._logger, CancellationToken.None);
     }
 
     [Fact]

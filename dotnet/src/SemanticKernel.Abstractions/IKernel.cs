@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,6 +86,7 @@ public interface IKernel
     /// Set the semantic memory to use
     /// </summary>
     /// <param name="memory">Semantic memory instance</param>
+    [Obsolete("Memory no longer managed in IKernel. Instead, initialize your skill class with the memory provider it needs.")]
     void RegisterMemory(ISemanticTextMemory memory);
 
     /// <summary>

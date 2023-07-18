@@ -27,8 +27,6 @@ public sealed class SequentialPlannerTests
         var kernel = new Mock<IKernel>();
         kernel.Setup(x => x.Log).Returns(new Mock<ILogger>().Object);
 
-        var memory = new Mock<ISemanticTextMemory>();
-
         var input = new List<(string name, string skillName, string description, bool isSemantic)>()
         {
             ("SendEmail", "email", "Send an e-mail", false),
@@ -66,14 +64,12 @@ public sealed class SequentialPlannerTests
 
         var context = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             new Mock<ILogger>().Object
         );
 
         var returnContext = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             new Mock<ILogger>().Object
         );
@@ -153,8 +149,6 @@ public sealed class SequentialPlannerTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        // kernel.Setup(x => x.Log).Returns(new Mock<ILogger>().Object);
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var functionsView = new FunctionsView();
@@ -163,14 +157,12 @@ public sealed class SequentialPlannerTests
         var planString = "<plan>notvalid<</plan>";
         var returnContext = new SKContext(
             new ContextVariables(planString),
-            memory.Object,
             skills.Object,
             new Mock<ILogger>().Object
         );
 
         var context = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             new Mock<ILogger>().Object
         );
