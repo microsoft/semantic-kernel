@@ -39,6 +39,7 @@ export const EnterManifestStep: React.FC<IEnterManifestStepProps> = ({ manifestD
             try {
                 const validUrl = new URL(data.value);
                 setValidManifestDomain(validUrl.toString());
+                setValidationError(undefined);
             } catch (e) {
                 setValidationError('Domain is an invalid URL.');
             }
