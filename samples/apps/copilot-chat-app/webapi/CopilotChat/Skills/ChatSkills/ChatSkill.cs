@@ -267,7 +267,7 @@ public class ChatSkill
 
         // 4. Query relevant semantic memories
         var chatMemoriesTokenLimit = (int)(remainingToken * this._promptOptions.MemoriesResponseContextWeight);
-        var chatMemories = await this._semanticChatMemorySkill.QueryMemoriesAsync(chatContext, userIntent, chatId, chatMemoriesTokenLimit, chatContext.Memory);
+        var chatMemories = await this._semanticChatMemorySkill.QueryMemoriesAsync(userIntent, chatId, chatMemoriesTokenLimit, chatContext.Memory);
         if (chatContext.ErrorOccurred)
         {
             return string.Empty;
@@ -378,7 +378,7 @@ public class ChatSkill
     /// </summary>
     private Task<string> QueryChatMemoriesAsync(SKContext context, string userIntent, int tokenLimit)
     {
-        return this._semanticChatMemorySkill.QueryMemoriesAsync(context, userIntent, context["chatId"], tokenLimit, context.Memory);
+        return this._semanticChatMemorySkill.QueryMemoriesAsync(userIntent, context["chatId"], tokenLimit, context.Memory);
     }
 
     /// <summary>

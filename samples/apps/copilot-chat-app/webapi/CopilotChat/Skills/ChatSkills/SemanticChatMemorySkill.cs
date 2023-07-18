@@ -34,16 +34,17 @@ public class SemanticChatMemorySkill
     /// <summary>
     /// Query relevant memories based on the query.
     /// </summary>
-    /// <param name="context">The SKContext</param>
     /// <param name="query">Query to match.</param>
+    /// <param name="chatId">Chat ID to query history from.</param>
+    /// <param name="tokenLimit">Maximum number of tokens.</param>
+    /// <param name="textMemory">Semantic text memory.</param>
     /// <returns>A string containing the relevant memories.</returns>
     [SKFunction, Description("Query chat memories")]
     public async Task<string> QueryMemoriesAsync(
-        SKContext context,
         [Description("Query to match.")] string query,
         [Description("Chat ID to query history from")] string chatId,
         [Description("Maximum number of tokens")] int tokenLimit,
-        ISemanticTextMemory textMemory)
+        [Description("Semantic text memory")] ISemanticTextMemory textMemory)
     {
         var remainingToken = tokenLimit;
 

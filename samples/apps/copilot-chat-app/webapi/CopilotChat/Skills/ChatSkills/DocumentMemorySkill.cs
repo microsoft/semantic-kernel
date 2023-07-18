@@ -46,13 +46,16 @@ public class DocumentMemorySkill
     /// Query the document memory collection for documents that match the query.
     /// </summary>
     /// <param name="query">Query to match.</param>
-    /// <param name="context">The SkContext.</param>
+    /// <param name="chatId">ID of the chat that owns the documents.</param>
+    /// <param name="tokenLimit">Maximum number of tokens.</param>
+    /// <param name="textMemory">Semantic text memory.</param>
+    /// <returns>A string containing snippets from the relevant documents.</returns>
     [SKFunction, Description("Query documents in the memory given a user message")]
     public async Task<string> QueryDocumentsAsync(
         [Description("Query to match.")] string query,
         [Description("ID of the chat that owns the documents")] string chatId,
         [Description("Maximum number of tokens")] int tokenLimit,
-        ISemanticTextMemory textMemory)
+        [Description("Semantic text memory")] ISemanticTextMemory textMemory)
     {
         var remainingToken = tokenLimit;
 
