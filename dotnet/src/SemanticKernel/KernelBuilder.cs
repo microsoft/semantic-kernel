@@ -92,7 +92,7 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
-    /// Add logging to the kernel to be built.
+    /// Enables logging in the kernel to be built.
     /// </summary>
     /// <param name="logger">Logger to add.</param>
     /// <returns>Updated kernel builder with enabled logging.</returns>
@@ -104,9 +104,14 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
-    /// Add metering to the kernel to be built.
+    /// Enables metering in the kernel to be built.
     /// </summary>
     /// <param name="meterListener">Instance of <see cref="MeterListener"/> to be used for kernel metering.</param>
+    /// <remarks>
+    /// Note: some properties of passed <see cref="MeterListener"/> will be overridden
+    /// in order to subscribe to all <see cref="Kernel"/> metering events.
+    /// It's recommended to use dedicated instance of <see cref="MeterListener"/> for <see cref="Kernel"/>.
+    /// </remarks>
     /// <returns>Kernel builder with enabled metering.</returns>
     public KernelBuilder WithMetering(MeterListener meterListener)
     {
@@ -126,9 +131,14 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
-    /// Add tracing to the kernel to be built.
+    /// Enables tracing in the kernel to be built.
     /// </summary>
     /// <param name="activityListener">Instance of <see cref="ActivityListener"/> to be used for kernel tracing.</param>
+    /// <remarks>
+    /// Note: some properties of passed <see cref="ActivityListener"/> will be overridden
+    /// in order to subscribe to all <see cref="Kernel"/> tracing events.
+    /// It's recommended to use dedicated instance of <see cref="ActivityListener"/> for <see cref="Kernel"/>.
+    /// </remarks>
     /// <returns>Kernel builder with enabled tracing.</returns>
     public KernelBuilder WithTracing(ActivityListener activityListener)
     {
