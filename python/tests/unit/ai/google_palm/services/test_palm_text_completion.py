@@ -40,7 +40,7 @@ def test_google_palm_text_completion_init_with_empty_api_key() -> None:
 async def test_google_palm_text_completion_call_with_parameters() -> None:
     mock_gp = AsyncMock()
     with patch (
-        "semantic_kernel.connectors.ai.google_palm.services.gp_text_completion.GooglePalmTextCompletion",
+        "semantic_kernel.connectors.ai.google_palm.services.gp_text_completion.palm",
         new=mock_gp,
     ):
         model_id = "test_model_id"
@@ -62,5 +62,7 @@ async def test_google_palm_text_completion_call_with_parameters() -> None:
             candidate_count=settings.candidate_count,
             top_p=settings.top_p,
         )
+        
+        
 
         

@@ -2,7 +2,7 @@
 
 import semantic_kernel as sk
 import asyncio
-import semantic_kernel.connectors.ai.google_palm.services.gp_text_completion as sk_gp
+import semantic_kernel.connectors.ai.google_palm as sk_gp
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings
 )
@@ -11,7 +11,7 @@ async def text_completion_example(kernel, api_key, user_mssg, settings):
     palm_text_completion = sk_gp.GooglePalmTextCompletion(
         "models/text-bison-001", api_key
     )
-    kernel.add_text_completion_service("palm-2", palm_text_completion)
+    kernel.add_text_completion_service("models/text-bison-001", palm_text_completion)
     answer = await palm_text_completion.complete_async(user_mssg, settings)
     return answer
 
