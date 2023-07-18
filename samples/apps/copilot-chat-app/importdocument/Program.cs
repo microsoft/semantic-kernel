@@ -13,7 +13,7 @@ using Microsoft.Identity.Client;
 namespace ImportDocument;
 
 /// <summary>
-/// This console app imports a file to the CopilotChat WebAPI document memory store.
+/// This console app imports a list of files to the CopilotChat WebAPI document memory store.
 /// </summary>
 public static class Program
 {
@@ -26,12 +26,12 @@ public static class Program
             return;
         }
 
-        var fileOption = new Option<FileInfo>(name: "--file", description: "The file to import to document memory store.")
+        var filesOption = new Option<IEnumerable<FileInfo>>(name: "--files", description: "The files to import to document memory store.")
         {
-            IsRequired = true
+            IsRequired = true,
+            AllowMultipleArgumentsPerToken = true,
         };
 
-        // TODO: UI to retrieve ChatID from the WebApp will be added in the future with multi-user support.
         var chatCollectionOption = new Option<Guid>(
             name: "--chat-id",
             description: "Save the extracted context to an isolated chat collection.",
@@ -39,17 +39,17 @@ public static class Program
         );
 
         var rootCommand = new RootCommand(
-            "This console app imports a file to the CopilotChat WebAPI's document memory store."
+            "This console app imports files to the CopilotChat WebAPI's document memory store."
         )
         {
-            fileOption, chatCollectionOption
+            filesOption, chatCollectionOption
         };
 
-        rootCommand.SetHandler(async (file, chatCollectionId) =>
+        rootCommand.SetHandler(async (files, chatCollectionId) =>
             {
-                await UploadFileAsync(file, config!, chatCollectionId);
+                await ImportFilesAsync(files, config!, chatCollectionId);
             },
-            fileOption, chatCollectionOption
+            filesOption, chatCollectionOption
         );
 
         rootCommand.Invoke(args);
@@ -97,17 +97,20 @@ public static class Program
     }
 
     /// <summary>
-    /// Conditionally uploads a file to the Document Store for parsing.
+    /// Conditionally imports a list of files to the Document Store.
     /// </summary>
-    /// <param name="file">The file to upload for injection.</param>
+    /// <param name="files">A list of files to import.</param>
     /// <param name="config">Configuration.</param>
     /// <param name="chatCollectionId">Save the extracted context to an isolated chat collection.</param>
-    private static async Task UploadFileAsync(FileInfo file, Config config, Guid chatCollectionId)
+    private static async Task ImportFilesAsync(IEnumerable<FileInfo> files, Config config, Guid chatCollectionId)
     {
-        if (!file.Exists)
+        foreach (var file in files)
         {
-            Console.WriteLine($"File {file.FullName} does not exist.");
-            return;
+            if (!file.Exists)
+            {
+                Console.WriteLine($"File {file.FullName} does not exist.");
+                return;
+            }
         }
 
         IAccount? userAccount = null;
@@ -120,11 +123,12 @@ public static class Program
         }
         Console.WriteLine($"Successfully acquired User ID. Continuing...");
 
-        using var fileContent = new StreamContent(file.OpenRead());
-        using var formContent = new MultipartFormDataContent
+        using var formContent = new MultipartFormDataContent();
+        List<StreamContent> filesContent = files.Select(file => new StreamContent(file.OpenRead())).ToList();
+        for (int i = 0; i < filesContent.Count; i++)
         {
-            { fileContent, "formFile", file.Name }
-        };
+            formContent.Add(filesContent[i], "formFiles", files.ElementAt(i).Name);
+        }
 
         var userId = userAccount!.HomeAccountId.Identifier;
         var userName = userAccount.Username;
@@ -152,6 +156,12 @@ public static class Program
 
             // Calling UploadAsync here to make sure disposable objects are still in scope.
             await UploadAsync(formContent, accessToken!, config);
+        }
+
+        // Dispose of all the file streams.
+        foreach (var fileContent in filesContent)
+        {
+            fileContent.Dispose();
         }
     }
 
@@ -185,7 +195,7 @@ public static class Program
         try
         {
             using HttpResponseMessage response = await httpClient.PostAsync(
-                new Uri(new Uri(config.ServiceUri), "importDocument"),
+                new Uri(new Uri(config.ServiceUri), "importDocuments"),
                 multipartFormDataContent
             );
 

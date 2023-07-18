@@ -4,8 +4,10 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>samples</artifactId>
-    <version>0.2.3-alpha-SNAPSHOT</version>
+    <version>0.2.7-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>Semantic Kernel Samples Parent</name>
+    <description>Parent pom for sample code for using the Semantic Kernel project</description>
 
     <modules>
         <module>sample-code</module>
@@ -86,12 +88,12 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>sequentialplanner-extensions</artifactId>
+            <artifactId>semantickernel-sequentialplanner-extension</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>actionplanner-extension</artifactId>
+            <artifactId>semantickernel-actionplanner-extension</artifactId>
             <scope>compile</scope>
         </dependency>
     </dependencies>

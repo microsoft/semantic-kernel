@@ -29,7 +29,7 @@ public sealed class SKFunctionTests3
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
-        Assert.All(functions, f => Assert.NotNull(f));
+        Assert.All(functions, Assert.NotNull);
     }
 
     [Fact]

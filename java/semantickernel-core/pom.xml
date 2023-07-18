@@ -6,13 +6,14 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
-        <version>0.2.3-alpha-SNAPSHOT</version>
+        <version>0.2.7-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>semantickernel-core</artifactId>
     <packaging>jar</packaging>
-
+    <name>Semantic Kernel Core</name>
+    <description>Implementation of the Semantic Kernel</description>
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -82,12 +83,12 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>sequentialplanner-extensions</artifactId>
+            <artifactId>semantickernel-sequentialplanner-extension</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>actionplanner-extension</artifactId>
+            <artifactId>semantickernel-actionplanner-extension</artifactId>
             <scope>test</scope>
         </dependency>
 

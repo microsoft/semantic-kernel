@@ -52,14 +52,4 @@ public interface IPromptTemplateEngine
     IList<Block> RenderVariables(
         IList<Block> blocks,
         ContextVariables? variables);
-
-    /// <summary>
-    /// Given a list of blocks, render the Code Blocks, executing the functions and replacing placeholders with the functions result
-    /// </summary>
-    /// <param name="blocks">List of blocks, typically all the blocks found in a template</param>
-    /// <param name="executionContext">Access into the current kernel execution context</param>
-    /// <returns>An updated list of blocks where Code Blocks have rendered to Text Blocks</returns>
-    Task<IList<Block>> RenderCodeAsync(
-        IList<Block> blocks,
-        SKContext executionContext);
 }

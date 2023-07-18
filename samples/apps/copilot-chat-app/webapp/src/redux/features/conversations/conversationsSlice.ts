@@ -45,6 +45,10 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
         ) => {
             const { user, chatId } = action.payload;
             state.conversations[chatId].users.push(user);
+            state.conversations[chatId].userDataLoaded = false;
+        },
+        setUsersLoaded: (state: ConversationsState, action: PayloadAction<string>) => {
+            state.conversations[action.payload].userDataLoaded = true;
         },
         /*
          * updateConversationFromUser() and updateConversationFromServer() both update the conversations state.
@@ -122,6 +126,7 @@ export const {
     updateMessageState,
     updateUserIsTyping,
     updateUserIsTypingFromServer,
+    setUsersLoaded,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

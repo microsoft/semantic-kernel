@@ -69,6 +69,7 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         if (httpClient == null)
         {
             this._httpClient = new();
+            this._apiKey = apiKey;
             if (!string.IsNullOrEmpty(apiKey))
             {
                 this._httpClient.DefaultRequestHeaders.Add(AuthorizationHeaderName, apiKey);
