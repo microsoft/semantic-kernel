@@ -3,18 +3,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Moq;
 using Xunit;
-using static Microsoft.SemanticKernel.Skills.MsGraph.EmailSkill;
 
 namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
 public class EmailSkillTests
 {
-    private readonly SKContext _context = new();
-
     [Fact]
     public async Task SendEmailAsyncSucceedsAsync()
     {
@@ -29,14 +25,10 @@ public class EmailSkillTests
         string anySubject = Guid.NewGuid().ToString();
         string anyRecipient = Guid.NewGuid().ToString();
 
-        this._context.Variables.Set(Parameters.Recipients, anyRecipient);
-        this._context.Variables.Set(Parameters.Subject, anySubject);
-
         // Act
         await target.SendEmailAsync(anyContent, anyRecipient, anySubject);
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -92,7 +84,6 @@ public class EmailSkillTests
 
         // Assert
         Assert.Equal(anyEmailAddress, actual);
-        Assert.False(this._context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 }
