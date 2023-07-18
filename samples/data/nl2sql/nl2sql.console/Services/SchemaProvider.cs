@@ -42,7 +42,7 @@ internal static class SchemaProvider
     /// </summary>
     private static async Task<SchemaDefinition> GetSchemaAsync(string schemaName)
     {
-        var filePath = Path.Combine(Repo.RootConfig, "schemas", $"{schemaName}.json");
+        var filePath = Path.Combine(Repo.RootConfigFolder, "schemas", $"{schemaName}.json");
 
         return await SchemaSerializer.ReadAsync(filePath).ConfigureAwait(false);
     }

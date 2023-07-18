@@ -28,7 +28,7 @@ internal sealed class SqlQueryGenerator
 
     public SqlQueryGenerator(IKernel kernel)
     {
-        var functions = kernel.ImportSemanticSkillFromDirectory(Repo.RootConfig, "nl2sql");
+        var functions = kernel.ImportSemanticSkillFromDirectory(Repo.RootConfigFolder, "prompts");
         this.promptEval = functions["isquery"];
         this.promptGenerator = functions["generatequery"];
 

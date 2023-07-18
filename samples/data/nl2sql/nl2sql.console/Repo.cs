@@ -11,7 +11,7 @@ internal static class Repo
 {
     public static string RootFolder { get; } = GetRoot();
 
-    public static string RootConfig { get; } = $@"{Repo.RootFolder}\samples\data\nl2sql\nl2sql.config";
+    public static string RootConfigFolder { get; } = $@"{Repo.RootFolder}\samples\data\nl2sql\nl2sql.config";
 
     private static string GetRoot()
     {

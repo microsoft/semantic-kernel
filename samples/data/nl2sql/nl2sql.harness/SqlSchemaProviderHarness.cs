@@ -75,7 +75,7 @@ public sealed class SqlSchemaProviderHarness
 
     private async Task SaveSchemaAsync(string extension, string databaseKey, string schemaText)
     {
-        var fileName = Path.Combine(Repo.RootConfig, "schemas", $"{databaseKey}.{extension}");
+        var fileName = Path.Combine(Repo.RootConfigFolder, "schemas", $"{databaseKey}.{extension}");
 
         using var streamCompact =
             new StreamWriter(

@@ -43,12 +43,12 @@ SETX AZURE_OPENAI_DEPLOYMENT_NAME "gpt-4"
 - `AdventureWorksLT` - This is the *light* version of the well known sample database.
     - [Azure Setup](https://learn.microsoft.com/en-us/sql/samples/adventureworks-install-configure#deploy-to-azure-sql-database)
     - [Local Setup](https://learn.microsoft.com/en-us/sql/samples/adventureworks-install-configure#download-backup-files)
-- `DescriptionTest` - This is a database designed to exercise the description semantics of the schema expression.  The table and column names are completely devoid of meaning; however, description meta-data has been injected: [DescriptionTest.yaml](../nl2sql.config/schemas/DescriptionTest.yaml)
+- `DescriptionTest` - This is a database designed to exercise the description semantics of the schema expression.  The table and column names are completely devoid of meaning; however, description meta-data has been injected: [DescriptionTest.yaml](./schemas/DescriptionTest.yaml)
     - [Create a blank database.](https://learn.microsoft.com/en-us/azure/azure-sql/database/single-database-create-quickstart?view=azuresql&tabs=azure-portal)
     > Note: ['Basic'](https://learn.microsoft.com/en-us/azure/azure-sql/database/purchasing-models?view=azuresql-db) is an adequate service-tier for this sample.
-    - [Create and populate table A - (Users)](./sql//DescriptionTest) (`A.sql`)
-    - [Create and populate table B - (Interest Categories)](./sql//DescriptionTest) (`B.sql`)
-    - [Create and populate table C - (Association of users & categories)](./sql//DescriptionTest) (`C.sql`)
+    - [Create and populate table A - (Users)](./sql/DescriptionTest) (`A.sql`)
+    - [Create and populate table B - (Interest Categories)](./sql/DescriptionTest) (`B.sql`)
+    - [Create and populate table C - (Association of users & categories)](./sql/DescriptionTest) (`C.sql`)
 - Ensure [Network Access](https://learn.microsoft.com/en-us/azure/azure-sql/database/connectivity-settings?view=azuresql&tabs=azure-portal) if connecting to Azure hosted SQL.
     > Note: [Connecting to Azure SQL database via SSMS](https://learn.microsoft.com/en-us/sql/ssms/object/connect-to-an-instance-from-object-explorer) will prompt to configure an IP based firewall rule.
 
@@ -78,7 +78,7 @@ await this.CaptureSchemaAsync(
     "YourSchema",
     "A description for your-schema.").ConfigureAwait(false);
 ```
-3. Review YourSchema.json in the [schemas](../nl2sql.config/schemas/) folder.
+3. Review YourSchema.json in the [schemas](./schemas/) folder.
 1. Replace the default configuration with your own in [SchemaDefinitions.cs](../nl2sql.console/SchemasDefinitions.cs):
 ```
 public static IEnumerable<string> GetNames()
