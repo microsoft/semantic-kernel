@@ -1,3 +1,4 @@
+-- Table and column identities devoid of meaning
 create table A (
   A0 INT PRIMARY KEY,
   A1 VARCHAR(50),
@@ -8,6 +9,7 @@ create table A (
   A6 VARCHAR(50)
 );
 
+-- Descriptions captured as extened-properties
 EXEC sys.sp_addextendedproperty 
 @name  = N'MS_Description', @value = N'Registered users', 
 @level0type = N'SCHEMA', @level0name = N'dbo', 
@@ -48,6 +50,7 @@ EXEC sys.sp_addextendedproperty
 @level1type = N'TABLE', @level1name = A,
 @level2type = N'COLUMN', @level2name = A6;
 
+-- Sample data
 insert into A (A0, A1, A2, A3, A4, A5, A6) values (1, 'Aldrich', 'Bineham', 'abineham0@ezinearticles.com', 'Male', null, null);
 insert into A (A0, A1, A2, A3, A4, A5, A6) values (2, 'May', 'Darnell', 'mdarnell1@trellian.com', 'Female', 'Dongxi', 'China');
 insert into A (A0, A1, A2, A3, A4, A5, A6) values (3, 'Irving', 'McDonogh', 'imcdonogh2@mediafire.com', 'Male', null, 'Argentina');

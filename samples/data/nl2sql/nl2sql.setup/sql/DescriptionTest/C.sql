@@ -1,8 +1,11 @@
+-- Table and column identities devoid of meaning
 create table C (
   C0 INT,
   C1 INT REFERENCES A,
   C2 INT REFERENCES B,
 );
+
+-- Descriptions captured as extened-properties
 EXEC sys.sp_addextendedproperty 
 @name  = N'MS_Description', @value = N'Associate registered users with interest categories', 
 @level0type = N'SCHEMA', @level0name = N'dbo', 
@@ -23,6 +26,7 @@ EXEC sys.sp_addextendedproperty
 @level1type = N'TABLE', @level1name = C,
 @level2type = N'COLUMN', @level2name = C2;
 
+-- Sample data
 insert into C (C0, C1, C2) values (1, 856, 7);
 insert into C (C0, C1, C2) values (2, 59, 20);
 insert into C (C0, C1, C2) values (3, 878, 1);

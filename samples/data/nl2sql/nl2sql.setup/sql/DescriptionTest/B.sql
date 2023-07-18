@@ -1,8 +1,11 @@
+-- Table and column identities devoid of meaning
 create table B (
   B0 INT PRIMARY KEY,
   B1 VARCHAR(50),
   B2 BIT
 );
+
+-- Descriptions captured as extened-properties
 EXEC sys.sp_addextendedproperty 
 @name  = N'MS_Description', @value = N'Interest Categories', 
 @level0type = N'SCHEMA', @level0name = N'dbo', 
@@ -23,6 +26,7 @@ EXEC sys.sp_addextendedproperty
 @level1type = N'TABLE', @level1name = B,
 @level2type = N'COLUMN', @level2name = B2;
 
+-- Sample data
 insert into B (B0, B1, B2) values (1, 'Food', 0);
 insert into B (B0, B1, B2) values (2, 'Toys', 0);
 insert into B (B0, B1, B2) values (3, 'Clothing', 0);
