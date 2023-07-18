@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#define DISABLEHOST
-
+#define DISABLEHOST // Comment line to enable
 namespace SemanticKernel.Data.Nl2Sql.Harness;
 
 using System.IO;
@@ -19,7 +18,7 @@ using Xunit.Abstractions;
 public sealed class SqlSchemaProviderHarness
 {
 #if DISABLEHOST
-    private const string SkipReason = "Host only runs locally";
+    private const string SkipReason = "Harness only for local/dev environment";
 #else
     private const string SkipReason = null;
 #endif
