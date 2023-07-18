@@ -74,7 +74,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         // Import AI Plugin
         var skill = await kernel.ImportAIPluginAsync(
             SkillResourceNames.AzureKeyVault,
-            stream,
+            stream!,
             new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
