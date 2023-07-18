@@ -40,6 +40,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
+        this.LogActionDetails();
         return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
     }
 
@@ -49,6 +50,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
+        this.LogActionDetails();
         return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
     }
 }
