@@ -5,7 +5,7 @@ create table C (
   C2 INT REFERENCES B,
 );
 
--- Descriptions captured as extened-properties
+-- Descriptions captured as extended-properties
 EXEC sys.sp_addextendedproperty 
 @name  = N'MS_Description', @value = N'Associate registered users with interest categories', 
 @level0type = N'SCHEMA', @level0name = N'dbo', 

@@ -1,6 +1,6 @@
 Generate a SQL SELECT query that is compatible with Microsoft SQL Server and achieves the OBJECTIVE exclusively using only the tables and views described in "SCHEMA:".
 
-Only genreate a SQL if the OBJECTIVE can be answered by querying a database with tables described in SCHEMA.
+Only generate a SQL if the OBJECTIVE can be answered by querying a database with tables described in SCHEMA.
 
 Do not include any explanations, only provide valid SQL.
 

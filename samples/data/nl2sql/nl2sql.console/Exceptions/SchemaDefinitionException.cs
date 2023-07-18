@@ -5,7 +5,7 @@ using System;
 using System.Runtime.Serialization;
 
 /// <summary>
-/// Respresents a failure reading a serialized schema definition.
+/// Represents a failure reading a serialized schema definition.
 /// </summary>
 [Serializable]
 public class SchemaDefinitionException : Exception

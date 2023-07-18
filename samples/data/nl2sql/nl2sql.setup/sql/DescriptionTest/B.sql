@@ -5,7 +5,7 @@ create table B (
   B2 BIT
 );
 
--- Descriptions captured as extened-properties
+-- Descriptions captured as extended-properties
 EXEC sys.sp_addextendedproperty 
 @name  = N'MS_Description', @value = N'Interest Categories', 
 @level0type = N'SCHEMA', @level0name = N'dbo', 

@@ -5,7 +5,7 @@ using System;
 using System.Runtime.Serialization;
 
 /// <summary>
-/// Respresents a failure or unexpected condition parsing the result of a semantic function.
+/// Represents a failure or unexpected condition parsing the result of a semantic function.
 /// </summary>
 [Serializable]
 public class ResultParsingException : Exception

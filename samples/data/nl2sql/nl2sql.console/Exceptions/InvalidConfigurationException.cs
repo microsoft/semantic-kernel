@@ -5,7 +5,7 @@ using System;
 using System.Runtime.Serialization;
 
 /// <summary>
-/// Respresents a missing or unexpected configuration setting.
+/// Represents a missing or unexpected configuration setting.
 /// </summary>
 [Serializable]
 public class InvalidConfigurationException : Exception

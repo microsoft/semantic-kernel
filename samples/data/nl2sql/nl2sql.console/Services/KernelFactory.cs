@@ -28,8 +28,8 @@ internal static class KernelFactory
     /// <summary>
     /// Penalty for using any model less than GPT4 for SQL generation.
     /// </summary>
-    private const string DefaulChatModel = "gpt-4";
-    private const string DefaulEmbedModel = "text-embedding-ada-003";
+    private const string DefaultChatModel = "gpt-4";
+    private const string DefaultEmbedModel = "text-embedding-ada-003";
 
     /// <summary>
     /// Factory method for <see cref="IServiceCollection"/>
@@ -81,8 +81,8 @@ internal static class KernelFactory
             builder.WithLogger(logger);
         }
 
-        modelCompletion ??= DefaulChatModel;
-        modelEmbedding ??= DefaulEmbedModel;
+        modelCompletion ??= DefaultChatModel;
+        modelEmbedding ??= DefaultEmbedModel;
 
         builder
             .WithMemoryStorage(new VolatileMemoryStore())
@@ -110,8 +110,8 @@ internal static class KernelFactory
             builder.WithLogger(logger);
         }
 
-        modelCompletion ??= DefaulChatModel;
-        modelEmbedding ??= DefaulEmbedModel;
+        modelCompletion ??= DefaultChatModel;
+        modelEmbedding ??= DefaultEmbedModel;
 
         builder
             .WithMemoryStorage(new VolatileMemoryStore())

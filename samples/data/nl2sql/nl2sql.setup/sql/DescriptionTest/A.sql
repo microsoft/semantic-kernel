@@ -9,7 +9,7 @@ create table A (
   A6 VARCHAR(50)
 );
 
--- Descriptions captured as extened-properties
+-- Descriptions captured as extended-properties
 EXEC sys.sp_addextendedproperty 
 @name  = N'MS_Description', @value = N'Registered users', 
 @level0type = N'SCHEMA', @level0name = N'dbo', 

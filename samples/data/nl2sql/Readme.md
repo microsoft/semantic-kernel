@@ -10,7 +10,7 @@ Whether or not this approach provides an adequate or cost-effective solution for
 While a full ecosystem for data-retrieval and processing includes components and capabilities in addition to natural language query generation, this sample aims to:
 
 1. Demonstrate the natural ability of LLM to reason over an objective and generate a SQL query.
-1. Allow exploration of any *(SQL Server)* database (on-premesis or cloud hosted).
+1. Allow exploration of any *(SQL Server)* database (on-premises or cloud hosted).
 
 ## Sample Info
 
