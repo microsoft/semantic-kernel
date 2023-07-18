@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.3.2.dev"
+version = "0.3.3.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -40,6 +40,11 @@ pinecone-client = "^2.2.2"
 psycopg-pool = "^3.1.7"
 psycopg = "^3.1.9"
 psycopg-binary = "^3.1.9"
+
+[tool.poetry.group.azure_search.dependencies]
+azure-search-documents = {version = "11.4.0b6", allow-prereleases = true}
+azure-core = "^1.28.0"
+azure-identity = "^1.13.0"
 
 [tool.isort]
 profile = "black"

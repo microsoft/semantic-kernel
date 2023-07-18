@@ -7,9 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
@@ -237,60 +234,6 @@ public sealed class Kernel : IKernel, IDisposable
         {
             return service;
         }
-
-        if (typeof(T) == typeof(ITextCompletion))
-        {
-            name ??= this.Config.DefaultServiceId;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (!this.Config.TextCompletionServices.TryGetValue(name, out Func<IKernel, ITextCompletion> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' text completion service not available");
-            }
-
-            var serv = factory.Invoke(this);
-            return (T)serv;
-        }
-
-        if (typeof(T) == typeof(IEmbeddingGeneration<string, float>))
-        {
-            name ??= this.Config.DefaultServiceId;
-
-            if (!this.Config.TextEmbeddingGenerationServices.TryGetValue(name, out Func<IKernel, IEmbeddingGeneration<string, float>> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' text embedding service not available");
-            }
-
-            var serv = factory.Invoke(this);
-            return (T)serv;
-        }
-
-        if (typeof(T) == typeof(IChatCompletion))
-        {
-            name ??= this.Config.DefaultServiceId;
-
-            if (!this.Config.ChatCompletionServices.TryGetValue(name, out Func<IKernel, IChatCompletion> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' chat completion service not available");
-            }
-
-            var serv = factory.Invoke(this);
-            return (T)serv;
-        }
-
-        if (typeof(T) == typeof(IImageGeneration))
-        {
-            name ??= this.Config.DefaultServiceId;
-
-            if (!this.Config.ImageGenerationServices.TryGetValue(name, out Func<IKernel, IImageGeneration> factory))
-            {
-                throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"'{name}' image generation service not available");
-            }
-
-            var serv = factory.Invoke(this);
-            return (T)serv;
-        }
-#pragma warning restore CS0618 // Type or member is obsolete
 
         throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
     }
