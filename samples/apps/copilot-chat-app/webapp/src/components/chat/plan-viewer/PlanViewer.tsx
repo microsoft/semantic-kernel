@@ -131,7 +131,7 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
 
     return (
         <div className={classes.container}>
-            <Text>Based on the request, Copilot Chat will run the following steps:</Text>
+            <Text>Based on the request, Chat Copilot will run the following steps:</Text>
             <Text weight="bold">{`Goal: ${description}`}</Text>
             {plan.steps.map((step: any, index: number) => {
                 return (

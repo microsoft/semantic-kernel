@@ -39,7 +39,7 @@ export const DeleteChatDialog: React.FC<IEditChatNameProps> = ({ chatName }) => 
                 <DialogBody>
                     <DialogTitle>Are you sure you want to delete chat {chatName}?</DialogTitle>
                     <DialogContent>
-                        This will permanently delete the chat for you—but not for Copilot Chat. You need to delete
+                        This will permanently delete the chat for you—but not for Chat Copilot. You need to delete
                         anything that you have shared (files, tasks, etc.) separately.
                     </DialogContent>
                     <DialogActions className={classes.actions}>

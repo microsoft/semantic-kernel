@@ -1,6 +1,6 @@
 import { Body1, Input, InputOnChangeData, Subtitle1, Text, makeStyles, tokens } from '@fluentui/react-components';
 import { ErrorCircle16Regular } from '@fluentui/react-icons';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 export const useClasses = makeStyles({
     error: {
@@ -9,30 +9,33 @@ export const useClasses = makeStyles({
         columnGap: tokens.spacingHorizontalS,
         alignItems: 'center',
     },
+    focus: {},
 });
 
 interface IEnterManifestStepProps {
     manifestDomain?: string;
-    setValidManifestDomain: (domain: string) => void;
+    manifestDomainError?: string;
+    setValidManifestDomain: (domain: string, error?: string) => void;
 }
 
-export const EnterManifestStep: React.FC<IEnterManifestStepProps> = ({ manifestDomain, setValidManifestDomain }) => {
+export const EnterManifestStep: React.FC<IEnterManifestStepProps> = ({
+    manifestDomain,
+    manifestDomainError,
+    setValidManifestDomain,
+}) => {
     const classes = useClasses();
-
-    const [input, setInput] = useState<string>(manifestDomain ?? '');
-    const [validationError, setValidationError] = useState<string | undefined>();
 
     const onInputChange = useCallback(
         (ev: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
             ev.preventDefault();
-            setInput(data.value);
+            setValidManifestDomain(data.value);
 
+            // TODO: add debouncing or throttling to avoid excessive validation calls
             try {
                 const validUrl = new URL(data.value);
-                setValidManifestDomain(validUrl.toString());
-                setValidationError(undefined);
+                setValidManifestDomain(validUrl.toString(), undefined);
             } catch (e) {
-                setValidationError('Domain is an invalid URL.');
+                setValidManifestDomain(data.value, 'Domain is an invalid URL.');
             }
         },
         [setValidManifestDomain],
@@ -60,18 +63,19 @@ export const EnterManifestStep: React.FC<IEnterManifestStepProps> = ({ manifestD
                 required
                 type="text"
                 id={'plugin-domain-input'}
-                value={input}
+                value={manifestDomain ?? ''}
                 onChange={onInputChange}
                 placeholder={`yourdomain.com`}
+                autoFocus
             />
-            {validationError && (
+            {manifestDomainError && (
                 <div className={classes.error}>
                     <ErrorCircle16Regular />
-                    <Body1>{validationError}</Body1>
+                    <Body1>{manifestDomainError}</Body1>
                 </div>
             )}
             <Body1 italic>
-                Note: Copilot Chat currently only supports plugins requiring{' '}
+                Note: Chat Copilot currently only supports plugins requiring{' '}
                 <a
                     href={'https://platform.openai.com/docs/plugins/authentication/no-authentication'}
                     target="_blank"

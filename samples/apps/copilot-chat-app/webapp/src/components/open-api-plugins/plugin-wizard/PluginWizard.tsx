@@ -25,6 +25,9 @@ export const useClasses = makeStyles({
     root: {
         height: '400px',
     },
+    surface: {
+        width: '450px',
+    },
     center: {
         paddingTop: '75px',
         display: 'flex',
@@ -56,11 +59,13 @@ export const PluginWizard: React.FC = () => {
 
     const [activeStep, setActiveStep] = useState(CreatePluginSteps.EnterManifest);
     const [manifestDomain, setManifestDomain] = useState<string | undefined>();
+    const [manifestDomainError, setManifestDomainError] = useState<string | undefined>();
     const [pluginVerified, setPluginVerified] = useState(false);
     const [pluginManifest, setPluginManifest] = useState<PluginManifest | undefined>();
 
     const resetLocalState = useCallback(() => {
         setManifestDomain(undefined);
+        setManifestDomainError(undefined);
         setActiveStep(CreatePluginSteps.EnterManifest);
         setPluginVerified(false);
     }, []);
@@ -83,8 +88,9 @@ export const PluginWizard: React.FC = () => {
         setPluginManifest(manifest);
     }, []);
 
-    const setValidManifestDomain = useCallback((domain: string) => {
+    const setValidManifestDomain = useCallback((domain: string, error?: string) => {
         setManifestDomain(domain);
+        setManifestDomainError(error);
     }, []);
 
     const wizardSteps: IWizardStep[] = [
@@ -100,10 +106,16 @@ export const PluginWizard: React.FC = () => {
                         },
                         initials: '', // Set to empty string so no initials are rendered behind image
                     }}
-                    secondaryText="Connect an OpenAI Plugin to expose Copilot Chat to third-party applications."
+                    secondaryText="Connect an OpenAI Plugin to expose Chat Copilot to third-party applications."
                 />
             ),
-            body: <EnterManifestStep manifestDomain={manifestDomain} setValidManifestDomain={setValidManifestDomain} />,
+            body: (
+                <EnterManifestStep
+                    manifestDomain={manifestDomain}
+                    manifestDomainError={manifestDomainError}
+                    setValidManifestDomain={setValidManifestDomain}
+                />
+            ),
             buttons: (
                 <>
                     <DialogTrigger>
@@ -112,7 +124,7 @@ export const PluginWizard: React.FC = () => {
                     <Button
                         data-testid="find-manifest-button"
                         appearance="primary"
-                        disabled={!manifestDomain}
+                        disabled={!manifestDomain || manifestDomainError !== undefined}
                         onClick={() => {
                             setActiveStep(CreatePluginSteps.VerifyManifest);
                         }}
@@ -187,7 +199,7 @@ export const PluginWizard: React.FC = () => {
                     Add
                 </Button>
             </DialogTrigger>
-            <DialogSurface>
+            <DialogSurface className={classes.surface}>
                 <DialogBody className={classes.root}>
                     <DialogTitle
                         action={
