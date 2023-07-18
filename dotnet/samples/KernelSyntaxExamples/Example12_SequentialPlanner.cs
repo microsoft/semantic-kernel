@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
@@ -36,7 +37,7 @@ internal static class Example12_SequentialPlanner
         {
             await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
         }
-        catch (PlanningException e)
+        catch (SKException e)
         {
             Console.WriteLine(e.Message);
             // Create plan error: Not possible to create plan for goal with available functions.

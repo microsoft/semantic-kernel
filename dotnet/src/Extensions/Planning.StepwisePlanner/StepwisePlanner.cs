@@ -72,7 +72,7 @@ public class StepwisePlanner
     {
         if (string.IsNullOrEmpty(goal))
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
+            throw new SKException("The goal specified is empty");
         }
 
         string functionDescriptions = this.GetFunctionDescriptions();
@@ -116,7 +116,7 @@ public class StepwisePlanner
 
                 if (llmResponse.ErrorOccurred)
                 {
-                    var exception = new PlanningException(PlanningException.ErrorCodes.UnknownError, $"Error occurred while executing stepwise plan: {llmResponse.LastErrorDescription}", llmResponse.LastException);
+                    var exception = new SKException($"Error occurred while executing stepwise plan: {llmResponse.LastErrorDescription}", llmResponse.LastException);
                     context.Fail(exception.Message, exception);
                     return context;
                 }
@@ -329,7 +329,7 @@ public class StepwisePlanner
         var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionName);
         if (targetFunction == null)
         {
-            throw new PlanningException(PlanningException.ErrorCodes.UnknownError, $"The function '{actionName}' was not found.");
+            throw new SKException($"The function '{actionName}' was not found.");
         }
 
         try

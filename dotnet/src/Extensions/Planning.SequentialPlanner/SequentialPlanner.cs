@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -54,12 +53,12 @@ public sealed class SequentialPlanner
     /// </summary>
     /// <param name="goal">The goal to create a plan for.</param>
     /// <returns>The plan.</returns>
-    /// <exception cref="PlanningException">Thrown when the plan cannot be created.</exception>
+    /// <exception cref="SKException">Thrown when the plan cannot be created.</exception>
     public async Task<Plan> CreatePlanAsync(string goal)
     {
         if (string.IsNullOrEmpty(goal))
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
+            throw new SKException("The goal specified is empty");
         }
 
         string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config).ConfigureAwait(false);
@@ -71,36 +70,20 @@ public sealed class SequentialPlanner
 
         if (planResult.ErrorOccurred)
         {
-            throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, $"Error creating plan for goal: {planResult.LastErrorDescription}", planResult.LastException);
+            throw new SKException($"Error creating plan for goal: {planResult.LastErrorDescription}", planResult.LastException);
         }
 
         string planResultString = planResult.Result.Trim();
 
-        try
-        {
-            var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
-            var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+        var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
+        var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
 
-            if (plan.Steps.Count == 0)
-            {
-                throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, $"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
-            }
+        if (plan.Steps.Count == 0)
+        {
+            throw new SKException($"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
+        }
 
-            return plan;
-        }
-        catch (PlanningException planException) when (planException.ErrorCode == PlanningException.ErrorCodes.CreatePlanError)
-        {
-            throw;
-        }
-        catch (PlanningException planException) when (planException.ErrorCode == PlanningException.ErrorCodes.InvalidPlan ||
-                                                      planException.ErrorCode == PlanningException.ErrorCodes.InvalidGoal)
-        {
-            throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, "Unable to create plan", planException);
-        }
-        catch (Exception e)
-        {
-            throw new PlanningException(PlanningException.ErrorCodes.UnknownError, "Unknown error creating plan", e);
-        }
+        return plan;
     }
 
     private SequentialPlannerConfig Config { get; }

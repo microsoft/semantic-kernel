@@ -81,7 +81,7 @@ public sealed class ActionPlanner
     {
         if (string.IsNullOrEmpty(goal))
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
+            throw new SKException("The goal specified is empty");
         }
 
         this._context.Variables.Update(goal);
@@ -91,7 +91,7 @@ public sealed class ActionPlanner
 
         if (planData == null)
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "The plan deserialized to a null object");
+            throw new SKException("The plan deserialized to a null object");
         }
 
         // Build and return plan
@@ -243,13 +243,12 @@ Goal: tell me a joke.
             }
             catch (Exception e)
             {
-                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
-                    "Plan parsing error, invalid JSON", e);
+                throw new SKException("Plan parsing error, invalid JSON", e);
             }
         }
         else
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to extract valid json string from planner result: '{plannerResult}'");
+            throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
         }
     }
 
