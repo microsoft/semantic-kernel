@@ -31,6 +31,16 @@ export enum ChatMessageType {
     Document,
 }
 
+/**
+ * States for RLHF
+ */
+export enum UserFeedback {
+    Unknown,
+    Requested,
+    Positive,
+    Negative,
+}
+
 export interface IChatMessage {
     type: ChatMessageType;
     timestamp: number;
@@ -43,4 +53,5 @@ export interface IChatMessage {
     debug?: string;
     state?: PlanState;
     tokenUsage?: TokenUsages;
+    userFeedback?: UserFeedback;
 }

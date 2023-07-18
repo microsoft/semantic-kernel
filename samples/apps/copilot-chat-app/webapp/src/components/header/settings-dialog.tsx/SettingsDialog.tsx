@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import {
+    Accordion,
+    AccordionHeader,
+    AccordionItem,
+    AccordionPanel,
     Button,
     Dialog,
     DialogActions,
@@ -9,6 +13,8 @@ import {
     DialogOpenChangeData,
     DialogSurface,
     DialogTitle,
+    DialogTrigger,
+    Divider,
     Label,
     makeStyles,
     shorthands,
@@ -18,18 +24,21 @@ import React from 'react';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { TokenUsage } from '../../shared/TokenUsage';
+import { useDialogClasses } from '../../shared/styles';
 import { SettingSection } from './SettingSection';
 
 const useClasses = makeStyles({
     root: {
-        ...shorthands.overflow('hidden'),
+        ...shorthands.overflow('scroll'),
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
-        height: '100%',
+        height: '650px',
     },
     footer: {
         paddingTop: tokens.spacingVerticalL,
+    },
+    paddingLeft: {
+        paddingLeft: tokens.spacingHorizontalMNudge,
     },
 });
 
@@ -40,6 +49,7 @@ interface ISettingsDialogProps {
 
 export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDialog }) => {
     const classes = useClasses();
+    const dialogClasses = useDialogClasses();
     const { settings, tokenUsage } = useAppSelector((state: RootState) => state.app);
 
     return (
@@ -58,23 +68,40 @@ export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDial
                             promptUsage={tokenUsage.prompt}
                             dependencyUsage={tokenUsage.dependency}
                         />
-                        {settings.map((setting) => {
-                            return <SettingSection key={setting.title} setting={setting} />;
-                        })}
-                        <Label size="small" color="brand" className={classes.footer}>
-                            Join the Semantic Kernel open source community!{' '}
-                            <a href="https://aka.ms/semantic-kernel" target="_blank" rel="noreferrer">
-                                Learn More
-                            </a>
-                            .
-                        </Label>
+                        <Accordion collapsible multiple defaultOpenItems={['basic', 'advanced']}>
+                            <AccordionItem value="basic">
+                                <AccordionHeader expandIconPosition="end">
+                                    <h3>Basic</h3>
+                                </AccordionHeader>
+                                <AccordionPanel>
+                                    <SettingSection key={settings[0].title} setting={settings[0]} contentOnly />
+                                </AccordionPanel>
+                            </AccordionItem>
+                            <Divider />
+                            <AccordionItem value="advanced">
+                                <AccordionHeader expandIconPosition="end">
+                                    <h3>Advanced</h3>
+                                </AccordionHeader>
+                                <AccordionPanel>
+                                    {settings.slice(1).map((setting) => {
+                                        return <SettingSection key={setting.title} setting={setting} />;
+                                    })}
+                                </AccordionPanel>
+                            </AccordionItem>
+                        </Accordion>
                     </DialogContent>
-                    <DialogActions>
-                        <Button appearance="secondary" onClick={() => closeDialog()}>
-                            Close
-                        </Button>
-                    </DialogActions>
                 </DialogBody>
+                <DialogActions position="start" className={dialogClasses.footer}>
+                    <Label size="small" color="brand" className={classes.footer}>
+                        Join the Semantic Kernel open source community!{' '}
+                        <a href="https://aka.ms/semantic-kernel" target="_blank" rel="noreferrer">
+                            Learn More
+                        </a>
+                    </Label>
+                    <DialogTrigger disableButtonEnhancement>
+                        <Button appearance="secondary">Close</Button>
+                    </DialogTrigger>
+                </DialogActions>
             </DialogSurface>
         </Dialog>
     );

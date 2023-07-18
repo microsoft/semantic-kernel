@@ -239,6 +239,21 @@ export const useChat = () => {
         return [];
     };
 
+    const getSemanticMemories = async (chatId: string, memoryName: string) => {
+        try {
+            return await chatService.getSemanticMemoriesAsync(
+                chatId,
+                memoryName,
+                await AuthHelper.getSKaaSAccessToken(instance, inProgress),
+            );
+        } catch (e: any) {
+            const errorMessage = `Unable to get semantic memories. Details: ${getErrorDetails(e)}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+
+        return [];
+    };
+
     const importDocument = async (chatId: string, files: File[]) => {
         try {
             await documentImportService.importDocumentAsync(
@@ -295,6 +310,16 @@ export const useChat = () => {
         return { success: true, message: '' };
     };
 
+    const editChat = async (chatId: string, title: string, syetemDescription: string) => {
+        const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
+        try {
+            await chatService.editChatAsync(chatId, title, syetemDescription, accessToken);
+        } catch (e: any) {
+            const errorMessage = `Error editing chat ${chatId}. Details: ${getErrorDetails(e)}`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        }
+    };
+
     return {
         getChatUserById,
         createChat,
@@ -303,8 +328,10 @@ export const useChat = () => {
         downloadBot,
         uploadBot,
         getChatMemorySources,
+        getSemanticMemories,
         importDocument,
         joinChat,
+        editChat,
     };
 };
 

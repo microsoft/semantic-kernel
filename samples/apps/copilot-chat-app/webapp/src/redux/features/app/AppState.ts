@@ -17,6 +17,7 @@ interface Feature {
     enabled: boolean;
     label: string;
     disabled?: boolean;
+    description?: string;
 }
 
 export interface Setting {
@@ -62,7 +63,8 @@ export const Features = {
     },
     [FeatureKeys.PluginsPlannersAndPersonas]: {
         enabled: true,
-        label: 'Activate All',
+        label: 'Plugins & Planners & Personas',
+        description: 'The Plans and Persona tabs are hidden until you turn this on',
     },
     [FeatureKeys.AzureContentSafety]: {
         enabled: false,
@@ -86,14 +88,15 @@ export const Features = {
 
 export const Settings = [
     {
-        title: 'Display',
-        features: [FeatureKeys.DarkMode, FeatureKeys.SimplifiedExperience],
+        // Basic settings has to stay at the first index. Add all new settings to end of array.
+        title: 'Basic',
+        features: [FeatureKeys.DarkMode, FeatureKeys.PluginsPlannersAndPersonas],
         stackVertically: true,
     },
     {
-        title: 'Plugins & Planners & Personas',
-        description: 'The Plans and Persona tabs are hidden until you turn this on',
-        features: [FeatureKeys.PluginsPlannersAndPersonas],
+        title: 'Display',
+        features: [FeatureKeys.SimplifiedExperience],
+        stackVertically: true,
     },
     {
         title: 'Azure AI',
@@ -111,7 +114,7 @@ export const initialState: AppState = {
     alerts: [
         {
             message:
-                'Copilot chat is designed for internal use only. By using this chat bot, you agree to not to share confidential or customer information or store sensitive information in chat history. Further, you agree that Copilot chat can collect and retain your chat history for service improvement.',
+                'By using Chat Copilot, you agree to protect sensitive data, not store it in chat, and allow chat history collection for service improvements. This tool is for internal use only.',
             type: AlertType.Info,
         },
     ],

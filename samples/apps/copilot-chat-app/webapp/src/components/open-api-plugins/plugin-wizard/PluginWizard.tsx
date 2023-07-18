@@ -15,7 +15,7 @@ import { CheckmarkCircle48Regular, Dismiss24Regular } from '@fluentui/react-icon
 import React, { ReactElement, useCallback, useState } from 'react';
 import { PluginManifest } from '../../../libs/models/PluginManifest';
 import { usePlugins } from '../../../libs/usePlugins';
-import { useDialogClasses } from '../styles';
+import { useDialogClasses } from '../../shared/styles';
 import { EnterManifestStep } from './steps/EnterManifestStep';
 import { VerifyManifestStep } from './steps/VerifyManifestStep';
 

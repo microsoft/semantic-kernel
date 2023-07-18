@@ -432,14 +432,14 @@ public class DocumentImportController : ControllerBase
         string extension = Path.GetExtension(fileName).ToUpperInvariant();
         return extension switch
         {
-            ".txt" => SupportedFileType.Txt,
-            ".md" => SupportedFileType.Md,
-            ".pdf" => SupportedFileType.Pdf,
-            ".jpg" => SupportedFileType.Jpg,
-            ".jpeg" => SupportedFileType.Jpg,
-            ".png" => SupportedFileType.Png,
-            ".tif" => SupportedFileType.Tiff,
-            ".tiff" => SupportedFileType.Tiff,
+            ".TXT" => SupportedFileType.Txt,
+            ".MD" => SupportedFileType.Md,
+            ".PDF" => SupportedFileType.Pdf,
+            ".JPG" => SupportedFileType.Jpg,
+            ".JPEG" => SupportedFileType.Jpg,
+            ".PNG" => SupportedFileType.Png,
+            ".TIF" => SupportedFileType.Tiff,
+            ".TIFF" => SupportedFileType.Tiff,
             _ => throw new ArgumentOutOfRangeException($"Unsupported file type: {extension}"),
         };
     }
