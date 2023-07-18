@@ -1,13 +1,4 @@
-import {
-    Body1,
-    Body2,
-    Input,
-    InputOnChangeData,
-    Subtitle2,
-    Text,
-    makeStyles,
-    tokens,
-} from '@fluentui/react-components';
+import { Body1, Input, InputOnChangeData, Subtitle1, Text, makeStyles, tokens } from '@fluentui/react-components';
 import { ErrorCircle16Regular } from '@fluentui/react-icons';
 import { useCallback, useState } from 'react';
 
@@ -49,8 +40,7 @@ export const EnterManifestStep: React.FC<IEnterManifestStepProps> = ({ manifestD
 
     return (
         <>
-            <Body2>Connect an OpenAI Plugin to expose Copilot Chat to third-party applications.</Body2>
-            <Subtitle2>Enter your website domain</Subtitle2>
+            <Subtitle1>Enter your website domain</Subtitle1>
             <Text size={400}>
                 To connect a plugin, provide the domain of your website where your{' '}
                 <a
