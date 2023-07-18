@@ -4,9 +4,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Document.FileSystem;
 using Moq;
@@ -16,8 +13,6 @@ namespace SemanticKernel.Skills.UnitTests.Document;
 
 public class DocumentSkillTests
 {
-    private readonly SKContext _context = new(new ContextVariables(), NullMemory.Instance, null, NullLogger.Instance);
-
     [Fact]
     public async Task ReadTextAsyncSucceedsAsync()
     {
@@ -43,7 +38,6 @@ public class DocumentSkillTests
 
         // Assert
         Assert.Equal(expectedText, actual);
-        Assert.False(this._context.ErrorOccurred);
         fileSystemConnectorMock.VerifyAll();
         documentConnectorMock.VerifyAll();
     }
@@ -75,7 +69,6 @@ public class DocumentSkillTests
         await target.AppendTextAsync(anyText, anyFilePath);
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
         fileSystemConnectorMock.VerifyAll();
         documentConnectorMock.VerifyAll();
     }
@@ -109,7 +102,6 @@ public class DocumentSkillTests
         await target.AppendTextAsync(anyText, anyFilePath);
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
         fileSystemConnectorMock.VerifyAll();
         documentConnectorMock.VerifyAll();
     }
