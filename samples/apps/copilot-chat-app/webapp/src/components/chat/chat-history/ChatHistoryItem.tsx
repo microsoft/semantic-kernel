@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Persona, Text, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
+import { Persona, Text, makeStyles, mergeClasses, shorthands } from '@fluentui/react-components';
 import { ThumbDislike24Filled, ThumbLike16Filled } from '@fluentui/react-icons';
 import React from 'react';
 import { AuthorRoles, ChatMessageType, IChatMessage, UserFeedback } from '../../../libs/models/ChatMessage';
@@ -8,7 +8,7 @@ import { GetResponseOptions, useChat } from '../../../libs/useChat';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { FeatureKeys } from '../../../redux/features/app/AppState';
-import { Breakpoints } from '../../../styles';
+import { Breakpoints, customTokens } from '../../../styles';
 import { timestampToDateString } from '../../utils/TextUtils';
 import { PlanViewer } from '../plan-viewer/PlanViewer';
 import { PromptDetails } from '../prompt-details/PromptDetails';
@@ -22,11 +22,11 @@ const useClasses = makeStyles({
         display: 'flex',
         flexDirection: 'row',
         maxWidth: '75%',
-        ...shorthands.borderRadius(tokens.borderRadiusMedium),
+        ...shorthands.borderRadius(customTokens.borderRadiusMedium),
         ...Breakpoints.small({
             maxWidth: '100%',
         }),
-        ...shorthands.gap(tokens.spacingHorizontalXS),
+        ...shorthands.gap(customTokens.spacingHorizontalXS),
     },
     debug: {
         position: 'absolute',
@@ -37,26 +37,26 @@ const useClasses = makeStyles({
         alignSelf: 'flex-end',
     },
     persona: {
-        paddingTop: tokens.spacingVerticalS,
+        paddingTop: customTokens.spacingVerticalS,
     },
     item: {
-        backgroundColor: tokens.colorNeutralBackground1,
-        ...shorthands.borderRadius(tokens.borderRadiusMedium),
-        ...shorthands.padding(tokens.spacingVerticalS, tokens.spacingHorizontalL),
+        backgroundColor: customTokens.colorNeutralBackground1,
+        ...shorthands.borderRadius(customTokens.borderRadiusMedium),
+        ...shorthands.padding(customTokens.spacingVerticalS, customTokens.spacingHorizontalL),
     },
     me: {
-        backgroundColor: '#e8ebf9',
+        backgroundColor: customTokens.colorMeBackground,
     },
     time: {
-        color: tokens.colorNeutralForeground3,
-        fontSize: tokens.fontSizeBase200,
+        color: customTokens.colorNeutralForeground3,
+        fontSize: customTokens.fontSizeBase200,
         fontWeight: 400,
     },
     header: {
         position: 'relative',
         display: 'flex',
         flexDirection: 'row',
-        ...shorthands.gap(tokens.spacingHorizontalL),
+        ...shorthands.gap(customTokens.spacingHorizontalL),
     },
     canvas: {
         width: '100%',

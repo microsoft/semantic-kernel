@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { Label, makeStyles, shorthands } from '@fluentui/react-components';
+import { Label, Link, makeStyles, shorthands } from '@fluentui/react-components';
 import { tokens } from '@fluentui/tokens';
 import { SharedStyles } from '../../../styles';
 
@@ -32,9 +32,9 @@ export const TabView: React.FC<ITabViewProps> = ({ title, learnMoreDescription, 
             {children}
             <Label size="small" color="brand" className={classes.footer}>
                 Want to learn more about {learnMoreDescription}? Click{' '}
-                <a href={learnMoreLink} target="_blank" rel="noreferrer">
+                <Link href={learnMoreLink} target="_blank" rel="noreferrer">
                     here
-                </a>
+                </Link>
                 .
             </Label>
         </div>

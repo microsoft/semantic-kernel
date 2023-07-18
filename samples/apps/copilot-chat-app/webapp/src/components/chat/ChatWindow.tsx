@@ -35,7 +35,7 @@ const useClasses = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        backgroundColor: '#F5F5F5',
+        backgroundColor: tokens.colorNeutralBackground3,
         boxShadow: 'rgb(0 0 0 / 25%) 0 0.2rem 0.4rem -0.075rem',
     },
     header: {

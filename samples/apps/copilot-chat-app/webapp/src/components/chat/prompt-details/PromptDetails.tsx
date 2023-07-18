@@ -10,6 +10,7 @@ import {
     DialogTitle,
     DialogTrigger,
     Label,
+    Link,
     Tooltip,
     makeStyles,
     shorthands,
@@ -61,9 +62,9 @@ export const PromptDetails: React.FC<IPromptDetailsProps> = ({ message }) => {
                     <DialogActions position="start" className={dialogClasses.footer}>
                         <Label size="small" color="brand">
                             Want to learn more about prompts? Click{' '}
-                            <a href="https://aka.ms/sk-about-prompts" target="_blank" rel="noreferrer">
+                            <Link href="https://aka.ms/sk-about-prompts" target="_blank" rel="noreferrer">
                                 here
-                            </a>
+                            </Link>
                             .
                         </Label>
                         <DialogTrigger disableButtonEnhancement>
