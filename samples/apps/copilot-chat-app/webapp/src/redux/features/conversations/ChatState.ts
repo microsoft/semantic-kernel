@@ -12,6 +12,6 @@ export interface ChatState {
     botProfilePicture: string;
     lastUpdatedTimestamp?: number;
     input: string;
-    isBotTyping: boolean;
+    botResponseStatus: string | undefined;
     userDataLoaded: boolean;
 }

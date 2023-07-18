@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
@@ -15,6 +16,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
+using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -42,6 +44,11 @@ public class ChatSkill
     /// A repository to save and retrieve chat sessions.
     /// </summary>
     private readonly ChatSessionRepository _chatSessionRepository;
+
+    /// <summary>
+    /// A SignalR hub context to broadcast updates of the execution.
+    /// </summary>
+    private readonly IHubContext<MessageRelayHub> _messageRelayHubContext;
 
     /// <summary>
     /// Settings containing prompt texts.
@@ -80,6 +87,7 @@ public class ChatSkill
         IKernel kernel,
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,
+        IHubContext<MessageRelayHub> messageRelayHubContext,
         IOptions<PromptsOptions> promptOptions,
         IOptions<DocumentMemoryOptions> documentImportOptions,
         CopilotChatPlanner planner,
@@ -88,6 +96,7 @@ public class ChatSkill
         this._kernel = kernel;
         this._chatMessageRepository = chatMessageRepository;
         this._chatSessionRepository = chatSessionRepository;
+        this._messageRelayHubContext = messageRelayHubContext;
         // Clone the prompt options to avoid modifying the original prompt options.
         this._promptOptions = promptOptions.Value.Copy();
 
@@ -304,12 +313,14 @@ public class ChatSkill
         context.Variables.Set("messageType", ((int)botMessage.Type).ToString(CultureInfo.InvariantCulture));
 
         // Extract semantic chat memory
+        await this.UpdateResponseStatusOnClient(chatId, "Extracting semantic chat memory");
         await SemanticChatMemoryExtractor.ExtractSemanticChatMemoryAsync(
             chatId,
             this._kernel,
             chatContext,
             this._promptOptions);
 
+        await this.UpdateResponseStatusOnClient(chatId, "Finishing up");
         this.GetTokenUsages(context, chatContext);
         context.Variables.Update(response);
         return context;
@@ -325,6 +336,7 @@ public class ChatSkill
     private async Task<string> GetChatResponseAsync(string chatId, SKContext chatContext)
     {
         // 0. Get the audience
+        await this.UpdateResponseStatusOnClient(chatId, "Interpreting input (audience, intent, etc.)");
         var audience = await this.GetAudienceAsync(chatContext);
         if (chatContext.ErrorOccurred)
         {
@@ -357,6 +369,7 @@ public class ChatSkill
         }
 
         // 4. Query relevant semantic memories
+        await this.UpdateResponseStatusOnClient(chatId, "Querying memories");
         var chatMemoriesTokenLimit = (int)(remainingToken * this._promptOptions.MemoriesResponseContextWeight);
         var chatMemories = await this._semanticChatMemorySkill.QueryMemoriesAsync(userIntent, chatId, chatMemoriesTokenLimit, chatContext.Memory);
         if (chatContext.ErrorOccurred)
@@ -378,6 +391,7 @@ public class ChatSkill
         var chatContextTextTokenCount = remainingToken - Utilities.TokenCount(chatContextText);
         if (chatContextTextTokenCount > 0)
         {
+            await this.UpdateResponseStatusOnClient(chatId, "Extracting chat history");
             var chatHistory = await this.ExtractChatHistoryAsync(chatId, chatContextTextTokenCount);
             if (chatContext.ErrorOccurred)
             {
@@ -401,6 +415,7 @@ public class ChatSkill
             skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
+        await this.UpdateResponseStatusOnClient(chatId, "Invoking the AI model");
         chatContext = await completionFunction.InvokeAsync(
             context: chatContext,
             settings: this.CreateChatResponseCompletionSettings()
@@ -694,6 +709,16 @@ public class ChatSkill
         }
 
         this._promptOptions.SystemDescription = chatSession!.SystemDescription;
+    }
+
+    /// <summary>
+    /// Update the status of the response on the client.
+    /// </summary>
+    /// <param name="chatId">Id of the chat session</param>
+    /// <param name="status">Current status of the response</param>
+    private async Task UpdateResponseStatusOnClient(string chatId, string status)
+    {
+        await this._messageRelayHubContext.Clients.Group(chatId).SendAsync("ReceiveBotResponseStatus", chatId, status);
     }
 
     # endregion

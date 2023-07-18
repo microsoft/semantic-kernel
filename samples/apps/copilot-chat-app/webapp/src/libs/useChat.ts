@@ -83,7 +83,7 @@ export const useChat = () => {
                     users: [loggedInUser],
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
                     input: '',
-                    isBotTyping: false,
+                    botResponseStatus: undefined,
                     userDataLoaded: false,
                 };
 
@@ -165,7 +165,7 @@ export const useChat = () => {
                         messages: chatMessages,
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
                         input: '',
-                        isBotTyping: false,
+                        botResponseStatus: undefined,
                         userDataLoaded: false,
                     };
                 }
@@ -210,7 +210,7 @@ export const useChat = () => {
                     users: [loggedInUser],
                     messages: chatMessages,
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
-                    isBotTyping: false,
+                    botResponseStatus: undefined,
                 };
 
                 dispatch(addConversation(newChat));
@@ -281,7 +281,7 @@ export const useChat = () => {
                     users: chatUsers,
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
                     input: '',
-                    isBotTyping: false,
+                    botResponseStatus: undefined,
                     userDataLoaded: false,
                 };
 

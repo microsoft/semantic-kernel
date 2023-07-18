@@ -17,7 +17,7 @@ const enum SignalRCallbackMethods {
     ReceiveResponse = 'ReceiveResponse',
     UserJoined = 'UserJoined',
     ReceiveUserTypingState = 'ReceiveUserTypingState',
-    ReceiveBotTypingState = 'ReceiveBotTypingState',
+    ReceiveBotResponseStatus = 'ReceiveBotResponseStatus',
     GlobalDocumentUploaded = 'GlobalDocumentUploaded',
     ChatDocumentUploaded = 'ChatDocumentUploaded',
     ChatEdited = 'ChatEdited',
@@ -206,8 +206,8 @@ export const registerSignalREvents = (store: Store) => {
         },
     );
 
-    hubConnection.on(SignalRCallbackMethods.ReceiveBotTypingState, (chatId: string, isTyping: boolean) => {
-        store.dispatch({ type: 'conversations/updateBotIsTypingFromServer', payload: { chatId, isTyping } });
+    hubConnection.on(SignalRCallbackMethods.ReceiveBotResponseStatus, (chatId: string, status: string) => {
+        store.dispatch({ type: 'conversations/updateBotResponseStatusFromServer', payload: { chatId, status } });
     });
 
     hubConnection.on(SignalRCallbackMethods.GlobalDocumentUploaded, (fileNames: string, userName: string) => {

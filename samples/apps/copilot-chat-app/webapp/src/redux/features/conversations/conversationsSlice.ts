@@ -32,7 +32,10 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             const newInput = action.payload.newInput;
             state.conversations[id].input = newInput;
         },
-        editConversationSystemDescription: (state: ConversationsState, action: PayloadAction<ConversationSystemDescriptionChange>) => {
+        editConversationSystemDescription: (
+            state: ConversationsState,
+            action: PayloadAction<ConversationSystemDescriptionChange>,
+        ) => {
             const id = action.payload.id;
             const newSystemDescription = action.payload.newSystemDescription;
             state.conversations[id].systemDescription = newSystemDescription;
@@ -110,13 +113,13 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             const { userId, chatId, isTyping } = action.payload;
             updateUserTypingState(state, userId, chatId, isTyping);
         },
-        updateBotIsTypingFromServer: (
+        updateBotResponseStatusFromServer: (
             state: ConversationsState,
-            action: PayloadAction<{ chatId: string; isTyping: boolean }>,
+            action: PayloadAction<{ chatId: string; status: string }>,
         ) => {
-            const { chatId, isTyping } = action.payload;
+            const { chatId, status } = action.payload;
             const conversation = state.conversations[chatId];
-            conversation.isBotTyping = isTyping;
+            conversation.botResponseStatus = status;
         },
     },
 });
