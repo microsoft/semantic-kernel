@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
@@ -137,7 +138,7 @@ public class CodeTokenizerTests
         var template2 = @"call 'f\\'x";
 
         // Act
-        Assert.Throws<TemplateException>(() => this._target.Tokenize(template1));
-        Assert.Throws<TemplateException>(() => this._target.Tokenize(template2));
+        Assert.Throws<SKException>(() => this._target.Tokenize(template1));
+        Assert.Throws<SKException>(() => this._target.Tokenize(template2));
     }
 }
