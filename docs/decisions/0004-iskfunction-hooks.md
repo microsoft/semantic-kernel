@@ -11,7 +11,7 @@ informed:
 
 ## Context and Problem Statement
 
-An ISKFuction Caller needs:
+An ISKFunction Caller needs:
 
 - Know and be notified before the ISKFunction is executed by either `Function.InvokeAsync` or `Kernel.RunAsync` with information it can get prior and after execution.
 
@@ -56,7 +56,7 @@ An ISKFuction Caller needs:
   - Specified on function invocation: As part of the function invoke be able to specify what are the callback hooks as a parameter that will be triggered.
 
 - Middleware ?
-  - Specified on Kernel level, and would only be used using IKernel.RunAsync operation, this patern would be similar to asp.net core middlewares, running the pipelines with a context and a requestdelegate next for controlling (Pre/Post conditions)
+  - Specified on Kernel level, and would only be used using IKernel.RunAsync operation, this pattern would be similar to asp.net core middlewares, running the pipelines with a context and a requestdelegate next for controlling (Pre/Post conditions)
 
 ## Pros and Cons of the Options
 
