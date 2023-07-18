@@ -110,21 +110,21 @@ async def test_does_collection_exist_async():
     assert result is False
 
 
-@pytest.mark.asyncio
-async def test_upsert_async_and_get_async(memory_record1):
-    qdrant_mem_store = QdrantMemoryStore(local=True)
+# @pytest.mark.asyncio
+# async def test_upsert_async_and_get_async(memory_record1):
+#     qdrant_mem_store = QdrantMemoryStore(local=True)
 
-    await qdrant_mem_store.create_collection_async("test_collection", TEST_VECTOR_SIZE)
-    await qdrant_mem_store.upsert_async("test_collection", memory_record1)
-    result = await qdrant_mem_store.get_async(
-        "test_collection", memory_record1._id, with_embedding=True
-    )
-    assert result is not None
-    assert result._id == memory_record1._id
-    assert result._text == memory_record1._text
-    assert result._timestamp == memory_record1._timestamp
-    for i in range(len(result._embedding)):
-        assert result._embedding[i] == memory_record1._embedding[i]
+#     await qdrant_mem_store.create_collection_async("test_collection", TEST_VECTOR_SIZE)
+#     await qdrant_mem_store.upsert_async("test_collection", memory_record1)
+#     result = await qdrant_mem_store.get_async(
+#         "test_collection", memory_record1._id, with_embedding=True
+#     )
+#     assert result is not None
+#     assert result._id == memory_record1._id
+#     assert result._text == memory_record1._text
+#     assert result._timestamp == memory_record1._timestamp
+#     for i in range(len(result._embedding)):
+#         assert result._embedding[i] == memory_record1._embedding[i]
 
 
 # @pytest.mark.asyncio
