@@ -100,10 +100,14 @@ class AzureCognitiveSearchMemoryTests {
         kernel =
                 SKBuilders.kernel()
 <<<<<<< HEAD
+<<<<<<< HEAD
                         .withKernelConfig(SKBuilders.kernelConfig().build())
 =======
                         .setKernelConfig(SKBuilders.kernelConfig().build())
 >>>>>>> b9d30fe6 (Fix formatting of other types)
+=======
+                        .withKernelConfig(SKBuilders.kernelConfig().build())
+>>>>>>> upstream/experimental-java
                         .withMemory(new AzureCognitiveSearchMemory(searchIndexAsyncClient))
                         .build();
     }
