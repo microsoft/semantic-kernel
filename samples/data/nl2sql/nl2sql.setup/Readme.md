@@ -8,15 +8,15 @@ This project aligns with the configuration strategy used throughout this repo:
 Choose the settings according to your endpoint (*Azure Open AI* or *Open AI*):
 
 #### Azure Open AI
-- AZURE_OPENAI_DEPLOYMENT_NAME
-- AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME
-- AZURE_OPENAI_ENDPOINT
 - AZURE_OPENAI_KEY
+- AZURE_OPENAI_ENDPOINT
+- AZURE_OPENAI_DEPLOYMENT_NAME (optional: default to `gpt-4`)
+- AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME (optional: default to `text-embedding-ada-003`)
 
 #### OpenAI
 - OPENAI_API_KEY
-- OPENAI_API_COMPLETION_MODEL
-- OPENAI_API_EMBEDDINGS_MODEL
+- OPENAI_API_COMPLETION_MODEL (optional: default to `gpt-4`)
+- OPENAI_API_EMBEDDINGS_MODEL (optional: default to `text-embedding-ada-003`)
 
 ### Examples
 To set your secrets with .NET 
