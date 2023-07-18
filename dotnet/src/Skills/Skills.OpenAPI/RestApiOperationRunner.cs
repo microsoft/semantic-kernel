@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
@@ -143,13 +144,13 @@ internal sealed class RestApiOperationRunner
         {
             if (!arguments.TryGetValue(RestApiOperation.ContentTypeArgumentName, out mediaType))
             {
-                throw new RestApiOperationException($"No content type is provided for the {operation.Id} operation.");
+                throw new SKException($"No content type is provided for the {operation.Id} operation.");
             }
         }
 
         if (!s_payloadFactoryByMediaType.TryGetValue(mediaType!, out var payloadFactory))
         {
-            throw new RestApiOperationException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunner)}.");
+            throw new SKException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunner)}.");
         }
 
         return payloadFactory.Invoke(arguments);
@@ -164,7 +165,7 @@ internal sealed class RestApiOperationRunner
     {
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out var content))
         {
-            throw new RestApiOperationException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
+            throw new SKException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
         }
 
         return new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson);
@@ -179,7 +180,7 @@ internal sealed class RestApiOperationRunner
     {
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out var propertyValue))
         {
-            throw new RestApiOperationException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
+            throw new SKException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
         }
 
         return new StringContent(propertyValue, Encoding.UTF8, MediaTypeTextPlain);
