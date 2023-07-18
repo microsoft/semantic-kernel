@@ -73,9 +73,17 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
 
-        WebPage[]? results = data?.WebPages?.Value;
+        List<string> output = new();
+        if (data?.WebPages?.Value != null)
+        {
+            output.Add(string.Format("Bing Search Results\n\n" +
+                "----\n\n" +
+                $"Page Name: {data?.WebPages?.Value.FirstOrDefault().Name}\n\n" +
+                $"Page Snippet: {data?.WebPages?.Value.FirstOrDefault().Snippet}...\n\n" +
+                $"Page Url: {data?.WebPages?.Value.FirstOrDefault().Url}"));
+        }
 
-        return results == null ? Enumerable.Empty<string>() : results.Select(x => x.Snippet);
+        return output.Count == 0 ? Enumerable.Empty<string>() : output.Take(1);
     }
 
     /// <summary>
