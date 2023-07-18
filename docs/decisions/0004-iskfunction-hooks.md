@@ -41,11 +41,6 @@ An ISKFuction Caller needs:
 
     - Set: Modify output parameters content
 
-MADR is a lean template to capture any decisions in a structured way. The template originated from capturing architectural decisions and developed to a template allowing to capture any decisions taken.
-For more information [see](https://adr.github.io/madr/)
-
-<!-- This is an optional element. Feel free to remove. -->
-
 ## Decision Drivers
 
 - Architecture changes and the associated decision making process should be transparent to the community.

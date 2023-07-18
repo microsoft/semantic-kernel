@@ -30,8 +30,7 @@ public static class Example53_FunctionHooks
                 apiKey: openAIApiKey)
             .Build();
 
-        // Function defined using few-shot design pattern
-        const string FunctionDefinition = @"Write a paragraph about: {{$input}}.";
+        const string FunctionDefinition = "Write a paragraph about: {{$input}}.";
 
         var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 100, temperature: 0.4, topP: 1);
 

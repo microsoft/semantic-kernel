@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using RepoUtils;
-using System.Linq;
 using Microsoft.SemanticKernel.Planning;
+using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example54_PlanHooks
