@@ -140,7 +140,14 @@ class RedisMemoryStore(MemoryStoreBase):
             )
 
     async def get_collections_async(self) -> List[str]:
-        pass
+        """
+        Get all collection names in the data store.
+
+        Returns:
+            List[str] -- list of collection names
+        """
+        # Note: FT._LIST is a temporary command that may be deprecated in the future according to Redis
+        return [name.decode() for name in self._database.execute_command("FT._LIST")]
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """

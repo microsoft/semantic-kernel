@@ -1,7 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
-import time
 from datetime import datetime
 
 import numpy as np
@@ -17,9 +15,7 @@ try:
 except ImportError:
     redis_installed = False
 
-pytestmark = pytest.mark.skipif(
-    not redis_installed, reason="Redis is not installed"
-)
+pytestmark = pytest.mark.skipif(not redis_installed, reason="Redis is not installed")
 
 
 @pytest.fixture(scope="session")
@@ -74,6 +70,7 @@ def test_constructor(connection_string):
     memory = RedisMemoryStore(connection_string)
     assert memory._database.ping()
 
+
 def test_configure(connection_string):
     memory = RedisMemoryStore(connection_string)
 
@@ -86,7 +83,7 @@ def test_configure(connection_string):
     port_setup["port"] = "not_number"
     try:
         memory.configure(port_setup)
-    except redis.exceptions.ResponseError as e:
+    except redis.exceptions.ResponseError:
         pass
     assert memory._database.ping()
 
@@ -94,7 +91,7 @@ def test_configure(connection_string):
 @pytest.mark.asyncio
 async def test_create_and_does_collection_exist_async(connection_string):
     memory = RedisMemoryStore(connection_string)
-    
+
     await memory.create_collection_async("test_collection")
     exists = await memory.does_collection_exist_async("test_collection")
     assert exists
@@ -102,13 +99,21 @@ async def test_create_and_does_collection_exist_async(connection_string):
 
 @pytest.mark.asyncio
 async def test_get_collections_async(connection_string):
-    pass
+    memory = RedisMemoryStore(connection_string)
+
+    collection_names = ["c1", "c2", "c3"]
+    for c_n in collection_names:
+        await memory.create_collection_async(c_n)
+
+    names_from_func = await memory.get_collections_async()
+    for c_n in collection_names:
+        assert c_n in names_from_func
 
 
 @pytest.mark.asyncio
 async def test_delete_collection_async(connection_string):
     memory = RedisMemoryStore(connection_string)
-    
+
     await memory.create_collection_async("test_collection")
     await memory.delete_collection_async("test_collection")
 
@@ -119,7 +124,7 @@ async def test_delete_collection_async(connection_string):
 @pytest.mark.asyncio
 async def test_does_collection_exist_async(connection_string):
     memory = RedisMemoryStore(connection_string)
-    
+
     await memory.create_collection_async("test_collection")
     exists = await memory.does_collection_exist_async("test_collection")
     assert exists
