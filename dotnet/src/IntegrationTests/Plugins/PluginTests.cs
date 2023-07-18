@@ -34,8 +34,8 @@ public class PluginTests
 
         var contextVariables = new ContextVariables();
         contextVariables["q"] = query;
-        contextVariables["size"] = size.ToString();
-        contextVariables["budget"] = budget.ToString();
+        contextVariables["size"] = size.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        contextVariables["budget"] = budget.ToString(System.Globalization.CultureInfo.InvariantCulture);
         contextVariables["countryCode"] = countryCode;
 
         // Act
