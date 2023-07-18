@@ -151,7 +151,7 @@ class MilvusMemoryStore(MemoryStoreBase):
     async def delete_collection_async(
         self, collection_name: str = "", all: bool = False
     ) -> None:
-        """Delete the speficied collection.
+        """Delete the specified collection.
 
         If all is True, all collections in the cluster will be removed.
 
