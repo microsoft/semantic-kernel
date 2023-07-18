@@ -26,6 +26,9 @@ class GooglePalmTextCompletion():
             api_key {str} -- GooglePalm API key, see
             https://developers.generativeai.google/products/palm
         """
+        if not api_key:
+            raise ValueError("The Google PaLM API key cannot be `None` or empty`")
+        
         self._model_id = model_id
         self._api_key = api_key
 

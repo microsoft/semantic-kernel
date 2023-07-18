@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import semantic_kernel as sk
 import asyncio
 import semantic_kernel.connectors.ai.google_palm.services.gp_text_completion as sk_gp
