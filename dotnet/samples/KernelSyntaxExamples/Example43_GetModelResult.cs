@@ -19,7 +19,9 @@ public static class Example43_GetModelResult
         Console.WriteLine("======== Inline Function Definition + Result ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService(
+                modelId: TestConfiguration.OpenAI.ModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Function defined using few-shot design pattern
@@ -50,14 +52,10 @@ Event: {{$input}}
         Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAITextResult()?.Usage.AsJson());
         Console.WriteLine();
 
-        // Using the Kernel RunAsync
-        textResult = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
-        Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAITextResult()?.Usage.AsJson());
-        Console.WriteLine();
-
         // Using Chat Completion directly
-        var chatCompletion = new OpenAIChatCompletion("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        var chatCompletion = new OpenAIChatCompletion(
+            modelId: TestConfiguration.OpenAI.ChatModelId,
+            apiKey: TestConfiguration.OpenAI.ApiKey);
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
         IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new CompleteRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });

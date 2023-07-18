@@ -32,7 +32,9 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 /// The embedding data persists between subsequent instances and has similarity search capability.
 /// </remarks>
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
-public class WeaviateMemoryStore : IMemoryStore, IDisposable
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+public class WeaviateMemoryStore : IMemoryStore
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
     /// <summary>
     /// The authorization header name
@@ -50,42 +52,9 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
     };
 
     private readonly HttpClient _httpClient;
-    private readonly bool _isSelfManagedHttpClient;
     private readonly ILogger _logger;
-    private bool _disposed;
     private readonly Uri? _endpoint = null;
     private string? _apiKey;
-
-    /// <summary>
-    ///     Constructor for a memory store backed by Weaviate
-    /// </summary>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
-    public WeaviateMemoryStore(string scheme, string host, int port, string? apiKey = null, HttpClient? httpClient = null, ILogger? logger = null)
-    {
-        Verify.NotNullOrWhiteSpace(scheme);
-        Verify.NotNullOrWhiteSpace(host, "Host cannot be null or empty");
-
-        this._logger = logger ?? NullLogger<WeaviateMemoryStore>.Instance;
-        if (httpClient == null)
-        {
-            this._httpClient = new();
-            this._apiKey = apiKey;
-            if (!string.IsNullOrEmpty(apiKey))
-            {
-                this._httpClient.DefaultRequestHeaders.Add(AuthorizationHeaderName, apiKey);
-            }
-
-            // If not passed an HttpClient, then it is the responsibility of this class
-            // to ensure it is cleared up in the Dispose() method.
-            this._isSelfManagedHttpClient = true;
-        }
-        else
-        {
-            this._httpClient = httpClient;
-        }
-
-        this._httpClient.BaseAddress = new($"{scheme}://{host}:{port}/v1/");
-    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateMemoryStore"/> class.
@@ -125,13 +94,6 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
         this._endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint);
         this._logger = logger ?? NullLogger.Instance;
         this._httpClient = httpClient;
-    }
-
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     /// <inheritdoc />
@@ -576,25 +538,5 @@ public class WeaviateMemoryStore : IMemoryStore, IDisposable
             weaviateObject.Properties["sk_text"].ToString(),
             weaviateObject.Properties["sk_additional_metadata"].ToString()
         );
-    }
-
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
-    protected virtual void Dispose(bool disposing)
-    {
-        if (this._disposed)
-        {
-            return;
-        }
-
-        if (disposing)
-        {
-            // Clean-up the HttpClient if we created it.
-            if (this._isSelfManagedHttpClient)
-            {
-                this._httpClient.Dispose();
-            }
-        }
-
-        this._disposed = true;
     }
 }
