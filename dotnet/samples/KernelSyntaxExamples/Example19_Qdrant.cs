@@ -16,7 +16,7 @@ public static class Example19_Qdrant
     {
         QdrantMemoryStore memoryStore = new(TestConfiguration.Qdrant.Endpoint, 1536, ConsoleLogger.Log);
         IKernel kernel = Kernel.Builder
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(memoryStore)

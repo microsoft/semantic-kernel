@@ -35,7 +35,7 @@ using Resources;
  *
  * TLDR: how to render a prompt:
  *
- *      var kernel = new KernelBuilder().AddLogging(ConsoleLogger.Log).Build();
+ *      var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
  *      ... import skills and functions ...
  *      var context = kernel.CreateNewContext();
  *      ... set variables ...
@@ -64,7 +64,7 @@ public static class Example30_ChatWithPrompts
 
         // Usual kernel initialization, with GPT 3.5 Turbo
         IKernel kernel = new KernelBuilder()
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             .WithOpenAIChatCompletionService("gpt-3.5-turbo", TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 

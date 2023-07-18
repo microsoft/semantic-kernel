@@ -105,7 +105,7 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder.AddLogging(this._logger);
+        var builder = Kernel.Builder.WithLogger(this._logger);
 
         if (useChatModel)
         {

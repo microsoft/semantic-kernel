@@ -42,7 +42,7 @@ NpgsqlDataSource dataSource = dataSourceBuilder.Build();
 PostgresMemoryStore memoryStore = new PostgresMemoryStore(dataSource, vectorSize: 1536/*, schema: "public" */);
 
 IKernel kernel = Kernel.Builder
-    .AddLogging(ConsoleLogger.Log)
+    .WithLogger(ConsoleLogger.Log)
     .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
     .WithMemoryStorage(memoryStore)
     //.WithPostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public") // This method offers an alternative approach to registering Postgres memory store.

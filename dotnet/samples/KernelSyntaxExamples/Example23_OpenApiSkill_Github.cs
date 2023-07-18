@@ -31,7 +31,7 @@ public static class Example23_OpenApiSkill_GitHub
 
     public static async Task<string> ListPullRequestsFromGitHubAsync(BearerAuthenticationProvider authenticationProvider)
     {
-        var kernel = new KernelBuilder().AddLogging(ConsoleLogger.Log).Build();
+        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         var skill = await kernel.ImportOpenApiSkillFromFileAsync(
             "GitHubSkill",
@@ -63,7 +63,7 @@ public static class Example23_OpenApiSkill_GitHub
 
     public static async Task GetPullRequestFromGitHubAsync(BearerAuthenticationProvider authenticationProvider, string pullNumber)
     {
-        var kernel = new KernelBuilder().AddLogging(ConsoleLogger.Log).Build();
+        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         var skill = await kernel.ImportOpenApiSkillFromFileAsync(
             "GitHubSkill",

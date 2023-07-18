@@ -31,7 +31,7 @@ IDatabase database = connectionMultiplexer.GetDatabase();
 RedisMemoryStore memoryStore = new RedisMemoryStore(database, vectorSize: 1536);
 
 IKernel kernel = Kernel.Builder
-    .AddLogging(ConsoleLogger.Log)
+    .WithLogger(ConsoleLogger.Log)
     .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
     .WithMemoryStorage(memoryStore)
     .Build();

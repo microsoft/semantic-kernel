@@ -18,7 +18,7 @@ public static class Example03_Variables
     {
         Console.WriteLine("======== Variables ========");
 
-        IKernel kernel = new KernelBuilder().AddLogging(s_log).Build();
+        IKernel kernel = new KernelBuilder().WithLogger(s_log).Build();
         var text = kernel.ImportSkill(new StaticTextSkill(), "text");
 
         var variables = new ContextVariables("Today is: ");

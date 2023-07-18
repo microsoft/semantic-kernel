@@ -18,7 +18,7 @@ public static class Example21_ChatGptPlugins
 
     private static async Task RunChatGptPluginAsync()
     {
-        var kernel = new KernelBuilder().AddLogging(ConsoleLogger.Log).Build();
+        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         using HttpClient httpClient = new();
 
         //Import a ChatGPT plugin using one of the following Kernel extension methods
@@ -40,7 +40,7 @@ public static class Example21_ChatGptPlugins
 
         //--------------- Example of using Klarna ChatGPT plugin ------------------------
 
-        //var kernel = new KernelBuilder().AddLogging(ConsoleLogger.Log).Build();
+        //var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
         //var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiSkillExecutionParameters(httpClient));
 

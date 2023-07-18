@@ -98,9 +98,9 @@ public sealed class Program
         string folder = RepoFiles.SampleSkillsPath();
 
         var kernel = new KernelBuilder()
-            .AddLogging(logger)
-            .AddMetering(meterListener)
-            .AddTracing(activityListener)
+            .WithLogging(logger)
+            .WithMetering(meterListener)
+            .WithTracing(activityListener)
             .WithAzureChatCompletionService(
                 Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
                 Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
@@ -120,8 +120,8 @@ public sealed class Program
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
 
         return new SequentialPlannerBuilder(kernel)
-            .AddConfiguration(plannerConfig)
-            .AddLogging(logger)
+            .WithConfiguration(plannerConfig)
+            .WithLogging(logger)
             .Build();
     }
 

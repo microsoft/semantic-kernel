@@ -38,7 +38,7 @@ public class SequentialPlannerBuilder
     /// </summary>
     /// <param name="config">Instance of <see cref="SequentialPlannerConfig"/> planner configuration.</param>
     /// <returns>Updated planner builder including the given configuration.</returns>
-    public SequentialPlannerBuilder AddConfiguration(SequentialPlannerConfig config)
+    public SequentialPlannerBuilder WithConfiguration(SequentialPlannerConfig config)
     {
         Verify.NotNull(config);
         this._config = config;
@@ -50,7 +50,7 @@ public class SequentialPlannerBuilder
     /// </summary>
     /// <param name="prompt">Prompt string.</param>
     /// <returns>Updated planner builder including the given prompt.</returns>
-    public SequentialPlannerBuilder AddPrompt(string prompt)
+    public SequentialPlannerBuilder WithPrompt(string prompt)
     {
         Verify.NotNullOrWhiteSpace(prompt);
         this.prompt = prompt;
@@ -62,7 +62,7 @@ public class SequentialPlannerBuilder
     /// </summary>
     /// <param name="logger">Instance of <see cref="ILogger"/> to be used for planner logging.</param>
     /// <returns>Updated planner builder with added logging.</returns>
-    public SequentialPlannerBuilder AddLogging(ILogger logger)
+    public SequentialPlannerBuilder WithLogging(ILogger logger)
     {
         Verify.NotNull(logger);
         this._logger = logger;

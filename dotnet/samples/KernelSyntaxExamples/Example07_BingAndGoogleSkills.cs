@@ -31,7 +31,7 @@ public static class Example07_BingAndGoogleSkills
         }
 
         IKernel kernel = new KernelBuilder()
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)

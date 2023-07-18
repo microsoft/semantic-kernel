@@ -179,7 +179,7 @@ Jane: Goodbye!
     private static IKernel InitializeKernel()
     {
         IKernel kernel = Kernel.Builder
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
                 TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,

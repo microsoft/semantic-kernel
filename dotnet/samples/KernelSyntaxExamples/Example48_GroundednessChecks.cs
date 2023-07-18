@@ -59,7 +59,7 @@ after this event Caroline became his wife.""";
     {
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
                 TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
@@ -124,7 +124,7 @@ which are not grounded in the original.
         Console.WriteLine("======== Planning - Groundedness Checks ========");
 
         var kernel = new KernelBuilder()
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
                 TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,

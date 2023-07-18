@@ -23,7 +23,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
         }
 
         IKernel kernel = new KernelBuilder()
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-002", openAIApiKey, serviceId: "text-davinci-002")
             .WithOpenAITextCompletionService("text-davinci-003", openAIApiKey)
             .Build();

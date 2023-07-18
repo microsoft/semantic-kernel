@@ -28,7 +28,7 @@ public static class Example06_TemplateLanguage
         }
 
         IKernel kernel = Kernel.Builder
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)

@@ -28,7 +28,7 @@ public static class Example05_InlineFunctionDefinition
          */
 
         IKernel kernel = new KernelBuilder()
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)

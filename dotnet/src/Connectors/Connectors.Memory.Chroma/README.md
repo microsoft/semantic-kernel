@@ -24,7 +24,7 @@ const string endpoint = "http://localhost:8000";
 ChromaMemoryStore memoryStore = new(endpoint);
 
 IKernel kernel = Kernel.Builder
-    .AddLogging(logger)
+    .WithLogger(logger)
     .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", "OPENAI_API_KEY")
     .WithMemoryStorage(memoryStore)
     //.WithChromaMemoryStore(endpoint) // This method offers an alternative approach to registering Chroma memory store.

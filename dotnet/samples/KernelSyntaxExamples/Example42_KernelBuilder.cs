@@ -101,7 +101,7 @@ public static class Example42_KernelBuilder
 
         // Example: how to use a custom memory and configure Azure OpenAI
         var kernel4 = Kernel.Builder
-            .AddLogging(NullLogger.Instance)
+            .WithLogger(NullLogger.Instance)
             .WithMemory(memory)
             .WithAzureTextCompletionService(
                 deploymentName: azureOpenAITextCompletionDeployment,
@@ -111,13 +111,13 @@ public static class Example42_KernelBuilder
 
         // Example: how to use a custom memory storage and custom embedding generator
         var kernel5 = Kernel.Builder
-            .AddLogging(NullLogger.Instance)
+            .WithLogger(NullLogger.Instance)
             .WithMemoryStorageAndTextEmbeddingGeneration(memoryStorage, textEmbeddingGenerator)
             .Build();
 
         // Example: how to use a custom memory storage
         var kernel6 = Kernel.Builder
-            .AddLogging(NullLogger.Instance)
+            .WithLogger(NullLogger.Instance)
             .WithMemoryStorage(memoryStorage) // Custom memory storage
             .WithAzureTextCompletionService(
                 deploymentName: azureOpenAITextCompletionDeployment,

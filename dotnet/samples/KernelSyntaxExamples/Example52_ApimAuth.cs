@@ -56,7 +56,7 @@ public static class Example52_ApimAuth
 
         // Example: how to use a custom OpenAIClient and configure Azure OpenAI
         var kernel = Kernel.Builder
-            .AddLogging(loggerFactory.CreateLogger<IKernel>())
+            .WithLogger(loggerFactory.CreateLogger<IKernel>())
             .WithAzureTextCompletionService("text-davinci-003", openAIClient)
             .Build();
 

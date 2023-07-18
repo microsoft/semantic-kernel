@@ -81,8 +81,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="log">Logger to add.</param>
     /// <remarks>
-    /// This method will be deprecated and removed in one of the next SK SDK versions.
-    /// Method <see cref="KernelBuilder.AddLogging(ILogger)"/> should be used instead.
+    /// This method will be deprecated and removed in one of the next SK SDK versions. Use <see cref="WithLogging(ILogger)"/> method instead.
     /// </remarks>
     /// <returns>Updated kernel builder including the logger.</returns>
     public KernelBuilder WithLogger(ILogger log)
@@ -97,7 +96,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="logger">Logger to add.</param>
     /// <returns>Updated kernel builder with enabled logging.</returns>
-    public KernelBuilder AddLogging(ILogger logger)
+    public KernelBuilder WithLogging(ILogger logger)
     {
         Verify.NotNull(logger);
         this._logger = logger;
@@ -109,7 +108,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="meterListener">Instance of <see cref="MeterListener"/> to be used for kernel metering.</param>
     /// <returns>Kernel builder with enabled metering.</returns>
-    public KernelBuilder AddMetering(MeterListener meterListener)
+    public KernelBuilder WithMetering(MeterListener meterListener)
     {
         Verify.NotNull(meterListener);
 
@@ -131,7 +130,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="activityListener">Instance of <see cref="ActivityListener"/> to be used for kernel tracing.</param>
     /// <returns>Kernel builder with enabled tracing.</returns>
-    public KernelBuilder AddTracing(ActivityListener activityListener)
+    public KernelBuilder WithTracing(ActivityListener activityListener)
     {
         Verify.NotNull(activityListener);
 

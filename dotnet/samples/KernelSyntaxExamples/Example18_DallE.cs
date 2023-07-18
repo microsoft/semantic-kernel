@@ -26,7 +26,7 @@ public static class Example18_DallE
         Console.WriteLine("======== OpenAI Dall-E 2 Image Generation ========");
 
         IKernel kernel = new KernelBuilder()
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             // Add your image generation service
             .WithOpenAIImageGenerationService(TestConfiguration.OpenAI.ApiKey)
             // Add your chat completion service 
@@ -95,7 +95,7 @@ public static class Example18_DallE
         Console.WriteLine("========Azure OpenAI Dall-E 2 Image Generation ========");
 
         IKernel kernel = new KernelBuilder()
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             // Add your image generation service
             .WithAzureOpenAIImageGenerationService(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service

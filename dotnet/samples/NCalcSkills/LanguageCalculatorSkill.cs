@@ -16,7 +16,7 @@ namespace NCalcSkills;
 /// </summary>
 /// <example>
 /// usage :
-/// var kernel = new KernelBuilder().AddLogging(ConsoleLogger.Log).Build();
+/// var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 /// var question = "what is the square root of 625";
 /// var calculatorSkill = kernel.ImportSkill(new LanguageCalculatorSkill(kernel));
 /// var summary = await kernel.RunAsync(questions, calculatorSkill["Calculate"]);

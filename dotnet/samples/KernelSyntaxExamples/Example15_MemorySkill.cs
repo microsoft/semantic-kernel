@@ -16,7 +16,7 @@ public static class Example15_MemorySkill
     public static async Task RunAsync()
     {
         var kernel = Kernel.Builder
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())

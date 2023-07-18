@@ -40,7 +40,7 @@ public static class Example26_AADAuth
         };
 
         IKernel kernel = new KernelBuilder()
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             // Add Azure chat completion service using DefaultAzureCredential AAD auth
             .WithAzureChatCompletionService(
                 "gpt-35-turbo",

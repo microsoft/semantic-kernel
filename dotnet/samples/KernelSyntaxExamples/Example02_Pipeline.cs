@@ -17,7 +17,7 @@ public static class Example02_Pipeline
     {
         Console.WriteLine("======== Pipeline ========");
 
-        IKernel kernel = new KernelBuilder().AddLogging(s_log).Build();
+        IKernel kernel = new KernelBuilder().WithLogger(s_log).Build();
 
         // Load native skill
         var text = kernel.ImportSkill(new TextSkill());

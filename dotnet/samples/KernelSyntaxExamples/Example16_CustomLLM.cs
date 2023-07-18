@@ -95,7 +95,7 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM - Text Completion - SKFunction ========");
 
         IKernel kernel = new KernelBuilder()
-            .AddLogging(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Log)
             // Add your text completion service as a singleton instance
             .WithAIService<ITextCompletion>("myService1", new MyTextCompletionService())
             // Add your text completion service as a factory method
@@ -130,7 +130,7 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
-        IKernel kernel = new KernelBuilder().AddLogging(ConsoleLogger.Log).Build();
+        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
         ITextCompletion textCompletion = new MyTextCompletionService();
 
         var prompt = "Write one paragraph why AI is awesome";

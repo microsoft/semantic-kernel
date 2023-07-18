@@ -43,7 +43,7 @@ public sealed class WebSkillTests : IDisposable
     public async Task BingSkillTestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
-        IKernel kernel = Kernel.Builder.AddLogging(this._logger).Build();
+        IKernel kernel = Kernel.Builder.WithLogger(this._logger).Build();
 
         using XunitLogger<BingConnector> connectorLogger = new(this._output);
         BingConnector connector = new(this._bingApiKey, connectorLogger);
@@ -66,7 +66,7 @@ public sealed class WebSkillTests : IDisposable
     public async Task WebFileDownloadSkillFileTestAsync()
     {
         // Arrange
-        IKernel kernel = Kernel.Builder.AddLogging(this._logger).Build();
+        IKernel kernel = Kernel.Builder.WithLogger(this._logger).Build();
         using XunitLogger<WebFileDownloadSkill> skillLogger = new(this._output);
         var skill = new WebFileDownloadSkill(skillLogger);
         var download = kernel.ImportSkill(skill, "WebFileDownload");
