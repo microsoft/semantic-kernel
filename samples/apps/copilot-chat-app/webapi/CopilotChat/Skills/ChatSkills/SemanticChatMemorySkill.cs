@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Service.CopilotChat.Options;
 
@@ -50,10 +49,10 @@ public class SemanticChatMemorySkill
 
         // Search for relevant memories.
         List<MemoryQueryResult> relevantMemories = new();
-        foreach (var memoryName in this._promptOptions.MemoryTypes)
+        foreach (var memoryName in this._promptOptions.MemoryMap.Keys)
         {
             var results = textMemory.SearchAsync(
-                SemanticChatMemoryExtractor.MemoryCollectionType(chatId, memoryName),
+                SemanticChatMemoryExtractor.MemoryCollectionName(chatId, memoryName),
                 query,
                 limit: 100,
                 minRelevanceScore: this._promptOptions.SemanticMemoryMinRelevance);

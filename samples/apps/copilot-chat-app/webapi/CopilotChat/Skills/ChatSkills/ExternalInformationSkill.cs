@@ -67,7 +67,6 @@ public class ExternalInformationSkill
     /// </summary>
     [SKFunction, Description("Acquire external information")]
     public async Task<string> AcquireExternalInformationAsync(
-        [Description("Maximum numbzer of tokens")] int tokenLimit,
         [Description("The intent to whether external information is needed")] string userIntent,
         SKContext context)
     {
@@ -97,7 +96,8 @@ public class ExternalInformationSkill
 
             // Invoke plan
             newPlanContext = await plan.InvokeAsync(newPlanContext);
-            tokenLimit = tokenLimit -
+            int tokenLimit =
+                int.Parse(context["tokenLimit"], new NumberFormatInfo()) -
                 Utilities.TokenCount(PromptPreamble) -
                 Utilities.TokenCount(PromptPostamble);
 
