@@ -104,13 +104,13 @@ export const PlanViewer: React.FC<PlanViewerProps> = ({ message, messageIndex, g
         contextVariables.push(
             planState === PlanState.PlanApproved
                 ? {
-                    key: 'planUserIntent',
-                    value: description,
-                }
+                      key: 'planUserIntent',
+                      value: description,
+                  }
                 : {
-                    key: 'userCancelledPlan',
-                    value: 'true',
-                },
+                      key: 'userCancelledPlan',
+                      value: 'true',
+                  },
         );
 
         // Invoke plan

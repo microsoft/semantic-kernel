@@ -23,6 +23,10 @@ import {
     Info16Regular,
     Share20Filled,
     Share20Regular,
+    ThumbDislike16Filled,
+    ThumbDislike16Regular,
+    ThumbLike16Filled,
+    ThumbLike16Regular,
     bundleIcon,
 } from '@fluentui/react-icons';
 
@@ -38,3 +42,5 @@ export const Edit = bundleIcon(EditFilled, EditRegular);
 export const ArrowDownload16 = bundleIcon(ArrowDownload16Filled, ArrowDownload16Regular);
 export const Share20 = bundleIcon(Share20Filled, Share20Regular);
 export const Info16 = bundleIcon(Info16Filled, Info16Regular);
+export const ThumbLike16 = bundleIcon(ThumbLike16Filled, ThumbLike16Regular);
+export const ThumbDislike16 = bundleIcon(ThumbDislike16Filled, ThumbDislike16Regular);

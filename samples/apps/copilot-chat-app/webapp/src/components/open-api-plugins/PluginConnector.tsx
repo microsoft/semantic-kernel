@@ -20,7 +20,7 @@ import { TokenHelper } from '../../libs/auth/TokenHelper';
 import { useAppDispatch } from '../../redux/app/hooks';
 import { AdditionalApiProperties, PluginAuthRequirements } from '../../redux/features/plugins/PluginsState';
 import { connectPlugin } from '../../redux/features/plugins/pluginsSlice';
-import { useDialogClasses } from './styles';
+import { useDialogClasses } from '../shared/styles';
 
 interface PluginConnectorProps {
     name: string;

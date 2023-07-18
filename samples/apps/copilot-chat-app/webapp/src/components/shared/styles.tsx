@@ -24,4 +24,10 @@ export const useDialogClasses = makeStyles({
         width: '100%',
         rowGap: '10px',
     },
+    footer: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        minWidth: '175px',
+    },
 });

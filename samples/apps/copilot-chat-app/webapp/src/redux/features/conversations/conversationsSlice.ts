@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { createSlice, PayloadAction, Slice } from '@reduxjs/toolkit';
-import { IChatMessage } from '../../../libs/models/ChatMessage';
+import { ChatMessageType, IChatMessage, UserFeedback } from '../../../libs/models/ChatMessage';
 import { IChatUser } from '../../../libs/models/ChatUser';
 import { PlanState } from '../../../libs/models/Plan';
 import { ChatState } from './ChatState';
@@ -32,7 +32,10 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             const newInput = action.payload.newInput;
             state.conversations[id].input = newInput;
         },
-        editConversationSystemDescription: (state: ConversationsState, action: PayloadAction<ConversationSystemDescriptionChange>) => {
+        editConversationSystemDescription: (
+            state: ConversationsState,
+            action: PayloadAction<ConversationSystemDescriptionChange>,
+        ) => {
             const id = action.payload.id;
             const newSystemDescription = action.payload.newSystemDescription;
             state.conversations[id].systemDescription = newSystemDescription;
@@ -118,6 +121,15 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             const conversation = state.conversations[chatId];
             conversation.isBotTyping = isTyping;
         },
+        setUserFeedback: (
+            state: ConversationsState,
+            action: PayloadAction<{ userFeedback: UserFeedback; messageIndex: number; chatId?: string }>,
+        ) => {
+            const { userFeedback, messageIndex, chatId } = action.payload;
+            const id = chatId ?? state.selectedId;
+            state.conversations[id].messages[messageIndex].userFeedback = userFeedback;
+            frontLoadChat(state, id);
+        },
     },
 });
 
@@ -134,6 +146,7 @@ export const {
     updateUserIsTyping,
     updateUserIsTypingFromServer,
     setUsersLoaded,
+    setUserFeedback,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;
@@ -145,7 +158,11 @@ const frontLoadChat = (state: ConversationsState, id: string) => {
 };
 
 const updateConversation = (state: ConversationsState, chatId: string, message: IChatMessage) => {
-    state.conversations[chatId].messages.push(message);
+    const requestUserFeedback = message.userId === 'bot' && message.type === ChatMessageType.Message;
+    state.conversations[chatId].messages.push({
+        ...message,
+        userFeedback: requestUserFeedback ? UserFeedback.Requested : undefined,
+    });
     frontLoadChat(state, chatId);
 };
 
