@@ -72,30 +72,29 @@
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.connectors</groupId>
-            <artifactId>semantickernel-connectors</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-ai-openai</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-core-skills</artifactId>
+            <artifactId>semantickernel-plugin-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>semantickernel-sequentialplanner-extension</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-planning-sequential-planner</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>semantickernel-actionplanner-extension</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-planning-action-planner</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
-            <version>2.0.1.MR</version>
         </dependency>
     </dependencies>
 </project>

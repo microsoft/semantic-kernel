@@ -28,23 +28,25 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.microsoft.semantic-kernel.connectors</groupId>
-                <artifactId>semantickernel-connectors</artifactId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-ai-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-                <artifactId>semantickernel-sequentialplanner-extension</artifactId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-planning-sequential-planner</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-core-skills</artifactId>
+                <artifactId>semantickernel-planning-action-planner</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-                <artifactId>semantickernel-actionplanner-extension</artifactId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-plugin-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -71,6 +73,12 @@
                 <scope>runtime</scope>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${com.fasterxml.jackson.core.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-core</artifactId>
                 <version>3.5.6</version>
@@ -85,6 +93,16 @@
                 <artifactId>azure-core-http-netty</artifactId>
                 <version>1.13.2</version>
                 <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-search-documents</artifactId>
+                <version>11.6.0-beta.6</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>2.0.1.MR</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

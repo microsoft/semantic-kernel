@@ -7,12 +7,12 @@
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
         <version>0.2.7-alpha-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>semantickernel-core-skills</artifactId>
-    <name>Semantic Kernel Core Skills</name>
-    <description>Core skills used by the Semantic Kernel</description>
+    <artifactId>semantickernel-planning-action-planner</artifactId>
+    <name>Semantic Kernel Action Planner Extension</name>
+    <description>Action Planner implementation for Semantic Kernel</description>
 
     <dependencies>
         <dependency>
@@ -20,20 +20,15 @@
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-test</artifactId>
-            <scope>test</scope>
-            <version>3.5.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
+
 </project>

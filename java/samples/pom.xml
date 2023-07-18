@@ -58,8 +58,8 @@
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.connectors</groupId>
-            <artifactId>semantickernel-connectors</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-ai-openai</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
@@ -68,7 +68,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-core-skills</artifactId>
+            <artifactId>semantickernel-plugin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -87,13 +87,13 @@
             <version>${log4j2.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>semantickernel-sequentialplanner-extension</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-planning-sequential-planner</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>semantickernel-actionplanner-extension</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-planning-action-planner</artifactId>
             <scope>compile</scope>
         </dependency>
     </dependencies>
