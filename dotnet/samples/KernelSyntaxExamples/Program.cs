@@ -1,167 +1,113 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Reliability;
+using RepoUtils;
 
 public static class Program
 {
     // ReSharper disable once InconsistentNaming
     public static async Task Main()
     {
-        Example01_NativeFunctions.Run();
-        Console.WriteLine("== DONE ==");
+        // Load configuration from environment variables or user secrets.
+        LoadUserSecrets();
 
-        await Example02_Pipeline.RunAsync();
-        Console.WriteLine("== DONE ==");
+        // Execution canceled if the user presses Ctrl+C.
+        using CancellationTokenSource cancellationTokenSource = new();
+        CancellationToken cancelToken = cancellationTokenSource.ConsoleCancellationToken();
 
-        await Example03_Variables.RunAsync();
-        Console.WriteLine("== DONE ==");
+        // Run examples
+        await Example01_NativeFunctions.RunAsync().SafeWaitAsync(cancelToken);
+        await Example02_Pipeline.RunAsync().SafeWaitAsync(cancelToken);
+        await Example03_Variables.RunAsync().SafeWaitAsync(cancelToken);
+        await Example04_CombineLLMPromptsAndNativeCode.RunAsync().SafeWaitAsync(cancelToken);
+        await Example05_InlineFunctionDefinition.RunAsync().SafeWaitAsync(cancelToken);
+        await Example06_TemplateLanguage.RunAsync().SafeWaitAsync(cancelToken);
+        await Example07_BingAndGoogleSkills.RunAsync().SafeWaitAsync(cancelToken);
+        await Example08_RetryHandler.RunAsync().SafeWaitAsync(cancelToken);
+        await Example09_FunctionTypes.RunAsync().SafeWaitAsync(cancelToken);
+        await Example10_DescribeAllSkillsAndFunctions.RunAsync().SafeWaitAsync(cancelToken);
+        await Example11_WebSearchQueries.RunAsync().SafeWaitAsync(cancelToken);
+        await Example12_SequentialPlanner.RunAsync().SafeWaitAsync(cancelToken);
+        await Example13_ConversationSummarySkill.RunAsync().SafeWaitAsync(cancelToken);
+        await Example14_SemanticMemory.RunAsync().SafeWaitAsync(cancelToken);
+        await Example15_MemorySkill.RunAsync().SafeWaitAsync(cancelToken);
+        await Example16_CustomLLM.RunAsync().SafeWaitAsync(cancelToken);
+        await Example17_ChatGPT.RunAsync().SafeWaitAsync(cancelToken);
+        await Example18_DallE.RunAsync().SafeWaitAsync(cancelToken);
+        await Example19_Qdrant.RunAsync().SafeWaitAsync(cancelToken);
+        await Example20_HuggingFace.RunAsync().SafeWaitAsync(cancelToken);
+        await Example21_ChatGptPlugins.RunAsync().SafeWaitAsync(cancelToken);
+        await Example22_OpenApiSkill_AzureKeyVault.RunAsync().SafeWaitAsync(cancelToken);
+        await Example23_OpenApiSkill_GitHub.RunAsync().SafeWaitAsync(cancelToken);
+        await Example24_OpenApiSkill_Jira.RunAsync().SafeWaitAsync(cancelToken);
+        await Example25_ReadOnlyMemoryStore.RunAsync().SafeWaitAsync(cancelToken);
+        await Example26_AADAuth.RunAsync().SafeWaitAsync(cancelToken);
+        await Example27_SemanticFunctionsUsingChatGPT.RunAsync().SafeWaitAsync(cancelToken);
+        await Example28_ActionPlanner.RunAsync().SafeWaitAsync(cancelToken);
+        await Example29_Tokenizer.RunAsync().SafeWaitAsync(cancelToken);
+        await Example30_ChatWithPrompts.RunAsync().SafeWaitAsync(cancelToken);
+        await Example31_CustomPlanner.RunAsync().SafeWaitAsync(cancelToken);
+        await Example32_StreamingCompletion.RunAsync().SafeWaitAsync(cancelToken);
+        await Example33_StreamingChat.RunAsync().SafeWaitAsync(cancelToken);
+        await Example34_CustomChatModel.RunAsync().SafeWaitAsync(cancelToken);
+        await Example35_GrpcSkills.RunAsync().SafeWaitAsync(cancelToken);
+        await Example36_MultiCompletion.RunAsync().SafeWaitAsync(cancelToken);
+        await Example37_MultiStreamingCompletion.RunAsync().SafeWaitAsync(cancelToken);
+        await Example38_Pinecone.RunAsync().SafeWaitAsync(cancelToken);
+        await Example39_Postgres.RunAsync().SafeWaitAsync(cancelToken);
+        await Example40_DIContainer.RunAsync().SafeWaitAsync(cancelToken);
+        await Example41_HttpClientUsage.RunAsync().SafeWaitAsync(cancelToken);
+        await Example42_KernelBuilder.RunAsync().SafeWaitAsync(cancelToken);
+        await Example43_GetModelResult.RunAsync().SafeWaitAsync(cancelToken);
+        await Example44_MultiChatCompletion.RunAsync().SafeWaitAsync(cancelToken);
+        await Example45_MultiStreamingChatCompletion.RunAsync().SafeWaitAsync(cancelToken);
+        await Example46_Weaviate.RunAsync().SafeWaitAsync(cancelToken);
+        await Example47_Redis.RunAsync().SafeWaitAsync(cancelToken);
+        await Example48_GroundednessChecks.RunAsync().SafeWaitAsync(cancelToken);
+        await Example49_LogitBias.RunAsync().SafeWaitAsync(cancelToken);
+        await Example50_Chroma.RunAsync().SafeWaitAsync(cancelToken);
+        await Example51_StepwisePlanner.RunAsync().SafeWaitAsync(cancelToken);
+        await Example52_ApimAuth.RunAsync().SafeWaitAsync(cancelToken);
+    }
 
-        await Example04_CombineLLMPromptsAndNativeCode.RunAsync();
-        Console.WriteLine("== DONE ==");
+    private static void LoadUserSecrets()
+    {
+        IConfigurationRoot configRoot = new ConfigurationBuilder()
+            .AddEnvironmentVariables()
+            .AddUserSecrets<Env>()
+            .Build();
+        TestConfiguration.Initialize(configRoot);
+    }
 
-        await Example05_InlineFunctionDefinition.RunAsync();
-        Console.WriteLine("== DONE ==");
+    private static CancellationToken ConsoleCancellationToken(this CancellationTokenSource tokenSource)
+    {
+        Console.CancelKeyPress += (s, e) =>
+        {
+            Console.WriteLine("Canceling...");
+            tokenSource.Cancel();
+            e.Cancel = true;
+        };
 
-        await Example06_TemplateLanguage.RunAsync();
-        Console.WriteLine("== DONE ==");
+        return tokenSource.Token;
+    }
 
-        await Example07_BingAndGoogleSkills.RunAsync();
-        Console.WriteLine("== DONE ==");
+    private static async Task SafeWaitAsync(this Task task,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await task.WaitAsync(cancellationToken);
+            Console.WriteLine("== DONE ==");
+        }
+        catch (ConfigurationNotFoundException ex)
+        {
+            Console.WriteLine($"{ex.Message}. Skipping example.");
+        }
 
-        await Example08_RetryHandler.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example09_FunctionTypes.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        Example10_DescribeAllSkillsAndFunctions.Run();
-        Console.WriteLine("== DONE ==");
-
-        await Example11_WebSearchQueries.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example12_SequentialPlanner.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example13_ConversationSummarySkill.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example14_SemanticMemory.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example15_MemorySkill.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example16_CustomLLM.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example17_ChatGPT.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example18_DallE.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example19_Qdrant.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example20_HuggingFace.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example21_ChatGptPlugins.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example22_OpenApiSkill_AzureKeyVault.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example23_OpenApiSkill_GitHub.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example24_OpenApiSkill_Jira.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example25_ReadOnlyMemoryStore.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example26_AADAuth.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example27_SemanticFunctionsUsingChatGPT.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example28_ActionPlanner.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        Example29_Tokenizer.Run();
-        Console.WriteLine("== DONE ==");
-
-        await Example30_ChatWithPrompts.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example31_CustomPlanner.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example32_StreamingCompletion.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example33_StreamingChat.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example34_CustomChatModel.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example35_GrpcSkills.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example36_MultiCompletion.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example37_MultiStreamingCompletion.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example38_Pinecone.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example39_Postgres.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example40_DIContainer.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        Example41_HttpClientUsage.Run();
-        Console.WriteLine("== DONE ==");
-
-        Example42_KernelBuilder.Run();
-        Console.WriteLine("== DONE ==");
-
-        await Example43_GetModelResult.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example44_MultiChatCompletion.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example45_MultiStreamingChatCompletion.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example46_Weaviate.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example47_Redis.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example48_GroundednessChecks.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example49_LogitBias.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example50_Chroma.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example51_StepwisePlanner.RunAsync();
-        Console.WriteLine("== DONE ==");
-
-        await Example52_ApimAuth.RunAsync();
-        Console.WriteLine("== DONE ==");
+        cancellationToken.ThrowIfCancellationRequested();
     }
 }

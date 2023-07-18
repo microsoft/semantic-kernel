@@ -70,9 +70,9 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+                TestConfiguration.AzureOpenAI.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -92,7 +92,7 @@ internal static class Example12_SequentialPlanner
         // - WriterSkill.Translate language='Italian' INPUT='' =>
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(plan.ToPlanString());
+        Console.WriteLine(plan.ToPlanWithGoalString());
 
         var result = await kernel.RunAsync(plan);
 
@@ -124,7 +124,7 @@ internal static class Example12_SequentialPlanner
         // - email.SendEmail INPUT='$TRANSLATED_SUMMARY' email_address='$EMAIL_ADDRESS' =>
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(plan.ToPlanString());
+        Console.WriteLine(plan.ToPlanWithGoalString());
 
         var input =
             "Once upon a time, in a faraway kingdom, there lived a kind and just king named Arjun. " +
@@ -166,7 +166,7 @@ internal static class Example12_SequentialPlanner
         // - WriterSkill.NovelChapter chapterIndex='3' previousChapter='$CHAPTER_2_SYNOPSIS' INPUT='$CHAPTER_3_SYNOPSIS' theme='Children's mystery' => RESULT__CHAPTER_3
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(originalPlan.ToPlanString());
+        Console.WriteLine(originalPlan.ToPlanWithGoalString());
 
         Stopwatch sw = new();
         sw.Start();
@@ -180,13 +180,13 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureChatCompletionService(
-                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_CHAT_KEY"))
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .WithAzureTextEmbeddingGenerationService(
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_EMBEDDINGS_KEY"))
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+                TestConfiguration.AzureOpenAIEmbeddings.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -215,7 +215,7 @@ internal static class Example12_SequentialPlanner
         var plan = await planner.CreatePlanAsync(goal);
 
         Console.WriteLine("Original plan:");
-        Console.WriteLine(plan.ToPlanString());
+        Console.WriteLine(plan.ToPlanWithGoalString());
     }
 
     private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
@@ -223,9 +223,9 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
             .WithAzureChatCompletionService(
-                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_CHAT_KEY"))
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { MaxTokens = maxTokens });
