@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -53,13 +52,9 @@ public sealed class PlanTests
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new Plan(goal);
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
         var context = new SKContext(
-            new ContextVariables("Some input"),
-            skills.Object,
-            log.Object
+            new ContextVariables("Some input")
         );
 
         // Act
@@ -89,13 +84,9 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -126,13 +117,9 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -163,13 +150,9 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -200,13 +183,9 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -237,13 +216,9 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -274,13 +249,9 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -318,13 +289,9 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -376,13 +343,9 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            new ContextVariables(stepOutput)
         );
 
         returnContext.Fail("Error description", new ArgumentException("Error message"));
@@ -413,11 +376,7 @@ public sealed class PlanTests
         var log = new Mock<ILogger>();
         var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
-        );
+        var returnContext = new SKContext();
 
         returnContext.Fail("Error description", new ArgumentException("Error message"));
 
@@ -443,14 +402,8 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
-        );
+        var returnContext = new SKContext();
 
         var childFunction1 = new Mock<ISKFunction>();
         childFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
@@ -524,14 +477,8 @@ public sealed class PlanTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
-        );
+        var returnContext = new SKContext();
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
@@ -556,14 +503,8 @@ public sealed class PlanTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
-        );
+        var returnContext = new SKContext();
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
@@ -595,14 +536,8 @@ public sealed class PlanTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
-        );
+        var returnContext = new SKContext();
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
@@ -630,9 +565,7 @@ public sealed class PlanTests
         plan.State.Set("type", "poem");
 
         var contextOverride = new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
+            new ContextVariables()
         );
         contextOverride.Variables.Set("type", "joke");
         contextOverride.Variables.Update("Medusa");
@@ -651,14 +584,8 @@ public sealed class PlanTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
-        );
+        var returnContext = new SKContext();
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
@@ -706,9 +633,7 @@ public sealed class PlanTests
         planStep.Parameters.Set("type", "poem");
         plan.AddSteps(planStep);
         var contextOverride = new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
+            new ContextVariables()
         );
         contextOverride.Variables.Set("type", "joke");
         contextOverride.Variables.Update("Medusa"); // context input will not override parameters
@@ -727,14 +652,8 @@ public sealed class PlanTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(),
-            skills.Object,
-           log.Object
-        );
+        var returnContext = new SKContext();
 
         var outlineMock = new Mock<ISKFunction>();
         outlineMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
@@ -825,11 +744,7 @@ public sealed class PlanTests
         plan.AddSteps(planStep);
 
         // Act
-        var result = await plan.InvokeAsync(new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
-        ));
+        var result = await plan.InvokeAsync();
 
         var expected =
             @"Chapter #1: Outline section #0 of 3: Here is a 3 chapter outline about NovelOutline function input.
@@ -851,13 +766,9 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
+            new ContextVariables()
         );
 
         var functionMock = new Mock<ISKFunction>();
@@ -876,11 +787,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         plan.State.Set("var", "foobar");
 
         // Act
-        var result = await plan.InvokeAsync(new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
-        ));
+        var result = await plan.InvokeAsync();
 
         var expected =
             @"Here is a payload '{""prop"":""value"", ""$prop"": 3, ""prop2"": ""my name is $pop and foobar""}' for Function input.";
