@@ -79,7 +79,7 @@ public sealed class Program
 
     private static void ConfigureApplicationInsightsTelemetry(ServiceCollection services)
     {
-        string instrumentationKey = Env.Var("APP_INSIGHTS_INSTRUMENTATION_KEY");
+        string instrumentationKey = Env.Var("ApplicationInsights__InstrumentationKey");
 
         services.AddLogging(loggingBuilder =>
         {
@@ -102,9 +102,9 @@ public sealed class Program
             .WithMetering(meterListener)
             .WithTracing(activityListener)
             .WithAzureChatCompletionService(
-                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_CHAT_KEY"))
+                Env.Var("AzureOpenAI__ChatDeploymentName"),
+                Env.Var("AzureOpenAI__Endpoint"),
+                Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill", "WriterSkill");
