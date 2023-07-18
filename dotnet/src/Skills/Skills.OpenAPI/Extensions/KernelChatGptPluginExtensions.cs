@@ -23,6 +23,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class for extensions methods for IKernel interface.
 /// </summary>
+[Obsolete("ChatGpt specific extensions will be removed in a future version. Use KernelAIPluginExtensions instead")]
 public static class KernelChatGptPluginExtensions
 {
     /// <summary>

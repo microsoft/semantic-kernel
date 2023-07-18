@@ -30,6 +30,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class for extensions methods for <see cref="IKernel"/> interface.
 /// </summary>
+[Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions instead")]
 public static class KernelOpenApiExtensions
 {
     /// <summary>

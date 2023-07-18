@@ -1,0 +1,354 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using Microsoft.SemanticKernel.SkillDefinition;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Threading;
+using System.IO;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Linq;
+using System.Text.Json.Nodes;
+
+namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
+
+public static class KernelAIPluginExtensions
+{
+    /// <summary>
+    /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="skillName">Skill name.</param>
+    /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns></returns>
+    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+        this IKernel kernel,
+        string skillName,
+        Uri uri,
+        OpenApiSkillExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+        Verify.ValidSkillName(skillName);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
+#pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+
+        var pluginJson = await LoadJsonFromUri(
+            kernel,
+            uri,
+            executionParameters,
+            internalHttpClient,
+            cancellationToken).ConfigureAwait(false);
+
+        if (TryParseAIPluginForUrl(pluginJson, out var openApiUrl))
+        {
+            return await kernel
+                .ImportAIPluginAsync(
+                    skillName,
+                    new Uri(openApiUrl),
+                    executionParameters,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        //assume OpenAPI v3
+        var parser = new OpenApiDocumentParser(kernel.Log);
+
+        using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
+        {
+            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? true, cancellationToken).ConfigureAwait(false);
+
+            var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
+
+            var skill = new Dictionary<string, ISKFunction>();
+
+            foreach (var operation in operations)
+            {
+                try
+                {
+                    kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
+                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
+                    skill[function.Name] = function;
+                }
+                catch (Exception ex) when (!ex.IsCriticalException())
+                {
+                    //Logging the exception and keep registering other Rest functions
+                    kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                        skillName, operation.Id, ex.Message);
+                }
+            }
+
+            return skill;
+        }
+    }
+
+    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+        this IKernel kernel,
+        string skillName,
+        Stream stream,
+        OpenApiSkillExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+        Verify.ValidSkillName(skillName);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
+#pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+
+        var pluginJson = await LoadJsonFromStream(kernel, stream).ConfigureAwait(false);
+
+        if (TryParseAIPluginForUrl(pluginJson, out var openApiUrl))
+        {
+            return await kernel
+                .ImportAIPluginAsync(
+                    skillName,
+                    new Uri(openApiUrl),
+                    executionParameters,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        //assume OpenAPI v3
+        var parser = new OpenApiDocumentParser(kernel.Log);
+
+        using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
+        {
+            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? true, cancellationToken).ConfigureAwait(false);
+
+            var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
+
+            var skill = new Dictionary<string, ISKFunction>();
+
+            foreach (var operation in operations)
+            {
+                try
+                {
+                    kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
+                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
+                    skill[function.Name] = function;
+                }
+                catch (Exception ex) when (!ex.IsCriticalException())
+                {
+                    //Logging the exception and keep registering other Rest functions
+                    kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                        skillName, operation.Id, ex.Message);
+                }
+            }
+
+            return skill;
+        }
+    }
+
+    #region private
+
+    private static async Task<string> LoadJsonFromUri(
+        IKernel kernel,
+        Uri uri,
+        OpenApiSkillExecutionParameters? executionParameters,
+        HttpClient internalHttpClient,
+        CancellationToken cancellationToken)
+    {
+        var pluginJson = string.Empty;
+
+        if (uri.IsFile)
+        {
+            if (!File.Exists(uri.LocalPath))
+            {
+                throw new FileNotFoundException($"Invalid URI. The specified path '{uri.LocalPath}' does not exist.");
+            }
+
+            kernel.Log.LogTrace("Importing AI Plugin from {0}", uri.LocalPath);
+
+            pluginJson = File.ReadAllText(uri.LocalPath);
+        }
+        else
+        {
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
+
+            if (!string.IsNullOrEmpty(executionParameters?.UserAgent))
+            {
+                requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
+            }
+
+            using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            pluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        }
+
+        return pluginJson;
+    }
+
+    private static async Task<string> LoadJsonFromStream(
+        IKernel kernel,
+        Stream stream)
+    {
+        using StreamReader reader = new(stream);
+        return await reader.ReadToEndAsync().ConfigureAwait(false);
+    }
+
+    private static bool TryParseAIPluginForUrl(string gptPluginJson, out string? openApiUrl)
+    {
+        JsonNode? gptPlugin = JsonNode.Parse(gptPluginJson);
+
+        string? apiType = gptPlugin?["api"]?["type"]?.ToString();
+
+        if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")
+        {
+            openApiUrl = null;
+
+            return false;
+        }
+
+        openApiUrl = gptPlugin?["api"]?["url"]?.ToString();
+
+        if (string.IsNullOrWhiteSpace(openApiUrl))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Registers SKFunction for a REST API operation.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="skillName">Skill name.</param>
+    /// <param name="runner">The REST API operation runner.</param>
+    /// <param name="operation">The REST API operation.</param>
+    /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
+    private static ISKFunction RegisterRestApiFunction(
+        this IKernel kernel,
+        string skillName,
+        RestApiOperationRunner runner,
+        RestApiOperation operation,
+        Uri? serverUrlOverride = null,
+        CancellationToken cancellationToken = default)
+    {
+        var restOperationParameters = operation.GetParameters(serverUrlOverride);
+
+        var logger = kernel.Log ?? NullLogger.Instance;
+
+        async Task<SKContext> ExecuteAsync(SKContext context)
+        {
+            try
+            {
+                // Extract function arguments from context
+                var arguments = new Dictionary<string, string>();
+                foreach (var parameter in restOperationParameters)
+                {
+                    // A try to resolve argument by alternative parameter name
+                    if (!string.IsNullOrEmpty(parameter.AlternativeName) && context.Variables.TryGetValue(parameter.AlternativeName!, out string? value))
+                    {
+                        arguments.Add(parameter.Name, value);
+                        continue;
+                    }
+
+                    // A try to resolve argument by original parameter name
+                    if (context.Variables.TryGetValue(parameter.Name, out value))
+                    {
+                        arguments.Add(parameter.Name, value);
+                        continue;
+                    }
+
+                    if (parameter.IsRequired)
+                    {
+                        throw new KeyNotFoundException(
+                            $"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{skillName}.{operation.Id}' Rest function.");
+                    }
+                }
+
+                var result = await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
+                if (result != null)
+                {
+                    context.Variables.Update(result.ToString());
+                }
+            }
+            catch (Exception ex) when (!ex.IsCriticalException())
+            {
+                logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
+                    ex.Message);
+                context.Fail(ex.Message, ex);
+            }
+
+            return context;
+        }
+
+        var parameters = restOperationParameters
+            .Select(p => new ParameterView
+            {
+                Name = p.AlternativeName ?? p.Name,
+                Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
+                DefaultValue = p.DefaultValue ?? string.Empty
+            })
+            .ToList();
+
+        var function = SKFunction.FromNativeFunction(
+            nativeFunction: ExecuteAsync,
+            parameters: parameters,
+            description: operation.Description,
+            skillName: skillName,
+            functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
+            log: logger);
+
+        return kernel.RegisterCustomFunction(function);
+    }
+
+    /// <summary>
+    /// Converts operation id to valid SK Function name.
+    /// A function name can contain only ASCII letters, digits, and underscores.
+    /// </summary>
+    /// <param name="operationId">The operation id.</param>
+    /// <param name="logger">The logger.</param>
+    /// <returns>Valid SK Function name.</returns>
+    private static string ConvertOperationIdToValidFunctionName(string operationId, ILogger logger)
+    {
+        try
+        {
+            Verify.ValidFunctionName(operationId);
+            return operationId;
+        }
+        catch (KernelException)
+        {
+        }
+
+        // Tokenize operation id on forward and back slashes
+        string[] tokens = operationId.Split('/', '\\');
+        string result = string.Empty;
+
+        foreach (string token in tokens)
+        {
+            // Removes all characters that are not ASCII letters, digits, and underscores.
+            string formattedToken = s_removeInvalidCharsRegex.Replace(token, "");
+            result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
+        }
+
+        logger.LogInformation("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{2}\" when invoking function.", operationId, result, result);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Used to convert operationId to SK function names.
+    /// </summary>
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
+
+    #endregion
+}

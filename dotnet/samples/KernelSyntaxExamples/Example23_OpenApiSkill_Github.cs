@@ -33,9 +33,9 @@ public static class Example23_OpenApiSkill_GitHub
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        var skill = await kernel.ImportOpenApiSkillFromFileAsync(
+        var skill = await kernel.ImportAIPluginAsync(
             "GitHubSkill",
-            "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
+            new Uri("../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json"),
             new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
@@ -65,9 +65,9 @@ public static class Example23_OpenApiSkill_GitHub
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
 
-        var skill = await kernel.ImportOpenApiSkillFromFileAsync(
+        var skill = await kernel.ImportAIPluginAsync(
             "GitHubSkill",
-            "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
+            new Uri("../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json"),
             new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
