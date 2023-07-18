@@ -8,6 +8,7 @@ from numpy import ndarray
 import redis
 from redis.commands.search.field import NumericField, TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
+from redis.exceptions import ResponseError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
@@ -24,6 +25,7 @@ class RedisMemoryStore(MemoryStoreBase):
     # For more information on vector attributes: https://redis.io/docs/stack/search/reference/vectors
     # Vector similarity index algorithm. The default value is "HNSW".
     VECTOR_INDEX_ALGORITHM = "HNSW"
+
     # Type for vectors. The supported types are FLOAT32 and FLOAT64. The default is "FLOAT32"
     VECTOR_TYPE = "FLOAT32"
 
@@ -43,7 +45,7 @@ class RedisMemoryStore(MemoryStoreBase):
     ) -> None:
         """
         RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
-        Consult the [Redis documentation](https://redis-py.readthedocs.io/en/stable/connections.html) 
+        Consult the [Redis documentation](https://redis-py.readthedocs.io/en/stable/connections.html)
         for more details about Redis connections.
 
         Arguments:
@@ -73,11 +75,11 @@ class RedisMemoryStore(MemoryStoreBase):
 
     def configure(self, settings: Dict[str, Any]) -> None:
         """
-        Configures the Redis database connection, consult the [Redis documentation](https://redis.io/commands/config-set/) 
+        Configures the Redis database connection, consult the [Redis documentation](https://redis.io/commands/config-set/)
         for further information on accepted parameters.
 
         Arguments:
-            * `settings` {Dict[str, Any]} -- Desired configuration formatted each as {parameter: value} 
+            * `settings` {Dict[str, Any]} -- Desired configuration formatted each as {parameter: value}
 
         Example:
             ```
@@ -89,7 +91,6 @@ class RedisMemoryStore(MemoryStoreBase):
             ```
 
         Exceptions:
-            Configuration that trigger Redis exceptions will be ignored and the error will be printed to console.
             Consult the [Redis documentation](https://redis.readthedocs.io/en/stable/exceptions.html) for further
             details on the exceptions that can occur.
 
@@ -97,10 +98,7 @@ class RedisMemoryStore(MemoryStoreBase):
             `None`
         """
         for param, val in settings.items():
-            try:
-                self._database.config_set(param, val)
-            except Exception as e:
-                print(f"Error configuring ({param}:{val})\n\t{e}")
+            self._database.config_set(param, val)
 
     async def create_collection_async(self, collection_name: str) -> None:
         """
@@ -109,7 +107,7 @@ class RedisMemoryStore(MemoryStoreBase):
         If a collection of the name already exists, it is left unchanged.
 
         Arguments:
-            * `collection_name` {str} -- The name for the created collection
+            * `collection_name` {str} -- Name for a collection of embeddings
 
         Returns:
             `None`
@@ -118,7 +116,7 @@ class RedisMemoryStore(MemoryStoreBase):
         try:
             self._ft(collection_name).info()
             print(f'Collection "{collection_name}" already exists.')
-        except Exception:
+        except ResponseError:
             index_definition = IndexDefinition(
                 prefix=f"{collection_name}:", index_type=IndexType.HASH
             )
@@ -141,19 +139,27 @@ class RedisMemoryStore(MemoryStoreBase):
                 definition=index_definition, fields=schema
             )
 
-
     async def get_collections_async(self) -> List[str]:
         pass
 
     async def delete_collection_async(self, collection_name: str) -> None:
-        pass
+        """
+        Deletes a collection and all its data from the data store.
+        If the collection does not exist, the database is left unchanged.
+
+        Arguments:
+            * `collection_name` {str} -- Name for a collection of embeddings
+
+        """
+        if await self.does_collection_exist_async(collection_name):
+            self._ft(collection_name).dropindex(delete_documents=True)
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """
-        Determines if a collection exists in the data store
+        Determines if a collection exists in the data store.
 
         Arguments:
-            * `collection_name` {str} -- The name of the collection
+            * `collection_name` {str} -- Name for a collection of embeddings
 
         Returns:
             `True` if the collection exists, `False` if not
@@ -161,7 +167,7 @@ class RedisMemoryStore(MemoryStoreBase):
         try:
             self._ft(collection_name).info()
             return True
-        except Exception:
+        except ResponseError:
             return False
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
