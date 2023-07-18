@@ -180,9 +180,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
             try
             {
                 string renderedPrompt = await functionConfig.PromptTemplate.RenderAsync(context).ConfigureAwait(false);
-                var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, context.CancellationToken).ConfigureAwait(false);
+
+                // If there is a pre execution hook, call it
                 if (preExecutionHook is not null)
                 {
+                    // Allow the pre execution hook to update the context if needed
                     context = preExecutionHook(context, renderedPrompt);
                 }
 
@@ -209,8 +211,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 context.Fail(ex.Message, ex);
             }
 
+            // If there is a post execution hook, call it
             if (postExecutionHook is not null)
             {
+                // Allow the post execution hook to update the context if needed
                 context = postExecutionHook(context);
             }
 
@@ -246,7 +250,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             this.AddDefaultValues(context.Variables);
 
-            var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context).ConfigureAwait(false);
             var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context, this._preExecutionHook, this._postExecutionHook).ConfigureAwait(false);
             context.Variables.Update(resultContext.Variables);
         }
@@ -796,11 +799,12 @@ public sealed class SKFunction : ISKFunction, IDisposable
             throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError, "Function returned null unexpectedly.");
     }
 
+    /// <inheritdoc/>
     public ISKFunction SetPreExecutionHook(Func<SKContext, string, SKContext>? preHook)
     {
         if (this._preExecutionHook is not null)
         {
-            this._log?.LogWarning("A pre-execution hook has already been set and was overriden [Skill: {0}, Function: '{1}']", this.SkillName, this.Name);
+            this._log?.LogWarning("An existing pre-execution hook was overridden [Skill: {0}, Function: '{1}']", this.SkillName, this.Name);
         }
 
         this._preExecutionHook = preHook;
@@ -808,11 +812,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
         return this;
     }
 
+    /// <inheritdoc/>
     public ISKFunction SetPostExecutionHook(Func<SKContext, SKContext>? postHook)
     {
         if (this._postExecutionHook is not null)
         {
-            this._log?.LogWarning("A post-execution hook has already been set and was overriden [Skill: {0}, Function: '{1}']", this.SkillName, this.Name);
+            // Execution hooks override can lead to unexpected behavior, avoid when possible. Logging for visibility.
+            this._log?.LogWarning("An existing post-execution hook was overridden [Skill: {0}, Function: '{1}']", this.SkillName, this.Name);
         }
 
         this._postExecutionHook = postHook;

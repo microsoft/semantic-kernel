@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -385,7 +384,38 @@ public sealed class Plan : ISKFunction
 
     public ISKFunction SetPreExecutionHook(Func<SKContext, string, SKContext>? preHook)
     {
+        if (this.Function is not null)
+        {
+            this.Function.SetPreExecutionHook(preHook);
+        }
+
         this._preExecutionHook = preHook;
+
+        return this;
+    }
+
+    public Plan SetStepsPreExecutionHook(Func<SKContext, string, SKContext>? preHook)
+    {
+        if (this.Steps.Count != 0)
+        {
+            foreach (ISKFunction step in this.Steps)
+            {
+                step.SetPreExecutionHook(preHook);
+            }
+        }
+
+        return this;
+    }
+
+    public Plan SetStepsPostExecutionHook(Func<SKContext, SKContext>? postHook)
+    {
+        if (this.Steps.Count != 0)
+        {
+            foreach (ISKFunction step in this.Steps)
+            {
+                step.SetPostExecutionHook(postHook);
+            }
+        }
 
         return this;
     }
@@ -394,17 +424,7 @@ public sealed class Plan : ISKFunction
     {
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
-
-            if (result.ErrorOccurred)
-            {
-                result.Log.LogError(
-                    result.LastException,
-                    "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
-                return result;
-            }
-
-            context.Variables.Update(result.Result);
+            this.Function.SetPostExecutionHook(postHook);
         }
         else
         {

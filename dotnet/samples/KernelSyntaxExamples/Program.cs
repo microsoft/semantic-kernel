@@ -72,6 +72,8 @@ public static class Program
         await Example50_Chroma.RunAsync().SafeWaitAsync(cancelToken);
         await Example51_StepwisePlanner.RunAsync().SafeWaitAsync(cancelToken);
         await Example52_ApimAuth.RunAsync().SafeWaitAsync(cancelToken);
+        await Example53_FunctionHooks.RunAsync().SafeWaitAsync(cancelToken);
+        await Example54_PlanHooks.RunAsync().SafeWaitAsync(cancelToken);
     }
 
     private static void LoadUserSecrets()
