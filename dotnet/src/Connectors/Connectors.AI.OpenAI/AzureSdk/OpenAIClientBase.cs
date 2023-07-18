@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
@@ -29,7 +30,7 @@ public abstract class OpenAIClientBase : ClientBase
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -48,5 +49,14 @@ public abstract class OpenAIClientBase : ClientBase
         }
 
         this.Client = new OpenAIClient(apiKey, options);
+    }
+
+    /// <summary>
+    /// Logs OpenAI action details.
+    /// </summary>
+    /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
+    private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
+    {
+        this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelId);
     }
 }
