@@ -24,7 +24,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         if (!this._store.TryAdd(collectionName, new ConcurrentDictionary<string, MemoryRecord>()))
         {
-            return Task.FromException(new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, $"Could not create collection {collectionName}"));
+            return Task.FromException(new SKException($"Could not create collection {collectionName}"));
         }
 
         return Task.CompletedTask;
@@ -47,7 +47,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         if (!this._store.TryRemove(collectionName, out _))
         {
-            return Task.FromException(new MemoryException(MemoryException.ErrorCodes.FailedToDeleteCollection, $"Could not delete collection {collectionName}"));
+            return Task.FromException(new SKException($"Could not delete collection {collectionName}"));
         }
 
         return Task.CompletedTask;
@@ -66,8 +66,7 @@ public class VolatileMemoryStore : IMemoryStore
         }
         else
         {
-            return Task.FromException<string>(new MemoryException(MemoryException.ErrorCodes.AttemptedToAccessNonexistentCollection,
-                $"Attempted to access a memory collection that does not exist: {collectionName}"));
+            return Task.FromException<string>(new SKException($"Attempted to access a memory collection that does not exist: {collectionName}"));
         }
 
         return Task.FromResult(record.Key);

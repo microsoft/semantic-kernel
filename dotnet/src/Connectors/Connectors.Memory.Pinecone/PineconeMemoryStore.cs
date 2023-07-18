@@ -256,9 +256,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             throw new SKException($"Failed to get vector data from Pinecone: {ex.Message}", ex);
         }
-        catch (MemoryException ex)
+        catch (SKException)
         {
-            throw new SKException($"Failed deserialize Pinecone response to Memory Record: {ex.Message}", ex);
+            throw;
         }
 
         return null;
