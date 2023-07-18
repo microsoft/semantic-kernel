@@ -20,6 +20,7 @@ extend-exclude = [
 
 [default.extend-words]
 ACI = "ACI" # Azure Container Instance
+IIF = "IIF" # SQL Function
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
