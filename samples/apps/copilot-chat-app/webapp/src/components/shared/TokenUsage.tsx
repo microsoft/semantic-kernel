@@ -65,7 +65,7 @@ export const TokenUsage: React.FC<ITokenUsage> = ({ sessionTotal, promptUsage, d
                     <PopoverSurface className={classes.popover}>
                         <Text>
                             Prompt token usage is the number of tokens used in the bot generation prompt. Dependency
-                            token usage is the number of tokens used in dependency prompts called to contruct the bot
+                            token usage is the number of tokens used in dependency prompts called to construct the bot
                             generation prompt.
                         </Text>
                     </PopoverSurface>
