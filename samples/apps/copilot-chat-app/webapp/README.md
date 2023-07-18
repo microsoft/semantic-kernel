@@ -1,4 +1,4 @@
-# Copilot Chat Web App
+# Chat Copilot Web App
 
 > This learning sample is for educational purposes only and is not recommended for
 > production deployments.
@@ -7,7 +7,7 @@ See [../README.md](../README.md) for complete instructions on setting up and run
 
 ## How to use HTTPS for local development
 
-If you want to run Copilot Chat with HTTPS, you need to create a certificate and sign it with a Certificate Authority (CA) that is trusted locally by your device and browser. You have a couple of options on how to do this:
+If you want to run Chat Copilot with HTTPS, you need to create a certificate and sign it with a Certificate Authority (CA) that is trusted locally by your device and browser. You have a couple of options on how to do this:
 
 1. (Recommended) Reusuing the [dotnet dev-certs](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-dev-certs) generated for the webapi app
 
@@ -86,7 +86,7 @@ Option 2: Using [mkcert](https://github.com/FiloSottile/mkcert#installation)
 
     > **Warning**: (from the developers of mkcert) the rootCA-key.pem file that mkcert automatically generates gives complete power to intercept secure requests from your machine. Do not share it.
 
-### Step 2: Configuring Copilot Chat to use the certificate
+### Step 2: Configuring Chat Copilot to use the certificate
 
 1. In the webapp `.env` file, uncomment the following lines and populate with your respective certificate and key files generated in the step above.
     ```
@@ -110,7 +110,7 @@ Option 2: Using [mkcert](https://github.com/FiloSottile/mkcert#installation)
     ...
     ```
 1. Add the same URLs (with ports!) as single-page application (SPA) redirect URIs to your Azure Active Directory (AAD) application registration. This can be done in the [Azure Portal](https://portal.azure.com).
-1. Restart the `webapi` and `webapp` - Copilot Chat should be now running locally with HTTPS.
+1. Restart the `webapi` and `webapp` - Chat Copilot should be now running locally with HTTPS.
 
 ## Authentication
 

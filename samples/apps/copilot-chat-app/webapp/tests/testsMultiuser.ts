@@ -1,8 +1,8 @@
 import { expect } from '@playwright/test';
-import * as util from './utils'
+import * as util from './utils';
 
 /*
-Summary: Tests the Multiuser feature of Copilot Chat. Specifically if a user can 
+Summary: Tests the Multiuser feature of Chat Copilot. Specifically if a user can 
 generate a chatid for their chat session and then if another user can join that same chat session.
 */
 export async function shareAndJoinChatSessionTest(page) {
@@ -21,7 +21,7 @@ export async function shareAndJoinChatSessionTest(page) {
     const chatId = await labelByID.textContent();
     await page.getByTestId('chatIDCloseButton').click();
 
-    await page.getByTestId('logOutMenuList').click(); 
+    await page.getByTestId('logOutMenuList').click();
     await page.getByTestId('logOutMenuButton').click();
 
     const usernameToLowerCase = userAccount1.toLowerCase();
@@ -36,10 +36,10 @@ export async function shareAndJoinChatSessionTest(page) {
     await page.getByTestId('joinChatButton').click();
 
     await page.waitForTimeout(util.ChatStateChangeWait);
-    
-    await page.getByTestId('chatParticipantsView').click();    
+
+    await page.getByTestId('chatParticipantsView').click();
     const numPeople = await page.getByTestId('chatParticipantsView').textContent();
-    await expect(numPeople).toEqual("+2");
+    await expect(numPeople).toEqual('+2');
 
     await util.postUnitTest(page);
 }
