@@ -69,6 +69,8 @@ public sealed class BingConnector : IWebSearchEngineConnector
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
         string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Response content received: {0}", json);
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
