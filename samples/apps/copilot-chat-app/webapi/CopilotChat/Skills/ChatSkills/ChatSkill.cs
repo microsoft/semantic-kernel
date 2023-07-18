@@ -321,7 +321,7 @@ public class ChatSkill
             chatContext,
             this._promptOptions);
 
-        await this.UpdateResponseStatusOnClient(chatId, "Finishing up");
+        await this.UpdateResponseStatusOnClient(chatId, "Calculating total token usage");
         this.GetTokenUsages(context, chatContext);
         context.Variables.Update(response);
         return context;
