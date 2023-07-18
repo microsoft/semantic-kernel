@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -23,8 +21,6 @@ public sealed class KernelBuilder
     private KernelConfig _config = new();
     private Func<ISemanticTextMemory> _memoryFactory = () => NullMemory.Instance;
     private ILogger _logger = NullLogger.Instance;
-    private ActivityListener? _activityListener;
-    private MeterListener? _meterListener;
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
@@ -66,13 +62,6 @@ public sealed class KernelBuilder
             instance.UseMemory(this._memoryStorageFactory.Invoke());
         }
 
-        this._meterListener?.Start();
-
-        if (this._activityListener is not null)
-        {
-            ActivitySource.AddActivityListener(this._activityListener);
-        }
-
         return instance;
     }
 
@@ -80,75 +69,11 @@ public sealed class KernelBuilder
     /// Add a logger to the kernel to be built.
     /// </summary>
     /// <param name="log">Logger to add.</param>
-    /// <remarks>
-    /// This method will be deprecated and removed in one of the next SK SDK versions. Use <see cref="WithLogging(ILogger)"/> method instead.
-    /// </remarks>
     /// <returns>Updated kernel builder including the logger.</returns>
     public KernelBuilder WithLogger(ILogger log)
     {
         Verify.NotNull(log);
         this._logger = log;
-        return this;
-    }
-
-    /// <summary>
-    /// Enables logging in the kernel to be built.
-    /// </summary>
-    /// <param name="logger">Logger to add.</param>
-    /// <returns>Updated kernel builder with enabled logging.</returns>
-    public KernelBuilder WithLogging(ILogger logger)
-    {
-        Verify.NotNull(logger);
-        this._logger = logger;
-        return this;
-    }
-
-    /// <summary>
-    /// Enables metering in the kernel to be built.
-    /// </summary>
-    /// <param name="meterListener">Instance of <see cref="MeterListener"/> to be used for kernel metering.</param>
-    /// <remarks>
-    /// Note: some properties of passed <see cref="MeterListener"/> will be overridden
-    /// in order to subscribe to all <see cref="Kernel"/> metering events.
-    /// It's recommended to use dedicated instance of <see cref="MeterListener"/> for <see cref="Kernel"/>.
-    /// </remarks>
-    /// <returns>Kernel builder with enabled metering.</returns>
-    public KernelBuilder WithMetering(MeterListener meterListener)
-    {
-        Verify.NotNull(meterListener);
-
-        meterListener.InstrumentPublished = (instrument, listener) =>
-        {
-            if (instrument.Meter.Name.StartsWith(typeof(Kernel).Namespace, StringComparison.Ordinal))
-            {
-                listener.EnableMeasurementEvents(instrument);
-            }
-        };
-
-        this._meterListener = meterListener;
-
-        return this;
-    }
-
-    /// <summary>
-    /// Enables tracing in the kernel to be built.
-    /// </summary>
-    /// <param name="activityListener">Instance of <see cref="ActivityListener"/> to be used for kernel tracing.</param>
-    /// <remarks>
-    /// Note: some properties of passed <see cref="ActivityListener"/> will be overridden
-    /// in order to subscribe to all <see cref="Kernel"/> tracing events.
-    /// It's recommended to use dedicated instance of <see cref="ActivityListener"/> for <see cref="Kernel"/>.
-    /// </remarks>
-    /// <returns>Kernel builder with enabled tracing.</returns>
-    public KernelBuilder WithTracing(ActivityListener activityListener)
-    {
-        Verify.NotNull(activityListener);
-
-        activityListener.ShouldListenTo =
-            activitySource => activitySource.Name.StartsWith(typeof(Kernel).Namespace, StringComparison.Ordinal);
-
-        this._activityListener = activityListener;
-
         return this;
     }
 

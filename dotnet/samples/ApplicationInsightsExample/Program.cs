@@ -36,10 +36,13 @@ public sealed class Program
         var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
-        using var meterListener = GetMeterListener(telemetryClient);
-        using var activityListener = GetActivityListener(telemetryClient);
+        using var meterListener = new MeterListener();
+        using var activityListener = new ActivityListener();
 
-        var kernel = GetKernel(logger, meterListener, activityListener);
+        ConfigureMetering(meterListener, telemetryClient);
+        ConfigureTracing(activityListener, telemetryClient);
+
+        var kernel = GetKernel(logger);
         var planner = GetPlanner(kernel, logger);
 
         try
@@ -93,14 +96,12 @@ public sealed class Program
         });
     }
 
-    private static IKernel GetKernel(ILogger logger, MeterListener meterListener, ActivityListener activityListener)
+    private static IKernel GetKernel(ILogger logger)
     {
         string folder = RepoFiles.SampleSkillsPath();
 
         var kernel = new KernelBuilder()
-            .WithLogging(logger)
-            .WithMetering(meterListener)
-            .WithTracing(activityListener)
+            .WithLogger(logger)
             .WithAzureChatCompletionService(
                 Env.Var("AzureOpenAI__ChatDeploymentName"),
                 Env.Var("AzureOpenAI__Endpoint"),
@@ -126,10 +127,18 @@ public sealed class Program
     /// Example of metering configuration in Application Insights
     /// using <see cref="MeterListener"/> to attach for <see cref="Meter"/> recordings.
     /// </summary>
+    /// <param name="meterListener">Instance of <see cref="MeterListener"/> for metering configuration.</param>
     /// <param name="telemetryClient">Instance of Application Insights <see cref="TelemetryClient"/>.</param>
-    private static MeterListener GetMeterListener(TelemetryClient telemetryClient)
+    private static void ConfigureMetering(MeterListener meterListener, TelemetryClient telemetryClient)
     {
-        var meterListener = new MeterListener();
+        meterListener.InstrumentPublished = (instrument, listener) =>
+        {
+            // Subscribe to all metrics in Semantic Kernel
+            if (instrument.Meter.Name.StartsWith("Microsoft.SemanticKernel", StringComparison.Ordinal))
+            {
+                listener.EnableMeasurementEvents(instrument);
+            }
+        };
 
         MeasurementCallback<double> measurementCallback = (instrument, measurement, tags, state) =>
         {
@@ -138,15 +147,16 @@ public sealed class Program
 
         meterListener.SetMeasurementEventCallback(measurementCallback);
 
-        return meterListener;
+        meterListener.Start();
     }
 
     /// <summary>
     /// Example of advanced distributed tracing configuration in Application Insights
     /// using <see cref="ActivityListener"/> to attach for <see cref="Activity"/> events.
     /// </summary>
+    /// <param name="activityListener">Instance of <see cref="ActivityListener"/> for tracing configuration.</param>
     /// <param name="telemetryClient">Instance of Application Insights <see cref="TelemetryClient"/>.</param>
-    private static ActivityListener GetActivityListener(TelemetryClient telemetryClient)
+    private static void ConfigureTracing(ActivityListener activityListener, TelemetryClient telemetryClient)
     {
         var operations = new ConcurrentDictionary<string, IOperationHolder<DependencyTelemetry>>();
 
@@ -168,12 +178,15 @@ public sealed class Program
             }
         };
 
-        return new ActivityListener()
-        {
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            SampleUsingParentId = (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllData,
-            ActivityStarted = activityStarted,
-            ActivityStopped = activityStopped
-        };
+        // Subscribe to all traces in Semantic Kernel
+        activityListener.ShouldListenTo =
+            activitySource => activitySource.Name.StartsWith("Microsoft.SemanticKernel", StringComparison.Ordinal);
+
+        activityListener.Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData;
+        activityListener.SampleUsingParentId = (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllData;
+        activityListener.ActivityStarted = activityStarted;
+        activityListener.ActivityStopped = activityStopped;
+
+        ActivitySource.AddActivityListener(activityListener);
     }
 }
