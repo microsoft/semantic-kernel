@@ -5,33 +5,14 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Moq;
-using SemanticKernel.Skills.UnitTests.XunitHelpers;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
-public class CloudDriveSkillTests : IDisposable
+public class CloudDriveSkillTests
 {
-    private readonly XunitLogger<SKContext> _logger;
-    private readonly SKContext _context;
-    private bool _disposedValue = false;
-
-    public CloudDriveSkillTests(ITestOutputHelper output)
-    {
-        this._logger = new XunitLogger<SKContext>(output);
-        this._context = new SKContext(
-            new ContextVariables(),
-            NullMemory.Instance,
-            null,
-            this._logger,
-            CancellationToken.None);
-    }
-
     [Fact]
     public async Task UploadSmallFileAsyncSucceedsAsync()
     {
@@ -92,25 +73,5 @@ public class CloudDriveSkillTests : IDisposable
         // Assert
         Assert.Equal(expectedContent, actual);
         connectorMock.VerifyAll();
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this._disposedValue)
-        {
-            if (disposing)
-            {
-                this._logger.Dispose();
-            }
-
-            this._disposedValue = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }
