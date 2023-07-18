@@ -149,6 +149,7 @@ public interface Kernel extends SkillExecutor {
         public <T extends AIService> Builder withAIService(
                 @Nullable String serviceId, T instance, boolean setAsDefault, Class<T> clazz) {
             this.aiServices.setService(serviceId, instance, setAsDefault, clazz);
+
             return this;
         }
 

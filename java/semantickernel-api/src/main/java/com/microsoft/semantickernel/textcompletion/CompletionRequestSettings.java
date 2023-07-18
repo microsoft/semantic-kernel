@@ -124,6 +124,18 @@ public class CompletionRequestSettings {
         this(0, 0, 0, 0, 256, 1, "", new ArrayList<>());
     }
 
+    public CompletionRequestSettings(CompletionRequestSettings requestSettings) {
+        this(
+                requestSettings.getTemperature(),
+                requestSettings.getTopP(),
+                requestSettings.getPresencePenalty(),
+                requestSettings.getFrequencyPenalty(),
+                requestSettings.getMaxTokens(),
+                requestSettings.getBestOf(),
+                requestSettings.getUser(),
+                requestSettings.getStopSequences());
+    }
+
     /**
      * Create a new settings object with the values from another settings object.
      *

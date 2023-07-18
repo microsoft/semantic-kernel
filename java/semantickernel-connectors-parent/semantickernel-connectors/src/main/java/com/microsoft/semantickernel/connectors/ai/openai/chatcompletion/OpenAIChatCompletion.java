@@ -11,9 +11,11 @@ import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatRequestSettings;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
+import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +26,14 @@ import javax.annotation.Nullable;
 public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<OpenAIChatHistory> {
     public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId) {
         super(client, modelId);
+    }
+
+    @Override
+    public Mono<List<String>> completeAsync(
+            String text, CompletionRequestSettings requestSettings) {
+        ChatRequestSettings chatRequestSettings = new ChatRequestSettings(requestSettings);
+
+        return generateMessageAsync(createNewChat(text), chatRequestSettings).map(Arrays::asList);
     }
 
     public static class Builder implements ChatCompletion.Builder {

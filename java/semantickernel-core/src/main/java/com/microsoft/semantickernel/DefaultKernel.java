@@ -77,8 +77,16 @@ public class DefaultKernel implements Kernel {
         }
 
         if (TextCompletion.class.isAssignableFrom(clazz)) {
-            Function<Kernel, TextCompletion> factory =
-                    kernelConfig.getTextCompletionServiceOrDefault(serviceId);
+            Function<Kernel, ? extends TextCompletion> factory = null;
+            try {
+                factory = kernelConfig.getTextCompletionServiceOrDefault(serviceId);
+            } catch (KernelException e) {
+                if (e.getErrorCode() == KernelException.ErrorCodes.ServiceNotFound) {
+                    // Could not find text completion service, try to find a chat completion service
+                    factory = kernelConfig.getChatCompletionServiceOrDefault(serviceId);
+                }
+            }
+
             if (factory == null) {
                 throw new KernelException(
                         KernelException.ErrorCodes.ServiceNotFound,
