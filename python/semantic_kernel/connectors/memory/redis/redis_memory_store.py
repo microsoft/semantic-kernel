@@ -14,11 +14,11 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 
 class RedisMemoryStore(MemoryStoreBase):
-    """
-    Implementation of the MemoryStoreBase class with Redis
-    """
+    """A memory store implmentation using Redis"""
 
     _database: "redis.Redis"
+    _vector_size: int
+    _ft: "redis.Redis.ft"
     _logger: Logger
 
     # For more information on vector attributes: https://redis.io/docs/stack/search/reference/vectors
@@ -61,9 +61,9 @@ class RedisMemoryStore(MemoryStoreBase):
             if connection_string
             else (database if database else redis.Redis())
         )
-
         if settings:
             self.configure(settings)
+        assert self._database.ping(), "Redis could not establish a connection"
 
         assert vector_size > 0, "Vector dimension must be positive integer"
         self._vector_size = vector_size
@@ -138,11 +138,9 @@ class RedisMemoryStore(MemoryStoreBase):
             )
 
             self._ft(collection_name).create_index(
-                definition=index_definition, schema=schema
+                definition=index_definition, fields=schema
             )
 
-    async def get_collection_async(self, collection_name: str) -> List[str]:
-        pass
 
     async def get_collections_async(self) -> List[str]:
         pass
@@ -151,7 +149,20 @@ class RedisMemoryStore(MemoryStoreBase):
         pass
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
-        pass
+        """
+        Determines if a collection exists in the data store
+
+        Arguments:
+            * `collection_name` {str} -- The name of the collection
+
+        Returns:
+            `True` if the collection exists, `False` if not
+        """
+        try:
+            self._ft(collection_name).info()
+            return True
+        except Exception:
+            return False
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         pass
