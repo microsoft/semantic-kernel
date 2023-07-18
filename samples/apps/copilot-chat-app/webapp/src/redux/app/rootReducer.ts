@@ -4,6 +4,7 @@ import { AnyAction, combineReducers, createAction, Reducer } from '@reduxjs/tool
 import appReducer from '../features/app/appSlice';
 import conversationsReducer from '../features/conversations/conversationsSlice';
 import pluginsReducer from '../features/plugins/pluginsSlice';
+import usersReducer from '../features/users/usersSlice';
 import { RootState } from './store';
 
 // Define a top-level root state reset action
@@ -14,6 +15,7 @@ const rootReducer: Reducer<RootState> = combineReducers({
     app: appReducer,
     conversations: conversationsReducer,
     plugins: pluginsReducer,
+    users: usersReducer,
 });
 
 // Define a special resetApp reducer that handles resetting the entire state
@@ -25,6 +27,7 @@ export const resetAppReducer = (state: RootState | undefined, action: AnyAction)
             app: appReducer(undefined, action),
             conversations: conversationsReducer(undefined, action),
             plugins: pluginsReducer(undefined, action),
+            users: usersReducer(undefined, action),
         };
     }
 

@@ -26,7 +26,7 @@ public class AIServiceCollection
     /// <param name="service">The service instance.</param>
     /// <exception cref="ArgumentNullException">The service instance is null.</exception>
     public void SetService<T>(T service) where T : IAIService
-        => this.SetService<T>(DefaultKey, service, true);
+        => this.SetService(DefaultKey, service, true);
 
     /// <summary>
     /// Registers a singleton service instance with an optional name and default flag.

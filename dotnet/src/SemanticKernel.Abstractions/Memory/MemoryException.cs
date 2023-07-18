@@ -13,15 +13,6 @@ namespace Microsoft.SemanticKernel.Memory;
 public class MemoryException : SKException
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="MemoryException"/> class with a provided error code.
-    /// </summary>
-    /// <param name="error">The error code.</param>
-    public MemoryException(ErrorCodes error)
-        : this(error, message: null, innerException: null)
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="MemoryException"/> class with a provided error code and message.
     /// </summary>
     /// <param name="errorCode">The error code.</param>
@@ -37,7 +28,7 @@ public class MemoryException : SKException
     /// <param name="errorCode">The error code.</param>
     /// <param name="message">A string that describes the error.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    public MemoryException(ErrorCodes errorCode, string? message, Exception? innerException)
+    public MemoryException(ErrorCodes errorCode, string? message = null, Exception? innerException = null)
         : base(GetDefaultMessage(errorCode, message), innerException)
     {
         this.ErrorCode = errorCode;

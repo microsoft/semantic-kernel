@@ -34,7 +34,7 @@ public sealed class SKFunctionTests1
 
         // Assert
         Assert.Equal(0, skFunction.RequestSettings.Temperature);
-        Assert.Equal(256, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal(null, skFunction.RequestSettings.MaxTokens);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public sealed class SKFunctionTests1
 
         promptTemplate
             .Setup(x => x.GetParameters())
-            .Returns(new List<ParameterView>()); ;
+            .Returns(new List<ParameterView>());
 
         return promptTemplate;
     }
