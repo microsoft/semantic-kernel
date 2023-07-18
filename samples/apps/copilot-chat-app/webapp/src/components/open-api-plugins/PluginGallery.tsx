@@ -8,6 +8,7 @@ import {
     DialogTitle,
     DialogTrigger,
     Label,
+    Link,
     Subtitle1,
     Subtitle2,
     makeStyles,
@@ -107,9 +108,9 @@ export const PluginGallery: React.FC = () => {
                         </div>
                         <Label size="small" color="brand">
                             Want to learn more about plugins? Click{' '}
-                            <a href="https://aka.ms/sk-plugins-howto" target="_blank" rel="noreferrer">
+                            <Link href="https://aka.ms/sk-plugins-howto" target="_blank" rel="noreferrer">
                                 here
-                            </a>
+                            </Link>
                             .
                         </Label>
                     </DialogContent>
