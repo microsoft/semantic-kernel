@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { UserFeedback } from '../../../libs/models/ChatMessage';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { FeatureKeys } from '../../../redux/features/app/AppState';
 import { setUserFeedback } from '../../../redux/features/conversations/conversationsSlice';
 import { ThumbDislike16, ThumbLike16 } from '../../shared/BundledIcons';
 
@@ -23,6 +24,7 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageIndex
 
     const dispatch = useAppDispatch();
     const { selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { features } = useAppSelector((state: RootState) => state.app);
 
     const onUserFeedbackProvided = useCallback(
         (positive: boolean) => {
@@ -48,6 +50,7 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageIndex
                     appearance="transparent"
                     aria-label="Edit"
                     onClick={() => onUserFeedbackProvided(true)}
+                    disabled={!features[FeatureKeys.RLHF].enabled}
                 />
             </Tooltip>
             <Tooltip content={'Dislike bot message'} relationship="label">
@@ -56,6 +59,7 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageIndex
                     appearance="transparent"
                     aria-label="Edit"
                     onClick={() => onUserFeedbackProvided(false)}
+                    disabled={!features[FeatureKeys.RLHF].enabled}
                 />
             </Tooltip>
         </div>

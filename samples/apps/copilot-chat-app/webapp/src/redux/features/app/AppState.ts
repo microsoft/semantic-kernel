@@ -50,6 +50,7 @@ export enum FeatureKeys {
     AzureCognitiveSearch,
     BotAsDocs,
     MultiUserChat,
+    RLHF, // Reinforcement Learning from Human Feedback
 }
 
 export const Features = {
@@ -84,6 +85,11 @@ export const Features = {
         enabled: false,
         label: 'Live Chat Session Sharing',
     },
+    [FeatureKeys.RLHF]: {
+        enabled: false,
+        label: 'Reinforcement Learning from Human Feedback',
+        description: 'Enable users to vote on model-generated responses. For demonstration purposes only.',
+    },
 };
 
 export const Settings = [
@@ -106,7 +112,7 @@ export const Settings = [
     {
         title: 'Experimental',
         description: 'The related icons and menu options are hidden until you turn this on',
-        features: [FeatureKeys.BotAsDocs, FeatureKeys.MultiUserChat],
+        features: [FeatureKeys.BotAsDocs, FeatureKeys.MultiUserChat, FeatureKeys.RLHF],
     },
 ];
 

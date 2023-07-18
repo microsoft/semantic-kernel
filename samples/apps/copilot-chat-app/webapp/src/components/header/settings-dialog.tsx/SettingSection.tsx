@@ -34,7 +34,13 @@ export const SettingSection: React.FC<ISettingsSectionProps> = ({ setting, conte
         <>
             {!contentOnly && <h3>{setting.title}</h3>}
             {setting.description && <p>{setting.description}</p>}
-            <div style={{ display: 'flex', flexDirection: `${setting.stackVertically ? 'column' : 'row'}` }}>
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: `${setting.stackVertically ? 'column' : 'row'}`,
+                    flexWrap: 'wrap',
+                }}
+            >
                 {setting.features.map((key) => {
                     const feature = features[key];
                     return (
@@ -46,7 +52,9 @@ export const SettingSection: React.FC<ISettingsSectionProps> = ({ setting, conte
                                 disabled={feature.disabled}
                                 onChange={() => onFeatureChange(key)}
                             />
-                            <Text className={classes.featureDescription}>{feature.description}</Text>
+                            <Text key={`${key}-description`} className={classes.featureDescription}>
+                                {feature.description}
+                            </Text>
                         </>
                     );
                 })}

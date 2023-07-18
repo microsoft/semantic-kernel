@@ -23,22 +23,28 @@ import {
 import React from 'react';
 import { useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { SharedStyles } from '../../../styles';
 import { TokenUsage } from '../../shared/TokenUsage';
 import { useDialogClasses } from '../../shared/styles';
 import { SettingSection } from './SettingSection';
 
 const useClasses = makeStyles({
     root: {
-        ...shorthands.overflow('scroll'),
+        ...shorthands.overflow('hidden'),
         display: 'flex',
         flexDirection: 'column',
-        height: '650px',
+        height: '600px',
+    },
+    outer: {
+        paddingRight: tokens.spacingVerticalXS,
+    },
+    content: {
+        height: '100%',
+        ...SharedStyles.scroll,
+        paddingRight: tokens.spacingVerticalL,
     },
     footer: {
         paddingTop: tokens.spacingVerticalL,
-    },
-    paddingLeft: {
-        paddingLeft: tokens.spacingHorizontalMNudge,
     },
 });
 
@@ -59,16 +65,16 @@ export const SettingsDialog: React.FC<ISettingsDialogProps> = ({ open, closeDial
                 if (!data.open) closeDialog();
             }}
         >
-            <DialogSurface>
+            <DialogSurface className={classes.outer}>
                 <DialogBody className={classes.root}>
                     <DialogTitle>Settings</DialogTitle>
-                    <DialogContent>
+                    <DialogContent className={classes.content}>
                         <TokenUsage
                             sessionTotal
                             promptUsage={tokenUsage.prompt}
                             dependencyUsage={tokenUsage.dependency}
                         />
-                        <Accordion collapsible multiple defaultOpenItems={['basic', 'advanced']}>
+                        <Accordion collapsible multiple defaultOpenItems={['basic']}>
                             <AccordionItem value="basic">
                                 <AccordionHeader expandIconPosition="end">
                                     <h3>Basic</h3>

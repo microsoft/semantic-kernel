@@ -161,7 +161,7 @@ export const VerifyManifestStep: React.FC<IVerifyManifestStepProps> = ({
     };
 
     return (
-        <Accordion collapsible multiple>
+        <Accordion collapsible multiple defaultOpenItems={[FileType.Manifest, FileType.OpenApiSpec]}>
             {statusComponent(FileType.Manifest, manifestVerificationState)}
             {statusComponent(FileType.OpenApiSpec, openApiSpecVerificationState)}
         </Accordion>

@@ -53,5 +53,6 @@ export interface IChatMessage {
     debug?: string;
     state?: PlanState;
     tokenUsage?: TokenUsages;
+    // TODO: Persistent RLHF, view only right now
     userFeedback?: UserFeedback;
 }

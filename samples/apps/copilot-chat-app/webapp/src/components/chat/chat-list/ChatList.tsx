@@ -13,10 +13,8 @@ import {
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { AlertType } from '../../../libs/models/AlertType';
 import { Bot } from '../../../libs/models/Bot';
-import { ChatMessageType } from '../../../libs/models/ChatMessage';
 import { useChat } from '../../../libs/useChat';
 import { useFile } from '../../../libs/useFile';
-import { isPlan } from '../../../libs/utils/PlanUtils';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { addAlert } from '../../../redux/features/app/appSlice';
@@ -25,9 +23,10 @@ import { Conversations } from '../../../redux/features/conversations/Conversatio
 import { Breakpoints } from '../../../styles';
 import { FileUploader } from '../../FileUploader';
 import { Dismiss20, Filter20 } from '../../shared/BundledIcons';
+import { isToday } from '../../utils/TextUtils';
 import { NewBotMenu } from './bot-menu/NewBotMenu';
 import { SimplifiedNewBotMenu } from './bot-menu/SimplifiedNewBotMenu';
-import { ChatListItem } from './ChatListItem';
+import { ChatListSection } from './ChatListSection';
 
 const useClasses = makeStyles({
     root: {
@@ -73,18 +72,6 @@ const useClasses = makeStyles({
             display: 'none',
         }),
     },
-    botsHeader: {
-        marginTop: 0,
-        marginBottom: tokens.spacingVerticalSNudge,
-        marginLeft: tokens.spacingHorizontalXL,
-        marginRight: tokens.spacingHorizontalXL,
-        fontWeight: tokens.fontWeightRegular,
-        fontSize: tokens.fontSizeBase200,
-        color: tokens.colorNeutralForeground3,
-        ...Breakpoints.small({
-            display: 'none',
-        }),
-    },
     input: {
         flexGrow: 1,
         ...shorthands.padding(tokens.spacingHorizontalNone),
@@ -94,20 +81,28 @@ const useClasses = makeStyles({
     },
 });
 
+interface ConversationsView {
+    filteredConversations?: Conversations;
+    latestConversations?: Conversations;
+    olderConversations?: Conversations;
+}
+
 export const ChatList: FC = () => {
     const classes = useClasses();
     const { features } = useAppSelector((state: RootState) => state.app);
-    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const { conversations } = useAppSelector((state: RootState) => state.conversations);
 
     const [isFiltering, setIsFiltering] = useState(false);
     const [filterText, setFilterText] = useState('');
-    const [conversationsView, setConversationsView] = useState(conversations);
+    const [conversationsView, setConversationsView] = useState<ConversationsView>({
+        latestConversations: conversations,
+    });
 
     const chat = useChat();
     const fileHandler = useFile();
     const dispatch = useAppDispatch();
 
-    const sortConversations = (conversations: Conversations): Conversations => {
+    const sortConversations = (conversations: Conversations): ConversationsView => {
         // sort conversations by last activity
         const sortedIds = Object.keys(conversations).sort((a, b) => {
             if (conversations[a].lastUpdatedTimestamp === undefined) {
@@ -121,11 +116,19 @@ export const ChatList: FC = () => {
         });
 
         // Add conversations to sortedConversations in the order of sortedIds.
-        const sortedConversations: Conversations = {};
+        const latestConversations: Conversations = {};
+        const olderConversations: Conversations = {};
         sortedIds.forEach((id) => {
-            sortedConversations[id] = conversations[id];
+            if (isToday(new Date(conversations[id].lastUpdatedTimestamp ?? 0))) {
+                latestConversations[id] = conversations[id];
+            } else {
+                olderConversations[id] = conversations[id];
+            }
         });
-        return sortedConversations;
+        return {
+            latestConversations: latestConversations,
+            olderConversations: olderConversations,
+        };
     };
 
     useEffect(() => {
@@ -138,7 +141,7 @@ export const ChatList: FC = () => {
                     filteredConversations[key] = conversations[key];
                 }
             }
-            setConversationsView(filteredConversations);
+            setConversationsView({ filteredConversations: filteredConversations });
         } else {
             // If no search string, show full conversations list.
             setConversationsView(sortConversations(conversations));
@@ -210,36 +213,23 @@ export const ChatList: FC = () => {
                     </>
                 )}
             </div>
-            <Text as="h3" className={classes.botsHeader}>
-                Your bots
-            </Text>
             <div aria-label={'chat list'} className={classes.list}>
-                {Object.keys(conversationsView).map((id) => {
-                    const convo = conversationsView[id];
-                    const messages = convo.messages;
-                    const lastMessage = messages[convo.messages.length - 1];
-                    const isSelected = id === selectedId;
-
-                    return (
-                        <ChatListItem
-                            id={id}
-                            key={id}
-                            isSelected={isSelected}
-                            header={convo.title}
-                            timestamp={convo.lastUpdatedTimestamp ?? lastMessage.timestamp}
-                            preview={
-                                messages.length > 0
-                                    ? lastMessage.type === ChatMessageType.Document
-                                        ? 'Sent a file'
-                                        : isPlan(lastMessage.content)
-                                        ? 'Click to view proposed plan'
-                                        : lastMessage.content
-                                    : 'Click to start the chat'
-                            }
-                            botProfilePicture={convo.botProfilePicture}
-                        />
-                    );
-                })}
+                {isFiltering && filterText.length > 0 ? (
+                    <>
+                        {conversationsView.filteredConversations && (
+                            <ChatListSection conversations={conversationsView.filteredConversations} />
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {conversationsView.latestConversations && (
+                            <ChatListSection header="Today" conversations={conversationsView.latestConversations} />
+                        )}
+                        {conversationsView.olderConversations && (
+                            <ChatListSection header="Older" conversations={conversationsView.olderConversations} />
+                        )}
+                    </>
+                )}
             </div>
         </div>
     );
