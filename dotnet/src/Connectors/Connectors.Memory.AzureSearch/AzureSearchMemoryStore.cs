@@ -15,6 +15,7 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureSearch;
@@ -113,9 +114,7 @@ public class AzureSearchMemoryStore : IMemoryStore
 
         if (result?.Value == null)
         {
-            throw new AzureSearchMemoryException(
-                AzureSearchMemoryException.ErrorCodes.ReadFailure,
-                "Memory read returned null");
+            throw new SKException("Memory read returned null");
         }
 
         return result.Value.ToMemoryRecord();
@@ -246,9 +245,7 @@ public class AzureSearchMemoryStore : IMemoryStore
     {
         if (embeddingSize < 1)
         {
-            throw new AzureSearchMemoryException(
-                AzureSearchMemoryException.ErrorCodes.InvalidEmbeddingSize,
-                "Invalid embedding size: the value must be greater than zero.");
+            throw new SKException("Invalid embedding size: the value must be greater than zero.");
         }
 
         var configName = "searchConfig";
@@ -336,9 +333,7 @@ public class AzureSearchMemoryStore : IMemoryStore
 
         if (result == null || result.Value.Results.Count == 0)
         {
-            throw new AzureSearchMemoryException(
-                AzureSearchMemoryException.ErrorCodes.WriteFailure,
-                "Memory write returned null or an empty set");
+            throw new SKException("Memory write returned null or an empty set");
         }
 
         return result.Value.Results.Select(x => x.Key).ToList();
@@ -355,9 +350,7 @@ public class AzureSearchMemoryStore : IMemoryStore
     {
         if (indexName.Length > 128)
         {
-            throw new AzureSearchMemoryException(
-                AzureSearchMemoryException.ErrorCodes.InvalidIndexName,
-                "The collection name is too long, it cannot exceed 128 chars.");
+            throw new SKException("The collection name is too long, it cannot exceed 128 chars.");
         }
 
 #pragma warning disable CA1308 // The service expects a lowercase string
