@@ -160,9 +160,9 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new SKException("Failed to get vector data", ex);
         }
-        catch (MemoryException ex)
+        catch (SKException)
         {
-            throw new SKException("Failed to convert Qdrant vector record to memory record", ex);
+            throw;
         }
     }
 
@@ -209,9 +209,9 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new SKException("Failed to get vector data", ex);
         }
-        catch (MemoryException ex)
+        catch (SKException)
         {
-            throw new SKException("Failed to convert Qdrant vector record to memory record", ex);
+            throw;
         }
     }
 
