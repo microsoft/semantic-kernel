@@ -1,7 +1,8 @@
 # Natural Language to SQL Console
 
-`Nl2Sql` provides a sandbox for experimentation and testing of the abilities of LLM's (esp. GPT-4) to
-generate SQL queries based on natural language expression.
+`Nl2Sql` provides a sandbox for experimentation and testing of the abilities of LLM's to generate SQL queries based on natural language expression.
+
+[GPT-4 has raised the bar](https://medium.com/querymind/gpt-4s-sql-mastery-2cd1f3dea543) on query generation capabilities.
 
 While other approaches exist in this space, this sample serves to showcase the capability (and limitations) of LLM using [Semantic Kernel](https://github.com/microsoft/semantic-kernel) for *dotnet*.
 Whether or not this approach provides an adequate or cost-effective solution for any particular use-case depends on its specific context and associated expectations.
@@ -17,7 +18,7 @@ The default configuration targets two sample schemas, but it may be configured t
 
 This sample is organized as follows:
 
-- `nlsql.config` - Contains data-schemas and semantic-prompts.
+- `nlsql.config` - Contains [data-schemas](./nl2sql.config/schemas/Readme.md) and [semantic-prompts](./nl2sql.config/nl2sql/Readme.md).
 - `nlsql.console` - A console application that translates a natural language objective into a SQL query.
 - `nlsql.harness` - A dev-harness for reverse-engineering live schema.
 - `nlsql.setup` - Instructions configuring (default and custom) along with any associated resource files.
@@ -25,4 +26,5 @@ This sample is organized as follows:
 - `nlsql.sln` - A *Visual Studio* solution.
 
 The first step to run the sample is to perform the [initial setup and configuration](./nl2sql.setup/Readme.md): [nl2sql.setup/Readme.md](./nl2sql.setup/Readme.md).
+
 
