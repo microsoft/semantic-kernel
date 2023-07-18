@@ -32,13 +32,6 @@ class GooglePalmTextCompletion():
         self._model_id = model_id
         self._api_key = api_key
 
-        try:
-            import google.generativeai as palm
-        except (ImportError, ModuleNotFoundError):
-            raise ImportError(
-                "Please ensure that google.generativeai is installed to use GooglePalmTextCompletion"
-            )
-
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> Union[str, List[str]]:
@@ -78,7 +71,7 @@ class GooglePalmTextCompletion():
                     and len(request_settings.stop_sequences) > 0
                     else None
                 ),  
-                candidate_count=request_settings.candidate_count, 
+                candidate_count=request_settings.number_of_responses, 
                 top_p=request_settings.top_p,            
             )
         except Exception as ex:
@@ -87,7 +80,7 @@ class GooglePalmTextCompletion():
                 "Google PaLM service failed to complete the prompt",
                 ex,
             )
-        if request_settings.candidate_count > 1:
+        if request_settings.number_of_responses > 1:
             return [candidate['output'] for candidate in response.candidates]
         else:
             return response.result

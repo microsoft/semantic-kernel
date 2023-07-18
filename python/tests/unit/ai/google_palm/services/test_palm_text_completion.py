@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
-from unittest.mock import AsyncMock, patch
+import asyncio
+from unittest.mock import AsyncMock, patch, MagicMock
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
@@ -38,7 +39,11 @@ def test_google_palm_text_completion_init_with_empty_api_key() -> None:
 
 @pytest.mark.asyncio
 async def test_google_palm_text_completion_call_with_parameters() -> None:
-    mock_gp = AsyncMock()
+    mock_response = MagicMock()
+    mock_response.result = asyncio.Future()
+    mock_response.result.set_result("Example response")
+    mock_gp = MagicMock()
+    mock_gp.generate_text.return_value = mock_response
     with patch (
         "semantic_kernel.connectors.ai.google_palm.services.gp_text_completion.palm",
         new=mock_gp,
@@ -51,15 +56,16 @@ async def test_google_palm_text_completion_call_with_parameters() -> None:
             api_key=api_key,
         )
         settings = CompleteRequestSettings()
-        await gp_text_completion.complete_async(prompt, settings)
+        response = await gp_text_completion.complete_async(prompt, settings)
+        assert isinstance(response.result(), str) and len(response.result()) > 0
 
         mock_gp.generate_text.assert_called_once_with(
-            model_id=model_id, 
+            model=model_id, 
             prompt=prompt,
             temperature=settings.temperature,
             max_output_tokens=settings.max_tokens,
             stop_sequences=None,
-            candidate_count=settings.candidate_count,
+            candidate_count=settings.number_of_responses,
             top_p=settings.top_p,
         )
         

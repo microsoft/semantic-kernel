@@ -27,9 +27,8 @@ async def main() -> None:
         "Think about it step by step, and show your work.")
     response = await text_completion_example(kernel, apikey, user_mssg, settings)
     print(f"User:> {user_mssg}\nChatBot:> {response}\n")
-    # Use candidate_count to control the number of responses
     # Use temperature to control the variance of the responses
-    settings.candidate_count = 3
+    settings.number_of_responses = 3
     settings.temperature = 1
     user_mssg = "Give a concise answer. A common method for traversing a binary tree is"
     response = await text_completion_example(kernel, apikey, user_mssg, settings)
