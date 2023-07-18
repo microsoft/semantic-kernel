@@ -2,22 +2,22 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.SkillDefinition;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Diagnostics;
-using System.Net.Http.Headers;
-using System.Net.Http;
-using System.Threading;
-using System.IO;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using System.Globalization;
-using System.Text.RegularExpressions;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 
