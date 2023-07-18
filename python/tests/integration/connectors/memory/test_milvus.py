@@ -20,6 +20,7 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.fixture(scope="module")
 def setup_milvus():
+    default_server.cleanup()
     default_server.start()
     host = "http://127.0.0.1:" + str(default_server.listen_port)
     port = None
