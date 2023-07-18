@@ -7,12 +7,14 @@ import {
     DialogSurface,
     DialogTitle,
     DialogTrigger,
+    Persona,
     Text,
     makeStyles,
     tokens,
 } from '@fluentui/react-components';
 import { CheckmarkCircle48Regular, Dismiss24Regular } from '@fluentui/react-icons';
 import React, { ReactElement, useCallback, useState } from 'react';
+import AddPluginIcon from '../../../assets/plugin-icons/add-plugin.png';
 import { PluginManifest } from '../../../libs/models/PluginManifest';
 import { usePlugins } from '../../../libs/usePlugins';
 import { useDialogClasses } from '../../shared/styles';
@@ -36,7 +38,7 @@ export const useClasses = makeStyles({
 
 interface IWizardStep {
     id: CreatePluginSteps;
-    header?: string;
+    header?: ReactElement;
     body: ReactElement;
     buttons?: ReactElement;
 }
@@ -88,7 +90,19 @@ export const PluginWizard: React.FC = () => {
     const wizardSteps: IWizardStep[] = [
         {
             id: CreatePluginSteps.EnterManifest,
-            header: 'Plugin manifest',
+            header: (
+                <Persona
+                    size="huge"
+                    name="Custom plugin"
+                    avatar={{
+                        image: {
+                            src: AddPluginIcon,
+                        },
+                        initials: '', // Set to empty string so no initials are rendered behind image
+                    }}
+                    secondaryText="Connect an OpenAI Plugin to expose Copilot Chat to third-party applications."
+                />
+            ),
             body: <EnterManifestStep manifestDomain={manifestDomain} setValidManifestDomain={setValidManifestDomain} />,
             buttons: (
                 <>
@@ -110,7 +124,7 @@ export const PluginWizard: React.FC = () => {
         },
         {
             id: CreatePluginSteps.VerifyManifest,
-            header: 'Verify Plugin',
+            header: <>Verify Plugin</>,
             body: (
                 <VerifyManifestStep
                     manifestDomain={manifestDomain}
