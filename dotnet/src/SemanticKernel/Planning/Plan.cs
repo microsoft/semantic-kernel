@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -81,14 +80,6 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     [JsonIgnore]
     public bool IsSemantic { get; private set; }
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public bool IsSensitive { get; private set; } = false;
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public ITrustService TrustServiceInstance { get; private set; } = TrustService.DefaultTrusted;
 
     /// <inheritdoc/>
     [JsonIgnore]
@@ -617,7 +608,7 @@ public sealed class Plan : ISKFunction
             }
         }
 
-        foreach (KeyValuePair<string, TrustAwareString> item in variables)
+        foreach (KeyValuePair<string, string> item in variables)
         {
             if (!stepVariables.ContainsKey(item.Key))
             {
@@ -635,8 +626,6 @@ public sealed class Plan : ISKFunction
         this.SkillName = function.SkillName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
-        this.IsSensitive = function.IsSensitive;
-        this.TrustServiceInstance = function.TrustServiceInstance;
         this.RequestSettings = function.RequestSettings;
     }
 

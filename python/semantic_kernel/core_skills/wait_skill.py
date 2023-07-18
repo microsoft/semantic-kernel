@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import asyncio
 
 from semantic_kernel.skill_definition import sk_function
@@ -8,7 +10,7 @@ class WaitSkill:
     WaitSkill provides a set of functions to wait for a certain amount of time.
 
     Usage:
-        kernel.import_skill("wait", WaitSkill());
+        kernel.import_skill(WaitSkill(), skill_name="wait")
 
     Examples:
         {{wait.seconds 5}} => Wait for 5 seconds

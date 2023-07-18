@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import datetime
 
 from semantic_kernel.skill_definition import sk_function
@@ -9,11 +11,12 @@ class TimeSkill:
                  to get the current time and date.
 
     Usage:
-        kernel.import_skill("time", TimeSkill())
+        kernel.import_skill(TimeSkill(), skill_name="time")
 
     Examples:
         {{time.date}}            => Sunday, 12 January, 2031
         {{time.today}}           => Sunday, 12 January, 2031
+        {{time.iso_date}}        => 2031-01-12
         {{time.now}}             => Sunday, January 12, 2031 9:15 PM
         {{time.utcNow}}          => Sunday, January 13, 2031 5:15 AM
         {{time.time}}            => 09:15:07 PM
@@ -54,6 +57,17 @@ class TimeSkill:
             {{time.today}} => Sunday, 12 January, 2031
         """
         return self.date()
+
+    @sk_function(description="Get the current date in iso format.")
+    def iso_date(self) -> str:
+        """
+        Get the current date in iso format
+
+        Example:
+            {{time.iso_date}} => 2031-01-12
+        """
+        today = datetime.date.today()
+        return today.isoformat()
 
     @sk_function(description="Get the current date and time in the local time zone")
     def now(self) -> str:

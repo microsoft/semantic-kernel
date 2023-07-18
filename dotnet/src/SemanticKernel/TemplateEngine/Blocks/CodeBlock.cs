@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -124,7 +123,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             this.Log.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
             string input = ((ITextRendering)this._tokens[1]).Render(contextClone.Variables);
             // Keep previous trust information when updating the input
-            contextClone.Variables.Update(new TrustAwareString(input, contextClone.Variables.IsAllTrusted()));
+            contextClone.Variables.Update(input);
         }
 
         try
@@ -136,19 +135,6 @@ internal sealed class CodeBlock : Block, ICodeRendering
             this.Log.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}",
                 function.SkillName, function.Name, ex.Message);
             contextClone.Fail(ex.Message, ex);
-        }
-
-        // If the output of the function is not trusted, tag the main context as untrusted as well.
-        // This is important for cases where there is a function call within a prompt template and
-        // the result of the function call is untrusted. In such cases, we need to propagate the
-        // untrusted tag back to the main context.
-        // TODO: we might want to evaluate updating the template engine to rely on TrustAwareStrings that already
-        // include trust information. This way, the rendered prompt will be a TrustAwareString that already
-        // carries trust information, so this won't be needed.
-        // (e.g. concatenating strings A (trusted) and B (untrusted), will result in a string that is untrusted)
-        if (!contextClone.IsTrusted)
-        {
-            context.UntrustAll();
         }
 
         if (contextClone.ErrorOccurred)

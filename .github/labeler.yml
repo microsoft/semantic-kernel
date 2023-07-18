@@ -1,10 +1,10 @@
 # Add 'kernel' label to any change within Connectors, Extensions, Skills, and tests directories
 kernel:
-  - "dotnet/src/Connectors/**/*"
-  - "dotnet/src/Extensions/**/*"
-  - "dotnet/src/Skills/**/*"
-  - "dotnet/src/IntegrationTests/**/*"
-  - "dotnet/src/SemanticKernel.UnitTests/**/*"
+  - dotnet/src/Connectors/**/*
+  - dotnet/src/Extensions/**/*
+  - dotnet/src/Skills/**/*
+  - dotnet/src/IntegrationTests/**/*
+  - dotnet/src/SemanticKernel.UnitTests/**/*
 
 # Add 'kernel.core' label to any change within the 'SemanticKernel', 'SemanticKernel.Abstractions', or 'SemanticKernel.MetaPackage' directories
 kernel.core:
@@ -16,11 +16,28 @@ kernel.core:
 python:
   - python/**/*
 
+# Add 'java' label to any change within the 'java' directory
+java:
+  - java/**/*
+
 # Add 'samples' label to any change within the 'samples' directory
 samples:
   - samples/**/*
 
 # Add '.NET' label to any change within samples or kernel 'dotnet' directories.
 .NET:
-  - dotnet/src/**/*
-  - samples/**/dotnet/**/*
+  - dotnet/**/*
+
+# Add 'copilot chat' label to any change within the 'samples/apps/copilot-chat-app' directory
+copilot chat:
+  - samples/apps/copilot-chat-app/**/*
+
+# Add 'documentation' label to any change within the 'docs' directory, or any '.md' files
+documentation:
+  - docs/**/*
+  - '**/*.md'
+
+# Add 'memory' label to any memory connectors in dotnet/ or python/
+memory:
+  - dotnet/src/Connectors/Connectors.Memory.*/**/*
+  - python/semantic_kernel/connectors/memory/**/*

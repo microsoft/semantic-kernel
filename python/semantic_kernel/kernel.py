@@ -5,7 +5,7 @@ import importlib
 import inspect
 import os
 from logging import Logger
-from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union, cast
 from uuid import uuid4
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -35,6 +35,7 @@ from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
+from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -133,6 +134,110 @@ class Kernel:
 
         return function
 
+    async def run_stream_async(
+        self,
+        *functions: Any,
+        input_context: Optional[SKContext] = None,
+        input_vars: Optional[ContextVariables] = None,
+        input_str: Optional[str] = None,
+    ):
+        if len(functions) > 1:
+            pipeline_functions = functions[:-1]
+            stream_function = functions[-1]
+
+            # run pipeline functions
+            context = await self.run_async(
+                pipeline_functions, input_context, input_vars, input_str
+            )
+
+        elif len(functions) == 1:
+            stream_function = functions[0]
+            # if the user passed in a context, prioritize it, but merge with any other inputs
+            if input_context is not None:
+                context = input_context
+                if input_vars is not None:
+                    context._variables = input_vars.merge_or_overwrite(
+                        new_vars=context._variables, overwrite=False
+                    )
+
+                if input_str is not None:
+                    context._variables = ContextVariables(input_str).merge_or_overwrite(
+                        new_vars=context._variables, overwrite=False
+                    )
+
+            # if the user did not pass in a context, prioritize an input string,
+            # and merge that with input context variables
+            else:
+                if input_str is not None and input_vars is None:
+                    variables = ContextVariables(input_str)
+                elif input_str is None and input_vars is not None:
+                    variables = input_vars
+                elif input_str is not None and input_vars is not None:
+                    variables = ContextVariables(input_str)
+                    variables = variables.merge_or_overwrite(
+                        new_vars=input_vars, overwrite=False
+                    )
+                else:
+                    variables = ContextVariables()
+                context = SKContext(
+                    variables,
+                    self._memory,
+                    self._skill_collection.read_only_skill_collection,
+                    self._log,
+                )
+        else:
+            raise ValueError("No functions passed to run")
+
+        try:
+            client: ChatCompletionClientBase | TextCompletionClientBase
+            client = stream_function._ai_service
+
+            # Get the closure variables from function for finding function_config
+            closure_vars = stream_function._function.__closure__
+            for var in closure_vars:
+                if isinstance(var.cell_contents, SemanticFunctionConfig):
+                    function_config = var.cell_contents
+                    break
+
+            if function_config.has_chat_prompt:
+                as_chat_prompt = cast(
+                    ChatPromptTemplate, function_config.prompt_template
+                )
+
+                # Similar to non-chat, render prompt (which renders to a
+                # list of <role, content> messages)
+                completion = ""
+                messages = await as_chat_prompt.render_messages_async(context)
+                async for steam_message in client.complete_chat_stream_async(
+                    messages, stream_function._chat_request_settings
+                ):
+                    completion += steam_message
+                    yield steam_message
+
+                # Add the last message from the rendered chat prompt
+                # (which will be the user message) and the response
+                # from the model (the assistant message)
+                _, content = messages[-1]
+                as_chat_prompt.add_user_message(content)
+                as_chat_prompt.add_assistant_message(completion)
+
+                # Update context
+                context.variables.update(completion)
+
+            else:
+                completion = ""
+                prompt = await function_config.prompt_template.render_async(context)
+                async for stream_message in client.complete_stream_async(
+                    prompt, stream_function._ai_request_settings
+                ):
+                    completion += stream_message
+                    yield stream_message
+                context.variables.update(completion)
+
+        except Exception as e:
+            # TODO: "critical exceptions"
+            context.fail(str(e), e)
+
     async def run_async(
         self,
         *functions: Any,
@@ -153,7 +258,8 @@ class Kernel:
                     new_vars=context._variables, overwrite=False
                 )
 
-        # if the user did not pass in a context, prioritize an input string, and merge that with input context variables
+        # if the user did not pass in a context, prioritize an input string,
+        # and merge that with input context variables
         else:
             if input_str is not None and input_vars is None:
                 variables = ContextVariables(input_str)

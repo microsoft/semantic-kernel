@@ -2,11 +2,12 @@
 
 [![Python package](https://img.shields.io/pypi/v/semantic-kernel)](https://pypi.org/project/semantic-kernel/)
 [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)
-[![dotnet](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci.yml)
+[![dotnet Docker](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml)
+[![dotnet Windows](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml)
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
-> ℹ️ **NOTE**:This project is just like AI and will evolve quickly.
+> ℹ️ **NOTE**: This project is just like AI and will evolve quickly.
 > We invite you to join us in developing the Semantic Kernel together!
 > Please contribute by
 > using GitHub [Discussions](https://github.com/microsoft/semantic-kernel/discussions),
@@ -43,31 +44,41 @@ in the history of computing.
 
 Semantic Kernel is available to explore AI and build apps with C# and Python:
 
-<div style="display:flex;height:30px;padding:5px 0 5px 10px;">
-<img src="https://user-images.githubusercontent.com/371009/230673036-fad1e8e6-5d48-49b1-a9c1-6f9834e0d165.png" style="margin-right:12px" height="30"/>
-<a href="dotnet/README.md">Using Semantic Kernel in C#</a>.
-</div>
+<table width=100%>
+  <tbody>
+    <tr>
+      <td>
+        <img align="left" width=52px src="https://user-images.githubusercontent.com/371009/230673036-fad1e8e6-5d48-49b1-a9c1-6f9834e0d165.png">
+        <div>
+          <a href="dotnet/README.md">Using Semantic Kernel in C#</a> &nbsp
+        </div>
+      </td>
+      <td>
+        <img align="left" width=52px src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg">
+        <div>
+          <a href="python/README.md">Using Semantic Kernel in Python</a>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-<div style="display:flex;height:30px;padding:5px 0 5px 10px;">
-<img src="https://user-images.githubusercontent.com/371009/230673733-7a447d30-b48e-46e1-bd84-2b321c90649e.png" style="margin-right:12px" height="30"/>
-<a href="python/README.md">Using Semantic Kernel in Python</a>.
-</div>
-<br/>
-
-See the [Feature Matrix](FEATURE_MATRIX.md) to see a breakdown of feature parity between C# and Python.
+See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of feature parity between our currently supported languages.
 
 The quickest way to get started with the basics is to get an API key
 (OpenAI or Azure OpenAI)
 and to run one of the C# or Python console applications/scripts:
 
-For C#:
+### For C#:
+
 1. Create a new console app.
 2. Add the semantic kernel nuget `Microsoft.SemanticKernel`.
 3. Copy the code from [here](dotnet/README.md) into the app `Program.cs` file.
 4. Replace the configuration placeholders for API key and other params with your key and settings.
 5. Run with `F5` or `dotnet run`
 
-For Python:
+### For Python:
+
 1. Install the pip package: `python -m pip install semantic-kernel`.
 2. Create a new script e.g. `hello-world.py`.
 3. Store your API key and settings in an `.env` file as described [here](python/README.md).

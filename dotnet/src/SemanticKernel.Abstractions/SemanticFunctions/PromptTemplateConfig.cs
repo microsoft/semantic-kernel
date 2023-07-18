@@ -56,7 +56,7 @@ public class PromptTemplateConfig
         /// </summary>
         [JsonPropertyName("max_tokens")]
         [JsonPropertyOrder(5)]
-        public int MaxTokens { get; set; } = 256;
+        public int? MaxTokens { get; set; }
 
         /// <summary>
         /// Stop sequences are optional sequences that tells the AI model when to stop generating tokens.
@@ -151,15 +151,6 @@ public class PromptTemplateConfig
     [JsonPropertyOrder(6)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public InputConfig Input { get; set; } = new();
-
-    /// <summary>
-    /// Whether the function is sensitive (default false).
-    /// When a function is sensitive, the default trust service will throw an exception
-    /// if the function is invoked passing in some untrusted input (or context, or prompt).
-    /// </summary>
-    [JsonPropertyName("is_sensitive")]
-    [JsonPropertyOrder(7)]
-    public bool IsSensitive { get; set; } = false;
 
     /// <summary>
     /// Remove some default properties to reduce the JSON complexity.

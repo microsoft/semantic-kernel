@@ -65,18 +65,18 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
 }) => {
     const classes = useClasses();
 
-    const usernameRequired = authRequirements.username;
-    const emailRequired = authRequirements.email;
-    const passwordRequired = authRequirements.password;
-    const accessTokenRequired = authRequirements.personalAccessToken;
-    const msalRequired = authRequirements.Msal;
-    const oauthRequired = authRequirements.OAuth;
+    const usernameRequired = !!authRequirements.username;
+    const emailRequired = !!authRequirements.email;
+    const passwordRequired = !!authRequirements.password;
+    const accessTokenRequired = !!authRequirements.personalAccessToken;
+    const msalRequired = !!authRequirements.Msal;
+    const oauthRequired = !!authRequirements.OAuth;
 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [accessToken, setAccessToken] = useState('');
-    const [apiPropertiesInput, setApiRequirementsInput] = useState(apiProperties);
+    const [apiPropertiesInput, setApiRequirementsInput] = useState(apiProperties ?? {});
 
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -84,38 +84,39 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
     const dispatch = useAppDispatch();
     const { instance, inProgress } = useMsal();
 
-    const handleSubmit = async (event: FormEvent) => {
+    const handleSubmit = (event: FormEvent) => {
         event.preventDefault();
-        try {
-            if (msalRequired) {
-                const token = await TokenHelper.getAccessTokenUsingMsal(inProgress, instance, authRequirements.scopes!);
-                dispatch(
-                    connectPlugin({
-                        plugin: name,
-                        accessToken: token,
-                        apiProperties: apiPropertiesInput,
-                    }),
-                );
-            } else if (oauthRequired) {
-                // TODO: implement OAuth Flow
-            } else {
-                // Basic Auth or PAT
-                dispatch(
-                    connectPlugin({
-                        plugin: name,
-                        username: username,
-                        email: email,
-                        password: password,
-                        accessToken: accessToken,
-                        apiProperties: apiPropertiesInput,
-                    }),
-                );
-            }
-
-            setOpen(false);
-        } catch (_e) {
-            setErrorMessage(`Could not authenticate to ${name}. Check your permissions and try again.`);
+        if (msalRequired) {
+            TokenHelper.getAccessTokenUsingMsal(inProgress, instance, authRequirements.scopes ?? [])
+                .then((token) => {
+                    dispatch(
+                        connectPlugin({
+                            plugin: name,
+                            accessToken: token,
+                            apiProperties: apiPropertiesInput,
+                        }),
+                    );
+                })
+                .catch(() => {
+                    setErrorMessage(`Could not authenticate to ${name}. Check your permissions and try again.`);
+                });
+        } else if (oauthRequired) {
+            // TODO: implement OAuth Flow
+        } else {
+            // Basic Auth or PAT
+            dispatch(
+                connectPlugin({
+                    plugin: name,
+                    username,
+                    email,
+                    password,
+                    accessToken,
+                    apiProperties: apiPropertiesInput,
+                }),
+            );
         }
+
+        setOpen(false);
     };
 
     return (
@@ -128,7 +129,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
             modalType="alert"
         >
             <DialogTrigger>
-                <Button aria-label="Enable plugin" appearance="primary">
+                <Button data-testid="openPluginDialogButton" aria-label="Enable plugin" appearance="primary">
                     Enable
                 </Button>
             </DialogTrigger>
@@ -161,7 +162,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                                 <>
                                     To continue, you will authorize the following:{' '}
                                     <div className={classes.scopes}>
-                                        {authRequirements.scopes?.map((scope) => {
+                                        {authRequirements.scopes.map((scope) => {
                                             return <Text key={scope}>{scope}</Text>;
                                         })}
                                     </div>
@@ -173,8 +174,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                             {(msalRequired || oauthRequired) && (
                                 <Body1>
                                     {' '}
-                                    You will be prompted into sign in with {publisher} on the next screen if you haven't
-                                    already provided prior consent.
+                                    {`You will be prompted into sign in with ${publisher} on the next screen if you haven't already provided prior consent.`}
                                 </Body1>
                             )}
                             {usernameRequired && (
@@ -243,9 +243,9 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                             {apiProperties && (
                                 <>
                                     <Body1Strong> Configuration </Body1Strong>
-                                    <Body1>Some additional information is required to enable {name}'s REST APIs.</Body1>
+                                    <Body1>{`Some additional information is required to enable ${name}'s REST APIs.`}</Body1>
                                     {Object.keys(apiProperties).map((property) => {
-                                        const propertyDetails = apiPropertiesInput![property];
+                                        const propertyDetails = apiPropertiesInput[property];
                                         return (
                                             <div className={classes.section} key={property}>
                                                 <Input
@@ -287,7 +287,7 @@ export const PluginConnector: React.FC<PluginConnectorProps> = ({
                             <DialogTrigger>
                                 <Button appearance="secondary">Cancel</Button>
                             </DialogTrigger>
-                            <Button type="submit" appearance="primary" disabled={!!errorMessage}>
+                            <Button data-testid="enablePluginButton" type="submit" appearance="primary" disabled={!!errorMessage}>
                                 Enable
                             </Button>
                         </DialogActions>

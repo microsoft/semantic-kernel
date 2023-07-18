@@ -18,7 +18,9 @@ public static class Example20_HuggingFace
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Log)
-            .WithHuggingFaceTextCompletionService("gpt2", apiKey: Env.Var("HF_API_KEY"))
+            .WithHuggingFaceTextCompletionService(
+                model: TestConfiguration.HuggingFace.ApiKey,
+                apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
         const string FunctionDefinition = "Question: {{$input}}; Answer:";

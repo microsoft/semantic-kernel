@@ -209,6 +209,10 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
         value: 'chatmemorysources'
       }
       {
+        name: 'ChatStore:Cosmos:ChatParticipantsContainer'
+        value: 'chatparticipants'
+      }
+      {
         name: 'ChatStore:Cosmos:ConnectionString'
         value: deployCosmosDB ? cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString : ''
       }

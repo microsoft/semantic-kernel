@@ -106,11 +106,11 @@ public class ChromaClient : IChromaClient
     }
 
     /// <inheritdoc />
-    public async Task AddEmbeddingsAsync(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default)
+    public async Task UpsertEmbeddingsAsync(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Adding embeddings to collection with id: {0}", collectionId);
+        this._logger.LogDebug("Upserting embeddings to collection with id: {0}", collectionId);
 
-        using var request = AddEmbeddingsRequest.Create(collectionId, ids, embeddings, metadatas).Build();
+        using var request = UpsertEmbeddingsRequest.Create(collectionId, ids, embeddings, metadatas).Build();
 
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
