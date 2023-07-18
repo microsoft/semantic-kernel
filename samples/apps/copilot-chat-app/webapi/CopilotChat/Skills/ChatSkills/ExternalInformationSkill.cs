@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -64,12 +65,12 @@ public class ExternalInformationSkill
     /// <summary>
     /// Extract relevant additional knowledge using a planner.
     /// </summary>
-    [SKFunction("Acquire external information")]
-    [SKFunctionName("AcquireExternalInformation")]
-    [SKFunctionInput(Description = "The intent to whether external information is needed")]
-    [SKFunctionContextParameter(Name = "tokenLimit", Description = "Maximum number of tokens")]
-    [SKFunctionContextParameter(Name = "proposedPlan", Description = "Previously proposed plan that is approved")]
-    public async Task<string> AcquireExternalInformationAsync(string userIntent, SKContext context)
+    [SKFunction, Description("Acquire external information")]
+    [SKParameter("tokenLimit", "Maximum number of tokens")]
+    [SKParameter("proposedPlan", "Previously proposed plan that is approved")]
+    public async Task<string> AcquireExternalInformationAsync(
+        [Description("The intent to whether external information is needed")] string userIntent,
+        SKContext context)
     {
         FunctionsView functions = this._planner.Kernel.Skills.GetFunctionsView(true, true);
         if (functions.NativeFunctions.IsEmpty && functions.SemanticFunctions.IsEmpty)

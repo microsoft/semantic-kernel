@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Core;
@@ -17,12 +18,14 @@ public static class Example10_DescribeAllSkillsAndFunctions
     /// list of parameters, parameters descriptions, etc.
     /// See the end of the file for a sample of what the output looks like.
     /// </summary>
-    public static void Run()
+    public static Task RunAsync()
     {
         Console.WriteLine("======== Describe all skills and functions ========");
 
         var kernel = Kernel.Builder
-            .WithOpenAITextCompletionService("text-davinci-003", "none")
+            .WithOpenAITextCompletionService(
+                modelId: TestConfiguration.OpenAI.ModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Import a native skill
@@ -73,6 +76,8 @@ public static class Example10_DescribeAllSkillsAndFunctions
             Console.WriteLine("Skill: " + skill.Key);
             foreach (FunctionView func in skill.Value) { PrintFunction(func); }
         }
+
+        return Task.CompletedTask;
     }
 
     private static void PrintFunction(FunctionView func)
