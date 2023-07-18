@@ -23,14 +23,16 @@ public sealed class BingConnector : IWebSearchEngineConnector
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
+    private readonly string? _uri;
+    private readonly string defaultUri = "https://api.bing.microsoft.com/v7.0/search?q";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BingConnector"/> class.
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="logger">An optional logger to log connector-related information.</param>
-    public BingConnector(string apiKey, ILogger<BingConnector>? logger = null) :
-        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), logger)
+    public BingConnector(string apiKey, string uri = "", ILogger<BingConnector>? logger = null) :
+        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), uri, logger)
     {
     }
 
@@ -40,13 +42,14 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
     /// <param name="logger">An optional logger to log connector-related information.</param>
-    public BingConnector(string apiKey, HttpClient httpClient, ILogger<BingConnector>? logger = null)
+    public BingConnector(string apiKey, HttpClient httpClient, string uri = "", ILogger<BingConnector>? logger = null)
     {
         Verify.NotNull(httpClient);
 
         this._apiKey = apiKey;
         this._logger = logger ?? NullLogger<BingConnector>.Instance;
         this._httpClient = httpClient;
+        this._uri = string.IsNullOrEmpty(uri) ? this.defaultUri : uri;
     }
 
     /// <inheritdoc/>
@@ -58,7 +61,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
 
-        Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
+        Uri uri = new($"{this._uri}={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
 
         this._logger.LogDebug("Sending request: {0}", uri);
 
