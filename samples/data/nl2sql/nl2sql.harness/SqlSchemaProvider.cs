@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Data.Nl2Sql.Harness.Schema;
+namespace SemanticKernel.Data.Nl2Sql.Harness;
 
 using System;
 using System.Collections.Generic;

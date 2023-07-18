@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #define DISABLEHOST
-namespace SemanticKernel.Data.Nl2Sql.Harness.Schema;
+
+namespace SemanticKernel.Data.Nl2Sql.Harness;
 
 using System.IO;
 using System.Threading.Tasks;
