@@ -459,13 +459,14 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         HttpResponseMessage response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
         if (response.IsSuccessStatusCode)
         {
-            this._logger.LogTrace("Qdrant responded successfully");
+            this._logger.LogDebug("Qdrant responded successfully");
         }
         else
         {
-            this._logger.LogTrace("Qdrant responded with error");
+            this._logger.LogWarning("Qdrant responded with error");
         }
 
         return (response, responseContent);

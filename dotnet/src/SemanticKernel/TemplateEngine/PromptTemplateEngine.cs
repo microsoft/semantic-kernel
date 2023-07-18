@@ -91,8 +91,9 @@ public class PromptTemplateEngine : IPromptTemplateEngine
             result.Append(await t.ConfigureAwait(false));
         }
 
-        // TODO: remove PII, allow tracing prompts differently
-        this._log.LogDebug("Rendered prompt: {0}", result);
+        // Sensitive data, logging as trace, disabled by default
+        this._log.LogTrace("Rendered prompt: {0}", result);
+
         return result.ToString();
     }
 

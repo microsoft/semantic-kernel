@@ -229,6 +229,7 @@ cryptography = ">=3.2"
 name = "azure-common"
 version = "1.1.28"
 description = "Microsoft Azure Client Library for Python (Common)"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -240,6 +241,7 @@ files = [
 name = "azure-core"
 version = "1.28.0"
 description = "Microsoft Azure Core Library for Python"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -259,6 +261,7 @@ aio = ["aiohttp (>=3.0)"]
 name = "azure-identity"
 version = "1.13.0"
 description = "Microsoft Azure Identity Library for Python"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -277,6 +280,7 @@ six = ">=1.12.0"
 name = "azure-search-documents"
 version = "11.4.0b6"
 description = "Microsoft Azure Cognitive Search Client Library for Python"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -414,6 +418,7 @@ files = [
 name = "cffi"
 version = "1.15.1"
 description = "Foreign Function Interface for Python calling C code."
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -794,6 +799,7 @@ typing = ["mypy (>=0.990)"]
 name = "cryptography"
 version = "41.0.2"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1367,6 +1373,7 @@ numpy = "*"
 name = "httpcore"
 version = "0.17.3"
 description = "A minimal low-level HTTP client."
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1378,11 +1385,11 @@ files = [
 anyio = ">=3.0,<5.0"
 certifi = "*"
 h11 = ">=0.13,<0.15"
-sniffio = "==1.*"
+sniffio = ">=1.0.0,<2.0.0"
 
 [package.extras]
 http2 = ["h2 (>=3,<5)"]
-socks = ["socksio (==1.*)"]
+socks = ["socksio (>=1.0.0,<2.0.0)"]
 
 [[package]]
 name = "httptools"
@@ -1608,6 +1615,7 @@ test-extra = ["curio", "matplotlib (!=3.2.0)", "nbformat", "numpy (>=1.21)", "pa
 name = "isodate"
 version = "0.6.1"
 description = "An ISO 8601 date/time/duration parser and formatter"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -1890,6 +1898,7 @@ tests = ["pytest (>=4.6)"]
 name = "msal"
 version = "1.22.0"
 description = "The Microsoft Authentication Library (MSAL) for Python library enables your app to access the Microsoft Cloud by supporting authentication of users with Microsoft Azure Active Directory accounts (AAD) and Microsoft Accounts (MSA) using industry standard OAuth2 and OpenID Connect."
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -1909,6 +1918,7 @@ broker = ["pymsalruntime (>=0.13.2,<0.14)"]
 name = "msal-extensions"
 version = "1.0.0"
 description = "Microsoft Authentication Library extensions (MSAL EX) provides a persistence API that can save your data on disk, encrypted on Windows, macOS and Linux. Concurrent data access will be coordinated by a file lock mechanism."
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -2611,6 +2621,7 @@ testing = ["pytest", "pytest-benchmark"]
 name = "portalocker"
 version = "2.7.0"
 description = "Wraps the portalocker recipe for easy usage"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 files = [
@@ -2948,6 +2959,7 @@ pyasn1 = ">=0.4.6,<0.6.0"
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
@@ -3025,6 +3037,7 @@ plugins = ["importlib-metadata"]
 name = "pyjwt"
 version = "2.7.0"
 description = "JSON Web Token implementation in Python"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -3686,6 +3699,7 @@ testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
@@ -4089,6 +4103,7 @@ tutorials = ["matplotlib", "pandas", "tabulate"]
 name = "typing-extensions"
 version = "4.7.1"
 description = "Backported and Experimental Type Hints for Python 3.7+"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -4563,4 +4578,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "db2d573ad92a118a4a22efacf4232489545b7f952a3c95015b8e507076e58fdc"
+content-hash = "4ba6ba6436918fe498163a71df58e3f97f1c842999c92d1bdafed70ad2cc6ee3"
