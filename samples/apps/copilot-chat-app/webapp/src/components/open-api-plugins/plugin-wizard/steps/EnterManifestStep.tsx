@@ -45,7 +45,7 @@ export const EnterManifestStep: React.FC<IEnterManifestStepProps> = ({
         <>
             <Subtitle1>Enter your website domain</Subtitle1>
             <Text size={400}>
-                To connect a plugin, provide the domain of your website where your{' '}
+                To connect a plugin, provide the website domain where your{' '}
                 <a
                     href={'https://platform.openai.com/docs/plugins/getting-started/plugin-manifest'}
                     target="_blank"

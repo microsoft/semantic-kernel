@@ -26,7 +26,7 @@ export const useClasses = makeStyles({
         height: '400px',
     },
     surface: {
-        width: '450px',
+        width: '500px',
     },
     center: {
         paddingTop: '75px',
