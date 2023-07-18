@@ -203,4 +203,16 @@ export class ChatService extends BaseService {
 
         return chatUsers;
     };
+
+    public getSemanticMemoriesAsync = async (chatId: string, memoryName: string, accessToken: string): Promise<string[]> => {
+        const result = await this.getResponseAsync<string[]>(
+            {
+                commandPath: `chatMemory/${chatId}/${memoryName}`,
+                method: 'GET',
+            },
+            accessToken,
+        );
+
+        return result;
+    }
 }
