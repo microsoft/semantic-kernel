@@ -34,6 +34,8 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         using var activity = s_activitySource.StartActivity("SequentialPlanner.CreatePlan");
 
         this._logger.LogInformation("Plan creation started.");
+
+        // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Plan Goal: {Goal}", goal);
 
         var stopwatch = new Stopwatch();
@@ -49,6 +51,8 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
             this._logger.LogInformation("Plan creation status: {Status}", "Success");
 
             this._logger.LogInformation("Created plan: \n {Plan}", plan.ToSafePlanString());
+
+            // Sensitive data, logging as trace, disabled by default
             this._logger.LogTrace("Created plan with details: \n {Plan}", plan.ToPlanString());
 
             return plan;
