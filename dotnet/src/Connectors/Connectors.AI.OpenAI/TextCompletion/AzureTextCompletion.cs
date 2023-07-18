@@ -71,7 +71,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        this.LogDeploymentName();
+        this.LogActionDetails();
         return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
     }
 
@@ -81,7 +81,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        this.LogDeploymentName();
+        this.LogActionDetails();
         return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
     }
 }

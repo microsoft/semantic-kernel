@@ -52,11 +52,11 @@ public abstract class OpenAIClientBase : ClientBase
     }
 
     /// <summary>
-    /// Logs OpenAI model ID together with caller information.
+    /// Logs OpenAI action details.
     /// </summary>
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
-    private protected void LogModelId([CallerMemberName] string? callerMemberName = default)
+    private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        this.Logger.LogInformation("OpenAI Model ID: {ModelId}. Action: {Action}", this.ModelId, callerMemberName);
+        this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelId);
     }
 }

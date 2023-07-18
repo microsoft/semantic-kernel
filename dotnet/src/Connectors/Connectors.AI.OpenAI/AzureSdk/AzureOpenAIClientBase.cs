@@ -98,11 +98,11 @@ public abstract class AzureOpenAIClientBase : ClientBase
     }
 
     /// <summary>
-    /// Logs Azure OpenAI deployment name together with caller information.
+    /// Logs Azure OpenAI action details.
     /// </summary>
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
-    private protected void LogDeploymentName([CallerMemberName] string? callerMemberName = default)
+    private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        this.Logger.LogInformation("Azure OpenAI Deployment Name: {DeploymentName}. Action: {Action}", this.ModelId, callerMemberName);
+        this.Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, this.ModelId);
     }
 }
