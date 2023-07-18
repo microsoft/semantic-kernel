@@ -336,7 +336,7 @@ public class ChatSkill
     private async Task<string> GetChatResponseAsync(string chatId, SKContext chatContext)
     {
         // 0. Get the audience
-        await this.UpdateResponseStatusOnClient(chatId, "Interpreting input (audience, intent, etc.)");
+        await this.UpdateResponseStatusOnClient(chatId, "Extracting audience");
         var audience = await this.GetAudienceAsync(chatContext);
         if (chatContext.ErrorOccurred)
         {
@@ -344,6 +344,7 @@ public class ChatSkill
         }
 
         // 1. Extract user intent from the conversation history.
+        await this.UpdateResponseStatusOnClient(chatId, "Extracting user intent");
         var userIntent = await this.GetUserIntentAsync(chatContext);
         if (chatContext.ErrorOccurred)
         {
@@ -351,9 +352,11 @@ public class ChatSkill
         }
 
         // 2. Calculate the remaining token budget.
+        await this.UpdateResponseStatusOnClient(chatId, "Calculating remaining token budget");
         var remainingToken = this.GetChatContextTokenLimit(userIntent);
 
         // 3. Acquire external information from planner
+        await this.UpdateResponseStatusOnClient(chatId, "Acquiring external information from planner");
         var externalInformationTokenLimit = (int)(remainingToken * this._promptOptions.ExternalInformationContextWeight);
         var planResult = await this.AcquireExternalInformationAsync(chatContext, userIntent, externalInformationTokenLimit);
         if (chatContext.ErrorOccurred)
@@ -369,7 +372,7 @@ public class ChatSkill
         }
 
         // 4. Query relevant semantic memories
-        await this.UpdateResponseStatusOnClient(chatId, "Querying memories");
+        await this.UpdateResponseStatusOnClient(chatId, "Querying semantic memories");
         var chatMemoriesTokenLimit = (int)(remainingToken * this._promptOptions.MemoriesResponseContextWeight);
         var chatMemories = await this._semanticChatMemorySkill.QueryMemoriesAsync(userIntent, chatId, chatMemoriesTokenLimit, chatContext.Memory);
         if (chatContext.ErrorOccurred)
@@ -378,6 +381,7 @@ public class ChatSkill
         }
 
         // 5. Query relevant document memories
+        await this.UpdateResponseStatusOnClient(chatId, "Querying document memories");
         var documentContextTokenLimit = (int)(remainingToken * this._promptOptions.DocumentContextWeight);
         var documentMemories = await this._documentMemorySkill.QueryDocumentsAsync(userIntent, chatId, documentContextTokenLimit, chatContext.Memory);
         if (chatContext.ErrorOccurred)
