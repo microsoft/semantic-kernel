@@ -119,10 +119,7 @@ public sealed class Program
     {
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
 
-        return new SequentialPlannerBuilder(kernel)
-            .WithConfiguration(plannerConfig)
-            .WithLogging(logger)
-            .Build();
+        return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(logger);
     }
 
     /// <summary>
