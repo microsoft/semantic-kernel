@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
 
-import static com.microsoft.semantickernel.util.LocaleParser.parseLocale;
-
-import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
-import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
-import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.util.Locale;
+
+import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
+import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
+import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
+import com.microsoft.semantickernel.util.LocaleParser;
 
 /**
  * Description: TimeSkill provides a set of functions to get the current time and date.
@@ -65,7 +65,7 @@ public class TimeSkill {
      *
      * @return a ZonedDateTime object with the current date and time.
      */
-    public static ZonedDateTime now() {
+    public ZonedDateTime now() {
         return ZonedDateTime.now(ZoneId.systemDefault());
     }
 
@@ -415,8 +415,20 @@ public class TimeSkill {
                             name = "locale",
                             description = "Locale to use when formatting the date",
                             required = false)
-                    String locale) {
-        ZoneId zoneId = ZoneId.systemDefault();
-        return zoneId.getDisplayName(TextStyle.FULL, parseLocale(locale));
+        String locale) {
+      ZoneId zoneId = ZoneId.systemDefault();
+      return zoneId.getDisplayName(TextStyle.FULL, parseLocale(locale));
+    }
+    
+    /**
+     * <p>Parse the locale string into a Locale object.
+     * 
+     * <p>By default, it parses using the LocaleParser utility class.
+     * 
+     * @param locale string
+     * @return a locale object
+     */
+    protected Locale parseLocale(String locale) {
+      return LocaleParser.parseLocale(locale);
     }
 }
