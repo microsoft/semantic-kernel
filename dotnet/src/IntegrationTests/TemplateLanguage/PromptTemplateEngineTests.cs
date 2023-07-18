@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
@@ -144,7 +145,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         this._logger.WriteLine("expected: " + expectedResult);
         if (expectedResult.StartsWith("ERROR", StringComparison.OrdinalIgnoreCase))
         {
-            await Assert.ThrowsAsync<TemplateException>(
+            await Assert.ThrowsAsync<SKException>(
                 async () => await this._target.RenderAsync(template, kernel.CreateNewContext()));
         }
         else

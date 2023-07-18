@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using Xunit;
@@ -34,11 +34,8 @@ public class CodeBlockTests
         this._skills.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
         var target = new CodeBlock("functionName", this._log.Object);
 
-        // Act
-        var exception = await Assert.ThrowsAsync<TemplateException>(async () => await target.RenderCodeAsync(context));
-
-        // Assert
-        Assert.Equal(TemplateException.ErrorCodes.FunctionNotFound, exception.ErrorCode);
+        // Act & Assert
+        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
     }
 
     [Fact]
@@ -55,11 +52,8 @@ public class CodeBlockTests
         this._skills.Setup(x => x.GetFunction("functionName")).Returns(function.Object);
         var target = new CodeBlock("functionName", this._log.Object);
 
-        // Act
-        var exception = await Assert.ThrowsAsync<TemplateException>(async () => await target.RenderCodeAsync(context));
-
-        // Assert
-        Assert.Equal(TemplateException.ErrorCodes.RuntimeError, exception.ErrorCode);
+        // Act & Assert
+        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
     }
 
     [Fact]

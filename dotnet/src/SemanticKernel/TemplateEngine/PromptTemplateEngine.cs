@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -45,7 +46,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
             {
                 if (!block.IsValid(out var error))
                 {
-                    throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
+                    throw new SKException(error);
                 }
             }
         }
@@ -81,7 +82,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
                 default:
                     const string Error = "Unexpected block type, the block doesn't have a rendering method";
                     this._log.LogError(Error);
-                    throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, Error);
+                    throw new SKException(Error);
             }
         }
 
