@@ -43,10 +43,16 @@ public class PromptsOptions
     internal double ExternalInformationContextWeight { get; } = 0.3;
 
     /// <summary>
-    /// Minimum relevance of a semantic memory to be included in the final prompt.
-    /// The higher the value, the answer will be more relevant to the user intent.
+    /// Upper bound of the relevancy score of a semantic memory to be included in the final prompt.
+    /// The actual relevancy score is determined by the memory balance.
     /// </summary>
-    internal double SemanticMemoryMinRelevance { get; } = 0.8;
+    internal double SemanticMemoryRelevanceUpper { get; } = 0.9;
+
+    /// <summary>
+    /// Lower bound of the relevancy score of a semantic memory to be included in the final prompt.
+    /// The actual relevancy score is determined by the memory balance.
+    /// </summary>
+    internal double SemanticMemoryRelevanceLower { get; } = 0.6;
 
     /// <summary>
     /// Minimum relevance of a document memory to be included in the final prompt.

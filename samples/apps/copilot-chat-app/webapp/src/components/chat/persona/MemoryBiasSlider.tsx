@@ -2,6 +2,10 @@
 
 import { Button, Label, Popover, PopoverSurface, PopoverTrigger, Slider, makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import React from 'react';
+import { useChat } from '../../../libs/useChat';
+import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
+import { RootState } from '../../../redux/app/store';
+import { editConversationMemoryBalance } from '../../../redux/features/conversations/conversationsSlice';
 import { Info16 } from '../../shared/BundledIcons';
 
 const useClasses = makeStyles({
@@ -28,9 +32,35 @@ const useClasses = makeStyles({
     },
 });
 
-
 export const MemoryBiasSlider: React.FC = () => {
+    const chat = useChat();
     const classes = useClasses();
+    const dispatch = useAppDispatch();
+
+    const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
+    const chatState = conversations[selectedId];
+    const [balance, setBalance] = React.useState<number>(chatState.memoryBalance * 100);
+
+    React.useEffect(() => {
+        const balance = chatState.memoryBalance * 100;
+        console.log(`MemoryBiasSlider: ${balance}`);
+        setBalance(balance);
+    }, [chatState]);
+
+    const sliderValueChange = (value: number) => {
+        chat.editChat(
+            selectedId,
+            chatState.title,
+            chatState.systemDescription,
+            value / 100
+        ).then(() => {
+            setBalance(value);
+            dispatch(editConversationMemoryBalance({
+                id: selectedId,
+                memoryBalance: value / 100
+            }));
+        }).catch(() => { });
+    }
 
     return (
         <div className={classes.root}>
@@ -47,7 +77,12 @@ export const MemoryBiasSlider: React.FC = () => {
             </div>
             <div>
                 <Label>Short Term</Label>
-                <Slider min={0} max={100} defaultValue={50} />
+                <Slider
+                    min={0}
+                    max={100}
+                    value={balance}
+                    onChange={(_, data) => sliderValueChange(data.value)}
+                />
                 <Label>Long Term</Label>
             </div>
         </div>

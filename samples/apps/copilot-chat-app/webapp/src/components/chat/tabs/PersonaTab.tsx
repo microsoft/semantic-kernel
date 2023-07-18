@@ -47,6 +47,7 @@ export const PersonaTab: React.FC = () => {
                         selectedId,
                         chatState.title,
                         newSystemDescription,
+                        chatState.memoryBalance,
                     ).finally(() => {
                         dispatch(
                             editConversationSystemDescription({

@@ -202,6 +202,7 @@ public class ChatHistoryController : ControllerBase
         {
             chat!.Title = chatParameters.Title;
             chat!.SystemDescription = chatParameters.SystemDescription;
+            chat!.MemoryBalance = chatParameters.MemoryBalance;
             await this._sessionRepository.UpsertAsync(chat);
             await messageRelayHubContext.Clients.Group(chatId).SendAsync(ChatEditedClientCall, chat);
             return this.Ok(chat);

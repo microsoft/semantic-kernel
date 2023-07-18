@@ -85,6 +85,7 @@ export const useChat = () => {
                     input: '',
                     botResponseStatus: undefined,
                     userDataLoaded: false,
+                    memoryBalance: result.memoryBalance,
                 };
 
                 dispatch(addConversation(newChat));
@@ -167,6 +168,7 @@ export const useChat = () => {
                         input: '',
                         botResponseStatus: undefined,
                         userDataLoaded: false,
+                        memoryBalance: chatSession.memoryBalance,
                     };
                 }
 
@@ -298,6 +300,7 @@ export const useChat = () => {
                     input: '',
                     botResponseStatus: undefined,
                     userDataLoaded: false,
+                    memoryBalance: result.memoryBalance,
                 };
 
                 dispatch(addConversation(newChat));
@@ -310,10 +313,21 @@ export const useChat = () => {
         return { success: true, message: '' };
     };
 
-    const editChat = async (chatId: string, title: string, syetemDescription: string) => {
+    const editChat = async (
+        chatId: string,
+        title: string,
+        syetemDescription: string,
+        memoryBalance: number,
+    ) => {
         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
-            await chatService.editChatAsync(chatId, title, syetemDescription, accessToken);
+            await chatService.editChatAsync(
+                chatId,
+                title,
+                syetemDescription,
+                memoryBalance,
+                accessToken
+            );
         } catch (e: any) {
             const errorMessage = `Error editing chat ${chatId}. Details: ${getErrorDetails(e)}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));

@@ -130,7 +130,7 @@ internal static class SemanticChatMemoryExtractor
                 collection: memoryCollectionName,
                 query: item.ToFormattedString(),
                 limit: 1,
-                minRelevanceScore: options.SemanticMemoryMinRelevance,
+                minRelevanceScore: options.SemanticMemoryRelevanceUpper,
                 cancellationToken: context.CancellationToken
             )
             .ToListAsync()

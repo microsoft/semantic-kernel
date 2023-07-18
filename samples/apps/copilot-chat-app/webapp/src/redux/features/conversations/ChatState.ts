@@ -14,4 +14,5 @@ export interface ChatState {
     input: string;
     botResponseStatus: string | undefined;
     userDataLoaded: boolean;
+    memoryBalance: number;
 }
