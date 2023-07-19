@@ -21,9 +21,6 @@ public class Example99_BlogAnnouncement {
 
   public static void main(String[] args) {
     OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromSystemProperties();
-    if (settings.isValid() == false) {
-      settings = AIProviderSettings.getOpenAISettingsFromEnv();
-    }
 
     NonAzureOpenAIKeyCredential credential = new NonAzureOpenAIKeyCredential(settings.getKey());
 
