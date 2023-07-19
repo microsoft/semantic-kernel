@@ -3,6 +3,7 @@
 from logging import Logger
 from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
 from numpy import ndarray
 
 import redis
@@ -128,15 +129,15 @@ class RedisMemoryStore(MemoryStoreBase):
                 TextField(name="description"),
                 TextField(name="text"),
                 TextField(name="additional_metadata"),
-                # VectorField(
-                #     name="embedding",
-                #     algorithm=RedisMemoryStore.VECTOR_INDEX_ALGORITHM,
-                #     attributes={
-                #         "TYPE": RedisMemoryStore.VECTOR_TYPE,
-                #         "DIM": self._vector_size,
-                #         "DISTANCE_METRIC": RedisMemoryStore.VECTOR_DISTANCE_METRIC,
-                #     },
-                # ),
+                VectorField(
+                    name="embedding",
+                    algorithm=RedisMemoryStore.VECTOR_INDEX_ALGORITHM,
+                    attributes={
+                        "TYPE": RedisMemoryStore.VECTOR_TYPE,
+                        "DIM": self._vector_size,
+                        "DISTANCE_METRIC": RedisMemoryStore.VECTOR_DISTANCE_METRIC,
+                    },
+                ),
             )
 
             self._ft(collection_name).create_index(
@@ -266,6 +267,26 @@ class RedisMemoryStore(MemoryStoreBase):
         Helper function to serialize a record into a Redis mapping (excluding its key)
         """
         assert record._key, "Record must have a valid key"
+
+        # Cast dimensions and type to match schema
+        np_type = (
+            np.float32 if RedisMemoryStore.VECTOR_TYPE == "FLOAT32" else np.float64
+        )
+        final_embed = None
+        if record.embedding is not None:
+            final_embed = record.embedding.astype(np_type)
+
+            if final_embed.size < self._vector_size:
+                # If smaller than specified dimension, fill in with zeroes
+                zeroes = np.zeros(self._vector_size - final_embed.size, dtype=np_type)
+                final_embed = np.concatenate((final_embed, zeroes), dtype=np_type)
+            else:
+                raise Exception(
+                    f"Error: embedding too big, must match configured dimensionality of {self._vector_size}"
+                )
+        else:
+            final_embed = np.zeros(self._vector_size, dtype=np_type).tobytes()
+
         mapping = {
             "timestamp": str(record._timestamp) or "",
             "is_reference": int(record._is_reference) or 0,
@@ -274,6 +295,6 @@ class RedisMemoryStore(MemoryStoreBase):
             "description": record._description or "",
             "text": record._text or "",
             "additional_metadata": record._additional_metadata or "",
-            # "embedding": record._embedding.tobytes() or bytes(0),
+            "embedding": final_embed.tobytes(),
         }
         return mapping
