@@ -109,12 +109,12 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         if (result.Result == null)
         {
-            throw new AzureSdk.OpenAIInvalidResponseException<AzureImageGenerationResponse>(null, "Azure Image Generation null response");
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Azure Image Generation null response");
         }
 
         if (result.Result.Images.Count == 0)
         {
-            throw new AzureSdk.OpenAIInvalidResponseException<AzureImageGenerationResponse>(result, "Azure Image Generation result not found");
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Azure Image Generation result not found");
         }
 
         return result.Result.Images.First().Url;
@@ -184,7 +184,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
                 }
                 else if (this.IsFailedOrCancelled(result.Status))
                 {
-                    throw new AzureSdk.OpenAIInvalidResponseException<AzureImageGenerationResponse>(result, $"Azure OpenAI image generation {result.Status}");
+                    throw new AIException(AIException.ErrorCodes.InvalidResponseContent, $"Azure OpenAI image generation {result.Status}");
                 }
 
                 if (response.Headers.TryGetValues("retry-after", out var afterValues) && long.TryParse(afterValues.FirstOrDefault(), out var after))
