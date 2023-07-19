@@ -59,14 +59,14 @@ public abstract class ClientBase
 
         if (response == null)
         {
-            throw new OpenAIInvalidResponseException<Completions>(null, "Text completions null response");
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions null response");
         }
 
         var responseData = response.Value;
 
         if (responseData.Choices.Count == 0)
         {
-            throw new OpenAIInvalidResponseException<Completions>(responseData, "Text completions not found");
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text completions not found");
         }
 
         return responseData.Choices.Select(choice => new TextResult(responseData, choice)).ToList();
@@ -119,12 +119,12 @@ public abstract class ClientBase
 
             if (response == null)
             {
-                throw new OpenAIInvalidResponseException<Embeddings>(null, "Text embedding null response");
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text embedding null response");
             }
 
             if (response.Value.Data.Count == 0)
             {
-                throw new OpenAIInvalidResponseException<Embeddings>(response.Value, "Text embedding not found");
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Text embedding not found");
             }
 
             EmbeddingItem x = response.Value.Data[0];
@@ -158,12 +158,12 @@ public abstract class ClientBase
 
         if (response == null)
         {
-            throw new OpenAIInvalidResponseException<ChatCompletions>(null, "Chat completions null response");
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions null response");
         }
 
         if (response.Value.Choices.Count == 0)
         {
-            throw new OpenAIInvalidResponseException<ChatCompletions>(response.Value, "Chat completions not found");
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions not found");
         }
 
         return response.Value.Choices.Select(chatChoice => new ChatResult(response.Value, chatChoice)).ToList();
@@ -193,7 +193,7 @@ public abstract class ClientBase
 
         if (response is null)
         {
-            throw new OpenAIInvalidResponseException<StreamingChatCompletions>(null, "Chat completions null response");
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Chat completions null response");
         }
 
         using StreamingChatCompletions streamingChatCompletions = response.Value;
