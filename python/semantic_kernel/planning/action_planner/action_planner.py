@@ -101,7 +101,7 @@ class ActionPlanner:
             self._logger.info(
                 f"ActionPlanner has picked {skill}.{fun}. Reference to this function found in context: {function_ref}"
             )
-            plan = Plan(goal, function_ref)
+            plan = Plan(function=function_ref)
         else:
             function_ref = self._context.skills.get_function(
                 generated_plan["plan"]["function"]
@@ -110,8 +110,7 @@ class ActionPlanner:
                 f"ActionPlanner has picked {generated_plan['plan']['function']}. Reference to this function found in context: {function_ref}"
             )
             plan = Plan(
-                goal,
-                function_ref,
+                function=function_ref,
             )
 
         for key, val in generated_plan["plan"]["parameters"].items():
