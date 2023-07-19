@@ -64,35 +64,13 @@ public static class KernelAIPluginExtensions
                 .ConfigureAwait(false);
         }
 
-        //assume OpenAPI v3
-        var parser = new OpenApiDocumentParser(kernel.Log);
-
-        using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
-        {
-            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
-
-            var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
-
-            var skill = new Dictionary<string, ISKFunction>();
-
-            foreach (var operation in operations)
-            {
-                try
-                {
-                    kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
-                    skill[function.Name] = function;
-                }
-                catch (Exception ex) when (!ex.IsCriticalException())
-                {
-                    //Logging the exception and keep registering other Rest functions
-                    kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
-                        skillName, operation.Id, ex.Message);
-                }
-            }
-
-            return skill;
-        }
+        return await LoadSkill(
+            kernel,
+            skillName,
+            executionParameters,
+            internalHttpClient,
+            pluginJson,
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -136,35 +114,13 @@ public static class KernelAIPluginExtensions
                 .ConfigureAwait(false);
         }
 
-        //assume OpenAPI v3
-        var parser = new OpenApiDocumentParser(kernel.Log);
-
-        using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
-        {
-            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? true, cancellationToken).ConfigureAwait(false);
-
-            var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
-
-            var skill = new Dictionary<string, ISKFunction>();
-
-            foreach (var operation in operations)
-            {
-                try
-                {
-                    kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
-                    skill[function.Name] = function;
-                }
-                catch (Exception ex) when (!ex.IsCriticalException())
-                {
-                    //Logging the exception and keep registering other Rest functions
-                    kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
-                        skillName, operation.Id, ex.Message);
-                }
-            }
-
-            return skill;
-        }
+        return await LoadSkill(
+            kernel,
+            skillName,
+            executionParameters,
+            internalHttpClient,
+            pluginJson,
+            cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
@@ -194,12 +150,30 @@ public static class KernelAIPluginExtensions
                 .ConfigureAwait(false);
         }
 
-        //assume OpenAPI v3
+        return await LoadSkill(
+            kernel,
+            skillName,
+            executionParameters,
+            internalHttpClient,
+            pluginJson,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    #region private
+
+    private static async Task<IDictionary<string, ISKFunction>> LoadSkill(
+        IKernel kernel,
+        string skillName,
+        OpenApiSkillExecutionParameters? executionParameters,
+        HttpClient internalHttpClient,
+        string pluginJson,
+        CancellationToken cancellationToken)
+    {
         var parser = new OpenApiDocumentParser(kernel.Log);
 
         using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
         {
-            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? true, cancellationToken).ConfigureAwait(false);
+            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
             var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
 
@@ -224,8 +198,6 @@ public static class KernelAIPluginExtensions
             return skill;
         }
     }
-
-    #region private
 
     private static async Task<string> LoadJsonFromUri(
         IKernel kernel,
