@@ -64,8 +64,8 @@ jobs:
           Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
           Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
           Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          AZURE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_SEARCH_ADMIN_KEY}}
-          AZURE_SEARCH_ENDPOINT: ${{secrets.AZURE_SEARCH_ENDPOINT}}
+          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
+          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
           poetry run pytest ./tests/integration
