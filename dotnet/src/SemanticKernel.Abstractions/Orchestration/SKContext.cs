@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -115,9 +116,7 @@ public sealed class SKContext
     {
         if (this.Skills is null)
         {
-            throw new KernelException(
-                KernelException.ErrorCodes.SkillCollectionNotSet,
-                "Skill collection not found in the context");
+            throw new SKException("Skill collection not found in the context");
         }
 
         return this.Skills.GetFunction(skillName, functionName);

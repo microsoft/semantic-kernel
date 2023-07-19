@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Xunit;
@@ -67,7 +68,7 @@ public sealed class SKFunctionTests3
             {
                 SKFunction.FromNativeMethod(method, instance, "skill");
             }
-            catch (KernelException e) when (e.ErrorCode is KernelException.ErrorCodes.FunctionTypeNotSupported or KernelException.ErrorCodes.InvalidFunctionDescription)
+            catch (SKException)
             {
                 count++;
             }

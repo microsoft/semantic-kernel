@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
@@ -584,7 +585,7 @@ public sealed class PlanSerializationTests
         if (requireFunctions)
         {
             // Act + Assert
-            Assert.Throws<KernelException>(() => Plan.FromJson(serializedPlan, returnContext));
+            Assert.Throws<SKException>(() => Plan.FromJson(serializedPlan, returnContext));
         }
         else
         {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -60,9 +61,7 @@ public static class SKContextSequentialPlannerExtensions
 
         if (context.Skills == null)
         {
-            throw new KernelException(
-                KernelException.ErrorCodes.SkillCollectionNotSet,
-                "Skill collection not found in the context");
+            throw new SKException("Skill collection not found in the context");
         }
 
         var functionsView = context.Skills.GetFunctionsView();

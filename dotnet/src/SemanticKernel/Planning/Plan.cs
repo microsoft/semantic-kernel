@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -239,7 +240,7 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="context">Context to use</param>
     /// <returns>The updated plan</returns>
-    /// <exception cref="KernelException">If an error occurs while running the plan</exception>
+    /// <exception cref="SKException">If an error occurs while running the plan</exception>
     public async Task<Plan> InvokeNextStepAsync(SKContext context)
     {
         if (this.HasNextStep)
@@ -256,8 +257,7 @@ public sealed class Plan : ISKFunction
 
             if (result.ErrorOccurred)
             {
-                throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
-                    $"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
+                throw new SKException($"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
             }
 
             #region Update State
@@ -420,9 +420,7 @@ public sealed class Plan : ISKFunction
         {
             if (context.Skills == null)
             {
-                throw new KernelException(
-                    KernelException.ErrorCodes.SkillCollectionNotSet,
-                    "Skill collection not found in the context");
+                throw new SKException("Skill collection not found in the context");
             }
 
             if (context.Skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
@@ -431,9 +429,7 @@ public sealed class Plan : ISKFunction
             }
             else if (requireFunctions)
             {
-                throw new KernelException(
-                    KernelException.ErrorCodes.FunctionNotAvailable,
-                    $"Function '{plan.SkillName}.{plan.Name}' not found in skill collection");
+                throw new SKException($"Function '{plan.SkillName}.{plan.Name}' not found in skill collection");
             }
         }
         else

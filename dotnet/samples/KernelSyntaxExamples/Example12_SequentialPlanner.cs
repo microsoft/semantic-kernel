@@ -270,7 +270,7 @@ internal static class Example12_SequentialPlanner
                 Console.WriteLine(plan.State.ToString());
             }
         }
-        catch (KernelException e)
+        catch (SKException e)
         {
             Console.WriteLine("Step - Execution failed:");
             Console.WriteLine(e.Message);
