@@ -1,17 +1,19 @@
-import os
 import json
-import regex
+import os
 from logging import Logger
-from typing import Optional
 from textwrap import dedent
+from typing import Optional
+
+import regex
+
 from semantic_kernel import Kernel
-from semantic_kernel.planning import Plan
-from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.planning import Plan
+from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.skill_definition.parameter_view import ParameterView
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.utils.null_logger import NullLogger
 
 
 class ActionPlanner:
@@ -107,7 +109,8 @@ class ActionPlanner:
                 generated_plan["plan"]["function"]
             )
             self._logger.info(
-                f"ActionPlanner has picked {generated_plan['plan']['function']}. Reference to this function found in context: {function_ref}"
+                f"ActionPlanner has picked {generated_plan['plan']['function']}. \
+                    Reference to this function found in context: {function_ref}"
             )
             plan = Plan(
                 function=function_ref,
