@@ -368,7 +368,6 @@ public sealed class PlanTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var planInput = "Some input";
-        var stepOutput = "Output: The input was: ";
         var plan = new Plan(goal);
 
         // Arrange
