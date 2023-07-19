@@ -66,7 +66,7 @@ public class Config {
 
     private static Supplier<ClientSettings<?>> getOpenAIClientFromDefaultPropertiesLocations(ClientType type) {
         return () -> {
-            LOGGER.info("Create supplier for settings of " + type);
+            LOGGER.debug("Create supplier for settings of " + type);
             try {
                 for (String location : DEFAULT_PROPERTIES_LOCATIONS) {
                     LOGGER.debug("Attempting config file at "+location);
