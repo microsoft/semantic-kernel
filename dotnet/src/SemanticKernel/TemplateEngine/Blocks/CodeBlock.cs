@@ -119,8 +119,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
         if (this._tokens.Count > 1)
         {
-            // TODO: PII
+            // Sensitive data, logging as trace, disabled by default
             this.Log.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
+
             string input = ((ITextRendering)this._tokens[1]).Render(contextClone.Variables);
             // Keep previous trust information when updating the input
             contextClone.Variables.Update(input);

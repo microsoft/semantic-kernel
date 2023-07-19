@@ -5,27 +5,14 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Moq;
-using SemanticKernel.Skills.UnitTests.XunitHelpers;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
-public class OrganizationHierarchySkillTests : IDisposable
+public class OrganizationHierarchySkillTests
 {
-    private readonly XunitLogger<SKContext> _logger;
-    private readonly SKContext _context;
-    private bool _disposedValue = false;
-
-    public OrganizationHierarchySkillTests(ITestOutputHelper output)
-    {
-        this._logger = new XunitLogger<SKContext>(output);
-        this._context = new SKContext(logger: this._logger, cancellationToken: CancellationToken.None);
-    }
-
     [Fact]
     public async Task GetMyDirectReportsEmailAsyncSucceedsAsync()
     {
@@ -81,25 +68,5 @@ public class OrganizationHierarchySkillTests : IDisposable
         // Assert
         Assert.Equal(anyManagerName, actual);
         connectorMock.VerifyAll();
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this._disposedValue)
-        {
-            if (disposing)
-            {
-                this._logger.Dispose();
-            }
-
-            this._disposedValue = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

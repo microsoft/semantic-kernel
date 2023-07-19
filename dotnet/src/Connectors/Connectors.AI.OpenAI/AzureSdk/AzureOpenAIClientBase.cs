@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
@@ -31,7 +32,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         string endpoint,
         string apiKey,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -62,7 +63,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         string endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -94,5 +95,14 @@ public abstract class AzureOpenAIClientBase : ClientBase
 
         this.ModelId = modelId;
         this.Client = openAIClient;
+    }
+
+    /// <summary>
+    /// Logs Azure OpenAI action details.
+    /// </summary>
+    /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
+    private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
+    {
+        this.Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, this.ModelId);
     }
 }

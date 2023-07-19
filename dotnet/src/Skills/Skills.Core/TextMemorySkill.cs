@@ -74,7 +74,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
         Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
 
-        context.Log.LogTrace("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+        context.Log.LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
 
         var memory = await context.Memory.GetAsync(collection, key).ConfigureAwait(false);
 
@@ -105,7 +105,7 @@ public sealed class TextMemorySkill
         relevance ??= DefaultRelevance;
         limit ??= DefaultLimit;
 
-        context.Log.LogTrace("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
+        context.Log.LogDebug("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
 
         // Search memory
         List<MemoryQueryResult> memories = await context.Memory
@@ -119,7 +119,7 @@ public sealed class TextMemorySkill
             return string.Empty;
         }
 
-        context.Log.LogTrace("Done looking for memories in collection '{0}')", collection);
+        context.Log.LogDebug("Done looking for memories in collection '{0}')", collection);
         return limit == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
     }
 
@@ -145,7 +145,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
         Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
 
-        context.Log.LogTrace("Saving memory to collection '{0}'", collection);
+        context.Log.LogDebug("Saving memory to collection '{0}'", collection);
 
         await context.Memory.SaveInformationAsync(collection, text: text, id: key).ConfigureAwait(false);
     }
@@ -169,7 +169,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
         Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
 
-        context.Log.LogTrace("Removing memory from collection '{0}'", collection);
+        context.Log.LogDebug("Removing memory from collection '{0}'", collection);
 
         await context.Memory.RemoveAsync(collection, key).ConfigureAwait(false);
     }
