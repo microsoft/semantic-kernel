@@ -15,7 +15,7 @@ from azure.search.documents.indexes.models import (
 )
 from numpy import ndarray
 
-from semantic_kernel.connectors.memory.azure_search.utils import (
+from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     SEARCH_FIELD_EMBEDDING,
     SEARCH_FIELD_ID,
     dict_to_memory_record,
@@ -30,7 +30,7 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
 
 
-class AzureSearchMemoryStore(MemoryStoreBase):
+class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     _search_index_client: SearchIndexClient = None
     _vector_size: int = None
     _logger: Logger = None
@@ -44,15 +44,15 @@ class AzureSearchMemoryStore(MemoryStoreBase):
         token_credentials: Optional[TokenCredential] = None,
         logger: Optional[Logger] = None,
     ) -> None:
-        """Initializes a new instance of the AzureSearchMemoryStore class.
+        """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
 
         Arguments:
             vector_size {int}                                -- Embedding vector size.
-            search_endpoint {Optional[str]}                  -- The endpoint of the Azure Search service
+            search_endpoint {Optional[str]}                  -- The endpoint of the Azure Cognitive Search service
                                                                 (default: {None}).
-            admin_key {Optional[str]}                        -- Azure Search API key (default: {None}).
-            azure_credentials {Optional[AzureKeyCredential]} -- Azure Search credentials (default: {None}).
-            token_credentials {Optional[TokenCredential]}    -- Azure Search token credentials
+            admin_key {Optional[str]}                        -- Azure Cognitive Search API key (default: {None}).
+            azure_credentials {Optional[AzureKeyCredential]} -- Azure Cognitive Search credentials (default: {None}).
+            token_credentials {Optional[TokenCredential]}    -- Azure Cognitive Search token credentials
                                                                 (default: {None}).
             logger {Optional[Logger]}                        -- The logger to use (default: {None}).
         """
@@ -60,7 +60,8 @@ class AzureSearchMemoryStore(MemoryStoreBase):
             pass
         except ImportError:
             raise ValueError(
-                "Error: Unable to import Azure Search client python package. Please install Azure Search client"
+                "Error: Unable to import Azure Cognitive Search client python package."
+                "Please install Azure Cognitive Search client"
             )
 
         self._logger = logger or NullLogger()
@@ -222,7 +223,7 @@ class AzureSearchMemoryStore(MemoryStoreBase):
         """
 
         # Look up Search client class to see if exists or create
-        azure_search_client = self._search_index_client.get_search_client(
+        search_client = self._search_index_client.get_search_client(
             collection_name.lower()
         )
 
@@ -234,7 +235,7 @@ class AzureSearchMemoryStore(MemoryStoreBase):
 
         search_record = memory_record_to_search_record(record)
 
-        result = await azure_search_client.upload_documents(documents=[search_record])
+        result = await search_client.upload_documents(documents=[search_record])
 
         # Throw exception if problem
         # Clean this up not needed if throwing
@@ -258,7 +259,7 @@ class AzureSearchMemoryStore(MemoryStoreBase):
 
         # Initialize search client here
         # Look up Search client class to see if exists or create
-        azure_search_client = self._search_index_client.get_search_client(
+        search_client = self._search_index_client.get_search_client(
             collection_name.lower()
         )
 
@@ -276,7 +277,7 @@ class AzureSearchMemoryStore(MemoryStoreBase):
             search_records.append(search_record)
             search_ids.append(record._id)
 
-        result = azure_search_client.upload_documents(documents=search_records)
+        result = search_client.upload_documents(documents=search_records)
 
         if result[0].succeeded:
             return search_ids
