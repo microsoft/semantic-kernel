@@ -23,7 +23,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class for extensions methods for IKernel interface.
 /// </summary>
-[Obsolete("ChatGpt specific extensions will be removed in a future version. Use KernelAIPluginExtensions instead")]
 public static class KernelChatGptPluginExtensions
 {
     /// <summary>
@@ -35,6 +34,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginFromUrlAsync(
         this IKernel kernel,
         string skillName,
@@ -74,6 +74,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginFromResourceAsync(
         this IKernel kernel,
         string skillName,
@@ -108,6 +109,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginFromDirectoryAsync(
         this IKernel kernel,
         string parentDirectory,
@@ -146,6 +148,7 @@ public static class KernelChatGptPluginExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginFromFileAsync(
         this IKernel kernel,
         string skillName,
