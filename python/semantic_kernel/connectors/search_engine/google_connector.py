@@ -1,7 +1,11 @@
-from typing import Optional, List
+import urllib
 from logging import Logger
-from semantic_kernel.utils.null_logger import NullLogger
+from typing import List, Optional
+
+import aiohttp
+
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
+from semantic_kernel.utils.null_logger import NullLogger
 
 
 class GoogleConnector(ConnectorBase):
@@ -29,4 +33,59 @@ class GoogleConnector(ConnectorBase):
     async def search_async(
         self, query: str, num_results: str, offset: str
     ) -> List[str]:
-        return super().search_async(query, num_results, offset)
+        """
+        Returns the search results of the query provided by pinging the Google Custom search API.
+        Returns `num_results` results and ignores the first `offset`.
+
+        :param query: search query
+        :param num_results: the number of search results to return
+        :param offset: the number of search results to ignore
+        :return: list of search results
+        """
+        if not query:
+            raise ValueError("query cannot be 'None' or empty.")
+
+        if not num_results:
+            num_results = 1
+        if not offset:
+            offset = 0
+
+        num_results = int(num_results)
+        offset = int(offset)
+
+        if num_results <= 0:
+            raise ValueError("num_results value must be greater than 0.")
+        if num_results > 10:
+            raise ValueError("num_results value must be less than or equal to 10.")
+
+        if offset < 0:
+            raise ValueError("offset must be greater than 0.")
+
+        self._logger.info(
+            f"Received request for google search with \
+                params:\nquery: {query}\nnum_results: {num_results}\noffset: {offset}"
+        )
+
+        _base_url = "https://www.googleapis.com/customsearch/v1"
+        _request_url = (
+            f"{_base_url}?q={urllib.parse.quote_plus(query)}"
+            f"&key={self._api_key}&cx={self._search_engine_id}"
+            f"&num={num_results}&start={offset}"
+        )
+
+        self._logger.info("Sending GET request to Google Search API.")
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(_request_url, raise_for_status=True) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self._logger.info("Request successfull.")
+                    self._logger.info(f"API Response: {data}")
+                    items = data["items"]
+                    result = [x["snippet"] for x in items]
+                    return result
+                else:
+                    self._logger.error(
+                        f"Request to Google Search API failed with status code: {response.status}."
+                    )
+                    return []
