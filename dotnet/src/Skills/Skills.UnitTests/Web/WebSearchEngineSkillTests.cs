@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Skills.Web;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 using static Microsoft.SemanticKernel.Skills.Web.Bing.BingConnector;
 
 namespace SemanticKernel.Skills.UnitTests.Web;
@@ -55,12 +54,6 @@ public sealed class WebSearchEngineSkillTests
         await target.GetSearchResultsAsync(anyQuery);
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
         connectorMock.VerifyAll();
-    }
-
-    public void Dispose()
-    {
-        this._logger.Dispose();
     }
 }
