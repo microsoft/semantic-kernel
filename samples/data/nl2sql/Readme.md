@@ -18,7 +18,7 @@ The default configuration targets two sample schemas, but it may be configured t
 
 This sample is organized as follows:
 
-- `nl2sql.config` - Contains [setup instructions](./nl2sql.config/Readme.md), [data-schemas](./nl2sql.config/schemas/Readme.md) and [semantic-prompts](./nl2sql.config/prompts/Readme.md).
+- `nl2sql.config` - Contains [setup instructions](./nl2sql.config/Readme.md), [data-schemas](./nl2sql.config/schemas/Readme.md) and [semantic-prompts](./nl2sql.config/nl2sql/Readme.md).
 - `nl2sql.console` - A console application that translates a natural language objective into a SQL query.
 - `nl2sql.library` - A console application that translates a natural language objective into a SQL query.
 - `nl2sql.harness` - A dev-harness for reverse-engineering live schema.
