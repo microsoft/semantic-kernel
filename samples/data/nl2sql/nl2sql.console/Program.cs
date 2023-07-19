@@ -38,7 +38,7 @@ internal static class Program
                         config
                             .ClearProviders()
                             .AddConfiguration(context.Configuration.GetSection("Logging"))
-                            .AddTraceSource(new SourceSwitch("FileTrace", $"{SourceLevels.Verbose}"), traceListener);
+                            .AddTraceSource(new SourceSwitch("FileTrace", $"{SourceLevels.Verbose}"), traceListener); // Verbose to capture kernel logging
                     })
                 .ConfigureServices(
                     (context, services) =>

@@ -66,8 +66,6 @@ internal sealed class Nl2SqlConsole : BackgroundService
                 continue;
             }
 
-            this.logger.LogInformation($"Objective: {objective}"); // $$$ KERNEL LOGGING ???
-
             var context = this.kernel.CreateNewContext();
             var query =
                 await this.queryGenerator.SolveObjectiveAsync(
