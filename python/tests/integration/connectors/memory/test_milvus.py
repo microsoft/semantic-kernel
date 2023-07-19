@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import platform
+
 import numpy as np
 import pytest
-import platform
 
 from semantic_kernel.connectors.memory.milvus import MilvusMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -20,8 +21,9 @@ pytestmark = pytest.mark.skipif(
 
 pytestmark = pytest.mark.skipif(
     platform.system() == "Windows",
-    reason="local milvus is not officially supported on Windows"
+    reason="local milvus is not officially supported on Windows",
 )
+
 
 @pytest.fixture(scope="module")
 def setup_milvus():
