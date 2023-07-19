@@ -203,25 +203,34 @@ public static class KernelAIPluginExtensions
 
     private static bool TryParseAIPluginForUrl(string gptPluginJson, out string? openApiUrl)
     {
-        JsonNode? gptPlugin = JsonNode.Parse(gptPluginJson);
+        try
+        {
+            JsonNode? gptPlugin = JsonNode.Parse(gptPluginJson);
 
-        string? apiType = gptPlugin?["api"]?["type"]?.ToString();
+            string? apiType = gptPlugin?["api"]?["type"]?.ToString();
 
-        if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")
+            if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")
+            {
+                openApiUrl = null;
+
+                return false;
+            }
+
+            openApiUrl = gptPlugin?["api"]?["url"]?.ToString();
+
+            if (string.IsNullOrWhiteSpace(openApiUrl))
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch (System.Text.Json.JsonException)
         {
             openApiUrl = null;
 
             return false;
         }
-
-        openApiUrl = gptPlugin?["api"]?["url"]?.ToString();
-
-        if (string.IsNullOrWhiteSpace(openApiUrl))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     /// <summary>
