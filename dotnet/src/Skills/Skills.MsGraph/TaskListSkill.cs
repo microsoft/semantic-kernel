@@ -90,7 +90,9 @@ public sealed class TaskListSkill
             title: title,
             reminder: reminder);
 
-        this._logger.LogInformation("Adding task '{0}' to task list '{1}'", task.Title, defaultTaskList.Name);
+        // Sensitive data, logging as trace, disabled by default
+        this._logger.LogTrace("Adding task '{0}' to task list '{1}'", task.Title, defaultTaskList.Name);
+
         await this._connector.AddTaskAsync(defaultTaskList.Id, task, cancellationToken).ConfigureAwait(false);
     }
 
