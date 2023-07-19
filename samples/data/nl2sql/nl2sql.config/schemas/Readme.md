@@ -7,9 +7,9 @@ Unlike other approaches, the prompts here are quite lean...relying almost entire
 Pretty much what you'd expect.  Note: column type and primary key inclusion are captured, but not expressed in the YAML expression.  
 > The [DIN approach](https://arxiv.org/abs/2304.11015) (et. al.) to the  [Spider challenge](https://yale-lily.github.io/spider) demonstrated type, nullity, etc... just aren't so impactful.  In the trade-off between vebosity and token usage, low/no-impact meta-data looses.
 
-- [Schema](../../nl2sql.console/Schema/SchemaDefinition.cs)
-- [Table](../../nl2sql.console/Schema/SchemaTable.cs)
-- [Column](../../nl2sql.console/Schema/SchemaColumn.cs)
+- [Schema](../../nl2sql.library/Schema/SchemaDefinition.cs)
+- [Table](../../nl2sql.library/Schema/SchemaTable.cs)
+- [Column](../../nl2sql.library/Schema/SchemaColumn.cs)
 
 ## Semantic Schema Format (YAML)
 Examples of yaml formatted schema for inspection.  The actual semantic YAML is generated at runtime.
