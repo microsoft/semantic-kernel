@@ -138,17 +138,10 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    [Obsolete("Memory no longer managed in IKernel. Instead, initialize your skill class with the memory provider it needs.")]
     public void RegisterMemory(ISemanticTextMemory memory)
     {
         this._memory = memory;
     }
-
-    /// <inheritdoc/>
-    public Task<SKContext> RunAsync(
-        ISKFunction skFunction,
-        CancellationToken cancellationToken) // TODO: add default after other overloads are removed.
-        => this.RunAsync(new ContextVariables(), cancellationToken, skFunction);
 
     /// <inheritdoc/>
     public Task<SKContext> RunAsync(params ISKFunction[] pipeline)

@@ -133,12 +133,10 @@ public static class SKContextSequentialPlannerExtensions
     /// <param name="context">The SKContext to save the functions to.</param>
     /// <param name="memory">The memory provide to store the functions to..</param>
     /// <param name="availableFunctions">The available functions to save.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     internal static async Task RememberFunctionsAsync(
         SKContext context,
         ISemanticTextMemory memory,
-        List<FunctionView> availableFunctions,
-        CancellationToken cancellationToken = default)
+        List<FunctionView> availableFunctions)
     {
         // Check if the functions have already been saved to memory.
         if (context.Variables.ContainsKey(PlanSKFunctionsAreRemembered))
@@ -155,14 +153,14 @@ public static class SKContextSequentialPlannerExtensions
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
             var memoryEntry = await memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken: context.CancellationToken).ConfigureAwait(false);
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
                 // Memory now supports these such strategies.
                 await memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: textToEmbed, id: key, description: description,
-                    additionalMetadata: string.Empty, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    additionalMetadata: string.Empty, cancellationToken: context.CancellationToken).ConfigureAwait(false);
             }
         }
 

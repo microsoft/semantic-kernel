@@ -95,7 +95,7 @@ public sealed class TextMemorySkill
     /// SKContext["input"] = "what is the capital of France?"
     /// {{memory.recall $input }} => "Paris"
     /// </example>
-    /// <param name="text">The input text to find related memories for.</param>
+    /// <param name="input">The input text to find related memories for.</param>
     /// <param name="collection">Memories collection to search.</param>
     /// <param name="relevance">The relevance score, from 0.0 to 1.0, where 1.0 means perfect match.</param>
     /// <param name="limit">The maximum number of relevant memories to recall.</param>
@@ -103,10 +103,10 @@ public sealed class TextMemorySkill
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [SKFunction, Description("Semantic search and return up to N memories related to the input text")]
     public async Task<string> RecallAsync(
-        [Description("The input text to find related memories for")] string text,
+        [Description("The input text to find related memories for")] string input,
         [SKName(CollectionParam), Description("Memories collection to search"), DefaultValue(DefaultCollection)] string collection,
-        [Description("The relevance score, from 0.0 to 1.0, where 1.0 means perfect match"), DefaultValue(DefaultRelevance)] double? relevance,
-        [Description("The maximum number of relevant memories to recall"), DefaultValue(DefaultLimit)] int? limit,
+        [SKName(RelevanceParam), Description("The relevance score, from 0.0 to 1.0, where 1.0 means perfect match"), DefaultValue(DefaultRelevance)] double? relevance,
+        [SKName(LimitParam), Description("The maximum number of relevant memories to recall"), DefaultValue(DefaultLimit)] int? limit,
         ILogger? logger,
         CancellationToken cancellationToken = default)
     {
@@ -119,7 +119,7 @@ public sealed class TextMemorySkill
 
         // Search memory
         List<MemoryQueryResult> memories = await this._memory
-            .SearchAsync(collection, text, limit.Value, relevance.Value, cancellationToken: cancellationToken)
+            .SearchAsync(collection, input, limit.Value, relevance.Value, cancellationToken: cancellationToken)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -141,14 +141,14 @@ public sealed class TextMemorySkill
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
     /// {{memory.save $input }}
     /// </example>
-    /// <param name="text">The information to save</param>
+    /// <param name="input">The information to save</param>
     /// <param name="collection">Memories collection associated with the information to save</param>
     /// <param name="key">The key associated with the information to save</param>
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [SKFunction, Description("Save information to semantic memory")]
     public async Task SaveAsync(
-        [Description("The information to save")] string text,
+        [Description("The information to save")] string input,
         [SKName(CollectionParam), Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
         [SKName(KeyParam), Description("The key associated with the information to save")] string key,
         ILogger? logger,
@@ -160,7 +160,7 @@ public sealed class TextMemorySkill
 
         logger.LogDebug("Saving memory to collection '{0}'", collection);
 
-        await this._memory.SaveInformationAsync(collection, text: text, id: key, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await this._memory.SaveInformationAsync(collection, text: input, id: key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

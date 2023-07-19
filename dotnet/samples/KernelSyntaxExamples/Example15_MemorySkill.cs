@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Core;
@@ -20,6 +19,7 @@ public static class Example15_MemorySkill
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
+            .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
         // ========= Store memories using the kernel =========
@@ -32,8 +32,7 @@ public static class Example15_MemorySkill
         // ========= Store memories using semantic function =========
 
         // Add Memory as a skill for other functions
-        using var semanticMemory = new SemanticTextMemory(new VolatileMemoryStore(), kernel.GetService<ITextEmbeddingGeneration>());
-        var memorySkill = new TextMemorySkill(semanticMemory);
+        var memorySkill = new TextMemorySkill(kernel.Memory);
         kernel.ImportSkill(memorySkill);
 
         // Build a semantic function that saves info to memory

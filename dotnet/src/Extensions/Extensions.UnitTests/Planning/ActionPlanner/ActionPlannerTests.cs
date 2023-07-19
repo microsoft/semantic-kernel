@@ -102,8 +102,12 @@ public sealed class ActionPlannerTests
     {
         var kernel = new Mock<IKernel>();
 
-        var skills = mockSkills;
-        if (mockSkills == null)
+        Mock<ISkillCollection> skills;
+        if (mockSkills != null)
+        {
+            skills = mockSkills;
+        }
+        else
         {
             skills = new Mock<ISkillCollection>();
 
@@ -113,14 +117,13 @@ public sealed class ActionPlannerTests
 
         var returnContext = new SKContext(
             new ContextVariables(testPlanString),
-            skills!.Object,
+            skills.Object,
             new Mock<ILogger>().Object
         );
 
         var context = new SKContext(
-            new ContextVariables(),
-            skills!.Object,
-            new Mock<ILogger>().Object
+            skills: skills.Object,
+            logger: new Mock<ILogger>().Object
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
