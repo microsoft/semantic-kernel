@@ -34,8 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		..\.github\workflows\dotnet-format.yml = ..\.github\workflows\dotnet-format.yml
-		..\README.md = ..\README.md
 		..\nuget.config = ..\nuget.config
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.UnitTests", "src\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj", "{37E39C68-5A40-4E63-9D3C-0C66AD98DFCB}"

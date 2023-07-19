@@ -10,6 +10,7 @@ using Moq;
 using SemanticKernel.Skills.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
+using static Microsoft.SemanticKernel.Skills.Web.Bing.BingConnector;
 
 namespace SemanticKernel.Skills.UnitTests.Web;
 
@@ -31,7 +32,7 @@ public sealed class WebSearchEngineSkillTests : IDisposable
         IEnumerable<string> expected = new[] { Guid.NewGuid().ToString() };
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
-        connectorMock.Setup(c => c.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.SearchAsync<string>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
         WebSearchEngineSkill target = new(connectorMock.Object);
@@ -40,6 +41,30 @@ public sealed class WebSearchEngineSkillTests : IDisposable
 
         // Act
         await target.SearchAsync(anyQuery);
+
+        // Assert
+        Assert.False(this._context.ErrorOccurred);
+        connectorMock.VerifyAll();
+    }
+
+
+
+    [Fact]
+    public async Task GetSearchResultsSucceedsAsync()
+    {
+        // Arrange
+        IEnumerable<WebPage> expected = new List<WebPage>();
+
+        Mock<IWebSearchEngineConnector> connectorMock = new();
+        connectorMock.Setup(c => c.SearchAsync<WebPage>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expected);
+
+        WebSearchEngineSkill target = new(connectorMock.Object);
+
+        string anyQuery = Guid.NewGuid().ToString();
+
+        // Act
+        await target.GetSearchResultsAsync(anyQuery);
 
         // Assert
         Assert.False(this._context.ErrorOccurred);
