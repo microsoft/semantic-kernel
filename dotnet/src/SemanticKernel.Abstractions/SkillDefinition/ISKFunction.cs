@@ -100,7 +100,7 @@ public interface ISKFunction
     /// <summary>
     /// Used for setting a pre-execution hook to a function.
     /// </summary>
-    /// <remarks>Using more than once in the same function will override the previous pre-execution hook, avoid override when possible.</remarks>
+    /// <remarks>Using more than once in the same function will override the previous pre-execution hook, avoid overriding when possible.</remarks>
     /// <param name="preHook">Pre-hook delegate</param>
     /// <returns>Self instance</returns>
     ISKFunction SetPreExecutionHook(Func<SKContext, string, SKContext>? preHook);
@@ -108,7 +108,7 @@ public interface ISKFunction
     /// <summary>
     /// Used for setting a post-execution hook to a function.
     /// </summary>
-    /// <remarks>Using more than once in the same function will override the previous post-execution hook, avoid override when possible.</remarks>
+    /// <remarks>Using more than once in the same function will override the previous post-execution hook, avoid overriding when possible.</remarks>
     /// <param name="postHook">Post-hook delegate</param>
     /// <returns>Self instance</returns>
     ISKFunction SetPostExecutionHook(Func<SKContext, SKContext>? postHook);

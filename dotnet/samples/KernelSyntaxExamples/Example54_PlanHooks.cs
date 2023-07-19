@@ -34,8 +34,8 @@ public static class Example54_PlanHooks
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToPlanString());
 
-        plan.SetStepsPreExecutionHook(MyPreHook);
-        plan.SetStepsPostExecutionHook(MyPostHook);
+        plan.SetPreExecutionHook(MyPreHook);
+        plan.SetPostExecutionHook(MyPostHook);
 
         var result = await kernel.RunAsync(plan);
 

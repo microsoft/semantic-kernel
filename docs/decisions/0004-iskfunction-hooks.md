@@ -37,9 +37,8 @@ An ISKFunction Caller needs:
     - Get: SKContext
     - Get: Output parameters
 
-    - Set: Modify a prompt content after getting it from LLM and before reading it into SKContext.Variables
-
-    - Set: Modify output parameters content
+    - Set: Modify a prompt content after getting it from LLM
+    - Set: Modify output parameters content (before returning the output)
 
 ## Decision Drivers
 
@@ -74,20 +73,17 @@ Cons: - Limited to only one method observing a specific event (Pre Post and InEx
 
 Pros: - Common pattern for handling Pre/Post Setting/Filtering data
 
-Cons:
-0
+Cons: - TBD
 
 ## Open Questions
 
 - Post Execution Hooks should execute right after the LLM result or before the end of the function execution itself?
 
+- Should Pre/Post Hooks be many (pub/sub) allowing registration/deregistration?
+
 - Setting hooks on top of pre existing hooks should be allowed or throw an error?
 
 - Setting hooks on Plans should automatically cascade this hooks for all the inner steps + overriding existing ones in the process?
-
-- Should we have dedicated method to Set Hooks for all its children steps (working recursively)?
-
-- Pre/Post function Hooks should be one or many (pub/sub) allowing naming/deregistration?
 
 ## Decision Outcome
 

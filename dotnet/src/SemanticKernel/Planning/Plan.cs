@@ -382,6 +382,12 @@ public sealed class Plan : ISKFunction
             : this.Function.SetAIConfiguration(settings);
     }
 
+    /// <summary>
+    /// Used for setting a pre-execution hook to a plan and its children.
+    /// </summary>
+    /// <remarks>Using more than once in the same function will override the previous pre-execution hook, avoid overriding when possible.</remarks>
+    /// <param name="preHook">Pre-hook delegate</param>
+    /// <returns>Self instance</returns>
     public ISKFunction SetPreExecutionHook(Func<SKContext, string, SKContext>? preHook)
     {
         if (this.Function is not null)
@@ -389,46 +395,30 @@ public sealed class Plan : ISKFunction
             this.Function.SetPreExecutionHook(preHook);
         }
 
-        this._preExecutionHook = preHook;
-
-        return this;
-    }
-
-    public Plan SetStepsPreExecutionHook(Func<SKContext, string, SKContext>? preHook)
-    {
-        if (this.Steps.Count != 0)
+        foreach (Plan step in this.Steps)
         {
-            foreach (ISKFunction step in this.Steps)
-            {
-                step.SetPreExecutionHook(preHook);
-            }
+            step.SetPreExecutionHook(preHook);
         }
 
         return this;
     }
 
-    public Plan SetStepsPostExecutionHook(Func<SKContext, SKContext>? postHook)
-    {
-        if (this.Steps.Count != 0)
-        {
-            foreach (ISKFunction step in this.Steps)
-            {
-                step.SetPostExecutionHook(postHook);
-            }
-        }
-
-        return this;
-    }
-
+    /// <summary>
+    /// Used for setting a post-execution hook to a plan and its children.
+    /// </summary>
+    /// <remarks>Using more than once in the same plan will override the previous post-execution hook, avoid overriding when possible.</remarks>
+    /// <param name="postHook">Post-hook delegate</param>
+    /// <returns>Self instance</returns>
     public ISKFunction SetPostExecutionHook(Func<SKContext, SKContext>? postHook)
     {
         if (this.Function is not null)
         {
             this.Function.SetPostExecutionHook(postHook);
         }
-        else
+
+        foreach (Plan step in this.Steps)
         {
-            this._postExecutionHook = postHook;
+            step.SetPostExecutionHook(postHook);
         }
 
         return this;
@@ -656,9 +646,6 @@ public sealed class Plan : ISKFunction
     private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
 
     private const string DefaultResultKey = "PLAN.RESULT";
-
-    private Func<SKContext, string, SKContext>? _preExecutionHook;
-    private Func<SKContext, SKContext>? _postExecutionHook;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
