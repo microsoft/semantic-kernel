@@ -48,6 +48,7 @@ public sealed class SqlQueryGenerator
     [SKName("GenerateQueryFromObjective")]
     public async Task<string?> SolveObjectiveAsync(string objective, SKContext context)
     {
+        // Search for schema with best similiarity match to the objective
         var recall =
             await context.Memory.SearchAsync(
                 SchemaProvider.MemoryCollectionName,
@@ -59,7 +60,7 @@ public sealed class SqlQueryGenerator
         var best = recall.FirstOrDefault();
         if (best == null)
         {
-            return null;
+            return null; // No schema / no query
         }
 
         var schemaName = best.Metadata.Id;
@@ -69,6 +70,7 @@ public sealed class SqlQueryGenerator
         context[ContextParamSchema] = schemaText;
         context[ContextParamSchemaId] = schemaName;
 
+        // Screen objective to determine if it can be solved with the selected schema.
         if (!await this.ScreenObjectiveAsync(context).ConfigureAwait(false))
         {
             return null; // Objective doesn't pass screen
@@ -77,17 +79,15 @@ public sealed class SqlQueryGenerator
         // Generate query
         await this.promptGenerator.InvokeAsync(context).ConfigureAwait(false);
 
-        return context.GetResult(ContentLabelQuery, require: false);
+        // Parse result to handle 
+        return context.GetResult(ContentLabelQuery);
     }
 
-    /// <summary>
-    /// Screen objective to determine if it can be solved with the selected schema.
-    /// </summary>
     private async Task<bool> ScreenObjectiveAsync(SKContext context)
     {
         await this.promptEval.InvokeAsync(context).ConfigureAwait(false);
 
-        var answer = context.GetResult(ContentLabelAnswer, require: false);
+        var answer = context.GetResult(ContentLabelAnswer);
 
         return answer.Equals(ContentAffirmative, StringComparison.OrdinalIgnoreCase);
     }

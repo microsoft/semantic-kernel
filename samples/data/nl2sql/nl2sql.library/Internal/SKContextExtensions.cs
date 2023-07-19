@@ -1,38 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 namespace SemanticKernel.Data.Nl2Sql.Library.Internal;
 
+using System;
 using System.IO;
 using Microsoft.SemanticKernel.Orchestration;
 
 internal static class SKContextExtensions
 {
-    public static bool TryGetResult(this SKContext context, out string result, string? label = null, bool require = true)
-    {
-        result = string.Empty;
-
-        if (context?.ErrorOccurred != false)
-        {
-            return false;
-        }
-
-        result = context.Result;
-
-        if (!string.IsNullOrWhiteSpace(label))
-        {
-            result.TryGetValue(out result, label, require);
-        }
-
-        return true;
-    }
-
-    public static string GetResult(this SKContext context, string? label = null, bool require = true)
+    public static string GetResult(this SKContext context, string? label = null)
     {
         if (context == null)
         {
             return string.Empty;
         }
 
-        if (!context.TryGetResult(out var result, label, require))
+        if (context.ErrorOccurred)
         {
             if (context.LastException != null)
             {
@@ -40,6 +22,18 @@ internal static class SKContextExtensions
             }
 
             throw new InvalidDataException(context.LastErrorDescription);
+        }
+
+        var result = context.Result;
+
+        if (!string.IsNullOrWhiteSpace(label))
+        {
+            // Trim out label, if present.
+            int index = result.IndexOf($"{label}:", StringComparison.OrdinalIgnoreCase);
+            if (index > -1)
+            {
+                result = result.Substring(index + label.Length + 1);
+            }
         }
 
         return result;
