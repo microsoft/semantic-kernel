@@ -8,13 +8,13 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureSearch;
+namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
 /// <summary>
 /// Azure Cognitive Search record and index definition.
 /// Note: once defined, index cannot be modified.
 /// </summary>
-public class AzureSearchMemoryRecord
+public class AzureCognitiveSearchMemoryRecord
 {
     public const string IdField = "Id";
     public const string TextField = "Text";
@@ -73,16 +73,16 @@ public class AzureSearchMemoryRecord
     /// <summary>
     /// Ctor required by JSON deserializer
     /// </summary>
-    public AzureSearchMemoryRecord()
+    public AzureCognitiveSearchMemoryRecord()
     {
     }
 
-    public AzureSearchMemoryRecord(string id)
+    public AzureCognitiveSearchMemoryRecord(string id)
     {
         this.Id = EncodeId(id);
     }
 
-    public AzureSearchMemoryRecord(
+    public AzureCognitiveSearchMemoryRecord(
         string id,
         string text,
         string externalSourceName,
@@ -111,9 +111,9 @@ public class AzureSearchMemoryRecord
             additionalMetadata: this.AdditionalMetadata ?? string.Empty);
     }
 
-    public static AzureSearchMemoryRecord FromMemoryRecord(MemoryRecord record)
+    public static AzureCognitiveSearchMemoryRecord FromMemoryRecord(MemoryRecord record)
     {
-        return new AzureSearchMemoryRecord(
+        return new AzureCognitiveSearchMemoryRecord(
             id: record.Metadata.Id,
             text: record.Metadata.Text,
             externalSourceName: string.Empty,
