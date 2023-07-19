@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import datetime
 from logging import Logger
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -203,7 +204,7 @@ class RedisMemoryStore(MemoryStoreBase):
         record._key = f"{collection_name}:{record._id}"
 
         # Overwrites previous data or inserts new key if not present
-        # Index registers any hash according to the scheme and prefixed with collection_name:
+        # Index registers any hash matching its schema and prefixed with collection_name:
         self._database.hset(
             record._key,
             mapping=self._serialize_record(record),
@@ -230,7 +231,37 @@ class RedisMemoryStore(MemoryStoreBase):
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool
     ) -> MemoryRecord:
-        pass
+        """
+        Gets a memory record from the data store. Does not guarantee that the collection exists.
+
+        Arguments:
+            collection_name {str} -- Name for a collection of embeddings
+            key {str} -- Unique id associated with the memory record to get
+            with_embedding {bool} -- If true, the embedding will be returned in the memory record
+
+        Returns:
+            MemoryRecord -- The memory record if found, else None
+        """
+        if not await self.does_collection_exist_async(collection_name):
+            raise Exception(f"Collection '{collection_name}' does not exist")
+
+        internal_key = f"{collection_name}:{key}"
+        raw_fields = self._database.hgetall(internal_key)
+
+        if len(raw_fields) == 0:
+            return None
+
+        # Convert from bytes
+        record_fields = dict()
+        for field, val in raw_fields.items():
+            field_name = field.decode()
+            record_fields[field_name] = (
+                val.decode() if field_name != "embedding" else val
+            )
+
+        record = self._deserialize_record(record_fields, with_embedding)
+        record._key = internal_key
+        return record
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool
@@ -266,7 +297,7 @@ class RedisMemoryStore(MemoryStoreBase):
         """
         Helper function to serialize a record into a Redis mapping (excluding its key)
         """
-        assert record._key, "Record must have a valid key"
+        assert record._key, "Error: Record must have a valid key"
 
         # Cast dimensions and type to match schema
         np_type = (
@@ -288,7 +319,7 @@ class RedisMemoryStore(MemoryStoreBase):
             final_embed = np.zeros(self._vector_size, dtype=np_type).tobytes()
 
         mapping = {
-            "timestamp": str(record._timestamp) or "",
+            "timestamp": record._timestamp.isoformat(sep=" ") or "",
             "is_reference": int(record._is_reference) or 0,
             "external_source_name": record._external_source_name or "",
             "id": record._id or "",
@@ -298,3 +329,30 @@ class RedisMemoryStore(MemoryStoreBase):
             "embedding": final_embed.tobytes(),
         }
         return mapping
+
+    def _deserialize_record(
+        self, fields: Dict[str, Any], with_embedding: bool
+    ) -> MemoryRecord:
+        """
+        Helper function to deserialize a record from a Redis mapping
+        """
+        assert fields.get("id", None), "Error: id not present in serialized data"
+
+        record = MemoryRecord(
+            key=fields["id"],
+            id=fields["id"],
+            is_reference=bool(int(fields["is_reference"])),
+            external_source_name=fields["external_source_name"],
+            description=fields["description"],
+            text=fields["text"],
+            additional_metadata=fields["additional_metadata"],
+            embedding=None,
+        )
+
+        if fields["timestamp"] != "":
+            record._timestamp = datetime.datetime.fromisoformat(fields["timestamp"])
+
+        if with_embedding:
+            record._embedding = np.frombuffer(fields["embedding"])
+
+        return record
