@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -70,10 +71,10 @@ public class ChromaMemoryStore : IMemoryStore
         {
             await this._chromaClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (ChromaClientException e) when (e.CollectionDoesNotExistException(collectionName))
+        catch (SKException e) when (e.Message.Contains(string.Format(CultureInfo.InvariantCulture, CollectionDoesNotExistErrorFormat, collectionName)))
         {
             this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
-            throw new ChromaMemoryStoreException($"Cannot delete non-existent collection {collectionName}", e);
+            throw new SKException($"Cannot delete non-existent collection {collectionName}", e);
         }
     }
 
@@ -225,6 +226,8 @@ public class ChromaMemoryStore : IMemoryStore
     private const string IncludeMetadatas = "metadatas";
     private const string IncludeEmbeddings = "embeddings";
     private const string IncludeDistances = "distances";
+    private const string CollectionDoesNotExistErrorFormat = "Collection {0} does not exist";
+    private const string DeleteNonExistentCollectionErrorMessage = "list index out of range";
 
     private readonly ILogger _logger;
     private readonly IChromaClient _chromaClient;
@@ -239,7 +242,7 @@ public class ChromaMemoryStore : IMemoryStore
     {
         return
             await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false) ??
-            throw new ChromaMemoryStoreException($"Collection {collectionName} does not exist");
+            throw new SKException($"Collection {collectionName} does not exist");
     }
 
     private async Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken)
@@ -248,7 +251,7 @@ public class ChromaMemoryStore : IMemoryStore
         {
             return await this._chromaClient.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (ChromaClientException e) when (e.CollectionDoesNotExistException(collectionName))
+        catch (SKException e) when (e.Message.Contains(string.Format(CultureInfo.InvariantCulture, CollectionDoesNotExistErrorFormat, collectionName)))
         {
             this._logger.LogError("Collection {0} does not exist", collectionName);
 
