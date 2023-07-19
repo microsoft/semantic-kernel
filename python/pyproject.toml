@@ -30,6 +30,10 @@ torch = "2.0.0"
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.3.29"
 
+[tool.poetry.group.milvus.dependencies]
+pymilvus = "^2.2.11"
+milvus = "^2.2.11"
+
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = "^3.18.0"
 
@@ -41,7 +45,7 @@ psycopg-pool = "^3.1.7"
 psycopg = "^3.1.9"
 psycopg-binary = "^3.1.9"
 
-[tool.poetry.group.azure_search.dependencies]
+[tool.poetry.group.azure_cognitive_search.dependencies]
 azure-search-documents = {version = "11.4.0b6", allow-prereleases = true}
 azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
