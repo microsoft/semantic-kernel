@@ -17,7 +17,7 @@ import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-public class Example_BlogAnnouncement {
+public class Example_PlanWithNativeFunctions {
 
     public static void main(String[] args) throws IOException {
         AzureOpenAISettings settings = AIProviderSettings.getAzureOpenAISettingsFromFile(
