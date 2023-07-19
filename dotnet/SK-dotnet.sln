@@ -145,6 +145,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AI.Oobabooga", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning.StepwisePlanner", "src\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj", "{4762BCAF-E1C5-4714-B88D-E50FA333C50E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationInsightsExample", "samples\ApplicationInsightsExample\ApplicationInsightsExample.csproj", "{C754950A-E16C-4F96-9CC7-9328E361B5AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -356,6 +358,12 @@ Global
 		{4762BCAF-E1C5-4714-B88D-E50FA333C50E}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{4762BCAF-E1C5-4714-B88D-E50FA333C50E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4762BCAF-E1C5-4714-B88D-E50FA333C50E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -407,6 +415,7 @@ Global
 		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{677F1381-7830-4115-9C1A-58B282629DC6} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{4762BCAF-E1C5-4714-B88D-E50FA333C50E} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

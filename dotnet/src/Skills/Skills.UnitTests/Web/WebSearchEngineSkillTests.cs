@@ -4,27 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.Web;
 using Moq;
-using SemanticKernel.Skills.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
 using static Microsoft.SemanticKernel.Skills.Web.Bing.BingConnector;
 
 namespace SemanticKernel.Skills.UnitTests.Web;
 
-public sealed class WebSearchEngineSkillTests : IDisposable
+public sealed class WebSearchEngineSkillTests
 {
-    private readonly SKContext _context;
-    private readonly XunitLogger<SKContext> _logger;
-
-    public WebSearchEngineSkillTests(ITestOutputHelper output)
-    {
-        this._logger = new XunitLogger<SKContext>(output);
-        this._context = new SKContext(logger: this._logger);
-    }
-
     [Fact]
     public async Task SearchAsyncSucceedsAsync()
     {
@@ -43,7 +32,6 @@ public sealed class WebSearchEngineSkillTests : IDisposable
         await target.SearchAsync(anyQuery);
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
