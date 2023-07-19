@@ -230,6 +230,11 @@ public class ChromaMemoryStore : IMemoryStore
     private readonly IChromaClient _chromaClient;
     private readonly List<string> _defaultEmbeddingIncludeTypes = new() { IncludeMetadatas };
 
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        Converters = { new ChromaBooleanConverter() }
+    };
+
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
     {
         return
@@ -292,15 +297,19 @@ public class ChromaMemoryStore : IMemoryStore
         var embeddingsVector = this.GetEmbeddingForMemoryRecord(embeddings, recordIndex);
         var key = ids?[recordIndex];
 
-        return MemoryRecord.FromJsonMetadata(
-            json: metadata,
+        return MemoryRecord.FromMetadata(
+            metadata: metadata,
             embedding: embeddingsVector,
             key: key);
     }
 
-    private string GetMetadataForMemoryRecord(List<Dictionary<string, object>>? metadatas, int recordIndex)
+    private MemoryRecordMetadata GetMetadataForMemoryRecord(List<Dictionary<string, object>>? metadatas, int recordIndex)
     {
-        return metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex]) : string.Empty;
+        var serializedMetadata = metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex]) : string.Empty;
+
+        return
+            JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, this._jsonSerializerOptions) ??
+            throw new ChromaMemoryStoreException("Unable to deserialize memory record metadata.");
     }
 
     private Embedding<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)
