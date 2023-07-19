@@ -49,6 +49,11 @@
                 <artifactId>semantickernel-plugin-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-gpt3-tokenizer</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
 
             <dependency>

@@ -42,5 +42,4 @@
             <artifactId>jsr305</artifactId>
         </dependency>
     </dependencies>
-
 </project>

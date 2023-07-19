@@ -69,6 +69,7 @@
 
         <module>extensions/semantickernel-planning-action-planner</module>
         <module>extensions/semantickernel-planning-sequential-planner</module>
+        <module>extensions/semantickernel-gpt3-tokenizer</module>
 
         <module>plugins/semantickernel-plugin-core</module>
 
