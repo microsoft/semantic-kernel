@@ -43,10 +43,4 @@ public class ChromaClientException : Exception
     /// <param name="collectionName">Collection name.</param>
     public bool CollectionDoesNotExistException(string collectionName) =>
         this.Message.Contains(string.Format(CultureInfo.InvariantCulture, CollectionDoesNotExistErrorFormat, collectionName));
-
-    /// <summary>
-    /// Checks if Chroma API error means that there was an attempt to delete non-existent collection.
-    /// </summary>
-    public bool DeleteNonExistentCollectionException() =>
-        this.Message.Contains(DeleteNonExistentCollectionErrorMessage);
 }

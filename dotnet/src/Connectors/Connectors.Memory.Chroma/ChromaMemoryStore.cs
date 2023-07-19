@@ -70,7 +70,7 @@ public class ChromaMemoryStore : IMemoryStore
         {
             await this._chromaClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (ChromaClientException e) when (e.DeleteNonExistentCollectionException())
+        catch (ChromaClientException e) when (e.CollectionDoesNotExistException(collectionName))
         {
             this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
             throw new ChromaMemoryStoreException($"Cannot delete non-existent collection {collectionName}", e);

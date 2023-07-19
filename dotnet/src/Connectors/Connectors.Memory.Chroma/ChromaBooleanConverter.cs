@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 /// <summary>
 /// JSON Converter for Chroma boolean values.
 /// </summary>
-internal class ChromaBooleanConverter : JsonConverter<bool>
+public class ChromaBooleanConverter : JsonConverter<bool>
 {
     /// <inheritdoc/>
     public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
