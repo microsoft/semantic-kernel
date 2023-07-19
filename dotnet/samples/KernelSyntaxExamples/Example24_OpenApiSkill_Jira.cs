@@ -43,7 +43,7 @@ public static class Example24_OpenApiSkill_Jira
         if (useLocalFile)
         {
             var apiSkillFile = "./../../../Skills/JiraSkill/openapi.json";
-            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", new Uri(apiSkillFile), new OpenApiSkillExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
+            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillFile, new OpenApiSkillExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
         }
         else
         {
