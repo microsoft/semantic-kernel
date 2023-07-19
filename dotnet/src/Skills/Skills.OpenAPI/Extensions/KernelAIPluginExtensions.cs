@@ -28,6 +28,78 @@ public static class KernelAIPluginExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
+    /// <param name="filePath">The file path to the AI Plugin</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns></returns>
+    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+        this IKernel kernel,
+        string skillName,
+        string filePath,
+        OpenApiSkillExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+        Verify.ValidSkillName(skillName);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
+#pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+
+        var pluginJson = await LoadJsonFromFilePath(
+            kernel,
+            filePath,
+            executionParameters,
+            internalHttpClient,
+            cancellationToken).ConfigureAwait(false);
+
+        if (TryParseAIPluginForUrl(pluginJson, out var openApiUrl))
+        {
+            return await kernel
+                .ImportAIPluginAsync(
+                    skillName,
+                    new Uri(openApiUrl),
+                    executionParameters,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        //assume OpenAPI v3
+        var parser = new OpenApiDocumentParser(kernel.Log);
+
+        using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
+        {
+            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? true, cancellationToken).ConfigureAwait(false);
+
+            var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
+
+            var skill = new Dictionary<string, ISKFunction>();
+
+            foreach (var operation in operations)
+            {
+                try
+                {
+                    kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
+                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
+                    skill[function.Name] = function;
+                }
+                catch (Exception ex) when (!ex.IsCriticalException())
+                {
+                    //Logging the exception and keep registering other Rest functions
+                    kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                        skillName, operation.Id, ex.Message);
+                }
+            }
+
+            return skill;
+        }
+    }
+
+    /// <summary>
+    /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="skillName">Skill name.</param>
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -162,35 +234,39 @@ public static class KernelAIPluginExtensions
         HttpClient internalHttpClient,
         CancellationToken cancellationToken)
     {
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
+
+        if (!string.IsNullOrEmpty(executionParameters?.UserAgent))
+        {
+            requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
+        }
+
+        using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+    }
+
+    private static async Task<string> LoadJsonFromFilePath(
+        IKernel kernel,
+        string filePath,
+        OpenApiSkillExecutionParameters? executionParameters,
+        HttpClient internalHttpClient,
+        CancellationToken cancellationToken)
+    {
         var pluginJson = string.Empty;
 
-        if (uri.IsFile)
+        if (!File.Exists(filePath))
         {
-            if (!File.Exists(uri.LocalPath))
-            {
-                throw new FileNotFoundException($"Invalid URI. The specified path '{uri.LocalPath}' does not exist.");
-            }
-
-            kernel.Log.LogTrace("Importing AI Plugin from {0}", uri.LocalPath);
-
-            pluginJson = File.ReadAllText(uri.LocalPath);
-        }
-        else
-        {
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
-
-            if (!string.IsNullOrEmpty(executionParameters?.UserAgent))
-            {
-                requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
-            }
-
-            using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            pluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
         }
 
-        return pluginJson;
+        kernel.Log.LogTrace("Importing AI Plugin from {0}", filePath);
+
+        using (var sr = File.OpenText(filePath))
+        {
+            return await sr.ReadToEndAsync().ConfigureAwait(false); //must await here to avoid stream reader being disposed before the string is read
+        }
     }
 
     private static async Task<string> LoadJsonFromStream(

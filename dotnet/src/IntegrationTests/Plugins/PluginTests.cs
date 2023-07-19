@@ -76,4 +76,71 @@ public class PluginTests
         // Assert
         Assert.False(result.ErrorOccurred);
     }
+
+    [Theory]
+    [InlineData(".\\Plugins\\instacart-ai-plugin.json",
+        "Instacart",
+        "create",
+        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
+        )]
+    public async Task QueryInstacartPluginFromStream(
+        string pluginFilePath,
+        string name,
+        string functionName,
+        string payload)
+    {
+        // Arrange
+        using (var stream = System.IO.File.OpenRead(pluginFilePath))
+        {
+            var kernel = new KernelBuilder().Build();
+            using HttpClient httpClient = new();
+
+            //note that this plugin is not compliant according to the underlying validator in SK
+            var skill = await kernel.ImportAIPluginAsync(
+                name,
+                stream,
+                new OpenApiSkillExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+
+            var contextVariables = new ContextVariables();
+            contextVariables["payload"] = payload;
+
+            // Act
+            var result = await skill[functionName].InvokeAsync(new SKContext(contextVariables));
+
+            // Assert
+            Assert.False(result.ErrorOccurred);
+        }
+    }
+
+    [Theory]
+    [InlineData(".\\Plugins\\instacart-ai-plugin.json",
+        "Instacart",
+        "create",
+        "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
+        )]
+    public async Task QueryInstacartPluginUsingRelativeFilePath(
+        string pluginFilePath,
+        string name,
+        string functionName,
+        string payload)
+    {
+        // Arrange
+        var kernel = new KernelBuilder().Build();
+        using HttpClient httpClient = new();
+
+        //note that this plugin is not compliant according to the underlying validator in SK
+        var skill = await kernel.ImportAIPluginAsync(
+            name,
+            pluginFilePath,
+            new OpenApiSkillExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+
+        var contextVariables = new ContextVariables();
+        contextVariables["payload"] = payload;
+
+        // Act
+        var result = await skill[functionName].InvokeAsync(new SKContext(contextVariables));
+
+        // Assert
+        Assert.False(result.ErrorOccurred);
+    }
 }
