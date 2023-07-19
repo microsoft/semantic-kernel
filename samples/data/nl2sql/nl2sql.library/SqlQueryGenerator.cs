@@ -48,7 +48,7 @@ public sealed class SqlQueryGenerator
     [SKName("GenerateQueryFromObjective")]
     public async Task<string?> SolveObjectiveAsync(string objective, SKContext context)
     {
-        // Search for schema with best similiarity match to the objective
+        // Search for schema with best similarity match to the objective
         var recall =
             await context.Memory.SearchAsync(
                 SchemaProvider.MemoryCollectionName,
