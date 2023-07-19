@@ -178,12 +178,62 @@ class RedisMemoryStore(MemoryStoreBase):
             return False
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
-        pass
+        """
+        Upsert a memory record into the data store. Does not gurantee that the collection exists.
+            If the record already exists, it will be updated.
+            If the record does not exist, it will be created.
+
+        Arguemnts:
+            collection_name {str} -- Name for a collection of embeddings
+            record {MemoryRecord} -- Memory record to upsert
+
+        Returns
+            str -- The unique identifier for the memory record, which is the Redis key
+        """
+
+        if not self.does_collection_exist_async(collection_name):
+            raise Exception(f"Collection '{collection_name}' does not exist")
+
+        # Typical Redis key structure: collection_name:
+        record._key = f"{collection_name}:{record._id}"
+
+        # Overwrites previous data or inserts new key if not present
+        response = self._database.hset(
+            name=collection_name,
+            key=record._key,
+            mapping={
+                "timestamp": record._timestamp or "",
+                "is_reference": str(record._is_reference),
+                "external_source_name": record._external_source_name or "",
+                "id": record._id or "",
+                "description": record._description or "",
+                "text": record._text or "",
+                "additional_metadata": record._additional_metadata or "",
+                "embedding": record._embedding.tobytes(),
+            },
+        )
+
+        if not response:
+            raise Exception(f"Error upserting record with id {record._id}")
+
+        return record._key
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
     ) -> List[str]:
-        pass
+        """
+        Upserts a group of memory records into the data store. Does not gurantee that the collection exists.
+            If the record already exists, it will be updated.
+            If the record does not exist, it will be created.
+
+        Arguemnts:
+            collection_name {str} -- Name for a collection of embeddings
+            records {List[MemoryRecords]} -- Memory records to upsert
+
+        Returns
+            str -- The unique identifiers for the memory records, which are the Redis keys
+        """
+        return [self.upsert_async(rec) for rec in records]
 
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool
