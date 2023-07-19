@@ -6,9 +6,10 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from typing import Union, List
 from semantic_kernel.connectors.ai.ai_exception import AIException
 import google.generativeai as palm
+import asyncio
 
 
-class GooglePalmTextCompletion():
+class GooglePalmTextCompletion(CompleteRequestSettings):
     _model_id: str
     _api_key: str
 
@@ -36,6 +37,47 @@ class GooglePalmTextCompletion():
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> Union[str, List[str]]:
         
+        response = await self._send_completion_request(prompt, request_settings)
+        
+        if request_settings.number_of_responses > 1:
+            return [candidate['output'] for candidate in response.candidates]
+        else:
+            return response.result
+
+    async def complete_stream_async(
+        self, prompt: str, request_settings: CompleteRequestSettings
+    ):
+        """
+        Google PaLM does not support streaming. This function simulates streaming
+        behavior. The user needs to print the results using an async for loop
+        with flush=True.
+        """
+        response = await self._send_completion_request(prompt, request_settings)
+      
+        if request_settings.number_of_responses > 1:
+            for choice in response.candidates:
+                await asyncio.sleep(0.1)
+                yield choice['output']
+        else:
+            words = response.result.split()
+            for word in words:
+                await asyncio.sleep(0.1)
+                yield word
+        
+    async def _send_completion_request(
+        self, prompt: str, request_settings: CompleteRequestSettings
+    ):
+        """
+        Completes the given prompt. Returns a single string completion.
+        Cannot return multiple completions. Cannot return logprobs.
+
+        Arguments:
+            prompt {str} -- The prompt to complete.
+            request_settings {CompleteRequestSettings} -- The request settings.
+
+        Returns:
+            str -- The completed text.
+        """
         if not prompt:
                 raise ValueError("Prompt cannot be `None` or empty")
         if request_settings is None:
@@ -80,7 +122,4 @@ class GooglePalmTextCompletion():
                 "Google PaLM service failed to complete the prompt",
                 ex,
             )
-        if request_settings.number_of_responses > 1:
-            return [candidate['output'] for candidate in response.candidates]
-        else:
-            return response.result
+        return response

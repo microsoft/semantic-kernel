@@ -18,8 +18,8 @@ class CompleteRequestSettings:
     max_tokens: int = 256
     stop_sequences: List[str] = field(default_factory=list)
     number_of_responses: int = 1
-    logprobs: int = 0 
-    token_selection_biases: Dict[int, int] = field(default_factory=dict) 
+    logprobs: int = 0
+    token_selection_biases: Dict[int, int] = field(default_factory=dict)
 
     def update_from_completion_config(
         self, completion_config: "PromptTemplateConfig.CompletionConfig"
