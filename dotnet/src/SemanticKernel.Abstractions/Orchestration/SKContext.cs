@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -54,6 +55,23 @@ public sealed class SKContext
     /// Read only skills collection
     /// </summary>
     public IReadOnlySkillCollection Skills { get; }
+
+    /// <summary>
+    /// Access registered functions by skill + name. Not case sensitive.
+    /// The function might be native or semantic, it's up to the caller handling it.
+    /// </summary>
+    /// <param name="skillName">Skill name</param>
+    /// <param name="functionName">Function name</param>
+    /// <returns>Delegate to execute the function</returns>
+    public ISKFunction Func(string skillName, string functionName)
+    {
+        if (this.Skills is null)
+        {
+            throw new SKException("Skill collection not found in the context");
+        }
+
+        return this.Skills.GetFunction(skillName, functionName);
+    }
 
     /// <summary>
     /// App logger

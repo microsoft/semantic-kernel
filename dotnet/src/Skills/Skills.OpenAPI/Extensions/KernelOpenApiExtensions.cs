@@ -325,7 +325,7 @@ public static class KernelOpenApiExtensions
             Verify.ValidFunctionName(operationId);
             return operationId;
         }
-        catch (KernelException)
+        catch (SKException)
         {
         }
 

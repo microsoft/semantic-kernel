@@ -115,9 +115,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         if (context.Skills == null)
         {
-            throw new KernelException(
-                KernelException.ErrorCodes.SkillCollectionNotSet,
-                "Skill collection not found in the context");
+            throw new SKException("Skill collection not found in the context");
         }
 
         if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))

@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -44,16 +45,12 @@ internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
     [DoesNotReturn]
     private static ISKFunction ThrowFunctionNotAvailable(string skillName, string functionName)
     {
-        throw new KernelException(
-            KernelException.ErrorCodes.FunctionNotAvailable,
-            $"Function not available: {skillName}.{functionName}");
+        throw new SKException($"Function not available: {skillName}.{functionName}");
     }
 
     [DoesNotReturn]
     private static ISKFunction ThrowFunctionNotAvailable(string functionName)
     {
-        throw new KernelException(
-            KernelException.ErrorCodes.FunctionNotAvailable,
-            $"Function not available: {functionName}");
+        throw new SKException($"Function not available: {functionName}");
     }
 }

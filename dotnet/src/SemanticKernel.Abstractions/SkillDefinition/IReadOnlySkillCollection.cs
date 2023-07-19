@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -15,7 +16,7 @@ public interface IReadOnlySkillCollection
     /// </summary>
     /// <param name="functionName">The name of the function to retrieve.</param>
     /// <returns>The function retrieved from the collection.</returns>
-    /// <exception cref="KernelException">The specified function could not be found in the collection.</exception>
+    /// <exception cref="SKException">The specified function could not be found in the collection.</exception>
     ISKFunction GetFunction(string functionName);
 
     /// <summary>
@@ -24,7 +25,7 @@ public interface IReadOnlySkillCollection
     /// <param name="skillName">The name of the skill with which the function is associated.</param>
     /// <param name="functionName">The name of the function to retrieve.</param>
     /// <returns>The function retrieved from the collection.</returns>
-    /// <exception cref="KernelException">The specified function could not be found in the collection.</exception>
+    /// <exception cref="SKException">The specified function could not be found in the collection.</exception>
     ISKFunction GetFunction(string skillName, string functionName);
 
     /// <summary>
