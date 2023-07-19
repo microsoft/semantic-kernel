@@ -65,11 +65,11 @@ public class Config {
     }
 
     private static Supplier<ClientSettings<?>> getOpenAIClientFromDefaultPropertiesLocations(ClientType type) {
-        LOGGER.info("Create supplier for settings of "+type);
         return () -> {
+            LOGGER.info("Create supplier for settings of " + type);
             try {
                 for (String location : DEFAULT_PROPERTIES_LOCATIONS) {
-                    LOGGER.info("Attempting config file at "+location);
+                    LOGGER.debug("Attempting config file at "+location);
                     if (Files.isRegularFile(Path.of(location))) {
                         return switch (type) {
                             case OPEN_AI -> AIProviderSettings.getOpenAISettingsFromFile(location);
@@ -92,6 +92,7 @@ public class Config {
             public OpenAIAsyncClient getClient() throws IOException {
                 return buildClient(
                         () -> {
+                            LOGGER.debug("Loading AI provider settings from "+CONF_PROPERTIES);
                             try {
                                 return AIProviderSettings.getOpenAISettingsFromFile(CONF_PROPERTIES);
                             } catch (IOException e) {
@@ -130,6 +131,7 @@ public class Config {
             public OpenAIAsyncClient getClient() throws IOException {
                 return buildClient(
                         () -> {
+                            LOGGER.debug("Loading AI provider settings from "+CONF_PROPERTIES);
                             try {
                                 return AIProviderSettings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
                             } catch (IOException e) {
