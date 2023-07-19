@@ -148,8 +148,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
             ITextCompletion? client,
             CompleteRequestSettings? requestSettings,
             SKContext context,
-            Func<SKContext, string, SKContext>? preExecutionHook,
-            Func<SKContext, SKContext>? postExecutionHook
+            PreExecutionHook? preExecutionHook,
+            PostExecutionHook? postExecutionHook
             )
         {
             return Task.FromResult(context);
@@ -171,8 +171,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
         async Task<SKContext> LocalFunc(
             ITextCompletion? client,
             CompleteRequestSettings? requestSettings,
-            SKContext context, Func<SKContext, string, SKContext>? preExecutionHook,
-            Func<SKContext, SKContext>? postExecutionHook)
+            SKContext context, PreExecutionHook? preExecutionHook,
+            PostExecutionHook? postExecutionHook)
         {
             Verify.NotNull(client);
             Verify.NotNull(requestSettings);
@@ -340,7 +340,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Func<SKContext, string, SKContext>?, Func<SKContext, SKContext>?, Task<SKContext>> _function;
+    private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, PreExecutionHook?, PostExecutionHook?, Task<SKContext>> _function;
     private readonly ILogger _log;
     private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
@@ -348,7 +348,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
     private struct MethodDetails
     {
-        public Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Func<SKContext, string, SKContext>?, Func<SKContext, SKContext>?, Task<SKContext>> Function { get; set; }
+        public Func<ITextCompletion?, CompleteRequestSettings?, SKContext, PreExecutionHook?, PostExecutionHook?, Task<SKContext>> Function { get; set; }
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
@@ -361,7 +361,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     internal SKFunction(
-        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Func<SKContext, string, SKContext>?, Func<SKContext, SKContext>?, Task<SKContext>> delegateFunction,
+        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, PreExecutionHook?, PostExecutionHook?, Task<SKContext>> delegateFunction,
         IList<ParameterView> parameters,
         string skillName,
         string functionName,
@@ -464,7 +464,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     // Inspect a method and returns the corresponding delegate and related info
-    private static (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Func<SKContext, string, SKContext>?, Func<SKContext, SKContext>?, Task<SKContext>> function, List<ParameterView>) GetDelegateInfo(object? instance, MethodInfo method)
+    private static (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, PreExecutionHook?, PostExecutionHook?, Task<SKContext>> function, List<ParameterView>) GetDelegateInfo(object? instance, MethodInfo method)
     {
         ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
 
@@ -489,7 +489,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         Func<object?, SKContext, Task<SKContext>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, Func<SKContext, string, SKContext>?, Func<SKContext, SKContext>?, Task<SKContext>> function = (_, _, context, _, _) =>
+        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, PreExecutionHook?, PostExecutionHook?, Task<SKContext>> function = (_, _, context, _, _) =>
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
@@ -800,7 +800,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetPreExecutionHook(Func<SKContext, string, SKContext>? preHook)
+    public ISKFunction SetPreExecutionHook(PreExecutionHook? preHook)
     {
         if (this._preExecutionHook is not null)
         {
@@ -813,7 +813,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetPostExecutionHook(Func<SKContext, SKContext>? postHook)
+    public ISKFunction SetPostExecutionHook(PostExecutionHook? postHook)
     {
         if (this._postExecutionHook is not null)
         {
@@ -1000,8 +1000,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
         return null;
     }
 
-    private Func<SKContext, string, SKContext>? _preExecutionHook;
-    private Func<SKContext, SKContext>? _postExecutionHook;
+    private PreExecutionHook? _preExecutionHook;
+    private PostExecutionHook? _postExecutionHook;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{this.Name} ({this.Description})";

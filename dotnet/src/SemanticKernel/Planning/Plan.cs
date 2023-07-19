@@ -394,7 +394,7 @@ public sealed class Plan : ISKFunction
     /// <remarks>Using more than once in the same function will override the previous pre-execution hook, avoid overriding when possible.</remarks>
     /// <param name="preHook">Pre-hook delegate</param>
     /// <returns>Self instance</returns>
-    public ISKFunction SetPreExecutionHook(Func<SKContext, string, SKContext>? preHook)
+    public ISKFunction SetPreExecutionHook(PreExecutionHook? preHook)
     {
         if (this.Function is not null)
         {
@@ -415,7 +415,7 @@ public sealed class Plan : ISKFunction
     /// <remarks>Using more than once in the same plan will override the previous post-execution hook, avoid overriding when possible.</remarks>
     /// <param name="postHook">Post-hook delegate</param>
     /// <returns>Self instance</returns>
-    public ISKFunction SetPostExecutionHook(Func<SKContext, SKContext>? postHook)
+    public ISKFunction SetPostExecutionHook(PostExecutionHook? postHook)
     {
         if (this.Function is not null)
         {
