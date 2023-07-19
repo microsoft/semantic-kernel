@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from dotenv import dotenv_values
 
@@ -23,31 +23,54 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     return api_key, org_id
 
 
-def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, str, str]:
+def azure_openai_settings_from_dot_env(include_deployment: bool = True, include_api_version: bool = False) -> Tuple[str, str, str, str]:
     """
     Reads the Azure OpenAI API key and endpoint from the .env file.
 
     Returns:
-        Tuple[str, str, str]: The deployment name (or empty), Azure OpenAI API key,
-            and the endpoint
+        Tuple[str, str, str, str]: The deployment name (or empty), Azure OpenAI API key,
+          the endpoint and the api version
     """
 
-    deployment, api_key, endpoint = None, None, None
+    deployment, api_key, endpoint, api_version = None, None, None, None
     config = dotenv_values(".env")
     deployment = config.get("AZURE_OPENAI_DEPLOYMENT_NAME", None)
     api_key = config.get("AZURE_OPENAI_API_KEY", None)
     endpoint = config.get("AZURE_OPENAI_ENDPOINT", None)
+    api_version = config.get("AZURE_OPENAI_API_VERSION", None)
 
     # Azure requires the deployment name, the API key and the endpoint URL.
     if include_deployment:
         assert (
             deployment is not None
         ), "Azure OpenAI deployment name not found in .env file"
-
+    if include_api_version:
+        assert (
+            api_version is not None
+        ), "Azure OpenAI API version not found in .env file"
     assert api_key is not None, "Azure OpenAI API key not found in .env file"
     assert endpoint is not None, "Azure OpenAI endpoint not found in .env file"
 
-    return deployment or "", api_key, endpoint
+    return deployment or "", api_key, endpoint, api_version or ""
+
+
+def azure_openai_settings_from_dot_env_as_dict(include_deployment: bool = True, include_api_version: bool = False) -> Dict[str, str]:
+    """
+    Reads the Azure OpenAI API key and endpoint from the .env file.
+
+    Returns:
+        Dict[str, str]: The deployment name (or empty), Azure OpenAI API key, endpoint and api version (or empty)
+    """
+    deployment_name, api_key, endpoint, api_version = azure_openai_settings_from_dot_env(include_deployment, include_api_version)
+    ret = {
+        "api_key": api_key,
+        "endpoint": endpoint,
+    }
+    if include_deployment:
+        ret["deployment_name"] = deployment_name
+    if include_api_version:
+        ret["api_version"] = api_version
+    return ret
 
 
 def postgres_settings_from_dot_env() -> str:

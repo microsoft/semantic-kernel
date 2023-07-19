@@ -2,8 +2,13 @@
 
 import asyncio
 
+from dotenv import load_dotenv
+
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
+
+load_dotenv()
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -16,9 +21,8 @@ flowery prose.
 
 kernel = sk.Kernel()
 
-api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.add_chat_service(
-    "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
+    "chat-gpt", sk_oai.AzureChatCompletion(**azure_openai_settings_from_dot_env_as_dict())
 )
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(

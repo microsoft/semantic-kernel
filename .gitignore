@@ -482,3 +482,6 @@ swa-cli.config.json
 
 # Semantic Kernel Tools
 /.semantic-kernel
+
+# python devcontainer
+/python/.devcontainer/*
