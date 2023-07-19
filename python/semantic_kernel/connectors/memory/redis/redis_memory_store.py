@@ -121,18 +121,22 @@ class RedisMemoryStore(MemoryStoreBase):
                 prefix=f"{collection_name}:", index_type=IndexType.HASH
             )
             schema = (
-                TextField(name="key"),
-                TextField(name="metadata"),
-                NumericField(name="timestamp"),
-                VectorField(
-                    name="embedding",
-                    algorithm=RedisMemoryStore.VECTOR_INDEX_ALGORITHM,
-                    attributes={
-                        "TYPE": RedisMemoryStore.VECTOR_TYPE,
-                        "DIM": self._vector_size,
-                        "DISTANCE_METRIC": RedisMemoryStore.VECTOR_DISTANCE_METRIC,
-                    },
-                ),
+                TextField(name="timestamp"),
+                NumericField(name="is_reference"),
+                TextField(name="external_source_name"),
+                TextField(name="id"),
+                TextField(name="description"),
+                TextField(name="text"),
+                TextField(name="additional_metadata"),
+                # VectorField(
+                #     name="embedding",
+                #     algorithm=RedisMemoryStore.VECTOR_INDEX_ALGORITHM,
+                #     attributes={
+                #         "TYPE": RedisMemoryStore.VECTOR_TYPE,
+                #         "DIM": self._vector_size,
+                #         "DISTANCE_METRIC": RedisMemoryStore.VECTOR_DISTANCE_METRIC,
+                #     },
+                # ),
             )
 
             self._ft(collection_name).create_index(
@@ -191,31 +195,18 @@ class RedisMemoryStore(MemoryStoreBase):
             str -- The unique identifier for the memory record, which is the Redis key
         """
 
-        if not self.does_collection_exist_async(collection_name):
+        if not await self.does_collection_exist_async(collection_name):
             raise Exception(f"Collection '{collection_name}' does not exist")
 
-        # Typical Redis key structure: collection_name:
+        # Typical Redis key structure: collection_name:{some identifier}
         record._key = f"{collection_name}:{record._id}"
 
         # Overwrites previous data or inserts new key if not present
-        response = self._database.hset(
-            name=collection_name,
-            key=record._key,
-            mapping={
-                "timestamp": record._timestamp or "",
-                "is_reference": str(record._is_reference),
-                "external_source_name": record._external_source_name or "",
-                "id": record._id or "",
-                "description": record._description or "",
-                "text": record._text or "",
-                "additional_metadata": record._additional_metadata or "",
-                "embedding": record._embedding.tobytes(),
-            },
+        # Index registers any hash according to the scheme and prefixed with collection_name:
+        self._database.hset(
+            record._key,
+            mapping=self._serialize_record(record),
         )
-
-        if not response:
-            raise Exception(f"Error upserting record with id {record._id}")
-
         return record._key
 
     async def upsert_batch_async(
@@ -233,7 +224,7 @@ class RedisMemoryStore(MemoryStoreBase):
         Returns
             str -- The unique identifiers for the memory records, which are the Redis keys
         """
-        return [self.upsert_async(rec) for rec in records]
+        return [await self.upsert_async(collection_name, rec) for rec in records]
 
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool
@@ -269,3 +260,20 @@ class RedisMemoryStore(MemoryStoreBase):
         with_embedding: bool = True,
     ) -> Tuple[MemoryRecord, float]:
         pass
+
+    def _serialize_record(self, record: MemoryRecord) -> Dict[str, Any]:
+        """
+        Helper function to serialize a record into a Redis mapping (excluding its key)
+        """
+        assert record._key, "Record must have a valid key"
+        mapping = {
+            "timestamp": str(record._timestamp) or "",
+            "is_reference": int(record._is_reference) or 0,
+            "external_source_name": record._external_source_name or "",
+            "id": record._id or "",
+            "description": record._description or "",
+            "text": record._text or "",
+            "additional_metadata": record._additional_metadata or "",
+            # "embedding": record._embedding.tobytes() or bytes(0),
+        }
+        return mapping

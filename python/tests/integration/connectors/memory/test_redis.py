@@ -98,6 +98,17 @@ async def test_create_and_does_collection_exist_async(connection_string):
 
 
 @pytest.mark.asyncio
+async def test_delete_collection_async(connection_string):
+    memory = RedisMemoryStore(connection_string)
+
+    await memory.create_collection_async("test_collection")
+    await memory.delete_collection_async("test_collection")
+
+    exists = await memory.does_collection_exist_async("test_collection")
+    assert not exists
+
+
+@pytest.mark.asyncio
 async def test_get_collections_async(connection_string):
     memory = RedisMemoryStore(connection_string)
 
@@ -108,17 +119,7 @@ async def test_get_collections_async(connection_string):
     names_from_func = await memory.get_collections_async()
     for c_n in collection_names:
         assert c_n in names_from_func
-
-
-@pytest.mark.asyncio
-async def test_delete_collection_async(connection_string):
-    memory = RedisMemoryStore(connection_string)
-
-    await memory.create_collection_async("test_collection")
-    await memory.delete_collection_async("test_collection")
-
-    exists = await memory.does_collection_exist_async("test_collection")
-    assert not exists
+        await memory.delete_collection_async(c_n)
 
 
 @pytest.mark.asyncio
@@ -136,14 +137,22 @@ async def test_does_collection_exist_async(connection_string):
 
 @pytest.mark.asyncio
 async def test_upsert_async_and_get_async(connection_string, memory_record1):
-    pass
+    memory = RedisMemoryStore(connection_string)
+
+    await memory.create_collection_async("test_collection")
+    await memory.upsert_async("test_collection", memory_record1)
+
 
 
 @pytest.mark.asyncio
 async def test_upsert_batch_async_and_get_batch_async(
     connection_string, memory_record1, memory_record2
 ):
-    pass
+    memory = RedisMemoryStore(connection_string)
+
+    await memory.create_collection_async("test_collection")
+    await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
+
 
 
 @pytest.mark.asyncio
