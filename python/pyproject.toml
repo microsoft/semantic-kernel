@@ -30,6 +30,10 @@ torch = "2.0.0"
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.3.29"
 
+[tool.poetry.group.milvus.dependencies]
+pymilvus = "^2.2.11"
+milvus = "^2.2.11"
+
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = "^3.18.0"
 
