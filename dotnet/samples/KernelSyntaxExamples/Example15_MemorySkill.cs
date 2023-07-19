@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Core;
@@ -19,7 +20,6 @@ public static class Example15_MemorySkill
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService("text-davinci-003", TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
-            .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
         // ========= Store memories using the kernel =========
@@ -32,8 +32,9 @@ public static class Example15_MemorySkill
         // ========= Store memories using semantic function =========
 
         // Add Memory as a skill for other functions
-        var memorySkill = new TextMemorySkill();
-        kernel.ImportSkill(new TextMemorySkill());
+        using var semanticMemory = new SemanticTextMemory(new VolatileMemoryStore(), kernel.GetService<ITextEmbeddingGeneration>());
+        var memorySkill = new TextMemorySkill(semanticMemory);
+        kernel.ImportSkill(memorySkill);
 
         // Build a semantic function that saves info to memory
         const string SaveFunctionDefinition = "{{save $info}}";
@@ -48,7 +49,7 @@ public static class Example15_MemorySkill
         // ========= Test memory remember =========
         Console.WriteLine("========= Example: Recalling a Memory =========");
 
-        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info5", context);
+        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info5", logger: context.Log);
         Console.WriteLine("Memory associated with 'info1': {0}", answer);
         /*
         Output:
@@ -58,11 +59,11 @@ public static class Example15_MemorySkill
         // ========= Test memory recall =========
         Console.WriteLine("========= Example: Recalling an Idea =========");
 
-        answer = await memorySkill.RecallAsync("where did I grow up?", MemoryCollectionName, relevance: null, limit: 2, context: context);
+        answer = await memorySkill.RecallAsync("where did I grow up?", MemoryCollectionName, relevance: null, limit: 2, logger: context.Log);
         Console.WriteLine("Ask: where did I grow up?");
         Console.WriteLine("Answer:\n{0}", answer);
 
-        answer = await memorySkill.RecallAsync("where do I live?", MemoryCollectionName, relevance: null, limit: 2, context: context);
+        answer = await memorySkill.RecallAsync("where do I live?", MemoryCollectionName, relevance: null, limit: 2, logger: context.Log);
         Console.WriteLine("Ask: where do I live?");
         Console.WriteLine("Answer:\n{0}", answer);
 
@@ -131,7 +132,7 @@ Answer:
         */
 
         context[TextMemorySkill.KeyParam] = "info1";
-        await memorySkill.RemoveAsync(MemoryCollectionName, "info1", context);
+        await memorySkill.RemoveAsync(MemoryCollectionName, "info1", logger: context.Log);
 
         result = await aboutMeOracle.InvokeAsync("Tell me a bit about myself", context);
 
