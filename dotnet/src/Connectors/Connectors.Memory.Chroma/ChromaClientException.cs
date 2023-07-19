@@ -11,7 +11,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 public class ChromaClientException : Exception
 {
     private const string CollectionDoesNotExistErrorFormat = "Collection {0} does not exist";
-    private const string DeleteNonExistentCollectionErrorMessage = "list index out of range";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChromaClientException"/> class.
