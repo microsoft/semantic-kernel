@@ -23,7 +23,9 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     return api_key, org_id
 
 
-def azure_openai_settings_from_dot_env(include_deployment: bool = True, include_api_version: bool = False) -> Tuple[str, str, str, str]:
+def azure_openai_settings_from_dot_env(
+    include_deployment: bool = True, include_api_version: bool = False
+) -> Tuple[str, str, str, str]:
     """
     Reads the Azure OpenAI API key and endpoint from the .env file.
 
@@ -54,14 +56,22 @@ def azure_openai_settings_from_dot_env(include_deployment: bool = True, include_
     return deployment or "", api_key, endpoint, api_version or ""
 
 
-def azure_openai_settings_from_dot_env_as_dict(include_deployment: bool = True, include_api_version: bool = False) -> Dict[str, str]:
+def azure_openai_settings_from_dot_env_as_dict(
+    include_deployment: bool = True, include_api_version: bool = False
+) -> Dict[str, str]:
     """
     Reads the Azure OpenAI API key and endpoint from the .env file.
 
     Returns:
-        Dict[str, str]: The deployment name (or empty), Azure OpenAI API key, endpoint and api version (or empty)
+        Dict[str, str]: The deployment name (or empty), Azure OpenAI API key,
+        endpoint and api version (or empty)
     """
-    deployment_name, api_key, endpoint, api_version = azure_openai_settings_from_dot_env(include_deployment, include_api_version)
+    (
+        deployment_name,
+        api_key,
+        endpoint,
+        api_version,
+    ) = azure_openai_settings_from_dot_env(include_deployment, include_api_version)
     ret = {
         "api_key": api_key,
         "endpoint": endpoint,
