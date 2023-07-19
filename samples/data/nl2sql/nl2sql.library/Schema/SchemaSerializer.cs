@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Data.Nl2Sql.Schema;
+namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using SemanticKernel.Data.Nl2Sql.Exceptions;
 
-public static class SchemaSerializer
+internal static class SchemaSerializer
 {
     public static async Task<SchemaDefinition> ReadAsync(string path)
     {
@@ -24,7 +23,7 @@ public static class SchemaSerializer
                 {
                     PropertyNameCaseInsensitive = true
                 }).ConfigureAwait(false) ??
-            throw new SchemaDefinitionException("Unable to read schema.");
+            throw new JsonException("Unable to read schema.");
     }
 
     public static string ToJson(this SchemaDefinition schema)

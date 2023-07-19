@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using Nl2Sql.Schema;
+using SemanticKernel.Data.Nl2Sql.Library.Schema;
 using Xunit;
 using Xunit.Abstractions;
 

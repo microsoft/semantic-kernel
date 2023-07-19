@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Data.Nl2Sql.Services;
+namespace SemanticKernel.Data.Nl2Sql;
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SemanticKernel.Data.Nl2Sql.Exceptions;
 
 /// <summary>
 /// Responsible for producing a connection string for the requested schema.
@@ -46,7 +46,7 @@ internal sealed class SqlConnectionProvider
     {
         var connectionString =
             this.configuration.GetConnectionString(schemaName) ??
-            throw new InvalidConfigurationException($"Missing configuration for connection-string: {schemaName}");
+            throw new InvalidDataException($"Missing configuration for connection-string: {schemaName}");
 
         var connection = new SqlConnection(connectionString);
 

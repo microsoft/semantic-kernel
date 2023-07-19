@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
-using SemanticKernel.Data.Nl2Sql.Schema;
+using SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 internal sealed class SqlSchemaProvider
 {

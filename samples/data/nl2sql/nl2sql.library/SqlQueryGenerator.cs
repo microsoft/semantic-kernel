@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Data.Nl2Sql.Query;
+namespace SemanticKernel.Data.Nl2Sql.Library;
 
 using System;
 using System.ComponentModel;
@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.Data.Nl2Sql.Services;
+using SemanticKernel.Data.Nl2Sql.Library.Internal;
+using SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 /// <summary>
 /// Generate SQL query targeting Microsoft SQL Server.
 /// </summary>
-internal sealed class SqlQueryGenerator
+public sealed class SqlQueryGenerator
 {
     public const string ContextParamObjective = "data_objective";
     public const string ContextParamSchema = "data_schema";
@@ -23,16 +24,18 @@ internal sealed class SqlQueryGenerator
     private const string ContentLabelAnswer = "answer";
     private const string ContentAffirmative = "yes";
 
+    private const string SkillName = "nl2sql";
+
     private readonly ISKFunction promptEval;
     private readonly ISKFunction promptGenerator;
 
-    public SqlQueryGenerator(IKernel kernel)
+    public SqlQueryGenerator(IKernel kernel, string rootSkillFolder)
     {
-        var functions = kernel.ImportSemanticSkillFromDirectory(Repo.RootConfigFolder, "prompts");
+        var functions = kernel.ImportSemanticSkillFromDirectory(rootSkillFolder, SkillName);
         this.promptEval = functions["isquery"];
         this.promptGenerator = functions["generatequery"];
 
-        kernel.ImportSkill(this, "nl2sql");
+        kernel.ImportSkill(this, SkillName);
     }
 
     /// <summary>

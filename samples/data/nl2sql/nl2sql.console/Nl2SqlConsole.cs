@@ -4,16 +4,17 @@ namespace SemanticKernel.Data.Nl2Sql;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using SemanticKernel.Data.Nl2Sql.Query;
-using SemanticKernel.Data.Nl2Sql.Services;
+using SemanticKernel.Data.Nl2Sql.Library;
+using SemanticKernel.Data.Nl2Sql.Library.Schema;
 
-internal class Nl2SqlConsole : BackgroundService
+internal sealed class Nl2SqlConsole : BackgroundService
 {
     private const ConsoleColor FocusColor = ConsoleColor.Yellow;
     private const ConsoleColor PromptColor = ConsoleColor.Gray;
@@ -43,14 +44,17 @@ internal class Nl2SqlConsole : BackgroundService
         this.kernel = kernel;
         this.sqlProvider = sqlProvider;
         this.logger = logger;
-        this.queryGenerator = new SqlQueryGenerator(this.kernel);
+        this.queryGenerator = new SqlQueryGenerator(this.kernel, Repo.RootConfigFolder);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Yield(); // Yield to hosting framework prior to blocking console (for input)
 
-        var schemaNames = await SchemaProvider.InitializeAsync(this.kernel).ToArrayAsync().ConfigureAwait(false);
+        var schemaNames = SchemasDefinitions.GetNames().ToArray();
+        await SchemaProvider.InitializeAsync(
+            this.kernel,
+            schemaNames.Select(s => Path.Combine(Repo.RootConfigFolder, "schemas", $"{s}.json"))).ConfigureAwait(false);
 
         this.WriteIntroduction(schemaNames);
 

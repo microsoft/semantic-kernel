@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Data.Nl2Sql.Schema;
+namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 using System.IO;
 using System.Linq;
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 /// <remarks>
 /// Turns out YAML is extremely efficient with token usage.
 /// </remarks>
-public sealed class YamlSchemaFormatter : ISchemaFormatter
+internal sealed class YamlSchemaFormatter : ISchemaFormatter
 {
     public static YamlSchemaFormatter Instance { get; } = new YamlSchemaFormatter();
 

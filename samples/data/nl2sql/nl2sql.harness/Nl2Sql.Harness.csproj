@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\nl2sql.console\Nl2Sql.Console.csproj" />
+    <ProjectReference Include="..\nl2sql.library\Nl2Sql.Library.csproj" />
   </ItemGroup>
 
 </Project>

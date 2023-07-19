@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Data.Nl2Sql.Schema;
+namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 using System;
 using System.IO;
 using System.Threading.Tasks;
 
-public static class ISchemaFormatterExtensions
+internal static class ISchemaFormatterExtensions
 {
     public static async Task<string> FormatAsync(this SchemaDefinition schema, ISchemaFormatter formatter)
     {

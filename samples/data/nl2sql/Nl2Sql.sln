@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nl2Sql.Console", "nl2sql.co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nl2Sql.Harness", "nl2sql.harness\Nl2Sql.Harness.csproj", "{57A61FDB-B790-4AE7-8601-10C3C0976C05}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nl2Sql.Library", "nl2sql.library\Nl2Sql.Library.csproj", "{691C0D9D-C829-428D-9AA0-0959900981B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{57A61FDB-B790-4AE7-8601-10C3C0976C05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57A61FDB-B790-4AE7-8601-10C3C0976C05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57A61FDB-B790-4AE7-8601-10C3C0976C05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{691C0D9D-C829-428D-9AA0-0959900981B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{691C0D9D-C829-428D-9AA0-0959900981B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{691C0D9D-C829-428D-9AA0-0959900981B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{691C0D9D-C829-428D-9AA0-0959900981B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

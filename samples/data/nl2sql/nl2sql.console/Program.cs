@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SemanticKernel.Data.Nl2Sql.Services;
 
 /// <summary>
 /// Entry point for console execution.
@@ -39,8 +38,7 @@ internal static class Program
                         config
                             .ClearProviders()
                             .AddConfiguration(context.Configuration.GetSection("Logging"))
-                            .AddDebug()
-                            .AddTraceSource(new SourceSwitch("FileTrace", $"{SourceLevels.Information}"), traceListener);
+                            .AddTraceSource(new SourceSwitch("FileTrace", $"{SourceLevels.Verbose}"), traceListener);
                     })
                 .ConfigureServices(
                     (context, services) =>

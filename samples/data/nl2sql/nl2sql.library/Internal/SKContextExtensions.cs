@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Data.Nl2Sql.Query;
+namespace SemanticKernel.Data.Nl2Sql.Library.Internal;
 
+using System.IO;
 using Microsoft.SemanticKernel.Orchestration;
-using SemanticKernel.Data.Nl2Sql.Exceptions;
 
 internal static class SKContextExtensions
 {
@@ -36,10 +36,10 @@ internal static class SKContextExtensions
         {
             if (context.LastException != null)
             {
-                throw new ResultParsingException("No result available due to an unexpected failure.", context.LastException);
+                throw new InvalidDataException("No result available due to an unexpected failure.", context.LastException);
             }
 
-            throw new ResultParsingException(context.LastErrorDescription);
+            throw new InvalidDataException(context.LastErrorDescription);
         }
 
         return result;

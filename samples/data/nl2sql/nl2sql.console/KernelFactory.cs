@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Data.Nl2Sql.Services;
+
+namespace SemanticKernel.Data.Nl2Sql;
 
 using System;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using SemanticKernel.Data.Nl2Sql.Exceptions;
 
 /// <summary>
 /// Responsible for initializing Semantic <see cref="Kernel"/> based on the configuration.
@@ -45,9 +46,8 @@ internal static class KernelFactory
             var apikey = configuration.GetValue<string>(SettingNameAzureApiKey);
             if (!string.IsNullOrWhiteSpace(apikey))
             {
-                var endpoint =
-                    configuration.GetValue<string>(SettingNameAzureEndpoint) ??
-                    throw new InvalidConfigurationException("Setting 'Endpoint' not defined in 'AIService' section.");
+                var endpoint = configuration.GetValue<string>(SettingNameAzureEndpoint) ??
+                    throw new InvalidDataException($"No endpoint configured in {SettingNameAzureEndpoint}.");
 
                 var modelCompletion = configuration.GetValue<string>(SettingNameAzureModelCompletion);
                 var modelEmbedding = configuration.GetValue<string>(SettingNameAzureModelEmbedding);
@@ -64,7 +64,7 @@ internal static class KernelFactory
                 return ConfigureOpenAI(apikey, modelCompletion, modelEmbedding, logger).Build();
             }
 
-            throw new InvalidConfigurationException($"No api-key configured in {SettingNameAzureApiKey} or {SettingNameOpenAIApiKey}.");
+            throw new InvalidDataException($"No api-key configured in {SettingNameAzureApiKey} or {SettingNameOpenAIApiKey}.");
         }
     }
 

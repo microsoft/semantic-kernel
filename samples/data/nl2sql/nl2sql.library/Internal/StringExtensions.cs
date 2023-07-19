@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Data.Nl2Sql.Query;
+namespace SemanticKernel.Data.Nl2Sql.Library.Internal;
 
 using System;
 

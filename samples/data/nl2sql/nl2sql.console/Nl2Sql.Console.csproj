@@ -16,11 +16,11 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="nl2sql.harness" />
-    <InternalsVisibleTo Include="nl2sql.unittests" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
@@ -29,6 +29,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.TraceSource" Version="7.0.0" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="0.17.230711.7-preview" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\nl2sql.library\Nl2Sql.Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>
