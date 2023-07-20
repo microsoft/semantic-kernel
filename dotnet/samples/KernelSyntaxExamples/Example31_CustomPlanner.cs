@@ -30,7 +30,7 @@ internal static class Example31_CustomPlanner
         IDictionary<string, ISKFunction> skills = LoadQASkill(kernel);
         SKContext context = CreateContextQueryContext(kernel);
 
-        // Create a memory store using the VolatileMemoryStore and the embedding generator regsitered in the kernel
+        // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
         using var semanticTextMemory = new SemanticTextMemory(
           storage: new VolatileMemoryStore(),
           embeddingGenerator: kernel.GetService<ITextEmbeddingGeneration>());
