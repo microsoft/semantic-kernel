@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace SemanticKernel.Service.Services;
 
 /// <summary>
-/// Used to mock the TesseractEngine in the event that the Tesseract language file is not installed.
+/// Used as a placeholder implementation when "none" is set in the OcrSupport:Type field in the configuration.
 /// </summary>
 public class NullOcrEngine : IOcrEngine
 {
