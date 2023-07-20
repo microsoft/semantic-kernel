@@ -379,6 +379,28 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this.AssertMemoryRecordEqual(expectedRecord2, actualRecord2);
     }
 
+    [Theory(Skip = SkipReason)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItProcessesBooleanValuesCorrectlyAsync(bool isReference)
+    {
+        // Arrange
+        var collectionName = this.GetRandomCollectionName();
+        var metadata = this.GetRandomMemoryRecordMetadata(isReference: isReference);
+        var expectedRecord = this.GetRandomMemoryRecord(metadata: metadata);
+
+        await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
+
+        // Act
+        var createdRecordKey = await this._chromaMemoryStore.UpsertAsync(collectionName, expectedRecord);
+        var actualRecord = await this._chromaMemoryStore.GetAsync(collectionName, createdRecordKey, true);
+
+        // Assert
+        Assert.NotNull(actualRecord);
+
+        Assert.Equal(expectedRecord.Metadata.IsReference, actualRecord.Metadata.IsReference);
+    }
+
     public void Dispose()
     {
         this.Dispose(true);
@@ -427,6 +449,29 @@ public sealed class ChromaMemoryStoreTests : IDisposable
             embedding: recordEmbedding,
             additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
             key: recordKey);
+    }
+
+    private MemoryRecord GetRandomMemoryRecord(MemoryRecordMetadata metadata, Embedding<float>? embedding = null)
+    {
+        var recordEmbedding = embedding ?? new Embedding<float>(new[] { 1f, 3f, 5f });
+
+        return MemoryRecord.FromMetadata(
+            metadata: metadata,
+            embedding: recordEmbedding,
+            key: metadata.Id);
+    }
+
+    private MemoryRecordMetadata GetRandomMemoryRecordMetadata(bool isReference = false, string? key = null)
+    {
+        var recordKey = key ?? Guid.NewGuid().ToString();
+
+        return new MemoryRecordMetadata(
+            isReference: isReference,
+            id: recordKey,
+            text: "text-" + Guid.NewGuid().ToString(),
+            description: "description-" + Guid.NewGuid().ToString(),
+            externalSourceName: "source-name-" + Guid.NewGuid().ToString(),
+            additionalMetadata: "metadata-" + Guid.NewGuid().ToString());
     }
 
     #endregion
