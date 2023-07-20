@@ -5,13 +5,12 @@ import { Button, Spinner, Textarea, makeStyles, mergeClasses, shorthands, tokens
 import { AttachRegular, ImageRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
-import React, { useCallback, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Constants } from '../../Constants';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
 import { ChatMessageType } from '../../libs/models/ChatMessage';
-import { GetResponseOptions, useChat } from '../../libs/useChat';
-import { useContentModerator } from '../../libs/useContentModerator';
+import { GetResponseOptions } from '../../libs/useChat';
 import { useFile } from '../../libs/useFile';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
@@ -87,16 +86,15 @@ interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeave, onSubmit }) => {
     const classes = useClasses();
     const { instance, inProgress } = useMsal();
-    const chat = useChat();
     const dispatch = useAppDispatch();
-    const [value, setValue] = React.useState('');
-    const [recognizer, setRecognizer] = React.useState<speechSdk.SpeechRecognizer>();
-    const [isListening, setIsListening] = React.useState(false);
-    const [documentImporting, setDocumentImporting] = React.useState(false);
+    const fileHandler = useFile();
+
+    const [value, setValue] = useState('');
+    const [recognizer, setRecognizer] = useState<speechSdk.SpeechRecognizer>();
+    const [isListening, setIsListening] = useState(false);
+    const [documentImporting, setDocumentImporting] = useState(false);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
     const imageUploaderRef = useRef<HTMLInputElement>(null);
-    const fileHandler = useFile();
-    const contentModerator = useContentModerator();
 
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
@@ -139,65 +137,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         }
     };
 
-    const handleImport = async (file?: File, dragAndDropFiles?: FileList) => {
-        const files = dragAndDropFiles ?? documentFileRef.current?.files;
-
-        if (file || (files && files.length > 0)) {
-            setDocumentImporting(true);
-            // Deep copy the FileList into an array so that the function
-            // maintains a list of files to import before the import is complete.
-            const filesArray = file ? [file] : files ? Array.from(files) : [];
-            const filesToUploadArray: File[] = [];
-            const imageErrors: string[] = [];
-
-            for (const file of filesArray) {
-                if (features[FeatureKeys.AzureContentSafety].show && file.type.startsWith('image/')) {
-                    try {
-                        await handleImageUpload(file);
-                        filesToUploadArray.push(file);
-                    } catch (e: any) {
-                        imageErrors.push((e as Error).message);
-                    }
-                } else {
-                    filesToUploadArray.push(file);
-                }
-            }
-
-            if (imageErrors.length > 0) {
-                setDocumentImporting(false);
-                const errorMessage = `Failed to upload image(s): ${imageErrors.join('; ')}`;
-                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
-            }
-
-            if (filesToUploadArray.length > 0) {
-                chat.importDocument(selectedId, filesToUploadArray).finally(() => {
-                    setDocumentImporting(false);
-                });
-            }
-        }
-
-        // Reset the file input so that the onChange event will
-        // be triggered even if the same file is selected again.
-        if (documentFileRef.current?.value) {
-            documentFileRef.current.value = '';
-        }
-
-        // Reset the file input so that the onChange event will
-        // be triggered even if the same file is selected again.
-        if (imageUploaderRef.current?.value) {
-            imageUploaderRef.current.value = '';
-        }
-    };
-
-    const handleImageUpload = useCallback(
-        async (file: File) => {
-            await fileHandler.loadImage(file, contentModerator.analyzeImage).catch((error: Error) => {
-                throw new Error(`'${file.name}': ${error.message}`);
-            });
-        },
-        [fileHandler, contentModerator],
-    );
-
     const handleSubmit = (value: string, messageType: ChatMessageType = ChatMessageType.Message) => {
         if (value.trim() === '') {
             return; // only submit if value is not empty
@@ -220,7 +159,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
         if (!features[FeatureKeys.SimplifiedExperience].show) {
             onDragLeave(e);
-            void handleImport(undefined, e.dataTransfer.files);
+            void fileHandler.handleImport(
+                setDocumentImporting,
+                documentFileRef,
+                undefined,
+                imageUploaderRef,
+                undefined,
+                e.dataTransfer.files,
+            );
         }
     };
 
@@ -286,7 +232,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             accept=".txt,.pdf,.md,.jpg,.jpeg,.png,.tif,.tiff"
                             multiple={true}
                             onChange={() => {
-                                void handleImport();
+                                void fileHandler.handleImport(
+                                    setDocumentImporting,
+                                    documentFileRef,
+                                    undefined,
+                                    imageUploaderRef,
+                                );
                             }}
                         />
                         <Button
@@ -299,7 +250,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             ref={imageUploaderRef}
                             acceptedExtensions={['.jpeg', '.png']}
                             onSelectedFile={(file: File) => {
-                                void handleImport(file);
+                                void fileHandler.handleImport(
+                                    setDocumentImporting,
+                                    documentFileRef,
+                                    undefined,
+                                    imageUploaderRef,
+                                    file,
+                                );
                             }}
                         />
                         <Button

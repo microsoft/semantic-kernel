@@ -35,8 +35,7 @@ import * as React from 'react';
 import { useRef } from 'react';
 import { ChatMemorySource } from '../../../libs/models/ChatMemorySource';
 import { useChat } from '../../../libs/useChat';
-import { useAppSelector } from '../../../redux/app/hooks';
-import { RootState } from '../../../redux/app/store';
+import { useFile } from '../../../libs/useFile';
 import { timestampToDateString } from '../../utils/TextUtils';
 import { TabView } from './TabView';
 
@@ -86,7 +85,7 @@ interface TableItem {
 }
 
 // Hack: This is a dummy interface to show the progress of the file upload.
-interface SelectedFileStatus {
+export interface SelectedFileStatus {
     name: string;
     countDown: number;
 }
@@ -94,8 +93,8 @@ interface SelectedFileStatus {
 export const DocumentsTab: React.FC<ChatResourceListProps> = ({ chatId }) => {
     const classes = useClasses();
     const chat = useChat();
+    const fileHandler = useFile();
 
-    const { selectedId } = useAppSelector((state: RootState) => state.conversations);
     const [documentImporting, setDocumentImporting] = React.useState(false);
     const [selectedDocuments, setSelectedDocuments] = React.useState<SelectedFileStatus[]>([]);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
@@ -132,34 +131,6 @@ export const DocumentsTab: React.FC<ChatResourceListProps> = ({ chatId }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [chatId, documentImporting]);
 
-    const handleImport = (dragAndDropFiles?: FileList) => {
-        const files = dragAndDropFiles ?? documentFileRef.current?.files;
-
-        if (files && files.length > 0) {
-            // Deep copy the FileList into an array so that the function
-            // maintains a list of files to import before the import is complete.
-            const filesArray = Array.from(files);
-            setSelectedDocuments(
-                filesArray.map((file) => ({
-                    name: file.name,
-                    countDown: file.size / 1000, // Hack: count down is the number of seconds to complete the import.
-                })),
-            );
-
-            setDocumentImporting(true);
-            chat.importDocument(selectedId, filesArray).finally(() => {
-                setSelectedDocuments([]);
-                setDocumentImporting(false);
-            });
-        }
-
-        // Reset the file input so that the onChange event will
-        // be triggered even if the same file is selected again.
-        if (documentFileRef.current?.value) {
-            documentFileRef.current.value = '';
-        }
-    };
-
     const { columns, rows } = useTable(resources);
     return (
         <TabView
@@ -176,7 +147,8 @@ export const DocumentsTab: React.FC<ChatResourceListProps> = ({ chatId }) => {
                     accept=".txt,.pdf,.md,.jpg,.jpeg,.png,.tif,.tiff"
                     multiple={true}
                     onChange={() => {
-                        handleImport();
+                        // TODO: render error if image validation fails
+                        void fileHandler.handleImport(setDocumentImporting, documentFileRef, setSelectedDocuments);
                     }}
                 />
                 <Tooltip content="Embed file into chat session" relationship="label">
