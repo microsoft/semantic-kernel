@@ -107,9 +107,10 @@ public class WeaviateMemoryStore : IMemoryStore
 
         using HttpRequestMessage request = CreateClassSchemaRequest.Create(className, description).Build();
 
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
         try
         {
-            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
             CreateClassSchemaResponse? result = JsonSerializer.Deserialize<CreateClassSchemaResponse>(responseContent, s_jsonSerializerOptions);
             response.EnsureSuccessStatusCode();
 
@@ -122,7 +123,8 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (HttpRequestException e)
         {
-            throw new SKException($"Unable to create collection: {collectionName}, with class name: {className}", e);
+            this._logger.LogError(e, "Unable to create collection: {0}, with class name: {1}", collectionName, className);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
 
@@ -174,15 +176,17 @@ public class WeaviateMemoryStore : IMemoryStore
         this._logger.LogTrace("Listing collections");
 
         using HttpRequestMessage request = GetSchemaRequest.Create().Build();
-        string responseContent;
+
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
         try
         {
-            (HttpResponseMessage response, responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
         }
-        catch (Exception e)
+        catch (HttpRequestException e)
         {
-            throw new SKException("Unable to list collections", e);
+            this._logger.LogError(e, "Unable to list collections");
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
@@ -207,15 +211,18 @@ public class WeaviateMemoryStore : IMemoryStore
 
         if (await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
+            using HttpRequestMessage request = DeleteSchemaRequest.Create(className).Build();
+
+            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
             try
             {
-                using HttpRequestMessage request = DeleteSchemaRequest.Create(className).Build();
-                (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
             }
-            catch (Exception e)
+            catch (HttpRequestException e)
             {
-                throw new SKException("Collection deletion failed", e);
+                this._logger.LogError(e, "Collection deletion failed");
+                throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
             }
         }
     }
@@ -245,15 +252,16 @@ public class WeaviateMemoryStore : IMemoryStore
 
         using HttpRequestMessage request = requestBuilder.Build();
 
-        string responseContent;
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
         try
         {
-            (HttpResponseMessage response, responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
         }
         catch (HttpRequestException e)
         {
-            throw new SKException("Failed to upsert vectors", e);
+            this._logger.LogError(e, "Failed to upsert vectors");
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonSerializerOptions);
@@ -352,15 +360,17 @@ public class WeaviateMemoryStore : IMemoryStore
 
         using HttpRequestMessage request = requestBuilder.Build();
 
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
         try
         {
-            (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             this._logger.LogTrace("Vector deleted");
         }
         catch (HttpRequestException e)
         {
-            throw new SKException("Vector delete request failed", e);
+            this._logger.LogError(e, "Vector delete request failed");
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
 
@@ -393,10 +403,21 @@ public class WeaviateMemoryStore : IMemoryStore
         }.Build();
 
         List<(MemoryRecord, double)> result = new();
+
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
         try
         {
-            (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            this._logger.LogError(e, "Nearest vectors search failed: {0}", e.Message);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+        }
+
+        try
+        {
             GraphResponse? data = JsonSerializer.Deserialize<GraphResponse>(responseContent, s_jsonSerializerOptions);
 
             if (data == null)

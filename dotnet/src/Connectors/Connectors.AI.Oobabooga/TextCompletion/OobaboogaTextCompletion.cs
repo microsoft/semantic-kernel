@@ -13,7 +13,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
@@ -213,24 +212,26 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
 
             using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
 
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            TextCompletionResponse? completionResponse = JsonSerializer.Deserialize<TextCompletionResponse>(body);
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException e)
+            {
+                throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            }
+
+            TextCompletionResponse? completionResponse = JsonSerializer.Deserialize<TextCompletionResponse>(responseContent);
 
             if (completionResponse is null)
             {
-                throw new OobaboogaInvalidResponseException<string>(body, "Unexpected response from Oobabooga API");
+                throw new OobaboogaInvalidResponseException<string>(responseContent, "Unexpected response from Oobabooga API");
             }
 
             return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
-        }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
         }
         finally
         {

@@ -111,6 +111,10 @@ public class AzureSearchMemoryStore : IMemoryStore
             // Index not found, no data to return
             return null;
         }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
+        }
 
         if (result?.Value == null)
         {
@@ -179,6 +183,10 @@ public class AzureSearchMemoryStore : IMemoryStore
         {
             // Index not found, no data to return
         }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
+        }
 
         if (searchResult == null) { yield break; }
 
@@ -213,6 +221,10 @@ public class AzureSearchMemoryStore : IMemoryStore
         catch (RequestFailedException e) when (e.Status == 404)
         {
             // Index not found, no data to delete
+        }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
         }
     }
 
@@ -329,6 +341,10 @@ public class AzureSearchMemoryStore : IMemoryStore
         {
             await this.CreateIndexAsync(indexName, embeddingSize, cancellationToken).ConfigureAwait(false);
             result = await UpsertCode().ConfigureAwait(false);
+        }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
         }
 
         if (result == null || result.Value.Results.Count == 0)

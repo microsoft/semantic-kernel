@@ -89,44 +89,43 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
     private async Task<IReadOnlyList<ITextStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
+        var completionRequest = new TextCompletionRequest
+        {
+            Input = text
+        };
+
+        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
+
+        httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
+        if (!string.IsNullOrEmpty(this._apiKey))
+        {
+            httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        }
+
+        using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+
+        var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
         try
         {
-            var completionRequest = new TextCompletionRequest
-            {
-                Input = text
-            };
-
-            using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
-
-            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
-            if (!string.IsNullOrEmpty(this._apiKey))
-            {
-                httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-            }
-
-            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
-
-            if (completionResponse is null)
-            {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
-                {
-                    Data = { { "ResponseData", body } },
-                };
-            }
-
-            return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
         }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        catch (HttpRequestException e)
         {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
+
+        List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(responseContent);
+
+        if (completionResponse is null)
+        {
+            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
+            {
+                Data = { { "ResponseData", responseContent } },
+            };
+        }
+
+        return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
     }
 
     /// <summary>

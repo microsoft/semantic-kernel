@@ -67,7 +67,7 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpRequestException e)
         {
             this._logger.LogError("Error occurred on Get Vectors request: {0}", e.Message);
-            yield break;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         FetchResponse? data = JsonSerializer.Deserialize<FetchResponse>(responseContent, this._jsonSerializerOptions);
@@ -120,7 +120,7 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpRequestException e)
         {
             this._logger.LogError("Error occurred on Query Vectors request: {0}", e.Message);
-            yield break;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         QueryResponse? queryResponse = JsonSerializer.Deserialize<QueryResponse>(responseContent, this._jsonSerializerOptions);
@@ -227,7 +227,7 @@ public sealed class PineconeClient : IPineconeClient
             catch (HttpRequestException e)
             {
                 this._logger.LogError("Failed to upsert vectors {0}", e.Message);
-                throw;
+                throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
             }
 
             UpsertResponse? data = JsonSerializer.Deserialize<UpsertResponse>(responseContent, this._jsonSerializerOptions);
@@ -278,7 +278,7 @@ public sealed class PineconeClient : IPineconeClient
 
         using HttpRequestMessage request = deleteRequest.Build();
 
-        (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -287,7 +287,7 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpRequestException e)
         {
             this._logger.LogError("Delete operation failed: {0}", e.Message);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
 
@@ -303,7 +303,7 @@ public sealed class PineconeClient : IPineconeClient
             .InNamespace(indexNamespace)
             .Build();
 
-        (HttpResponseMessage response, string _) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(basePath, request, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -312,7 +312,7 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpRequestException e)
         {
             this._logger.LogWarning("Vector update for Document {0} failed. Message: {1}", document.Id, e.Message);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
 
@@ -339,7 +339,7 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpRequestException e)
         {
             this._logger.LogDebug("Index not found {0}", e.Message);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         IndexStats? result = JsonSerializer.Deserialize<IndexStats>(responseContent, this._jsonSerializerOptions);
@@ -361,7 +361,17 @@ public sealed class PineconeClient : IPineconeClient
     {
         using HttpRequestMessage request = ListIndexesRequest.Create().Build();
 
-        (HttpResponseMessage _, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(this.GetIndexOperationsApiBasePath(), request, cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            this._logger.LogError(e, "Listing index names failed. Message: {0}", e.Message);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+        }
 
         string[]? indices = JsonSerializer.Deserialize<string[]?>(responseContent, this._jsonSerializerOptions);
 
@@ -394,17 +404,17 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.BadRequest)
         {
             this._logger.LogError(e, "Bad Request: {0}, {1}", response.StatusCode, responseContent);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
         catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.Conflict)
         {
             this._logger.LogError(e, "Index of given name already exists: {0}, {1}", response.StatusCode, responseContent);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Creating index failed: {0}, {1}", e.Message, responseContent);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
 
@@ -424,12 +434,12 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.NotFound)
         {
             this._logger.LogError(e, "Index Not Found: {0}, {1}", response.StatusCode, responseContent);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Deleting index failed: {0}, {1}", e.Message, responseContent);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         this._logger.LogInformation("Index: {0} has been successfully deleted.", indexName);
@@ -468,12 +478,12 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.BadRequest)
         {
             this._logger.LogError(e, "Bad Request: {0}, {1}", response.StatusCode, responseContent);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Describe index failed: {0}, {1}", e.Message, responseContent);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         PineconeIndex? indexDescription = JsonSerializer.Deserialize<PineconeIndex>(responseContent, this._jsonSerializerOptions);
@@ -506,17 +516,17 @@ public sealed class PineconeClient : IPineconeClient
         catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.BadRequest)
         {
             this._logger.LogError(e, "Request exceeds quota or collection name is invalid. {0}", indexName);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
         catch (HttpRequestException e) when (response.StatusCode == HttpStatusCode.NotFound)
         {
             this._logger.LogError(e, "Index not found. {0}", indexName);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Index configuration failed: {0}, {1}", e.Message, responseContent);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         this._logger.LogDebug("Collection created. {0}", indexName);

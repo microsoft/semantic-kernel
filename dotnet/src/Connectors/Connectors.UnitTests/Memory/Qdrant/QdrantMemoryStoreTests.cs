@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -146,12 +145,12 @@ public class QdrantMemoryStoreTests
             .Returns(AsyncEnumerable.Empty<QdrantVectorRecord>());
         mockQdrantClient
             .Setup<Task>(x => x.UpsertVectorsAsync(It.IsAny<string>(), It.IsAny<IEnumerable<QdrantVectorRecord>>(), It.IsAny<CancellationToken>()))
-            .Throws<HttpRequestException>();
+            .Throws<HttpOperationException>();
 
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Assert
-        await Assert.ThrowsAsync<SKException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord));
+        await Assert.ThrowsAsync<HttpOperationException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord));
     }
 
     [Fact]

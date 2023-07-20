@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Skills.Web;
@@ -64,8 +65,18 @@ public sealed class WebFileDownloadSkill
 
         this._logger.LogDebug("Sending GET request for {0}", url);
         using HttpResponseMessage response = await this._httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            this._logger.LogError(e, "Request failed: {0} {1}", response.StatusCode, e.Message);
+            throw new HttpOperationException(response.StatusCode, null, e.Message, e);
+        }
 
         using Stream webStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         using FileStream outputFileStream = new(Environment.ExpandEnvironmentVariables(filePath), FileMode.Create);

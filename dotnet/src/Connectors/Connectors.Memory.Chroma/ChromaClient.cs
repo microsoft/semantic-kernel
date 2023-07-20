@@ -184,7 +184,7 @@ public class ChromaClient : IChromaClient
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "{0} {1} operation failed: {2}, {3}", request.Method.Method, operationName, e.Message, responseContent);
-            throw new SKException($"{request.Method.Method} {operationName} operation failed: {e.Message}, {responseContent}", e);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         return (response, responseContent);

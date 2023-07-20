@@ -110,16 +110,23 @@ internal sealed class RestApiOperationRunner
             }
         }
 
-        using var responseMessage = await this._httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        using var response = await this._httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        responseMessage.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            throw new HttpOperationException(response.StatusCode, content, e.Message, e);
+        }
 
         // First iteration allowing to associate additional metadata with the returned content.
         var result = new RestApiOperationResponse(
             content,
-            responseMessage.Content.Headers.ContentType.ToString());
+            response.Content.Headers.ContentType.ToString());
 
         return JsonSerializer.SerializeToNode(result);
     }

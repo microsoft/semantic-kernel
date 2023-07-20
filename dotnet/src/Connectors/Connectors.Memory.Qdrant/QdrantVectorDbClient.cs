@@ -12,8 +12,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+using Microsoft.SemanticKernel.Diagnostics;
+using Verify = Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics.Verify;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -88,7 +89,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         catch (HttpRequestException e)
         {
             this._logger.LogDebug("Vectors not found {0}", e.Message);
-            yield break;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         var data = JsonSerializer.Deserialize<GetVectorsResponse>(responseContent);
@@ -138,7 +139,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         catch (HttpRequestException e)
         {
             this._logger.LogDebug("Request for vector with payload ID failed {0}", e.Message);
-            return null;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 
         var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
@@ -196,6 +197,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Vector delete request failed: {0}", e.Message);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
 
@@ -235,6 +237,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Vector delete request failed: {0}", e.Message);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
 
@@ -266,6 +269,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Vector upserts request failed: {0}", e.Message);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
 
@@ -301,7 +305,15 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
             yield break;
         }
 
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            this._logger.LogError(e, "Nearest vectors search failed: {0}", e.Message);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+        }
 
         var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
 
@@ -361,7 +373,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Collection upsert failed: {0}, {1}", e.Message, responseContent);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
 
@@ -386,7 +398,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "Collection deletion failed: {0}, {1}", e.Message, responseContent);
-            throw;
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
 

@@ -64,12 +64,21 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         using HttpResponseMessage response = await this.SendGetRequest(uri, cancellationToken).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+        string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
-        string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         this._logger.LogTrace("Response content received: {0}", json);
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            this._logger.LogError(e, "Request failed: {0} {1}", response.StatusCode, json);
+            throw new HttpOperationException(response.StatusCode, json, e.Message, e);
+        }
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
 
