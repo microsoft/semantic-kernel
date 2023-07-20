@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import itertools
 from typing import AsyncIterable, List
 

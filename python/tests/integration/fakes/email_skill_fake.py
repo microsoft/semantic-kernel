@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from semantic_kernel.skill_definition.sk_function_decorator import sk_function
 
 

@@ -1,5 +1,6 @@
-import pytest
+# Copyright (c) Microsoft. All rights reserved.
 
+import pytest
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planning.sequential_planner.parser import SequentialPlanParser
