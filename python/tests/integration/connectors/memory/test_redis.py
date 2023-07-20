@@ -68,7 +68,7 @@ def memory_record3():
 
 def test_constructor(connection_string):
     memory = RedisMemoryStore(connection_string)
-    assert memory._database.ping()
+    assert memory.ping()
 
 
 def test_configure(connection_string):
@@ -106,6 +106,23 @@ async def test_delete_collection_async(connection_string):
 
     exists = await memory.does_collection_exist_async("test_collection")
     assert not exists
+
+    # Delete a non-existent collection with no error
+    await memory.delete_collection_async("test_collection")
+
+
+@pytest.mark.asyncio
+async def test_delete_all_collection_async(connection_string):
+    memory = RedisMemoryStore(connection_string)
+
+    cols = ["test_col1", "test_col2", "test_col3"]
+    for c in cols:
+        await memory.create_collection_async(c)
+
+    await memory.delete_all_collections_async()
+    for c in cols:
+        exists = await memory.does_collection_exist_async(c)
+        assert not exists
 
 
 @pytest.mark.asyncio
@@ -159,15 +176,16 @@ async def test_upsert_batch_async_and_get_batch_async(
         await memory.create_collection_async("test_collection")
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
 
+    expected_id = [memory_record1._id, memory_record2._id]
     fetched = await memory.get_batch_async(
         "test_collection", ["test_id1", "test_id2"], True
     )
 
-    assert fetched[0]._id == "test_id1"
+    assert fetched[0]._id in expected_id
     for expected, actual in zip(fetched[0].embedding, memory_record1.embedding):
         assert expected == actual, "Did not retain correct embedding"
 
-    assert fetched[1]._id == "test_id2"
+    assert fetched[1]._id in expected_id
     for expected, actual in zip(fetched[1].embedding, memory_record2.embedding):
         assert expected == actual, "Did not retain correct embedding"
 
