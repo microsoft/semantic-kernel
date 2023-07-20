@@ -228,7 +228,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
             if (completionResponse is null)
             {
-                throw new OobaboogaInvalidResponseException<string>(responseContent, "Unexpected response from Oobabooga API");
+                throw new SKException("Unexpected response from Oobabooga API");
             }
 
             return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
@@ -314,7 +314,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
                 if (responseObject is null)
                 {
-                    throw new OobaboogaInvalidResponseException<string>(messageText, "Unexpected response from Oobabooga API");
+                    throw new SKException($"Unexpected response from Oobabooga API: {messageText}");
                 }
 
                 switch (responseObject.Event)
