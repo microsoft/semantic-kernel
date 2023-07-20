@@ -16,7 +16,6 @@ using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
@@ -155,18 +154,8 @@ public class ChatController : ControllerBase, IDisposable
         // Klarna Shopping
         if (openApiSkillsAuthHeaders.KlarnaAuthentication != null)
         {
-            // Register the Klarna shopping ChatGPT plugin with the planner's kernel.
-            using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger)
-            {
-                InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
-            };
-            using HttpClient importHttpClient = new(retryHandler, false);
-            importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
-            await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
-                new OpenApiSkillExecutionParameters
-                {
-                    HttpClient = importHttpClient,
-                });
+            // Register the Klarna shopping ChatGPT plugin with the planner's kernel. There is no authentication required for this plugin.
+            await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiSkillExecutionParameters());
         }
 
         // GitHub
