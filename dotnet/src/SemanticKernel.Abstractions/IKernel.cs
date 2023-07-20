@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -173,7 +174,7 @@ public interface IKernel
     /// </summary>
     /// <returns>SK context</returns>
     SKContext CreateNewContext();
-    
+
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
