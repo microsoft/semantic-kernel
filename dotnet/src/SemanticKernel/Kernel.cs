@@ -144,7 +144,7 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ISKFunction skFunction, CancellationToken cancellationToken)
+    public Task<SKContext> RunAsync(ISKFunction skFunction, CancellationToken cancellationToken = default)
         => this.RunAsync(new ContextVariables(), cancellationToken, skFunction);
 
     /// <inheritdoc/>

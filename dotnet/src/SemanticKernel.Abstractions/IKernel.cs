@@ -95,7 +95,7 @@ public interface IKernel
     /// <returns>Result of the function composition</returns>
     Task<SKContext> RunAsync(
         ISKFunction skFunction,
-        CancellationToken cancellationToken); // TODO: add `= default` value after the `params` overloads are removed, or it will be ambiguous.
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.

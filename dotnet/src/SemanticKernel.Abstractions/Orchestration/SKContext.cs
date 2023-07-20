@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
@@ -48,6 +49,12 @@ public sealed class SKContext
     /// (One prompt can have multiple results).
     /// </summary>
     public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
+
+    /// <summary>
+    /// The token to monitor for cancellation requests.
+    /// </summary>
+    [Obsolete("Add a CancellationToken param to SKFunction method signatures instead of retrieving it from SKContext.")]
+    public CancellationToken CancellationToken { get; } = default;
 
     /// <summary>
     /// The culture currently associated with this context.
