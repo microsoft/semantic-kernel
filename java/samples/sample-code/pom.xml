@@ -50,7 +50,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-planning-sequential-planner</artifactId>
+            <artifactId>semantickernel-planners</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>

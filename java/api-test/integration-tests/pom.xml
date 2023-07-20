@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-planning-sequential-planner</artifactId>
+            <artifactId>semantickernel-planners</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -67,8 +67,7 @@
     <modules>
         <module>connectors/semantickernel-connectors-ai-openai</module>
 
-        <module>extensions/semantickernel-planning-action-planner</module>
-        <module>extensions/semantickernel-planning-sequential-planner</module>
+        <module>extensions/semantickernel-planners</module>
         <module>extensions/semantickernel-gpt3-tokenizer</module>
 
         <module>plugins/semantickernel-plugin-core</module>
@@ -430,10 +429,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
