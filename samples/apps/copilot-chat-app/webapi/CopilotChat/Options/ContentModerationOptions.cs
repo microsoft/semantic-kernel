@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using SemanticKernel.Service.Options;
 using System.ComponentModel.DataAnnotations;
+using SemanticKernel.Service.Options;
 
 namespace SemanticKernel.Service.CopilotChat.Options;
 

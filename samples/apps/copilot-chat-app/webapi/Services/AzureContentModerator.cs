@@ -79,7 +79,7 @@ public sealed class AzureContentModerator : IDisposable
     /// </summary>
     /// <param name="analysisResult">The content analysis result.</param>
     /// <param name="threshold">The violation threshold.</param>
-    /// <returns>The list of violated category names. Will return an empty list if there is no violoation.</returns>
+    /// <returns>The list of violated category names. Will return an empty list if there is no violation.</returns>
     public static List<string> ParseViolatedCategories(Dictionary<string, AnalysisResult> analysisResult, short threshold)
     {
         var violatedCategories = new List<string>();
