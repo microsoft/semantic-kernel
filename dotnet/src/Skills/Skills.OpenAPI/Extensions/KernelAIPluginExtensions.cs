@@ -46,30 +46,19 @@ public static class KernelAIPluginExtensions
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
-        var pluginJson = await LoadDocumentFromFilePath(
+        var pluginContents = await LoadDocumentFromFilePath(
             kernel,
             filePath,
             executionParameters,
             internalHttpClient,
             cancellationToken).ConfigureAwait(false);
 
-        if (TryParseAIPluginForUrl(pluginJson, out var openApiUrl))
-        {
-            return await kernel
-                .ImportAIPluginAsync(
-                    skillName,
-                    new Uri(openApiUrl),
-                    executionParameters,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        return await LoadSkill(
+        return await CompleteImport(
             kernel,
+            pluginContents,
             skillName,
-            executionParameters,
             internalHttpClient,
-            pluginJson,
+            executionParameters,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -96,30 +85,19 @@ public static class KernelAIPluginExtensions
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
-        var pluginJson = await LoadDocumentFromUri(
+        var pluginContents = await LoadDocumentFromUri(
             kernel,
             uri,
             executionParameters,
             internalHttpClient,
             cancellationToken).ConfigureAwait(false);
 
-        if (TryParseAIPluginForUrl(pluginJson, out var openApiUrl))
-        {
-            return await kernel
-                .ImportAIPluginAsync(
-                    skillName,
-                    new Uri(openApiUrl),
-                    executionParameters,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        return await LoadSkill(
+        return await CompleteImport(
             kernel,
+            pluginContents,
             skillName,
-            executionParameters,
             internalHttpClient,
-            pluginJson,
+            executionParameters,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -137,9 +115,28 @@ public static class KernelAIPluginExtensions
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
-        var pluginJson = await LoadDocumentFromStream(kernel, stream).ConfigureAwait(false);
+        var pluginContents = await LoadDocumentFromStream(kernel, stream).ConfigureAwait(false);
 
-        if (TryParseAIPluginForUrl(pluginJson, out var openApiUrl))
+        return await CompleteImport(
+            kernel,
+            pluginContents,
+            skillName,
+            internalHttpClient,
+            executionParameters,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    #region private
+
+    private static async Task<IDictionary<string, ISKFunction>> CompleteImport(
+        IKernel kernel,
+        string pluginContents,
+        string skillName,
+        HttpClient internalHttpClient,
+        OpenApiSkillExecutionParameters? executionParameters,
+        CancellationToken cancellationToken)
+    {
+        if (TryParseAIPluginForUrl(pluginContents, out var openApiUrl))
         {
             return await kernel
                 .ImportAIPluginAsync(
@@ -155,11 +152,9 @@ public static class KernelAIPluginExtensions
             skillName,
             executionParameters,
             internalHttpClient,
-            pluginJson,
+            pluginContents,
             cancellationToken).ConfigureAwait(false);
     }
-
-    #region private
 
     private static async Task<IDictionary<string, ISKFunction>> LoadSkill(
         IKernel kernel,
