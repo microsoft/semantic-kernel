@@ -3,9 +3,8 @@
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../redux/app/hooks';
 import { FeatureKeys } from '../redux/features/app/AppState';
-import { addAlert, setFeatureFlag } from '../redux/features/app/appSlice';
+import { setFeatureFlag } from '../redux/features/app/appSlice';
 import { AuthHelper } from './auth/AuthHelper';
-import { AlertType } from './models/AlertType';
 import { ContentModerationService } from './services/ContentModerationService';
 
 const riskThreshold = 4;
@@ -17,6 +16,7 @@ export const useContentModerator = () => {
     const contentModeratorService = new ContentModerationService(process.env.REACT_APP_BACKEND_URI as string);
 
     const analyzeImage = async (base64Image: string) => {
+        const VIOLATIONS_FLAG = 'ContainsViolations';
         try {
             // remove image prefix
             const image = base64Image.replace('data:image/png;base64,', '').replace('data:image/jpeg;base64,', '');
@@ -34,12 +34,13 @@ export const useContentModerator = () => {
             });
 
             if (violations.length > 0) {
-                const errorMessage = `Detect undesirable image content with potential risk: ${violations.join(', ')}`;
-                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+                throw new Error(`Detected undesirable image content with potential risk: ${violations.join(', ')}`, {
+                    cause: VIOLATIONS_FLAG,
+                });
             }
         } catch (error) {
-            const errorMessage = 'Unable to analyze image';
-            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+            if ((error as Error).cause === VIOLATIONS_FLAG) throw error;
+            throw new Error('Unable to analyze image');
         }
     };
 
