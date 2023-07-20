@@ -165,7 +165,7 @@ public class SKContextExtensionsTests
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(variables, skills.Object, logger);
-        var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78 };
+        var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
         // Act
