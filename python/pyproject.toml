@@ -28,7 +28,7 @@ sentence-transformers = "^2.2.2"
 torch = "2.0.0"
 
 [tool.poetry.group.chromadb.dependencies]
-chromadb = "^0.3.29"
+chromadb = "^0.4.0"
 
 [tool.poetry.group.milvus.dependencies]
 pymilvus = "^2.2.11"
