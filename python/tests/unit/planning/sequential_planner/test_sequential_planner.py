@@ -1,14 +1,15 @@
 from unittest.mock import Mock
 
 import pytest
-
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.planning.planning_exception import PlanningException
-from semantic_kernel.planning.sequential_planner.planner import SequentialPlanner
+from semantic_kernel.planning.sequential_planner.sequential_planner import (
+    SequentialPlanner,
+)
 from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase

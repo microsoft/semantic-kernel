@@ -7,7 +7,9 @@ from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.planning.sequential_planner.config import SequentialPlannerConfig
+from semantic_kernel.planning.sequential_planner.sequential_planner_config import (
+    SequentialPlannerConfig,
+)
 from semantic_kernel.skill_definition.function_view import FunctionView
 
 

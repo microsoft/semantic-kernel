@@ -1,14 +1,15 @@
 from unittest.mock import Mock
 
 import pytest
-
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.planning.sequential_planner.config import SequentialPlannerConfig
-from semantic_kernel.planning.sequential_planner.extensions import (
+from semantic_kernel.planning.sequential_planner.sequential_planner_config import (
+    SequentialPlannerConfig,
+)
+from semantic_kernel.planning.sequential_planner.sequential_planner_extensions import (
     SequentialPlannerFunctionViewExtension,
     SequentialPlannerSKContextExtension,
 )

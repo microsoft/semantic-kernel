@@ -6,11 +6,15 @@ from typing import TYPE_CHECKING
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
-from semantic_kernel.planning.sequential_planner.config import SequentialPlannerConfig
-from semantic_kernel.planning.sequential_planner.extensions import (
+from semantic_kernel.planning.sequential_planner.sequential_planner_config import (
+    SequentialPlannerConfig,
+)
+from semantic_kernel.planning.sequential_planner.sequential_planner_extensions import (
     SequentialPlannerSKContextExtension as SKContextExtension,
 )
-from semantic_kernel.planning.sequential_planner.parser import SequentialPlanParser
+from semantic_kernel.planning.sequential_planner.sequential_planner_parser import (
+    SequentialPlanParser,
+)
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
