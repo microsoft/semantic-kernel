@@ -197,19 +197,8 @@ class RedisMemoryStore(MemoryStoreBase):
             str -- The unique identifier for the memory record, which is the Redis key
         """
 
-        if not await self.does_collection_exist_async(collection_name):
-            raise Exception(f"Collection '{collection_name}' does not exist")
-
-        # Typical Redis key structure: collection_name:{some identifier}
-        record._key = f"{collection_name}:{record._id}"
-
-        # Overwrites previous data or inserts new key if not present
-        # Index registers any hash matching its schema and prefixed with collection_name:
-        self._database.hset(
-            record._key,
-            mapping=self._serialize_record(record),
-        )
-        return record._key
+        batch = await self.upsert_batch_async(collection_name, [record])
+        return batch[0]
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -224,9 +213,26 @@ class RedisMemoryStore(MemoryStoreBase):
             records {List[MemoryRecords]} -- Memory records to upsert
 
         Returns
-            str -- The unique identifiers for the memory records, which are the Redis keys
+            List[str] -- The unique identifiers for the memory records, which are the Redis keys
         """
-        return [await self.upsert_async(collection_name, rec) for rec in records]
+
+        if not await self.does_collection_exist_async(collection_name):
+            raise Exception(f"Collection '{collection_name}' does not exist")
+
+        keys = list()
+        for rec in records:
+            # Typical Redis key structure: collection_name:{some identifier}
+            rec._key = f"{collection_name}:{rec._id}"
+
+            # Overwrites previous data or inserts new key if not present
+            # Index registers any hash matching its schema and prefixed with collection_name:
+            self._database.hset(
+                rec._key,
+                mapping=self._serialize_record(rec),
+            )
+            keys.append(rec._key)
+
+        return keys
 
     async def get_async(
         self, collection_name: str, key: str, with_embedding: bool
@@ -242,26 +248,9 @@ class RedisMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord -- The memory record if found, else None
         """
-        if not await self.does_collection_exist_async(collection_name):
-            raise Exception(f"Collection '{collection_name}' does not exist")
 
-        internal_key = f"{collection_name}:{key}"
-        raw_fields = self._database.hgetall(internal_key)
-
-        if len(raw_fields) == 0:
-            return None
-
-        # Convert from bytes
-        record_fields = dict()
-        for field, val in raw_fields.items():
-            field_name = field.decode()
-            record_fields[field_name] = (
-                val.decode() if field_name != "embedding" else val
-            )
-
-        record = self._deserialize_record(record_fields, with_embedding)
-        record._key = internal_key
-        return record
+        batch = await self.get_batch_async(collection_name, [key], with_embedding)
+        return batch[0] if len(batch) else None
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool
