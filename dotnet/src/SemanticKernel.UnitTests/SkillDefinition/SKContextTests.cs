@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -54,7 +53,7 @@ public class SKContextTests
         // Arrange
         IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new Parrot(), "test");
         this._skills.Setup(x => x.GetFunction("func")).Returns(skill["say"]);
-        var target = new SKContext(new ContextVariables(), NullMemory.Instance, this._skills.Object, this._log.Object);
+        var target = new SKContext(new ContextVariables(), this._skills.Object, this._log.Object);
         Assert.NotNull(target.Skills);
 
         // Act
