@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
@@ -98,17 +97,11 @@ public sealed class ActionPlannerTests
         await Assert.ThrowsAsync<PlanningException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
-    private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? mockSkills = null)
+    private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? skills = null)
     {
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
 
-        Mock<ISkillCollection> skills;
-        if (mockSkills != null)
-        {
-            skills = mockSkills;
-        }
-        else
+        if (skills is null)
         {
             skills = new Mock<ISkillCollection>();
 
@@ -118,13 +111,11 @@ public sealed class ActionPlannerTests
 
         var returnContext = new SKContext(
             new ContextVariables(testPlanString),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var context = new SKContext(
-            skills: skills.Object,
-            logger: logger.Object
+            skills: skills.Object
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
