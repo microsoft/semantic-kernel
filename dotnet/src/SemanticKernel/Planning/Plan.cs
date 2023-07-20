@@ -13,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -223,13 +222,14 @@ public sealed class Plan : ISKFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
     /// <remarks>
-    /// This method executes the next step in the plan using the specified kernel instance and context variables. The context variables contain the necessary information for executing the plan, such as the memory, skills, and logger. The method returns a task representing the asynchronous execution of the plan's next step.
+    /// This method executes the next step in the plan using the specified kernel instance and context variables.
+    /// The context variables contain the necessary information for executing the plan, such as the skills, and logger.
+    /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var context = new SKContext(
             variables,
-            kernel.Memory,
             kernel.Skills,
             kernel.Log);
 
@@ -253,12 +253,7 @@ public sealed class Plan : ISKFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(
-                functionVariables,
-                context.Memory,
-                context.Skills,
-                context.Log);
-
+            var functionContext = new SKContext(functionVariables, context.Skills, context.Log);
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
@@ -313,7 +308,6 @@ public sealed class Plan : ISKFunction
     public Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
-        ISemanticTextMemory? memory = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
@@ -321,7 +315,6 @@ public sealed class Plan : ISKFunction
 
         SKContext context = new(
             this.State,
-            memory: memory,
             logger: logger);
 
         return this.InvokeAsync(context, settings, cancellationToken);

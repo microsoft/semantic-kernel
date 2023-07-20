@@ -172,7 +172,6 @@ public sealed class Kernel : IKernel, IDisposable
     {
         var context = new SKContext(
             variables,
-            this._memory,
             this._skillCollection.ReadOnlySkillCollection,
             this.Log);
 
@@ -223,7 +222,6 @@ public sealed class Kernel : IKernel, IDisposable
     public SKContext CreateNewContext()
     {
         return new SKContext(
-            memory: this._memory,
             skills: this._skillCollection.ReadOnlySkillCollection,
             logger: this.Log);
     }

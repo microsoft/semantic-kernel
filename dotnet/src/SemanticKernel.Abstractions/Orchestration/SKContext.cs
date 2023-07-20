@@ -98,7 +98,12 @@ public sealed class SKContext
     /// <summary>
     /// Semantic memory
     /// </summary>
-    public ISemanticTextMemory Memory { get; }
+    [Obsolete("Memory no longer passed through SKContext. Instead, initialize your skill class with the memory provider it needs.")]
+    public ISemanticTextMemory Memory
+    {
+        get => throw new InvalidOperationException(
+            "Memory no longer passed through SKContext. Instead, initialize your skill class with the memory provider it needs.");
+    }
 
     /// <summary>
     /// Read only skills collection
@@ -133,17 +138,14 @@ public sealed class SKContext
     /// Constructor for the context.
     /// </summary>
     /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="memory">Semantic text memory unit to include in context.</param>
     /// <param name="skills">Skills to include in context.</param>
     /// <param name="logger">Logger for operations in context.</param>
     public SKContext(
         ContextVariables? variables = null,
-        ISemanticTextMemory? memory = null,
         IReadOnlySkillCollection? skills = null,
         ILogger? logger = null)
     {
         this.Variables = variables ?? new();
-        this.Memory = memory ?? NullMemory.Instance;
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
         this.Log = logger ?? NullLogger.Instance;
         this._culture = CultureInfo.CurrentCulture;
@@ -168,7 +170,6 @@ public sealed class SKContext
     {
         return new SKContext(
             variables: this.Variables.Clone(),
-            memory: this.Memory,
             skills: this.Skills,
             logger: this.Log)
         {
@@ -195,11 +196,6 @@ public sealed class SKContext
             {
                 var view = skills.GetFunctionsView();
                 display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";
-            }
-
-            if (this.Memory is ISemanticTextMemory memory && memory is not NullMemory)
-            {
-                display += $", Memory = {memory.GetType().Name}";
             }
 
             display += $", Culture = {this.Culture.EnglishName}";

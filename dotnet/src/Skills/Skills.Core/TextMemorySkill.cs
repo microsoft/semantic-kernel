@@ -7,9 +7,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Skills.Core;
@@ -49,11 +49,14 @@ public sealed class TextMemorySkill
     private const double DefaultRelevance = 0.0;
     private const int DefaultLimit = 1;
 
+    private ISemanticTextMemory _memory;
+
     /// <summary>
     /// Creates a new instance of the TextMemorySkill
     /// </summary>
-    public TextMemorySkill()
+    public TextMemorySkill(ISemanticTextMemory memory)
     {
+        this._memory = memory;
     }
 
     /// <summary>
@@ -61,7 +64,7 @@ public sealed class TextMemorySkill
     /// </summary>
     /// <param name="collection">Memories collection associated with the memory to retrieve</param>
     /// <param name="key">The key associated with the memory to retrieve.</param>
-    /// <param name="context">Context containing the memory</param>
+    /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <example>
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
@@ -69,17 +72,18 @@ public sealed class TextMemorySkill
     /// </example>
     [SKFunction, Description("Key-based lookup for a specific memory")]
     public async Task<string> RetrieveAsync(
-        [Description("Memories collection associated with the memory to retrieve"), DefaultValue(DefaultCollection)] string? collection,
-        [Description("The key associated with the memory to retrieve")] string key,
-        SKContext context,
+        [SKName(CollectionParam), Description("Memories collection associated with the memory to retrieve"), DefaultValue(DefaultCollection)] string? collection,
+        [SKName(KeyParam), Description("The key associated with the memory to retrieve")] string key,
+        ILogger? logger,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
-        Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
+        Verify.NotNullOrWhiteSpace(collection);
+        Verify.NotNullOrWhiteSpace(key);
+        logger ??= NullLogger.Instance;
 
-        context.Log.LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+        logger.LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
 
-        var memory = await context.Memory.GetAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var memory = await this._memory.GetAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return memory?.Metadata.Text ?? string.Empty;
     }
@@ -91,40 +95,41 @@ public sealed class TextMemorySkill
     /// SKContext["input"] = "what is the capital of France?"
     /// {{memory.recall $input }} => "Paris"
     /// </example>
-    /// <param name="text">The input text to find related memories for.</param>
+    /// <param name="input">The input text to find related memories for.</param>
     /// <param name="collection">Memories collection to search.</param>
     /// <param name="relevance">The relevance score, from 0.0 to 1.0, where 1.0 means perfect match.</param>
     /// <param name="limit">The maximum number of relevant memories to recall.</param>
-    /// <param name="context">Contains the memory to search.</param>
+    /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [SKFunction, Description("Semantic search and return up to N memories related to the input text")]
     public async Task<string> RecallAsync(
-        [Description("The input text to find related memories for")] string text,
-        [Description("Memories collection to search"), DefaultValue(DefaultCollection)] string collection,
-        [Description("The relevance score, from 0.0 to 1.0, where 1.0 means perfect match"), DefaultValue(DefaultRelevance)] double? relevance,
-        [Description("The maximum number of relevant memories to recall"), DefaultValue(DefaultLimit)] int? limit,
-        SKContext context,
+        [Description("The input text to find related memories for")] string input,
+        [SKName(CollectionParam), Description("Memories collection to search"), DefaultValue(DefaultCollection)] string collection,
+        [SKName(RelevanceParam), Description("The relevance score, from 0.0 to 1.0, where 1.0 means perfect match"), DefaultValue(DefaultRelevance)] double? relevance,
+        [SKName(LimitParam), Description("The maximum number of relevant memories to recall"), DefaultValue(DefaultLimit)] int? limit,
+        ILogger? logger,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
+        Verify.NotNullOrWhiteSpace(collection);
+        logger ??= NullLogger.Instance;
         relevance ??= DefaultRelevance;
         limit ??= DefaultLimit;
 
-        context.Log.LogDebug("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
+        logger.LogDebug("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
 
         // Search memory
-        List<MemoryQueryResult> memories = await context.Memory
-            .SearchAsync(collection, text, limit.Value, relevance.Value, cancellationToken: cancellationToken)
+        List<MemoryQueryResult> memories = await this._memory
+            .SearchAsync(collection, input, limit.Value, relevance.Value, cancellationToken: cancellationToken)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
         if (memories.Count == 0)
         {
-            context.Log.LogWarning("Memories not found in collection: {0}", collection);
+            logger.LogWarning("Memories not found in collection: {0}", collection);
             return string.Empty;
         }
 
-        context.Log.LogDebug("Done looking for memories in collection '{0}')", collection);
+        logger.LogTrace("Done looking for memories in collection '{0}')", collection);
         return limit == 1 ? memories[0].Metadata.Text : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text));
     }
 
@@ -136,25 +141,26 @@ public sealed class TextMemorySkill
     /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
     /// {{memory.save $input }}
     /// </example>
-    /// <param name="text">The information to save</param>
+    /// <param name="input">The information to save</param>
     /// <param name="collection">Memories collection associated with the information to save</param>
     /// <param name="key">The key associated with the information to save</param>
-    /// <param name="context">Contains the memory to save.</param>
+    /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [SKFunction, Description("Save information to semantic memory")]
     public async Task SaveAsync(
-        [Description("The information to save")] string text,
-        [Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
-        [Description("The key associated with the information to save")] string key,
-        SKContext context,
+        [Description("The information to save")] string input,
+        [SKName(CollectionParam), Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
+        [SKName(KeyParam), Description("The key associated with the information to save")] string key,
+        ILogger? logger,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
-        Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
+        Verify.NotNullOrWhiteSpace(collection);
+        Verify.NotNullOrWhiteSpace(key);
+        logger ??= NullLogger.Instance;
 
-        context.Log.LogDebug("Saving memory to collection '{0}'", collection);
+        logger.LogDebug("Saving memory to collection '{0}'", collection);
 
-        await context.Memory.SaveInformationAsync(collection, text: text, id: key, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await this._memory.SaveInformationAsync(collection, text: input, id: key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -166,20 +172,21 @@ public sealed class TextMemorySkill
     /// </example>
     /// <param name="collection">Memories collection associated with the information to save</param>
     /// <param name="key">The key associated with the information to save</param>
-    /// <param name="context">Contains the memory from which to remove.</param>
+    /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     [SKFunction, Description("Remove specific memory")]
     public async Task RemoveAsync(
-        [Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
-        [Description("The key associated with the information to save")] string key,
-        SKContext context,
+        [SKName(CollectionParam), Description("Memories collection associated with the information to save"), DefaultValue(DefaultCollection)] string collection,
+        [SKName(KeyParam), Description("The key associated with the information to save")] string key,
+        ILogger? logger,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(collection, $"{nameof(context)}.{nameof(context.Variables)}[{CollectionParam}]");
-        Verify.NotNullOrWhiteSpace(key, $"{nameof(context)}.{nameof(context.Variables)}[{KeyParam}]");
+        Verify.NotNullOrWhiteSpace(collection);
+        Verify.NotNullOrWhiteSpace(key);
+        logger ??= NullLogger.Instance;
 
-        context.Log.LogDebug("Removing memory from collection '{0}'", collection);
+        logger.LogDebug("Removing memory from collection '{0}'", collection);
 
-        await context.Memory.RemoveAsync(collection, key, cancellationToken).ConfigureAwait(false);
+        await this._memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 }

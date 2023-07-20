@@ -45,7 +45,7 @@ public class SequentialPlanParserTests
         IKernel kernel,
         ContextVariables? variables = null)
     {
-        return new SKContext(variables, kernel.Memory, kernel.Skills, kernel.Log);
+        return new SKContext(variables, kernel.Skills, kernel.Log);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
