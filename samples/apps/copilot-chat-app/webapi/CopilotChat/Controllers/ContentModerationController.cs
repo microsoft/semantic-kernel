@@ -49,6 +49,11 @@ public class ContentModerationController : ControllerBase
     public async Task<ActionResult<Dictionary<string, AnalysisResult>>> ImageAnalysisAsync(
         [FromBody] string base64Image)
     {
+        if (!this._options.Enabled)
+        {
+            return this.NotFound("Content Moderation is currently disabled.");
+        }
+
         return await this._contentModerator.ImageAnalysisAsync(base64Image, default);
     }
 

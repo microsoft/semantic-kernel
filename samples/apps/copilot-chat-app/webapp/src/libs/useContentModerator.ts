@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import { useMsal } from '@azure/msal-react';
-import { useAppDispatch } from '../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../redux/app/hooks';
+import { RootState } from '../redux/app/store';
 import { FeatureKeys } from '../redux/features/app/AppState';
-import { setFeatureFlag } from '../redux/features/app/appSlice';
+import { addAlert, toggleFeatureState } from '../redux/features/app/appSlice';
 import { AuthHelper } from './auth/AuthHelper';
+import { AlertType } from './models/AlertType';
 import { ContentModerationService } from './services/ContentModerationService';
 
 const riskThreshold = 4;
@@ -12,6 +14,7 @@ const riskThreshold = 4;
 export const useContentModerator = () => {
     const dispatch = useAppDispatch();
     const { inProgress, instance } = useMsal();
+    const { features } = useAppSelector((state: RootState) => state.app);
 
     const contentModeratorService = new ContentModerationService(process.env.REACT_APP_BACKEND_URI as string);
 
@@ -38,9 +41,26 @@ export const useContentModerator = () => {
                     cause: VIOLATIONS_FLAG,
                 });
             }
-        } catch (error) {
-            if ((error as Error).cause === VIOLATIONS_FLAG) throw error;
-            throw new Error('Unable to analyze image');
+        } catch (e) {
+            const ANALYSIS_FAILURE_ERROR_MESSAGE = 'Unable to analyze image';
+            const error = e as Error;
+            const SERVICE_DISABLED_MESSAGE = 'Content Moderation is currently disabled.';
+
+            if (error.message.includes(SERVICE_DISABLED_MESSAGE)) {
+                dispatch(toggleFeatureState({ feature: FeatureKeys.AzureContentSafety, disable: true, show: false }));
+
+                if (features[FeatureKeys.AzureContentSafety].show) {
+                    dispatch(
+                        addAlert({
+                            type: AlertType.Warning,
+                            message: `${ANALYSIS_FAILURE_ERROR_MESSAGE}: ${SERVICE_DISABLED_MESSAGE} Please contact your admin to enable.`,
+                        }),
+                    );
+                }
+            } else {
+                if (error.cause === VIOLATIONS_FLAG) throw error;
+                throw new Error(ANALYSIS_FAILURE_ERROR_MESSAGE);
+            }
         }
     };
 
@@ -51,7 +71,7 @@ export const useContentModerator = () => {
             );
 
             if (result) {
-                dispatch(setFeatureFlag(FeatureKeys.AzureContentSafety));
+                dispatch(toggleFeatureState({ feature: FeatureKeys.AzureContentSafety, disable: false, show: true }));
             }
         } catch (error) {
             /* empty */

@@ -108,7 +108,7 @@ const App: FC = () => {
     return (
         <FluentProvider
             className="app-container"
-            theme={features[FeatureKeys.DarkMode].enabled ? semanticKernelDarkTheme : semanticKernelLightTheme}
+            theme={features[FeatureKeys.DarkMode].show ? semanticKernelDarkTheme : semanticKernelLightTheme}
         >
             <UnauthenticatedTemplate>
                 <div className={classes.container}>

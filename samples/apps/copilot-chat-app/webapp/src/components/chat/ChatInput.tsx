@@ -151,7 +151,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             const imageErrors: string[] = [];
 
             for (const file of filesArray) {
-                if (file.type.startsWith('image/')) {
+                if (features[FeatureKeys.AzureContentSafety].show && file.type.startsWith('image/')) {
                     try {
                         await handleImageUpload(file);
                         filesToUploadArray.push(file);
@@ -218,7 +218,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     };
 
     const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
-        if (!features[FeatureKeys.SimplifiedExperience].enabled) {
+        if (!features[FeatureKeys.SimplifiedExperience].show) {
             onDragLeave(e);
             void handleImport(undefined, e.dataTransfer.files);
         }
@@ -276,7 +276,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 />
             </div>
             <div className={classes.controls}>
-                {!features[FeatureKeys.SimplifiedExperience].enabled && (
+                {!features[FeatureKeys.SimplifiedExperience].show && (
                     <div className={classes.functional}>
                         {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
                         <input

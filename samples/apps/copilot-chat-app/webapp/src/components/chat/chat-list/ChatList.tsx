@@ -181,7 +181,7 @@ export const ChatList: FC = () => {
     return (
         <div className={classes.root}>
             <div className={classes.header}>
-                {features[FeatureKeys.SimplifiedExperience].enabled ? (
+                {features[FeatureKeys.SimplifiedExperience].show ? (
                     <SimplifiedNewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
                 ) : (
                     <>

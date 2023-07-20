@@ -105,7 +105,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
         content = (
             <img
                 className={
-                    features[FeatureKeys.AzureContentSafety].enabled && isModerating
+                    features[FeatureKeys.AzureContentSafety].show && isModerating
                         ? mergeClasses(classes.image, classes.blur)
                         : classes.image
                 }
@@ -137,9 +137,7 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
                     className={classes.persona}
                     avatar={avatar}
                     presence={
-                        !features[FeatureKeys.SimplifiedExperience].enabled && !isMe
-                            ? { status: 'available' }
-                            : undefined
+                        !features[FeatureKeys.SimplifiedExperience].show && !isMe ? { status: 'available' } : undefined
                     }
                 />
             }

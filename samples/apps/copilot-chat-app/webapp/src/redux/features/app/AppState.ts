@@ -14,9 +14,9 @@ export interface Alert {
 }
 
 interface Feature {
-    enabled: boolean;
+    show: boolean; // Whether to show the feature in the UX
     label: string;
-    disabled?: boolean;
+    disabled?: boolean; // Set to true if you don't want the user to control the visibility of this feature or there's no backend support
     description?: string;
 }
 
@@ -55,40 +55,40 @@ export enum FeatureKeys {
 
 export const Features = {
     [FeatureKeys.DarkMode]: {
-        enabled: false,
+        show: false,
         label: 'Dark Mode',
     },
     [FeatureKeys.SimplifiedExperience]: {
-        enabled: true,
+        show: true,
         label: 'Simplified Chat Experience',
     },
     [FeatureKeys.PluginsPlannersAndPersonas]: {
-        enabled: false,
+        show: false,
         label: 'Plugins & Planners & Personas',
-        description: 'The Plans and Persona tabs are hidden until you turn this on',
+        descriptishow: 'The Plans and Persona tabs are hidden until you turn this on',
     },
     [FeatureKeys.AzureContentSafety]: {
-        enabled: false,
+        show: false,
         label: 'Azure Content Safety',
         disabled: true,
     },
     [FeatureKeys.AzureCognitiveSearch]: {
-        enabled: false,
+        show: false,
         label: 'Azure Cognitive Search',
         disabled: true,
     },
     [FeatureKeys.BotAsDocs]: {
-        enabled: false,
+        show: false,
         label: 'Save/Load Chat Sessions',
     },
     [FeatureKeys.MultiUserChat]: {
-        enabled: false,
+        show: false,
         label: 'Live Chat Session Sharing',
     },
     [FeatureKeys.RLHF]: {
-        enabled: false,
+        show: false,
         label: 'Reinforcement Learning from Human Feedback',
-        description: 'Enable users to vote on model-generated responses. For demonstration purposes only.',
+        descriptishow: 'Enable users to vote on model-generated responses. For demonstration purposes only.',
     },
 };
 
@@ -111,7 +111,7 @@ export const Settings = [
     },
     {
         title: 'Experimental',
-        description: 'The related icons and menu options are hidden until you turn this on',
+        descriptishow: 'The related icons and menu options are hidden until you turn this on',
         features: [FeatureKeys.BotAsDocs, FeatureKeys.MultiUserChat, FeatureKeys.RLHF],
     },
 ];

@@ -54,13 +54,13 @@ export const ChatRoom: React.FC = () => {
 
     const [isDraggingOver, setIsDraggingOver] = React.useState(false);
     const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-        if (!features[FeatureKeys.SimplifiedExperience].enabled) {
+        if (!features[FeatureKeys.SimplifiedExperience].show) {
             e.preventDefault();
             setIsDraggingOver(true);
         }
     };
     const onDragLeave = (e: React.DragEvent<HTMLDivElement | HTMLTextAreaElement>) => {
-        if (!features[FeatureKeys.SimplifiedExperience].enabled) {
+        if (!features[FeatureKeys.SimplifiedExperience].show) {
             e.preventDefault();
             setIsDraggingOver(false);
         }

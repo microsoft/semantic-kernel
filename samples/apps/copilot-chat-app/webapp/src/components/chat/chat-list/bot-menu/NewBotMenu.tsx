@@ -53,7 +53,7 @@ export const NewBotMenu: FC<NewBotMenuProps> = ({ onFileUpload }) => {
                         </MenuItem>
                         <MenuItem
                             data-testid="uploadABotMenuItem"
-                            disabled={!features[FeatureKeys.BotAsDocs].enabled}
+                            disabled={!features[FeatureKeys.BotAsDocs].show}
                             icon={<ArrowUploadRegular />}
                             onClick={onFileUpload}
                         >
@@ -61,7 +61,7 @@ export const NewBotMenu: FC<NewBotMenuProps> = ({ onFileUpload }) => {
                         </MenuItem>
                         <MenuItem
                             data-testid="joinABotMenuItem"
-                            disabled={!features[FeatureKeys.MultiUserChat].enabled}
+                            disabled={!features[FeatureKeys.MultiUserChat].show}
                             icon={<PeopleTeamAddRegular />}
                             onClick={onJoinClick}
                         >
