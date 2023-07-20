@@ -258,6 +258,7 @@ public class ChatSkill
         SKContext context)
     {
         // Save this new message to memory such that subsequent chat responses can use it
+        await this.UpdateResponseStatusOnClient(chatId, "Saving user message to chat history");
         await this.SaveNewMessageAsync(message, userId, userName, chatId, messageType);
 
         // Clone the context to avoid modifying the original context variables.
@@ -290,6 +291,7 @@ public class ChatSkill
         context.Variables.Set("prompt", prompt);
 
         // Save this response to memory such that subsequent chat responses can use it
+        await this.UpdateResponseStatusOnClient(chatId, "Saving bot message to chat history");
         ChatMessage botMessage = await this.SaveNewResponseAsync(response, prompt, chatId);
         context.Variables.Set("messageId", botMessage.Id);
         context.Variables.Set("messageType", ((int)botMessage.Type).ToString(CultureInfo.InvariantCulture));

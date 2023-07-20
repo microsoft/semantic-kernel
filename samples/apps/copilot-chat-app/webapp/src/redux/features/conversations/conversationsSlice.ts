@@ -126,6 +126,7 @@ export const {
     updateMessageState,
     updateUserIsTyping,
     updateUserIsTypingFromServer,
+    updateBotResponseStatusFromServer,
     setUsersLoaded,
 } = conversationsSlice.actions;
 

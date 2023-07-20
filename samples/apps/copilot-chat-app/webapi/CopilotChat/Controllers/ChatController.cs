@@ -98,13 +98,6 @@ public class ChatController : ControllerBase, IDisposable
             return this.NotFound($"Failed to find {ChatSkillName}/{ChatFunctionName} on server");
         }
 
-        // Broadcast bot typing state to all users
-        if (ask.Variables.Where(v => v.Key == "chatId").Any())
-        {
-            var chatId = ask.Variables.Where(v => v.Key == "chatId").First().Value;
-            await messageRelayHubContext.Clients.Group(chatId).SendAsync(GeneratingResponseClientCall, chatId, "Calling the kernel");
-        }
-
         // Run the function.
         SKContext? result = null;
         try
@@ -138,7 +131,7 @@ public class ChatController : ControllerBase, IDisposable
         {
             var chatId = ask.Variables.Where(v => v.Key == "chatId").First().Value;
             await messageRelayHubContext.Clients.Group(chatId).SendAsync(ReceiveResponseClientCall, chatSkillAskResult, chatId);
-            await messageRelayHubContext.Clients.Group(chatId).SendAsync(GeneratingResponseClientCall, chatId);
+            await messageRelayHubContext.Clients.Group(chatId).SendAsync(GeneratingResponseClientCall, chatId, null);
         }
 
         return this.Ok(chatSkillAskResult);
