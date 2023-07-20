@@ -19,7 +19,7 @@ pre-commit = "3.3.3"
 black = {version = "23.3.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
 pytest = "7.4.0"
-ruff = "0.0.277"
+ruff = "0.0.278"
 pytest-asyncio = "0.21.0"
 
 [tool.poetry.group.hugging_face.dependencies]
