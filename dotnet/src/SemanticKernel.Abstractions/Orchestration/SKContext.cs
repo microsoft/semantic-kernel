@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
@@ -49,11 +48,6 @@ public sealed class SKContext
     /// (One prompt can have multiple results).
     /// </summary>
     public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
-
-    /// <summary>
-    /// The token to monitor for cancellation requests.
-    /// </summary>
-    public CancellationToken CancellationToken { get; }
 
     /// <summary>
     /// The culture currently associated with this context.
@@ -135,19 +129,16 @@ public sealed class SKContext
     /// <param name="memory">Semantic text memory unit to include in context.</param>
     /// <param name="skills">Skills to include in context.</param>
     /// <param name="logger">Logger for operations in context.</param>
-    /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
     public SKContext(
         ContextVariables? variables = null,
         ISemanticTextMemory? memory = null,
         IReadOnlySkillCollection? skills = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
+        ILogger? logger = null)
     {
         this.Variables = variables ?? new();
         this.Memory = memory ?? NullMemory.Instance;
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
         this.Log = logger ?? NullLogger.Instance;
-        this.CancellationToken = cancellationToken;
         this._culture = CultureInfo.CurrentCulture;
     }
 
@@ -172,8 +163,7 @@ public sealed class SKContext
             variables: this.Variables.Clone(),
             memory: this.Memory,
             skills: this.Skills,
-            logger: this.Log,
-            cancellationToken: this.CancellationToken)
+            logger: this.Log)
         {
             Culture = this.Culture,
             ErrorOccurred = this.ErrorOccurred,

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
@@ -44,10 +43,9 @@ public class SequentialPlanParserTests
 
     private SKContext CreateSKContext(
         IKernel kernel,
-        ContextVariables? variables = null,
-        CancellationToken cancellationToken = default)
+        ContextVariables? variables = null)
     {
-        return new SKContext(variables, kernel.Memory, kernel.Skills, kernel.Log, cancellationToken);
+        return new SKContext(variables, kernel.Memory, kernel.Skills, kernel.Log);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
@@ -66,7 +64,7 @@ public class SequentialPlanParserTests
         kernel = kernelMock.Object;
 
         // For Create
-        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<CancellationToken>())).Returns(this.CreateSKContext(kernel));
+        kernelMock.Setup(k => k.CreateNewContext()).Returns(this.CreateSKContext(kernel));
 
         var functionsView = new FunctionsView();
         foreach (var (name, skillName, description, isSemantic, resultString) in functions)
@@ -77,7 +75,7 @@ public class SequentialPlanParserTests
 
             var result = this.CreateSKContext(kernel);
             result.Variables.Update(resultString);
-            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, default))
                 .ReturnsAsync(result);
 
             if (string.IsNullOrEmpty(name))

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -64,7 +65,7 @@ public sealed class SequentialPlannerConfig
     /// <summary>
     /// Optional callback to get the available functions for planning.
     /// </summary>
-    public Func<SequentialPlannerConfig, string?, Task<IOrderedEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
+    public Func<SequentialPlannerConfig, string?, CancellationToken, Task<IOrderedEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
 
     /// <summary>
     /// Optional callback to get a function by name.

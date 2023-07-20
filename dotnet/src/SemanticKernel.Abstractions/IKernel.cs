@@ -88,6 +88,16 @@ public interface IKernel
     void RegisterMemory(ISemanticTextMemory memory);
 
     /// <summary>
+    /// Run a single synchronous or asynchronous <see cref="ISKFunction"/>.
+    /// </summary>
+    /// <param name="skFunction">A Semantic Kernel function to run</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function composition</returns>
+    Task<SKContext> RunAsync(
+        ISKFunction skFunction,
+        CancellationToken cancellationToken); // TODO: add `= default` value after the `params` overloads are removed, or it will be ambiguous.
+
+    /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="pipeline">List of functions</param>
@@ -161,9 +171,8 @@ public interface IKernel
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
-    /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
     /// <returns>SK context</returns>
-    SKContext CreateNewContext(CancellationToken cancellationToken = default);
+    SKContext CreateNewContext();
 
     /// <summary>
     /// Get one of the configured services. Currently limited to AI services.

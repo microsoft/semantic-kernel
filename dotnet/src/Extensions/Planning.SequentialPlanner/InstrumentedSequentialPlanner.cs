@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -29,7 +30,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     }
 
     /// <inheritdoc />
-    public async Task<Plan> CreatePlanAsync(string goal)
+    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity("SequentialPlanner.CreatePlan");
 
@@ -44,7 +45,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         {
             stopwatch.Start();
 
-            var plan = await this._planner.CreatePlanAsync(goal).ConfigureAwait(false);
+            var plan = await this._planner.CreatePlanAsync(goal, cancellationToken).ConfigureAwait(false);
 
             stopwatch.Stop();
 

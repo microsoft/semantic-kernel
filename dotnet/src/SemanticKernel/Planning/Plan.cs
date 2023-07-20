@@ -220,7 +220,7 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="kernel">The kernel instance to use for executing the plan.</param>
     /// <param name="variables">The variables to use for the execution of the plan.</param>
-    /// <param name="cancellationToken">The cancellation token to cancel the execution of the plan.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
     /// <remarks>
     /// This method executes the next step in the plan using the specified kernel instance and context variables. The context variables contain the necessary information for executing the plan, such as the memory, skills, and logger. The method returns a task representing the asynchronous execution of the plan's next step.
@@ -231,19 +231,19 @@ public sealed class Plan : ISKFunction
             variables,
             kernel.Memory,
             kernel.Skills,
-            kernel.Log,
-            cancellationToken);
+            kernel.Log);
 
-        return this.InvokeNextStepAsync(context);
+        return this.InvokeNextStepAsync(context, cancellationToken);
     }
 
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
     /// <param name="context">Context to use</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
     /// <exception cref="KernelException">If an error occurs while running the plan</exception>
-    public async Task<Plan> InvokeNextStepAsync(SKContext context)
+    public async Task<Plan> InvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
@@ -257,10 +257,9 @@ public sealed class Plan : ISKFunction
                 functionVariables,
                 context.Memory,
                 context.Skills,
-                context.Log,
-                context.CancellationToken);
+                context.Log);
 
-            var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
+            var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
             if (result.ErrorOccurred)
@@ -307,7 +306,6 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        // TODO - Eventually, we should be able to describe a plan and its expected inputs/outputs
         return this.Function?.Describe() ?? new();
     }
 
@@ -324,20 +322,20 @@ public sealed class Plan : ISKFunction
         SKContext context = new(
             this.State,
             memory: memory,
-            logger: logger,
-            cancellationToken: cancellationToken);
+            logger: logger);
 
-        return this.InvokeAsync(context, settings);
+        return this.InvokeAsync(context, settings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null)
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default)
     {
         if (this.Function is not null)
         {
-            var result = await this.InstrumentedInvokeAsync(this.Function, context, settings).ConfigureAwait(false);
+            var result = await this.InstrumentedInvokeAsync(this.Function, context, settings, cancellationToken).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -355,7 +353,7 @@ public sealed class Plan : ISKFunction
 
                 AddVariablesToContext(this.State, functionContext);
 
-                await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
+                await this.InvokeNextStepAsync(functionContext, cancellationToken).ConfigureAwait(false);
 
                 this.UpdateContextWithOutputs(context);
             }
@@ -596,7 +594,8 @@ public sealed class Plan : ISKFunction
     private async Task<SKContext> InstrumentedInvokeAsync(
         ISKFunction function,
         SKContext context,
-        CompleteRequestSettings? settings = null)
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
 
@@ -606,7 +605,7 @@ public sealed class Plan : ISKFunction
 
         stopwatch.Start();
 
-        var result = await function.InvokeAsync(context, settings).ConfigureAwait(false);
+        var result = await function.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
 
         stopwatch.Stop();
 

@@ -144,6 +144,10 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
+    public Task<SKContext> RunAsync(ISKFunction skFunction, CancellationToken cancellationToken)
+        => this.RunAsync(new ContextVariables(), cancellationToken, skFunction);
+
+    /// <inheritdoc/>
     public Task<SKContext> RunAsync(params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(), pipeline);
 
@@ -170,8 +174,7 @@ public sealed class Kernel : IKernel, IDisposable
             variables,
             this._memory,
             this._skillCollection.ReadOnlySkillCollection,
-            this.Log,
-            cancellationToken);
+            this.Log);
 
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
@@ -188,8 +191,8 @@ public sealed class Kernel : IKernel, IDisposable
 
             try
             {
-                context.CancellationToken.ThrowIfCancellationRequested();
-                context = await f.InvokeAsync(context).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (context.ErrorOccurred)
                 {
@@ -217,13 +220,23 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext(CancellationToken cancellationToken = default)
+    public SKContext CreateNewContext()
     {
         return new SKContext(
             memory: this._memory,
             skills: this._skillCollection.ReadOnlySkillCollection,
-            logger: this.Log,
-            cancellationToken: cancellationToken);
+            logger: this.Log);
+    }
+
+    /// <summary>
+    /// Create a new instance of a context, linked to the kernel internal state.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for operations in context.</param>
+    /// <returns>SK context</returns>
+    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
+    public SKContext CreateNewContext(CancellationToken cancellationToken)
+    {
+        return this.CreateNewContext();
     }
 
     /// <inheritdoc/>
