@@ -30,7 +30,7 @@ def sample_skills_path() -> str:
 
     if not found:
         raise ValueError(
-            "Skills directory not found. The app needs the skills from the repo to work."
+            "Skills directory not found. Create a skills directory in a samples folder"
         )
 
     return path
@@ -52,33 +52,47 @@ def create_kernel_for_request(req: func.HttpRequest, skills: List[str]):
     try:
         api_config = headers_to_config(req.headers)
     except ValueError:
-        logging.exception(f"No headers found. Using local .env file for configuration.")
-        try: 
+        logging.exception("No headers found. Using local .env file for configuration.")
+        try:
             api_config = dotenv_to_config()
-        except AssertionError as e:
-            logging.exception(f"No .env file found.")
-            return None, func.HttpResponse("No valid headers found and no .env file found.", status_code=400)
+        except AssertionError:
+            logging.exception("No .env file found.")
+            return None, func.HttpResponse(
+                "No valid headers found and no .env file found.", status_code=400
+            )
 
     try:
-        if api_config.serviceid == AIService.OPENAI.value or api_config.serviceid == AIService.OPENAI.name:
+        if (
+            api_config.serviceid == AIService.OPENAI.value
+            or api_config.serviceid == AIService.OPENAI.name
+        ):
             # Add an OpenAI backend
             kernel.add_text_completion_service(
                 "dv",
                 sk_oai.OpenAITextCompletion(
-                    model_id=api_config.deployment_model_id, api_key=api_config.key, org_id=api_config.org_id
+                    model_id=api_config.deployment_model_id,
+                    api_key=api_config.key,
+                    org_id=api_config.org_id,
                 ),
             )
-        elif api_config.serviceid == AIService.AZURE_OPENAI.value or api_config.serviceid == AIService.AZURE_OPENAI.name:
+        elif (
+            api_config.serviceid == AIService.AZURE_OPENAI.value
+            or api_config.serviceid == AIService.AZURE_OPENAI.name
+        ):
             # Add an Azure backend
             kernel.add_text_completion_service(
                 "dv",
                 sk_oai.AzureTextCompletion(
-                    deployment_name=api_config.deployment_model_id, api_key=api_config.key, endpoint=api_config.endpoint
+                    deployment_name=api_config.deployment_model_id,
+                    api_key=api_config.key,
+                    endpoint=api_config.endpoint,
                 ),
             )
     except ValueError as e:
         logging.exception(f"Error creating completion service: {e}")
-        return None, func.HttpResponse("Error creating completion service: {e}", status_code=400)
+        return None, func.HttpResponse(
+            "Error creating completion service: {e}", status_code=400
+        )
 
     try:
         register_semantic_skills(kernel, sample_skills_path(), skills)
