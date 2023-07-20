@@ -154,29 +154,13 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             List[str] -- The list of collections.
         """
 
-        results_list = list(str)
+        results_list = []
         items = self._search_index_client.list_index_names()
 
-        for result in items:
+        async for result in items:
             results_list.append(result)
 
         return results_list
-
-    async def get_collection_async(self, collection_name: str) -> SearchIndex:
-        """Gets the a collections based upon collection name.
-
-        Arguments:
-            collection_name {str} -- Name of the collection.
-
-        Returns:
-            SearchIndex -- Collection Information.
-        """
-
-        collection_result = await self._search_index_client.get_index(
-            name=collection_name.lower()
-        )
-
-        return collection_result
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.
@@ -222,27 +206,10 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             str -- The unique record id of the record.
         """
 
-        # Look up Search client class to see if exists or create
-        search_client = self._search_index_client.get_search_client(
-            collection_name.lower()
-        )
-
-        # Note:
-        # * Document id     = user provided value
-        # * MemoryRecord.id = base64(Document id)
-        if not record._id:
-            record._id = str(uuid.uuid4())
-
-        search_record = memory_record_to_search_record(record)
-
-        result = await search_client.upload_documents(documents=[search_record])
-
-        # Throw exception if problem
-        # Clean this up not needed if throwing
-        if result[0].succeeded:
-            return record._id
-        else:
-            raise ValueError("Error: Unable to upsert record.")
+        result = await self.upsert_batch_async(collection_name, [record])
+        if result:
+            return result[0]
+        return None
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -277,7 +244,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             search_records.append(search_record)
             search_ids.append(record._id)
 
-        result = search_client.upload_documents(documents=search_records)
+        result = await search_client.upload_documents(documents=search_records)
+        await search_client.close()
 
         if result[0].succeeded:
             return search_ids
@@ -308,7 +276,10 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                 key=encode_id(key), selected_fields=get_field_selection(with_embedding)
             )
         except ResourceNotFoundError:
+            await search_client.close()
             raise KeyError("Memory record not found")
+
+        await search_client.close()
 
         # Create Memory record from document
         return dict_to_memory_record(search_result, with_embedding)
@@ -373,6 +344,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         docs_to_delete = {SEARCH_FIELD_ID: encode_id(key)}
 
         await search_client.delete_documents(documents=[docs_to_delete])
+        await search_client.close()
 
     async def get_nearest_match_async(
         self,
@@ -441,6 +413,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         )
 
         if not search_results or search_results is None:
+            await search_client.close()
             return []
 
         # Convert the results to MemoryRecords
@@ -452,4 +425,5 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             memory_record = dict_to_memory_record(search_record, with_embeddings)
             nearest_results.append((memory_record, search_record["@search.score"]))
 
+        await search_client.close()
         return nearest_results
