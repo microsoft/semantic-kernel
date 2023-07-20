@@ -23,7 +23,9 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     return api_key, org_id
 
 
-def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, str, str]:
+def azure_openai_settings_from_dot_env(
+    include_deployment=True, include_api_key=True
+) -> Tuple[str, str, str]:
     """
     Reads the Azure OpenAI API key and endpoint from the .env file.
 
@@ -44,7 +46,9 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
             deployment is not None
         ), "Azure OpenAI deployment name not found in .env file"
 
-    assert api_key is not None, "Azure OpenAI API key not found in .env file"
+    if include_api_key:
+        assert api_key is not None, "Azure OpenAI API key not found in .env file"
+
     assert endpoint is not None, "Azure OpenAI endpoint not found in .env file"
 
     return deployment or "", api_key, endpoint
