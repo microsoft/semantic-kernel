@@ -17,5 +17,5 @@ public interface ICodeRendering
     /// <param name="context">SK execution context</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Rendered content</returns>
-    public Task<string> RenderCodeAsync(SKContext context, CancellationToken cancellationToken);
+    public Task<string> RenderCodeAsync(SKContext context, CancellationToken cancellationToken = default);
 }
