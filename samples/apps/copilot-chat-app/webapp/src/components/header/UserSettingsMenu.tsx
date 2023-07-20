@@ -60,7 +60,9 @@ export const UserSettingsMenu: FC<IUserSettingsProps> = ({ setLoadingState }) =>
                             name={activeUserInfo?.username}
                             size={28}
                             badge={
-                                !features[FeatureKeys.SimplifiedExperience].show ? { status: 'available' } : undefined
+                                !features[FeatureKeys.SimplifiedExperience].enabled
+                                    ? { status: 'available' }
+                                    : undefined
                             }
                         />
                     }
@@ -72,7 +74,9 @@ export const UserSettingsMenu: FC<IUserSettingsProps> = ({ setLoadingState }) =>
                             name={activeUserInfo?.username}
                             secondaryText={activeUserInfo?.email}
                             presence={
-                                !features[FeatureKeys.SimplifiedExperience].show ? { status: 'available' } : undefined
+                                !features[FeatureKeys.SimplifiedExperience].enabled
+                                    ? { status: 'available' }
+                                    : undefined
                             }
                             avatar={{ color: 'colorful' }}
                         />

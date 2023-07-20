@@ -14,9 +14,9 @@ export interface Alert {
 }
 
 interface Feature {
-    show: boolean; // Whether to show the feature in the UX
+    enabled: boolean; // Whether to show the feature in the UX
     label: string;
-    disabled?: boolean; // Set to true if you don't want the user to control the visibility of this feature or there's no backend support
+    inactive?: boolean; // Set to true if you don't want the user to control the visibility of this feature or there's no backend support
     description?: string;
 }
 
@@ -55,40 +55,40 @@ export enum FeatureKeys {
 
 export const Features = {
     [FeatureKeys.DarkMode]: {
-        show: false,
+        enabled: false,
         label: 'Dark Mode',
     },
     [FeatureKeys.SimplifiedExperience]: {
-        show: true,
+        enabled: true,
         label: 'Simplified Chat Experience',
     },
     [FeatureKeys.PluginsPlannersAndPersonas]: {
-        show: false,
+        enabled: false,
         label: 'Plugins & Planners & Personas',
-        descriptishow: 'The Plans and Persona tabs are hidden until you turn this on',
+        descriptienabled: 'The Plans and Persona tabs are hidden until you turn this on',
     },
     [FeatureKeys.AzureContentSafety]: {
-        show: false,
+        enabled: false,
         label: 'Azure Content Safety',
-        disabled: true,
+        inactive: true,
     },
     [FeatureKeys.AzureCognitiveSearch]: {
-        show: false,
+        enabled: false,
         label: 'Azure Cognitive Search',
-        disabled: true,
+        inactive: true,
     },
     [FeatureKeys.BotAsDocs]: {
-        show: false,
+        enabled: false,
         label: 'Save/Load Chat Sessions',
     },
     [FeatureKeys.MultiUserChat]: {
-        show: false,
+        enabled: false,
         label: 'Live Chat Session Sharing',
     },
     [FeatureKeys.RLHF]: {
-        show: false,
+        enabled: false,
         label: 'Reinforcement Learning from Human Feedback',
-        descriptishow: 'Enable users to vote on model-generated responses. For demonstration purposes only.',
+        descriptienabled: 'Enable users to vote on model-generated responses. For demonstration purposes only.',
     },
 };
 
@@ -111,7 +111,7 @@ export const Settings = [
     },
     {
         title: 'Experimental',
-        descriptishow: 'The related icons and menu options are hidden until you turn this on',
+        descriptienabled: 'The related icons and menu options are hidden until you turn this on',
         features: [FeatureKeys.BotAsDocs, FeatureKeys.MultiUserChat, FeatureKeys.RLHF],
     },
 ];

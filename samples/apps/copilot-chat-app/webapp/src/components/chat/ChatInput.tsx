@@ -157,7 +157,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     };
 
     const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
-        if (!features[FeatureKeys.SimplifiedExperience].show) {
+        if (!features[FeatureKeys.SimplifiedExperience].enabled) {
             onDragLeave(e);
             void fileHandler.handleImport(
                 setDocumentImporting,
@@ -222,7 +222,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 />
             </div>
             <div className={classes.controls}>
-                {!features[FeatureKeys.SimplifiedExperience].show && (
+                {!features[FeatureKeys.SimplifiedExperience].enabled && (
                     <div className={classes.functional}>
                         {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
                         <input

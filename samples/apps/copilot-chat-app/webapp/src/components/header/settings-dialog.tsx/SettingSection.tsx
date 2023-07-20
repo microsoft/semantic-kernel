@@ -48,8 +48,8 @@ export const SettingSection: React.FC<ISettingsSectionProps> = ({ setting, conte
                             <Switch
                                 key={key}
                                 label={feature.label}
-                                checked={feature.show}
-                                disabled={feature.disabled}
+                                checked={feature.enabled}
+                                disabled={feature.inactive}
                                 onChange={() => onFeatureChange(key)}
                             />
                             <Text key={`${key}-description`} className={classes.featureDescription}>

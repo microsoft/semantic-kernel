@@ -92,7 +92,7 @@ export const ChatWindow: React.FC = () => {
     const classes = useClasses();
     const { features } = useAppSelector((state: RootState) => state.app);
 
-    const showShareBotMenu = features[FeatureKeys.BotAsDocs].show || features[FeatureKeys.MultiUserChat].show;
+    const showShareBotMenu = features[FeatureKeys.BotAsDocs].enabled || features[FeatureKeys.MultiUserChat].enabled;
 
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
@@ -108,7 +108,7 @@ export const ChatWindow: React.FC = () => {
         <div className={classes.root}>
             <div className={classes.header}>
                 <div className={classes.title}>
-                    {!features[FeatureKeys.SimplifiedExperience].show && (
+                    {!features[FeatureKeys.SimplifiedExperience].enabled && (
                         <>
                             <Persona
                                 key={'Semantic Kernel Bot'}
@@ -151,7 +151,7 @@ export const ChatWindow: React.FC = () => {
                         <Tab data-testid="documentsTab" id="documents" value="documents">
                             Documents
                         </Tab>
-                        {features[FeatureKeys.PluginsPlannersAndPersonas].show && (
+                        {features[FeatureKeys.PluginsPlannersAndPersonas].enabled && (
                             <>
                                 <Tab data-testid="plansTab" id="plans" value="plans" icon={<Map16Regular />}>
                                     Plans
@@ -164,7 +164,7 @@ export const ChatWindow: React.FC = () => {
                     </TabList>
                 </div>
                 <div className={classes.controls}>
-                    {!features[FeatureKeys.SimplifiedExperience].show && (
+                    {!features[FeatureKeys.SimplifiedExperience].enabled && (
                         <div data-testid="chatParticipantsView">
                             <ParticipantsList participants={conversations[selectedId].users} />
                         </div>

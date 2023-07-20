@@ -50,7 +50,7 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageIndex
                     appearance="transparent"
                     aria-label="Edit"
                     onClick={() => onUserFeedbackProvided(true)}
-                    disabled={!features[FeatureKeys.RLHF].show}
+                    disabled={!features[FeatureKeys.RLHF].enabled}
                 />
             </Tooltip>
             <Tooltip content={'Dislike bot message'} relationship="label">
@@ -59,7 +59,7 @@ export const UserFeedbackActions: React.FC<IUserFeedbackProps> = ({ messageIndex
                     appearance="transparent"
                     aria-label="Edit"
                     onClick={() => onUserFeedbackProvided(false)}
-                    disabled={!features[FeatureKeys.RLHF].show}
+                    disabled={!features[FeatureKeys.RLHF].enabled}
                 />
             </Tooltip>
         </div>

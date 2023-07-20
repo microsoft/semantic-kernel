@@ -115,8 +115,8 @@ export const ChatListItem: FC<IChatListItemProps> = ({
     const dispatch = useAppDispatch();
     const { features } = useAppSelector((state: RootState) => state.app);
 
-    const showPreview = !features[FeatureKeys.SimplifiedExperience].show && preview;
-    const showActions = features[FeatureKeys.SimplifiedExperience].show && isSelected;
+    const showPreview = !features[FeatureKeys.SimplifiedExperience].enabled && preview;
+    const showActions = features[FeatureKeys.SimplifiedExperience].enabled && isSelected;
 
     const [editingTitle, setEditingTitle] = useState(false);
 
@@ -139,7 +139,7 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                     <Persona
                         avatar={{ image: { src: botProfilePicture } }}
                         presence={
-                            !features[FeatureKeys.SimplifiedExperience].show ? { status: 'available' } : undefined
+                            !features[FeatureKeys.SimplifiedExperience].enabled ? { status: 'available' } : undefined
                         }
                     />
                     {editingTitle ? (
@@ -150,11 +150,11 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                                 <div className={classes.header}>
                                     <Text className={classes.title}>
                                         {header}
-                                        {features[FeatureKeys.AzureContentSafety].show && (
+                                        {features[FeatureKeys.AzureContentSafety].enabled && (
                                             <ShieldTask16Regular className={classes.protectedIcon} />
                                         )}
                                     </Text>
-                                    {!features[FeatureKeys.SimplifiedExperience].show && (
+                                    {!features[FeatureKeys.SimplifiedExperience].enabled && (
                                         <Text className={classes.timestamp} size={300}>
                                             {time}
                                         </Text>

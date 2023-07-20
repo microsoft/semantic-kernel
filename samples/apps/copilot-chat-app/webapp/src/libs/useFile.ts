@@ -94,7 +94,7 @@ export const useFile = () => {
                 );
 
             for (const file of filesArray) {
-                if (features[FeatureKeys.AzureContentSafety].show && file.type.startsWith('image/')) {
+                if (features[FeatureKeys.AzureContentSafety].enabled && file.type.startsWith('image/')) {
                     try {
                         await handleImageUpload(file);
                         filesToUploadArray.push(file);
@@ -125,8 +125,8 @@ export const useFile = () => {
             documentFileRef.current.value = '';
         }
 
-        // Reset the file input so that the onChange event will
-        // be triggered even if the same file is selected again.
+        // Reset the image input so that the onChange event will
+        // be triggered even if the same image is selected again.
         if (imageUploaderRef?.current?.value) {
             imageUploaderRef.current.value = '';
         }

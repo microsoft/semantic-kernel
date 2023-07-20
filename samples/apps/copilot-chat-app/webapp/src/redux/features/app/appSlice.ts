@@ -29,7 +29,7 @@ export const appSlice = createSlice({
                 ...state.features,
                 [action.payload]: {
                     ...feature,
-                    show: !feature.show,
+                    enabled: !feature.enabled,
                 },
             };
         },
@@ -38,8 +38,8 @@ export const appSlice = createSlice({
             state: AppState,
             action: PayloadAction<{
                 feature: FeatureKeys;
-                disable: boolean;
-                show: boolean;
+                deactivate: boolean;
+                enable: boolean;
             }>,
         ) => {
             const feature = state.features[action.payload.feature];
@@ -47,8 +47,8 @@ export const appSlice = createSlice({
                 ...state.features,
                 [action.payload.feature]: {
                     ...feature,
-                    show: action.payload.disable ? false : action.payload.show,
-                    disabled: action.payload.disable,
+                    enabled: action.payload.deactivate ? false : action.payload.enable,
+                    inactive: action.payload.deactivate,
                 },
             };
         },

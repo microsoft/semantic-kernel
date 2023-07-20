@@ -58,7 +58,7 @@ export const SimplifiedNewBotMenu: FC<SimplifiedNewBotMenuProps> = ({ onFileUplo
                         <Divider />
                         <MenuItem
                             data-testid="uploadABotMenuItem"
-                            disabled={!features[FeatureKeys.BotAsDocs].show}
+                            disabled={!features[FeatureKeys.BotAsDocs].enabled}
                             // TODO: Fix, not sure if it works right
                             onClick={onFileUpload}
                         >
@@ -66,7 +66,7 @@ export const SimplifiedNewBotMenu: FC<SimplifiedNewBotMenuProps> = ({ onFileUplo
                         </MenuItem>
                         <MenuItem
                             data-testid="joinABotMenuItem"
-                            disabled={!features[FeatureKeys.MultiUserChat].show}
+                            disabled={!features[FeatureKeys.MultiUserChat].enabled}
                             onClick={onJoinClick}
                         >
                             Join Shared Chat

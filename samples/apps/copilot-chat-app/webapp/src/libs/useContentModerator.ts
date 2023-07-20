@@ -47,9 +47,11 @@ export const useContentModerator = () => {
             const SERVICE_DISABLED_MESSAGE = 'Content Moderation is currently disabled.';
 
             if (error.message.includes(SERVICE_DISABLED_MESSAGE)) {
-                dispatch(toggleFeatureState({ feature: FeatureKeys.AzureContentSafety, disable: true, show: false }));
+                dispatch(
+                    toggleFeatureState({ feature: FeatureKeys.AzureContentSafety, deactivate: true, enable: false }),
+                );
 
-                if (features[FeatureKeys.AzureContentSafety].show) {
+                if (features[FeatureKeys.AzureContentSafety].enabled) {
                     dispatch(
                         addAlert({
                             type: AlertType.Warning,
@@ -71,10 +73,12 @@ export const useContentModerator = () => {
             );
 
             if (result) {
-                dispatch(toggleFeatureState({ feature: FeatureKeys.AzureContentSafety, disable: false, show: true }));
+                dispatch(
+                    toggleFeatureState({ feature: FeatureKeys.AzureContentSafety, deactivate: false, enable: true }),
+                );
             }
         } catch (error) {
-            /* empty */
+            /* Do nothing, leave feature disabled */
         }
     };
 

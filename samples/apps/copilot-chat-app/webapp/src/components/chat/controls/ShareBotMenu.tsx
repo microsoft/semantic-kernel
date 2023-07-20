@@ -47,7 +47,7 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
                             data-testid="downloadBotMenuItem"
                             icon={<ArrowDownloadRegular />}
                             onClick={onDownloadBotClick}
-                            disabled={!features[FeatureKeys.BotAsDocs].show}
+                            disabled={!features[FeatureKeys.BotAsDocs].enabled}
                         >
                             Download your Bot
                         </MenuItem>
@@ -56,7 +56,7 @@ export const ShareBotMenu: FC<ShareBotMenuProps> = ({ chatId, chatTitle }) => {
                             data-testid="inviteOthersMenuItem"
                             icon={<PeopleTeamAddRegular />}
                             onClick={() => setIsGettingInvitationId(true)}
-                            disabled={!features[FeatureKeys.MultiUserChat].show}
+                            disabled={!features[FeatureKeys.MultiUserChat].enabled}
                         >
                             Invite others to your Bot
                         </MenuItem>
