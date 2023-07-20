@@ -229,7 +229,6 @@ public sealed class Plan : ISKFunction
     {
         var context = new SKContext(
             variables,
-            kernel.Memory,
             kernel.Skills,
             kernel.Log,
             cancellationToken);
@@ -253,13 +252,7 @@ public sealed class Plan : ISKFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(
-                functionVariables,
-                context.Memory,
-                context.Skills,
-                context.Log,
-                context.CancellationToken);
-
+            var functionContext = new SKContext(functionVariables, context.Skills, context.Log, context.CancellationToken);
             var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
@@ -323,7 +316,6 @@ public sealed class Plan : ISKFunction
 
         SKContext context = new(
             this.State,
-            memory: memory,
             logger: logger,
             cancellationToken: cancellationToken);
 

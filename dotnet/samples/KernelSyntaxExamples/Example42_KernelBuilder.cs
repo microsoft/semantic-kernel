@@ -109,12 +109,6 @@ public static class Example42_KernelBuilder
                 apiKey: azureOpenAIKey)
             .Build();
 
-        // Example: how to use a custom memory storage and custom embedding generator
-        var kernel5 = Kernel.Builder
-            .WithLogger(NullLogger.Instance)
-            .WithMemoryStorageAndTextEmbeddingGeneration(memoryStorage, textEmbeddingGenerator)
-            .Build();
-
         // Example: how to use a custom memory storage
         var kernel6 = Kernel.Builder
             .WithLogger(NullLogger.Instance)
