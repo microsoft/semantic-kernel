@@ -7,7 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -224,9 +224,9 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Assert
         Assert.True(context.ErrorOccurred);
-        Assert.IsType<AIException>(context.LastException);
-        Assert.Equal(AIException.ErrorCodes.AccessDenied, ((AIException)context.LastException).ErrorCode);
-        Assert.Contains("The request is not authorized, HTTP status: 401", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
+        Assert.IsType<HttpOperationException>(context.LastException);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
+        Assert.Contains("The request is not authorized, HTTP status: 401", ((HttpOperationException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -252,9 +252,9 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Assert
         Assert.True(context.ErrorOccurred);
-        Assert.IsType<AIException>(context.LastException);
-        Assert.Equal(AIException.ErrorCodes.AccessDenied, ((AIException)context.LastException).ErrorCode);
-        Assert.Contains("The request is not authorized, HTTP status: 401", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
+        Assert.IsType<HttpOperationException>(context.LastException);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
+        Assert.Contains("The request is not authorized, HTTP status: 401", ((HttpOperationException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -280,10 +280,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Assert
         Assert.True(context.ErrorOccurred);
-        Assert.IsType<AIException>(context.LastException);
-        Assert.Equal(AIException.ErrorCodes.InvalidRequest, ((AIException)context.LastException).ErrorCode);
-        Assert.Contains("The request is not valid, HTTP status: 400", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase); // This message could change in the future, comes from Azure OpenAI
+        Assert.IsType<HttpOperationException>(context.LastException);
+        Assert.Equal(HttpStatusCode.BadRequest, ((HttpOperationException)context.LastException).StatusCode);
+        Assert.Contains("The request is not valid, HTTP status: 400", ((HttpOperationException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("maximum context length is", ((HttpOperationException)context.LastException).ResponseContent, StringComparison.OrdinalIgnoreCase); // This message could change in the future, comes from Azure OpenAI
     }
 
     [Theory(Skip = "This test is for manual verification.")]

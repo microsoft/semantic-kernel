@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -45,7 +44,6 @@ public abstract class OpenAIClientBase
     /// <param name="requestBody">Request payload</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of text embeddings</returns>
-    /// <exception cref="AIException">AIException thrown during the request.</exception>
     private protected async Task<IList<Embedding<float>>> ExecuteTextEmbeddingRequestAsync(
         string url,
         string requestBody,
@@ -54,9 +52,7 @@ public abstract class OpenAIClientBase
         var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         if (result.Embeddings is not { Count: >= 1 })
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidResponseContent,
-                "Embeddings not found");
+            throw new SKException("Embeddings not found");
         }
 
         return result.Embeddings.Select(e => new Embedding<float>(e.Values, transferOwnership: true)).ToList();
@@ -70,7 +66,6 @@ public abstract class OpenAIClientBase
     /// <param name="extractResponseFunc">Function to invoke to extract the desired portion of the image generation response.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of image URLs</returns>
-    /// <exception cref="AIException">AIException thrown during the request.</exception>
     private protected async Task<IList<string>> ExecuteImageGenerationRequestAsync(
         string url,
         string requestBody,
@@ -110,7 +105,7 @@ public abstract class OpenAIClientBase
         var result = Json.Deserialize<T>(responseJson);
         if (result is null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");
+            throw new SKException("Response JSON parse error");
         }
 
         return result;

@@ -13,10 +13,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Services;
@@ -197,7 +197,7 @@ public static class Example42_KernelBuilder
         private static AsyncRetryPolicy GetPolicy(ILogger log)
         {
             return Policy
-                .Handle<AIException>(ex => ex.ErrorCode == AIException.ErrorCodes.Throttling)
+                .Handle<HttpOperationException>(ex => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 .WaitAndRetryAsync(new[]
                     {
                         TimeSpan.FromSeconds(2),

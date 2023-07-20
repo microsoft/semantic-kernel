@@ -15,7 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
@@ -184,11 +183,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
                 context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
             }
-            catch (AIException ex)
+            catch (SKException ex)
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
-                                       " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-                log?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
+                                       " or while executing the text completion. Function: {0}.{1}. Error: {2}.";
+                log?.LogError(ex, Message, skillName, functionName, ex.Message);
                 context.Fail(ex.Message, ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())

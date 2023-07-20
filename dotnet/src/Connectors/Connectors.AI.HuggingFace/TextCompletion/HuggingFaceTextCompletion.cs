@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
@@ -119,7 +118,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
         if (completionResponse is null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
+            throw new SKException("Unexpected response from model")
             {
                 Data = { { "ResponseData", responseContent } },
             };

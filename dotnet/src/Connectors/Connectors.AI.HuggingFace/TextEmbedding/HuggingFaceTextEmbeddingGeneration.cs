@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 
@@ -76,9 +75,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                "The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new ArgumentException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
     }
 
@@ -96,33 +93,34 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     /// <param name="data">Data to embed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of generated embeddings.</returns>
-    /// <exception cref="AIException">Exception when backend didn't respond with generated embeddings.</exception>
+    /// <exception cref="HttpOperationException">Exception when backend didn't respond with generated embeddings.</exception>
     private async Task<IList<Embedding<float>>> ExecuteEmbeddingRequestAsync(IList<string> data, CancellationToken cancellationToken)
     {
+        var embeddingRequest = new TextEmbeddingRequest
+        {
+            Input = data
+        };
+
+        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
+
+        httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
+
+        var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+
+        var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
         try
         {
-            var embeddingRequest = new TextEmbeddingRequest
-            {
-                Input = data
-            };
-
-            using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
-
-            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
-
-            var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
-
-            return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding!, transferOwnership: true)).ToList()!;
+            response.EnsureSuccessStatusCode();
         }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        catch (HttpRequestException e)
         {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
+
+        var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(responseContent);
+
+        return embeddingResponse?.Embeddings?.Select(l => new Embedding<float>(l.Embedding!, transferOwnership: true)).ToList()!;
     }
 
     /// <summary>
@@ -145,7 +143,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
         }
         else
         {
-            throw new AIException(AIException.ErrorCodes.InvalidConfiguration, "No endpoint or HTTP client base address has been provided");
+            throw new SKException("No endpoint or HTTP client base address has been provided");
         }
 
         return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
