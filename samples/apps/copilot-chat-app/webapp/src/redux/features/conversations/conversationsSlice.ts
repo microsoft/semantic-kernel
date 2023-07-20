@@ -10,7 +10,7 @@ import {
     Conversations,
     ConversationsState,
     ConversationTitleChange,
-    initialState
+    initialState,
 } from './ConversationsState';
 
 export const conversationsSlice: Slice<ConversationsState> = createSlice({
@@ -104,13 +104,13 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             const { userId, chatId, isTyping } = action.payload;
             updateUserTypingState(state, userId, chatId, isTyping);
         },
-        updateBotIsTypingFromServer: (
+        updateBotResponseStatusFromServer: (
             state: ConversationsState,
-            action: PayloadAction<{ chatId: string; isTyping: boolean }>,
+            action: PayloadAction<{ chatId: string; status: string }>,
         ) => {
-            const { chatId, isTyping } = action.payload;
+            const { chatId, status } = action.payload;
             const conversation = state.conversations[chatId];
-            conversation.isBotTyping = isTyping;
+            conversation.botResponseStatus = status;
         },
     },
 });

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
@@ -15,6 +16,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
+using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
@@ -44,6 +46,11 @@ public class ChatSkill
     private readonly ChatSessionRepository _chatSessionRepository;
 
     /// <summary>
+    /// A SignalR hub context to broadcast updates of the execution.
+    /// </summary>
+    private readonly IHubContext<MessageRelayHub> _messageRelayHubContext;
+
+    /// <summary>
     /// Settings containing prompt texts.
     /// </summary>
     private readonly PromptsOptions _promptOptions;
@@ -70,6 +77,7 @@ public class ChatSkill
         IKernel kernel,
         ChatMessageRepository chatMessageRepository,
         ChatSessionRepository chatSessionRepository,
+        IHubContext<MessageRelayHub> messageRelayHubContext,
         IOptions<PromptsOptions> promptOptions,
         IOptions<DocumentMemoryOptions> documentImportOptions,
         CopilotChatPlanner planner,
@@ -79,6 +87,7 @@ public class ChatSkill
         this._chatMessageRepository = chatMessageRepository;
         this._chatSessionRepository = chatSessionRepository;
         this._promptOptions = promptOptions.Value;
+        this._messageRelayHubContext = messageRelayHubContext;
 
         this._semanticChatMemorySkill = new SemanticChatMemorySkill(
             promptOptions);
@@ -286,6 +295,7 @@ public class ChatSkill
         context.Variables.Set("messageType", ((int)botMessage.Type).ToString(CultureInfo.InvariantCulture));
 
         // Extract semantic chat memory
+        await this.UpdateResponseStatusOnClient(chatId, "Extracting semantic chat memory");
         await SemanticChatMemoryExtractor.ExtractSemanticChatMemoryAsync(
             chatId,
             this._kernel,
@@ -306,6 +316,7 @@ public class ChatSkill
     private async Task<string> GetChatResponseAsync(string chatId, SKContext chatContext)
     {
         // 0. Get the audience
+        await this.UpdateResponseStatusOnClient(chatId, "Extracting audience");
         var audience = await this.GetAudienceAsync(chatContext);
         if (chatContext.ErrorOccurred)
         {
@@ -313,6 +324,7 @@ public class ChatSkill
         }
 
         // 1. Extract user intent from the conversation history.
+        await this.UpdateResponseStatusOnClient(chatId, "Extracting user intent");
         var userIntent = await this.GetUserIntentAsync(chatContext);
         if (chatContext.ErrorOccurred)
         {
@@ -320,9 +332,11 @@ public class ChatSkill
         }
 
         // 2. Calculate the remaining token budget.
+        await this.UpdateResponseStatusOnClient(chatId, "Calculating remaining token budget");
         var remainingToken = this.GetChatContextTokenLimit(userIntent);
 
         // 3. Acquire external information from planner
+        await this.UpdateResponseStatusOnClient(chatId, "Acquiring external information from planner");
         var externalInformationTokenLimit = (int)(remainingToken * this._promptOptions.ExternalInformationContextWeight);
         var planResult = await this.AcquireExternalInformationAsync(chatContext, userIntent, externalInformationTokenLimit);
         if (chatContext.ErrorOccurred)
@@ -333,10 +347,12 @@ public class ChatSkill
         // If plan is suggested, send back to user for approval before running
         if (this._externalInformationSkill.ProposedPlan != null)
         {
+            chatContext.Variables.Set("prompt", this._externalInformationSkill.ProposedPlan.Plan.Description);
             return JsonSerializer.Serialize<ProposedPlan>(this._externalInformationSkill.ProposedPlan);
         }
 
         // 4. Query relevant semantic memories
+        await this.UpdateResponseStatusOnClient(chatId, "Querying semantic memories");
         var chatMemoriesTokenLimit = (int)(remainingToken * this._promptOptions.MemoriesResponseContextWeight);
         var chatMemories = await this._semanticChatMemorySkill.QueryMemoriesAsync(userIntent, chatId, chatMemoriesTokenLimit, chatContext.Memory);
         if (chatContext.ErrorOccurred)
@@ -345,6 +361,7 @@ public class ChatSkill
         }
 
         // 5. Query relevant document memories
+        await this.UpdateResponseStatusOnClient(chatId, "Querying document memories");
         var documentContextTokenLimit = (int)(remainingToken * this._promptOptions.DocumentContextWeight);
         var documentMemories = await this._documentMemorySkill.QueryDocumentsAsync(userIntent, chatId, documentContextTokenLimit, chatContext.Memory);
         if (chatContext.ErrorOccurred)
@@ -358,6 +375,7 @@ public class ChatSkill
         var chatContextTextTokenCount = remainingToken - Utilities.TokenCount(chatContextText);
         if (chatContextTextTokenCount > 0)
         {
+            await this.UpdateResponseStatusOnClient(chatId, "Extracting chat history");
             var chatHistory = await this.ExtractChatHistoryAsync(chatId, chatContextTextTokenCount);
             if (chatContext.ErrorOccurred)
             {
@@ -381,6 +399,7 @@ public class ChatSkill
             skillName: nameof(ChatSkill),
             description: "Complete the prompt.");
 
+        await this.UpdateResponseStatusOnClient(chatId, "Invoking the AI model");
         chatContext = await completionFunction.InvokeAsync(
             context: chatContext,
             settings: this.CreateChatResponseCompletionSettings()
@@ -626,6 +645,16 @@ public class ChatSkill
             );
 
         return remainingToken;
+    }
+
+    /// <summary>
+    /// Update the status of the response on the client.
+    /// </summary>
+    /// <param name="chatId">Id of the chat session</param>
+    /// <param name="status">Current status of the response</param>
+    private async Task UpdateResponseStatusOnClient(string chatId, string status)
+    {
+        await this._messageRelayHubContext.Clients.Group(chatId).SendAsync("ReceiveBotResponseStatus", chatId, status);
     }
 
     # endregion

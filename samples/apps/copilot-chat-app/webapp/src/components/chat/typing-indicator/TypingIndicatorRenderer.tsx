@@ -13,26 +13,23 @@ const useClasses = makeStyles({
 });
 
 interface TypingIndicatorRendererProps {
-    isBotTyping: boolean;
+    botResponseStatus: string | undefined;
     numberOfUsersTyping: number;
 }
 
-export const TypingIndicatorRenderer: React.FC<TypingIndicatorRendererProps> = ({ isBotTyping, numberOfUsersTyping }) => {
+export const TypingIndicatorRenderer: React.FC<TypingIndicatorRendererProps> = ({
+    botResponseStatus,
+    numberOfUsersTyping,
+}) => {
     const classes = useClasses();
 
-    let message = '';
-    if (isBotTyping) {
-        if (numberOfUsersTyping === 0) {
-            message = 'Bot is typing';
-        } else if (numberOfUsersTyping === 1) {
-            message = 'Bot and 1 user are typing';
-        } else {
-            message = `Bot and ${numberOfUsersTyping} users are typing`;
-        }
-    } else if (numberOfUsersTyping === 1) {
-        message = '1 user is typing';
+    let message = botResponseStatus;
+    if (numberOfUsersTyping === 1) {
+        message = message ? `${message} and 1 user is typing` : '1 user is typing';
     } else if (numberOfUsersTyping > 1) {
-        message = `${numberOfUsersTyping} users are typing`;
+        message = message
+            ? `${message} and ${numberOfUsersTyping} users are typing`
+            : `${numberOfUsersTyping} users are typing`;
     }
 
     if (!message) {
@@ -46,5 +43,9 @@ export const TypingIndicatorRenderer: React.FC<TypingIndicatorRendererProps> = (
         </div>
     );
 
-    return <Animation name="slideInCubic" keyframeParams={{ distance: '2.4rem' }}>{typingIndicator}</Animation>;
+    return (
+        <Animation name="slideInCubic" keyframeParams={{ distance: '2.4rem' }}>
+            {typingIndicator}
+        </Animation>
+    );
 };

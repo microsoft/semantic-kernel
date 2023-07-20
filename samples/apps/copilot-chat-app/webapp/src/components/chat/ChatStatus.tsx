@@ -15,9 +15,7 @@ export const ChatStatus: React.FC = () => {
     React.useEffect(() => {
         const checkAreTyping = () => {
             const updatedTypingUsers: IChatUser[] = users.filter(
-                (chatUser: IChatUser) =>
-                    chatUser.id !== activeUserInfo?.id &&
-                    chatUser.isTyping,
+                (chatUser: IChatUser) => chatUser.id !== activeUserInfo?.id && chatUser.isTyping,
             );
 
             setTypingUserList(updatedTypingUsers);
@@ -26,6 +24,9 @@ export const ChatStatus: React.FC = () => {
     }, [activeUserInfo, users]);
 
     return (
-        <TypingIndicatorRenderer isBotTyping={conversations[selectedId].isBotTyping} numberOfUsersTyping={typingUserList.length} />
+        <TypingIndicatorRenderer
+            botResponseStatus={conversations[selectedId].botResponseStatus}
+            numberOfUsersTyping={typingUserList.length}
+        />
     );
 };
