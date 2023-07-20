@@ -101,6 +101,7 @@ public sealed class ActionPlannerTests
     private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? mockSkills = null)
     {
         var kernel = new Mock<IKernel>();
+        var logger = new Mock<ILogger>();
 
         Mock<ISkillCollection> skills;
         if (mockSkills != null)
@@ -118,12 +119,12 @@ public sealed class ActionPlannerTests
         var returnContext = new SKContext(
             new ContextVariables(testPlanString),
             skills.Object,
-            new Mock<ILogger>().Object
+            logger.Object
         );
 
         var context = new SKContext(
             skills: skills.Object,
-            logger: new Mock<ILogger>().Object
+            logger: logger.Object
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
