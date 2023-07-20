@@ -256,10 +256,6 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             throw new SKException($"Failed to get vector data from Pinecone: {ex.Message}", ex);
         }
-        catch (SKException)
-        {
-            throw;
-        }
 
         return null;
     }

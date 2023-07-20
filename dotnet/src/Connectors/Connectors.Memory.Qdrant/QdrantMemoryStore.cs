@@ -160,10 +160,6 @@ public class QdrantMemoryStore : IMemoryStore
         {
             throw new SKException("Failed to get vector data", ex);
         }
-        catch (SKException)
-        {
-            throw;
-        }
     }
 
     /// <inheritdoc/>
@@ -208,10 +204,6 @@ public class QdrantMemoryStore : IMemoryStore
         catch (HttpRequestException ex)
         {
             throw new SKException("Failed to get vector data", ex);
-        }
-        catch (SKException)
-        {
-            throw;
         }
     }
 
