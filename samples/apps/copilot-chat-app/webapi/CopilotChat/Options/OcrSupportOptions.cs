@@ -21,7 +21,12 @@ public class OcrSupportOptions
         /// <summary>
         /// Tesseract OCR Support
         /// </summary>
-        Tesseract
+        Tesseract,
+
+        /// <summary>
+        /// Azure Form Recognizer OCR Support
+        /// </summary>
+        AzureFormRecognizer
     }
 
     /// <summary>
@@ -30,8 +35,14 @@ public class OcrSupportOptions
     public OcrSupportType Type { get; set; } = OcrSupportType.None;
 
     /// <summary>
-    /// Gets or sets the configuration for the Tesseract OCR support.
+    /// Gets or sets the configuration for Tesseract OCR support.
     /// </summary>
     [RequiredOnPropertyValue(nameof(Type), OcrSupportType.Tesseract)]
     public TesseractOptions? Tesseract { get; set; }
+
+    /// <summary>
+    /// Gets or sets the configuration for Azure Form Recognizer OCR support.
+    /// </summary>
+    [RequiredOnPropertyValue(nameof(Type), OcrSupportType.AzureFormRecognizer)]
+    public AzureFormRecognizerOptions? AzureFormRecognizer { get; set; }
 }

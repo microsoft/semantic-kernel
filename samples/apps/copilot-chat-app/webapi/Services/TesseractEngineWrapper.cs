@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Tesseract;
 
 namespace SemanticKernel.Service.Services;
@@ -8,7 +11,7 @@ namespace SemanticKernel.Service.Services;
 /// <summary>
 /// Wrapper for the TesseractEngine within the Tesseract OCR library. This is used to allow the TesseractEngine to be mocked in the event that the Tesseract language file is not installed.
 /// </summary>
-public class TesseractEngineWrapper : ITesseractEngine
+public class TesseractEngineWrapper : IOcrEngine
 {
     /// <summary>
     /// Creates a new instance of the TesseractEngineWrapper passing in a valid TesseractEngine.
@@ -30,8 +33,18 @@ public class TesseractEngineWrapper : ITesseractEngine
     public TesseractEngine TesseractEngine { get; }
 
     ///<inheritdoc/>
-    public Page Process(Pix image)
+    public async Task<string> ReadTextFromImageFileAsync(IFormFile imageFile)
     {
-        return this.TesseractEngine.Process(image);
+        await using (var ms = new MemoryStream())
+        {
+            await imageFile.CopyToAsync(ms);
+            var fileBytes = ms.ToArray();
+            await using var imgStream = new MemoryStream(fileBytes);
+
+            using var img = Pix.LoadFromMemory(imgStream.ToArray());
+
+            using var page = this.TesseractEngine.Process(img);
+            return page.GetText();
+        }
     }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -89,15 +90,21 @@ public static class CopilotChatServiceExtensions
 
         switch (ocrSupportConfig.Type)
         {
+            case OcrSupportOptions.OcrSupportType.AzureFormRecognizer:
+            {
+                services.AddSingleton<IOcrEngine>(sp => new AzureFormRecognizerOcrEngine(ocrSupportConfig.AzureFormRecognizer!.Endpoint!, new AzureKeyCredential(ocrSupportConfig.AzureFormRecognizer!.Key!)));
+                break;
+
+            }
             case OcrSupportOptions.OcrSupportType.Tesseract:
             {
-                services.AddSingleton<ITesseractEngine>(sp => new TesseractEngineWrapper(new TesseractEngine(ocrSupportConfig.Tesseract!.FilePath, ocrSupportConfig.Tesseract!.Language, EngineMode.Default)));
+                services.AddSingleton<IOcrEngine>(sp => new TesseractEngineWrapper(new TesseractEngine(ocrSupportConfig.Tesseract!.FilePath, ocrSupportConfig.Tesseract!.Language, EngineMode.Default)));
                 break;
             }
 
             case OcrSupportOptions.OcrSupportType.None:
             {
-                services.AddSingleton<ITesseractEngine>(sp => new NullTesseractEngine());
+                services.AddSingleton<IOcrEngine>(sp => new NullOcrEngine());
                 break;
             }
 
