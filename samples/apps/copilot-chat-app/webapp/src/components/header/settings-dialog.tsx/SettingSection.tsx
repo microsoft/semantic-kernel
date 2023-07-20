@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
 import { FeatureKeys, Setting } from '../../../redux/features/app/AppState';
-import { setFeatureFlag } from '../../../redux/features/app/appSlice';
+import { toggleFeatureFlag } from '../../../redux/features/app/appSlice';
 
 const useClasses = makeStyles({
     featureDescription: {
@@ -25,7 +25,7 @@ export const SettingSection: React.FC<ISettingsSectionProps> = ({ setting, conte
 
     const onFeatureChange = useCallback(
         (featureKey: FeatureKeys) => {
-            dispatch(setFeatureFlag(featureKey));
+            dispatch(toggleFeatureFlag(featureKey));
         },
         [dispatch],
     );

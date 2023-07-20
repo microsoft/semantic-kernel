@@ -23,7 +23,7 @@ export const appSlice = createSlice({
             state.activeUserInfo = action.payload;
         },
         // This sets the feature flag
-        setFeatureFlag: (state: AppState, action: PayloadAction<FeatureKeys>) => {
+        toggleFeatureFlag: (state: AppState, action: PayloadAction<FeatureKeys>) => {
             const feature = state.features[action.payload];
             state.features = {
                 ...state.features,
@@ -66,7 +66,7 @@ export const {
     removeAlert,
     setAlerts,
     setActiveUserInfo,
-    setFeatureFlag,
+    toggleFeatureFlag,
     toggleFeatureState,
     updateTokenUsage,
 } = appSlice.actions;

@@ -65,7 +65,7 @@ export const Features = {
     [FeatureKeys.PluginsPlannersAndPersonas]: {
         enabled: false,
         label: 'Plugins & Planners & Personas',
-        descriptienabled: 'The Plans and Persona tabs are hidden until you turn this on',
+        description: 'The Plans and Persona tabs are hidden until you turn this on',
     },
     [FeatureKeys.AzureContentSafety]: {
         enabled: false,
@@ -88,7 +88,7 @@ export const Features = {
     [FeatureKeys.RLHF]: {
         enabled: false,
         label: 'Reinforcement Learning from Human Feedback',
-        descriptienabled: 'Enable users to vote on model-generated responses. For demonstration purposes only.',
+        description: 'Enable users to vote on model-generated responses. For demonstration purposes only.',
     },
 };
 
@@ -111,7 +111,7 @@ export const Settings = [
     },
     {
         title: 'Experimental',
-        descriptienabled: 'The related icons and menu options are hidden until you turn this on',
+        description: 'The related icons and menu options are hidden until you turn this on',
         features: [FeatureKeys.BotAsDocs, FeatureKeys.MultiUserChat, FeatureKeys.RLHF],
     },
 ];
