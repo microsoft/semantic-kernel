@@ -46,7 +46,7 @@ public static class KernelAIPluginExtensions
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
-        var pluginJson = await LoadJsonFromFilePath(
+        var pluginJson = await LoadDocumentFromFilePath(
             kernel,
             filePath,
             executionParameters,
@@ -96,7 +96,7 @@ public static class KernelAIPluginExtensions
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
-        var pluginJson = await LoadJsonFromUri(
+        var pluginJson = await LoadDocumentFromUri(
             kernel,
             uri,
             executionParameters,
@@ -137,7 +137,7 @@ public static class KernelAIPluginExtensions
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
-        var pluginJson = await LoadJsonFromStream(kernel, stream).ConfigureAwait(false);
+        var pluginJson = await LoadDocumentFromStream(kernel, stream).ConfigureAwait(false);
 
         if (TryParseAIPluginForUrl(pluginJson, out var openApiUrl))
         {
@@ -199,7 +199,7 @@ public static class KernelAIPluginExtensions
         }
     }
 
-    private static async Task<string> LoadJsonFromUri(
+    private static async Task<string> LoadDocumentFromUri(
         IKernel kernel,
         Uri uri,
         OpenApiSkillExecutionParameters? executionParameters,
@@ -219,7 +219,7 @@ public static class KernelAIPluginExtensions
         return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     }
 
-    private static async Task<string> LoadJsonFromFilePath(
+    private static async Task<string> LoadDocumentFromFilePath(
         IKernel kernel,
         string filePath,
         OpenApiSkillExecutionParameters? executionParameters,
@@ -241,7 +241,7 @@ public static class KernelAIPluginExtensions
         }
     }
 
-    private static async Task<string> LoadJsonFromStream(
+    private static async Task<string> LoadDocumentFromStream(
         IKernel kernel,
         Stream stream)
     {
