@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
@@ -60,6 +61,11 @@ public sealed class SequentialPlannerConfig
     /// If set to false (default), the plan creation will fail if any functions are missing.
     /// </summary>
     public bool AllowMissingFunctions { get; set; } = false;
+
+    /// <summary>
+    /// Semantic memory to use for function lookup (optional).
+    /// </summary>
+    public ISemanticTextMemory Memory { get; set; } = NullMemory.Instance;
 
     /// <summary>
     /// Optional callback to get the available functions for planning.
