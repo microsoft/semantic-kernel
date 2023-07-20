@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import json
 import os
 from logging import Logger
@@ -9,7 +11,7 @@ import regex
 from semantic_kernel import Kernel
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-from semantic_kernel.planning import Plan
+from semantic_kernel.planning.plan import Plan
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.skill_definition.parameter_view import ParameterView
