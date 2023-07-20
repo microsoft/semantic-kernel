@@ -107,7 +107,7 @@ public sealed class SKContext
     /// <summary>
     /// Read only skills collection
     /// </summary>
-    public IReadOnlySkillCollection? Skills { get; internal set; }
+    public IReadOnlySkillCollection Skills { get; }
 
     /// <summary>
     /// Access registered functions by skill + name. Not case sensitive.
@@ -118,13 +118,6 @@ public sealed class SKContext
     /// <returns>Delegate to execute the function</returns>
     public ISKFunction Func(string skillName, string functionName)
     {
-        if (this.Skills is null)
-        {
-            throw new KernelException(
-                KernelException.ErrorCodes.SkillCollectionNotSet,
-                "Skill collection not found in the context");
-        }
-
         return this.Skills.GetFunction(skillName, functionName);
     }
 
