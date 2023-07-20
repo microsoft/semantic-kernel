@@ -20,6 +20,7 @@ using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
+using SemanticKernel.Service.Services;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
@@ -56,6 +57,12 @@ public class ChatSkill
     private readonly PromptsOptions _promptOptions;
 
     /// <summary>
+    /// Content moderator.
+    /// TODO: We probably need an interface in SK.
+    /// </summary>
+    private readonly AzureContentModerator _contentModerator;
+
+    /// <summary>
     /// A semantic chat memory skill instance to query semantic memories.
     /// </summary>
     private readonly SemanticChatMemorySkill _semanticChatMemorySkill;
@@ -79,6 +86,12 @@ public class ChatSkill
         "planner",
         "memoryExtraction"
     };
+    private IOptions<DocumentMemoryOptions> _documentImportOptions;
+
+    /// <summary>
+    /// Options for the Azure content moderation
+    /// </summary>
+    private readonly ContentModerationOptions _contentModerationOptions;
 
     /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
@@ -90,6 +103,8 @@ public class ChatSkill
         IHubContext<MessageRelayHub> messageRelayHubContext,
         IOptions<PromptsOptions> promptOptions,
         IOptions<DocumentMemoryOptions> documentImportOptions,
+        IOptions<ContentModerationOptions> contentModerationOptions, // TODO: pass less parameters about content safety.
+        AzureContentModerator contentModerator,
         CopilotChatPlanner planner,
         ILogger logger)
     {
@@ -100,12 +115,16 @@ public class ChatSkill
         // Clone the prompt options to avoid modifying the original prompt options.
         this._promptOptions = promptOptions.Value.Copy();
 
+        this._documentImportOptions = documentImportOptions;
+
         this._semanticChatMemorySkill = new SemanticChatMemorySkill(
             promptOptions,
             chatSessionRepository);
         this._documentMemorySkill = new DocumentMemorySkill(
             promptOptions,
             documentImportOptions);
+        this._contentModerationOptions = contentModerationOptions.Value;
+        this._contentModerator = contentModerator;
         this._externalInformationSkill = new ExternalInformationSkill(
             promptOptions,
             planner);
@@ -273,15 +292,22 @@ public class ChatSkill
         [Description("ID of the response message for planner"), DefaultValue(null), SKName("responseMessageId")] string? messageId,
         SKContext context)
     {
+        // Clone the context to avoid modifying the original context variables.
+        var chatContext = Utilities.CopyContextWithVariablesClone(context);
+        chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
+
+        // HACK: identifying if user input is image.
+        // Can we write a simple SK function to identifying image input? Hmm... one more model call?
+        if (message.StartsWith("data:image", StringComparison.InvariantCultureIgnoreCase))
+        {
+            return await this.ProcessImageContent(message, userId, userName, chatId, chatContext);
+        }
+
         // Set the system description in the prompt options
         await this.SetSystemDescriptionAsync(chatId);
 
         // Save this new message to memory such that subsequent chat responses can use it
         await this.SaveNewMessageAsync(message, userId, userName, chatId, messageType);
-
-        // Clone the context to avoid modifying the original context variables.
-        var chatContext = Utilities.CopyContextWithVariablesClone(context);
-        chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
 
         // Check if plan exists in ask's context variables.
         // If plan was returned at this point, that means it was approved or cancelled.
@@ -323,11 +349,53 @@ public class ChatSkill
 
         await this.UpdateResponseStatusOnClient(chatId, "Calculating total token usage");
         this.GetTokenUsages(context, chatContext);
+
         context.Variables.Update(response);
+
         return context;
     }
 
     #region Private
+
+    /// <summary>
+    /// Invokes AzureContentModerator to analyze image content.
+    /// </summary>
+    /// <returns>SKContext containing the image analysis result.</returns>
+    private async Task<SKContext> ProcessImageContent(
+        [Description("The new message")] string message,
+        [Description("Unique and persistent identifier for the user")] string userId,
+        [Description("Name of the user")] string userName,
+        [Description("Unique and persistent identifier for the chat")] string chatId,
+        SKContext chatContext)
+    {
+        var imageCannedResponse = "Great image!";
+        string messageType = "image";
+
+        if (this._contentModerationOptions.Enabled)
+        {
+            var moderationResult = await this._contentModerator.ImageAnalysisAsync(message, default);
+            var violationCategories = AzureContentModerator.ParseViolatedCategories(moderationResult, this._contentModerationOptions.ViolationThreshold);
+
+            if (violationCategories.Count > 0)
+            {
+                await this.SaveNewMessageAsync($"Content is redacted due to potential violation: {string.Join(", ", violationCategories)}", userId, userName, chatId, messageType);
+
+                chatContext.Variables.Update("It seems the content isn't appropriate.");
+            }
+            else
+            {
+                chatContext.Variables.Update(imageCannedResponse);
+                await this.SaveNewMessageAsync(imageCannedResponse, userId, userName, chatId, messageType);
+            }
+        }
+        else
+        {
+            chatContext.Variables.Update(imageCannedResponse);
+            await this.SaveNewMessageAsync(imageCannedResponse, userId, userName, chatId, messageType);
+        }
+
+        return chatContext;
+    }
 
     /// <summary>
     /// Generate the necessary chat context to create a prompt then invoke the model to get a response.

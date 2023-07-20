@@ -13,6 +13,7 @@ import Loading from './components/views/Loading';
 import { Login } from './components/views/Login';
 import { AlertType } from './libs/models/AlertType';
 import { useChat } from './libs/useChat';
+import { useContentModerator } from './libs/useContentModerator';
 import { useAppDispatch, useAppSelector } from './redux/app/hooks';
 import { RootState } from './redux/app/store';
 import { FeatureKeys } from './redux/features/app/AppState';
@@ -67,6 +68,7 @@ const App: FC = () => {
     const isAuthenticated = useIsAuthenticated();
 
     const chat = useChat();
+    const contentModerator = useContentModerator();
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -94,6 +96,8 @@ const App: FC = () => {
                         setAppState(AppState.Chat);
                     }
                 });
+
+                void contentModerator.getContentModerationStatus();
             }
         }
 

@@ -9,6 +9,8 @@ import { ChatState } from '../redux/features/conversations/ChatState';
 import { Conversations } from '../redux/features/conversations/ConversationsState';
 import {
     addConversation,
+    removeChatSessionModeratingMessage,
+    setChatSessionModeratingMessage,
     setConversations,
     setSelectedConversation,
 } from '../redux/features/conversations/conversationsSlice';
@@ -125,6 +127,13 @@ export const useChat = () => {
         }
 
         try {
+            const isInputImage = value.startsWith('data:image');
+
+            // HACK Content Moderation
+            if (isInputImage) {
+                dispatch(setChatSessionModeratingMessage({ message: value }));
+            }
+
             const askResult = await chatService.getBotResponseAsync(
                 ask,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
@@ -140,6 +149,11 @@ export const useChat = () => {
                     dependency: dependencyTokenUsage ? parseInt(dependencyTokenUsage) : 0,
                 }),
             );
+
+            // HACK Content Moderation
+            if (isInputImage && askResult.value !== "It seems the content isn't appropriate.") {
+                dispatch(removeChatSessionModeratingMessage({ message: value }));
+            }
         } catch (e: any) {
             const errorMessage = `Unable to generate bot response. Details: ${getErrorDetails(e)}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
@@ -169,6 +183,7 @@ export const useChat = () => {
                         botResponseStatus: undefined,
                         userDataLoaded: false,
                         memoryBalance: chatSession.memoryBalance,
+                        moderatingMessages: [],
                     };
                 }
 
@@ -313,21 +328,10 @@ export const useChat = () => {
         return { success: true, message: '' };
     };
 
-    const editChat = async (
-        chatId: string,
-        title: string,
-        syetemDescription: string,
-        memoryBalance: number,
-    ) => {
+    const editChat = async (chatId: string, title: string, syetemDescription: string, memoryBalance: number) => {
         const accessToken = await AuthHelper.getSKaaSAccessToken(instance, inProgress);
         try {
-            await chatService.editChatAsync(
-                chatId,
-                title,
-                syetemDescription,
-                memoryBalance,
-                accessToken
-            );
+            await chatService.editChatAsync(chatId, title, syetemDescription, memoryBalance, accessToken);
         } catch (e: any) {
             const errorMessage = `Error editing chat ${chatId}. Details: ${getErrorDetails(e)}`;
             dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));

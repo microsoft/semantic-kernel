@@ -42,7 +42,7 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
         },
         editConversationMemoryBalance: (
             state: ConversationsState,
-            action: PayloadAction<{id: string, memoryBalance: number}>,
+            action: PayloadAction<{ id: string; memoryBalance: number }>,
         ) => {
             const id = action.payload.id;
             const newMemoryBalance = action.payload.memoryBalance;
@@ -138,6 +138,39 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
             state.conversations[id].messages[messageIndex].userFeedback = userFeedback;
             frontLoadChat(state, id);
         },
+        setChatSessionModeratingMessage: (
+            state: ConversationsState,
+            action: PayloadAction<{ message: IChatMessage; chatId?: string }>,
+        ) => {
+            const { message, chatId } = action.payload;
+            const id = chatId ?? state.selectedId;
+            const messageStringId = message.userId + message.timestamp.toString();
+            if (state.conversations[id].moderatingMessages) {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                state.conversations[id].moderatingMessages!.push(messageStringId);
+            } else {
+                state.conversations[id].moderatingMessages = [messageStringId];
+            }
+            frontLoadChat(state, id);
+        },
+        removeChatSessionModeratingMessage: (
+            state: ConversationsState,
+            action: PayloadAction<{ message: IChatMessage; chatId?: string }>,
+        ) => {
+            const { message, chatId } = action.payload;
+            const id = chatId ?? state.selectedId;
+
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const index = state.conversations[id].moderatingMessages!.indexOf(
+                message.userId + message.timestamp.toString(),
+            );
+
+            if (index !== -1) {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                state.conversations[id].moderatingMessages!.splice(index, 1);
+                frontLoadChat(state, id);
+            }
+        },
     },
 });
 
@@ -156,6 +189,8 @@ export const {
     updateUserIsTypingFromServer,
     setUsersLoaded,
     setUserFeedback,
+    setChatSessionModeratingMessage,
+    removeChatSessionModeratingMessage,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

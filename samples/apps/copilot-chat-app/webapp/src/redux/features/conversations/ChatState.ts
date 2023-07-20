@@ -15,4 +15,6 @@ export interface ChatState {
     botResponseStatus: string | undefined;
     userDataLoaded: boolean;
     memoryBalance: number;
+    // HACK. Since the client insert user input without waiting for the id from the backend. We hack the solution to create a temporary id = userid + timestamp. If the message id is presented, it means it's under content moderation analysis.
+    moderatingMessages?: string[];
 }

@@ -2,20 +2,23 @@
 
 import { useMsal } from '@azure/msal-react';
 import { Button, Spinner, Textarea, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
-import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
+import { AttachRegular, ImageRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Constants } from '../../Constants';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
 import { ChatMessageType } from '../../libs/models/ChatMessage';
 import { GetResponseOptions, useChat } from '../../libs/useChat';
+import { useContentModerator } from '../../libs/useContentModerator';
+import { useFile } from '../../libs/useFile';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationInput } from '../../redux/features/conversations/conversationsSlice';
+import { FileUploader } from '../FileUploader';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { updateUserIsTyping } from './../../redux/features/conversations/conversationsSlice';
 import { ChatStatus } from './ChatStatus';
@@ -91,6 +94,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const [isListening, setIsListening] = React.useState(false);
     const [documentImporting, setDocumentImporting] = React.useState(false);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
+    const imageUploaderRef = useRef<HTMLInputElement>(null);
+    const fileHandler = useFile();
+    const contentModerator = useContentModerator();
+
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
 
@@ -140,7 +147,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             // Deep copy the FileList into an array so that the function
             // maintains a list of files to import before the import is complete.
             const filesArray = Array.from(files);
-            chat.importDocument(selectedId, filesArray).finally(() => {
+            const filesToUploadArray: File[] = [];
+
+            filesArray.forEach((file) => {
+                if (file.type.startsWith('image/')) {
+                    handleImageUpload(file);
+                } else {
+                    filesToUploadArray.push(file);
+                }
+            });
+
+            chat.importDocument(selectedId, filesToUploadArray).finally(() => {
                 setDocumentImporting(false);
             });
         }
@@ -151,6 +168,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             documentFileRef.current.value = '';
         }
     };
+
+    const handleImageUpload = useCallback(
+        (file: File) => {
+            void fileHandler
+                .loadImage(file, contentModerator.analyzeImage)
+                .catch((error: Error) =>
+                    dispatch(addAlert({ message: `Failed to upload image. ${error.message}`, type: AlertType.Error })),
+                );
+        },
+        [fileHandler, dispatch, contentModerator],
+    );
 
     const handleSubmit = (value: string, messageType: ChatMessageType = ChatMessageType.Message) => {
         if (value.trim() === '') {
@@ -230,26 +258,38 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 />
             </div>
             <div className={classes.controls}>
-                {!features[FeatureKeys.SimplifiedExperience].enabled && <div className={classes.functional}>
-                    {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
-                    <input
-                        type="file"
-                        ref={documentFileRef}
-                        style={{ display: 'none' }}
-                        accept=".txt,.pdf,.md,.jpg,.jpeg,.png,.tif,.tiff"
-                        multiple={true}
-                        onChange={() => {
-                            handleImport();
-                        }}
-                    />
-                    <Button
-                        disabled={documentImporting}
-                        appearance="transparent"
-                        icon={<AttachRegular />}
-                        onClick={() => documentFileRef.current?.click()}
-                    />
-                    {documentImporting && <Spinner size="tiny" />}
-                </div>}
+                {!features[FeatureKeys.SimplifiedExperience].enabled && (
+                    <div className={classes.functional}>
+                        {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
+                        <input
+                            type="file"
+                            ref={documentFileRef}
+                            style={{ display: 'none' }}
+                            accept=".txt,.pdf,.md,.jpg,.jpeg,.png,.tif,.tiff"
+                            multiple={true}
+                            onChange={() => {
+                                handleImport();
+                            }}
+                        />
+                        <Button
+                            disabled={documentImporting}
+                            appearance="transparent"
+                            icon={<AttachRegular />}
+                            onClick={() => documentFileRef.current?.click()}
+                        />
+                        <FileUploader
+                            ref={imageUploaderRef}
+                            acceptedExtensions={['.jpeg', '.png']}
+                            onSelectedFile={handleImageUpload}
+                        />
+                        <Button
+                            appearance="transparent"
+                            icon={<ImageRegular />}
+                            onClick={() => imageUploaderRef.current?.click()}
+                        />
+                        {documentImporting && <Spinner size="tiny" />}
+                    </div>
+                )}
                 <div className={classes.essentials}>
                     {recognizer && (
                         <Button
