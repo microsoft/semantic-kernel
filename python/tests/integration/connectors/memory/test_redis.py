@@ -142,6 +142,11 @@ async def test_upsert_async_and_get_async(connection_string, memory_record1):
     await memory.create_collection_async("test_collection")
     await memory.upsert_async("test_collection", memory_record1)
 
+    fetch_1 = await memory.get_async("test_collection", "test_id1", True)
+    assert fetch_1._id == "test_id1"
+
+    for expected, actual in zip(fetch_1.embedding, memory_record1.embedding):
+        assert expected == actual, "Did not retain correct embedding"
 
 
 @pytest.mark.asyncio
@@ -153,6 +158,17 @@ async def test_upsert_batch_async_and_get_batch_async(
     await memory.create_collection_async("test_collection")
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
 
+    fetched = await memory.get_batch_async(
+        "test_collection", ["test_id1", "test_id2"], True
+    )
+
+    assert fetched[0]._id == "test_id1"
+    for expected, actual in zip(fetched[0].embedding, memory_record1.embedding):
+        assert expected == actual, "Did not retain correct embedding"
+
+    assert fetched[1]._id == "test_id2"
+    for expected, actual in zip(fetched[1].embedding, memory_record2.embedding):
+        assert expected == actual, "Did not retain correct embedding"
 
 
 @pytest.mark.asyncio

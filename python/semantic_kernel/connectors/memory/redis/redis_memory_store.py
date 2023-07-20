@@ -266,7 +266,41 @@ class RedisMemoryStore(MemoryStoreBase):
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool
     ) -> List[MemoryRecord]:
-        pass
+        """
+        Gets a batch of memory records from the data store. Does not guarantee that the collection exists
+
+        Arguments:
+            collection_name {str} -- Name for a collection of embeddings
+            keys {List[str]} -- Unique ids associated with the memory records to get
+            with_embedding {bool} -- If true, the embeddings will be returned in the memory records
+
+        Returns:
+            List[MemoryRecord] -- The memory records if found, else an empty list
+        """
+        if not await self.does_collection_exist_async(collection_name):
+            raise Exception(f"Collection '{collection_name}' does not exist")
+
+        records = list()
+        for key in keys:
+            internal_key = f"{collection_name}:{key}"
+            raw_fields = self._database.hgetall(internal_key)
+
+            if len(raw_fields) == 0:
+                continue
+
+            # Convert from bytes
+            record_fields = dict()
+            for field, val in raw_fields.items():
+                field_name = field.decode()
+                record_fields[field_name] = (
+                    val.decode() if field_name != "embedding" else val
+                )
+
+            rec = self._deserialize_record(record_fields, with_embeddings)
+            rec._key = internal_key
+            records.append(rec)
+
+        return records
 
     async def remove_async(self, collection_name: str, key: str) -> None:
         pass
@@ -299,25 +333,6 @@ class RedisMemoryStore(MemoryStoreBase):
         """
         assert record._key, "Error: Record must have a valid key"
 
-        # Cast dimensions and type to match schema
-        np_type = (
-            np.float32 if RedisMemoryStore.VECTOR_TYPE == "FLOAT32" else np.float64
-        )
-        final_embed = None
-        if record.embedding is not None:
-            final_embed = record.embedding.astype(np_type)
-
-            if final_embed.size < self._vector_size:
-                # If smaller than specified dimension, fill in with zeroes
-                zeroes = np.zeros(self._vector_size - final_embed.size, dtype=np_type)
-                final_embed = np.concatenate((final_embed, zeroes), dtype=np_type)
-            else:
-                raise Exception(
-                    f"Error: embedding too big, must match configured dimensionality of {self._vector_size}"
-                )
-        else:
-            final_embed = np.zeros(self._vector_size, dtype=np_type).tobytes()
-
         mapping = {
             "timestamp": record._timestamp.isoformat(sep=" ") or "",
             "is_reference": int(record._is_reference) or 0,
@@ -326,7 +341,7 @@ class RedisMemoryStore(MemoryStoreBase):
             "description": record._description or "",
             "text": record._text or "",
             "additional_metadata": record._additional_metadata or "",
-            "embedding": final_embed.tobytes(),
+            "embedding": record.embedding.tobytes() or "",
         }
         return mapping
 
