@@ -18,6 +18,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 /// <summary>
 /// OpenAI text completion service.
 /// TODO: forward ETW logging to ILogger, see
@@ -40,7 +42,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
 
     @Override
     public Mono<List<String>> completeAsync(
-            String text, CompletionRequestSettings requestSettings) {
+            @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings) {
         return this.internalCompleteTextAsync(text, requestSettings);
     }
 

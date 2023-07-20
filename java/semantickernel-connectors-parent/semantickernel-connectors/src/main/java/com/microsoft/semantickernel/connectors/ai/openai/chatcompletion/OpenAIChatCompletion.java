@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** OpenAI chat completion client. */
@@ -30,9 +31,8 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
 
     @Override
     public Mono<List<String>> completeAsync(
-            String text, CompletionRequestSettings requestSettings) {
+            @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings) {
         ChatRequestSettings chatRequestSettings = new ChatRequestSettings(requestSettings);
-
         return generateMessageAsync(createNewChat(text), chatRequestSettings).map(Arrays::asList);
     }
 
