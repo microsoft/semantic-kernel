@@ -261,7 +261,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         SKContext context = new(
             new ContextVariables(input),
-            memory: memory,
             skills: this._skillCollection,
             logger: logger,
             cancellationToken: cancellationToken);
@@ -515,12 +514,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             TrackUniqueParameterType(ref hasSKContextParam, method, $"At most one {nameof(SKContext)} parameter is permitted.");
             return (static (SKContext ctx) => ctx, null);
-        }
-
-        if (type == typeof(ISemanticTextMemory))
-        {
-            TrackUniqueParameterType(ref hasMemoryParam, method, $"At most one {nameof(ISemanticTextMemory)} parameter is permitted.");
-            return (static (SKContext ctx) => ctx.Memory, null);
         }
 
         if (type == typeof(ILogger))
