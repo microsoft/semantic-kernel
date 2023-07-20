@@ -57,6 +57,9 @@ profile = "black"
 select = ["E", "F", "I"]
 line-length = 120
 
+[tool.black]
+line-length = 120
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
