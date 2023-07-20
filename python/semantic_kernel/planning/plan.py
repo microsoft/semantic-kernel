@@ -354,7 +354,7 @@ class Plan(SKFunctionBase):
         context.variables.update(result_string)
 
         for item in self._steps[self._next_step_index - 1]._outputs:
-            if item in self._state:
+            if self._state.contains_key(item):
                 context.variables.set(item, self._state[item])
             else:
                 context.variables.set(item, result_string)
@@ -391,7 +391,7 @@ class Plan(SKFunctionBase):
         # - Step Parameters (pull from variables or state by a key value)
         function_params = step.describe()
         for param in function_params._parameters:
-            if param.name.lower == "input":
+            if param.name.lower() == "input":
                 continue
             if step_variables.contains_key(param.name):
                 step_variables.set(param.name, variables[param.name])
@@ -422,7 +422,7 @@ class Plan(SKFunctionBase):
     ) -> str:
         result = input_string
         variables_regex = r"\$(?P<var>\w+)"
-        matches = re.findall(variables_regex, input_string)
+        matches = [m for m in re.finditer(variables_regex, input_string)]
         ordered_matches = sorted(
             matches, key=lambda m: len(m.group("var")), reverse=True
         )
