@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-import { AdditionalApiProperties, AuthHeaderTags } from '../../redux/features/plugins/PluginsState';
+import { Plugin } from '../../redux/features/plugins/PluginsState';
 import { ChatMemorySource } from '../models/ChatMemorySource';
 import { IChatMessage } from '../models/ChatMessage';
 import { IChatParticipant } from '../models/ChatParticipant';
@@ -11,21 +11,17 @@ import { IAskResult } from '../semantic-kernel/model/AskResult';
 import { BaseService } from './BaseService';
 
 export class ChatService extends BaseService {
-    public createChatAsync = async (
-        userId: string,
-        title: string,
-        accessToken: string,
-    ): Promise<IChatSession> => {
+    public createChatAsync = async (userId: string, title: string, accessToken: string): Promise<IChatSession> => {
         const body = {
-            userId: userId,
-            title: title,
+            userId,
+            title,
         };
 
         const result = await this.getResponseAsync<IChatSession>(
             {
-                commandPath: `chatSession/create`,
+                commandPath: 'chatSession/create',
                 method: 'POST',
-                body: body,
+                body,
             },
             accessToken,
         );
@@ -78,14 +74,14 @@ export class ChatService extends BaseService {
     public editChatAsync = async (chatId: string, title: string, accessToken: string): Promise<any> => {
         const body: IChatSession = {
             id: chatId,
-            title: title,
+            title,
         };
 
-        const result = await this.getResponseAsync<any>(
+        const result = await this.getResponseAsync<IChatSession>(
             {
-                commandPath: `chatSession/edit`,
+                commandPath: 'chatSession/edit',
                 method: 'POST',
-                body: body,
+                body,
             },
             accessToken,
         );
@@ -96,33 +92,27 @@ export class ChatService extends BaseService {
     public getBotResponseAsync = async (
         ask: IAsk,
         accessToken: string,
-        enabledPlugins?: {
-            headerTag: AuthHeaderTags;
-            authData: string;
-            apiProperties?: AdditionalApiProperties;
-        }[],
+        enabledPlugins?: Plugin[],
     ): Promise<IAskResult> => {
         // If skill requires any additional api properties, append to context
         if (enabledPlugins && enabledPlugins.length > 0) {
             const openApiSkillVariables: IAskVariables[] = [];
 
-            for (var idx in enabledPlugins) {
-                var plugin = enabledPlugins[idx];
-
+            for (const plugin of enabledPlugins) {
                 if (plugin.apiProperties) {
                     const apiProperties = plugin.apiProperties;
 
-                    for (var property in apiProperties) {
+                    for (const property in apiProperties) {
                         const propertyDetails = apiProperties[property];
 
                         if (propertyDetails.required && !propertyDetails.value) {
-                            throw new Error(`Missing required property ${property} for ${plugin} skill.`);
+                            throw new Error(`Missing required property ${property} for ${plugin.name} skill.`);
                         }
 
                         if (propertyDetails.value) {
                             openApiSkillVariables.push({
                                 key: `${property}`,
-                                value: apiProperties[property].value!,
+                                value: propertyDetails.value,
                             });
                         }
                     }
@@ -134,7 +124,7 @@ export class ChatService extends BaseService {
 
         const result = await this.getResponseAsync<IAskResult>(
             {
-                commandPath: `chat`,
+                commandPath: 'chat',
                 method: 'POST',
                 body: ask,
             },
@@ -147,15 +137,15 @@ export class ChatService extends BaseService {
 
     public joinChatAsync = async (userId: string, chatId: string, accessToken: string): Promise<IChatSession> => {
         const body: IChatParticipant = {
-            userId: userId,
-            chatId: chatId,
+            userId,
+            chatId,
         };
 
         await this.getResponseAsync<any>(
             {
-                commandPath: `chatParticipant/join`,
+                commandPath: 'chatParticipant/join',
                 method: 'POST',
-                body: body,
+                body,
             },
             accessToken,
         );
@@ -176,7 +166,7 @@ export class ChatService extends BaseService {
     };
 
     public getAllChatParticipantsAsync = async (chatId: string, accessToken: string): Promise<IChatUser[]> => {
-        const result = await this.getResponseAsync<any>(
+        const result = await this.getResponseAsync<IChatParticipant[]>(
             {
                 commandPath: `chatParticipant/getAllParticipants/${chatId}`,
                 method: 'GET',
@@ -184,15 +174,14 @@ export class ChatService extends BaseService {
             accessToken,
         );
 
-        const chatUsers: IChatUser[] = result.map((participant: any) => {
-            return {
-                id: participant.userId,
-                online: false,
-                fullName: '',       // The user's full name is not returned from the server
-                emailAddress: '',   // The user's email address is not returned from the server
-                isTyping: false,
-            } as IChatUser;
-        });
+        const chatUsers = result.map<IChatUser>((participant) => ({
+            id: participant.userId,
+            online: false,
+            fullName: '', // The user's full name is not returned from the server
+            emailAddress: '', // The user's email address is not returned from the server
+            isTyping: false,
+            photo: '',
+        }));
 
         return chatUsers;
     };

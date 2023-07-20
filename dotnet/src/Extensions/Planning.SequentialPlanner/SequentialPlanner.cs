@@ -15,9 +15,9 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
 /// </summary>
-public sealed class SequentialPlanner
+public sealed class SequentialPlanner : ISequentialPlanner
 {
-    private const string StopSequence = "<!--";
+    private const string StopSequence = "<!-- END -->";
 
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
@@ -42,18 +42,14 @@ public sealed class SequentialPlanner
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            maxTokens: this.Config.MaxTokens,
+            maxTokens: this.Config.MaxTokens ?? 1024,
             temperature: 0.0,
             stopSequences: new[] { StopSequence });
 
         this._context = kernel.CreateNewContext();
     }
 
-    /// <summary>
-    /// Create a plan for a goal.
-    /// </summary>
-    /// <param name="goal">The goal to create a plan for.</param>
-    /// <returns>The plan.</returns>
+    /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal)
     {
         if (string.IsNullOrEmpty(goal))
@@ -68,16 +64,37 @@ public sealed class SequentialPlanner
 
         var planResult = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
 
+        if (planResult.ErrorOccurred)
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, $"Error creating plan for goal: {planResult.LastErrorDescription}", planResult.LastException);
+        }
+
         string planResultString = planResult.Result.Trim();
 
         try
         {
-            var plan = planResultString.ToPlanFromXml(goal, this._context);
+            var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
+            var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+
+            if (plan.Steps.Count == 0)
+            {
+                throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, $"Not possible to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
+            }
+
             return plan;
+        }
+        catch (PlanningException planException) when (planException.ErrorCode == PlanningException.ErrorCodes.CreatePlanError)
+        {
+            throw;
+        }
+        catch (PlanningException planException) when (planException.ErrorCode == PlanningException.ErrorCodes.InvalidPlan ||
+                                                      planException.ErrorCode == PlanningException.ErrorCodes.InvalidGoal)
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, "Unable to create plan", planException);
         }
         catch (Exception e)
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Plan parsing error, invalid XML", e);
+            throw new PlanningException(PlanningException.ErrorCodes.UnknownError, "Unknown error creating plan", e);
         }
     }
 

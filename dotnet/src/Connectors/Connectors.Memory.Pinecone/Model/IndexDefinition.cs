@@ -3,7 +3,6 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 

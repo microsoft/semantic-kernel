@@ -8,8 +8,8 @@ on:
   pull_request:
     branches: ["main"]
     paths:
-      - 'samples/apps/**'
-      
+      - "samples/apps/**"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -36,20 +36,20 @@ jobs:
             echo "Found yarn project in $dir"
             yarndirs+=("$dir") # add the directory to the yarndirs array
           done
-          
+
           echo "All yarn projects found: '${yarndirs[*]}'"
           yarndirs_json=$(echo -n "${yarndirs[*]%\n}" | jq -R -s -j --compact-output 'split(" ")')
           matrix_json="{\"node_version\":[18], \"yarn_folder\":$yarndirs_json}"
           echo "Setting output matrix to $matrix_json"
           echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
-  
+
   build:
     runs-on: ubuntu-latest
     needs: find-yarn-projects
 
     strategy:
       matrix: ${{ fromJson(needs.find-yarn-projects.outputs.matrix) }}
-        
+
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node_version }}
@@ -57,7 +57,7 @@ jobs:
         with:
           node-version: ${{ matrix.node_version }}
           cache: "yarn"
-          cache-dependency-path: 'samples/apps/**/yarn.lock'
+          cache-dependency-path: "samples/apps/**/yarn.lock"
 
       - name: Run yarn install & yarn build
         # This step runs yarn install and yarn build for each project.

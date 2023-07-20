@@ -43,8 +43,8 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, memory.Object, skills.ReadOnlySkillCollection, logger, cancellationToken);
-        var config = new SequentialPlannerConfig();
+        var context = new SKContext(variables, skills.ReadOnlySkillCollection, logger, cancellationToken);
+        var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
         // Act
@@ -98,8 +98,8 @@ public class SKContextExtensionsTests
         skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, memory.Object, skills.Object, logger, cancellationToken);
-        var config = new SequentialPlannerConfig();
+        var context = new SKContext(variables, skills.Object, logger, cancellationToken);
+        var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
         // Act
@@ -164,8 +164,8 @@ public class SKContextExtensionsTests
         skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, memory.Object, skills.Object, logger, cancellationToken);
-        var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78 };
+        var context = new SKContext(variables, skills.Object, logger, cancellationToken);
+        var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
         // Act
@@ -217,8 +217,8 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, memory.Object, skills.ReadOnlySkillCollection, logger, cancellationToken);
-        var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78 };
+        var context = new SKContext(variables, skills.ReadOnlySkillCollection, logger, cancellationToken);
+        var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
         // Act

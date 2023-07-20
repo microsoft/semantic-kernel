@@ -52,30 +52,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 public sealed class SKFunctionAttribute : Attribute
 {
     /// <summary>Initializes the attribute.</summary>
-    /// <param name="isSensitive">Whether the function is set to be sensitive (default false).</param>
-    public SKFunctionAttribute(bool isSensitive = false) => this.IsSensitive = isSensitive;
-
-    /// <summary>
-    /// Whether the function is set to be sensitive (default false).
-    /// When a function is sensitive, the default trust service will throw an exception
-    /// if the function is invoked passing in some untrusted input (or context, or prompt).
-    /// </summary>
-    public bool IsSensitive { get; }
-
-    /// <summary>
-    /// Initializes the attribute with the specified description.
-    /// </summary>
-    /// <param name="description">Description of the function to be used by a planner to auto-discover functions.</param>
-    /// <param name="isSensitive">Whether the function is set to be sensitive (default false).</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public SKFunctionAttribute(string description, bool isSensitive = false)
+    public SKFunctionAttribute()
     {
-        this.Description = description;
-        this.IsSensitive = isSensitive;
     }
-
-    [Obsolete("This property is deprecated and will be removed in one of the next SK SDK versions.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public string Description { get; } = null!;
 }

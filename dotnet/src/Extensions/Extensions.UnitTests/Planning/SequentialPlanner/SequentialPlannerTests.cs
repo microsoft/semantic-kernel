@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -27,8 +25,6 @@ public sealed class SequentialPlannerTests
         // Arrange
         var kernel = new Mock<IKernel>();
         kernel.Setup(x => x.Log).Returns(new Mock<ILogger>().Object);
-
-        var memory = new Mock<ISemanticTextMemory>();
 
         var input = new List<(string name, string skillName, string description, bool isSemantic)>()
         {
@@ -67,14 +63,12 @@ public sealed class SequentialPlannerTests
 
         var context = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             new Mock<ILogger>().Object
         );
 
         var returnContext = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             new Mock<ILogger>().Object
         );
@@ -104,8 +98,7 @@ public sealed class SequentialPlannerTests
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
             It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>(),
-            It.IsAny<ITrustService?>()
+            It.IsAny<SemanticFunctionConfig>()
         )).Returns(mockFunctionFlowFunction.Object);
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object);
@@ -155,8 +148,6 @@ public sealed class SequentialPlannerTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        // kernel.Setup(x => x.Log).Returns(new Mock<ILogger>().Object);
-        var memory = new Mock<ISemanticTextMemory>();
         var skills = new Mock<ISkillCollection>();
 
         var functionsView = new FunctionsView();
@@ -165,14 +156,12 @@ public sealed class SequentialPlannerTests
         var planString = "<plan>notvalid<</plan>";
         var returnContext = new SKContext(
             new ContextVariables(planString),
-            memory.Object,
             skills.Object,
             new Mock<ILogger>().Object
         );
 
         var context = new SKContext(
             new ContextVariables(),
-            memory.Object,
             skills.Object,
             new Mock<ILogger>().Object
         );
@@ -192,8 +181,7 @@ public sealed class SequentialPlannerTests
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
             It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>(),
-            It.IsAny<ITrustService?>()
+            It.IsAny<SemanticFunctionConfig>()
         )).Returns(mockFunctionFlowFunction.Object);
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object);

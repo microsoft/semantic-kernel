@@ -33,7 +33,11 @@ public static class SKContextSequentialPlannerExtensions
         SequentialPlannerConfig? config = null)
     {
         config ??= new SequentialPlannerConfig();
-        var functions = await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false);
+
+        // Use configured function provider if available, otherwise use the default SKContext function provider.
+        IOrderedEnumerable<FunctionView> functions = config.GetAvailableFunctionsAsync is null ?
+            await context.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false) :
+            await config.GetAvailableFunctionsAsync(config, semanticQuery).ConfigureAwait(false);
 
         return string.Join("\n\n", functions.Select(x => x.ToManualString()));
     }
@@ -70,7 +74,7 @@ public static class SKContextSequentialPlannerExtensions
             .ToList();
 
         List<FunctionView>? result = null;
-        if (string.IsNullOrEmpty(semanticQuery) || context.Memory is NullMemory || config.RelevancyThreshold is null)
+        if (string.IsNullOrEmpty(semanticQuery) || config.Memory is NullMemory || config.RelevancyThreshold is null)
         {
             // If no semantic query is provided, return all available functions.
             // If a Memory provider has not been registered, return all available functions.
@@ -81,10 +85,10 @@ public static class SKContextSequentialPlannerExtensions
             result = new List<FunctionView>();
 
             // Remember functions in memory so that they can be searched.
-            await RememberFunctionsAsync(context, availableFunctions).ConfigureAwait(false);
+            await RememberFunctionsAsync(context, config.Memory, availableFunctions).ConfigureAwait(false);
 
             // Search for functions that match the semantic query.
-            var memories = context.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery!, config.MaxRelevantFunctions, config.RelevancyThreshold.Value,
+            var memories = config.Memory.SearchAsync(PlannerMemoryCollectionName, semanticQuery!, config.MaxRelevantFunctions, config.RelevancyThreshold.Value,
                 false,
                 context.CancellationToken);
 
@@ -126,8 +130,12 @@ public static class SKContextSequentialPlannerExtensions
     /// Saves all available functions to memory.
     /// </summary>
     /// <param name="context">The SKContext to save the functions to.</param>
+    /// <param name="memory">The memory provide to store the functions to..</param>
     /// <param name="availableFunctions">The available functions to save.</param>
-    internal static async Task RememberFunctionsAsync(SKContext context, List<FunctionView> availableFunctions)
+    internal static async Task RememberFunctionsAsync(
+        SKContext context,
+        ISemanticTextMemory memory,
+        List<FunctionView> availableFunctions)
     {
         // Check if the functions have already been saved to memory.
         if (context.Variables.ContainsKey(PlanSKFunctionsAreRemembered))
@@ -143,14 +151,14 @@ public static class SKContextSequentialPlannerExtensions
             var textToEmbed = function.ToEmbeddingString();
 
             // It'd be nice if there were a saveIfNotExists method on the memory interface
-            var memoryEntry = await context.Memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false,
+            var memoryEntry = await memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false,
                 cancellationToken: context.CancellationToken).ConfigureAwait(false);
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory
                 // As folks may want to tune their functions to be more or less relevant.
                 // Memory now supports these such strategies.
-                await context.Memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: textToEmbed, id: key, description: description,
+                await memory.SaveInformationAsync(collection: PlannerMemoryCollectionName, text: textToEmbed, id: key, description: description,
                     additionalMetadata: string.Empty, cancellationToken: context.CancellationToken).ConfigureAwait(false);
             }
         }

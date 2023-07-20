@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Resources;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -46,7 +47,14 @@ public static class KernelChatGptPluginExtensions
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
-        using HttpResponseMessage response = await internalHttpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+
+        if (!string.IsNullOrEmpty(executionParameters?.UserAgent))
+        {
+            requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
+        }
+
+        using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         string gptPluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -160,7 +168,7 @@ public static class KernelChatGptPluginExtensions
 
     private static string ParseOpenApiUrl(string gptPluginJson)
     {
-        JsonNode? gptPlugin = JsonObject.Parse(gptPluginJson);
+        JsonNode? gptPlugin = JsonNode.Parse(gptPluginJson);
 
         string? apiType = gptPlugin?["api"]?["type"]?.ToString();
         if (string.IsNullOrWhiteSpace(apiType) || apiType != "openapi")

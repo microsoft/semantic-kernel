@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -115,13 +116,11 @@ internal sealed class RestApiOperationRunner
         var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         // First iteration allowing to associate additional metadata with the returned content.
-        var result = new JsonObject
-        {
-            { "content", content },
-            { "contentType", responseMessage.Content.Headers.ContentType.ToString() }
-        };
+        var result = new RestApiOperationResponse(
+            content,
+            responseMessage.Content.Headers.ContentType.ToString());
 
-        return result;
+        return JsonSerializer.SerializeToNode(result);
     }
 
     /// <summary>

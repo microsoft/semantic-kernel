@@ -20,6 +20,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Pgvector" />
+
+    <!-- pgvector pulls in a 7.0 version -->
+    <PackageVersion Update="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>

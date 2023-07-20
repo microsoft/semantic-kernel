@@ -93,7 +93,7 @@ public abstract class OpenAIClientBase
         }
         catch (Exception ex) when (ex is NotSupportedException or JsonException)
         {
-            this._log.LogTrace("Unable to extract error from response body content. Exception: {0}:{1}", ex.GetType(), ex.Message);
+            this._log.LogError(ex, "Unable to extract error from response body content. Exception: {0}:{1}", ex.GetType(), ex.Message);
         }
 
         return null;
@@ -145,9 +145,9 @@ public abstract class OpenAIClientBase
 
     private protected async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod method, HttpContent? content, CancellationToken cancellationToken = default)
     {
-        HttpResponseMessage? response = null;
         try
         {
+            HttpResponseMessage? response = null;
             using (var request = new HttpRequestMessage(method, url))
             {
                 this.AddRequestHeaders(request);
@@ -159,7 +159,7 @@ public abstract class OpenAIClientBase
                 response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             }
 
-            this._log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+            this._log.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
             if (response.IsSuccessStatusCode)
             {

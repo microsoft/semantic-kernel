@@ -39,6 +39,7 @@ public sealed class SequentialPlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
+        _ = kernel.ImportSkill(new EmailSkillFake());
         TestHelpers.GetSkills(kernel, "FunSkill");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
@@ -83,12 +84,13 @@ public sealed class SequentialPlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = true;
         IKernel kernel = this.InitializeKernel(useEmbeddings);
+        _ = kernel.ImportSkill(new EmailSkillFake());
 
         // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(kernel);
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel,
-            new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30 });
+            new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -129,15 +131,14 @@ public sealed class SequentialPlannerTests : IDisposable
         if (useEmbeddings)
         {
             builder.WithAzureTextEmbeddingGenerationService(
-                deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
+                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
+                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
+                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
                 .WithMemoryStorage(new VolatileMemoryStore());
         }
 
         var kernel = builder.Build();
 
-        _ = kernel.ImportSkill(new EmailSkillFake());
         return kernel;
     }
 

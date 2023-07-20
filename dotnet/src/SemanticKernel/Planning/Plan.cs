@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -13,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -80,14 +81,6 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     [JsonIgnore]
     public bool IsSemantic { get; private set; }
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public bool IsSensitive { get; private set; } = false;
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public ITrustService TrustServiceInstance { get; private set; } = TrustService.DefaultTrusted;
 
     /// <inheritdoc/>
     [JsonIgnore]
@@ -236,10 +229,10 @@ public sealed class Plan : ISKFunction
     {
         var context = new SKContext(
             variables,
-            kernel.Memory,
             kernel.Skills,
             kernel.Log,
             cancellationToken);
+
         return this.InvokeNextStepAsync(context);
     }
 
@@ -259,7 +252,7 @@ public sealed class Plan : ISKFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
+            var functionContext = new SKContext(functionVariables, context.Skills, context.Log, context.CancellationToken);
             var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
@@ -323,7 +316,6 @@ public sealed class Plan : ISKFunction
 
         SKContext context = new(
             this.State,
-            memory: memory,
             logger: logger,
             cancellationToken: cancellationToken);
 
@@ -337,13 +329,10 @@ public sealed class Plan : ISKFunction
     {
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
+            var result = await this.InstrumentedInvokeAsync(this.Function, context, settings).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
-                result.Log.LogError(
-                    result.LastException,
-                    "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
                 return result;
             }
 
@@ -585,7 +574,7 @@ public sealed class Plan : ISKFunction
             }
         }
 
-        foreach (KeyValuePair<string, TrustAwareString> item in variables)
+        foreach (KeyValuePair<string, string> item in variables)
         {
             if (!stepVariables.ContainsKey(item.Key))
             {
@@ -596,6 +585,57 @@ public sealed class Plan : ISKFunction
         return stepVariables;
     }
 
+    private async Task<SKContext> InstrumentedInvokeAsync(
+        ISKFunction function,
+        SKContext context,
+        CompleteRequestSettings? settings = null)
+    {
+        using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
+
+        context.Log.LogInformation("{SkillName}.{StepName}: Step execution started.", this.SkillName, this.Name);
+
+        var stopwatch = new Stopwatch();
+
+        stopwatch.Start();
+
+        var result = await function.InvokeAsync(context, settings).ConfigureAwait(false);
+
+        stopwatch.Stop();
+
+        if (!result.ErrorOccurred)
+        {
+            context.Log.LogInformation(
+                "{SkillName}.{StepName}: Step execution status: {Status}.",
+                this.SkillName, this.Name, "Success");
+        }
+        else
+        {
+            context.Log.LogInformation(
+                "{SkillName}.{StepName}: Step execution status: {Status}.",
+                this.SkillName, this.Name, "Failed");
+
+            context.Log.LogError(
+                result.LastException,
+                "Something went wrong in plan step {SkillName}.{StepName}:'{ErrorDescription}'",
+                this.SkillName, this.Name, context.LastErrorDescription);
+        }
+
+        context.Log.LogInformation(
+            "{SkillName}.{StepName}: Step execution finished in {ExecutionTime}ms.",
+            this.SkillName, this.Name, stopwatch.ElapsedMilliseconds);
+
+        var stepExecutionTimeMetricName = string.Format(CultureInfo.InvariantCulture, StepExecutionTimeMetricFormat, this.SkillName, this.Name);
+
+        var stepExecutionTimeHistogram = s_meter.CreateHistogram<double>(
+            name: stepExecutionTimeMetricName,
+            unit: "ms",
+            description: "Plan step execution time");
+
+        stepExecutionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
+
+        return result;
+    }
+
     private void SetFunction(ISKFunction function)
     {
         this.Function = function;
@@ -603,8 +643,6 @@ public sealed class Plan : ISKFunction
         this.SkillName = function.SkillName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
-        this.IsSensitive = function.IsSensitive;
-        this.TrustServiceInstance = function.TrustServiceInstance;
         this.RequestSettings = function.RequestSettings;
     }
 
@@ -636,4 +674,20 @@ public sealed class Plan : ISKFunction
             return display;
         }
     }
+
+    #region Instrumentation
+
+    private const string StepExecutionTimeMetricFormat = "SK.{0}.{1}.ExecutionTime";
+
+    /// <summary>
+    /// Instance of <see cref="ActivitySource"/> for plan-related activities.
+    /// </summary>
+    private static ActivitySource s_activitySource = new(typeof(Plan).FullName);
+
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for planner-related metrics.
+    /// </summary>
+    private static Meter s_meter = new(typeof(Plan).FullName);
+
+    #endregion
 }

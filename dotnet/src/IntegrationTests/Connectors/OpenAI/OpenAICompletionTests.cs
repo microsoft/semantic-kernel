@@ -314,6 +314,50 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains(ExpectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task AzureOpenAIInvokePromptTestAsync()
+    {
+        // Arrange
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        var builder = Kernel.Builder.WithLogger(this._logger);
+        this.ConfigureAzureOpenAI(builder);
+        IKernel target = builder.Build();
+
+        var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
+
+        // Act
+        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
+
+        // Assert
+        Assert.Empty(actual.LastErrorDescription);
+        Assert.False(actual.ErrorOccurred);
+        Assert.Contains("Pike Place", actual.Result, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AzureOpenAIDefaultValueTestAsync()
+    {
+        // Arrange
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+
+        var builder = Kernel.Builder.WithLogger(this._logger);
+        this.ConfigureAzureOpenAI(builder);
+        IKernel target = builder.Build();
+
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "FunSkill");
+
+        // Act
+        SKContext actual = await target.RunAsync(skill["Limerick"]);
+
+        // Assert
+        Assert.Empty(actual.LastErrorDescription);
+        Assert.False(actual.ErrorOccurred);
+        Assert.Contains("Bob", actual.Result, StringComparison.OrdinalIgnoreCase);
+    }
+
     #region internals
 
     private readonly XunitLogger<Kernel> _logger;

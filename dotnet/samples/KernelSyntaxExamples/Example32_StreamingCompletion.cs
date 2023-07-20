@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with Text Completion as streaming
@@ -23,9 +22,9 @@ public static class Example32_StreamingCompletion
         Console.WriteLine("======== Azure OpenAI - Text Completion - Raw Streaming ========");
 
         var textCompletion = new AzureTextCompletion(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"));
+            TestConfiguration.AzureOpenAI.DeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey);
 
         await TextCompletionStreamAsync(textCompletion);
     }
@@ -34,7 +33,7 @@ public static class Example32_StreamingCompletion
     {
         Console.WriteLine("======== Open AI - Text Completion - Raw Streaming ========");
 
-        var textCompletion = new OpenAITextCompletion("text-davinci-003", Env.Var("OPENAI_API_KEY"));
+        var textCompletion = new OpenAITextCompletion("text-davinci-003", TestConfiguration.OpenAI.ApiKey);
 
         await TextCompletionStreamAsync(textCompletion);
     }

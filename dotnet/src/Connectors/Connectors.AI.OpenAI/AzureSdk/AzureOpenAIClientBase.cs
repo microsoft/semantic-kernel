@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
@@ -19,7 +20,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     private protected override OpenAIClient Client { get; }
 
     /// <summary>
-    /// Creates a new AzureTextCompletion client instance using API Key auth
+    /// Creates a new Azure OpenAI client instance using API Key auth
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -31,7 +32,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         string endpoint,
         string apiKey,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -50,19 +51,19 @@ public abstract class AzureOpenAIClientBase : ClientBase
     }
 
     /// <summary>
-    /// Creates a new AzureTextCompletion client instance supporting AAD auth
+    /// Creates a new Azure OpenAI client instance supporting AAD auth
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credential">Token credential, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="logger">Application logger</param>
     private protected AzureOpenAIClientBase(
         string modelId,
         string endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null,
-        ILogger? log = null)
+        ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(endpoint);
@@ -76,5 +77,32 @@ public abstract class AzureOpenAIClientBase : ClientBase
 
         this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
+    }
+
+    /// <summary>
+    /// Creates a new Azure OpenAI client instance using the specified OpenAIClient
+    /// </summary>
+    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="logger">Application logger</param>
+    private protected AzureOpenAIClientBase(
+        string modelId,
+        OpenAIClient openAIClient,
+        ILogger? logger = null)
+    {
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(openAIClient);
+
+        this.ModelId = modelId;
+        this.Client = openAIClient;
+    }
+
+    /// <summary>
+    /// Logs Azure OpenAI action details.
+    /// </summary>
+    /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
+    private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
+    {
+        this.Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, this.ModelId);
     }
 }

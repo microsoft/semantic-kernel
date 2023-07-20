@@ -8,6 +8,7 @@
     "auth:mac": "better-vsts-npm-auth -config .npmrc",
     "depcheck": "depcheck --ignores=\"@types/*,typescript\" --ignore-dirs=\".vscode,.vs,.git,node_modules\" --skip-missing",
     "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "prettify": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,scss,css,html,svg}\"",
     "serve": "serve -s build",
     "start": "react-scripts start",
@@ -23,7 +24,7 @@
     "@fluentui/react-icons": "^2.0.193",
     "@fluentui/react-northstar": "^0.66.4",
     "@microsoft/signalr": "^7.0.5",
-    "@playwright/test": "^1.34.3",
+    "@playwright/test": "^1.35.1",
     "@reduxjs/toolkit": "^1.9.1",
     "debug": "^4.3.4",
     "microsoft-cognitiveservices-speech-sdk": "^1.27.0",
@@ -38,30 +39,22 @@
     "@types/node": "^18.11.9",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.45.0",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "better-vsts-npm-auth": "^7.0.0",
     "depcheck": "^1.4.3",
-    "eslint": "^8.0.1",
-    "eslint-config-react-app": "^7.0.1",
-    "eslint-config-standard-with-typescript": "^23.0.0",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-n": "^15.0.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-react": "^7.31.11",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-security": "^0.1.0",
+    "eslint": "^8.42.0",
     "http-server": "^14.1.1",
     "prettier": "^2.8.1",
     "serve": "^14.2.0",
-    "typescript": "*",
+    "typescript": "5.0.4",
     "vsts-npm-auth": "^0.42.1",
     "workbox-window": "^6.5.4"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest"
+      "react-app/jest",
+      "../../.eslintrc.js"
     ]
   },
   "browserslist": {

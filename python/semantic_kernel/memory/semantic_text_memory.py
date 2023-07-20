@@ -56,7 +56,9 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         ):
             await self._storage.create_collection_async(collection_name=collection)
 
-        embedding = await self._embeddings_generator.generate_embeddings_async([text])
+        embedding = (
+            await self._embeddings_generator.generate_embeddings_async([text])
+        )[0]
         data = MemoryRecord.local_record(
             id=id,
             text=text,
@@ -94,7 +96,9 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         ):
             await self._storage.create_collection_async(collection_name=collection)
 
-        embedding = await self._embeddings_generator.generate_embeddings_async([text])
+        embedding = (
+            await self._embeddings_generator.generate_embeddings_async([text])
+        )[0]
         data = MemoryRecord.reference_record(
             external_id=external_id,
             source_name=external_source_name,
@@ -142,9 +146,9 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         Returns:
             List[MemoryQueryResult] -- The list of MemoryQueryResult found.
         """
-        query_embedding = await self._embeddings_generator.generate_embeddings_async(
-            [query]
-        )
+        query_embedding = (
+            await self._embeddings_generator.generate_embeddings_async([query])
+        )[0]
         results = await self._storage.get_nearest_matches_async(
             collection_name=collection,
             embedding=query_embedding,

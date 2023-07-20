@@ -5,7 +5,7 @@ export interface IAskResult {
     variables: Variable[];
 }
 
-export type Variable = {
+export interface Variable {
     key: string;
     value: string;
-};
+}
