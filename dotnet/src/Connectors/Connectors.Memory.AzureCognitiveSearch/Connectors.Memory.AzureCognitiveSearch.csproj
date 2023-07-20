@@ -15,6 +15,7 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
+    <PackageId>Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch</PackageId>
     <Title>Semantic Kernel - Azure Cognitive Search Semantic Memory</Title>
     <Description>Azure Cognitive Search Semantic Memory connector for Semantic Kernel</Description>
   </PropertyGroup>

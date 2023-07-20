@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Skills.Core;
 
 // ReSharper disable once InconsistentNaming
 public static class Example01_NativeFunctions
 {
-    public static void Run()
+    public static Task RunAsync()
     {
         Console.WriteLine("======== Functions ========");
 
@@ -17,5 +18,7 @@ public static class Example01_NativeFunctions
         var result = text.Uppercase("ciao!");
 
         Console.WriteLine(result);
+
+        return Task.CompletedTask;
     }
 }

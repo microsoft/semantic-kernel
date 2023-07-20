@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
+import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 
 import reactor.core.publisher.Mono;
 
@@ -188,7 +189,12 @@ public abstract class AbstractSkFunction<RequestConfiguration>
                                 parameter -> {
                                     String defaultValueString;
                                     if (parameter.getDefaultValue() == null
-                                            || parameter.getDefaultValue().isEmpty()) {
+                                            || parameter.getDefaultValue().isEmpty()
+                                            || parameter
+                                                    .getDefaultValue()
+                                                    .equals(
+                                                            SKFunctionParameters
+                                                                    .NO_DEFAULT_VALUE)) {
                                         defaultValueString = "";
                                     } else {
                                         defaultValueString =

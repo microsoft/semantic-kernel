@@ -3,9 +3,9 @@ name: Python Unit Tests
 on:
   workflow_dispatch:
   pull_request:
-    branches: [ "main", "feature*" ]
+    branches: ["main", "feature*"]
     paths:
-      - 'python/**'
+      - "python/**"
 
 jobs:
   python-unit-tests:
@@ -14,19 +14,19 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install poetry pytest
-        cd python
-        poetry install --without chromadb --without hugging_face
-    - name: Test with pytest
-      run: |
-        cd python && poetry run pytest ./tests/unit
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install poetry pytest
+          cd python
+          poetry install --without chromadb --without hugging_face --without azure_cognitive_search --without weaviate --without pinecone --without postgres
+      - name: Test with pytest
+        run: |
+          cd python && poetry run pytest ./tests/unit

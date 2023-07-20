@@ -6,7 +6,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
-    <version>0.2.7-alpha-SNAPSHOT</version>
+    <version>0.2.8-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>https://www.github.com/microsoft/semantic-kernel</url>
     <name>Semantic Kernel Parent</name>
@@ -70,6 +70,7 @@
         <module>semantickernel-extensions-parent</module>
         <module>semantickernel-connectors-parent</module>
         <module>semantickernel-core-skills</module>
+        <module>semantickernel-gpt3-tokenizer</module>
     </modules>
 
     <dependencyManagement>
@@ -807,6 +808,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-0.2.6-alpha</tag>
+        <tag>java-0.2.7-alpha</tag>
     </scm>
 </project>

@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>samples</artifactId>
-        <version>0.2.7-alpha-SNAPSHOT</version>
+        <version>0.2.8-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -51,6 +51,11 @@
         <dependency>
             <groupId>com.microsoft.semantic-kernel.extensions</groupId>
             <artifactId>semantickernel-sequentialplanner-extension</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-gpt3-tokenizer</artifactId>
             <scope>compile</scope>
         </dependency>
     </dependencies>

@@ -5,7 +5,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
-    <version>0.2.7-alpha-SNAPSHOT</version>
+    <version>0.2.8-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>
@@ -45,6 +45,11 @@
             <dependency>
                 <groupId>com.microsoft.semantic-kernel.extensions</groupId>
                 <artifactId>semantickernel-actionplanner-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-gpt3-tokenizer</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -122,6 +127,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-0.2.6-alpha</tag>
+        <tag>java-0.2.7-alpha</tag>
     </scm>
 </project>
