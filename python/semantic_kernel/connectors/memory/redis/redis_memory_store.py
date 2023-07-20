@@ -95,9 +95,6 @@ class RedisMemoryStore(MemoryStoreBase):
         Exceptions:
             Consult the [Redis documentation](https://redis.readthedocs.io/en/stable/exceptions.html) for further
             details on the exceptions that can occur.
-
-        Returns:
-            `None`
         """
         for param, val in settings.items():
             self._database.config_set(param, val)
@@ -110,9 +107,6 @@ class RedisMemoryStore(MemoryStoreBase):
 
         Arguments:
             * `collection_name` {str} -- Name for a collection of embeddings
-
-        Returns:
-            `None`
         """
 
         try:
@@ -285,10 +279,31 @@ class RedisMemoryStore(MemoryStoreBase):
         return records
 
     async def remove_async(self, collection_name: str, key: str) -> None:
-        pass
+        """
+        Removes a memory record from the data store. Does not guarantee that the collection exists.
+        If the key does not exist, do nothing.
+
+        Arguments:
+            collection_name {str} -- Name for a collection of embeddings
+            key {str} -- Unique id associated with the memory record to remove
+        """
+        if not await self.does_collection_exist_async(collection_name):
+            raise Exception(f"Collection '{collection_name}' does not exist")
+
+        self._database.delete(f"{collection_name}:{key}")
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
-        pass
+        """
+        Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
+
+        Arguments:
+            collection_name {str} -- Name for a collection of embeddings
+            keys {List[str]} -- Unique ids associated with the memory records to remove
+        """
+        if not await self.does_collection_exist_async(collection_name):
+            raise Exception(f"Collection '{collection_name}' does not exist")
+
+        self._database.delete([f"{collection_name}:{key}" for key in keys])
 
     async def get_nearest_matches_async(
         self,

@@ -137,14 +137,14 @@ async def test_does_collection_exist_async(connection_string):
 
 @pytest.mark.asyncio
 async def test_upsert_async_and_get_async(connection_string, memory_record1):
-    memory = RedisMemoryStore(connection_string)
+    memory = RedisMemoryStore(connection_string, vector_size=2)
 
     await memory.create_collection_async("test_collection")
     await memory.upsert_async("test_collection", memory_record1)
 
     fetch_1 = await memory.get_async("test_collection", "test_id1", True)
-    assert fetch_1._id == "test_id1"
 
+    assert fetch_1._id == "test_id1"
     for expected, actual in zip(fetch_1.embedding, memory_record1.embedding):
         assert expected == actual, "Did not retain correct embedding"
 
@@ -153,9 +153,10 @@ async def test_upsert_async_and_get_async(connection_string, memory_record1):
 async def test_upsert_batch_async_and_get_batch_async(
     connection_string, memory_record1, memory_record2
 ):
-    memory = RedisMemoryStore(connection_string)
+    memory = RedisMemoryStore(connection_string, vector_size=2)
 
-    await memory.create_collection_async("test_collection")
+    if not await memory.does_collection_exist_async("test_collection"):
+        await memory.create_collection_async("test_collection")
     await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
 
     fetched = await memory.get_batch_async(
@@ -173,12 +174,29 @@ async def test_upsert_batch_async_and_get_batch_async(
 
 @pytest.mark.asyncio
 async def test_remove_async(connection_string, memory_record1):
-    pass
+    memory = RedisMemoryStore(connection_string, vector_size=2)
+
+    if not await memory.does_collection_exist_async("test_collection"):
+        await memory.create_collection_async("test_collection")
+    await memory.upsert_async("test_collection", memory_record1)
+
+    await memory.remove_async("test_collection", "test_id1")
+    assert not await memory.get_async("test_collection", "test_id1", False)
 
 
 @pytest.mark.asyncio
 async def test_remove_batch_async(connection_string, memory_record1, memory_record2):
-    pass
+    memory = RedisMemoryStore(connection_string, vector_size=2)
+
+    if not await memory.does_collection_exist_async("test_collection"):
+        await memory.create_collection_async("test_collection")
+    await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
+
+    await memory.remove_async("test_collection", "test_id2")
+    assert not await memory.get_async("test_collection", "test_id2", False)
+
+    await memory.remove_async("test_collection", "test_id1")
+    assert not await memory.get_async("test_collection", "test_id2", False)
 
 
 @pytest.mark.asyncio
