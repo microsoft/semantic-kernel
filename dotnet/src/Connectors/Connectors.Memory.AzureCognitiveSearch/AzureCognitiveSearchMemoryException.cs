@@ -2,32 +2,32 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureSearch;
+namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
 #pragma warning disable RCS1194 // Implement exception constructors
 
 /// <summary>
 /// Exception thrown by the Azure Cognitive Search connector
 /// </summary>
-public class AzureSearchMemoryException : Exception
+public class AzureCognitiveSearchMemoryException : Exception
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureSearchMemoryException"/> class with a provided error code and message.
+    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryException"/> class with a provided error code and message.
     /// </summary>
     /// <param name="errorCode">The error code.</param>
     /// <param name="message">The exception message.</param>
-    public AzureSearchMemoryException(ErrorCodes errorCode, string? message)
+    public AzureCognitiveSearchMemoryException(ErrorCodes errorCode, string? message)
         : this(errorCode, message, innerException: null)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureSearchMemoryException"/> class with a provided error code, message, and inner exception.
+    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryException"/> class with a provided error code, message, and inner exception.
     /// </summary>
     /// <param name="errorCode">The error code.</param>
     /// <param name="message">A string that describes the error.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    public AzureSearchMemoryException(ErrorCodes errorCode, string? message, Exception? innerException)
+    public AzureCognitiveSearchMemoryException(ErrorCodes errorCode, string? message, Exception? innerException)
         : base(GetDefaultMessage(errorCode, message, innerException), innerException)
     {
         this.ErrorCode = errorCode;
