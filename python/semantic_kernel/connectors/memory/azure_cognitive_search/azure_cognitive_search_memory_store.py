@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import uuid
 from logging import Logger
 from typing import List, Optional, Tuple
@@ -55,6 +54,11 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             token_credentials {Optional[TokenCredential]}    -- Azure Cognitive Search token credentials
                                                                 (default: {None}).
             logger {Optional[Logger]}                        -- The logger to use (default: {None}).
+
+        Instantiate using Async Context Manager:
+            async with AzureCognitiveSearchMemoryStore(<...>) as memory:
+                await memory.<...>
+
         """
         try:
             pass
@@ -70,17 +74,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             search_endpoint, admin_key, azure_credentials, token_credentials
         )
 
-    def __del__(self):
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                loop.create_task(self.close())
-            else:
-                loop.run_until_complete(self.close())
-        except Exception:
-            pass
-
-    async def close(self):
+    async def close_async(self):
+        """Async close connection, invoked by MemoryStoreBase.__aexit__()"""
         if self._search_index_client is not None:
             await self._search_index_client.close()
 
@@ -155,7 +150,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """
 
         results_list = []
-        items = self._search_index_client.list_index_names()
+        items = await self._search_index_client.list_index_names()
 
         async for result in items:
             results_list.append(result)
