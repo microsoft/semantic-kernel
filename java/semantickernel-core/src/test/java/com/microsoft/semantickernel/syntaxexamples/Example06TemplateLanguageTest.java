@@ -65,8 +65,10 @@ public class Example06TemplateLanguageTest {
 
         Mono<String> renderedPrompt = promptRenderer.renderAsync(skContext);
 
+        String renderedText = renderedPrompt.block();
+
         // Check that it has been rendered
-        Assertions.assertTrue(!renderedPrompt.block().contains("time.Date"));
+        Assertions.assertTrue(!renderedText.contains("time.Date"));
 
         // Run the prompt / semantic function
         CompletionSKFunction kindOfDay =
