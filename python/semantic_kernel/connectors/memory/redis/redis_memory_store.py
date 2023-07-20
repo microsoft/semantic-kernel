@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import datetime
+from datetime import datetime
 from logging import Logger
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -198,7 +198,7 @@ class RedisMemoryStore(MemoryStoreBase):
         """
 
         batch = await self.upsert_batch_async(collection_name, [record])
-        return batch[0]
+        return batch[0] if len(batch) else None
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -274,18 +274,11 @@ class RedisMemoryStore(MemoryStoreBase):
             internal_key = f"{collection_name}:{key}"
             raw_fields = self._database.hgetall(internal_key)
 
+            # Did not find the record
             if len(raw_fields) == 0:
                 continue
 
-            # Convert from bytes
-            record_fields = dict()
-            for field, val in raw_fields.items():
-                field_name = field.decode()
-                record_fields[field_name] = (
-                    val.decode() if field_name != "embedding" else val
-                )
-
-            rec = self._deserialize_record(record_fields, with_embeddings)
+            rec = self._deserialize_record(raw_fields, with_embeddings)
             rec._key = internal_key
             records.append(rec)
 
@@ -330,7 +323,7 @@ class RedisMemoryStore(MemoryStoreBase):
             "description": record._description or "",
             "text": record._text or "",
             "additional_metadata": record._additional_metadata or "",
-            "embedding": record.embedding.tobytes() or "",
+            "embedding": record._embedding.astype(self._vector_type()).tobytes() or "",
         }
         return mapping
 
@@ -340,23 +333,28 @@ class RedisMemoryStore(MemoryStoreBase):
         """
         Helper function to deserialize a record from a Redis mapping
         """
-        assert fields.get("id", None), "Error: id not present in serialized data"
+        assert fields.get(b"id", None), "Error: id not present in serialized data"
 
         record = MemoryRecord(
-            key=fields["id"],
-            id=fields["id"],
-            is_reference=bool(int(fields["is_reference"])),
-            external_source_name=fields["external_source_name"],
-            description=fields["description"],
-            text=fields["text"],
-            additional_metadata=fields["additional_metadata"],
+            id=fields[b"id"].decode(),
+            is_reference=bool(int(fields[b"is_reference"].decode())),
+            external_source_name=fields[b"external_source_name"].decode(),
+            description=fields[b"description"].decode(),
+            text=fields[b"text"].decode(),
+            additional_metadata=fields[b"additional_metadata"].decode(),
             embedding=None,
         )
 
-        if fields["timestamp"] != "":
-            record._timestamp = datetime.datetime.fromisoformat(fields["timestamp"])
+        if fields[b"timestamp"] != b"":
+            record._timestamp = datetime.fromisoformat(fields[b"timestamp"].decode())
 
         if with_embedding:
-            record._embedding = np.frombuffer(fields["embedding"])
+            # Extract using the vector type, then convert to regular Python float type
+            record._embedding = np.frombuffer(
+                fields[b"embedding"], dtype=self._vector_type()
+            ).astype(float)
 
         return record
+
+    def _vector_type(self):
+        return np.float32 if RedisMemoryStore.VECTOR_TYPE == "FLOAT32" else np.float64
