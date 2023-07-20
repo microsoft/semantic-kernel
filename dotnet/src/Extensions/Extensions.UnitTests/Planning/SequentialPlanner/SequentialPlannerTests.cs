@@ -43,7 +43,7 @@ public sealed class SequentialPlannerTests
             functionsView.AddFunction(functionView);
 
             mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), default))
+                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
                 .Returns<SKContext, CompleteRequestSettings, CancellationToken>((context, settings, cancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
@@ -141,7 +141,7 @@ public sealed class SequentialPlannerTests
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object);
 
         // Act
-        await Assert.ThrowsAsync<PlanningException>(async () => await planner.CreatePlanAsync("", default));
+        await Assert.ThrowsAsync<PlanningException>(async () => await planner.CreatePlanAsync(""));
     }
 
     [Fact]

@@ -173,6 +173,14 @@ public interface IKernel
     /// </summary>
     /// <returns>SK context</returns>
     SKContext CreateNewContext();
+    
+    /// <summary>
+    /// Create a new instance of a context, linked to the kernel internal state.
+    /// </summary>
+    /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
+    /// <returns>SK context</returns>
+    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
+    SKContext CreateNewContext(CancellationToken cancellationToken);
 
     /// <summary>
     /// Get one of the configured services. Currently limited to AI services.
