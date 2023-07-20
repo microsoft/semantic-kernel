@@ -175,11 +175,8 @@ public class Example12_SequentialPlanner {
     private static Kernel initializeKernel() throws IOException {
         OpenAIAsyncClient client = Config.getClient();
         var kernel = SKBuilders.kernel()
-                .withKernelConfig(SKBuilders
-                        .kernelConfig()
-                        .addTextCompletionService("text-davinci-003", kernel1 -> SKBuilders.textCompletionService()
-                                .build(client, "text-davinci-003"))
-                        .build())
+                .withDefaultAIService(SKBuilders.textCompletionService()
+                        .build(client, "text-davinci-003"))
                 .withMemory(SKBuilders
                         .semanticTextMemory()
                         .setEmbeddingGenerator(

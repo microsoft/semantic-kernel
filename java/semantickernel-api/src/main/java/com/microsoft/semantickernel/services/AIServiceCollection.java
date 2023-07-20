@@ -2,11 +2,19 @@
 package com.microsoft.semantickernel.services;
 
 import com.microsoft.semantickernel.Verify;
+import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
+import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
+import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -14,6 +22,13 @@ import javax.annotation.Nullable;
 public class AIServiceCollection {
     // A constant key for the default service
     private static final String DefaultKey = "__DEFAULT__";
+
+    private static final List<Class<? extends AIService>> KNOWN_SERVICES =
+            Arrays.asList(
+                    EmbeddingGeneration.class,
+                    TextEmbeddingGeneration.class,
+                    TextCompletion.class,
+                    ChatCompletion.class);
 
     // A dictionary that maps a service type to a nested dictionary of names and service instances
     // or factories
@@ -63,34 +78,53 @@ public class AIServiceCollection {
      * @param name The name of the service, or null for the default service.
      * @param factory The factory function to create the service instance.
      * @param setAsDefault Whether the service should be the default for its type.
-     * @param serviceType The type of the service.
+     * @param specificServiceType The type of the service.
      */
     public <T extends AIService> void setService(
             @Nullable String name,
             Supplier<T> factory,
             boolean setAsDefault,
-            Class<T> serviceType) {
+            Class<T> specificServiceType) {
+
         // Validate the factory function
         if (factory == null) {
             throw new IllegalArgumentException();
         }
 
-        // Get or create the nested dictionary for the service type
-        Map<String, Supplier<? extends AIService>> namedServices = this.services.get(serviceType);
-        if (namedServices == null) {
-            namedServices = new HashMap<>();
-            services.put(serviceType, namedServices);
-        }
+        // if this is an implementation of a known service type, register it as such
+        getKnownServiceTypes(specificServiceType)
+                .forEach(
+                        serviceType -> {
+                            // Get or create the nested dictionary for the service type
+                            Map<String, Supplier<? extends AIService>> namedServices =
+                                    this.services.get(serviceType);
+                            if (namedServices == null) {
+                                namedServices = new HashMap<>();
+                                services.put(serviceType, namedServices);
+                            }
 
-        // Set as the default if the name is empty, or the default flag is true,
-        // or there is no default name for the service type.
-        if (name == null || setAsDefault || !this.hasDefault(serviceType)) {
-            // Update the default name for the service type
-            this.defaultIds.put(serviceType, name == null ? DefaultKey : name);
-        }
+                            // Set as the default if the name is empty, or the default flag is true,
+                            // or there is no default name for the service type.
+                            if (name == null || setAsDefault || !this.hasDefault(serviceType)) {
+                                // Update the default name for the service type
+                                this.defaultIds.put(serviceType, name == null ? DefaultKey : name);
+                            }
 
-        // Register the factory with the given name
-        namedServices.put(name == null ? DefaultKey : name, factory);
+                            // Register the factory with the given name
+                            namedServices.put(name == null ? DefaultKey : name, factory);
+                        });
+    }
+
+    private <T extends AIService> List<Class<? extends AIService>> getKnownServiceTypes(
+            Class<T> serviceType) {
+        List<Class<? extends AIService>> knownServices =
+                KNOWN_SERVICES.stream()
+                        .filter(knownServiceType -> knownServiceType.isAssignableFrom(serviceType))
+                        .collect(Collectors.toList());
+
+        List<Class<? extends AIService>> services = new ArrayList<>(knownServices);
+        services.add(serviceType);
+        return services;
     }
 
     /**

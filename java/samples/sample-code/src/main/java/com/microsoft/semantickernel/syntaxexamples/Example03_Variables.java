@@ -36,8 +36,7 @@ public class Example03_Variables {
     }
 
     public static void main(String[] args) {
-        KernelConfig kernelConfig = SKBuilders.kernelConfig().build();
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().build();
 
         // Load native skill
         ReadOnlyFunctionCollection functionCollection =

@@ -1,15 +1,14 @@
 package com.microsoft.semantickernel;
 
-import java.io.IOException;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.syntaxexamples.SampleSkillsUtil;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
 
 /**
  * Getting started
@@ -31,13 +30,8 @@ public class Example00_GettingStarted {
      * @return Kernel.
      */
     public static Kernel getKernel(OpenAIAsyncClient client) {
-        KernelConfig config = SKBuilders.kernelConfig()
-        .addTextCompletionService("davinci",
-            kernel -> SKBuilders.textCompletionService().build(client, "text-davinci-003"))
-                .build();
-
         Kernel kernel = SKBuilders.kernel()
-                .withKernelConfig(config)
+                .withDefaultAIService(SKBuilders.textCompletionService().build(client, "text-davinci-003"))
                 .build();
 
         return kernel;

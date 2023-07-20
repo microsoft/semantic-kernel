@@ -21,8 +21,6 @@ public class Example17_ChatGPT {
         OpenAIAsyncClient client = Config.getClient();
 
         Kernel kernel = SKBuilders.kernel()
-                .withKernelConfig(SKBuilders.kernelConfig()
-                        .build())
                 .withAIService(
                         "chat-test",
                         SKBuilders.chatCompletion().build(client, "chat-test"),

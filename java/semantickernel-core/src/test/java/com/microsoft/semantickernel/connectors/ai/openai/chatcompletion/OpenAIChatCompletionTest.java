@@ -7,7 +7,6 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
@@ -37,16 +36,11 @@ public class OpenAIChatCompletionTest {
     }
 
     private static String getRunExample(OpenAIAsyncClient client, String message) {
-        KernelConfig kernelConfig =
-                SKBuilders.kernelConfig()
-                        .addChatCompletionService(
-                                "gpt-3.5-turbo-0301",
-                                kernel ->
-                                        SKBuilders.chatCompletion()
-                                                .build(client, "gpt-3.5-turbo-0301"))
+        Kernel kernel =
+                SKBuilders.kernel()
+                        .withDefaultAIService(
+                                SKBuilders.chatCompletion().build(client, "gpt-3.5-turbo-0301"))
                         .build();
-
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
 
         ChatCompletion<OpenAIChatHistory> chatGPT = kernel.getService(null, ChatCompletion.class);
 

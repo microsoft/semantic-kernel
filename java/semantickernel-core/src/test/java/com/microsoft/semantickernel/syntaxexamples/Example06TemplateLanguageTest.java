@@ -5,7 +5,6 @@ import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenA
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -26,16 +25,12 @@ public class Example06TemplateLanguageTest {
         OpenAIAsyncClient client =
                 mockCompletionOpenAIAsyncClient(Tuples.of("Today is", "A-RESULT"));
 
-        KernelConfig kernelConfig =
-                SKBuilders.kernelConfig()
-                        .addTextCompletionService(
-                                "text-davinci-003",
-                                kernel1 ->
-                                        SKBuilders.textCompletionService()
-                                                .build(client, "text-davinci-003"))
+        Kernel kernel =
+                SKBuilders.kernel()
+                        .withDefaultAIService(
+                                SKBuilders.textCompletionService()
+                                        .build(client, "text-davinci-003"))
                         .build();
-
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
 
         // Load native skill into the kernel skill collection, sharing its functions
         // with prompt
