@@ -168,10 +168,10 @@ internal static class SemanticKernelExtensions
     internal static void AddContentModerator(this IServiceCollection services)
     {
         IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-        ContentModerationOptions settings = configuration.GetSection(ContentModerationOptions.PropertyName).Get<ContentModerationOptions>();
+        ContentModerationOptions options = configuration.GetSection(ContentModerationOptions.PropertyName).Get<ContentModerationOptions>();
 
         // HACK. If register service conditionally, the dependency injection will failed when the feature is OOF. Therefore we still register the service without checkout the feature flag.
-        services.AddSingleton<AzureContentModerator>(sp => new AzureContentModerator(new Uri(settings.Endpoint), settings.Key));
+        services.AddSingleton<AzureContentModerator>(sp => new AzureContentModerator(new Uri(options.Endpoint), options.Key, options));
     }
 
     /// <summary>

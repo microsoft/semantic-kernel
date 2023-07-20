@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
+using SemanticKernel.Service.CopilotChat.Options;
 
 namespace SemanticKernel.Service.Services;
 
@@ -32,6 +33,16 @@ public sealed class AzureContentModerator : IDisposable
     private readonly HttpClient _httpClient;
     private readonly HttpClientHandler? _httpClientHandler;
 
+    /// <summary>
+    /// Options for the content moderator.
+    /// </summary>
+    private readonly ContentModerationOptions? _contentModerationOptions;
+
+    /// <summary>
+    /// Gets the options for the content moderator.
+    /// </summary>
+    public ContentModerationOptions? ContentModerationOptions => this._contentModerationOptions;
+
     private static readonly List<string> s_categories = new()
     {
         "Hate",
@@ -44,10 +55,12 @@ public sealed class AzureContentModerator : IDisposable
     /// </summary>
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="apiKey">The API key.</param>
+    /// <param name="contentModerationOptions">Content moderator options from appsettings.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    public AzureContentModerator(Uri endpoint, string apiKey, HttpClientHandler httpClientHandler)
+    public AzureContentModerator(Uri endpoint, string apiKey, ContentModerationOptions contentModerationOptions, HttpClientHandler httpClientHandler)
     {
         this._endpoint = endpoint;
+        this._contentModerationOptions = contentModerationOptions;
         this._httpClient = new(httpClientHandler);
 
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
@@ -61,9 +74,11 @@ public sealed class AzureContentModerator : IDisposable
     /// </summary>
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="apiKey">The API key.</param>
-    public AzureContentModerator(Uri endpoint, string apiKey)
+    /// <param name="contentModerationOptions">Content moderator options from appsettings.</param>
+    public AzureContentModerator(Uri endpoint, string apiKey, ContentModerationOptions contentModerationOptions)
     {
         this._endpoint = endpoint;
+        this._contentModerationOptions = contentModerationOptions;
 
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._httpClient = new(this._httpClientHandler);

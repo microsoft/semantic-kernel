@@ -89,11 +89,6 @@ public class ChatSkill
     private IOptions<DocumentMemoryOptions> _documentImportOptions;
 
     /// <summary>
-    /// Options for the Azure content moderation
-    /// </summary>
-    private readonly ContentModerationOptions _contentModerationOptions;
-
-    /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
     /// </summary>
     public ChatSkill(
@@ -103,7 +98,6 @@ public class ChatSkill
         IHubContext<MessageRelayHub> messageRelayHubContext,
         IOptions<PromptsOptions> promptOptions,
         IOptions<DocumentMemoryOptions> documentImportOptions,
-        IOptions<ContentModerationOptions> contentModerationOptions, // TODO: pass less parameters about content safety.
         AzureContentModerator contentModerator,
         CopilotChatPlanner planner,
         ILogger logger)
@@ -123,7 +117,6 @@ public class ChatSkill
         this._documentMemorySkill = new DocumentMemorySkill(
             promptOptions,
             documentImportOptions);
-        this._contentModerationOptions = contentModerationOptions.Value;
         this._contentModerator = contentModerator;
         this._externalInformationSkill = new ExternalInformationSkill(
             promptOptions,
@@ -371,10 +364,10 @@ public class ChatSkill
         var imageCannedResponse = "Great image!";
         string messageType = "image";
 
-        if (this._contentModerationOptions.Enabled)
+        if (this._contentModerator.ContentModerationOptions!.Enabled)
         {
             var moderationResult = await this._contentModerator.ImageAnalysisAsync(message, default);
-            var violationCategories = AzureContentModerator.ParseViolatedCategories(moderationResult, this._contentModerationOptions.ViolationThreshold);
+            var violationCategories = AzureContentModerator.ParseViolatedCategories(moderationResult, this._contentModerator.ContentModerationOptions.ViolationThreshold);
 
             if (violationCategories.Count > 0)
             {

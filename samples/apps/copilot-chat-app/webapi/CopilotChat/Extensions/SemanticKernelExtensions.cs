@@ -55,7 +55,6 @@ public static class CopilotChatSemanticKernelExtensions
                 messageRelayHubContext: sp.GetRequiredService<IHubContext<MessageRelayHub>>(),
                 promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
                 documentImportOptions: sp.GetRequiredService<IOptions<DocumentMemoryOptions>>(),
-                contentModerationOptions: sp.GetRequiredService<IOptions<ContentModerationOptions>>(),
                 contentModerator: sp.GetRequiredService<AzureContentModerator>(),
                 planner: sp.GetRequiredService<CopilotChatPlanner>(),
                 logger: sp.GetRequiredService<ILogger<ChatSkill>>()
