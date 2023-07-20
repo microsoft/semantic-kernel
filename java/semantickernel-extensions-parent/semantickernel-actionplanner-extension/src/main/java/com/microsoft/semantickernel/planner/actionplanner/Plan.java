@@ -5,11 +5,16 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.Verify;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.*;
+import com.microsoft.semantickernel.orchestration.AbstractSkFunction;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.SKFunction;
+import com.microsoft.semantickernel.orchestration.WritableContextVariables;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
+import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 
 import reactor.core.publisher.Mono;
@@ -290,6 +295,17 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                                             }
                                         });
 
+                                // If this function produces an output, don't overwrite the current
+                                // result
+                                if (step.outputs.size() > 0) {
+                                    this.state =
+                                            this.state
+                                                    .writableClone()
+                                                    .setVariable(
+                                                            ContextVariables.MAIN_KEY,
+                                                            context.getResult());
+                                }
+
                                 sink.next(this);
                             });
         }
@@ -455,7 +471,9 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         // - Plan.Description
 
         String input = "";
-        if (step.parameters != null && !Verify.isNullOrEmpty(step.parameters.getInput())) {
+        if (step.parameters != null
+                && !Verify.isNullOrEmpty(step.parameters.getInput())
+                && !step.parameters.getInput().equals(SKFunctionParameters.NO_DEFAULT_VALUE)) {
             input =
                     this.expandFromVariables(
                             variables, Objects.requireNonNull(step.parameters.getInput()));
