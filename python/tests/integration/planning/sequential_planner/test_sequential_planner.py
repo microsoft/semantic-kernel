@@ -1,5 +1,6 @@
-import pytest
+# Copyright (c) Microsoft. All rights reserved.
 
+import pytest
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planning.sequential_planner.config import SequentialPlannerConfig
@@ -10,18 +11,18 @@ from tests.integration.fakes.writer_skill_fake import WriterSkillFake
 
 
 def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=False):
-    deployment_name, api_key, endpoint = get_aoai_config
+    _, api_key, endpoint = get_aoai_config
 
     kernel = Kernel()
     if use_chat_model:
         kernel.add_chat_service(
             "chat_completion",
-            sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
+            sk_oai.AzureChatCompletion("gpt-35-turbo", endpoint, api_key),
         )
     else:
         kernel.add_text_completion_service(
             "text_completion",
-            sk_oai.AzureChatCompletion(deployment_name, endpoint, api_key),
+            sk_oai.AzureChatCompletion("gpt-35-turbo", endpoint, api_key),
         )
 
     if use_embeddings:
@@ -97,8 +98,13 @@ async def test_create_plan_with_defaults_async(
 
     # Assert
     assert any(
-        step.name == expected_function and step.skill_name == expected_skill
-        # and step.parameters["endMarker"] == expected_default # TODO: Check endMarker has been set in C#
+        step.name == expected_function
+        and step.skill_name == expected_skill
+        and step.parameters["input"] == expected_default
+        # TODO: current sk_function decorator only support default values ["input"] key
+        # TODO: current version of fake skills used inline sk_function but actually most of them already in samples dir.
+        #           add test helper for python to import skills from samples dir. C# already has it.
+        # and step.parameters["endMarker"] == expected_default
         for step in plan._steps
     )
 
