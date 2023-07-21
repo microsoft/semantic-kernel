@@ -1,5 +1,13 @@
-package com.microsoft.semantickernel;
+///usr/bin/env jbang "$0" "$@" ; exit $?
+//DEPS com.microsoft.semantic-kernel:semantickernel-core:0.2.6-alpha
+//DEPS com.microsoft.semantic-kernel:semantickernel-core-skills:0.2.6-alpha
+//DEPS com.microsoft.semantic-kernel.connectors:semantickernel-connectors:0.2.6-alpha
+//DEPS org.slf4j:slf4j-jdk14:2.0.7
+//SOURCES syntaxexamples/SampleSkillsUtil.java,Config.java,Example00_GettingStarted.java
+package com.microsoft.semantickernel.samples;
 
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;

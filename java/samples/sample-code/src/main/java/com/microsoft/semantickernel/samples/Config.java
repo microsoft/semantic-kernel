@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel;
+package com.microsoft.semantickernel.samples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.connectors.ai.openai.util.ClientSettings;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAISettings;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,7 +26,7 @@ public class Config {
 
     private static final List<String> DEFAULT_PROPERTIES_LOCATIONS = Arrays.asList(
             "java/samples/conf.properties",
-            System.getProperty("user.home") + "/.sk/conf.properties"
+            System.getProperty("user.home") + File.separator + ".sk" + File.separator + "conf.properties"
     );
 
     public static final String CONF_PROPERTIES = getEnvOrProperty("CONF_PROPERTIES", "java/samples/conf.properties");
@@ -64,9 +65,11 @@ public class Config {
     }
 
     private static Supplier<ClientSettings<?>> getOpenAIClientFromDefaultPropertiesLocations(ClientType type) {
+        LOGGER.info("Create supplier for settings of "+type);
         return () -> {
             try {
                 for (String location : DEFAULT_PROPERTIES_LOCATIONS) {
+                    LOGGER.info("Attempting config file at "+location);
                     if (Files.isRegularFile(Path.of(location))) {
                         return switch (type) {
                             case OPEN_AI -> AIProviderSettings.getOpenAISettingsFromFile(location);
