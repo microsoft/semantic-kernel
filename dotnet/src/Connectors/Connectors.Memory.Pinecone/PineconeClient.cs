@@ -311,7 +311,7 @@ public sealed class PineconeClient : IPineconeClient
         }
         catch (HttpRequestException e)
         {
-            this._logger.LogWarning("Vector update for Document {0} failed. Message: {1}", document.Id, e.Message);
+            this._logger.LogError(e, "Vector update for Document {0} failed. Message: {1}", document.Id, e.Message);
             throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
     }
@@ -338,7 +338,7 @@ public sealed class PineconeClient : IPineconeClient
         }
         catch (HttpRequestException e)
         {
-            this._logger.LogDebug("Index not found {0}", e.Message);
+            this._logger.LogError(e, "Index not found {0}", e.Message);
             throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
         }
 

@@ -428,9 +428,20 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         this._logger.LogDebug("Listing collections");
 
         using var request = ListCollectionsRequest.Create().Build();
+
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         var collections = JsonSerializer.Deserialize<ListCollectionsResponse>(responseContent);
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException e)
+        {
+            this._logger.LogError(e, "Unable to list collections: {0}, {1}", e.Message, responseContent);
+            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+        }
 
         foreach (var collection in collections?.Result?.Collections ?? Enumerable.Empty<ListCollectionsResponse.CollectionResult.CollectionDescription>())
         {
