@@ -1,27 +1,28 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.util;
 
-import java.io.IOException;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
+
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
-public class OpenAISettings extends ClientSettings<OpenAISettings> {
-    private static final String DEFAULT_CLIENT_ID = "openai";
-    @Nullable private String key = null;
-    @Nullable private String organizationId = null;
+public class OpenAISettings extends OpenAIClientSettings {
+    public static final String OPEN_AI_ORGANIZATION_SUFFIX = "organizationid";
+    private static final String DEFAULT_SETTINGS_PREFIX = "client.openai";
 
-    private enum Property {
-        OPEN_AI_KEY("key"),
-        OPEN_AI_ORGANIZATION_ID("organizationid");
-        private final String label;
+    @Nullable private final String key;
+    @Nullable private final String organizationId;
+    private final String settingsPrefix;
 
-        Property(String label) {
-            this.label = label;
-        }
+    public OpenAISettings(Map<String, String> settings) {
+        this(DEFAULT_SETTINGS_PREFIX, settings);
+    }
 
-        public String label() {
-            return this.label;
-        }
+    public OpenAISettings(String settingsPrefix, Map<String, String> settings) {
+        this.settingsPrefix = settingsPrefix;
+        key = settings.get(settingsPrefix + "." + KEY_SUFFIX);
+        organizationId = settings.get(settingsPrefix + "." + OPEN_AI_ORGANIZATION_SUFFIX);
     }
 
     public String getKey() {
@@ -39,44 +40,12 @@ public class OpenAISettings extends ClientSettings<OpenAISettings> {
     }
 
     @Override
-    public OpenAISettings fromEnv() {
-        this.key = getSettingsValueFromEnv(Property.OPEN_AI_KEY.name());
-        this.organizationId = getSettingsValueFromEnv(Property.OPEN_AI_ORGANIZATION_ID.name());
-        return this;
-    }
-
-    @Override
-    public OpenAISettings fromFile(String path) throws IOException {
-        return fromFile(path, DEFAULT_CLIENT_ID);
-    }
-
-    @Override
-    public OpenAISettings fromFile(String path, String clientSettingsId) throws IOException {
-        this.key = getSettingsValueFromFile(path, Property.OPEN_AI_KEY.label(), clientSettingsId);
-        this.organizationId =
-                getSettingsValueFromFile(
-                        path, Property.OPEN_AI_ORGANIZATION_ID.label(), clientSettingsId);
-        return this;
-    }
-
-    @Override
-    public boolean isValid() {
-        return key != null && organizationId != null;
-    }
-
-    @Override
-    public OpenAISettings fromSystemProperties() {
-        return fromSystemProperties(DEFAULT_CLIENT_ID);
-    }
-
-    @Override
-    public OpenAISettings fromSystemProperties(String clientSettingsId) {
-        this.key =
-                getSettingsValueFromSystemProperties(
-                        Property.OPEN_AI_KEY.label(), clientSettingsId);
-        this.organizationId =
-                getSettingsValueFromSystemProperties(
-                        Property.OPEN_AI_ORGANIZATION_ID.label(), clientSettingsId);
-        return this;
+    public boolean assertIsValid() throws ConfigurationException {
+        if (key == null) {
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound,
+                    settingsPrefix + "." + KEY_SUFFIX);
+        }
+        return true;
     }
 }

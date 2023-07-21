@@ -6,16 +6,15 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -28,9 +27,9 @@ public class KernelTest extends AbstractKernelTest {
                 kernel.getSemanticFunctionBuilder()
                         .createFunction(
                                 """
-                                {{$input}}
+                                        {{$input}}
 
-                                One line TLDR with the fewest words.""",
+                                        One line TLDR with the fewest words.""",
                                 null,
                                 "",
                                 null,
@@ -38,9 +37,9 @@ public class KernelTest extends AbstractKernelTest {
 
         String text1 =
                 """
-                1st Law of Thermodynamics - Energy cannot be created or destroyed.
-                2nd Law of Thermodynamics - For a spontaneous process, the entropy of the universe increases.
-                3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero entropy""";
+                        1st Law of Thermodynamics - Energy cannot be created or destroyed.
+                        2nd Law of Thermodynamics - For a spontaneous process, the entropy of the universe increases.
+                        3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero entropy""";
 
         Mono<SKContext> mono = summarize.invokeAsync(text1);
         SKContext result = mono.block();
@@ -62,14 +61,14 @@ public class KernelTest extends AbstractKernelTest {
 
     @Test
     @EnabledIf("isAzureTestEnabled")
-    public void endToEndTextGenerationTestAzureOpenAI() throws IOException {
+    public void endToEndTextGenerationTestAzureOpenAI() throws ConfigurationException {
         Kernel kernel = buildKernel(getOpenAIClient(), "text-davinci-003");
         executeCompletion(kernel);
     }
 
     @Test
     @EnabledIf("isAzureTestEnabled")
-    public void endToEndTextGenerationTestOpenAI() throws IOException {
+    public void endToEndTextGenerationTestOpenAI() throws ConfigurationException, IOException {
         Kernel kernel = buildKernel(getOpenAIClient(), getOpenAIModel());
         executeCompletion(kernel);
     }

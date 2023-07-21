@@ -2,16 +2,17 @@
 package com.microsoft.semantickernel.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.Config;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TextSkill;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.planner.actionplanner.ActionPlanner;
 
 import java.io.IOException;
 
 public class Example28_ActionPlanner {
-    public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.getClient();
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
         System.out.println("======== Action Planner ========");
 

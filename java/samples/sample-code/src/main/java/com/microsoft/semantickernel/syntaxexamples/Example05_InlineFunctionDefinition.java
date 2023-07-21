@@ -3,10 +3,11 @@
 package com.microsoft.semantickernel.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.Config;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
@@ -16,8 +17,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
 public class Example05_InlineFunctionDefinition {
-    public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.getClient();
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 

@@ -2,16 +2,14 @@
 package com.microsoft.semantickernel.e2e;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 public class PlannerTest extends AbstractKernelTest {
 
@@ -19,7 +17,7 @@ public class PlannerTest extends AbstractKernelTest {
 
     @Test
     @EnabledIf("isAzureTestEnabled")
-    public void executeInlineFunction() throws IOException {
+    public void executeInlineFunction() throws ConfigurationException {
         Kernel kernel = buildTextCompletionKernel();
         kernel.importSkillFromDirectory(
                 "SummarizeSkill", "../../../samples/skills", "SummarizeSkill");

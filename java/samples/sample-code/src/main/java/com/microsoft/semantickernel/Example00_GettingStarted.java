@@ -1,22 +1,23 @@
 package com.microsoft.semantickernel;
 
-import java.io.IOException;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.syntaxexamples.SampleSkillsUtil;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
 
 /**
  * Getting started
- *
+ * <p>
  * Create a conf.properties file based on the examples files at the root of this
  * module.
- *
+ * <p>
  * <a href=
  * "https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart">Get
  * started with Azure OpenAI</a>
@@ -32,8 +33,8 @@ public class Example00_GettingStarted {
      */
     public static Kernel getKernel(OpenAIAsyncClient client) {
         KernelConfig config = SKBuilders.kernelConfig()
-        .addTextCompletionService("davinci",
-            kernel -> SKBuilders.textCompletionService().build(client, "text-davinci-003"))
+                .addTextCompletionService("davinci",
+                        kernel -> SKBuilders.textCompletionService().build(client, "text-davinci-003"))
                 .build();
 
         Kernel kernel = SKBuilders.kernel()
@@ -44,8 +45,8 @@ public class Example00_GettingStarted {
     }
 
     /**
-   * Imports 'FunSkill' from directory examples and runs the 'Joke' function
-   * within it.
+     * Imports 'FunSkill' from directory examples and runs the 'Joke' function
+     * within it.
      *
      * @param kernel Kernel with Text Completion.
      */
@@ -63,13 +64,12 @@ public class Example00_GettingStarted {
         }
     }
 
-    public static void run(Config.ClientType clientType) throws IOException {
-        Kernel kernel = getKernel(clientType.getClient());
+    public static void run(OpenAIAsyncClient client) {
+        Kernel kernel = getKernel(client);
         joke(kernel);
     }
 
-    public static void main(String args[]) throws IOException {
-        // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
-        run(Config.ClientType.OPEN_AI);
+    public static void main(String args[]) throws ConfigurationException, IOException {
+        run(OpenAIClientProvider.getClient());
     }
 }
