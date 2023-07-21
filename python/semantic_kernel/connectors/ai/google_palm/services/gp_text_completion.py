@@ -3,13 +3,16 @@
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 from typing import Union, List
 from semantic_kernel.connectors.ai.ai_exception import AIException
 import google.generativeai as palm
 import asyncio
 
 
-class GooglePalmTextCompletion(CompleteRequestSettings):
+class GooglePalmTextCompletion(TextCompletionClientBase):
     _model_id: str
     _api_key: str
 
