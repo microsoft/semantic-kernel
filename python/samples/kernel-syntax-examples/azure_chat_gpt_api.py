@@ -24,8 +24,7 @@ kernel = sk.Kernel()
 kernel.add_chat_service(
     "chat-gpt",
     sk_oai.AzureChatCompletion(
-        **azure_openai_settings_from_dot_env_as_dict(
-            include_api_version=True)
+        **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
     ),
 )
 
