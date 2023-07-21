@@ -1,4 +1,5 @@
-package com.microsoft.semantickernel.samples.syntaxexamples;// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.samples.Config;
