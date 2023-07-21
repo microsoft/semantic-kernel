@@ -98,13 +98,13 @@ BEGIN SUMMARY:
             this._logger.LogDebug("Downloading {RepoBundle}", repoBundle);
 
             var headers = new Dictionary<string, string>();
+            headers.Add("X-GitHub-Api-Version", "2022-11-28");
+            headers.Add("Accept", "application/vnd.github+json");
+            headers.Add("User-Agent", "msft-semantic-kernel-sample");
             if (!string.IsNullOrEmpty(patToken))
             {
                 this._logger.LogDebug("Access token detected, adding authorization headers");
                 headers.Add("Authorization", $"Bearer {patToken}");
-                headers.Add("X-GitHub-Api-Version", "2022-11-28");
-                headers.Add("Accept", "application/vnd.github+json");
-                headers.Add("User-Agent", "msft-semantic-kernel-sample");
             }
 
             await this.DownloadToFileAsync(repoBundle, headers, filePath, cancellationToken);

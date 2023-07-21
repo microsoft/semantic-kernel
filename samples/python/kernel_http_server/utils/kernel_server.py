@@ -3,7 +3,7 @@ import json
 
 import azure.functions as func
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel import ContextVariables, SKContext
+from semantic_kernel import ContextVariables
 from semantic_kernel.memory import VolatileMemoryStore
 from semantic_kernel.planning.basic_planner import BasicPlanner
 from semantic_kernel.planning.plan import Plan
@@ -26,8 +26,12 @@ class KernelServer:
         function_name = req.route_params.get("functionName")
 
         if not skill_name or not function_name:
-            logging.error(f"Skill name: {skill_name} or function name: {function_name} not provided")
-            return func.HttpResponse("Please pass skill_name and function_name on the URL", status_code=400)
+            logging.error(
+                f"Skill name: {skill_name} or function name: {function_name} not given"
+            )
+            return func.HttpResponse(
+                "Please pass skill_name and function_name on the URL", status_code=400
+            )
 
         logging.info("skill_name: %s", skill_name)
         logging.info("function_name: %s", function_name)
@@ -36,7 +40,7 @@ class KernelServer:
         try:
             req_body = req.get_json()
         except ValueError:
-            logging.warning(f"No JSON body provided in request.")
+            logging.warning("No JSON body provided in request.")
         ask = Ask(**req_body)
         logging.info("Ask object: %s", ask)
 
@@ -46,8 +50,13 @@ class KernelServer:
         try:
             sk_func = kernel.skills.get_function(skill_name, function_name)
         except KernelException:
-            logging.exception(f"Could not find function {function_name} in skill {skill_name}")
-            return func.HttpResponse(f"Could not find function {function_name} in skill {skill_name}", status_code=404)
+            logging.exception(
+                f"Could not find function {function_name} in skill {skill_name}"
+            )
+            return func.HttpResponse(
+                f"Could not find function {function_name} in skill {skill_name}",
+                status_code=404,
+            )
 
         context_var = ContextVariables(ask.value)
 
@@ -75,12 +84,16 @@ class KernelServer:
         try:
             planner_data = req.get_json()
         except ValueError:
-            logging.warning(f"No JSON body provided in request.")
-            return func.HttpResponse("No JSON body provided in request", status_code=400)
+            logging.warning("No JSON body provided in request.")
+            return func.HttpResponse(
+                "No JSON body provided in request", status_code=400
+            )
         if "skills" not in planner_data or "value" not in planner_data:
-            logging.warning(f"Skills or Value not provided in request.")
-            return func.HttpResponse("Skills or Value not provided in request", status_code=400)
-        
+            logging.warning("Skills or Value not provided in request.")
+            return func.HttpResponse(
+                "Skills or Value not provided in request", status_code=400
+            )
+
         skills = planner_data["skills"]
         value = planner_data["value"]
 
@@ -105,9 +118,9 @@ class KernelServer:
         planner_data = json.loads(req.get_body())
 
         if "inputs" not in planner_data:
-            logging.warning(f"Inputs not provided in request.")
+            logging.warning("Inputs not provided in request.")
             return func.HttpResponse("Inputs not provided in request", status_code=400)
-        
+
         data_inputs = planner_data["inputs"]
 
         subtasks = []
