@@ -23,6 +23,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -210,26 +213,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
             try {
                 List<Object> args =
                         Arrays.stream(method.getParameters())
-                                .map(
-                                        parameter -> {
-                                            if (SKContext.class.isAssignableFrom(
-                                                    parameter.getType())) {
-                                                return context; // .copy();
-                                            } else {
-                                                String value =
-                                                        getArgumentValue(
-                                                                method, context, parameter,
-                                                                inputArgs);
-                                                if (value != null) {
-                                                    return value;
-                                                } else {
-                                                    throw new AIException(
-                                                            AIException.ErrorCodes
-                                                                    .InvalidConfiguration,
-                                                            "Unknown arg " + parameter.getName());
-                                                }
-                                            }
-                                        })
+                                .map(getParameters(method, context, inputArgs))
                                 .collect(Collectors.toList());
 
                 Mono mono;
@@ -240,26 +224,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                         return Mono.error(e);
                     }
                 } else {
-                    mono =
-                            Mono.defer(
-                                    () -> {
-                                        return Mono.fromCallable(
-                                                        () -> {
-                                                            try {
-                                                                Object result =
-                                                                        method.invoke(
-                                                                                instance,
-                                                                                args.toArray());
-
-                                                                return result;
-                                                            } catch (IllegalAccessException
-                                                                    | InvocationTargetException e) {
-                                                                throw new RuntimeException(
-                                                                        e.getCause());
-                                                            }
-                                                        })
-                                                .subscribeOn(Schedulers.boundedElastic());
-                                    });
+                    mono = invokeAsyncFunction(method, instance, args);
                 }
 
                 return mono.map(
@@ -274,6 +239,56 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                 return Mono.error(e);
             }
         };
+    }
+
+    private static Mono<Object> invokeAsyncFunction(
+            Method method, Object instance, List<Object> args) {
+        return Mono.defer(
+                () ->
+                        Mono.fromCallable(
+                                        () -> {
+                                            try {
+                                                Object result =
+                                                        method.invoke(instance, args.toArray());
+
+                                                return result;
+                                            } catch (IllegalAccessException
+                                                    | InvocationTargetException e) {
+                                                throw new RuntimeException(e.getCause());
+                                            }
+                                        })
+                                .subscribeOn(Schedulers.boundedElastic()));
+    }
+
+    private static Function<Parameter, Object> getParameters(
+            Method method, SKContext context, Set<Parameter> inputArgs) {
+        return parameter -> {
+            if (SKContext.class.isAssignableFrom(parameter.getType())) {
+                return context;
+            } else {
+                return getArgumentValue(method, context, parameter, inputArgs);
+            }
+        };
+    }
+
+    private static String formErrorMessage(Method method, Parameter parameter) {
+        Matcher matcher = Pattern.compile("arg(\\d)").matcher(parameter.getName());
+        matcher.find();
+        return "For the function "
+                + method.getDeclaringClass().getName()
+                + "."
+                + method.getName()
+                + ", the unknown parameter"
+                + " name was detected as \""
+                + parameter.getName()
+                + "\" this is argument"
+                + " number "
+                + matcher.group(1)
+                + " to the function, this indicates that the argument name for this function was"
+                + " removed during compilation and semantic-kernel is unable to determine the name"
+                + " of the parameter. To support this function the argument must be annotated with"
+                + " @SKFunctionParameters or @SKFunctionInputAttribute. Alternatively the function"
+                + " was invoked with a required context variable missing and no default value.";
     }
 
     private static String getArgumentValue(
@@ -295,26 +310,41 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                         parameter.getAnnotation(SKFunctionParameters.class);
                 if (annotation != null) {
                     arg = annotation.defaultValue();
+
+                    if (NO_DEFAULT_VALUE.equals(arg)) {
+                        if (!annotation.required()) {
+                            return null;
+                        }
+
+                        throw new AIException(
+                                AIException.ErrorCodes.InvalidConfiguration,
+                                "Attempted to invoke function "
+                                        + method.getDeclaringClass().getName()
+                                        + "."
+                                        + method.getName()
+                                        + ". The context variable \""
+                                        + variableName
+                                        + "\" has not been set, and no default value is"
+                                        + " specified.");
+                    }
                 }
             }
         }
 
         if (arg == null && variableName.matches("arg\\d")) {
-            LOGGER.warn(
-                    "For the function "
-                            + method.getDeclaringClass().getName()
-                            + "."
-                            + method.getName()
-                            + ", the parameter argument name was detected as \""
-                            + variableName
-                            + "\" this indicates that the argument name for this function was"
-                            + " removed during compilation. To support this function its arguments"
-                            + " must be annotated with @SKFunctionParameters with the name defined,"
-                            + " or @SKFunctionInputAttribute.");
+            LOGGER.warn(formErrorMessage(method, parameter));
         }
 
         if (NO_DEFAULT_VALUE.equals(arg)) {
-            return null;
+            if (parameter.getName().matches("arg\\d")) {
+                throw new AIException(
+                        AIException.ErrorCodes.InvalidConfiguration,
+                        formErrorMessage(method, parameter));
+            } else {
+                throw new AIException(
+                        AIException.ErrorCodes.InvalidConfiguration,
+                        "Unknown arg " + parameter.getName());
+            }
         }
         return arg;
     }
