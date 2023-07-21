@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.3.3.dev"
+version = "0.3.4.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -19,7 +19,7 @@ pre-commit = "3.3.3"
 black = {version = "23.3.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
 pytest = "7.4.0"
-ruff = "0.0.277"
+ruff = "0.0.278"
 pytest-asyncio = "0.21.0"
 
 [tool.poetry.group.hugging_face.dependencies]
@@ -28,7 +28,7 @@ sentence-transformers = "^2.2.2"
 torch = "2.0.0"
 
 [tool.poetry.group.chromadb.dependencies]
-chromadb = "^0.3.29"
+chromadb = "^0.4.0"
 
 [tool.poetry.group.milvus.dependencies]
 pymilvus = "^2.2.11"
