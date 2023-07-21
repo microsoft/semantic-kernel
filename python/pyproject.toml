@@ -16,7 +16,7 @@ regex = "^2023.6.3"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "3.3.3"
-black = {version = "23.3.0", allow-prereleases = true}
+black = {version = "23.7.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
 pytest = "7.4.0"
 ruff = "0.0.278"
