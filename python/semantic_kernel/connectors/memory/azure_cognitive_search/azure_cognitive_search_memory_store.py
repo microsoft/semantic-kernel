@@ -150,7 +150,11 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """
 
         results_list = []
-        items = await self._search_index_client.list_index_names()
+        try:
+            items = await self._search_index_client.list_index_names()
+        except TypeError:
+            # Note: used on Windows
+            items = self._search_index_client.list_index_names()
 
         async for result in items:
             results_list.append(result)
