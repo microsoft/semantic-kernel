@@ -177,8 +177,12 @@ public class Example12_SequentialPlanner {
         var kernel = SKBuilders.kernel()
                 .withKernelConfig(SKBuilders
                         .kernelConfig()
-                        .addTextCompletionService("text-davinci-003", kernel1 -> SKBuilders.textCompletionService()
-                                .build(client, "text-davinci-003"))
+                        .addChatCompletionService(
+                                "gpt-35-turbo",
+                                kernel1 ->
+                                        SKBuilders.chatCompletion()
+                                                .build(client, "gpt-35-turbo"))
+
                         .build())
                 .withMemory(SKBuilders
                         .semanticTextMemory()
