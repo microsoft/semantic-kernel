@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -104,9 +105,10 @@ public sealed class PromptTemplate : IPromptTemplate
     /// Render the template using the information in the context
     /// </summary>
     /// <param name="executionContext">Kernel execution context helpers</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Prompt rendered to string</returns>
-    public async Task<string> RenderAsync(SKContext executionContext)
+    public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken)
     {
-        return await this._templateEngine.RenderAsync(this._template, executionContext).ConfigureAwait(false);
+        return await this._templateEngine.RenderAsync(this._template, executionContext, cancellationToken).ConfigureAwait(false);
     }
 }
