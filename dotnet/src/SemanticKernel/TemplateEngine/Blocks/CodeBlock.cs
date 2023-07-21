@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -17,17 +18,29 @@ internal sealed class CodeBlock : Block, ICodeRendering
 {
     internal override BlockTypes Type => BlockTypes.Code;
 
-    public CodeBlock(string? content, ILogger log)
-        : this(new CodeTokenizer(log).Tokenize(content), content?.Trim(), log)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CodeBlock"/> class.
+    /// </summary>
+    /// <param name="content">Block content</param>
+    /// <param name="logger">App logger</param>
+    public CodeBlock(string? content, ILogger logger)
+        : this(new CodeTokenizer(logger).Tokenize(content), content?.Trim(), logger)
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CodeBlock"/> class.
+    /// </summary>
+    /// <param name="tokens">A list of blocks</param>
+    /// <param name="content">Block content</param>
+    /// <param name="log">App logger</param>
     public CodeBlock(List<Block> tokens, string? content, ILogger log)
         : base(content?.Trim(), log)
     {
         this._tokens = tokens;
     }
 
+    /// <inheritdoc/>
     public override bool IsValid(out string errorMsg)
     {
         errorMsg = "";
@@ -70,7 +83,8 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
-    public async Task<string> RenderCodeAsync(SKContext context)
+    /// <inheritdoc/>
+    public async Task<string> RenderCodeAsync(SKContext context, CancellationToken cancellationToken = default)
     {
         if (!this._validated && !this.IsValid(out var error))
         {
@@ -117,8 +131,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
         if (this._tokens.Count > 1)
         {
-            // TODO: PII
+            // Sensitive data, logging as trace, disabled by default
             this.Log.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
+
             string input = ((ITextRendering)this._tokens[1]).Render(contextClone.Variables);
             // Keep previous trust information when updating the input
             contextClone.Variables.Update(input);

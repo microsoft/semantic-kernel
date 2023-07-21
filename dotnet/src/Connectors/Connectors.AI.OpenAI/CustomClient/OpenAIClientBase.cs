@@ -125,7 +125,7 @@ public abstract class OpenAIClientBase
             response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
-        this._log.LogTrace("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+        this._log.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
         if (response.IsSuccessStatusCode)
         {

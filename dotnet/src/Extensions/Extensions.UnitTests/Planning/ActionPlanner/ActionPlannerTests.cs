@@ -3,11 +3,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -37,8 +35,8 @@ public sealed class ActionPlannerTests
             functionsView.AddFunction(functionView);
 
             mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>()))
-                .Returns<SKContext, CompleteRequestSettings>((context, settings) =>
+                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .Returns<SKContext, CompleteRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(context);
@@ -99,14 +97,11 @@ public sealed class ActionPlannerTests
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
-    private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? mockSkills = null)
+    private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? skills = null)
     {
         var kernel = new Mock<IKernel>();
 
-        var memory = new Mock<ISemanticTextMemory>();
-        var skills = mockSkills;
-
-        if (mockSkills == null)
+        if (skills is null)
         {
             skills = new Mock<ISkillCollection>();
 
@@ -116,29 +111,25 @@ public sealed class ActionPlannerTests
 
         var returnContext = new SKContext(
             new ContextVariables(testPlanString),
-            memory.Object,
-            skills!.Object,
-            new Mock<ILogger>().Object
+            skills.Object
         );
 
         var context = new SKContext(
-            new ContextVariables(),
-            memory.Object,
-            skills!.Object,
-            new Mock<ILogger>().Object
+            skills: skills.Object
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
-            null
-        )).Callback<SKContext, CompleteRequestSettings>(
-            (c, s) => c.Variables.Update("Hello world!")
+            null,
+            default
+        )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
+            (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);
-        kernel.Setup(x => x.CreateNewContext(It.IsAny<CancellationToken>())).Returns(context);
+        kernel.Setup(x => x.CreateNewContext()).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),

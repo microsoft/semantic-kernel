@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -24,7 +26,10 @@ public abstract class ClientBase
     private const int MaxResultsPerPrompt = 128;
 
     // Prevent external inheritors
-    private protected ClientBase() { }
+    private protected ClientBase(ILogger? logger = null)
+    {
+        this.Logger = logger ?? NullLogger.Instance;
+    }
 
     /// <summary>
     /// Model Id or Deployment Name
@@ -35,6 +40,11 @@ public abstract class ClientBase
     /// OpenAI / Azure OpenAI Client
     /// </summary>
     private protected abstract OpenAIClient Client { get; }
+
+    /// <summary>
+    /// Logger instance
+    /// </summary>
+    private protected ILogger Logger { get; set; }
 
     /// <summary>
     /// Creates completions for the prompt and settings.
@@ -307,7 +317,7 @@ public abstract class ClientBase
             NucleusSamplingFactor = (float?)requestSettings.TopP,
             FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
             PresencePenalty = (float?)requestSettings.PresencePenalty,
-            ChoicesPerPrompt = requestSettings.ResultsPerPrompt
+            ChoiceCount = requestSettings.ResultsPerPrompt
         };
 
         foreach (var keyValue in requestSettings.TokenSelectionBiases)

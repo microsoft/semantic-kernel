@@ -18,9 +18,9 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureSearch;
+namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
-public class AzureSearchMemoryStore : IMemoryStore
+public class AzureCognitiveSearchMemoryStore : IMemoryStore
 {
     // Note: Azure max length 24 chars
     private const string UserAgent = "Semantic-Kernel";
@@ -30,7 +30,7 @@ public class AzureSearchMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="endpoint">Azure Cognitive Search URI, e.g. "https://contoso.search.windows.net"</param>
     /// <param name="apiKey">API Key</param>
-    public AzureSearchMemoryStore(string endpoint, string apiKey)
+    public AzureCognitiveSearchMemoryStore(string endpoint, string apiKey)
     {
         AzureKeyCredential credentials = new(apiKey);
         this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, ClientOptions());
@@ -41,7 +41,7 @@ public class AzureSearchMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="endpoint">Azure Cognitive Search URI, e.g. "https://contoso.search.windows.net"</param>
     /// <param name="credentials">Azure service</param>
-    public AzureSearchMemoryStore(string endpoint, TokenCredential credentials)
+    public AzureCognitiveSearchMemoryStore(string endpoint, TokenCredential credentials)
     {
         this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, ClientOptions());
     }
@@ -82,15 +82,15 @@ public class AzureSearchMemoryStore : IMemoryStore
     public Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         collectionName = this.NormalizeIndexName(collectionName);
-        return this.UpsertRecordAsync(collectionName, AzureSearchMemoryRecord.FromMemoryRecord(record), cancellationToken);
+        return this.UpsertRecordAsync(collectionName, AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record), cancellationToken);
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         collectionName = this.NormalizeIndexName(collectionName);
-        IList<AzureSearchMemoryRecord> azureSearchRecords = records.Select(AzureSearchMemoryRecord.FromMemoryRecord).ToList();
-        List<string> result = await this.UpsertBatchAsync(collectionName, azureSearchRecords, cancellationToken).ConfigureAwait(false);
+        IList<AzureCognitiveSearchMemoryRecord> searchRecords = records.Select(AzureCognitiveSearchMemoryRecord.FromMemoryRecord).ToList();
+        List<string> result = await this.UpsertBatchAsync(collectionName, searchRecords, cancellationToken).ConfigureAwait(false);
         foreach (var x in result) { yield return x; }
     }
 
@@ -99,11 +99,11 @@ public class AzureSearchMemoryStore : IMemoryStore
     {
         collectionName = this.NormalizeIndexName(collectionName);
         var client = this.GetSearchClient(collectionName);
-        Response<AzureSearchMemoryRecord>? result;
+        Response<AzureCognitiveSearchMemoryRecord>? result;
         try
         {
             result = await client
-                .GetDocumentAsync<AzureSearchMemoryRecord>(AzureSearchMemoryRecord.EncodeId(key), cancellationToken: cancellationToken)
+                .GetDocumentAsync<AzureCognitiveSearchMemoryRecord>(AzureCognitiveSearchMemoryRecord.EncodeId(key), cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (RequestFailedException e) when (e.Status == 404)
@@ -167,16 +167,16 @@ public class AzureSearchMemoryStore : IMemoryStore
         SearchQueryVector vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Fields = AzureSearchMemoryRecord.EmbeddingField,
+            Fields = AzureCognitiveSearchMemoryRecord.EmbeddingField,
             Value = embedding.Vector.ToList()
         };
 
         SearchOptions options = new() { Vector = vectorQuery };
-        Response<SearchResults<AzureSearchMemoryRecord>>? searchResult = null;
+        Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
         try
         {
             searchResult = await client
-                .SearchAsync<AzureSearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
+                .SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (RequestFailedException e) when (e.Status == 404)
@@ -190,7 +190,7 @@ public class AzureSearchMemoryStore : IMemoryStore
 
         if (searchResult == null) { yield break; }
 
-        await foreach (SearchResult<AzureSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
+        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
         {
             if (doc == null || doc.Score < minRelevanceScore) { continue; }
 
@@ -211,7 +211,7 @@ public class AzureSearchMemoryStore : IMemoryStore
     {
         collectionName = this.NormalizeIndexName(collectionName);
 
-        var records = keys.Select(x => new List<AzureSearchMemoryRecord> { new(x) });
+        var records = keys.Select(x => new List<AzureCognitiveSearchMemoryRecord> { new(x) });
 
         var client = this.GetSearchClient(collectionName);
         try
@@ -265,18 +265,18 @@ public class AzureSearchMemoryStore : IMemoryStore
         {
             Fields = new List<SearchField>
             {
-                new SimpleField(AzureSearchMemoryRecord.IdField, SearchFieldDataType.String) { IsKey = true },
-                new SearchField(AzureSearchMemoryRecord.EmbeddingField, SearchFieldDataType.Collection(SearchFieldDataType.Single))
+                new SimpleField(AzureCognitiveSearchMemoryRecord.IdField, SearchFieldDataType.String) { IsKey = true },
+                new SearchField(AzureCognitiveSearchMemoryRecord.EmbeddingField, SearchFieldDataType.Collection(SearchFieldDataType.Single))
                 {
                     IsSearchable = true,
                     VectorSearchDimensions = embeddingSize,
                     VectorSearchConfiguration = configName
                 },
-                new SearchField(AzureSearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
-                new SimpleField(AzureSearchMemoryRecord.DescriptionField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
-                new SimpleField(AzureSearchMemoryRecord.AdditionalMetadataField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
-                new SimpleField(AzureSearchMemoryRecord.ExternalSourceNameField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
-                new SimpleField(AzureSearchMemoryRecord.IsReferenceField, SearchFieldDataType.Boolean) { IsFilterable = true, IsFacetable = true },
+                new SearchField(AzureCognitiveSearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new SimpleField(AzureCognitiveSearchMemoryRecord.DescriptionField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new SimpleField(AzureCognitiveSearchMemoryRecord.AdditionalMetadataField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new SimpleField(AzureCognitiveSearchMemoryRecord.ExternalSourceNameField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
+                new SimpleField(AzureCognitiveSearchMemoryRecord.IsReferenceField, SearchFieldDataType.Boolean) { IsFilterable = true, IsFacetable = true },
             },
             VectorSearch = new VectorSearch
             {
@@ -304,16 +304,16 @@ public class AzureSearchMemoryStore : IMemoryStore
 
     private async Task<string> UpsertRecordAsync(
         string indexName,
-        AzureSearchMemoryRecord record,
+        AzureCognitiveSearchMemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        var list = await this.UpsertBatchAsync(indexName, new List<AzureSearchMemoryRecord> { record }, cancellationToken).ConfigureAwait(false);
+        var list = await this.UpsertBatchAsync(indexName, new List<AzureCognitiveSearchMemoryRecord> { record }, cancellationToken).ConfigureAwait(false);
         return list.First();
     }
 
     private async Task<List<string>> UpsertBatchAsync(
         string indexName,
-        IList<AzureSearchMemoryRecord> records,
+        IList<AzureCognitiveSearchMemoryRecord> records,
         CancellationToken cancellationToken = default)
     {
         var keys = new List<string>();
@@ -395,7 +395,7 @@ public class AzureSearchMemoryStore : IMemoryStore
     }
 
     /// <summary>
-    /// Options used by the Azure Search client, e.g. User Agent.
+    /// Options used by the Azure Cognitive Search client, e.g. User Agent.
     /// See also https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
     /// </summary>
     private static SearchClientOptions ClientOptions()

@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -77,7 +78,7 @@ public sealed class ActionPlanner
         this._context = kernel.CreateNewContext();
     }
 
-    public async Task<Plan> CreatePlanAsync(string goal)
+    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(goal))
         {
@@ -86,7 +87,7 @@ public sealed class ActionPlanner
 
         this._context.Variables.Update(goal);
 
-        SKContext result = await this._plannerFunction.InvokeAsync(this._context).ConfigureAwait(false);
+        SKContext result = await this._plannerFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
         ActionPlanResponse? planData = this.ParsePlannerResult(result);
 
         if (planData == null)

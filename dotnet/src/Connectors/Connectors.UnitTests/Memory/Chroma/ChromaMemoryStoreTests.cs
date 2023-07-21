@@ -28,6 +28,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly Mock<IChromaClient> _chromaClientMock;
+    private readonly JsonSerializerOptions _serializerOptions;
 
     public ChromaMemoryStoreTests()
     {
@@ -38,6 +39,11 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this._chromaClientMock
             .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
             .ReturnsAsync(new ChromaCollectionModel { Id = CollectionId, Name = CollectionName });
+
+        this._serializerOptions = new JsonSerializerOptions
+        {
+            Converters = { new ChromaBooleanConverter() }
+        };
     }
 
     [Fact]
@@ -103,12 +109,11 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     {
         // Arrange
         const string collectionName = "non-existent-collection";
-        const string deleteNonExistentCollectionErrorMessage = "list index out of range";
-        const string expectedExceptionMessage = $"Cannot delete non-existent collection {collectionName}";
+        const string collectionDoesNotExistErrorMessage = $"Collection {collectionName} does not exist";
 
         this._chromaClientMock
             .Setup(client => client.DeleteCollectionAsync(collectionName, CancellationToken.None))
-            .Throws(new SKException(deleteNonExistentCollectionErrorMessage));
+            .Throws(new SKException(collectionDoesNotExistErrorMessage));
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
@@ -117,7 +122,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         // Assert
         Assert.IsType<SKException>(exception);
-        Assert.Equal(expectedExceptionMessage, exception.Message);
+        Assert.Equal(collectionDoesNotExistErrorMessage, exception.Message);
     }
 
     [Fact]
@@ -311,7 +316,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     private Dictionary<string, object> GetEmbeddingMetadataFromMemoryRecord(MemoryRecord memoryRecord)
     {
-        var serialized = JsonSerializer.Serialize(memoryRecord.Metadata);
+        var serialized = JsonSerializer.Serialize(memoryRecord.Metadata, this._serializerOptions);
         return JsonSerializer.Deserialize<Dictionary<string, object>>(serialized)!;
     }
 
