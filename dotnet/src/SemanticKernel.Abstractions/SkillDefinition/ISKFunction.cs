@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -54,23 +53,23 @@ public interface ISKFunction
     /// <param name="context">SK context</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null);
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Invoke the <see cref="ISKFunction"/>.
     /// </summary>
     /// <param name="input">String input</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
-    /// <param name="memory">Semantic memory</param>
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
-        ISemanticTextMemory? memory = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default);
 

@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -54,15 +55,15 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(string templateText, SKContext context)
+    public async Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Rendering string template: {0}", templateText);
         var blocks = this.ExtractBlocks(templateText);
-        return await this.RenderAsync(blocks, context).ConfigureAwait(false);
+        return await this.RenderAsync(blocks, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task<string> RenderAsync(IList<Block> blocks, SKContext context)
+    public async Task<string> RenderAsync(IList<Block> blocks, SKContext context, CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Rendering list of {0} blocks", blocks.Count);
         var tasks = new List<Task<string>>(blocks.Count);
@@ -75,7 +76,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    tasks.Add(dynamicBlock.RenderCodeAsync(context));
+                    tasks.Add(dynamicBlock.RenderCodeAsync(context, cancellationToken));
                     break;
 
                 default:
