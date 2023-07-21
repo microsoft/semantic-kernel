@@ -153,11 +153,11 @@ async def test_upsert_async_and_get_async(connection_string, memory_record1):
     memory = RedisMemoryStore(connection_string)
 
     await memory.create_collection_async("test_collection", vector_dimension=2)
-    await memory.upsert_async("test_collection", memory_record1)
 
+    # Insert a record
+    await memory.upsert_async("test_collection", memory_record1)
     fetch_1 = await memory.get_async("test_collection", memory_record1._id, True)
     assert fetch_1 is not None, "Could not get record"
-
     assert fetch_1._id == memory_record1._id
     assert fetch_1._timestamp == memory_record1._timestamp
     assert fetch_1._is_reference == memory_record1._is_reference
@@ -167,6 +167,15 @@ async def test_upsert_async_and_get_async(connection_string, memory_record1):
     assert fetch_1._additional_metadata == memory_record1._additional_metadata
     for expected, actual in zip(fetch_1.embedding, memory_record1.embedding):
         assert expected == actual, "Did not retain correct embedding"
+
+    # Update a record
+    original_text = memory_record1._text
+    memory_record1._text = "updated sample text1"
+    await memory.upsert_async("test_collection", memory_record1)
+    fetch_1 = await memory.get_async("test_collection", memory_record1._id, True)
+    assert fetch_1 is not None, "Could not get record"
+    assert fetch_1._text == memory_record1._text
+    memory_record1._text = original_text
 
 
 @pytest.mark.asyncio
@@ -215,11 +224,49 @@ async def test_remove_batch_async(connection_string, memory_record1, memory_reco
 async def test_get_nearest_match_async(
     connection_string, memory_record1, memory_record2
 ):
-    pass
+    memory = RedisMemoryStore(connection_string)
+
+    await memory.create_collection_async("test_collection", vector_dimension=2)
+    await memory.upsert_batch_async("test_collection", [memory_record1, memory_record2])
+    test_embedding = memory_record1.embedding.copy()
+    test_embedding[0] = test_embedding[0] + 0.01
+
+    result = await memory.get_nearest_match_async(
+        "test_collection", test_embedding, min_relevance_score=0.0, with_embedding=True
+    )
+    assert result is not None
+    assert result[0]._id == memory_record1._id
+    assert result[0]._text == memory_record1._text
+    assert result[0]._description == memory_record1._description
+    assert result[0]._additional_metadata == memory_record1._additional_metadata
+    assert result[0]._timestamp == memory_record1._timestamp
+    print("\trecieved embed\t", result[0]._embedding)
+    print("\texpected embed\t", memory_record1._embedding)
+    for i in range(len(result[0]._embedding)):
+        assert result[0]._embedding[i] == memory_record1._embedding[i]
 
 
 @pytest.mark.asyncio
 async def test_get_nearest_matches_async(
     connection_string, memory_record1, memory_record2, memory_record3
 ):
-    pass
+    memory = RedisMemoryStore(connection_string)
+
+    await memory.create_collection_async("test_collection", vector_dimension=2)
+    await memory.upsert_batch_async(
+        "test_collection", [memory_record1, memory_record2, memory_record3]
+    )
+    test_embedding = memory_record2.embedding.copy()
+    test_embedding[0] = test_embedding[0] + 0.025
+
+    result = await memory.get_nearest_matches_async(
+        "test_collection",
+        test_embedding,
+        limit=2,
+        min_relevance_score=0.0,
+        with_embeddings=True,
+    )
+
+    assert len(result) == 2
+    assert result[0][0]._id in [memory_record3._id, memory_record2._id]
+    assert result[1][0]._id in [memory_record3._id, memory_record2._id]

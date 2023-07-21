@@ -411,7 +411,10 @@ class RedisMemoryStore(MemoryStoreBase):
 
         relevant_records = list()
         for match in matches:
-            score = match["vector_score"]
+            score = float(match["vector_score"])
+            if score < min_relevance_score:
+                continue
+
             record = self._deserialize_document_to_record(match, with_embeddings)
             relevant_records.append((record, score))
 
@@ -500,8 +503,9 @@ class RedisMemoryStore(MemoryStoreBase):
         self, doc: redis.commands.search.document.Document, with_embedding: bool
     ) -> MemoryRecord:
         # Parse collection name out of ID
-        colon_index = doc["id"].index(":")
-        id_str = doc["id"][colon_index + 1 :]
+        key_str = doc["id"]
+        colon_index = key_str.index(":")
+        id_str = key_str[colon_index + 1 :]
 
         record = MemoryRecord.local_record(
             id=id_str,
@@ -514,9 +518,11 @@ class RedisMemoryStore(MemoryStoreBase):
 
         if doc["timestamp"] != "":
             record._timestamp = datetime.fromisoformat(doc["timestamp"])
-
         if with_embedding:
-            byte_arr = doc["embedding"].encode()
-            record._embedding = np.frombuffer(byte_arr, dtype=np.uint8).astype(float)
+            # Some bytes are lost when retrieving a document
+            embed = self._database.hget(key_str, "embedding")
+            record._embedding = np.frombuffer(embed, dtype=self._vector_type).astype(
+                float
+            )
 
         return record
