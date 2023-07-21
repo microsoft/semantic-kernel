@@ -35,10 +35,15 @@ class RedisMemoryStore(MemoryStoreBase):
 
     _database: "redis.Redis"
     _vector_size: int
+    _vector_type: "np.dtype"
     _ft: "redis.Redis.ft"
     _logger: Logger
 
     # For more information on vector attributes: https://redis.io/docs/stack/search/reference/vectors
+    # Without RedisAI, it is currently not possible to retreive index-specific vector attributes to have these
+    # attributes be separate per collection. Vector dimensionality can be differnet per collection, and it is
+    # the responsiblity of the user to ensure proper dimensions of a record to be indexed correctly.
+
     # Vector similarity index algorithm. The supported types are "FLAT" and "HNSW", the default being "HNSW".
     VECTOR_INDEX_ALGORITHM = "HNSW"
 
@@ -53,10 +58,8 @@ class RedisMemoryStore(MemoryStoreBase):
 
     def __init__(
         self,
-        connection_string: str = None,
-        database: redis.Redis = None,
+        connection_string: str = "redis://localhost:6379",
         settings: Dict[str, Any] = None,
-        vector_size: int = 128,
         logger: Optional[Logger] = None,
     ) -> None:
         """
@@ -64,29 +67,24 @@ class RedisMemoryStore(MemoryStoreBase):
         See documentation about connections: https://redis-py.readthedocs.io/en/stable/connections.html
 
         Arguments:
-            connection_string {str} -- Specify the connection string of the Redis connection
-            database {redis.Redis} -- Provide specific instance of a Redis connection
-            settings  {Dict[str, Any]} -- Configuration settings for the Redis instance
-            vector_size {int} -- Dimension of vectors within the database, default to 128
+            connection_string {str} -- Specify the connection string of the Redis connection, default to redis://localhost:6379
+            settings {Dict[str, Any]} -- Configuration settings, default to None for a basic connection
+            logger {Optional[Logger]} -- Logger, defaults to None
 
         Note:
-            Configuration parameters are prioritized as database < connection_string < settings.
+            Connection parameters in settings may override connection_string if both are defined
         """
 
-        self._database = (
-            redis.Redis.from_url(connection_string)
-            if connection_string
-            else (database if database else redis.Redis())
-        )
+        self._database = redis.Redis.from_url(connection_string)
         if settings:
             self.configure(settings)
         assert self.ping(), "Redis could not establish a connection"
 
-        assert vector_size > 0, "Vector dimension must be positive integer"
-        self._vector_size = vector_size
         self._ft = self._database.ft
-
         self._logger = logger or NullLogger()
+        self._vector_type = (
+            np.float32 if RedisMemoryStore.VECTOR_TYPE == "FLOAT32" else np.float64
+        )
 
     def configure(self, settings: Dict[str, Any]) -> None:
         """
@@ -109,7 +107,11 @@ class RedisMemoryStore(MemoryStoreBase):
             Redis documentation for exceptions that can occur: https://redis.readthedocs.io/en/stable/exceptions.html
         """
         for param, val in settings.items():
-            self._database.config_set(param, val)
+            try:
+                self._database.config_set(param, val)
+            except Exception as e:
+                self._logger.error(e)
+                raise e
 
     def ping(self) -> bool:
         """
@@ -120,20 +122,31 @@ class RedisMemoryStore(MemoryStoreBase):
         """
         return self._database.ping()
 
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection_async(
+        self,
+        collection_name: str,
+        vector_dimension: int = 128,
+    ) -> None:
         """
         Creates a collection, implemented as a Redis index containing hashes
         prefixed with "collection_name:".
         If a collection of the name exists, it is left unchanged.
 
+        Note: vector dimensionality cannot be altered after the collection is created.
+
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
+            vector_dimension {int} -- Vector dimensionality, default to 128
         """
         try:
             self._ft(collection_name).info()
             self._logger.info(f'Collection "{collection_name}" already exists.')
             print(f'Collection "{collection_name}" already exists.')
         except ResponseError:
+            if vector_dimension <= 0:
+                self._logger.error("Vector dimension must be a positive integer")
+                raise Exception("Vector dimension must be a positive integer")
+
             index_def = IndexDefinition(
                 prefix=f"{collection_name}:", index_type=IndexType.HASH
             )
@@ -150,13 +163,19 @@ class RedisMemoryStore(MemoryStoreBase):
                     algorithm=RedisMemoryStore.VECTOR_INDEX_ALGORITHM,
                     attributes={
                         "TYPE": RedisMemoryStore.VECTOR_TYPE,
-                        "DIM": self._vector_size,
+                        "DIM": vector_dimension,
                         "DISTANCE_METRIC": RedisMemoryStore.VECTOR_DISTANCE_METRIC,
                     },
                 ),
             )
 
-            self._ft(collection_name).create_index(definition=index_def, fields=schema)
+            try:
+                self._ft(collection_name).create_index(
+                    definition=index_def, fields=schema
+                )
+            except Exception as e:
+                self._logger.error(e)
+                raise e
 
     async def get_collections_async(self) -> List[str]:
         """
@@ -337,7 +356,7 @@ class RedisMemoryStore(MemoryStoreBase):
             self._logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
-        self._database.delete([redis_key(collection_name, key) for key in keys])
+        self._database.delete(*[redis_key(collection_name, key) for key in keys])
 
     async def get_nearest_matches_async(
         self,
@@ -364,9 +383,7 @@ class RedisMemoryStore(MemoryStoreBase):
             raise Exception("Record must have a valid key associated with it")
 
         mapping = {
-            "timestamp": (
-                record._timestamp.isoformat(sep=" ") if record._timestamp else ""
-            ),
+            "timestamp": (record._timestamp.isoformat() if record._timestamp else ""),
             "is_reference": int(record._is_reference) if record._is_reference else 0,
             "external_source_name": record._external_source_name or "",
             "id": record._id or "",
@@ -374,7 +391,7 @@ class RedisMemoryStore(MemoryStoreBase):
             "text": record._text or "",
             "additional_metadata": record._additional_metadata or "",
             "embedding": (
-                record._embedding.astype(self._vector_type()).tobytes()
+                record._embedding.astype(self._vector_type).tobytes()
                 if record._embedding is not None
                 else ""
             ),
@@ -404,10 +421,7 @@ class RedisMemoryStore(MemoryStoreBase):
         if with_embedding:
             # Extract using the vector type, then convert to regular Python float type
             record._embedding = np.frombuffer(
-                fields[b"embedding"], dtype=self._vector_type()
+                fields[b"embedding"], dtype=self._vector_type
             ).astype(float)
 
         return record
-
-    def _vector_type(self):
-        return np.float32 if RedisMemoryStore.VECTOR_TYPE == "FLOAT32" else np.float64

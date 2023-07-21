@@ -83,3 +83,19 @@ def pinecone_settings_from_dot_env() -> Tuple[str, str]:
     assert environment is not None, "Pinecone environment not found in .env file"
 
     return api_key, environment
+
+
+def redis_settings_from_dot_env() -> str:
+    """Reads the Redis connection string from the .env file.
+
+    Returns:
+        str: The Redis connection string
+    """
+    config = dotenv_values(".env")
+    connection_string = config.get("REDIS_CONNECTION_STRING", None)
+
+    assert (
+        connection_string is not None
+    ), "Redis connection string not found in .env file"
+
+    return connection_string
