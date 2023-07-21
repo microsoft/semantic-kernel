@@ -17,7 +17,6 @@ from typing import Optional
 Utility function(s) for Qdrant vector database to support Qdrant Semantic Kernel memory implementation.
 """
 
-
 def guid_comb_generator() -> str:
     """
     Generate a GUID-comb identifier.
