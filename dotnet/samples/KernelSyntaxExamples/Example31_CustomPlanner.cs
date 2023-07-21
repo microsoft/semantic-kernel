@@ -29,6 +29,9 @@ internal static class Example31_CustomPlanner
         IDictionary<string, ISKFunction> skills = LoadQASkill(kernel);
         SKContext context = CreateContextQueryContext(kernel);
 
+        // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
+        kernel.ImportSkill(new TextMemorySkill(kernel.Memory));
+
         // Setup defined memories for recall
         await RememberFactsAsync(kernel);
 
@@ -84,7 +87,7 @@ internal static class Example31_CustomPlanner
 
     private static async Task RememberFactsAsync(IKernel kernel)
     {
-        kernel.ImportSkill(new TextMemorySkill());
+        kernel.ImportSkill(new TextMemorySkill(kernel.Memory));
 
         List<string> memoriesToSave = new()
         {
@@ -147,7 +150,7 @@ public class MarkupSkill
         var plan = docString.FromMarkup("Run a piece of xml markup", context);
 
         Console.WriteLine("Markup plan:");
-        Console.WriteLine(plan.ToPlanString());
+        Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
         var result = await plan.InvokeAsync();

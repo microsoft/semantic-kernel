@@ -53,7 +53,7 @@ public sealed class CloudDriveSkill
 
         using StreamReader sr = new(fileContentStream);
         string content = await sr.ReadToEndAsync().ConfigureAwait(false);
-        this._logger.LogDebug("File content: {0}", content);
+
         return content;
     }
 
