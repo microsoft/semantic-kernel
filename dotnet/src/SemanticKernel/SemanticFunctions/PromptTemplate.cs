@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -23,9 +21,6 @@ public sealed class PromptTemplate : IPromptTemplate
     private readonly IPromptTemplateEngine _templateEngine;
 
     // ReSharper disable once NotAccessedField.Local
-    private readonly ILogger _log = NullLogger.Instance;
-
-    // ReSharper disable once NotAccessedField.Local
     private readonly PromptTemplateConfig _promptConfig;
 
     /// <summary>
@@ -35,7 +30,7 @@ public sealed class PromptTemplate : IPromptTemplate
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="kernel">Kernel in which template is to take effect.</param>
     public PromptTemplate(string template, PromptTemplateConfig promptTemplateConfig, IKernel kernel)
-        : this(template, promptTemplateConfig, kernel.PromptTemplateEngine, kernel.Log)
+        : this(template, promptTemplateConfig, kernel.PromptTemplateEngine)
     {
     }
 
@@ -45,17 +40,14 @@ public sealed class PromptTemplate : IPromptTemplate
     /// <param name="template">Template.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="promptTemplateEngine">Prompt template engine.</param>
-    /// <param name="log">Optional logger for prompt template.</param>
     public PromptTemplate(
         string template,
         PromptTemplateConfig promptTemplateConfig,
-        IPromptTemplateEngine promptTemplateEngine,
-        ILogger? log = null)
+        IPromptTemplateEngine promptTemplateEngine)
     {
         this._template = template;
         this._templateEngine = promptTemplateEngine;
         this._promptConfig = promptTemplateConfig;
-        if (log != null) { this._log = log; }
     }
 
     /// <summary>
@@ -65,40 +57,24 @@ public sealed class PromptTemplate : IPromptTemplate
     /// <returns>List of parameters</returns>
     public IList<ParameterView> GetParameters()
     {
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
         // Parameters from config.json
-        List<ParameterView> result = new();
-        foreach (PromptTemplateConfig.InputParameter? p in this._promptConfig.Input.Parameters)
+        Dictionary<string, ParameterView> result = new(StringComparer.OrdinalIgnoreCase);
+        foreach (var p in this._promptConfig.Input.Parameters)
         {
-            if (p == null) { continue; }
-
-            result.Add(new ParameterView
-            {
-                Name = p.Name,
-                Description = p.Description,
-                DefaultValue = p.DefaultValue
-            });
-
-            seen.Add(p.Name);
+            result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
         }
 
         // Parameters from the template
-        List<VarBlock> listFromTemplate = this._templateEngine.ExtractBlocks(this._template)
-            .Where(x => x.Type == BlockTypes.Variable)
-            .Select(x => (VarBlock)x)
-            .Where(x => x != null)
-            .ToList();
-
-        foreach (VarBlock x in listFromTemplate)
+        foreach (var block in this._templateEngine.ExtractBlocks(this._template))
         {
-            if (seen.Contains(x.Name)) { continue; }
-
-            result.Add(new ParameterView { Name = x.Name });
-            seen.Add(x.Name);
+            string? blockName = (block as VarBlock)?.Name;
+            if (!string.IsNullOrEmpty(blockName) && !result.ContainsKey(blockName!))
+            {
+                result.Add(blockName!, new ParameterView(blockName!));
+            }
         }
 
-        return result;
+        return result.Values.ToList();
     }
 
     /// <summary>
