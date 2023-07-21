@@ -28,9 +28,9 @@ public class Example99_BlogAnnouncement {
         .credential(credential)
         .buildAsyncClient();
 
-    TextCompletion textCompletionService = SKBuilders.textCompletionService().build(client, "text-davinci-003");
+    TextCompletion textCompletionService = SKBuilders.textCompletionService().build(client, "gpt-35-turbo");
 
-    KernelConfig config = SKBuilders.kernelConfig().addTextCompletionService("davinci", k -> textCompletionService)
+    KernelConfig config = SKBuilders.kernelConfig().addTextCompletionService("textCompletion", k -> textCompletionService)
         .build();
 
     Kernel kernel = SKBuilders.kernel().withKernelConfig(config).build();
