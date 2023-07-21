@@ -65,8 +65,6 @@ jobs:
           Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
           Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
           Redis__Configuration: ${{ secrets.REDIS__CONFIGURATION }}
-          AZURE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_SEARCH_ADMIN_KEY}}
-          AZURE_SEARCH_ENDPOINT: ${{secrets.AZURE_SEARCH_ENDPOINT}}
           AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
