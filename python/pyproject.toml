@@ -20,7 +20,7 @@ black = {version = "23.3.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
 pytest = "7.4.0"
 ruff = "0.0.278"
-pytest-asyncio = "0.21.0"
+pytest-asyncio = "0.21.1"
 
 [tool.poetry.group.hugging_face.dependencies]
 transformers = "^4.28.1"
