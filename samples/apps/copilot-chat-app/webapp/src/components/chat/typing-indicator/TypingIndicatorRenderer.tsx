@@ -25,7 +25,7 @@ export const TypingIndicatorRenderer: React.FC<TypingIndicatorRendererProps> = (
 
     let message = botResponseStatus;
     if (numberOfUsersTyping === 1) {
-        message = message ? `${message} and 1 user is typing` : '1 user is typing';
+        message = message ? `${message} and a user is typing` : 'A user is typing';
     } else if (numberOfUsersTyping > 1) {
         message = message
             ? `${message} and ${numberOfUsersTyping} users are typing`
