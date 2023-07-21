@@ -1,21 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import datetime
-import uuid
 import struct
-
-from qdrant_client import QdrantClient
-from qdrant_client.models import Filter, FieldCondition, MatchValue
+import uuid
+from typing import Optional
 
 from numpy import zeros
+from qdrant_client import QdrantClient
+from qdrant_client.models import FieldCondition, Filter, MatchValue
 
 from semantic_kernel.memory.memory_record import MemoryRecord
-
-from typing import Optional
 
 """
 Utility function(s) for Qdrant vector database to support Qdrant Semantic Kernel memory implementation.
 """
+
 
 def guid_comb_generator() -> str:
     """
