@@ -35,8 +35,6 @@ internal static class ServicesExtensions
             .ValidateOnStart()
             .PostConfigure(TrimStringProperties);
 
-        var foo = services.BuildServiceProvider().GetService<IOptions<AIServiceOptions>>();
-
         // Authorization configuration
         services.AddOptions<AuthorizationOptions>()
             .Bind(configuration.GetSection(AuthorizationOptions.PropertyName))

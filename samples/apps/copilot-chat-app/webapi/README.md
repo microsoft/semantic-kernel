@@ -116,6 +116,18 @@ Before you get started, make sure you have the following additional requirements
     ```
     > To stop the container, in another terminal window run `docker container stop copilotchat; docker container rm copilotchat;`.
 
+# (Optional) Enabling the Azure Cognitive Search Memory Store
+
+Azure Cognitive Search can be used as a persistent memory store for Copilot Chat.
+The service can be used with either its [semantic search](https://learn.microsoft.com/en-us/azure/search/semantic-search-overview)
+or its [vector search](https://learn.microsoft.com/en-us/azure/search/vector-search-overview).
+
+When using semantic search, the service will provide a high-level ingestion mechanism that abstracts away the details of how the data is ingested.
+To use semantic search, make sure to enable the `Semantic Search` feature on your Azure Cognitive Search service.
+
+When using vector search, you have more control over the ingestion but must provide the embeddings to save into the database yourself.
+Contrary to semantic search, vector search makes use of the embedding configuration you set in appsettings.json.
+
 # (Optional) Enable Application Insights telemetry
 
 Enabling telemetry on CopilotChatApi allows you to capture data about requests to and from the API, allowing you to monitor the deployment and monitor how the application is being used.
