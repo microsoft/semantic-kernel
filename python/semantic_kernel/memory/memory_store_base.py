@@ -9,6 +9,15 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 
 class MemoryStoreBase(ABC):
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        await self.close_async()
+
+    async def close_async(self):
+        pass
+
     @abstractmethod
     async def create_collection_async(self, collection_name: str) -> None:
         pass
