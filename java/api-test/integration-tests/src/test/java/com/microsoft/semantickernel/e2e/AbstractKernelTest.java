@@ -44,7 +44,7 @@ public class AbstractKernelTest {
     }
 
     public static OpenAIAsyncClient getOpenAIClient() throws IOException {
-        return com.microsoft.semantickernel.Config.getClient();
+        return com.microsoft.semantickernel.samples.Config.getClient();
     }
 
     public static String getOpenAIModel() throws IOException {
