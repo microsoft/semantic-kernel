@@ -10,6 +10,7 @@ from numpy import ndarray
 import redis
 from redis.commands.search.field import NumericField, TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
+from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -132,11 +133,11 @@ class RedisMemoryStore(MemoryStoreBase):
         prefixed with "collection_name:".
         If a collection of the name exists, it is left unchanged.
 
-        Note: vector dimensionality cannot be altered after the collection is created.
+        Note: vector dimensionality for a collection cannot be altered after creation.
 
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
-            vector_dimension {int} -- Vector dimensionality, default to 128
+            vector_dimension {int} -- Size of each vector, default to 128
         """
         try:
             self._ft(collection_name).info()
@@ -196,7 +197,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
-            delete_records {bool} -- Delete all data associated with the collection, defaulted to True
+            delete_records {bool} -- Delete all data associated with the collection, default to True
 
         """
         if await self.does_collection_exist_async(collection_name):
@@ -207,7 +208,7 @@ class RedisMemoryStore(MemoryStoreBase):
         Deletes all collections present in the data store.
 
         Arguments:
-            delete_records {bool} -- Delete all data associated with the collections, defaulted to True
+            delete_records {bool} -- Delete all data associated with the collections, default to True
         """
         for col_name in await self.get_collections_async():
             self._ft(col_name).dropindex(delete_documents=delete_records)
@@ -234,6 +235,9 @@ class RedisMemoryStore(MemoryStoreBase):
             * If the record already exists, it will be updated.
             * If the record does not exist, it will be created.
 
+        Note: if the record do not have the same dimensionality configured for the collection,
+        it will not be detected to belong to the collection in Redis.
+
         Arguemnts:
             collection_name {str} -- Name for a collection of embeddings
             record {MemoryRecord} -- Memory record to upsert
@@ -251,6 +255,9 @@ class RedisMemoryStore(MemoryStoreBase):
         Upserts a group of memory records into the data store. Does not gurantee that the collection exists.
             * If the record already exists, it will be updated.
             * If the record does not exist, it will be created.
+
+        Note: if the records do not have the same dimensionality configured for the collection,
+        they will not be detected to belong to the collection in Redis.
 
         Arguemnts:
             collection_name {str} -- Name for a collection of embeddings
@@ -273,14 +280,14 @@ class RedisMemoryStore(MemoryStoreBase):
             # Index registers any hash matching its schema and prefixed with collection_name:
             self._database.hset(
                 rec._key,
-                mapping=self._serialize_record(rec),
+                mapping=self._serialize_record_to_redis(rec),
             )
             keys.append(rec._key)
 
         return keys
 
     async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
+        self, collection_name: str, key: str, with_embedding: bool = False
     ) -> MemoryRecord:
         """
         Gets a memory record from the data store. Does not guarantee that the collection exists.
@@ -288,7 +295,7 @@ class RedisMemoryStore(MemoryStoreBase):
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
             key {str} -- ID associated with the memory to get
-            with_embedding {bool} -- Include embedding with the memory record
+            with_embedding {bool} -- Include embedding with the memory record, default to False
 
         Returns:
             MemoryRecord -- The memory record if found, else None
@@ -298,7 +305,7 @@ class RedisMemoryStore(MemoryStoreBase):
         return batch[0] if len(batch) else None
 
     async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
+        self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
         """
         Gets a batch of memory records from the data store. Does not guarantee that the collection exists
@@ -306,7 +313,7 @@ class RedisMemoryStore(MemoryStoreBase):
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
             keys {List[str]} -- IDs associated with the memory records to get
-            with_embedding {bool} -- Include embeddings with the memory records
+            with_embedding {bool} -- Include embeddings with the memory records, default to False
 
         Returns:
             List[MemoryRecord] -- The memory records if found, else an empty list
@@ -323,7 +330,7 @@ class RedisMemoryStore(MemoryStoreBase):
             if len(raw_fields) == 0:
                 continue
 
-            rec = self._deserialize_record(raw_fields, with_embeddings)
+            rec = self._deserialize_redis_to_record(raw_fields, with_embeddings)
             rec._key = internal_key
             records.append(rec)
 
@@ -364,20 +371,83 @@ class RedisMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         limit: int,
         min_relevance_score: float = 0.0,
-        with_embeddings: bool = True,
+        with_embeddings: bool = False,
     ) -> List[Tuple[MemoryRecord, float]]:
-        pass
+        """
+        Get the nearest matches to an embedding using the configured similarity algorithm, which is
+        defaulted to cosine similarity.
+
+        Arguments:
+            collection_name {str} -- Name for a collection of embeddings
+            embedding {ndarray} -- Embedding to find the nearest matches to
+            limit {int} -- Maximum number of matches to return
+            min_relevance_score {float} -- Minimum relevance score of the matches, default to 0.0
+            with_embeddings {bool} -- Include embeddings in the resultant memory records, default to False
+
+        Returns:
+            List[Tuple[MemoryRecord, float]] -- Records and their relevance scores, or an empty list if none are found
+        """
+        if not await self.does_collection_exist_async(collection_name):
+            self._logger.error(f'Collection "{collection_name}" does not exist')
+            raise Exception(f'Collection "{collection_name}" does not exist')
+
+        query = (
+            Query(f"*=>[KNN {limit} @embedding $embedding AS vector_score]")
+            .dialect(RedisMemoryStore.QUERY_DIALECT)
+            .paging(offset=0, num=limit)
+            .return_fields(
+                "id",
+                "text",
+                "description",
+                "additional_metadata",
+                "embedding",
+                "timestamp",
+                "vector_score",
+            )
+            .sort_by("vector_score")
+        )
+        query_params = {"embedding": embedding.astype(self._vector_type).tobytes()}
+        matches = self._ft(collection_name).search(query, query_params).docs
+
+        relevant_records = list()
+        for match in matches:
+            score = match["vector_score"]
+            record = self._deserialize_document_to_record(match, with_embeddings)
+            relevant_records.append((record, score))
+
+        return relevant_records
 
     async def get_nearest_match_async(
         self,
         collection_name: str,
         embedding: ndarray,
         min_relevance_score: float = 0.0,
-        with_embedding: bool = True,
+        with_embedding: bool = False,
     ) -> Tuple[MemoryRecord, float]:
-        pass
+        """
+        Get the nearest match to an embedding using the configured similarity algorithm, which is
+        defaulted to cosine similarity.
 
-    def _serialize_record(self, record: MemoryRecord) -> Dict[str, Any]:
+        Arguments:
+            collection_name {str} -- Name for a collection of embeddings
+            embedding {ndarray} -- Embedding to find the nearest match to
+            min_relevance_score {float} -- Minimum relevance score of the match, default to 0.0
+            with_embedding {bool} -- Include embedding in the resultant memory record, default to False
+
+        Returns:
+            Tuple[MemoryRecord, float] -- Record and the relevance score, or None if not found
+        """
+        matches = await self.get_nearest_matches_async(
+            collection_name=collection_name,
+            embedding=embedding,
+            limit=1,
+            min_relevance_score=min_relevance_score,
+            with_embeddings=with_embedding,
+        )
+
+        return matches[0] if len(matches) else None
+
+    def _serialize_record_to_redis(self, record: MemoryRecord) -> Dict[str, Any]:
         if not record._key:
             self._logger.error("Record must have a valid key associated with it")
             raise Exception("Record must have a valid key associated with it")
@@ -398,7 +468,7 @@ class RedisMemoryStore(MemoryStoreBase):
         }
         return mapping
 
-    def _deserialize_record(
+    def _deserialize_redis_to_record(
         self, fields: Dict[str, Any], with_embedding: bool
     ) -> MemoryRecord:
         if not fields.get(b"id"):
@@ -423,5 +493,30 @@ class RedisMemoryStore(MemoryStoreBase):
             record._embedding = np.frombuffer(
                 fields[b"embedding"], dtype=self._vector_type
             ).astype(float)
+
+        return record
+
+    def _deserialize_document_to_record(
+        self, doc: redis.commands.search.document.Document, with_embedding: bool
+    ) -> MemoryRecord:
+        # Parse collection name out of ID
+        colon_index = doc["id"].index(":")
+        id_str = doc["id"][colon_index + 1 :]
+
+        record = MemoryRecord.local_record(
+            id=id_str,
+            text=doc["text"],
+            description=doc["description"],
+            additional_metadata=doc["additional_metadata"],
+            embedding=None,
+            timestamp=None,
+        )
+
+        if doc["timestamp"] != "":
+            record._timestamp = datetime.fromisoformat(doc["timestamp"])
+
+        if with_embedding:
+            byte_arr = doc["embedding"].encode()
+            record._embedding = np.frombuffer(byte_arr, dtype=np.uint8).astype(float)
 
         return record
