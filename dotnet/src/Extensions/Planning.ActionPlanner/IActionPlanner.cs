@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading;
 
-namespace Microsoft.SemanticKernel.Planning.Sequential;
+namespace Microsoft.SemanticKernel.Planning.Action;
 
 /// <summary>
-/// Interface for planner that uses set of semantic functions to create a sequential plan.
+/// Interface for planner that uses set of semantic functions to select one function out of many and create a plan.
 /// </summary>
-public interface ISequentialPlanner
+public interface IActionPlanner
 {
     /// <summary>
     /// Create a plan for a goal.

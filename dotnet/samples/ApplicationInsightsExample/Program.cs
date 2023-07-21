@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planning.Action;
 using Microsoft.SemanticKernel.Planning.Sequential;
 
 /// <summary>
@@ -43,7 +44,7 @@ public sealed class Program
         ConfigureTracing(activityListener, telemetryClient);
 
         var kernel = GetKernel(logger);
-        var planner = GetPlanner(kernel, logger);
+        var planner = GetSequentialPlanner(kernel, logger);
 
         try
         {
@@ -113,7 +114,7 @@ public sealed class Program
         return kernel;
     }
 
-    private static ISequentialPlanner GetPlanner(
+    private static ISequentialPlanner GetSequentialPlanner(
         IKernel kernel,
         ILogger logger,
         int maxTokens = 1024)
@@ -121,6 +122,13 @@ public sealed class Program
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
 
         return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(logger);
+    }
+
+    private static IActionPlanner GetActionPlanner(
+        IKernel kernel,
+        ILogger logger)
+    {
+        return new ActionPlanner(kernel).WithInstrumentation(logger);
     }
 
     /// <summary>
