@@ -41,9 +41,9 @@ class RedisMemoryStore(MemoryStoreBase):
     _logger: Logger
 
     # For more information on vector attributes: https://redis.io/docs/stack/search/reference/vectors
-    # Without RedisAI, it is currently not possible to retreive index-specific vector attributes to have these
-    # attributes be separate per collection. Vector dimensionality can be differnet per collection, and it is
-    # the responsiblity of the user to ensure proper dimensions of a record to be indexed correctly.
+    # Without RedisAI, it is currently not possible to retreive index-specific vector attributes to have
+    # fully independent collections. The user can chooes a different vector dimensionality per collection,
+    # but it is solely their responsibility to ensure proper dimensions of a vector to be indexed correctly.
 
     # Vector similarity index algorithm. The supported types are "FLAT" and "HNSW", the default being "HNSW".
     VECTOR_INDEX_ALGORITHM = "HNSW"
@@ -518,11 +518,10 @@ class RedisMemoryStore(MemoryStoreBase):
 
         if doc["timestamp"] != "":
             record._timestamp = datetime.fromisoformat(doc["timestamp"])
+
         if with_embedding:
             # Some bytes are lost when retrieving a document
-            embed = self._database.hget(key_str, "embedding")
-            record._embedding = np.frombuffer(embed, dtype=self._vector_type).astype(
-                float
-            )
+            eb = self._database.hget(key_str, "embedding")
+            record._embedding = np.frombuffer(eb, dtype=self._vector_type).astype(float)
 
         return record

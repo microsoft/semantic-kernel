@@ -240,8 +240,6 @@ async def test_get_nearest_match_async(
     assert result[0]._description == memory_record1._description
     assert result[0]._additional_metadata == memory_record1._additional_metadata
     assert result[0]._timestamp == memory_record1._timestamp
-    print("\trecieved embed\t", result[0]._embedding)
-    print("\texpected embed\t", memory_record1._embedding)
     for i in range(len(result[0]._embedding)):
         assert result[0]._embedding[i] == memory_record1._embedding[i]
 
