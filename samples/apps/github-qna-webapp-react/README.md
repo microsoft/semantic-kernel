@@ -36,6 +36,11 @@ only content extracted from markdown files.
 > [!CAUTION]
 > Each function will call Open AI which will use tokens that you will be billed for.
 
+## Working with private repositories
+The GitHub Repo Q&A Bot sample allows you to pull in data from private a GitHub repo. To do so, you must create a [fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) if you have not already. The token must have access to the repository you are trying to pull data from and Contents read access to the repository:
+![Alt text](image-1.png)
+
+
 ## Next Steps
 
 Create Skills and SK functions: Check out the [documentation](https://aka.ms/sk/learn)
