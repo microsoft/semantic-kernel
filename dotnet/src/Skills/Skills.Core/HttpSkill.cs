@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Skills.Core;
@@ -103,6 +104,7 @@ public sealed class HttpSkill
     private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
+        request.Headers.Add("User-Agent", MicrosoftDiagnostics.HttpUserAgent);
         using var response = await this._client.SendAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     }

@@ -15,15 +15,13 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
 public class AzureCognitiveSearchMemoryStore : IMemoryStore
 {
-    // Note: Azure max length 24 chars
-    private const string UserAgent = "Semantic-Kernel";
-
     /// <summary>
     /// Create a new instance of memory storage using Azure Cognitive Search.
     /// </summary>
@@ -395,38 +393,10 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         {
             Diagnostics =
             {
-                IsTelemetryEnabled = IsTelemetryEnabled(),
-                ApplicationId = UserAgent,
+                IsTelemetryEnabled = MicrosoftDiagnostics.IsTelemetryEnabled,
+                ApplicationId = MicrosoftDiagnostics.HttpUserAgent,
             },
         };
-    }
-
-    /// <summary>
-    /// Source: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
-    /// </summary>
-    private static bool IsTelemetryEnabled()
-    {
-        return !EnvironmentVariableToBool(Environment.GetEnvironmentVariable("AZURE_TELEMETRY_DISABLED")) ?? true;
-    }
-
-    /// <summary>
-    /// Source: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
-    /// </summary>
-    private static bool? EnvironmentVariableToBool(string? value)
-    {
-        if (string.Equals(bool.TrueString, value, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals("1", value, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        if (string.Equals(bool.FalseString, value, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals("0", value, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return null;
     }
 
     #endregion

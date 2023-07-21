@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
@@ -45,7 +46,7 @@ internal sealed class RestApiOperationRunner
     public RestApiOperationRunner(HttpClient httpClient, AuthenticateRequestAsyncCallback? authCallback = null, string? userAgent = null)
     {
         this._httpClient = httpClient;
-        this._userAgent = userAgent;
+        this._userAgent = userAgent ?? MicrosoftDiagnostics.HttpUserAgent;
 
         // If no auth callback provided, use empty function
         if (authCallback == null)
@@ -96,10 +97,9 @@ internal sealed class RestApiOperationRunner
             requestMessage.Content = payload;
         }
 
-        if (!string.IsNullOrWhiteSpace(this._userAgent))
-        {
-            requestMessage.Headers.Add("User-Agent", this._userAgent);
-        }
+        requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
+            ? this._userAgent
+            : MicrosoftDiagnostics.HttpUserAgent);
 
         if (headers != null)
         {

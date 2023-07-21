@@ -20,8 +20,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneration
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
-    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
-
     private readonly string _model;
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
@@ -108,7 +106,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
             using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
 
-            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
+            httpRequestMessage.Headers.Add("User-Agent", MicrosoftDiagnostics.HttpUserAgent);
 
             var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);

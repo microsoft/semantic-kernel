@@ -47,6 +47,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         this._apiKey = apiKey;
         this._logger = logger ?? NullLogger<BingConnector>.Instance;
         this._httpClient = httpClient;
+        this._httpClient.DefaultRequestHeaders.Add("User-Agent", MicrosoftDiagnostics.HttpUserAgent);
     }
 
     /// <inheritdoc/>

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -65,7 +66,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var values = this._messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
 
         var value = values.SingleOrDefault();
-        Assert.Equal(OobaboogaTextCompletion.HttpUserAgent, value);
+        Assert.Equal("Semantic-Kernel", value);
     }
 
     [Fact]
