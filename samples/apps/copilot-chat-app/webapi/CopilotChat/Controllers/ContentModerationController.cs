@@ -13,6 +13,7 @@ using SemanticKernel.Service.Services;
 namespace SemanticKernel.Service.CopilotChat.Controllers;
 
 [ApiController]
+[Authorize]
 public class ContentModerationController : ControllerBase
 {
     private readonly ILogger<ContentModerationController> _logger;
@@ -40,7 +41,6 @@ public class ContentModerationController : ControllerBase
     /// </summary>
     /// <param name="base64Image">The base64 encoded image for analysis.</param>
     /// <returns>The HTTP action result.</returns>
-    [Authorize]
     [HttpPost]
     [Route("contentModerator/image")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -61,7 +61,6 @@ public class ContentModerationController : ControllerBase
     /// Gets the status of content moderation.
     /// </summary>
     /// <returns></returns>
-    [Authorize]
     [HttpGet]
     [Route("contentModerator/status")]
     [ProducesResponseType(StatusCodes.Status200OK)]

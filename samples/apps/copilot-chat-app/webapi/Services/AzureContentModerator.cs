@@ -65,7 +65,7 @@ public sealed class AzureContentModerator : IDisposable
 
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
 
-        // HACK
+        // Subscription Key header required to authenticate requests to Azure API Management (APIM) service
         this._httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", apiKey);
     }
 
@@ -85,7 +85,7 @@ public sealed class AzureContentModerator : IDisposable
 
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
 
-        // HACK
+        // Subscription Key header required to authenticate requests to Azure API Management (APIM) service
         this._httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", apiKey);
     }
 

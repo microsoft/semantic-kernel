@@ -10,6 +10,7 @@ import { AlertType } from './models/AlertType';
 import { ContentModerationService } from './services/ContentModerationService';
 
 // Controls how the content moderation API categorizes the input content based on the level of offensive or unwanted elements
+// Values can be: 0,2,4,6. More details here: https://github.com/Azure/Azure-AI-Content-Safety-Private-Preview
 const riskThreshold = 4;
 
 export const useContentModerator = () => {

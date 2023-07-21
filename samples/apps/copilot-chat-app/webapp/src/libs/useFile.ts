@@ -126,7 +126,7 @@ export const useFile = () => {
 
     const handleImageUpload = async (file: File) => {
         await loadImage(file, contentModerator.analyzeImage).catch((error: Error) => {
-            throw new Error(`'${file.name}': ${error.message}`);
+            throw new Error(`'${file.name}' (${error.message})`);
         });
     };
 

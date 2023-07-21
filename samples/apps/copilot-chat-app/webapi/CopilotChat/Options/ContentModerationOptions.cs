@@ -33,6 +33,6 @@ public class ContentModerationOptions
     /// <summary>
     /// Set the violation threshold. See https://github.com/Azure/Project-Carnegie-Private-Preview for details.
     /// </summary>
-    [Range(0, int.MaxValue)]
+    [Range(0, 6)]
     public short ViolationThreshold { get; set; } = 4;
 }
