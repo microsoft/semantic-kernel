@@ -97,12 +97,6 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             "The max tokens must be greater than 0, "
             f"but was {request_settings.max_tokens}",
         )
-        if request_settings.logprobs != 0:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                "complete_async does not support logprobs, "
-                f"but logprobs={request_settings.logprobs} was requested",
-            )
         try:
             palm.configure(api_key=self._api_key)
         except Exception as ex:
