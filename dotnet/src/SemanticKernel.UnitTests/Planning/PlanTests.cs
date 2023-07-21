@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -90,8 +91,8 @@ public sealed class PlanTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -103,7 +104,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal($"{stepOutput}{planInput}", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -123,8 +124,8 @@ public sealed class PlanTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -136,7 +137,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal($"{stepOutput}{planInput}", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -156,8 +157,8 @@ public sealed class PlanTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -169,7 +170,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal($"{stepOutput}{planInput}{stepOutput}{planInput}", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Exactly(2));
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -189,8 +190,8 @@ public sealed class PlanTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -202,7 +203,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal($"{stepOutput}{planInput}{stepOutput}{planInput}", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Exactly(2));
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -222,8 +223,8 @@ public sealed class PlanTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -235,7 +236,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal($"{stepOutput}{planInput}{stepOutput}{planInput}", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Exactly(2));
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -255,8 +256,8 @@ public sealed class PlanTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -275,7 +276,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal($"{stepOutput}{planInput}{stepOutput}{planInput}", result.State.ToString());
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Exactly(2));
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -295,8 +296,8 @@ public sealed class PlanTests
         );
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
@@ -329,7 +330,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Exactly(2));
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -351,7 +352,7 @@ public sealed class PlanTests
         returnContext.Fail("Error description", new ArgumentException("Error message"));
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Returns(() => Task.FromResult(returnContext));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
@@ -359,7 +360,7 @@ public sealed class PlanTests
         // Act
         var cv = new ContextVariables(planInput);
         await Assert.ThrowsAsync<KernelException>(async () => await kernel.Object.StepAsync(cv, plan));
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -380,7 +381,7 @@ public sealed class PlanTests
         returnContext.Fail("Error description", new ArgumentException("Error message"));
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Returns(() => Task.FromResult(returnContext));
 
         plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
@@ -388,7 +389,7 @@ public sealed class PlanTests
         // Act
         var cv = new ContextVariables(planInput);
         await Assert.ThrowsAsync<KernelException>(async () => await kernel.Object.StepAsync(cv, plan));
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -405,24 +406,24 @@ public sealed class PlanTests
         var returnContext = new SKContext();
 
         var childFunction1 = new Mock<ISKFunction>();
-        childFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        childFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 1 output!" + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
         var childFunction2 = new Mock<ISKFunction>();
-        childFunction2.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        childFunction2.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 2 is happy about " + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
         var childFunction3 = new Mock<ISKFunction>();
-        childFunction3.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        childFunction3.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 3 heard " + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
         var nodeFunction1 = new Mock<ISKFunction>();
-        nodeFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        nodeFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(c.Variables.Input + " - this just happened."))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -439,10 +440,10 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal("Child 3 heard Child 2 is happy about Child 1 output!Write a poem or joke - this just happened.", plan.State.ToString());
-        nodeFunction1.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
-        childFunction1.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
-        childFunction2.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
-        childFunction3.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
+        nodeFunction1.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
+        childFunction1.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
+        childFunction2.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
+        childFunction3.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -480,8 +481,8 @@ public sealed class PlanTests
         var returnContext = new SKContext();
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Here is a poem about " + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
@@ -494,7 +495,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Here is a poem about Cleopatra", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null), Times.Once);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -506,8 +507,8 @@ public sealed class PlanTests
         var returnContext = new SKContext();
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
@@ -527,7 +528,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Here is a poem about Cleopatra", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Once);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -539,8 +540,8 @@ public sealed class PlanTests
         var returnContext = new SKContext();
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings?>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
@@ -557,7 +558,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Here is a poem about Cleopatra", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Once);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
 
         plan = new Plan(mockFunction.Object);
         plan.State.Set("input", "Cleopatra");
@@ -573,7 +574,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Here is a joke about Medusa", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Exactly(2));
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -585,8 +586,8 @@ public sealed class PlanTests
         var returnContext = new SKContext();
 
         var mockFunction = new Mock<ISKFunction>();
-        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
@@ -606,7 +607,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Here is a joke about Medusa", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Once);
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Once);
 
         planStep = new Plan(mockFunction.Object);
         plan = new Plan("A plan");
@@ -622,7 +623,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Here is a poem about Medusa", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Exactly(2));
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(2));
 
         planStep = new Plan(mockFunction.Object);
         plan = new Plan("A plan");
@@ -639,7 +640,7 @@ public sealed class PlanTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Here is a joke about Cleopatra", result.Result);
-        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), default), Times.Exactly(3));
+        mockFunction.Verify(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()), Times.Exactly(3));
     }
 
     [Fact]
@@ -651,22 +652,22 @@ public sealed class PlanTests
         var returnContext = new SKContext();
 
         var outlineMock = new Mock<ISKFunction>();
-        outlineMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        outlineMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update($"Here is a {c.Variables["chapterCount"]} chapter outline about " + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 
         var elementAtIndexMock = new Mock<ISKFunction>();
-        elementAtIndexMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        elementAtIndexMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
             {
                 returnContext.Variables.Update($"Outline section #{c.Variables["index"]} of {c.Variables["count"]}: " + c.Variables.Input);
             })
             .Returns(() => Task.FromResult(returnContext));
 
         var novelChapterMock = new Mock<ISKFunction>();
-        novelChapterMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        novelChapterMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
             {
                 returnContext.Variables.Update(
                     $"Chapter #{c.Variables["chapterIndex"]}: {c.Variables.Input}\nTheme:{c.Variables["theme"]}\nPreviously:{c.Variables["previousChapter"]}");
@@ -765,8 +766,8 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         var returnContext = new SKContext();
 
         var functionMock = new Mock<ISKFunction>();
-        functionMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), default))
-            .Callback<SKContext, CompleteRequestSettings>((c, s) =>
+        functionMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update($"Here is a payload '{c.Variables["payload"]}' for " + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
 

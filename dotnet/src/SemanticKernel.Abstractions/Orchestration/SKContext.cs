@@ -53,7 +53,8 @@ public sealed class SKContext
     /// <summary>
     /// The token to monitor for cancellation requests.
     /// </summary>
-    public CancellationToken CancellationToken { get; }
+    [Obsolete("Add a CancellationToken param to SKFunction method signatures instead of retrieving it from SKContext.")]
+    public CancellationToken CancellationToken { get; } = default;
 
     /// <summary>
     /// The culture currently associated with this context.
@@ -132,17 +133,14 @@ public sealed class SKContext
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="skills">Skills to include in context.</param>
     /// <param name="logger">Logger for operations in context.</param>
-    /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
     public SKContext(
         ContextVariables? variables = null,
         IReadOnlySkillCollection? skills = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
+        ILogger? logger = null)
     {
         this.Variables = variables ?? new();
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
         this.Log = logger ?? NullLogger.Instance;
-        this.CancellationToken = cancellationToken;
         this._culture = CultureInfo.CurrentCulture;
     }
 
@@ -166,8 +164,7 @@ public sealed class SKContext
         return new SKContext(
             variables: this.Variables.Clone(),
             skills: this.Skills,
-            logger: this.Log,
-            cancellationToken: this.CancellationToken)
+            logger: this.Log)
         {
             Culture = this.Culture,
             ErrorOccurred = this.ErrorOccurred,
