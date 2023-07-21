@@ -70,7 +70,6 @@ export const useFile = () => {
         setDocumentImporting: React.Dispatch<React.SetStateAction<boolean>>,
         documentFileRef: React.MutableRefObject<HTMLInputElement | null>,
         setSelectedDocuments?: React.Dispatch<React.SetStateAction<SelectedFileStatus[]>>,
-        imageUploaderRef?: React.RefObject<HTMLInputElement>,
         file?: File,
         dragAndDropFiles?: FileList,
     ) => {
@@ -85,13 +84,12 @@ export const useFile = () => {
             const imageErrors: string[] = [];
 
             // Required for components that show import progress
-            if (setSelectedDocuments)
-                setSelectedDocuments(
-                    filesArray.map((file) => ({
-                        name: file.name,
-                        countDown: file.size / 1000, // Hack: count down is the number of seconds to complete the import.
-                    })),
-                );
+            setSelectedDocuments?.(
+                filesArray.map((file) => ({
+                    name: file.name,
+                    countDown: file.size / 1000, // Hack: count down is the number of seconds to complete the import.
+                })),
+            );
 
             for (const file of filesArray) {
                 if (features[FeatureKeys.AzureContentSafety].enabled && file.type.startsWith('image/')) {
@@ -123,12 +121,6 @@ export const useFile = () => {
         // be triggered even if the same file is selected again.
         if (documentFileRef.current?.value) {
             documentFileRef.current.value = '';
-        }
-
-        // Reset the image input so that the onChange event will
-        // be triggered even if the same image is selected again.
-        if (imageUploaderRef?.current?.value) {
-            imageUploaderRef.current.value = '';
         }
     };
 

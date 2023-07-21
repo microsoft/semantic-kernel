@@ -9,6 +9,7 @@ import { AuthHelper } from './auth/AuthHelper';
 import { AlertType } from './models/AlertType';
 import { ContentModerationService } from './services/ContentModerationService';
 
+// Controls how the content moderation API categorizes the input content based on the level of offensive or unwanted elements
 const riskThreshold = 4;
 
 export const useContentModerator = () => {
@@ -22,7 +23,7 @@ export const useContentModerator = () => {
         const VIOLATIONS_FLAG = 'ContainsViolations';
         try {
             // remove image prefix
-            const image = base64Image.replace('data:image/png;base64,', '').replace('data:image/jpeg;base64,', '');
+            const image = base64Image.replace(/data:image\/(png|jpeg);base64,/, '');
 
             const result = await contentModeratorService.analyzeImageAsync(
                 image,

@@ -83,10 +83,6 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
 
-    // Check if the current message is moderated
-    const moderatingMessages = conversations[selectedId].moderatingMessages;
-    const isModerating = moderatingMessages?.some((m) => m === `${message.userId}${message.timestamp}`) ?? false;
-
     const isMe = message.authorRole === AuthorRoles.User && message.userId === activeUserInfo?.id;
     const isBot = message.authorRole === AuthorRoles.Bot;
     const user = chat.getChatUserById(message.userName, selectedId, conversations[selectedId].users);
@@ -101,18 +97,6 @@ export const ChatHistoryItem: React.FC<ChatHistoryItemProps> = ({ message, getRe
         content = <PlanViewer message={message} messageIndex={messageIndex} getResponse={getResponse} />;
     } else if (message.type === ChatMessageType.Document) {
         content = <ChatHistoryDocumentContent isMe={isMe} message={message} />;
-    } else if (message.content.startsWith('data:image')) {
-        content = (
-            <img
-                className={
-                    features[FeatureKeys.AzureContentSafety].enabled && isModerating
-                        ? mergeClasses(classes.image, classes.blur)
-                        : classes.image
-                }
-                src={message.content}
-                alt="TBA"
-            />
-        );
     } else {
         content = <ChatHistoryTextContent message={message} />;
     }

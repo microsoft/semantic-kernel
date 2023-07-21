@@ -147,7 +147,6 @@ export const DocumentsTab: React.FC<ChatResourceListProps> = ({ chatId }) => {
                     accept=".txt,.pdf,.md,.jpg,.jpeg,.png,.tif,.tiff"
                     multiple={true}
                     onChange={() => {
-                        // TODO: render error if image validation fails
                         void fileHandler.handleImport(setDocumentImporting, documentFileRef, setSelectedDocuments);
                     }}
                 />

@@ -2,7 +2,7 @@
 
 import { useMsal } from '@azure/msal-react';
 import { Button, Spinner, Textarea, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components';
-import { AttachRegular, ImageRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
+import { AttachRegular, MicRegular, SendRegular } from '@fluentui/react-icons';
 import debug from 'debug';
 import * as speechSdk from 'microsoft-cognitiveservices-speech-sdk';
 import React, { useRef, useState } from 'react';
@@ -17,7 +17,6 @@ import { RootState } from '../../redux/app/store';
 import { FeatureKeys } from '../../redux/features/app/AppState';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationInput } from '../../redux/features/conversations/conversationsSlice';
-import { FileUploader } from '../FileUploader';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { updateUserIsTyping } from './../../redux/features/conversations/conversationsSlice';
 import { ChatStatus } from './ChatStatus';
@@ -94,7 +93,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
     const [isListening, setIsListening] = useState(false);
     const [documentImporting, setDocumentImporting] = useState(false);
     const documentFileRef = useRef<HTMLInputElement | null>(null);
-    const imageUploaderRef = useRef<HTMLInputElement>(null);
 
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const { activeUserInfo, features } = useAppSelector((state: RootState) => state.app);
@@ -163,7 +161,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                 setDocumentImporting,
                 documentFileRef,
                 undefined,
-                imageUploaderRef,
                 undefined,
                 e.dataTransfer.files,
             );
@@ -232,12 +229,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             accept=".txt,.pdf,.md,.jpg,.jpeg,.png,.tif,.tiff"
                             multiple={true}
                             onChange={() => {
-                                void fileHandler.handleImport(
-                                    setDocumentImporting,
-                                    documentFileRef,
-                                    undefined,
-                                    imageUploaderRef,
-                                );
+                                void fileHandler.handleImport(setDocumentImporting, documentFileRef, undefined);
                             }}
                         />
                         <Button
@@ -245,24 +237,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
                             appearance="transparent"
                             icon={<AttachRegular />}
                             onClick={() => documentFileRef.current?.click()}
-                        />
-                        <FileUploader
-                            ref={imageUploaderRef}
-                            acceptedExtensions={['.jpeg', '.png']}
-                            onSelectedFile={(file: File) => {
-                                void fileHandler.handleImport(
-                                    setDocumentImporting,
-                                    documentFileRef,
-                                    undefined,
-                                    imageUploaderRef,
-                                    file,
-                                );
-                            }}
-                        />
-                        <Button
-                            appearance="transparent"
-                            icon={<ImageRegular />}
-                            onClick={() => imageUploaderRef.current?.click()}
                         />
                         {documentImporting && <Spinner size="tiny" />}
                     </div>

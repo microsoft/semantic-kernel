@@ -4,7 +4,7 @@ type IContentModerationResult = Record<string, { category: string; riskLevel: nu
 
 export class ContentModerationService extends BaseService {
     public analyzeImageAsync = async (base64Image: string, accessToken: string): Promise<IContentModerationResult> => {
-        const result = await this.getResponseAsync<IContentModerationResult>(
+        return await this.getResponseAsync<IContentModerationResult>(
             {
                 commandPath: 'contentModerator/image',
                 method: 'POST',
@@ -12,18 +12,15 @@ export class ContentModerationService extends BaseService {
             },
             accessToken,
         );
-
-        return result;
     };
 
     public getContentModerationStatusAsync = async (accessToken: string): Promise<boolean> => {
-        const result = await this.getResponseAsync<boolean>(
+        return await this.getResponseAsync<boolean>(
             {
                 commandPath: 'contentModerator/status',
                 method: 'GET',
             },
             accessToken,
         );
-        return result;
     };
 }

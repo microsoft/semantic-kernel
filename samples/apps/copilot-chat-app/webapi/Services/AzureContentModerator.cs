@@ -108,17 +108,25 @@ public sealed class AzureContentModerator : IDisposable
         }
         return violatedCategories;
     }
+
+    /// <summary>
+    /// Invokes a sync API to perform harmful content analysis on image.
+    /// <param name="base64Image">Base64 envoding content of image</param>
+    /// </summary>
+    /// <returns>SKContext containing the image analysis result.</returns>
     public async Task<Dictionary<string, AnalysisResult>> ImageAnalysisAsync(string base64Image, CancellationToken cancellationToken)
     {
         var image = base64Image.Replace("data:image/png;base64,", "", StringComparison.InvariantCultureIgnoreCase).Replace("data:image/jpeg;base64,", "", StringComparison.InvariantCultureIgnoreCase);
         ImageContent content = new(image);
         ImageAnalysisRequest requestBody = new(content, s_categories);
+
         using var httpRequestMessage = new HttpRequestMessage()
         {
             Method = HttpMethod.Post,
             RequestUri = new Uri($"{this._endpoint}/contentmoderator/image:analyze?api-version=2022-12-30-preview"),
             Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"),
         };
+
         var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode || body is null)
@@ -127,6 +135,7 @@ public sealed class AzureContentModerator : IDisposable
                 AIException.ErrorCodes.UnknownError,
                 $"Content moderator: Failed analyzing the image. {response.StatusCode}");
         }
+
         var result = JsonSerializer.Deserialize<Dictionary<string, AnalysisResult>>(body!);
         if (result is null)
         {
@@ -136,6 +145,7 @@ public sealed class AzureContentModerator : IDisposable
         }
         return result;
     }
+
     /// <inheritdoc/>
     public void Dispose()
     {

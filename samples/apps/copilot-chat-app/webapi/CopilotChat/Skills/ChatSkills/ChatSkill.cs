@@ -86,7 +86,6 @@ public class ChatSkill
         "planner",
         "memoryExtraction"
     };
-    private IOptions<DocumentMemoryOptions> _documentImportOptions;
 
     /// <summary>
     /// Create a new instance of <see cref="ChatSkill"/>.
@@ -108,8 +107,6 @@ public class ChatSkill
         this._messageRelayHubContext = messageRelayHubContext;
         // Clone the prompt options to avoid modifying the original prompt options.
         this._promptOptions = promptOptions.Value.Copy();
-
-        this._documentImportOptions = documentImportOptions;
 
         this._semanticChatMemorySkill = new SemanticChatMemorySkill(
             promptOptions,
@@ -289,13 +286,6 @@ public class ChatSkill
         var chatContext = Utilities.CopyContextWithVariablesClone(context);
         chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
 
-        // HACK: identifying if user input is image.
-        // Can we write a simple SK function to identifying image input? Hmm... one more model call?
-        if (message.StartsWith("data:image", StringComparison.InvariantCultureIgnoreCase))
-        {
-            return await this.ProcessImageContent(message, userId, userName, chatId, chatContext);
-        }
-
         // Set the system description in the prompt options
         await this.SetSystemDescriptionAsync(chatId);
 
@@ -349,46 +339,6 @@ public class ChatSkill
     }
 
     #region Private
-
-    /// <summary>
-    /// Invokes AzureContentModerator to analyze image content.
-    /// </summary>
-    /// <returns>SKContext containing the image analysis result.</returns>
-    private async Task<SKContext> ProcessImageContent(
-        [Description("The new message")] string message,
-        [Description("Unique and persistent identifier for the user")] string userId,
-        [Description("Name of the user")] string userName,
-        [Description("Unique and persistent identifier for the chat")] string chatId,
-        SKContext chatContext)
-    {
-        var imageCannedResponse = "Great image!";
-        string messageType = "image";
-
-        if (this._contentModerator.ContentModerationOptions!.Enabled)
-        {
-            var moderationResult = await this._contentModerator.ImageAnalysisAsync(message, default);
-            var violationCategories = AzureContentModerator.ParseViolatedCategories(moderationResult, this._contentModerator.ContentModerationOptions.ViolationThreshold);
-
-            if (violationCategories.Count > 0)
-            {
-                await this.SaveNewMessageAsync($"Content is redacted due to potential violation: {string.Join(", ", violationCategories)}", userId, userName, chatId, messageType);
-
-                chatContext.Variables.Update("It seems the content isn't appropriate.");
-            }
-            else
-            {
-                chatContext.Variables.Update(imageCannedResponse);
-                await this.SaveNewMessageAsync(imageCannedResponse, userId, userName, chatId, messageType);
-            }
-        }
-        else
-        {
-            chatContext.Variables.Update(imageCannedResponse);
-            await this.SaveNewMessageAsync(imageCannedResponse, userId, userName, chatId, messageType);
-        }
-
-        return chatContext;
-    }
 
     /// <summary>
     /// Generate the necessary chat context to create a prompt then invoke the model to get a response.
