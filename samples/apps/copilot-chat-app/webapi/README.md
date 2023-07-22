@@ -26,12 +26,12 @@ Before you get started, make sure you have the following requirements in place:
 
    > To clean your system of the developer certificate, run `dotnet run dev-certs https --clean`
 
-5. **(Optional)** To enable support for uploading image file formats such as png, jpg and tiff, there are two options, the Tesseract open source library and Azure Form Recognizer.
+5. **(Optional)** To enable support for uploading image file formats such as png, jpg and tiff, there are two options within the `OcrSupport` section of `./appsettings.json`, the Tesseract open source library and Azure Form Recognizer.
    - **Tesseract** we have included the [Tesseract](https://www.nuget.org/packages/Tesseract) nuget package.  
-     - You will need to obtain one or more [tessdata language data files](https://github.com/tesseract-ocr/tessdata) such as `eng.traineddata` and add them to your `./data` directory or the location specified in the `Tesseract.FilePath` location in `./appsettings.json`.  
+     - You will need to obtain one or more [tessdata language data files](https://github.com/tesseract-ocr/tessdata) such as `eng.traineddata` and add them to your `./data` directory or the location specified in the `OcrSupport:Tesseract:FilePath` location in `./appsettings.json`.  
      - Set the `Copy to Output Directory` value to `Copy if newer`.
    - **Azure Form Recognizer** we have included the [Azure.AI.FormRecognizer](https://www.nuget.org/packages/Azure.AI.FormRecognizer) nuget package.  
-     - You will need to obtain an [Azure Form Recognizer](https://azure.microsoft.com/en-us/services/form-recognizer/) resource and add the endpoint and key strings to your `./appsettings.json` file.     
+     - You will need to obtain an [Azure Form Recognizer](https://azure.microsoft.com/en-us/services/form-recognizer/) resource and add the `OcrSupport:AzureFormRecognizer:Endpoint` and `OcrSupport:AzureFormRecognizer:Key` values to the `./appsettings.json` file.     
 
 # Start the WebApi Service
 
