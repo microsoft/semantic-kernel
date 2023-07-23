@@ -34,6 +34,8 @@ GO
 -- Grant access rights to a specific schema, tables, or views
 GRANT SELECT ON SCHEMA::[SalesLT] TO bot_reader
 GO
+DENY SELECT ON [SalesLT].Customer (PasswordHash, PasswordSalt) TO search_bot;
+GO
 
 
 
