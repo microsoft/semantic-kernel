@@ -26,7 +26,7 @@ EXEC sys.sp_addextendedproperty
 @level1type = N'TABLE', @level1name = B,
 @level2type = N'COLUMN', @level2name = B2;
 
--- Sample data
+-- Artificially generated synthetic data
 insert into B (B0, B1, B2) values (1, 'Food', 0);
 insert into B (B0, B1, B2) values (2, 'Toys', 0);
 insert into B (B0, B1, B2) values (3, 'Clothing', 0);

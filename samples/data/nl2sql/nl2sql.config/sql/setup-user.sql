@@ -1,4 +1,4 @@
--- Manually create server login:
+-- Manually create server login: search_bot
 -- CREATE LOGIN search_bot ...
 
 -- Create the database role

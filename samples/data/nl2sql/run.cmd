@@ -10,5 +10,3 @@ dotnet build
 cls
 
 dotnet run
-
-endlocal
