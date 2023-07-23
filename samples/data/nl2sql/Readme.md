@@ -12,7 +12,7 @@ While a full ecosystem for data-retrieval and processing includes components and
 1. Demonstrate the natural ability of LLM to reason over an objective and generate a SQL query.
 1. Allow exploration of any *(SQL Server)* database (on-premises or cloud hosted).
 
-## Sample Info
+## ⚙️ Sample Info
 
 The default configuration targets two sample schemas, but it may be configured to target your own database as well.
 

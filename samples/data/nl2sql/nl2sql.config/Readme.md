@@ -1,6 +1,6 @@
 # Setup: Natural Language to SQL Console
 
-## LLM Configuration
+## ⚙️LLM Configuration
 
 This project aligns with the configuration strategy used throughout this repo: 
 [Common variables](../../../../dotnet/samples/KernelSyntaxExamples/README.md)
@@ -36,7 +36,7 @@ OR
 ```
 SETX AZURE_OPENAI_DEPLOYMENT_NAME "gpt-4"
 ```
-## SQL Configuration
+## ⚙️ SQL Configuration
 
 #### Setup
 
@@ -63,7 +63,9 @@ dotnet user-secrets set ConnectionStrings:AdventureWorksLT "..."
 dotnet user-secrets set ConnectionStrings:DescriptionTest "..."
 ```
 
-## Advanced (Custom Schema)
+Note: The user permissions should be restricted to only access specific data.  Ability to read from system views should be restricted (see: [setup-user.sql](./sql/setup-user.sql)).
+
+## ⚙️ Advanced (Custom Schema)
 The following steps allows you to describe and target your own database schema.
 
 1. Define the connection string so it can be consumed to reverse engineer your schema and also by the console:
