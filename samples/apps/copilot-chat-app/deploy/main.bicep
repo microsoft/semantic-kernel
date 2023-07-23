@@ -134,6 +134,9 @@ resource appServiceWeb 'Microsoft.Web/sites@2022-09-01' = {
     serverFarmId: appServicePlan.id
     httpsOnly: true
     virtualNetworkSubnetId: virtualNetwork.properties.subnets[0].id
+    siteConfig: {
+      healthCheckPath: '/healthz'
+    }
   }
 }
 
@@ -141,7 +144,7 @@ resource appServiceWebConfig 'Microsoft.Web/sites/config@2022-09-01' = {
   parent: appServiceWeb
   name: 'web'
   properties: {
-    alwaysOn: true
+    alwaysOn: false
     cors: {
       allowedOrigins: [
         'http://localhost:3000'

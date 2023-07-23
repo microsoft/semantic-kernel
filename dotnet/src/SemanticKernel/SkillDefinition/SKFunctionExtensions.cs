@@ -97,7 +97,7 @@ public static class SKFunctionExtensions
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
         string? input = null, CancellationToken cancellationToken = default)
     {
-        return function.InvokeAsync(input, settings: null, memory: null, logger: null, cancellationToken: cancellationToken);
+        return function.InvokeAsync(input, settings: null, logger: null, cancellationToken: cancellationToken);
     }
 
     /// <summary>
