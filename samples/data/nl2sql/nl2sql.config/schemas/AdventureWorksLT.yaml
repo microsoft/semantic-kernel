@@ -1,22 +1,5 @@
 description: Product, sales, and customer data for the AdentureWorks company.
 tables:
-  - dbo.BuildVersion: 
-    columns:
-      SystemInformationID: 
-      Database Version: 
-      ModifiedDate: 
-      VersionDate: 
-  - dbo.ErrorLog: 
-    columns:
-      ErrorLogID: 
-      ErrorLine: 
-      ErrorMessage: 
-      ErrorNumber: 
-      ErrorProcedure: 
-      ErrorSeverity: 
-      ErrorState: 
-      ErrorTime: 
-      UserName: 
   - SalesLT.Address: 
     columns:
       AddressID: 
@@ -38,8 +21,6 @@ tables:
       MiddleName: 
       ModifiedDate: 
       NameStyle: 
-      PasswordHash: 
-      PasswordSalt: 
       Phone: 
       rowguid: 
       SalesPerson: 

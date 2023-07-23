@@ -3,70 +3,6 @@
   "Description": "Product, sales, and customer data for the AdentureWorks company.",
   "Tables": [
     {
-      "Name": "dbo.BuildVersion",
-      "Columns": [
-        {
-          "Name": "SystemInformationID",
-          "Type": "tinyint",
-          "IsPrimary": true
-        },
-        {
-          "Name": "Database Version",
-          "Type": "nvarchar"
-        },
-        {
-          "Name": "ModifiedDate",
-          "Type": "datetime"
-        },
-        {
-          "Name": "VersionDate",
-          "Type": "datetime"
-        }
-      ]
-    },
-    {
-      "Name": "dbo.ErrorLog",
-      "Columns": [
-        {
-          "Name": "ErrorLogID",
-          "Type": "int",
-          "IsPrimary": true
-        },
-        {
-          "Name": "ErrorLine",
-          "Type": "int"
-        },
-        {
-          "Name": "ErrorMessage",
-          "Type": "nvarchar"
-        },
-        {
-          "Name": "ErrorNumber",
-          "Type": "int"
-        },
-        {
-          "Name": "ErrorProcedure",
-          "Type": "nvarchar"
-        },
-        {
-          "Name": "ErrorSeverity",
-          "Type": "int"
-        },
-        {
-          "Name": "ErrorState",
-          "Type": "int"
-        },
-        {
-          "Name": "ErrorTime",
-          "Type": "datetime"
-        },
-        {
-          "Name": "UserName",
-          "Type": "nvarchar"
-        }
-      ]
-    },
-    {
       "Name": "SalesLT.Address",
       "Columns": [
         {
@@ -143,14 +79,6 @@
         {
           "Name": "NameStyle",
           "Type": "bit"
-        },
-        {
-          "Name": "PasswordHash",
-          "Type": "varchar"
-        },
-        {
-          "Name": "PasswordSalt",
-          "Type": "varchar"
         },
         {
           "Name": "Phone",

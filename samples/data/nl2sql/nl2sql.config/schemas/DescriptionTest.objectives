@@ -9,4 +9,7 @@ how many categories does each user have? (show id and full name)
 how many categories does each user have? (show id and full name and sort descending by count)
 list all categories
 list all categories (show all fields)
+list categories for May
+list categories for user named May
+list categories for user named May (include id and full user name)
 
