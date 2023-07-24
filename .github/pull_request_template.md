@@ -18,6 +18,6 @@ Please help reviewers and future users, providing the following information:
 <!-- Before submitting this PR, please make sure: -->
 
 - [ ] The code builds clean without any errors or warnings
-- [ ] The PR follows the [SK Contribution Guidelines](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) and the [pre-submission formatting script](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md#dev-scripts) raises no violations
+- [ ] The PR follows the [SK Contribution Guidelines](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) and the [pre-submission formatting script](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md#development-scripts) raises no violations
 - [ ] All unit tests pass, and I have added new tests where possible
 - [ ] I didn't break anyone :smile:
