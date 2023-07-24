@@ -75,7 +75,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
         try
         {
             var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
-            var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions, this.PlanName);
+            var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
 
             if (plan.Steps.Count == 0)
             {
@@ -100,8 +100,6 @@ public sealed class SequentialPlanner : ISequentialPlanner
     }
 
     private SequentialPlannerConfig Config { get; }
-
-    public string? PlanName => this.Config?.PlanName;
 
     private readonly SKContext _context;
 

@@ -70,7 +70,7 @@ internal static class SequentialPlanParser
     /// <param name="planName">The plan name, Mainly used for telemetry purposes</param>
     /// <returns>The plan.</returns>
     /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
-    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getSkillFunction, bool allowMissingFunctions = false, string? planName = null)
+    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getSkillFunction, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
         try
@@ -111,7 +111,7 @@ internal static class SequentialPlanParser
         // Get the Solution
         XmlNodeList solution = xmlDoc.GetElementsByTagName(SolutionTag);
 
-        var plan = new Plan(goal, planName);
+        var plan = new Plan(goal);
 
         // loop through solution node and add to Steps
         foreach (XmlNode solutionNode in solution)

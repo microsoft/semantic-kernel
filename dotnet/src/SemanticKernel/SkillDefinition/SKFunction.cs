@@ -226,7 +226,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeLogicAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
         if (this.IsSemantic)
         {
@@ -251,15 +251,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
         return context;
     }
 
-    public async Task<SKContext> InvokeAsyncInstrumented(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
         this.ExecutionTotalCounter.Add(1);
         context.Log.LogInformation("{SkillName}.{StepName}: Function execution started", this.SkillName, this.Name);
         var stopwatch = new Stopwatch();
-
         stopwatch.Start();
-        await this.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
+        context = await this.InvokeLogicAsync(context, settings, cancellationToken).ConfigureAwait(false);
         stopwatch.Stop();
 
 

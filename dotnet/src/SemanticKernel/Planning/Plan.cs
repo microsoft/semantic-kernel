@@ -90,7 +90,7 @@ public sealed class Plan : ISKFunction
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
     /// </summary>
     /// <param name="goal">The goal of the plan used as description.</param>
-    public Plan(string goal, string? planName = null)
+    public Plan(string goal)
     {
         this.Description = goal;
         this.SkillName = this.GetType().FullName;
@@ -253,7 +253,7 @@ public sealed class Plan : ISKFunction
 
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Skills, context.Log);
-            var result = await step.InvokeAsyncInstrumented(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var result = await step.In(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
             if (result.ErrorOccurred)
@@ -353,7 +353,7 @@ public sealed class Plan : ISKFunction
         return context;
     }
 
-    public async Task<SKContext> InvokeAsyncInstrumented(
+    public async Task<SKContext> InvokeInstrumentedAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
