@@ -379,19 +379,19 @@ public sealed class SKFunction : ISKFunction, IDisposable
         this.Name = functionName;
         this.SkillName = skillName;
         this.Description = description;
-        this.ExecutionTimeHistogram = s_meter.CreateHistogram<double>(
+        this.ExecutionTimeHistogram = s_plan_meter.CreateHistogram<double>(
             name: string.Format(CultureInfo.InvariantCulture, ExecutionTimeMetricFormat, this.SkillName, this.Name),
             unit: "ms",
             description: "Function execution time");
-        this.ExecutionTotalCounter = s_meter.CreateCounter<int>(
+        this.ExecutionTotalCounter = s_plan_meter.CreateCounter<int>(
             name: string.Format(CultureInfo.InvariantCulture, ExecutionTotalMetricFormat, this.SkillName, this.Name),
             unit: "Executions",
             description: "Total function execution counter");
-        this.ExecutionSuccessCounter = s_meter.CreateCounter<int>(
+        this.ExecutionSuccessCounter = s_plan_meter.CreateCounter<int>(
             name: string.Format(CultureInfo.InvariantCulture, ExecutionSuccessMetricFormat, this.SkillName, this.Name),
             unit: "Executions",
             description: "Success function execution counter");
-        this.ExecutionFailureCounter = s_meter.CreateCounter<int>(
+        this.ExecutionFailureCounter = s_plan_meter.CreateCounter<int>(
             name: string.Format(CultureInfo.InvariantCulture, ExecutionCountFailureMetricFormat, this.SkillName, this.Name),
             unit: "Executions",
             description: "Failure function execution counter");
@@ -1034,14 +1034,20 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
     }
 
-    #region Instrumentation
     private const string ExecutionTimeMetricFormat = "SK.{0}.{1}.ExecutionTime";
+
     private const string ExecutionTotalMetricFormat = "SK.{0}.{1}.ExecutionTotal";
+
     private const string ExecutionCountFailureMetricFormat = "SK.{0}.{1}.ExecutionFailure";
+
     private const string ExecutionSuccessMetricFormat = "SK.{0}.{1}.ExecutionSuccess";
+
     private Histogram<double> ExecutionTimeHistogram;
+
     private Counter<int> ExecutionTotalCounter;
+
     private Counter<int> ExecutionSuccessCounter;
+
     private Counter<int> ExecutionFailureCounter;
 
     /// <summary>
@@ -1052,7 +1058,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
     /// </summary>
-    private static Meter s_meter = new(nameof(Plan));
-    #endregion
+    private static Meter s_plan_meter = new(nameof(Plan));
+
     #endregion
 }

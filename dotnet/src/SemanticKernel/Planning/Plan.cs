@@ -652,7 +652,7 @@ public sealed class Plan : ISKFunction
         }
     }
 
-    #region Instrumentation
+
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for plan-related activities.
     /// </summary>
@@ -662,21 +662,24 @@ public sealed class Plan : ISKFunction
     /// Instance of <see cref="Meter"/> for plan-related metrics.
     /// </summary>
     private static Meter s_meter = new(nameof(Plan));
+
     private static Histogram<double> s_executionTimeHistogram = s_meter.CreateHistogram<double>(
             name: "SK.Plan.Invoke.ExecutionTime",
             unit: "ms",
             description: "Plan execution time");
+
     private static Counter<int> s_executionTotalCounter = s_meter.CreateCounter<int>(
             name: "SK.Plan.Invoke.ExecutionTotal",
             unit: "Executions",
             description: "Total plan execution counter");
+
     private static Counter<int> s_executionSuccessCounter = s_meter.CreateCounter<int>(
             name: "SK.Plan.Invoke.ExecutionSuccess",
             unit: "Executions",
             description: "Success plan execution counter");
+
     private static Counter<int> s_executionFailureCounter = s_meter.CreateCounter<int>(
             name: "SK.Plan.Invoke.ExecutionFailure",
             unit: "Executions",
             description: "Failure plan execution counter");
-    #endregion
 }

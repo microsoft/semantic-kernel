@@ -79,7 +79,6 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     private readonly ISequentialPlanner _planner;
     private readonly ILogger _logger;
 
-    #region Instrumentation
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for planner-related activities.
     /// </summary>
@@ -94,18 +93,21 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
             name: $"SK.{PlannerType}.CreatePlan.ExecutionTime",
             unit: "ms",
             description: "Planner execution time");
+
     private static Counter<int> s_executionTotalCounter = s_meter.CreateCounter<int>(
             name: $"SK.{PlannerType}.CreatePlan.ExecutionTotal",
             unit: "Executions",
             description: "Total planner execution counter");
+
     private static Counter<int> s_executionSuccessCounter = s_meter.CreateCounter<int>(
             name: $"SK.{PlannerType}.CreatePlan.ExecutionSuccess",
             unit: "Executions",
             description: "Success planner execution counter");
+
     private static Counter<int> s_executionFailureCounter = s_meter.CreateCounter<int>(
             name: $"SK.{PlannerType}.CreatePlan.ExecutionFailure",
             unit: "Executions",
             description: "Failure planner execution counter");
-    #endregion
+
     #endregion
 }
