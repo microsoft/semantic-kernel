@@ -73,7 +73,7 @@ See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-s
 
 The quickest way to get started with the basics is to get an API key
 (OpenAI or Azure OpenAI)
-and to run one of the C#, Python console applications/scripts:
+and to run one of the C#, Python, and Java console applications/scripts:
 
 ### For C#:
 
