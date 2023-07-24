@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Planning.Action;
 
 /// <summary>
-/// Interface for planner that uses set of semantic functions to select one function out of many and create a plan.
+/// Interface for planner that uses a set of semantic functions to select one function out of many and create a plan.
 /// </summary>
 public interface IActionPlanner
 {
