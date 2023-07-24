@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : ISKFunction
+public sealed class Plan : ISKFunction, IDisposable
 {
     /// <summary>
     /// State of the plan
@@ -329,6 +329,14 @@ public sealed class Plan : ISKFunction
         }
 
         return this;
+    }
+
+    public void Dispose()
+    {
+        if (this.s_activitySource is not null)
+        {
+            this.s_activitySource.Dispose();
+        }
     }
 
     #region ISKFunction implementation
