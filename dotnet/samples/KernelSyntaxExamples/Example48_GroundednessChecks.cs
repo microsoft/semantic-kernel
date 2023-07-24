@@ -141,7 +141,7 @@ which are not grounded in the original.
         var plannerConfig = new SequentialPlannerConfig { };
         var planner = new SequentialPlanner(kernel, plannerConfig);
         var plan = await planner.CreatePlanAsync(ask);
-        Console.WriteLine(plan.ToPlanString());
+        Console.WriteLine(plan.ToPlanWithGoalString());
 
         var results = await plan.InvokeAsync(s_groundingText);
         Console.WriteLine(results.Result);

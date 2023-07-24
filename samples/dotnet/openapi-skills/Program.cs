@@ -213,11 +213,11 @@ internal sealed class Program
         }
         catch (JsonException)
         {
-            logger.LogDebug("Unable to extract JSON from planner response, it is likely not from an OpenAPI skill.");
+            logger.LogWarning("Unable to extract JSON from planner response, it is likely not from an OpenAPI skill.");
         }
         catch (InvalidOperationException)
         {
-            logger.LogDebug("Unable to extract JSON from planner response, it may already be proper JSON.");
+            logger.LogWarning("Unable to extract JSON from planner response, it may already be proper JSON.");
         }
 
         json = string.Empty;
