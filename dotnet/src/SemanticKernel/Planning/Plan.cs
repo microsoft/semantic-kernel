@@ -319,7 +319,7 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    private async Task<SKContext> InvokeLogicAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
@@ -352,7 +352,7 @@ public sealed class Plan : ISKFunction
         return context;
     }
 
-    public async Task<SKContext> InvokeInstrumentedAsync(
+    public async Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
@@ -364,7 +364,7 @@ public sealed class Plan : ISKFunction
         var stopwatch = new Stopwatch();
 
         stopwatch.Start();
-        context = await this.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
+        context = await this.InvokeLogicAsync(context, settings, cancellationToken).ConfigureAwait(false);
         stopwatch.Stop();
 
         if (context.ErrorOccurred)

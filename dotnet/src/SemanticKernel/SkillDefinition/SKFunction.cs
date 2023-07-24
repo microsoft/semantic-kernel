@@ -20,6 +20,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -225,45 +226,26 @@ public sealed class SKFunction : ISKFunction, IDisposable
         };
     }
 
-    /// <inheritdoc/>
-    public async Task<SKContext> InvokeLogicAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
-    {
-        if (this.IsSemantic)
-        {
-            this.AddDefaultValues(context.Variables);
-            var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
-            context.Variables.Update(resultContext.Variables);
-        }
-        else
-        {
-            try
-            {
-                context = await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception e) when (!e.IsCriticalException())
-            {
-                const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-                this._log.LogError(e, Message, this._function.Method.Name, e.Message);
-                context.Fail(e.Message, e);
-            }
-        }
-
-        return context;
-    }
-
     public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
+
         this.ExecutionTotalCounter.Add(1);
+
         context.Log.LogInformation("{SkillName}.{StepName}: Function execution started", this.SkillName, this.Name);
+
         var stopwatch = new Stopwatch();
+
         stopwatch.Start();
+
         context = await this.InvokeLogicAsync(context, settings, cancellationToken).ConfigureAwait(false);
+
         stopwatch.Stop();
 
         if (context.ErrorOccurred)
         {
             this.ExecutionFailureCounter.Add(1);
+
             context.Log.LogInformation(
                 "{SkillName}.{StepName}: Function execution status: {Status}",
                 this.SkillName, this.Name, "Failed");
@@ -276,8 +258,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         else
         {
             this.ExecutionSuccessCounter.Add(1);
+
             context.Log.LogInformation("{SkillName}.{StepName}: Function execution status: {Status}", this.SkillName, this.Name, "Success");
+
             context.Log.LogInformation("{SkillName}.{StepName}: finished in {ExecutionTime}ms", this.Name, stopwatch.ElapsedMilliseconds);
+
             this.ExecutionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
         }
 
@@ -296,7 +281,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             skills: this._skillCollection,
             logger: logger);
 
-        return this.InvokeAsync(context, settings, cancellationToken: cancellationToken);
+        return this.InvokeLogicAsync(context, settings, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -410,6 +395,31 @@ public sealed class SKFunction : ISKFunction, IDisposable
             name: string.Format(CultureInfo.InvariantCulture, ExecutionCountFailureMetricFormat, this.SkillName, this.Name),
             unit: "Executions",
             description: "Failure function execution counter");
+    }
+
+    private async Task<SKContext> InvokeLogicAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+    {
+        if (this.IsSemantic)
+        {
+            this.AddDefaultValues(context.Variables);
+            var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
+            context.Variables.Update(resultContext.Variables);
+        }
+        else
+        {
+            try
+            {
+                context = await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e) when (!e.IsCriticalException())
+            {
+                const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
+                this._log.LogError(e, Message, this._function.Method.Name, e.Message);
+                context.Fail(e.Message, e);
+            }
+        }
+
+        return context;
     }
 
     /// <summary>
@@ -1025,10 +1035,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     #region Instrumentation
-    private const string ExecutionTimeMetricFormat = "SK.Function.{0}.{1}.ExecutionTime";
-    private const string ExecutionTotalMetricFormat = "SK.Function.{0}.{1}.ExecutionTotal";
-    private const string ExecutionCountFailureMetricFormat = "SK.Function.{0}.{1}.ExecutionFailure";
-    private const string ExecutionSuccessMetricFormat = "SK.Function.{0}.{1}.ExecutionSuccess";
+    private const string ExecutionTimeMetricFormat = "SK.{0}.{1}.ExecutionTime";
+    private const string ExecutionTotalMetricFormat = "SK.{0}.{1}.ExecutionTotal";
+    private const string ExecutionCountFailureMetricFormat = "SK.{0}.{1}.ExecutionFailure";
+    private const string ExecutionSuccessMetricFormat = "SK.{0}.{1}.ExecutionSuccess";
     private Histogram<double> ExecutionTimeHistogram;
     private Counter<int> ExecutionTotalCounter;
     private Counter<int> ExecutionSuccessCounter;
@@ -1042,7 +1052,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
     /// </summary>
-    private static Meter s_meter = new(nameof(SKFunction));
+    private static Meter s_meter = new(nameof(Plan));
     #endregion
     #endregion
 }
