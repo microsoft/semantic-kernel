@@ -36,12 +36,12 @@ public sealed class AzureContentModerator : IDisposable
     /// <summary>
     /// Options for the content moderator.
     /// </summary>
-    private readonly ContentModerationOptions? _contentModerationOptions;
+    private readonly ContentModeratorOptions? _contentModeratorOptions;
 
     /// <summary>
     /// Gets the options for the content moderator.
     /// </summary>
-    public ContentModerationOptions? ContentModerationOptions => this._contentModerationOptions;
+    public ContentModeratorOptions? ContentModeratorOptions => this._contentModeratorOptions;
 
     private static readonly List<string> s_categories = new()
     {
@@ -55,12 +55,12 @@ public sealed class AzureContentModerator : IDisposable
     /// </summary>
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="apiKey">The API key.</param>
-    /// <param name="contentModerationOptions">Content moderator options from appsettings.</param>
+    /// <param name="contentModeratorOptions">Content moderator options from appsettings.</param>
     /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    public AzureContentModerator(Uri endpoint, string apiKey, ContentModerationOptions contentModerationOptions, HttpClientHandler httpClientHandler)
+    public AzureContentModerator(Uri endpoint, string apiKey, ContentModeratorOptions contentModeratorOptions, HttpClientHandler httpClientHandler)
     {
         this._endpoint = endpoint;
-        this._contentModerationOptions = contentModerationOptions;
+        this._contentModeratorOptions = contentModeratorOptions;
         this._httpClient = new(httpClientHandler);
 
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpUserAgent);
@@ -74,11 +74,11 @@ public sealed class AzureContentModerator : IDisposable
     /// </summary>
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="apiKey">The API key.</param>
-    /// <param name="contentModerationOptions">Content moderator options from appsettings.</param>
-    public AzureContentModerator(Uri endpoint, string apiKey, ContentModerationOptions contentModerationOptions)
+    /// <param name="contentModeratorOptions">Content moderator options from appsettings.</param>
+    public AzureContentModerator(Uri endpoint, string apiKey, ContentModeratorOptions contentModeratorOptions)
     {
         this._endpoint = endpoint;
-        this._contentModerationOptions = contentModerationOptions;
+        this._contentModeratorOptions = contentModeratorOptions;
 
         this._httpClientHandler = new() { CheckCertificateRevocationList = true };
         this._httpClient = new(this._httpClientHandler);
@@ -141,7 +141,7 @@ public sealed class AzureContentModerator : IDisposable
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
-                "Content moderator: Failed analyzing the image");
+                $"Content moderator: Failed analyzing the image. {body}");
         }
         return result;
     }

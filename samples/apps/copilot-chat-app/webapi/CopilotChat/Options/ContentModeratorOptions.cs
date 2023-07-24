@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.ComponentModel.DataAnnotations;
 using SemanticKernel.Service.Options;
 
@@ -8,9 +9,9 @@ namespace SemanticKernel.Service.CopilotChat.Options;
 /// <summary>
 /// Configuration options for content moderation.
 /// </summary>
-public class ContentModerationOptions
+public class ContentModeratorOptions
 {
-    public const string PropertyName = "ContentModeration";
+    public const string PropertyName = "ContentModerator";
 
     /// <summary>
     /// Whether to enable content moderation.
@@ -21,13 +22,13 @@ public class ContentModerationOptions
     /// <summary>
     /// Azure Content Moderator endpoints
     /// </summary>
-    [Required, NotEmptyOrWhitespace]
+    [RequiredOnPropertyValue(nameof(Enabled), true)]
     public string Endpoint { get; set; } = string.Empty;
 
     /// <summary>
     /// Key to access the content moderation service.
     /// </summary>
-    [Required, NotEmptyOrWhitespace]
+    [RequiredOnPropertyValue(nameof(Enabled), true)]
     public string Key { get; set; } = string.Empty;
 
     /// <summary>

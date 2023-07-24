@@ -60,7 +60,7 @@ public class ChatSkill
     /// Content moderator.
     /// TODO: We probably need an interface in SK.
     /// </summary>
-    private readonly AzureContentModerator _contentModerator;
+    private readonly AzureContentModerator? _contentModerator = null;
 
     /// <summary>
     /// A semantic chat memory skill instance to query semantic memories.
@@ -97,9 +97,9 @@ public class ChatSkill
         IHubContext<MessageRelayHub> messageRelayHubContext,
         IOptions<PromptsOptions> promptOptions,
         IOptions<DocumentMemoryOptions> documentImportOptions,
-        AzureContentModerator contentModerator,
         CopilotChatPlanner planner,
-        ILogger logger)
+        ILogger logger,
+        AzureContentModerator? contentModerator = null)
     {
         this._kernel = kernel;
         this._chatMessageRepository = chatMessageRepository;

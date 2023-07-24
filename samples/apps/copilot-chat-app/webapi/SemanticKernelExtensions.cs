@@ -168,9 +168,12 @@ internal static class SemanticKernelExtensions
     internal static void AddContentModerator(this IServiceCollection services)
     {
         IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-        ContentModerationOptions options = configuration.GetSection(ContentModerationOptions.PropertyName).Get<ContentModerationOptions>();
+        ContentModeratorOptions options = configuration.GetSection(ContentModeratorOptions.PropertyName).Get<ContentModeratorOptions>();
 
-        services.AddSingleton<AzureContentModerator>(sp => new AzureContentModerator(new Uri(options.Endpoint), options.Key, options));
+        if (options.Enabled)
+        {
+            services.AddSingleton<AzureContentModerator>(sp => new AzureContentModerator(new Uri(options.Endpoint), options.Key, options));
+        }
     }
 
     /// <summary>

@@ -14,26 +14,26 @@ namespace SemanticKernel.Service.CopilotChat.Controllers;
 
 [ApiController]
 [Authorize]
-public class ContentModerationController : ControllerBase
+public class ContentModeratorController : ControllerBase
 {
-    private readonly ILogger<ContentModerationController> _logger;
-    private readonly ContentModerationOptions _options;
-    private readonly AzureContentModerator _contentModerator;
+    private readonly ILogger<ContentModeratorController> _logger;
+    private readonly ContentModeratorOptions _options;
+    private readonly AzureContentModerator? _contentModerator = null;
 
     /// <summary>
-    /// The constructor of ContentModerationController.
+    /// The constructor of ContentModeratorController.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="contentModerationOptions">The content moderation options.</param>
+    /// <param name="ContentModeratorOptions">The content moderation options.</param>
     /// <param name="contentModerator">The content moderation service.</param>
-    public ContentModerationController(
-        ILogger<ContentModerationController> logger,
-        IOptions<ContentModerationOptions> contentModerationOptions,
-        AzureContentModerator contentModerator)
+    public ContentModeratorController(
+        ILogger<ContentModeratorController> logger,
+        IOptions<ContentModeratorOptions> ContentModeratorOptions,
+        AzureContentModerator? contentModerator = null)
     {
         this._logger = logger;
         this._contentModerator = contentModerator;
-        this._options = contentModerationOptions.Value;
+        this._options = ContentModeratorOptions.Value;
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class ContentModerationController : ControllerBase
             return this.NotFound("Content Moderation is currently disabled.");
         }
 
-        return await this._contentModerator.ImageAnalysisAsync(base64Image, default);
+        return await this._contentModerator!.ImageAnalysisAsync(base64Image, default);
     }
 
     /// <summary>
@@ -64,7 +64,7 @@ public class ContentModerationController : ControllerBase
     [HttpGet]
     [Route("contentModerator/status")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public bool ContentModerationStatus()
+    public bool ContentModeratorStatus()
     {
         return this._options.Enabled;
     }
