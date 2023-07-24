@@ -3,26 +3,24 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.Planning.Sequential;
+namespace Microsoft.SemanticKernel.Planning.Stepwise;
 
 /// <summary>
-/// Instrumented planner that uses semantic function to create a sequential plan.
+/// Instrumented planner that creates a Stepwise plan using Mrkl systems.
 /// Captures planner-related logs and metrics.
 /// </summary>
-public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
+public class InstrumentedStepwisePlanner : IStepwisePlanner
 {
     /// <summary>
-    /// Initialize a new instance of the <see cref="InstrumentedSequentialPlanner"/> class.
+    /// Initialize a new instance of the <see cref="InstrumentedStepwisePlanner"/> class.
     /// </summary>
-    /// <param name="planner">Instance of <see cref="ISequentialPlanner"/> to decorate.</param>
+    /// <param name="planner">Instance of <see cref="IStepwisePlanner"/> to decorate.</param>
     /// <param name="logger">Optional logger.</param>
-    public InstrumentedSequentialPlanner(
-        ISequentialPlanner planner,
+    public InstrumentedStepwisePlanner(
+        IStepwisePlanner planner,
         ILogger? logger = null)
     {
         this._planner = planner;
@@ -30,7 +28,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     }
 
     /// <inheritdoc />
-    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
+    public Plan CreatePlan(string goal)
     {
         using var activity = s_activitySource.StartActivity($"{PlannerType}.CreatePlan");
 
@@ -45,16 +43,11 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         {
             stopwatch.Start();
 
-            var plan = await this._planner.CreatePlanAsync(goal, cancellationToken).ConfigureAwait(false);
+            var plan = this._planner.CreatePlan(goal);
 
             stopwatch.Stop();
 
             this._logger.LogInformation("{PlannerType}: Plan creation status: {Status}", PlannerType, "Success");
-
-            this._logger.LogInformation("{PlannerType}: Created plan: \n {Plan}", PlannerType, plan.ToSafePlanString());
-
-            // Sensitive data, logging as trace, disabled by default
-            this._logger.LogTrace("{PlannerType}: Created plan with details: \n {Plan}", PlannerType, plan.ToPlanString());
 
             return plan;
         }
@@ -75,20 +68,20 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 
     #region private ================================================================================
 
-    private const string PlannerType = nameof(SequentialPlanner);
+    private const string PlannerType = nameof(StepwisePlanner);
 
-    private readonly ISequentialPlanner _planner;
+    private readonly IStepwisePlanner _planner;
     private readonly ILogger _logger;
 
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for planner-related activities.
     /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(InstrumentedSequentialPlanner).FullName);
+    private static ActivitySource s_activitySource = new(typeof(InstrumentedStepwisePlanner).FullName);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(InstrumentedSequentialPlanner).FullName);
+    private static Meter s_meter = new(typeof(InstrumentedStepwisePlanner).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to record plan creation execution time.
