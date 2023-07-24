@@ -59,7 +59,7 @@ public sealed class PlanTests
         );
 
         // Act
-        var result = await plan.InvokeLogicAsync(context);
+        var result = await plan.InvokeAsync(context);
 
         // Assert
         Assert.NotNull(result);
@@ -68,7 +68,7 @@ public sealed class PlanTests
         plan = new Plan(goal);
         // Act
         context.Variables.Update("other input");
-        result = await plan.InvokeLogicAsync(context);
+        result = await plan.InvokeAsync(context);
         // Assert
         Assert.NotNull(result);
         Assert.Equal("other input", result.Result);
@@ -569,7 +569,7 @@ public sealed class PlanTests
         contextOverride.Variables.Update("Medusa");
 
         // Act
-        result = await plan.InvokeLogicAsync(contextOverride);
+        result = await plan.InvokeAsync(contextOverride);
 
         // Assert
         Assert.NotNull(result);
@@ -635,7 +635,7 @@ public sealed class PlanTests
         contextOverride.Variables.Update("Medusa"); // context input will not override parameters
 
         // Act
-        result = await plan.InvokeLogicAsync(contextOverride);
+        result = await plan.InvokeAsync(contextOverride);
 
         // Assert
         Assert.NotNull(result);
