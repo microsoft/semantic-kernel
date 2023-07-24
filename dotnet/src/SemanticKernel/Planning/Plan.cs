@@ -253,7 +253,7 @@ public sealed class Plan : ISKFunction
 
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Skills, context.Log);
-            var result = await step.In(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
             if (result.ErrorOccurred)

@@ -20,6 +20,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -1038,7 +1039,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for plan-related activities.
     /// </summary>
-    private static ActivitySource s_activitySource = new(nameof(SKFunction));
+    private static ActivitySource s_activitySource = new(typeof(SKFunction).FullName);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
