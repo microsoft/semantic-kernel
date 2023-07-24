@@ -20,7 +20,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -261,7 +260,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
         stopwatch.Start();
         context = await this.InvokeLogicAsync(context, settings, cancellationToken).ConfigureAwait(false);
         stopwatch.Stop();
-
 
         if (context.ErrorOccurred)
         {
