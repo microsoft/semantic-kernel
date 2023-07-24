@@ -39,7 +39,6 @@ public sealed class SequentialPlanner : ISequentialPlanner
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
         this._functionFlowFunction = kernel.CreateSemanticFunction(
-            functionName: this.Config.PlanName?.Replace(" ", ""),
             promptTemplate: promptTemplate,
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +

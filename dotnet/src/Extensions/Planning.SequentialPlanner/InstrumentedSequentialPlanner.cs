@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -28,91 +27,85 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     {
         this._planner = planner;
         this._logger = logger ?? NullLogger.Instance;
-
-        string telemetryPrefixName = this.PlanName ?? this.GetType().Name;
-        this.s_executionTimeHistogram = s_meter.CreateHistogram<double>(
-            name: string.Format(CultureInfo.InvariantCulture, executionTimeMetricFormat, telemetryPrefixName),
-            unit: "ms",
-            description: "Planner execution time");
-        this.s_executionTotalCounter = s_meter.CreateCounter<int>(
-            name: string.Format(CultureInfo.InvariantCulture, executionTotalMetricFormat, telemetryPrefixName),
-            unit: "Executions",
-            description: "Total planner execution counter");
-        this.s_executionSuccessCounter = s_meter.CreateCounter<int>(
-            name: string.Format(CultureInfo.InvariantCulture, executionSuccessMetricFormat, telemetryPrefixName),
-            unit: "Executions",
-            description: "Success planner execution counter");
-        this.s_executionFailureCounter = s_meter.CreateCounter<int>(
-            name: string.Format(CultureInfo.InvariantCulture, executionCountFailureMetricFormat, telemetryPrefixName),
-            unit: "Executions",
-            description: "Failure planner execution counter");
     }
 
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        using var activity = s_activitySource.StartActivity("SequentialPlanner.CreatePlan");
+        s_executionTotalCounter.Add(1);
+        using var activity = s_activitySource.StartActivity($"{PlannerType}.CreatePlan");
 
-        this.s_executionTotalCounter.Add(1);
-        this._logger.LogInformation("Planner (Plan: {PlanName}) creation started", this.PlanName);
+        this._logger.LogInformation("{PlannerType}: Plan creation started.", PlannerType);
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Plan \"{PlanName}\" Goal: {Goal}", this.PlanName, goal);
+        this._logger.LogTrace("{PlannerType}: Plan Goal: {Goal}", PlannerType, goal);
 
         var stopwatch = new Stopwatch();
-        stopwatch.Start();
 
         try
         {
+            stopwatch.Start();
+
             var plan = await this._planner.CreatePlanAsync(goal, cancellationToken).ConfigureAwait(false);
 
             stopwatch.Stop();
 
-            this.s_executionSuccessCounter.Add(1);
-            this.s_executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
-            this._logger.LogInformation("Plan {Name} creation finished in {ExecutionTime}ms", this.PlanName, stopwatch.ElapsedMilliseconds);
-            this._logger.LogInformation("Planner (Plan: {PlanName}) creation status: {Status}", this.PlanName, "Success");
-            this._logger.LogInformation("Created plan \"{PlanName}\": \n {Plan}", this.PlanName, plan.ToSafePlanString());
+            s_executionSuccessCounter.Add(1);
+            s_executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
+
+            this._logger.LogInformation("{PlannerType}: Plan creation status: {Status}", PlannerType, "Success");
+            this._logger.LogInformation("{PlannerType}: Plan creation finished in {ExecutionTime}ms", PlannerType, stopwatch.ElapsedMilliseconds);
+
+            this._logger.LogInformation("{PlannerType}: Created plan: \n {Plan}", PlannerType, plan.ToSafePlanString());
+
             // Sensitive data, logging as trace, disabled by default
-            this._logger.LogTrace("Created plan \"{PlanName}\" with details: \n {Plan}", this.PlanName, plan.ToPlanString());
+            this._logger.LogTrace("{PlannerType}: Created plan with details: \n {Plan}", PlannerType, plan.ToPlanString());
 
             return plan;
         }
         catch (Exception ex)
         {
-            this.s_executionFailureCounter.Add(1);
-            this._logger.LogInformation("Plan (Plan: {PlanName}) creation status: {Status}", this.PlanName, "Failed");
-            this._logger.LogError(ex, "Plan (Plan: {PlanName}) creation exception details: {Message}", this.PlanName, ex.Message);
+            s_executionFailureCounter.Add(1);
+
+            this._logger.LogInformation("{PlannerType}: Plan creation status: {Status}", PlannerType, "Failed");
+            this._logger.LogError(ex, "{PlannerType}: Plan creation exception details: {Message}", PlannerType, ex.Message);
 
             throw;
         }
     }
 
-    public string? PlanName => this._planner.PlanName;
-
     #region private ================================================================================
+    private const string PlannerType = nameof(SequentialPlanner);
     private readonly ISequentialPlanner _planner;
     private readonly ILogger _logger;
 
     #region Instrumentation
-    private const string executionTimeMetricFormat = "SK.SequentialPlanner.{0}.ExecutionTime";
-    private const string executionTotalMetricFormat = "SK.SequentialPlanner.{0}.ExecutionTotal";
-    private const string executionCountFailureMetricFormat = "SK.SequentialPlanner.{0}.ExecutionFailure";
-    private const string executionSuccessMetricFormat = "SK.SequentialPlanner.{0}.ExecutionSuccess";
-    private Histogram<double> s_executionTimeHistogram;
-    private Counter<int> s_executionTotalCounter;
-    private Counter<int> s_executionSuccessCounter;
-    private Counter<int> s_executionFailureCounter;
-
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for planner-related activities.
     /// </summary>
-    private static ActivitySource s_activitySource = new(nameof(InstrumentedSequentialPlanner));
+    private static ActivitySource s_activitySource = new(typeof(InstrumentedSequentialPlanner).FullName);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
     /// </summary>
     private static Meter s_meter = new(nameof(InstrumentedSequentialPlanner));
+
+    private static Histogram<double> s_executionTimeHistogram = s_meter.CreateHistogram<double>(
+            name: $"SK.{PlannerType}.CreatePlan.ExecutionTime",
+            unit: "ms",
+            description: "Planner execution time");
+    private static Counter<int> s_executionTotalCounter = s_meter.CreateCounter<int>(
+            name: $"SK.{PlannerType}.CreatePlan.ExecutionTotal",
+            unit: "Executions",
+            description: "Total planner execution counter");
+    private static Counter<int> s_executionSuccessCounter = s_meter.CreateCounter<int>(
+            name: $"SK.{PlannerType}.CreatePlan.ExecutionSuccess",
+            unit: "Executions",
+            description: "Success planner execution counter");
+    private static Counter<int> s_executionFailureCounter = s_meter.CreateCounter<int>(
+            name: $"SK.{PlannerType}.CreatePlan.ExecutionFailure",
+            unit: "Executions",
+            description: "Failure planner execution counter");
     #endregion
     #endregion
 }

@@ -11,11 +11,6 @@ namespace Microsoft.SemanticKernel.Planning.Sequential;
 public interface ISequentialPlanner
 {
     /// <summary>
-    /// The plan name, Mainly used for telemetry purposes
-    /// </summary>
-    string? PlanName { get; }
-
-    /// <summary>
     /// Create a plan for a goal.
     /// </summary>
     /// <param name="goal">The goal to create a plan for.</param>

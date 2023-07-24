@@ -16,11 +16,6 @@ namespace Microsoft.SemanticKernel.Planning.Sequential;
 public sealed class SequentialPlannerConfig
 {
     /// <summary>
-    /// The plan name, Mainly used for telemetry purposes
-    /// </summary>
-    public string? PlanName { get; set; }
-
-    /// <summary>
     /// The minimum relevancy score for a function to be considered
     /// </summary>
     /// <remarks>

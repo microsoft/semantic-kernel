@@ -228,18 +228,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
-        using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
-        this.s_executionTotalCounter.Add(1);
-        context.Log.LogInformation("{SkillName}.{StepName}: Function execution started", this.SkillName, this.Name);
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
-
         if (this.IsSemantic)
         {
             this.AddDefaultValues(context.Variables);
-
             var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
-            stopwatch.Stop();
             context.Variables.Update(resultContext.Variables);
         }
         else
@@ -247,7 +239,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
             try
             {
                 context = await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
-                stopwatch.Stop();
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
@@ -257,9 +248,24 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
         }
 
+        return context;
+    }
+
+    public async Task<SKContext> InvokeAsyncInstrumented(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+    {
+        using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
+        this.ExecutionTotalCounter.Add(1);
+        context.Log.LogInformation("{SkillName}.{StepName}: Function execution started", this.SkillName, this.Name);
+        var stopwatch = new Stopwatch();
+
+        stopwatch.Start();
+        await this.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
+        stopwatch.Stop();
+
+
         if (context.ErrorOccurred)
         {
-            this.s_executionFailureCounter.Add(1);
+            this.ExecutionFailureCounter.Add(1);
             context.Log.LogInformation(
                 "{SkillName}.{StepName}: Function execution status: {Status}",
                 this.SkillName, this.Name, "Failed");
@@ -271,12 +277,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
         else
         {
-            this.s_executionSuccessCounter.Add(1);
-            context.Log.LogInformation(
-                "{SkillName}.{StepName}: Function execution status: {Status}",
-                this.SkillName, this.Name, "Success");
+            this.ExecutionSuccessCounter.Add(1);
+            context.Log.LogInformation("{SkillName}.{StepName}: Function execution status: {Status}", this.SkillName, this.Name, "Success");
+            context.Log.LogInformation("{SkillName}.{StepName}: finished in {ExecutionTime}ms", this.Name, stopwatch.ElapsedMilliseconds);
+            this.ExecutionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
         }
-        this.s_executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
 
         return context;
     }
@@ -391,20 +396,20 @@ public sealed class SKFunction : ISKFunction, IDisposable
         this.Name = functionName;
         this.SkillName = skillName;
         this.Description = description;
-        this.s_executionTimeHistogram = s_meter.CreateHistogram<double>(
-            name: string.Format(CultureInfo.InvariantCulture, executionTimeMetricFormat, this.SkillName, this.Name),
+        this.ExecutionTimeHistogram = s_meter.CreateHistogram<double>(
+            name: string.Format(CultureInfo.InvariantCulture, ExecutionTimeMetricFormat, this.SkillName, this.Name),
             unit: "ms",
             description: "Function execution time");
-        this.s_executionTotalCounter = s_meter.CreateCounter<int>(
-            name: string.Format(CultureInfo.InvariantCulture, executionTotalMetricFormat, this.SkillName, this.Name),
+        this.ExecutionTotalCounter = s_meter.CreateCounter<int>(
+            name: string.Format(CultureInfo.InvariantCulture, ExecutionTotalMetricFormat, this.SkillName, this.Name),
             unit: "Executions",
             description: "Total function execution counter");
-        this.s_executionSuccessCounter = s_meter.CreateCounter<int>(
-            name: string.Format(CultureInfo.InvariantCulture, executionSuccessMetricFormat, this.SkillName, this.Name),
+        this.ExecutionSuccessCounter = s_meter.CreateCounter<int>(
+            name: string.Format(CultureInfo.InvariantCulture, ExecutionSuccessMetricFormat, this.SkillName, this.Name),
             unit: "Executions",
             description: "Success function execution counter");
-        this.s_executionFailureCounter = s_meter.CreateCounter<int>(
-            name: string.Format(CultureInfo.InvariantCulture, executionCountFailureMetricFormat, this.SkillName, this.Name),
+        this.ExecutionFailureCounter = s_meter.CreateCounter<int>(
+            name: string.Format(CultureInfo.InvariantCulture, ExecutionCountFailureMetricFormat, this.SkillName, this.Name),
             unit: "Executions",
             description: "Failure function execution counter");
     }
@@ -1022,14 +1027,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     #region Instrumentation
-    private const string executionTimeMetricFormat = "SK.Function.{0}.{1}.ExecutionTime";
-    private const string executionTotalMetricFormat = "SK.Function.{0}.{1}.ExecutionTotal";
-    private const string executionCountFailureMetricFormat = "SK.Function.{0}.{1}.ExecutionFailure";
-    private const string executionSuccessMetricFormat = "SK.Function.{0}.{1}.ExecutionSuccess";
-    private Histogram<double> s_executionTimeHistogram;
-    private Counter<int> s_executionTotalCounter;
-    private Counter<int> s_executionSuccessCounter;
-    private Counter<int> s_executionFailureCounter;
+    private const string ExecutionTimeMetricFormat = "SK.Function.{0}.{1}.ExecutionTime";
+    private const string ExecutionTotalMetricFormat = "SK.Function.{0}.{1}.ExecutionTotal";
+    private const string ExecutionCountFailureMetricFormat = "SK.Function.{0}.{1}.ExecutionFailure";
+    private const string ExecutionSuccessMetricFormat = "SK.Function.{0}.{1}.ExecutionSuccess";
+    private Histogram<double> ExecutionTimeHistogram;
+    private Counter<int> ExecutionTotalCounter;
+    private Counter<int> ExecutionSuccessCounter;
+    private Counter<int> ExecutionFailureCounter;
 
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for plan-related activities.
