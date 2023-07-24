@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : ISKFunction, IDisposable
+public sealed class Plan : ISKFunction
 {
     /// <summary>
     /// State of the plan
@@ -175,7 +175,6 @@ public sealed class Plan : ISKFunction, IDisposable
     private void ConfigureTelemetry()
     {
         string telemetryPrefixName = this.Name ?? this.SkillName;
-        this.s_activitySource = new(telemetryPrefixName);
         this.s_executionTimeHistogram = s_meter.CreateHistogram<double>(
             name: string.Format(CultureInfo.InvariantCulture, executionTimeMetricFormat, telemetryPrefixName),
             unit: "ms",
@@ -331,14 +330,6 @@ public sealed class Plan : ISKFunction, IDisposable
         return this;
     }
 
-    public void Dispose()
-    {
-        if (this.s_activitySource is not null)
-        {
-            this.s_activitySource.Dispose();
-        }
-    }
-
     #region ISKFunction implementation
 
     /// <inheritdoc/>
@@ -369,7 +360,7 @@ public sealed class Plan : ISKFunction, IDisposable
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
-        using var activity = this.s_activitySource.StartActivity("Plan.Execution");
+        using var activity = s_activitySource.StartActivity("Plan.Execution");
 
         this.s_executionTotalCounter.Add(1);
         context.Log.LogInformation("Plan {Name}: started", this.Name);
@@ -702,7 +693,7 @@ public sealed class Plan : ISKFunction, IDisposable
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for plan-related activities.
     /// </summary>
-    private ActivitySource s_activitySource;
+    private static ActivitySource s_activitySource = new(nameof(Plan));
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for plan-related metrics.

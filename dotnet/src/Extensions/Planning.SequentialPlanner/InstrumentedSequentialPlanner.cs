@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Planning.Sequential;
 /// Instrumented planner that uses semantic function to create a sequential plan.
 /// Captures planner-related logs and metrics.
 /// </summary>
-public sealed class InstrumentedSequentialPlanner : ISequentialPlanner, IDisposable
+public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSequentialPlanner"/> class.
@@ -30,7 +30,6 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner, IDisposa
         this._logger = logger ?? NullLogger.Instance;
 
         string telemetryPrefixName = this.PlanName ?? this.GetType().Name;
-        this.s_activitySource = new(telemetryPrefixName);
         this.s_executionTimeHistogram = s_meter.CreateHistogram<double>(
             name: string.Format(CultureInfo.InvariantCulture, executionTimeMetricFormat, telemetryPrefixName),
             unit: "ms",
@@ -52,7 +51,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner, IDisposa
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        using var activity = this.s_activitySource.StartActivity("SequentialPlanner.CreatePlan");
+        using var activity = s_activitySource.StartActivity("SequentialPlanner.CreatePlan");
 
         this.s_executionTotalCounter.Add(1);
         this._logger.LogInformation("Planner (Plan: {PlanName}) creation started", this.PlanName);
@@ -89,14 +88,6 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner, IDisposa
         }
     }
 
-    public void Dispose()
-    {
-        if (this.s_activitySource is not null)
-        {
-            this.s_activitySource.Dispose();
-        }
-    }
-
     public string? PlanName => this._planner.PlanName;
 
     #region private ================================================================================
@@ -116,7 +107,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner, IDisposa
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for planner-related activities.
     /// </summary>
-    private ActivitySource s_activitySource;
+    private static ActivitySource s_activitySource = new(nameof(InstrumentedSequentialPlanner));
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
