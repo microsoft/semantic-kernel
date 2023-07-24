@@ -86,15 +86,18 @@ public sealed class Plan : ISKFunction
     public CompleteRequestSettings RequestSettings { get; private set; } = new();
 
     #endregion ISKFunction implementation
-
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     /// <summary>
     /// Initializes a new instance of the <see cref="Plan"/> class with a goal description.
     /// </summary>
     /// <param name="goal">The goal of the plan used as description.</param>
-    public Plan(string goal)
+    /// <param name="planName">The plan name, Mainly used for telemetry purposes</param>
+    public Plan(string goal, string? planName = null)
     {
         this.Description = goal;
         this.SkillName = this.GetType().FullName;
+        this.Name = planName ?? string.Empty;
+        this.ConfigureTelemetry();
     }
 
     /// <summary>
@@ -105,6 +108,7 @@ public sealed class Plan : ISKFunction
     public Plan(string goal, params ISKFunction[] steps) : this(goal)
     {
         this.AddSteps(steps);
+        this.ConfigureTelemetry();
     }
 
     /// <summary>
@@ -115,6 +119,7 @@ public sealed class Plan : ISKFunction
     public Plan(string goal, params Plan[] steps) : this(goal)
     {
         this.AddSteps(steps);
+        this.ConfigureTelemetry();
     }
 
     /// <summary>
@@ -124,6 +129,7 @@ public sealed class Plan : ISKFunction
     public Plan(ISKFunction function)
     {
         this.SetFunction(function);
+        this.ConfigureTelemetry();
     }
 
     /// <summary>
@@ -157,6 +163,35 @@ public sealed class Plan : ISKFunction
         this.Outputs = outputs;
         this._steps.Clear();
         this.AddSteps(steps.ToArray());
+        this.ConfigureTelemetry();
+    }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+    /// <summary>
+    /// Configure telemetry resources:
+    ///     1. Meters.
+    ///     2. Activity Source.
+    /// </summary>
+    private void ConfigureTelemetry()
+    {
+        string telemetryPrefixName = this.Name ?? this.SkillName;
+        this.s_activitySource = new(telemetryPrefixName);
+        this.s_executionTimeHistogram = s_meter.CreateHistogram<double>(
+            name: string.Format(CultureInfo.InvariantCulture, executionTimeMetricFormat, telemetryPrefixName),
+            unit: "ms",
+            description: "Plan execution time");
+        this.s_executionTotalCounter = s_meter.CreateCounter<int>(
+            name: string.Format(CultureInfo.InvariantCulture, executionTotalMetricFormat, telemetryPrefixName),
+            unit: "Executions",
+            description: "Total plan execution counter");
+        this.s_executionSuccessCounter = s_meter.CreateCounter<int>(
+            name: string.Format(CultureInfo.InvariantCulture, executionSuccessMetricFormat, telemetryPrefixName),
+            unit: "Executions",
+            description: "Success plan execution counter");
+        this.s_executionFailureCounter = s_meter.CreateCounter<int>(
+            name: string.Format(CultureInfo.InvariantCulture, executionCountFailureMetricFormat, telemetryPrefixName),
+            unit: "Executions",
+            description: "Failure plan execution counter");
     }
 
     /// <summary>
@@ -326,12 +361,22 @@ public sealed class Plan : ISKFunction
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
+        using var activity = this.s_activitySource.StartActivity("Plan.Execution");
+
+        this.s_executionTotalCounter.Add(1);
+        context.Log.LogInformation("Plan {Name}: started", this.Name);
+
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
         if (this.Function is not null)
         {
-            var result = await this.InstrumentedInvokeAsync(this.Function, context, settings, cancellationToken).ConfigureAwait(false);
-
+            var result = await this.Function.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
+            stopwatch.Stop();
             if (result.ErrorOccurred)
             {
+                context.Log.LogInformation("Plan {Name} status: {Status}", this.Name, "Failed");
+                context.Log.LogError(context.LastException, "Plan {Name} exception details: {Message}", this.Name, context.LastErrorDescription);
                 return result;
             }
 
@@ -347,9 +392,22 @@ public sealed class Plan : ISKFunction
                 AddVariablesToContext(this.State, functionContext);
 
                 await this.InvokeNextStepAsync(functionContext, cancellationToken).ConfigureAwait(false);
+                stopwatch.Stop();
 
                 this.UpdateContextWithOutputs(context);
             }
+        }
+
+        if (context.ErrorOccurred)
+        {
+            context.Log.LogInformation("Plan {Name} status: {Status}", this.Name, "Failed");
+            context.Log.LogError(context.LastException, "Plan {Name} exception details: {Message}", this.Name, context.LastErrorDescription);
+        }
+        else
+        {
+            context.Log.LogInformation("Plan {Name} status: {Status}", this.Name, "Success");
+            context.Log.LogInformation("Plan {Name} finished in {ExecutionTime}ms", this.Name, stopwatch.ElapsedMilliseconds);
+            this.s_executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
         }
 
         return context;
@@ -584,58 +642,6 @@ public sealed class Plan : ISKFunction
         return stepVariables;
     }
 
-    private async Task<SKContext> InstrumentedInvokeAsync(
-        ISKFunction function,
-        SKContext context,
-        CompleteRequestSettings? settings = null,
-        CancellationToken cancellationToken = default)
-    {
-        using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
-
-        context.Log.LogInformation("{SkillName}.{StepName}: Step execution started.", this.SkillName, this.Name);
-
-        var stopwatch = new Stopwatch();
-
-        stopwatch.Start();
-
-        var result = await function.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
-
-        stopwatch.Stop();
-
-        if (!result.ErrorOccurred)
-        {
-            context.Log.LogInformation(
-                "{SkillName}.{StepName}: Step execution status: {Status}.",
-                this.SkillName, this.Name, "Success");
-        }
-        else
-        {
-            context.Log.LogInformation(
-                "{SkillName}.{StepName}: Step execution status: {Status}.",
-                this.SkillName, this.Name, "Failed");
-
-            context.Log.LogError(
-                result.LastException,
-                "Something went wrong in plan step {SkillName}.{StepName}:'{ErrorDescription}'",
-                this.SkillName, this.Name, context.LastErrorDescription);
-        }
-
-        context.Log.LogInformation(
-            "{SkillName}.{StepName}: Step execution finished in {ExecutionTime}ms.",
-            this.SkillName, this.Name, stopwatch.ElapsedMilliseconds);
-
-        var stepExecutionTimeMetricName = string.Format(CultureInfo.InvariantCulture, StepExecutionTimeMetricFormat, this.SkillName, this.Name);
-
-        var stepExecutionTimeHistogram = s_meter.CreateHistogram<double>(
-            name: stepExecutionTimeMetricName,
-            unit: "ms",
-            description: "Plan step execution time");
-
-        stepExecutionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
-
-        return result;
-    }
-
     private void SetFunction(ISKFunction function)
     {
         this.Function = function;
@@ -676,18 +682,23 @@ public sealed class Plan : ISKFunction
     }
 
     #region Instrumentation
-
-    private const string StepExecutionTimeMetricFormat = "SK.{0}.{1}.ExecutionTime";
+    private const string executionTimeMetricFormat = "SK.Plan.{0}.ExecutionTime";
+    private const string executionTotalMetricFormat = "SK.Plan.{0}.ExecutionTotal";
+    private const string executionCountFailureMetricFormat = "SK.Plan.{0}.ExecutionFailure";
+    private const string executionSuccessMetricFormat = "SK.Plan.{0}.ExecutionSuccess";
+    private Histogram<double> s_executionTimeHistogram;
+    private Counter<int> s_executionTotalCounter;
+    private Counter<int> s_executionSuccessCounter;
+    private Counter<int> s_executionFailureCounter;
 
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for plan-related activities.
     /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(Plan).FullName);
+    private ActivitySource s_activitySource;
 
     /// <summary>
-    /// Instance of <see cref="Meter"/> for planner-related metrics.
+    /// Instance of <see cref="Meter"/> for plan-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(Plan).FullName);
-
+    private static Meter s_meter = new(nameof(Plan));
     #endregion
 }

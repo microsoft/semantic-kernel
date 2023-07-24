@@ -39,6 +39,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
         this._functionFlowFunction = kernel.CreateSemanticFunction(
+            functionName: this.Config.PlanName?.Replace(" ", ""),
             promptTemplate: promptTemplate,
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +
@@ -75,7 +76,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
         try
         {
             var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
-            var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+            var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions, this.PlanName);
 
             if (plan.Steps.Count == 0)
             {
@@ -100,6 +101,8 @@ public sealed class SequentialPlanner : ISequentialPlanner
     }
 
     private SequentialPlannerConfig Config { get; }
+
+    public string? PlanName => this.Config?.PlanName;
 
     private readonly SKContext _context;
 
