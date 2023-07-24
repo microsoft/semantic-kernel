@@ -30,7 +30,7 @@ def get_search_index_async_client(
     azure_credential: Optional[AzureKeyCredential] = None,
     token_credential: Optional[TokenCredential] = None,
 ):
-    """Return a client for Azure Search.
+    """Return a client for Azure Cognitive Search.
 
     Arguments:
         search_endpoint {str}                 -- Optional endpoint (default: {None}).
@@ -39,8 +39,8 @@ def get_search_index_async_client(
         token_credential {TokenCredential}    -- Optional Token credential (default: {None}).
     """
 
-    ENV_VAR_ENDPOINT = "AZURE_SEARCH_ENDPOINT"
-    ENV_VAR_API_KEY = "AZURE_SEARCH_ADMIN_KEY"
+    ENV_VAR_ENDPOINT = "AZURE_COGNITIVE_SEARCH_ENDPOINT"
+    ENV_VAR_API_KEY = "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
 
     try:
         # Note: there are two client classes available:
@@ -49,7 +49,8 @@ def get_search_index_async_client(
         from azure.search.documents.indexes.aio import SearchIndexClient
     except ImportError:
         raise ValueError(
-            "Error: Unable to import Azure Search client python package. Please install Azure Search client"
+            "Error: Unable to import Azure Cognitive Search client python package."
+            "Please install Azure Cognitive Search client"
         )
 
     azure_credential: AzureKeyCredential = None
@@ -64,11 +65,11 @@ def get_search_index_async_client(
     elif os.getenv(ENV_VAR_ENDPOINT):
         service_endpoint = os.getenv(ENV_VAR_ENDPOINT)
     else:
-        raise ValueError("Error: missing Azure Search client endpoint.")
+        raise ValueError("Error: missing Azure Cognitive Search client endpoint.")
 
     if service_endpoint is None:
         print(service_endpoint)
-        raise ValueError("Error: Azure Search client not set.")
+        raise ValueError("Error: Azure Cognitive Search client not set.")
 
     # Credentials
     if admin_key:
@@ -80,10 +81,10 @@ def get_search_index_async_client(
     elif os.getenv(ENV_VAR_API_KEY):
         azure_credential = AzureKeyCredential(os.getenv(ENV_VAR_API_KEY))
     else:
-        raise ValueError("Error: missing Azure Search client credentials.")
+        raise ValueError("Error: missing Azure Cognitive Search client credentials.")
 
     if azure_credential is None and token_credential is None:
-        raise ValueError("Error: Azure Search credentials not set.")
+        raise ValueError("Error: Azure Cognitive Search credentials not set.")
 
     sk_headers = {"User-Agent": "Semantic-Kernel"}
 
@@ -97,7 +98,7 @@ def get_search_index_async_client(
             endpoint=service_endpoint, credential=token_credential, headers=sk_headers
         )
 
-    raise ValueError("Error: unable to create Azure Search client.")
+    raise ValueError("Error: unable to create Azure Cognitive Search client.")
 
 
 def get_index_schema(vector_size: int) -> list:
@@ -107,7 +108,7 @@ def get_index_schema(vector_size: int) -> list:
         vector_size {int} -- The size of the vectors being stored in collection/index.
 
     Returns:
-        list -- The Azure Search schema as list type.
+        list -- The Azure Cognitive Search schema as list type.
     """
 
     search_fields = [
@@ -195,10 +196,10 @@ def dict_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
     """Converts a search result to a MemoryRecord.
 
     Arguments:
-        data {dict} -- Azure Search result data.
+        data {dict} -- Azure Cognitive Search result data.
 
     Returns:
-        MemoryRecord -- The MemoryRecord from Azure Search Data Result.
+        MemoryRecord -- The MemoryRecord from Azure Cognitive Search Data Result.
     """
 
     sk_result = MemoryRecord(
@@ -219,7 +220,7 @@ def memory_record_to_search_record(record: MemoryRecord) -> dict:
     """Convert a MemoryRecord to a dictionary
 
     Arguments:
-        record {MemoryRecord} -- The MemoryRecord from Azure Search Data Result.
+        record {MemoryRecord} -- The MemoryRecord from Azure Cognitive Search Data Result.
 
     Returns:
         data {dict} -- Dictionary data.
@@ -237,10 +238,10 @@ def memory_record_to_search_record(record: MemoryRecord) -> dict:
 
 
 def encode_id(id: str) -> str:
-    """Encode a record id to ensure compatibility with Azure search.
+    """Encode a record id to ensure compatibility with Azure Cognitive Search.
 
-    Azure Search keys can contain only letters, digits, underscore, dash, equal sign,
-    recommending to encode values with a URL-safe algorithm.
+    Azure Cognitive Search keys can contain only letters, digits, underscore, dash,
+    equal sign, recommending to encode values with a URL-safe algorithm.
     """
 
     id_bytes = id.encode("ascii")
@@ -251,8 +252,8 @@ def encode_id(id: str) -> str:
 def decode_id(base64_id: str) -> str:
     """Decode a record id to the original value.
 
-    Azure Search keys can contain only letters, digits, underscore, dash, equal sign,
-    recommending to encode values with a URL-safe algorithm.
+    Azure Cognitive Search keys can contain only letters, digits, underscore, dash,
+    equal sign, recommending to encode values with a URL-safe algorithm.
     """
 
     base64_bytes = base64_id.encode("ascii")

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import uuid
 from logging import Logger
 from typing import List, Optional, Tuple
@@ -15,7 +14,7 @@ from azure.search.documents.indexes.models import (
 )
 from numpy import ndarray
 
-from semantic_kernel.connectors.memory.azure_search.utils import (
+from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     SEARCH_FIELD_EMBEDDING,
     SEARCH_FIELD_ID,
     dict_to_memory_record,
@@ -30,7 +29,7 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
 
 
-class AzureSearchMemoryStore(MemoryStoreBase):
+class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     _search_index_client: SearchIndexClient = None
     _vector_size: int = None
     _logger: Logger = None
@@ -44,23 +43,29 @@ class AzureSearchMemoryStore(MemoryStoreBase):
         token_credentials: Optional[TokenCredential] = None,
         logger: Optional[Logger] = None,
     ) -> None:
-        """Initializes a new instance of the AzureSearchMemoryStore class.
+        """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
 
         Arguments:
             vector_size {int}                                -- Embedding vector size.
-            search_endpoint {Optional[str]}                  -- The endpoint of the Azure Search service
+            search_endpoint {Optional[str]}                  -- The endpoint of the Azure Cognitive Search service
                                                                 (default: {None}).
-            admin_key {Optional[str]}                        -- Azure Search API key (default: {None}).
-            azure_credentials {Optional[AzureKeyCredential]} -- Azure Search credentials (default: {None}).
-            token_credentials {Optional[TokenCredential]}    -- Azure Search token credentials
+            admin_key {Optional[str]}                        -- Azure Cognitive Search API key (default: {None}).
+            azure_credentials {Optional[AzureKeyCredential]} -- Azure Cognitive Search credentials (default: {None}).
+            token_credentials {Optional[TokenCredential]}    -- Azure Cognitive Search token credentials
                                                                 (default: {None}).
             logger {Optional[Logger]}                        -- The logger to use (default: {None}).
+
+        Instantiate using Async Context Manager:
+            async with AzureCognitiveSearchMemoryStore(<...>) as memory:
+                await memory.<...>
+
         """
         try:
             pass
         except ImportError:
             raise ValueError(
-                "Error: Unable to import Azure Search client python package. Please install Azure Search client"
+                "Error: Unable to import Azure Cognitive Search client python package."
+                "Please install Azure Cognitive Search client"
             )
 
         self._logger = logger or NullLogger()
@@ -69,17 +74,8 @@ class AzureSearchMemoryStore(MemoryStoreBase):
             search_endpoint, admin_key, azure_credentials, token_credentials
         )
 
-    def __del__(self):
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                loop.create_task(self.close())
-            else:
-                loop.run_until_complete(self.close())
-        except Exception:
-            pass
-
-    async def close(self):
+    async def close_async(self):
+        """Async close connection, invoked by MemoryStoreBase.__aexit__()"""
         if self._search_index_client is not None:
             await self._search_index_client.close()
 
@@ -153,29 +149,17 @@ class AzureSearchMemoryStore(MemoryStoreBase):
             List[str] -- The list of collections.
         """
 
-        results_list = list(str)
-        items = self._search_index_client.list_index_names()
+        results_list = []
+        try:
+            items = await self._search_index_client.list_index_names()
+        except TypeError:
+            # Note: used on Windows
+            items = self._search_index_client.list_index_names()
 
-        for result in items:
+        async for result in items:
             results_list.append(result)
 
         return results_list
-
-    async def get_collection_async(self, collection_name: str) -> SearchIndex:
-        """Gets the a collections based upon collection name.
-
-        Arguments:
-            collection_name {str} -- Name of the collection.
-
-        Returns:
-            SearchIndex -- Collection Information.
-        """
-
-        collection_result = await self._search_index_client.get_index(
-            name=collection_name.lower()
-        )
-
-        return collection_result
 
     async def delete_collection_async(self, collection_name: str) -> None:
         """Deletes a collection.
@@ -221,27 +205,10 @@ class AzureSearchMemoryStore(MemoryStoreBase):
             str -- The unique record id of the record.
         """
 
-        # Look up Search client class to see if exists or create
-        azure_search_client = self._search_index_client.get_search_client(
-            collection_name.lower()
-        )
-
-        # Note:
-        # * Document id     = user provided value
-        # * MemoryRecord.id = base64(Document id)
-        if not record._id:
-            record._id = str(uuid.uuid4())
-
-        search_record = memory_record_to_search_record(record)
-
-        result = await azure_search_client.upload_documents(documents=[search_record])
-
-        # Throw exception if problem
-        # Clean this up not needed if throwing
-        if result[0].succeeded:
-            return record._id
-        else:
-            raise ValueError("Error: Unable to upsert record.")
+        result = await self.upsert_batch_async(collection_name, [record])
+        if result:
+            return result[0]
+        return None
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -258,7 +225,7 @@ class AzureSearchMemoryStore(MemoryStoreBase):
 
         # Initialize search client here
         # Look up Search client class to see if exists or create
-        azure_search_client = self._search_index_client.get_search_client(
+        search_client = self._search_index_client.get_search_client(
             collection_name.lower()
         )
 
@@ -276,7 +243,8 @@ class AzureSearchMemoryStore(MemoryStoreBase):
             search_records.append(search_record)
             search_ids.append(record._id)
 
-        result = azure_search_client.upload_documents(documents=search_records)
+        result = await search_client.upload_documents(documents=search_records)
+        await search_client.close()
 
         if result[0].succeeded:
             return search_ids
@@ -307,7 +275,10 @@ class AzureSearchMemoryStore(MemoryStoreBase):
                 key=encode_id(key), selected_fields=get_field_selection(with_embedding)
             )
         except ResourceNotFoundError:
+            await search_client.close()
             raise KeyError("Memory record not found")
+
+        await search_client.close()
 
         # Create Memory record from document
         return dict_to_memory_record(search_result, with_embedding)
@@ -372,6 +343,7 @@ class AzureSearchMemoryStore(MemoryStoreBase):
         docs_to_delete = {SEARCH_FIELD_ID: encode_id(key)}
 
         await search_client.delete_documents(documents=[docs_to_delete])
+        await search_client.close()
 
     async def get_nearest_match_async(
         self,
@@ -440,6 +412,7 @@ class AzureSearchMemoryStore(MemoryStoreBase):
         )
 
         if not search_results or search_results is None:
+            await search_client.close()
             return []
 
         # Convert the results to MemoryRecords
@@ -451,4 +424,5 @@ class AzureSearchMemoryStore(MemoryStoreBase):
             memory_record = dict_to_memory_record(search_record, with_embeddings)
             nearest_results.append((memory_record, search_record["@search.score"]))
 
+        await search_client.close()
         return nearest_results
