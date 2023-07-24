@@ -261,7 +261,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
         Arguemnts:
             collection_name {str} -- Name for a collection of embeddings
-            records {List[MemoryRecords]} -- List of memory records to upsert
+            records {List[MemoryRecord]} -- List of memory records to upsert
 
         Returns
             List[str] -- Redis keys associated with the upserted memory records, or an empty list if an error occured
@@ -385,7 +385,8 @@ class RedisMemoryStore(MemoryStoreBase):
             with_embeddings {bool} -- Include embeddings in the resultant memory records, default to False
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- Records and their relevance scores, or an empty list if none are found
+            List[Tuple[MemoryRecord, float]] -- Records and their relevance scores by descending
+                order, or an empty list if no relevant matches are found
         """
         if not await self.does_collection_exist_async(collection_name):
             self._logger.error(f'Collection "{collection_name}" does not exist')
@@ -404,7 +405,7 @@ class RedisMemoryStore(MemoryStoreBase):
                 "timestamp",
                 "vector_score",
             )
-            .sort_by("vector_score")
+            .sort_by("vector_score", asc=False)
         )
         query_params = {"embedding": embedding.astype(self._vector_type).tobytes()}
         matches = self._ft(collection_name).search(query, query_params).docs
@@ -412,8 +413,10 @@ class RedisMemoryStore(MemoryStoreBase):
         relevant_records = list()
         for match in matches:
             score = float(match["vector_score"])
+
+            # Sorted by descending order
             if score < min_relevance_score:
-                continue
+                break
 
             record = self._deserialize_document_to_record(match, with_embeddings)
             relevant_records.append((record, score))
@@ -456,8 +459,8 @@ class RedisMemoryStore(MemoryStoreBase):
             raise Exception("Record must have a valid key associated with it")
 
         mapping = {
-            "timestamp": (record._timestamp.isoformat() if record._timestamp else ""),
-            "is_reference": int(record._is_reference) if record._is_reference else 0,
+            "timestamp": record._timestamp.isoformat() if record._timestamp else "",
+            "is_reference": 1 if record._is_reference else 0,
             "external_source_name": record._external_source_name or "",
             "id": record._id or "",
             "description": record._description or "",
@@ -520,7 +523,7 @@ class RedisMemoryStore(MemoryStoreBase):
             record._timestamp = datetime.fromisoformat(doc["timestamp"])
 
         if with_embedding:
-            # Some bytes are lost when retrieving a document
+            # Some bytes are lost when retrieving a document, fetch raw embedding
             eb = self._database.hget(key_str, "embedding")
             record._embedding = np.frombuffer(eb, dtype=self._vector_type).astype(float)
 
