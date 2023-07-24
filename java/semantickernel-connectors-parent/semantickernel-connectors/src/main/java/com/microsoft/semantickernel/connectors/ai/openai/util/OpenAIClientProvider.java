@@ -75,7 +75,10 @@ public class OpenAIClientProvider {
         Map<String, String> settings = getSettings(propertyFileLocations);
 
         if (clientType == null) {
-            clientType = ClientType.valueOf(settings.getOrDefault(OPENAI_CLIENT_TYPE, "OPEN_AI"));
+            String clientValue = settings.get(OPENAI_CLIENT_TYPE);
+            if (clientValue != null) {
+                clientType = ClientType.valueOf(clientValue);
+            }
         }
 
         return new OpenAIClientProvider(settings, clientType);
@@ -202,7 +205,7 @@ public class OpenAIClientProvider {
             LOGGER.info("No OpenAI client type specified, searching for a valid client type");
             try {
                 LOGGER.info("Trying OpenAI client");
-                OpenAIAsyncClient client = buildOpenAiClient();
+                OpenAIAsyncClient client = buildOpenAIClient();
                 LOGGER.info("Successfully instantiated OpenAI client");
                 return client;
             } catch (ConfigurationException e) {
@@ -211,7 +214,7 @@ public class OpenAIClientProvider {
 
             try {
                 LOGGER.info("Trying Azure OpenAI client");
-                OpenAIAsyncClient client = buildAzureOpenAiClient();
+                OpenAIAsyncClient client = buildAzureOpenAIClient();
                 LOGGER.info("Successfully instantiated Azure OpenAI client");
                 return client;
             } catch (ConfigurationException e) {
@@ -221,16 +224,16 @@ public class OpenAIClientProvider {
         } else {
             switch (clientType) {
                 case OPEN_AI:
-                    return buildOpenAiClient();
+                    return buildOpenAIClient();
                 case AZURE_OPEN_AI:
-                    return buildAzureOpenAiClient();
+                    return buildAzureOpenAIClient();
                 default:
                     throw new ConfigurationException(NoValidConfigurationsFound);
             }
         }
     }
 
-    private OpenAIAsyncClient buildOpenAiClient() throws ConfigurationException {
+    private OpenAIAsyncClient buildOpenAIClient() throws ConfigurationException {
         OpenAISettings settings = new OpenAISettings(configuredSettings);
         try {
             settings.assertIsValid();
@@ -245,7 +248,7 @@ public class OpenAIClientProvider {
                 .buildAsyncClient();
     }
 
-    private OpenAIAsyncClient buildAzureOpenAiClient() throws ConfigurationException {
+    private OpenAIAsyncClient buildAzureOpenAIClient() throws ConfigurationException {
         AzureOpenAISettings settings = new AzureOpenAISettings(configuredSettings);
 
         try {

@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
-
 @EnabledIf("isAzureTestEnabled")
 public class FunSkillTest extends AbstractKernelTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(FunSkillTest.class);

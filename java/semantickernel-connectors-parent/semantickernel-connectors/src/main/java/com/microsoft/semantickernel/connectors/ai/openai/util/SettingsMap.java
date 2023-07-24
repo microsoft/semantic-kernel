@@ -47,9 +47,13 @@ public class SettingsMap {
             Arrays.asList(
                     new File(new File(System.getProperty("user.home"), ".sk"), "conf.properties"),
                     new File("conf.properties"));
-    @Nullable private static final Map<String, String> DEFAULT_INST;
+    @Nullable private static Map<String, String> DEFAULT_INST;
 
-    static {
+    private static void initSettings() {
+        if (DEFAULT_INST != null) {
+            return;
+        }
+
         // Create the default instance
         Map<String, String> DEFAULT_INST_TMP;
         try {
@@ -67,6 +71,7 @@ public class SettingsMap {
      * @return A map of settings
      */
     public static Map<String, String> getDefault() throws ConfigurationException {
+        initSettings();
         if (DEFAULT_INST == null) {
             throw new ConfigurationException(NoValidConfigurationsFound);
         }

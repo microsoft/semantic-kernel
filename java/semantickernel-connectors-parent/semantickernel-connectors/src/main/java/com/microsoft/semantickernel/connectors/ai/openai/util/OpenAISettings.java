@@ -7,7 +7,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-public class OpenAISettings extends OpenAIClientSettings {
+public class OpenAISettings extends AbstractOpenAIClientSettings {
     public static final String OPEN_AI_ORGANIZATION_SUFFIX = "organizationid";
     private static final String DEFAULT_SETTINGS_PREFIX = "client.openai";
 

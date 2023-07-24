@@ -11,10 +11,12 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -37,9 +39,9 @@ public class KernelTest extends AbstractKernelTest {
 
         String text1 =
                 """
-                        1st Law of Thermodynamics - Energy cannot be created or destroyed.
-                        2nd Law of Thermodynamics - For a spontaneous process, the entropy of the universe increases.
-                        3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero entropy""";
+                1st Law of Thermodynamics - Energy cannot be created or destroyed.
+                2nd Law of Thermodynamics - For a spontaneous process, the entropy of the universe increases.
+                3rd Law of Thermodynamics - A perfect crystal at zero Kelvin has zero entropy""";
 
         Mono<SKContext> mono = summarize.invokeAsync(text1);
         SKContext result = mono.block();

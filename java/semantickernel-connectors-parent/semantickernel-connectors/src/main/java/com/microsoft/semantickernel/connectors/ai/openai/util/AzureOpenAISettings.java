@@ -8,7 +8,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Settings for Azure OpenAI client */
-public class AzureOpenAISettings extends OpenAIClientSettings {
+public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
     private static final String DEFAULT_SETTINGS_PREFIX = "client.azureopenai";
     private static final String AZURE_OPEN_AI_ENDPOINT_SUFFIX = "endpoint";
     private static final String AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX = "deploymentname";
@@ -38,7 +38,7 @@ public class AzureOpenAISettings extends OpenAIClientSettings {
      */
     public String getEndpoint() {
         if (endpoint == null) {
-            throw new RuntimeException("Azure OpenAI endpoint is not set");
+            throw new IllegalStateException("Azure OpenAI endpoint is not set");
         }
         return endpoint;
     }
@@ -50,14 +50,14 @@ public class AzureOpenAISettings extends OpenAIClientSettings {
      */
     public String getDeploymentName() {
         if (deploymentName == null) {
-            throw new RuntimeException("Azure OpenAI deployment name is not set");
+            throw new IllegalStateException("Azure OpenAI deployment name is not set");
         }
         return deploymentName;
     }
 
     public String getKey() {
         if (key == null) {
-            throw new RuntimeException("Azure OpenAI key is not set");
+            throw new IllegalStateException("Azure OpenAI key is not set");
         }
         return key;
     }

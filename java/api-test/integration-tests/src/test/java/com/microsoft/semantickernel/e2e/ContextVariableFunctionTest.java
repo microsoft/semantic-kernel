@@ -7,10 +7,12 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import reactor.core.publisher.Mono;
 
 import java.util.concurrent.ExecutionException;
@@ -22,14 +24,20 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContextVariableFunctionTest.class);
 
     public static void main(String[] args)
-            throws ExecutionException, InterruptedException, TimeoutException, ConfigurationException {
+            throws ExecutionException,
+                    InterruptedException,
+                    TimeoutException,
+                    ConfigurationException {
         new ContextVariableFunctionTest().runContextVariableTest();
     }
 
     @Test
     @EnabledIf("isAzureTestEnabled")
     public void runContextVariableTest()
-            throws ExecutionException, InterruptedException, TimeoutException, ConfigurationException {
+            throws ExecutionException,
+                    InterruptedException,
+                    TimeoutException,
+                    ConfigurationException {
         Kernel kernel = buildTextCompletionKernel();
 
         String prompt =

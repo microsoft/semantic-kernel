@@ -15,10 +15,12 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
+
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;
@@ -156,12 +158,11 @@ public class DefaultKernelTest {
                                         Tuples
                                                 .<ArgumentMatcher<String>, String, Consumer<String>>
                                                         of(
-                                                        arg ->
-                                                                arg.contains(
-                                                                        response.getT1()),
-                                                        response.getT2(),
-                                                        (arg) -> {
-                                                        }))
+                                                                arg ->
+                                                                        arg.contains(
+                                                                                response.getT1()),
+                                                                response.getT2(),
+                                                                (arg) -> {}))
                         .collect(Collectors.toList());
 
         return DefaultKernelTest.mockCompletionOpenAIAsyncClientMatchAndAssert(
@@ -177,8 +178,7 @@ public class DefaultKernelTest {
                                 spec ->
                                         Tuples
                                                 .<ArgumentMatcher<String>, String, Consumer<String>>
-                                                        of(spec.getT1(), spec.getT2(), arg -> {
-                                                }))
+                                                        of(spec.getT1(), spec.getT2(), arg -> {}))
                         .collect(Collectors.toList())
                         .toArray(new Tuple3[0]);
 
@@ -310,8 +310,8 @@ public class DefaultKernelTest {
                                 completionsOptions ->
                                         completionsOptions.getPrompt().size() == 1
                                                 && completionsOptions
-                                                .getPrompt()
-                                                .get(0)
-                                                .equals(expected)));
+                                                        .getPrompt()
+                                                        .get(0)
+                                                        .equals(expected)));
     }
 }
