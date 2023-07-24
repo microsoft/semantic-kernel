@@ -261,7 +261,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
             context.Log.LogInformation("{SkillName}.{StepName}: Function execution status: {Status}", this.SkillName, this.Name, "Success");
 
-            context.Log.LogInformation("{SkillName}.{StepName}: finished in {ExecutionTime}ms", this.Name, stopwatch.ElapsedMilliseconds);
+            context.Log.LogInformation("{SkillName}.{StepName}: finished in {ExecutionTime}ms", this.SkillName, this.Name, stopwatch.ElapsedMilliseconds);
 
             this.ExecutionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
         }

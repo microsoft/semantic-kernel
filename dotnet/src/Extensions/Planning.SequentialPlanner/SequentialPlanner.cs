@@ -59,7 +59,6 @@ public sealed class SequentialPlanner : ISequentialPlanner
         }
 
         string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
-
         this._context.Variables.Set("available_functions", relevantFunctionsManual);
 
         this._context.Variables.Update(goal);
