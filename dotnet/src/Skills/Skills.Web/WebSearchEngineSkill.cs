@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
@@ -8,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Newtonsoft.Json.Linq;
 using static Microsoft.SemanticKernel.Skills.Web.Bing.BingConnector;
 
 namespace Microsoft.SemanticKernel.Skills.Web;
@@ -65,10 +67,18 @@ public sealed class WebSearchEngineSkill
         [Description("Number of results to skip")] int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        var results = await this._connector.SearchAsync<WebPage>(query, count, offset, cancellationToken).ConfigureAwait(false);
-        if (!results.Any())
+        IEnumerable<WebPage> results = null;
+        try
         {
-            throw new InvalidOperationException("Failed to get a response from the web search engine.");
+            results = await this._connector.SearchAsync<WebPage>(query, count, offset, cancellationToken).ConfigureAwait(false);
+            if (!results.Any())
+            {
+                throw new InvalidOperationException("Failed to get a response from the web search engine.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
         }
 
         return JsonSerializer.Serialize(results);
