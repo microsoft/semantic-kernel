@@ -15,6 +15,11 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Action;
 using Microsoft.SemanticKernel.Planning.Sequential;
+using Microsoft.SemanticKernel.Planning.Stepwise;
+using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Skills.Web;
+using Microsoft.SemanticKernel.Skills.Web.Bing;
+using NCalcSkills;
 
 /// <summary>
 /// Example of telemetry in Semantic Kernel using Application Insights within console application.
@@ -99,7 +104,9 @@ public sealed class Program
 
     private static IKernel GetKernel(ILogger logger)
     {
-        string folder = RepoFiles.SampleSkillsPath();
+        var folder = RepoFiles.SampleSkillsPath();
+        var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
+        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
 
         var kernel = new KernelBuilder()
             .WithLogger(logger)
@@ -110,6 +117,10 @@ public sealed class Program
             .Build();
 
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill", "WriterSkill");
+
+        kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
+        kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "advancedCalculator");
+        kernel.ImportSkill(new TimeSkill(), "time");
 
         return kernel;
     }
@@ -129,6 +140,21 @@ public sealed class Program
         ILogger logger)
     {
         return new ActionPlanner(kernel).WithInstrumentation(logger);
+    }
+
+    private static IStepwisePlanner GetStepwisePlanner(
+        IKernel kernel,
+        ILogger logger,
+        int minIterationTimeMs = 1500,
+        int maxTokens = 2000)
+    {
+        var plannerConfig = new StepwisePlannerConfig
+        {
+            MinIterationTimeMs = minIterationTimeMs,
+            MaxTokens = maxTokens
+        };
+
+        return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(logger);
     }
 
     /// <summary>
