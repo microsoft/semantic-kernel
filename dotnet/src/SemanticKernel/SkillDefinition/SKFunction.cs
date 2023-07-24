@@ -227,9 +227,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
-        // If the function is invoked manually, the user might have left out the skill collection
-        context.Skills ??= this._skillCollection;
-
         if (this.IsSemantic)
         {
             this.AddDefaultValues(context.Variables);
