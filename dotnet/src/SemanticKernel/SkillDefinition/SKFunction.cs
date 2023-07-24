@@ -257,7 +257,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
         }
 
-
         if (context.ErrorOccurred)
         {
             this.s_executionFailureCounter.Add(1);
