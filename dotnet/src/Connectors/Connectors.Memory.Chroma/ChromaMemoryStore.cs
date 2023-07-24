@@ -67,15 +67,7 @@ public class ChromaMemoryStore : IMemoryStore
     {
         Verify.NotNullOrWhiteSpace(collectionName);
 
-        try
-        {
-            await this._chromaClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
-        }
-        catch (SKException e) when (e.Message.Contains(DeleteNonExistentCollectionErrorMessage))
-        {
-            this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
-            throw new SKException($"Cannot delete non-existent collection {collectionName}", e);
-        }
+        await this._chromaClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -227,7 +219,6 @@ public class ChromaMemoryStore : IMemoryStore
     private const string IncludeEmbeddings = "embeddings";
     private const string IncludeDistances = "distances";
     private const string CollectionDoesNotExistErrorFormat = "Collection {0} does not exist";
-    private const string DeleteNonExistentCollectionErrorMessage = "list index out of range";
 
     private readonly ILogger _logger;
     private readonly IChromaClient _chromaClient;
@@ -251,7 +242,7 @@ public class ChromaMemoryStore : IMemoryStore
         {
             return await this._chromaClient.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (SKException e) when (e.Message.Contains(string.Format(CultureInfo.InvariantCulture, CollectionDoesNotExistErrorFormat, collectionName)))
+        catch (HttpOperationException e) when (e.ResponseContent?.Contains(string.Format(CultureInfo.InvariantCulture, CollectionDoesNotExistErrorFormat, collectionName)) ?? false)
         {
             this._logger.LogError("Collection {0} does not exist", collectionName);
 

@@ -147,7 +147,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         this._chromaClientMock
             .Setup(client => client.GetCollectionAsync(collectionName, CancellationToken.None))
-            .Throws(new SKException(collectionDoesNotExistErrorMessage));
+            .Throws(new HttpOperationException() { ResponseContent = collectionDoesNotExistErrorMessage });
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
