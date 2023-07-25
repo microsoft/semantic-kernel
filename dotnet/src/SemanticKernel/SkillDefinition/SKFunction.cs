@@ -1052,25 +1052,25 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// A format string for creating the metric name of execution time.
     /// It includes placeholders for the skill name and the function name.
     /// </summary>
-    private const string ExecutionTimeMetricFormat = "SK.{Skill}.{Function}.ExecutionTime";
+    private const string ExecutionTimeMetricFormat = "SK.{0}.{1}.ExecutionTime";
 
     /// <summary>
     /// A format string for creating the metric name of total execution count.
     /// It includes placeholders for the skill name and the function name.
     /// </summary>
-    private const string ExecutionTotalMetricFormat = "SK.{Skill}.{Function}.ExecutionTotal";
+    private const string ExecutionTotalMetricFormat = "SK.{0}.{1}.ExecutionTotal";
 
     /// <summary>
     /// A format string for creating the metric name of execution failure count.
     /// It includes placeholders for the skill name and the function name.
     /// </summary>
-    private const string ExecutionCountFailureMetricFormat = "SK.{Skill}.{Function}.ExecutionFailure";
+    private const string ExecutionCountFailureMetricFormat = "SK.{0}.{1}.ExecutionFailure";
 
     /// <summary>
     /// A format string for creating the metric name of execution success count.
     /// It includes placeholders for the skill name and the function name.
     /// </summary>
-    private const string ExecutionSuccessMetricFormat = "SK.{Skill}.{Function}.ExecutionSuccess";
+    private const string ExecutionSuccessMetricFormat = "SK.{0}.{1}.ExecutionSuccess";
 
     /// <summary>
     /// Histogram to measure and track the execution time of invoking the SKFunction.
