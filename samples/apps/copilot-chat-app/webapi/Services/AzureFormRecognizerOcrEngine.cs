@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Azure;
@@ -31,11 +32,9 @@ public class AzureFormRecognizerOcrEngine : IOcrEngine
     ///<inheritdoc/>
     public async Task<string> ReadTextFromImageFileAsync(IFormFile imageFile)
     {
-        await using (var ms = new MemoryStream())
+        await using (var imgStream = new MemoryStream())
         {
-            await imageFile.CopyToAsync(ms);
-            var fileBytes = ms.ToArray();
-            await using var imgStream = new MemoryStream(fileBytes);
+            await imageFile.CopyToAsync(imgStream);
 
             // Start the OCR operation
             RecognizeContentOperation operation = await this.FormRecognizerClient.StartRecognizeContentAsync(imgStream);
@@ -44,18 +43,13 @@ public class AzureFormRecognizerOcrEngine : IOcrEngine
             Response<FormPageCollection> operationResponse = await operation.WaitForCompletionAsync();
             FormPageCollection formPages = operationResponse.Value;
 
-            // Get the text content
             StringBuilder text = new();
             foreach (FormPage page in formPages)
             {
                 foreach (FormLine line in page.Lines)
                 {
-                    foreach (FormWord word in line.Words)
-                    {
-                        text.Append(word.Text);
-                        text.Append(' ');
-                    }
-                    text.AppendLine();
+                    string lineText = string.Join(" ", line.Words.Select(word => word.Text));
+                    text.AppendLine(lineText);
                 }
             }
             return text.ToString();
