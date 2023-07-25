@@ -5,15 +5,15 @@
 namespace Microsoft.SemanticKernel.Planning.Flow;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
 /// This is a flow executor which iterates over the flow steps and executes them one by one.
@@ -247,10 +247,10 @@ internal class FlowExecutor : IFlowExecutor
                 }
                 catch (MissingMethodException ex)
                 {
-                    actionStep.Observation = $"Error invoking action {actionStep.Action} : {ex.Message}. " + 
-                                             "Use only the available functions listed in the [AVAILABLE FUNCTIONS] section. "+
-                                             "Do not attempt to use any other functions that are not specified.\r\n"+
-                                             "The value of parameters should either by empty when missing information, or derived from the agent scratchpad.\r\n"+
+                    actionStep.Observation = $"Error invoking action {actionStep.Action} : {ex.Message}. " +
+                                             "Use only the available functions listed in the [AVAILABLE FUNCTIONS] section. " +
+                                             "Do not attempt to use any other functions that are not specified.\r\n" +
+                                             "The value of parameters should either by empty when missing information, or derived from the agent scratchpad.\r\n" +
                                              "You are not allowed to ask user directly for more information.";
 
                     continue;

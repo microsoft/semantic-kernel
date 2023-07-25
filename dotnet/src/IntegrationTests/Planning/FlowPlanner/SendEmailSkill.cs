@@ -2,10 +2,10 @@
 
 namespace SemanticKernel.IntegrationTests.Planning.FlowPlanner;
 
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using System.ComponentModel;
 using System.Text.Json;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 public sealed class SendEmailSkill
 {
