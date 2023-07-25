@@ -35,7 +35,7 @@ jobs:
           - { os: 'windows', dotnet: '7.0', configuration: Debug }
           - { os: 'windows', dotnet: '8.0-preview', configuration: Release }
           
-    runs-on: ${{ ubuntu-latest }}
+    runs-on: ubuntu-latest
     env:
       NUGET_CERT_REVOCATION_MODE: offline
       DOTNET_DOCKER_IMG: mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
