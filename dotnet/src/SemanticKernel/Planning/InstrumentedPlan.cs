@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel.Planning;
 
 /// <summary>
 /// Standard Semantic Kernel callable plan with instrumentation.
-/// Plan is used to create trees of <see cref="IPlan"/>s.
 /// </summary>
 public sealed class InstrumentedPlan : IPlan
 {
@@ -91,11 +90,6 @@ public sealed class InstrumentedPlan : IPlan
     private readonly ILogger _logger;
 
     /// <summary>
-    /// Instance of <see cref="ActivitySource"/> for plan-related activities.
-    /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(Plan).FullName);
-
-    /// <summary>
     /// Instance of <see cref="Meter"/> for plan-related metrics.
     /// </summary>
     private static Meter s_meter = new(typeof(Plan).FullName);
@@ -107,8 +101,7 @@ public sealed class InstrumentedPlan : IPlan
         s_meter.CreateHistogram<double>(
             name: "SK.Plan.Execution.ExecutionTime",
             unit: "ms",
-            description: "Duration of plan execution"
-        );
+            description: "Duration of plan execution");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of plan executions.
@@ -116,8 +109,7 @@ public sealed class InstrumentedPlan : IPlan
     private static Counter<int> s_executionTotalCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionTotal",
-            description: "Total number of plan executions"
-        );
+            description: "Total number of plan executions");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful plan executions.
@@ -125,8 +117,7 @@ public sealed class InstrumentedPlan : IPlan
     private static Counter<int> s_executionSuccessCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionSuccess",
-            description: "Number of successful plan executions"
-        );
+            description: "Number of successful plan executions");
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed plan executions.
@@ -134,8 +125,7 @@ public sealed class InstrumentedPlan : IPlan
     private static Counter<int> s_executionFailureCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionFailure",
-            description: "Number of failed plan executions"
-        );
+            description: "Number of failed plan executions");
 
     /// <summary>
     /// Wrapper for instrumentation to be re-used in multiple invocation places.
@@ -143,8 +133,6 @@ public sealed class InstrumentedPlan : IPlan
     /// <param name="func">Delegate to instrument.</param>
     private async Task<SKContext> InvokeWithInstrumentationAsync(Func<Task<SKContext>> func)
     {
-        using var activity = s_activitySource.StartActivity("Plan.Execution");
-
         this._logger.LogInformation("Plan execution started.");
 
         var stopwatch = new Stopwatch();

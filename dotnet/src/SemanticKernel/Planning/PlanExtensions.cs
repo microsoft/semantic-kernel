@@ -73,7 +73,7 @@ public static class PlanExtensions
     /// </summary>
     /// <param name="plan">Instance of <see cref="IPlan"/> to decorate.</param>
     /// <param name="logger">Optional logger.</param>
-    public static IPlan WithInstrumentation(this Plan plan, ILogger? logger = null)
+    public static IPlan WithInstrumentation(this IPlan plan, ILogger? logger = null)
     {
         return new InstrumentedPlan(plan, logger);
     }

@@ -326,7 +326,10 @@ public sealed class Plan : IPlan
     {
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
+            var result = await this.Function
+                .WithInstrumentation(context.Log)
+                .InvokeAsync(context, settings, cancellationToken)
+                .ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
