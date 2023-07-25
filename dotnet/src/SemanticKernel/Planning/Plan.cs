@@ -327,6 +327,7 @@ public sealed class Plan : ISKFunction
         if (this.Function is not null)
         {
             var result = await this.Function.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
+
             if (result.ErrorOccurred)
             {
                 return result;
@@ -360,24 +361,33 @@ public sealed class Plan : ISKFunction
         using var activity = s_activitySource.StartActivity("Plan.Execution");
 
         s_executionTotalCounter.Add(1);
+
         context.Log.LogInformation("Plan started");
+
         var stopwatch = new Stopwatch();
 
         stopwatch.Start();
+
         context = await this.InvokeLogicAsync(context, settings, cancellationToken).ConfigureAwait(false);
+
         stopwatch.Stop();
 
         if (context.ErrorOccurred)
         {
             s_executionFailureCounter.Add(1);
+
             context.Log.LogInformation("Plan status: {Status}", "Failed");
+
             context.Log.LogError(context.LastException, "Plan exception details: {Message}", context.LastErrorDescription);
         }
         else
         {
             s_executionSuccessCounter.Add(1);
+
             context.Log.LogInformation("Plan status: {Status}", "Success");
+
             context.Log.LogInformation("Plan finished in {ExecutionTime}ms", stopwatch.ElapsedMilliseconds);
+
             s_executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
         }
 
@@ -662,7 +672,7 @@ public sealed class Plan : ISKFunction
     /// <summary>
     /// Instance of <see cref="Meter"/> for plan-related metrics.
     /// </summary>
-    private static Meter s_meter = new(nameof(Plan));
+    private static Meter s_meter = new(typeof(Plan).FullName);
 
     /// <summary>
     /// Histogram to measure and track the execution time of invoking the plan.

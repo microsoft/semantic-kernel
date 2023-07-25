@@ -32,8 +32,9 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        s_executionTotalCounter.Add(1);
         using var activity = s_activitySource.StartActivity($"{PlannerType}.CreatePlan");
+
+        s_executionTotalCounter.Add(1);
 
         this._logger.LogInformation("{PlannerType}: Plan creation started.", PlannerType);
 
@@ -51,9 +52,11 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
             stopwatch.Stop();
 
             s_executionSuccessCounter.Add(1);
+
             s_executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
 
             this._logger.LogInformation("{PlannerType}: Plan creation status: {Status}", PlannerType, "Success");
+
             this._logger.LogInformation("{PlannerType}: Plan creation finished in {ExecutionTime}ms", PlannerType, stopwatch.ElapsedMilliseconds);
 
             this._logger.LogInformation("{PlannerType}: Created plan: \n {Plan}", PlannerType, plan.ToSafePlanString());
@@ -68,6 +71,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
             s_executionFailureCounter.Add(1);
 
             this._logger.LogInformation("{PlannerType}: Plan creation status: {Status}", PlannerType, "Failed");
+
             this._logger.LogError(ex, "{PlannerType}: Plan creation exception details: {Message}", PlannerType, ex.Message);
 
             throw;
