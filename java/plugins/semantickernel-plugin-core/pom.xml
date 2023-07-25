@@ -7,12 +7,12 @@
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
         <version>0.2.8-alpha-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>semantickernel-core-skills</artifactId>
-    <name>Semantic Kernel Core Skills</name>
-    <description>Core skills used by the Semantic Kernel</description>
+    <artifactId>semantickernel-plugin-core</artifactId>
+    <name>Semantic Kernel Core Plugins</name>
+    <description>Core plugins used by the Semantic Kernel</description>
 
     <dependencies>
         <dependency>
