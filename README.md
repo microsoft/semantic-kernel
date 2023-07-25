@@ -21,17 +21,17 @@ code **native functions**, and **embeddings-based memory** unlocking new potenti
 and adding value to applications with AI.
 
 SK supports
-[prompt templating](docs/PROMPT_TEMPLATE_LANGUAGE.md), function
+[prompt templating](https://learn.microsoft.com/en-us/semantic-kernel/prompt-engineering/prompt-template-syntax), function
 chaining,
-[vectorized memory](docs/EMBEDDINGS.md), and
-[intelligent planning](docs/PLANNERS.md)
+[vectorized memory](https://learn.microsoft.com/en-us/semantic-kernel/memories/embeddings), and
+[intelligent planning](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
 capabilities out of the box.
 
 Semantic Kernel supports and encapsulates several design patterns from the latest
-in AI research, such that developers can infuse their applications with  [plugins](https://learn.microsoft.com/semantic-kernel/howto/) like [prompt](docs/PROMPT_TEMPLATE_LANGUAGE.md)
-chaining, recursive reasoning, summarization, zero/few-shot learning, contextual
-memory, long-term memory, [embeddings](docs/EMBEDDINGS.md), semantic indexing,
-[planning](docs/PLANNERS.md), retrieval-augmented generation and accessing external
+in AI research, such that developers can infuse their applications with [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins) like [prompt
+chaining](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions), recursive reasoning, summarization, zero/few-shot learning, contextual
+memory, long-term memory, [embeddings](https://learn.microsoft.com/en-us/semantic-kernel/memories/embeddings), semantic indexing,
+[planning](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner), retrieval-augmented generation and accessing external
 knowledge stores as well as your own data.
 
 By joining the SK community, you can build AI-first apps faster and have a front-row
@@ -84,7 +84,6 @@ and to run one of the C# or Python console applications/scripts:
 4. Copy the code from [here](python/README.md) into the `hello-world.py` script.
 5. Run the python script.
 
-
 ## Sample apps ⚡
 
 The repository includes some sample applications, with a React frontend and
@@ -94,7 +93,7 @@ Follow the links for more information and instructions about running these apps.
 
 |                                                                         |                                                                                                                                   |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| [Simple chat summary](samples/apps/chat-summary-webapp-react/README.md) | Use ready-to-use plugins and get plugins into your app easily.                                                                |
+| [Simple chat summary](samples/apps/chat-summary-webapp-react/README.md) | Use ready-to-use plugins and get plugins into your app easily.                                                                    |
 | [Book creator](samples/apps/book-creator-webapp-react/README.md)        | Use planner to deconstruct a complex goal and envision using the planner in your app.                                             |
 | [Authentication and APIs](samples/apps/auth-api-webapp-react/README.md) | Use a basic connector pattern to authenticate and connect to an API and imagine integrating external data into your app's LLM AI. |
 | [GitHub repository Q&A](samples/apps/github-qna-webapp-react/README.md) | Use embeddings and memory to store recent data and allow you to query against it.                                                 |
@@ -119,8 +118,9 @@ Getting Semantic Kernel deployed to Azure as web app service is easy with one-cl
 
 For a more hands-on overview, you can also check out the C# and Python Jupyter notebooks, starting
 from here:
-* [Getting Started with C# notebook](samples/notebooks/dotnet/00-getting-started.ipynb)
-* [Getting Started with Python notebook](samples/notebooks/python/00-getting-started.ipynb)
+
+- [Getting Started with C# notebook](samples/notebooks/dotnet/00-getting-started.ipynb)
+- [Getting Started with Python notebook](samples/notebooks/python/00-getting-started.ipynb)
 
 **Requirements:** C# notebooks require [.NET 7](https://dotnet.microsoft.com/download)
 and the VS Code [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
