@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 /** Settings for a text completion request */
 public class CompletionRequestSettings {
     /**
@@ -122,6 +124,18 @@ public class CompletionRequestSettings {
     /** Create a new settings object with default values. */
     public CompletionRequestSettings() {
         this(0, 0, 0, 0, 256, 1, "", new ArrayList<>());
+    }
+
+    public CompletionRequestSettings(@Nonnull CompletionRequestSettings requestSettings) {
+        this(
+                requestSettings.getTemperature(),
+                requestSettings.getTopP(),
+                requestSettings.getPresencePenalty(),
+                requestSettings.getFrequencyPenalty(),
+                requestSettings.getMaxTokens(),
+                requestSettings.getBestOf(),
+                requestSettings.getUser(),
+                requestSettings.getStopSequences());
     }
 
     /**

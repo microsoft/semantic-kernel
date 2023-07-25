@@ -11,7 +11,11 @@ import com.microsoft.semantickernel.memory.MemoryConfiguration;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.*;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
+import com.microsoft.semantickernel.orchestration.RegistrableSkFunction;
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceProvider;
@@ -220,6 +224,21 @@ public class DefaultKernel implements Kernel {
     public ReadOnlyFunctionCollection importSkillFromDirectory(
             String skillName, String parentDirectory) {
         return importSkillFromDirectory(skillName, parentDirectory, skillName);
+    }
+
+    @Override
+    public ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName) {
+        return importSkillFromResources(pluginDirectory, skillName, functionName, null);
+    }
+
+    @Override
+    public ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) {
+        Map<String, SemanticFunctionConfig> skills =
+                KernelExtensions.importSemanticSkillFromResourcesDirectory(
+                        pluginDirectory, skillName, functionName, clazz, promptTemplateEngine);
+        return importSkill(skillName, skills);
     }
 
     @Override

@@ -12,6 +12,8 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.syntaxexamples.Example17ChatGPTTest;
+import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
+import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -21,8 +23,31 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class OpenAIChatCompletionTest {
+
+    @Test
+    public void chatCompletionCanBeUsedAsATextCompletion() {
+        OpenAIAsyncClient client =
+                mockCompletionOpenAIAsyncClient(Tuples.of("Run completion", "A-RESULT"));
+        Kernel kernel =
+                SKBuilders.kernel()
+                        .withDefaultAIService(
+                                SKBuilders.chatCompletion().build(client, "gpt-3.5-turbo-0301"))
+                        .build();
+
+        TextCompletion textCompletion = kernel.getService(null, TextCompletion.class);
+
+        List<String> result =
+                textCompletion
+                        .completeAsync("Run completion", new CompletionRequestSettings())
+                        .block();
+
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("A-RESULT", result.get(0));
+    }
+
     @Test
     public void azureOpenAIChatSampleAsync() {
         OpenAIAsyncClient client =

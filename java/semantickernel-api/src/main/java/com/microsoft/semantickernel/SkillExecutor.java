@@ -56,6 +56,28 @@ public interface SkillExecutor {
     ReadOnlyFunctionCollection importSkillFromDirectory(String skillName, String parentDirectory);
 
     /**
+     * Imports a skill using ClassLoader.getResourceAsStream to load skills from the classpath.
+     *
+     * @param pluginDirectory directory within the classpath that contains the skill
+     * @param skillName name of the skill
+     * @param functionName name of the function
+     * @return the function collection
+     */
+    ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName);
+
+    /**
+     * Imports a skill using clazz.getResourceAsStream to load skills from the classpath.
+     *
+     * @param skillName name of the skill
+     * @param functionName name of the function
+     * @param clazz class that contains the skill
+     * @return the function collection
+     */
+    ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz);
+
+    /**
      * Imports the native functions annotated on the given object as a skill.
      *
      * @param nativeSkill object containing the native functions
