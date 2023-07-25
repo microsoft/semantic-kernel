@@ -1,5 +1,7 @@
 package com.microsoft.semantickernel;
 
+import java.io.IOException;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
@@ -19,8 +21,9 @@ public class Example99_BlogAnnouncement {
     System.setProperty("client.openai.key", "");
   }
 
-  public static void main(String[] args) {
-    OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromSystemProperties();
+  public static void main(String[] args) throws IOException {
+    // OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromSystemProperties();
+    OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromFile("/Users/brunoborges/.sk/conf.properties");
 
     NonAzureOpenAIKeyCredential credential = new NonAzureOpenAIKeyCredential(settings.getKey());
 
@@ -28,7 +31,7 @@ public class Example99_BlogAnnouncement {
         .credential(credential)
         .buildAsyncClient();
 
-    TextCompletion textCompletionService = SKBuilders.textCompletionService().build(client, "gpt-35-turbo");
+    TextCompletion textCompletionService = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
     KernelConfig config = SKBuilders.kernelConfig().addTextCompletionService("textCompletion", k -> textCompletionService)
         .build();
