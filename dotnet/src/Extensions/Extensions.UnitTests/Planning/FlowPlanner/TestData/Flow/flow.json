@@ -1,0 +1,47 @@
+{
+  "goal": "Make breakfast",
+  "steps": [
+    {
+      "goal": "Make coffee",
+      "skills": [
+        "MakeCoffeeSkill"
+      ],
+      "requires": [
+        "coffee_bean"
+      ],
+      "provides": [
+        "coffee"
+      ]
+    },
+    {
+      "goal": "Recipe",
+      "skills": [
+        "WebSearchSkill",
+        "CalorieCalculatorSkill",
+        "HealthCheckSkill",
+        "CoffeeRecommendationSkill"
+      ],
+      "provides": [
+        "ingredients",
+        "coffee_bean"
+      ]
+    },
+    {
+      "goal": "Cook",
+      "skills": [
+        "CookSkill",
+        "WebSearchSkill"
+      ],
+      "requires": [
+        "coffee",
+        "ingredients"
+      ],
+      "provides": [
+        "breakfast"
+      ]
+    }
+  ],
+  "provides": [
+    "breakfast"
+  ]
+}
