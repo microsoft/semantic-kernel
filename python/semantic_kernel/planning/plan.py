@@ -131,7 +131,7 @@ class Plan(SKFunctionBase):
         logger: Optional[Logger] = None,
         # TODO: cancellation_token: CancellationToken,
     ) -> SKContext:
-        if input is not None:
+        if input is not None and input != "":
             self._state.update(input)
 
         if context is None:
@@ -172,7 +172,7 @@ class Plan(SKFunctionBase):
         memory: Optional[SemanticTextMemoryBase] = None,
         logger: Optional[Logger] = None,
     ) -> SKContext:
-        if input is not None:
+        if input is not None and input != "":
             self._state.update(input)
 
         if context is None:
@@ -354,7 +354,7 @@ class Plan(SKFunctionBase):
         context.variables.update(result_string)
 
         for item in self._steps[self._next_step_index - 1]._outputs:
-            if self._state.contains_key(item):
+            if item in self._state.contains_key(item):
                 context.variables.set(item, self._state[item])
             else:
                 context.variables.set(item, result_string)
@@ -371,17 +371,17 @@ class Plan(SKFunctionBase):
         # - Empty if sending to another plan
         # - Plan.Description
         input_string = ""
-        if step._parameters["input"] is not None:
+        if step._parameters["input"] is not None and step._parameters["input"] != "":
             input_string = self.expand_from_variables(
                 variables, step._parameters["input"]
             )
-        elif variables["input"] is not None:
+        elif variables["input"] is not None and variables["input"] != "":
             input_string = variables["input"]
-        elif self._state["input"] is not None:
+        elif self._state["input"] is not None and self._state["input"] != "":
             input_string = self._state["input"]
         elif len(step._steps) > 0:
             input_string = ""
-        elif self._description is not None:
+        elif self._description is not None and self._description != "":
             input_string = self._description
 
         step_variables = ContextVariables(input_string)
@@ -391,13 +391,15 @@ class Plan(SKFunctionBase):
         # - Step Parameters (pull from variables or state by a key value)
         function_params = step.describe()
         for param in function_params._parameters:
-            if param.name.lower() == "input":
+            if param.name.lower() == variables._main_key.lower():
                 continue
-            if step_variables.contains_key(param.name):
+
+            if variables.contains_key(param.name):
                 step_variables.set(param.name, variables[param.name])
             elif (
                 self._state.contains_key(param.name)
-                and self._state[param.name] is not None
+                and (self._state[param.name] is not None
+                     and self._state[param.name] != "")
             ):
                 step_variables.set(param.name, self._state[param.name])
 
