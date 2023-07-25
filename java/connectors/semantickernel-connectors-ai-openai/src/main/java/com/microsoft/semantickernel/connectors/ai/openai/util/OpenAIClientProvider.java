@@ -19,16 +19,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
- * Builds an OpenAI client instance, the settings for the client are loaded from the following
- * sources in the order of precedence (lower number in this list overrides higher number):
- *
- * <ul>
- *   <li>1. Environment variables.
- *   <li>2. System properties.
- *   <li>3. Properties file set via CONF_PROPERTIES environment variable.
- *   <li>4. Properties file: ./conf.properties (Not used if CONF_PROPERTIES was set).
- *   <li>5. Properties file: ~/.sk/conf.properties (Not used if CONF_PROPERTIES was set).
- * </ul>
+ * Builds an OpenAI client instance, see {@link SettingsMap} documentation for details on how the
+ * settings are loaded.
  *
  * <p>If clientType is not set via OPENAI_CLIENT_TYPE setting, then this will attempt to first
  * instantiate an OpenAI client, and if that fails, then it will attempt to instantiate an Azure
@@ -155,20 +147,8 @@ public class OpenAIClientProvider {
     }
 
     /**
-     * Builds an OpenAI client instance, the settings for the client are loaded from the following
-     * sources in the order of precedence (lower number in this list overrides a higher number):
-     *
-     * <ul>
-     *   <li>1. Environment variables.
-     *   <li>2. System properties.
-     *   <li>3. Properties file set via CONF_PROPERTIES environment variable.
-     *   <li>4. Properties file: ./conf.properties (Not used if CONF_PROPERTIES was set).
-     *   <li>5. Properties file: ~/.sk/conf.properties (Not used if CONF_PROPERTIES was set).
-     * </ul>
-     *
-     * <p>If clientType is not set via OPENAI_CLIENT_TYPE setting, then this will attempt to first
-     * instantiate an OpenAI client, and if that fails, then it will attempt to instantiate an Azure
-     * OpenAI client.
+     * Builds an OpenAI client instance, see {@link SettingsMap} documentation for details on how
+     * the settings are loaded.
      *
      * @return A client instance
      * @throws ConfigurationException If the settings are not found
