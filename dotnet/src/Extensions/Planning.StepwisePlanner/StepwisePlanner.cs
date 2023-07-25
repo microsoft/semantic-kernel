@@ -116,7 +116,10 @@ public class StepwisePlanner
 
                 if (llmResponse.ErrorOccurred)
                 {
-                    var exception = new PlanningException(PlanningException.ErrorCodes.UnknownError, $"Error occurred while executing stepwise plan: {llmResponse.LastErrorDescription}", llmResponse.LastException);
+                    var exception = new PlanningException(
+                        PlanningException.ErrorCodes.UnknownError,
+                        $"Error occurred while executing stepwise plan: {llmResponse.LastErrorDescription}",
+                        llmResponse.LastException);
                     context.Fail(exception.Message, exception);
                     return context;
                 }
@@ -311,7 +314,9 @@ public class StepwisePlanner
 
             if (!string.IsNullOrEmpty(s.Action))
             {
-                scratchPadLines.Insert(insertPoint, $"{Action} {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(s.ActionVariables)}}}");
+                scratchPadLines.Insert(
+                    insertPoint,
+                    $"{Action} {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(s.ActionVariables)}}}");
             }
 
             if (i != 0)
@@ -351,7 +356,13 @@ public class StepwisePlanner
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger?.LogError(e, "Something went wrong in system step: {0}.{1}. Error: {2}", targetFunction.SkillName, targetFunction.Name, e.Message);
+            this._logger?.LogError(
+                e,
+                "Something went wrong in system step: {0}.{1}. Error: {2}",
+                targetFunction.SkillName,
+                targetFunction.Name,
+                e.Message);
+
             return $"Something went wrong in system step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException.Message}";
         }
     }
@@ -407,7 +418,9 @@ public class StepwisePlanner
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
-            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $"(default='{parameter.DefaultValue}')";
+            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue)
+                ? string.Empty
+                : $"(default='{parameter.DefaultValue}')";
             return $"  - {parameter.Name}: {parameter.Description} {defaultValueString}";
         }));
 

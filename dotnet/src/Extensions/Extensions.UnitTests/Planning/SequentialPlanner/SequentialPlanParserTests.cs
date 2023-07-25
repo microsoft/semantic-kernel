@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -11,6 +12,7 @@ using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
+using SemanticKernel.UnitTests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -42,11 +44,12 @@ public class SequentialPlanParserTests
         return kernelMock;
     }
 
+    [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance")]
     private SKContext CreateSKContext(
         IKernel kernel,
         ContextVariables? variables = null)
     {
-        return new SKContext(variables, kernel.Skills, kernel.Log);
+        return new MockSKContext(variables, kernel.Skills, logger: kernel.Log);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")

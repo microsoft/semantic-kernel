@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
+using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.Planning.SequentialPlanner;
@@ -43,7 +44,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, skills.ReadOnlySkillCollection, logger);
+        var context = new MockSKContext(variables, skills.ReadOnlySkillCollection, logger: logger);
         var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -98,7 +99,7 @@ public class SKContextExtensionsTests
         skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, skills.Object, logger);
+        var context = new MockSKContext(variables, skills.Object, logger: logger);
         var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -164,7 +165,7 @@ public class SKContextExtensionsTests
         skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, skills.Object, logger);
+        var context = new MockSKContext(variables, skills.Object, logger: logger);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -217,7 +218,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, skills.ReadOnlySkillCollection, logger);
+        var context = new MockSKContext(variables, skills.ReadOnlySkillCollection, logger: logger);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 

@@ -2,11 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -15,65 +13,39 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Semantic Kernel context.
 /// </summary>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class SKContext
+public abstract class SKContext
 {
-    /// <summary>
-    /// The culture currently associated with this context.
-    /// </summary>
-    private CultureInfo _culture;
-
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
-    public string Result => this.Variables.ToString();
+    public abstract string Result { get; }
 
     /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
     /// </summary>
-    public bool ErrorOccurred { get; private set; }
+    public abstract bool ErrorOccurred { get; }
 
     /// <summary>
     /// Error details.
     /// </summary>
-    public string LastErrorDescription { get; private set; } = string.Empty;
+    public abstract string LastErrorDescription { get; }
 
     /// <summary>
     /// When an error occurs, this is the most recent exception.
     /// </summary>
-    public Exception? LastException { get; private set; }
+    public abstract Exception? LastException { get; }
 
     /// <summary>
     /// When a prompt is processed, aka the current data after any model results processing occurred.
     /// (One prompt can have multiple results).
     /// </summary>
-    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
-
-    /// <summary>
-    /// The token to monitor for cancellation requests.
-    /// </summary>
-    [Obsolete("Add a CancellationToken param to SKFunction method signatures instead of retrieving it from SKContext.")]
-    public CancellationToken CancellationToken { get; } = default;
+    public abstract IReadOnlyCollection<ModelResult> ModelResults { get; }
 
     /// <summary>
     /// The culture currently associated with this context.
     /// </summary>
-    public CultureInfo Culture
-    {
-        get => this._culture;
-        set => this._culture = value ?? CultureInfo.CurrentCulture;
-    }
-
-    /// <summary>
-    /// Shortcut into user data, access variables by name
-    /// </summary>
-    /// <param name="name">Variable name</param>
-    public string this[string name]
-    {
-        get => this.Variables[name];
-        set => this.Variables[name] = value;
-    }
+    public abstract CultureInfo Culture { get; }
 
     /// <summary>
     /// Call this method to signal when an error occurs.
@@ -82,18 +54,51 @@ public sealed class SKContext
     /// <param name="errorDescription">Error description</param>
     /// <param name="exception">If available, the exception occurred</param>
     /// <returns>The current instance</returns>
-    public SKContext Fail(string errorDescription, Exception? exception = null)
-    {
-        this.ErrorOccurred = true;
-        this.LastErrorDescription = errorDescription;
-        this.LastException = exception;
-        return this;
-    }
+    public abstract void Fail(string errorDescription, Exception? exception = null);
 
     /// <summary>
     /// User variables
     /// </summary>
-    public ContextVariables Variables { get; }
+    public abstract ContextVariables Variables { get; }
+
+    /// <summary>
+    /// Read only skills collection
+    /// </summary>
+    public abstract IReadOnlySkillCollection Skills { get; }
+
+    /// <summary>
+    /// App logger
+    /// </summary>
+    public abstract ILogger Logger { get; }
+
+    /// <summary>
+    /// Print the processed input, aka the current data after any processing occurred.
+    /// If an error occurred, prints the last exception message instead.
+    /// </summary>
+    /// <returns>Processed input, aka result, or last exception message if any</returns>
+    public abstract override string ToString();
+
+    /// <summary>
+    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
+    /// and a new set variables, so that variables can be modified without affecting the original context.
+    /// </summary>
+    /// <returns>A new context copied from the current one</returns>
+    public abstract SKContext Clone();
+
+    #region Obsolete
+
+    /// <summary>
+    /// The token to monitor for cancellation requests.
+    /// </summary>
+    [Obsolete("Add a CancellationToken param to SKFunction method signatures instead of retrieving it from SKContext.")]
+    public CancellationToken CancellationToken { get; } = default;
+
+    /// <summary>
+    /// Shortcut into user data, access variables by name
+    /// </summary>
+    /// <param name="name">Variable name</param>
+    [Obsolete("Indexer for variable access removed. Use context.Variables instead.")]
+    public string this[string name] => this.Variables[name];
 
     /// <summary>
     /// Semantic memory
@@ -106,9 +111,10 @@ public sealed class SKContext
     }
 
     /// <summary>
-    /// Read only skills collection
+    /// App logger (obsolete - use 'Logger')
     /// </summary>
-    public IReadOnlySkillCollection Skills { get; }
+    [Obsolete("Use 'SKContext.Logger' instead.")]
+    public ILogger Log => this.Logger;
 
     /// <summary>
     /// Access registered functions by skill + name. Not case sensitive.
@@ -117,83 +123,9 @@ public sealed class SKContext
     /// <param name="skillName">Skill name</param>
     /// <param name="functionName">Function name</param>
     /// <returns>Delegate to execute the function</returns>
+    [Obsolete("This method has been removed from SKContext. Use SKContext.Skills collection instead.")]
     public ISKFunction Func(string skillName, string functionName)
-    {
-        return this.Skills.GetFunction(skillName, functionName);
-    }
+        => this.Skills.GetFunction(skillName, functionName);
 
-    /// <summary>
-    /// App logger
-    /// </summary>
-    public ILogger Log { get; }
-
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="skills">Skills to include in context.</param>
-    /// <param name="logger">Logger for operations in context.</param>
-    public SKContext(
-        ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null,
-        ILogger? logger = null)
-    {
-        this.Variables = variables ?? new();
-        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
-        this.Log = logger ?? NullLogger.Instance;
-        this._culture = CultureInfo.CurrentCulture;
-    }
-
-    /// <summary>
-    /// Print the processed input, aka the current data after any processing occurred.
-    /// If an error occurred, prints the last exception message instead.
-    /// </summary>
-    /// <returns>Processed input, aka result, or last exception message if any</returns>
-    public override string ToString()
-    {
-        return this.ErrorOccurred ? $"Error: {this.LastErrorDescription}" : this.Result;
-    }
-
-    /// <summary>
-    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
-    /// and a new set variables, so that variables can be modified without affecting the original context.
-    /// </summary>
-    /// <returns>A new context copied from the current one</returns>
-    public SKContext Clone()
-    {
-        return new SKContext(
-            variables: this.Variables.Clone(),
-            skills: this.Skills,
-            logger: this.Log)
-        {
-            Culture = this.Culture,
-            ErrorOccurred = this.ErrorOccurred,
-            LastErrorDescription = this.LastErrorDescription,
-            LastException = this.LastException,
-        };
-    }
-
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay
-    {
-        get
-        {
-            if (this.ErrorOccurred)
-            {
-                return $"Error: {this.LastErrorDescription}";
-            }
-
-            string display = this.Variables.DebuggerDisplay;
-
-            if (this.Skills is IReadOnlySkillCollection skills)
-            {
-                var view = skills.GetFunctionsView();
-                display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";
-            }
-
-            display += $", Culture = {this.Culture.EnglishName}";
-
-            return display;
-        }
-    }
+    #endregion
 }

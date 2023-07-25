@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
@@ -85,20 +84,18 @@ public sealed class PlanSerializationTests
 
         // Arrange Mocks
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
         var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
+        var returnContext = new DefaultSKContext(
             new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(new Plan(mockFunction.Object));
 
@@ -123,20 +120,18 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
         var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
+        var returnContext = new DefaultSKContext(
             new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(mockFunction.Object);
 
@@ -161,20 +156,18 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
         var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
+        var returnContext = new DefaultSKContext(
             new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -199,20 +192,16 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+        var returnContext = new DefaultSKContext(
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(new Plan(mockFunction.Object), mockFunction.Object);
 
@@ -236,20 +225,16 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+        var returnContext = new DefaultSKContext(
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
 
@@ -272,20 +257,16 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+        var returnContext = new DefaultSKContext(
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -329,13 +310,9 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+        var returnContext = new DefaultSKContext(
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -345,7 +322,7 @@ public sealed class PlanSerializationTests
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView()
         {
             Parameters = new List<ParameterView>()
@@ -399,13 +376,11 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
         var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
+        var returnContext = new DefaultSKContext(
             new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -415,7 +390,7 @@ public sealed class PlanSerializationTests
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView()
         {
             Parameters = new List<ParameterView>
@@ -449,10 +424,8 @@ public sealed class PlanSerializationTests
         // Act
         cv.Set("variables", "bar");
         cv.Update(string.Empty);
-        var nextContext = new SKContext(
-            new ContextVariables(),
-            skills.Object,
-            log.Object
+        var nextContext = new DefaultSKContext(
+            skills: skills.Object
         );
         plan = Plan.FromJson(serializedPlan1, nextContext);
         plan = await kernel.Object.StepAsync(cv, plan);
@@ -484,20 +457,18 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
         var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
+        var returnContext = new DefaultSKContext(
             new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         if (requireFunctions)
         {
@@ -541,20 +512,18 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var log = new Mock<ILogger>();
         var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
+        var returnContext = new DefaultSKContext(
             new ContextVariables(stepOutput),
-            skills.Object,
-            log.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(new Plan("Step1", mockFunction.Object), mockFunction.Object);
 

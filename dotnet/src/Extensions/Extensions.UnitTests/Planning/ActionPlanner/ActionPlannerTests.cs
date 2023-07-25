@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
+using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.Planning.ActionPlanner;
@@ -109,12 +110,12 @@ public sealed class ActionPlannerTests
             skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
         }
 
-        var returnContext = new SKContext(
+        var returnContext = new MockSKContext(
             new ContextVariables(testPlanString),
             skills.Object
         );
 
-        var context = new SKContext(
+        var context = new MockSKContext(
             skills: skills.Object
         );
 
@@ -125,7 +126,7 @@ public sealed class ActionPlannerTests
             default
         )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
-        ).Returns(() => Task.FromResult(returnContext));
+        ).Returns(() => Task.FromResult<SKContext>(returnContext));
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);

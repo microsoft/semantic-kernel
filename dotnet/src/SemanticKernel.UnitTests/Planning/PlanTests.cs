@@ -54,9 +54,8 @@ public sealed class PlanTests
         var plan = new Plan(goal);
         var kernel = new Mock<IKernel>();
 
-        var context = new SKContext(
-            new ContextVariables("Some input")
-        );
+        var context = new MockSKContext();
+        context.Variables.Update("Some input");
 
         // Act
         var result = await plan.InvokeAsync(context);
@@ -85,16 +84,14 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput)
-        );
+        var returnContext = new MockSKContext();
+        returnContext.Variables.Update(stepOutput);
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(new Plan(mockFunction.Object));
 
@@ -119,15 +116,14 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput)
-        );
+        var returnContext = new MockSKContext();
+        returnContext.Variables.Update(stepOutput);
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(mockFunction.Object);
 
@@ -152,15 +148,14 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
 
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput)
-        );
+        var returnContext = new MockSKContext();
+        returnContext.Variables.Update(stepOutput);
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -184,16 +179,14 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput)
-        );
+        var returnContext = new MockSKContext();
+        returnContext.Variables.Update(stepOutput);
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(new Plan(mockFunction.Object), mockFunction.Object);
 
@@ -217,16 +210,14 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput)
-        );
+        var returnContext = new MockSKContext();
+        returnContext.Variables.Update(stepOutput);
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
 
@@ -250,16 +241,14 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput)
-        );
+        var returnContext = new MockSKContext();
+        returnContext.Variables.Update(stepOutput);
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -290,10 +279,8 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput)
-        );
+        var returnContext = new MockSKContext();
+        returnContext.Variables.Update(stepOutput);
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -302,7 +289,7 @@ public sealed class PlanTests
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView
         {
             Parameters = new List<ParameterView>
@@ -344,16 +331,14 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext(
-            new ContextVariables(stepOutput)
-        );
+        var returnContext = new MockSKContext();
+        returnContext.Variables.Update(stepOutput);
 
         returnContext.Fail("Error description", new ArgumentException("Error message"));
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -375,14 +360,13 @@ public sealed class PlanTests
         var kernel = new Mock<IKernel>();
         var log = new Mock<ILogger>();
         var skills = new Mock<ISkillCollection>();
-
-        var returnContext = new SKContext();
+        var returnContext = new MockSKContext();
 
         returnContext.Fail("Error description", new ArgumentException("Error message"));
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
 
@@ -402,30 +386,29 @@ public sealed class PlanTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext();
+        var returnContext = new MockSKContext();
 
         var childFunction1 = new Mock<ISKFunction>();
         childFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 1 output!" + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
         var childFunction2 = new Mock<ISKFunction>();
         childFunction2.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 2 is happy about " + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
         var childFunction3 = new Mock<ISKFunction>();
         childFunction3.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Child 3 heard " + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         var nodeFunction1 = new Mock<ISKFunction>();
         nodeFunction1.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(c.Variables.Input + " - this just happened."))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         subPlan.AddSteps(childFunction1.Object, childFunction2.Object, childFunction3.Object);
         plan.AddSteps(subPlan);
@@ -477,14 +460,13 @@ public sealed class PlanTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext();
+        var returnContext = new MockSKContext();
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Here is a poem about " + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         var plan = new Plan(mockFunction.Object);
         plan.State.Set("input", "Cleopatra");
@@ -503,8 +485,7 @@ public sealed class PlanTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext();
+        var returnContext = new MockSKContext();
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -513,7 +494,7 @@ public sealed class PlanTests
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         var planStep = new Plan(mockFunction.Object);
         planStep.Parameters.Set("type", string.Empty);
@@ -537,7 +518,7 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
 
-        var returnContext = new SKContext();
+        var returnContext = new DefaultSKContext();
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -546,7 +527,7 @@ public sealed class PlanTests
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         var plan = new Plan(mockFunction.Object);
         plan.State.Set("input", "Cleopatra");
@@ -564,7 +545,7 @@ public sealed class PlanTests
         plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
-        var contextOverride = new SKContext();
+        var contextOverride = new DefaultSKContext();
         contextOverride.Variables.Set("type", "joke");
         contextOverride.Variables.Update("Medusa");
 
@@ -582,8 +563,7 @@ public sealed class PlanTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext();
+        var returnContext = new DefaultSKContext();
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -592,7 +572,7 @@ public sealed class PlanTests
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         var planStep = new Plan(mockFunction.Object);
         planStep.Parameters.Set("type", string.Empty);
@@ -630,7 +610,7 @@ public sealed class PlanTests
         planStep.Parameters.Set("input", "Cleopatra");
         planStep.Parameters.Set("type", "poem");
         plan.AddSteps(planStep);
-        var contextOverride = new SKContext();
+        var contextOverride = new DefaultSKContext();
         contextOverride.Variables.Set("type", "joke");
         contextOverride.Variables.Update("Medusa"); // context input will not override parameters
 
@@ -649,13 +629,13 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
 
-        var returnContext = new SKContext();
+        var returnContext = new MockSKContext();
 
         var outlineMock = new Mock<ISKFunction>();
         outlineMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update($"Here is a {c.Variables["chapterCount"]} chapter outline about " + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         var elementAtIndexMock = new Mock<ISKFunction>();
         elementAtIndexMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -663,7 +643,7 @@ public sealed class PlanTests
             {
                 returnContext.Variables.Update($"Outline section #{c.Variables["index"]} of {c.Variables["count"]}: " + c.Variables.Input);
             })
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         var novelChapterMock = new Mock<ISKFunction>();
         novelChapterMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -672,7 +652,7 @@ public sealed class PlanTests
                 returnContext.Variables.Update(
                     $"Chapter #{c.Variables["chapterIndex"]}: {c.Variables.Input}\nTheme:{c.Variables["theme"]}\nPreviously:{c.Variables["previousChapter"]}");
             })
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         var plan = new Plan("A plan with steps that alternate appending to the plan result.");
 
@@ -762,14 +742,13 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-
-        var returnContext = new SKContext();
+        var returnContext = new MockSKContext();
 
         var functionMock = new Mock<ISKFunction>();
         functionMock.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, CompleteRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update($"Here is a payload '{c.Variables["payload"]}' for " + c.Variables.Input))
-            .Returns(() => Task.FromResult(returnContext));
+            .Returns(() => Task.FromResult<SKContext>(returnContext));
 
         var plan = new Plan("A plan with steps that have variables with a $ in them but not associated with an output");
 

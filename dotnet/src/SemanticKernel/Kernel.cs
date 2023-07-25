@@ -170,10 +170,12 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
-        var context = new SKContext(
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
+        SKContext context = new DefaultSKContext(
             variables,
             this._skillCollection.ReadOnlySkillCollection,
-            this.Log);
+            logger: this.Log);
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
 
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
@@ -204,8 +206,7 @@ public sealed class Kernel : IKernel, IDisposable
             {
                 this.Log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
                     pipelineStepCount, f.SkillName, f.Name, e.Message);
-                context.Fail(e.Message, e);
-                return context;
+                return DefaultSKContext.FromException(e);
             }
         }
 
@@ -221,7 +222,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public SKContext CreateNewContext()
     {
-        return new SKContext(
+        return new DefaultSKContext(
             skills: this._skillCollection.ReadOnlySkillCollection,
             logger: this.Log);
     }

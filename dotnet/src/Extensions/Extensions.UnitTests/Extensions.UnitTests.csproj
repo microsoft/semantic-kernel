@@ -12,6 +12,8 @@
     <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
 
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />

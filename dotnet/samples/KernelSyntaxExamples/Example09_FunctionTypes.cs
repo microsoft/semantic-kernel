@@ -16,12 +16,12 @@ public static class Example09_FunctionTypes
     {
         Console.WriteLine("======== Native function types ========");
 
-        var fakeContext = new SKContext(logger: ConsoleLogger.Log);
-
         var kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Log)
             .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
+
+        var fakeContext = kernel.CreateNewContext();
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
         var test = kernel.ImportSkill(new LocalExampleSkill(), "test");
@@ -132,7 +132,7 @@ public class LocalExampleSkill
     [SKFunction]
     public async Task<string> Type06Async(SKContext context)
     {
-        var summarizer = context.Func("SummarizeSkill", "Summarize");
+        var summarizer = context.Skills.GetFunction("SummarizeSkill", "Summarize");
 
         var summary = await summarizer.InvokeAsync("blah blah blah");
 

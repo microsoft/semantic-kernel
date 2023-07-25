@@ -228,10 +228,10 @@ public sealed class Plan : ISKFunction
     /// </remarks>
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
-        var context = new SKContext(
+        var context = new DefaultSKContext(
             variables,
             kernel.Skills,
-            kernel.Log);
+            logger: kernel.Log);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
     }
@@ -253,7 +253,7 @@ public sealed class Plan : ISKFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Skills, context.Log);
+            var functionContext = new DefaultSKContext(functionVariables, context.Skills, context.Culture, logger: context.Logger);
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
@@ -313,7 +313,7 @@ public sealed class Plan : ISKFunction
     {
         if (input != null) { this.State.Update(input); }
 
-        SKContext context = new(
+        var context = new DefaultSKContext(
             this.State,
             logger: logger);
 
@@ -592,7 +592,7 @@ public sealed class Plan : ISKFunction
     {
         using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
 
-        context.Log.LogInformation("{SkillName}.{StepName}: Step execution started.", this.SkillName, this.Name);
+        context.Logger.LogInformation("{SkillName}.{StepName}: Step execution started.", this.SkillName, this.Name);
 
         var stopwatch = new Stopwatch();
 
@@ -604,23 +604,23 @@ public sealed class Plan : ISKFunction
 
         if (!result.ErrorOccurred)
         {
-            context.Log.LogInformation(
+            context.Logger.LogInformation(
                 "{SkillName}.{StepName}: Step execution status: {Status}.",
                 this.SkillName, this.Name, "Success");
         }
         else
         {
-            context.Log.LogInformation(
+            context.Logger.LogInformation(
                 "{SkillName}.{StepName}: Step execution status: {Status}.",
                 this.SkillName, this.Name, "Failed");
 
-            context.Log.LogError(
+            context.Logger.LogError(
                 result.LastException,
                 "Something went wrong in plan step {SkillName}.{StepName}:'{ErrorDescription}'",
                 this.SkillName, this.Name, context.LastErrorDescription);
         }
 
-        context.Log.LogInformation(
+        context.Logger.LogInformation(
             "{SkillName}.{StepName}: Step execution finished in {ExecutionTime}ms.",
             this.SkillName, this.Name, stopwatch.ElapsedMilliseconds);
 

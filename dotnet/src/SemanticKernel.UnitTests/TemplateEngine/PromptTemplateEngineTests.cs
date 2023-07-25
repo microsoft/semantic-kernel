@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
@@ -263,9 +264,10 @@ public sealed class PromptTemplateEngineTests
         return method.Method;
     }
 
+    [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance")]
     private SKContext MockContext()
     {
-        return new SKContext(
+        return new DefaultSKContext(
             this._variables,
             skills: this._skills.Object,
             logger: TestConsoleLogger.Log);

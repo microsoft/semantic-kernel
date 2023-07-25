@@ -182,27 +182,25 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
                 string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
-                // Update the result with the completion
-                context.Variables.Update(completion);
-
-                context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
+                // Create a copy of the SKContext, update the result with the completion
+                var contextResult = new DefaultSKContext(context);
+                contextResult.Variables.Update(completion);
+                return contextResult;
             }
             catch (AIException ex)
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
-                context.Fail(ex.Message, ex);
+                return DefaultSKContext.FromException(ex);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}";
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message);
-                context.Fail(ex.Message, ex);
+                return DefaultSKContext.FromException(ex);
             }
-
-            return context;
         }
 
         // Update delegate function with a reference to the LocalFunc created
@@ -231,24 +229,22 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             this.AddDefaultValues(context.Variables);
 
-            var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
-            context.Variables.Update(resultContext.Variables);
-        }
-        else
-        {
-            try
-            {
-                context = await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception e) when (!e.IsCriticalException())
-            {
-                const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-                this._log.LogError(e, Message, this._function.Method.Name, e.Message);
-                context.Fail(e.Message, e);
-            }
+            return await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
         }
 
-        return context;
+        try
+        {
+            return await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception e) when (!e.IsCriticalException())
+        {
+            const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
+            this._log.LogError(e, Message, this._function.Method.Name, e.Message);
+
+            var contextResult = new DefaultSKContext(context);
+            contextResult.Fail(e.Message, e);
+            return contextResult;
+        }
     }
 
     /// <inheritdoc/>
@@ -258,7 +254,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        SKContext context = new(
+        var context = new DefaultSKContext(
             new ContextVariables(input),
             skills: this._skillCollection,
             logger: logger);
@@ -517,7 +513,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         if (type == typeof(ILogger))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)} parameter is permitted.");
-            return (static (SKContext ctx, CancellationToken _) => ctx.Log, null);
+            return (static (SKContext ctx, CancellationToken _) => ctx.Logger, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))

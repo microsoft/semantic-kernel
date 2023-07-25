@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
+using SemanticKernel.UnitTests;
 using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.Planning.SequentialPlanner;
@@ -47,7 +48,7 @@ public sealed class SequentialPlannerTests
                 .Returns<SKContext, CompleteRequestSettings, CancellationToken>((context, settings, cancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
-                    return Task.FromResult(context);
+                    return Task.FromResult<SKContext>(context);
                 });
 
             skills.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
@@ -61,16 +62,14 @@ public sealed class SequentialPlannerTests
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedSkills = input.Select(x => x.skillName).ToList();
 
-        var context = new SKContext(
+        var context = new MockSKContext(
             new ContextVariables(),
-            skills.Object,
-            new Mock<ILogger>().Object
+            skills.Object
         );
 
-        var returnContext = new SKContext(
+        var returnContext = new MockSKContext(
             new ContextVariables(),
-            skills.Object,
-            new Mock<ILogger>().Object
+            skills.Object
         );
         var planString =
             @"
@@ -90,7 +89,7 @@ public sealed class SequentialPlannerTests
             default
         )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
-        ).Returns(() => Task.FromResult(returnContext));
+        ).Returns(() => Task.FromResult<SKContext>(returnContext));
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);
@@ -155,16 +154,14 @@ public sealed class SequentialPlannerTests
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
 
         var planString = "<plan>notvalid<</plan>";
-        var returnContext = new SKContext(
+        var returnContext = new MockSKContext(
             new ContextVariables(planString),
-            skills.Object,
-            new Mock<ILogger>().Object
+            skills.Object
         );
 
-        var context = new SKContext(
+        var context = new MockSKContext(
             new ContextVariables(),
-            skills.Object,
-            new Mock<ILogger>().Object
+            skills.Object
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
@@ -174,7 +171,7 @@ public sealed class SequentialPlannerTests
             default
         )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
-        ).Returns(() => Task.FromResult(returnContext));
+        ).Returns(() => Task.FromResult<SKContext>(returnContext));
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);
