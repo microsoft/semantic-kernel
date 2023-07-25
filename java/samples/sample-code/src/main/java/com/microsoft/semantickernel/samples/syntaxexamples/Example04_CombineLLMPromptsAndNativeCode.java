@@ -20,8 +20,7 @@ public class Example04_CombineLLMPromptsAndNativeCode {
     public static class SearchEngineSkill {
         @DefineSKFunction(description = "Append the day variable", name = "search")
         public Mono<String> search(
-                @SKFunctionInputAttribute
-                @SKFunctionParameters(description = "Text to search", name = "input")
+                @SKFunctionInputAttribute(description = "Text to search")
                 String input) {
             return Mono.just("Gran Torre Santiago is the tallest building in South America");
         }

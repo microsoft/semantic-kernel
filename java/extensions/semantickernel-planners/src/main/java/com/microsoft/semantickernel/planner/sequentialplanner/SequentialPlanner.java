@@ -27,11 +27,11 @@ public class SequentialPlanner {
     private static final String RestrictedSkillName = "SequentialPlanner_Excluded";
 
     private final SequentialPlannerRequestSettings config;
-    private final SKContext context;
 
     // the function flow semantic function, which takes a goal and creates an xml plan that can be
     // executed
     private final CompletionSKFunction functionFlowFunction;
+    private final Kernel kernel;
 
     public SequentialPlanner(
             Kernel kernel,
@@ -64,16 +64,27 @@ public class SequentialPlanner {
                                 new PromptTemplateConfig.CompletionConfig(
                                         0.0, 0.0, 0.0, 0.0, this.config.getMaxTokens()));
 
-        this.context = SKBuilders.context().build(kernel);
+        this.kernel = kernel;
+    }
+
+    /**
+     * Create a plan for a goal using a default context build on the current kernel.
+     *
+     * @param goal The goal to create a plan for.
+     * @return The plan
+     */
+    public Mono<Plan> createPlanAsync(String goal) {
+        return createPlanAsync(goal, SKBuilders.context().build(kernel));
     }
 
     /**
      * Create a plan for a goal.
      *
      * @param goal The goal to create a plan for.
+     * @param context The semantic kernel context
      * @return The plan
      */
-    public Mono<Plan> createPlanAsync(String goal) {
+    public Mono<Plan> createPlanAsync(String goal, SKContext context) {
         if (goal == null || goal.isEmpty()) {
             throw new PlanningException(
                     PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
@@ -100,16 +111,12 @@ public class SequentialPlanner {
 
                                 Plan plan =
                                         SequentialPlanParser.toPlanFromXml(
-                                                planResultString, goal, context);
+                                                planResultString, goal, context.getSkills());
                                 return plan;
                             });
         } catch (Exception e) {
             throw new PlanningException(
                     PlanningException.ErrorCodes.InvalidPlan, "Plan parsing error, invalid XML", e);
         }
-    }
-
-    public SKContext getContext() {
-        return context;
     }
 }

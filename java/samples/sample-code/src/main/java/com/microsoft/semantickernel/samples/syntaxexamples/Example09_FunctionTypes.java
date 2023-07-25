@@ -175,7 +175,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type08")
         public void Type08(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x) {
             System.out.println("Running function type 8");
         }
@@ -183,7 +183,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type09")
         public String Type09(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x) {
             System.out.println("Running function type 9");
             return "";
@@ -191,7 +191,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type10")
         public Mono<String> Type10Async(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x) {
             return Mono.delay(Duration.ZERO)
                     .map(x2 -> {
@@ -202,7 +202,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type11")
         public void Type11(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x,
                 SKContext context) {
             System.out.println("Running function type 11");
@@ -211,7 +211,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type12")
         public String Type12(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x,
                 SKContext context) {
             System.out.println("Running function type 12");
@@ -220,7 +220,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type13")
         public Mono<String> Type13Async(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x, SKContext context) {
             return Mono.delay(Duration.ZERO)
                     .map(x2 -> {
@@ -231,7 +231,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type14")
         public Mono<SKContext> Type14Async(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x, SKContext context) {
             return Mono.delay(Duration.ZERO)
                     .ignoreElement()

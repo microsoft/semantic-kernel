@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -19,16 +18,14 @@ public class Example03_Variables {
     public static class StaticTextSkill {
         @DefineSKFunction(description = "Change all string chars to uppercase.", name = "Uppercase")
         public static Mono<String> uppercase(
-                @SKFunctionInputAttribute
-                @SKFunctionParameters(description = "Text to uppercase", name = "input")
+                @SKFunctionInputAttribute(description = "Text to uppercase")
                 String text) {
             return Mono.just(text.toUpperCase(Locale.ROOT));
         }
 
         @DefineSKFunction(description = "Append the day variable", name = "appendDay")
         public Mono<String> appendDay(
-                @SKFunctionInputAttribute
-                @SKFunctionParameters(description = "Text to append to", name = "input")
+                @SKFunctionInputAttribute(description = "Text to append to")
                 String input,
                 @SKFunctionParameters(description = "Current day", name = "day") String day) {
             return Mono.just(input + day);

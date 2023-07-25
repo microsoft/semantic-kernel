@@ -6,7 +6,6 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
-import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.text.TextChunker;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
@@ -87,11 +86,7 @@ public class ConversationSummarySkill {
             description = "Given a long conversation transcript, summarize the conversation.",
             name = "SummarizeConversation")
     public Mono<SKContext> summarizeConversationAsync(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(
-                            description = "A long conversation transcript.",
-                            name = "input")
-                    String input,
+            @SKFunctionInputAttribute(description = "A long conversation transcript.") String input,
             @Nullable SKContext context) {
         List<String> lines = TextChunker.splitPlainTextLines(input, MaxTokens);
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
@@ -118,11 +113,7 @@ public class ConversationSummarySkill {
             description = "Given a long conversation transcript, identify action items.",
             name = "GetConversationActionItems")
     public Mono<SKContext> getConversationActionItemsAsync(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(
-                            description = "A long conversation transcript.",
-                            name = "input")
-                    String input,
+            @SKFunctionInputAttribute(description = "A long conversation transcript.") String input,
             SKContext context) {
         List<String> lines = TextChunker.splitPlainTextLines(input, MaxTokens);
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
@@ -145,11 +136,7 @@ public class ConversationSummarySkill {
                     "Given a long conversation transcript, identify topics worth remembering.",
             name = "GetConversationTopics")
     public Mono<SKContext> getConversationTopicsAsync(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(
-                            description = "A long conversation transcript.",
-                            name = "input")
-                    String input,
+            @SKFunctionInputAttribute(description = "A long conversation transcript.") String input,
             SKContext context) {
         List<String> lines = TextChunker.splitPlainTextLines(input, MaxTokens);
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);

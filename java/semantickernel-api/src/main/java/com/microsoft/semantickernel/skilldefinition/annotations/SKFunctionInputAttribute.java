@@ -9,4 +9,6 @@ import java.lang.annotation.Target;
 /** Annotates a parameter binding it to the "input" context variable */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface SKFunctionInputAttribute {}
+public @interface SKFunctionInputAttribute {
+    String description();
+}
