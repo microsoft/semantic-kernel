@@ -16,45 +16,9 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public abstract class SKContext
 {
     /// <summary>
-    /// Print the processed input, aka the current data after any processing occurred.
-    /// </summary>
-    /// <returns>Processed input, aka result</returns>
-    public abstract string Result { get; }
-
-    /// <summary>
-    /// Whether an error occurred while executing functions in the pipeline.
-    /// </summary>
-    public abstract bool ErrorOccurred { get; }
-
-    /// <summary>
-    /// Error details.
-    /// </summary>
-    public abstract string LastErrorDescription { get; }
-
-    /// <summary>
-    /// When an error occurs, this is the most recent exception.
-    /// </summary>
-    public abstract Exception? LastException { get; }
-
-    /// <summary>
-    /// When a prompt is processed, aka the current data after any model results processing occurred.
-    /// (One prompt can have multiple results).
-    /// </summary>
-    public abstract IReadOnlyCollection<ModelResult> ModelResults { get; }
-
-    /// <summary>
     /// The culture currently associated with this context.
     /// </summary>
     public abstract CultureInfo Culture { get; }
-
-    /// <summary>
-    /// Call this method to signal when an error occurs.
-    /// In the usual scenarios this is also how execution is stopped, e.g. to inform the user or take necessary steps.
-    /// </summary>
-    /// <param name="errorDescription">Error description</param>
-    /// <param name="exception">If available, the exception occurred</param>
-    /// <returns>The current instance</returns>
-    public abstract void Fail(string errorDescription, Exception? exception = null);
 
     /// <summary>
     /// User variables
@@ -72,18 +36,69 @@ public abstract class SKContext
     public abstract ILogger Logger { get; }
 
     /// <summary>
+    /// Creates a clone of the current context
+    /// </summary>
+    /// <returns>A new context copied from the current one</returns>
+    public abstract SKContext Clone();
+
+    #region Function results - will move to an SKResult class
+
+    /// <summary>
+    /// Print the processed input, aka the current data after any processing occurred.
+    /// </summary>
+    /// <returns>Processed input, aka result</returns>
+    public virtual string Result => this.Variables.ToString();
+
+    /// <summary>
+    /// When a prompt is processed, aka the current data after any model results processing occurred.
+    /// (One prompt can have multiple results).
+    /// </summary>
+    public abstract IReadOnlyList<ModelResult> ModelResults { get; set; }
+
+    #endregion
+
+    #region Error handling - legacy, to be replaced
+
+    /// <summary>
+    /// Whether an error occurred while executing functions in the pipeline.
+    /// </summary>
+    public virtual bool ErrorOccurred { get; protected set; }
+
+    /// <summary>
+    /// Error details.
+    /// </summary>
+    public virtual string? LastErrorDescription { get; protected set; }
+
+    /// <summary>
+    /// When an error occurs, this is the most recent exception.
+    /// </summary>
+    public virtual Exception? LastException { get; protected set; }
+
+    /// <summary>
+    /// Call this method to signal when an error occurs.
+    /// In the usual scenarios this is also how execution is stopped, e.g. to inform the user or take necessary steps.
+    /// </summary>
+    /// <param name="errorDescription">Error description</param>
+    /// <param name="exception">If available, the exception occurred</param>
+    /// <returns>The current instance</returns>
+    public virtual void Fail(string errorDescription, Exception? exception = null)
+    {
+        this.ErrorOccurred = true;
+        this.LastErrorDescription = errorDescription;
+        this.LastException = exception;
+    }
+
+    /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// If an error occurred, prints the last exception message instead.
     /// </summary>
     /// <returns>Processed input, aka result, or last exception message if any</returns>
-    public abstract override string ToString();
+    public override string ToString()
+    {
+        return this.ErrorOccurred ? $"Error: {this.LastErrorDescription}" : this.Result;
+    }
 
-    /// <summary>
-    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
-    /// and a new set variables, so that variables can be modified without affecting the original context.
-    /// </summary>
-    /// <returns>A new context copied from the current one</returns>
-    public abstract SKContext Clone();
+    #endregion
 
     #region Obsolete
 

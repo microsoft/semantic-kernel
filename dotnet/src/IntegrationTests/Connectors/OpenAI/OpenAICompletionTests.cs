@@ -133,7 +133,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
 
         // Assert
-        Assert.Empty(actual.LastErrorDescription);
+        Assert.Null(actual.LastErrorDescription);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
@@ -331,7 +331,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
 
         // Assert
-        Assert.Empty(actual.LastErrorDescription);
+        Assert.Null(actual.LastErrorDescription);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains("Pike Place", actual.Result, StringComparison.OrdinalIgnoreCase);
     }
@@ -353,7 +353,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(skill["Limerick"]);
 
         // Assert
-        Assert.Empty(actual.LastErrorDescription);
+        Assert.Null(actual.LastErrorDescription);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains("Bob", actual.Result, StringComparison.OrdinalIgnoreCase);
     }

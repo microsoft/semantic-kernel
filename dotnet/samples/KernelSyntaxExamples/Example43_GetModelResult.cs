@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure;
@@ -14,6 +15,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example43_GetModelResult
 {
+    [SuppressMessage("Performance", "CA1826:Do not use Enumerable methods on indexable collections")]
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Inline Function Definition + Result ========");

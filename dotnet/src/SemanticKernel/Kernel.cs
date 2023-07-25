@@ -206,7 +206,8 @@ public sealed class Kernel : IKernel, IDisposable
             {
                 this.Log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
                     pipelineStepCount, f.SkillName, f.Name, e.Message);
-                return DefaultSKContext.FromException(e);
+                context.Fail(e.Message, e);
+                return context;
             }
         }
 

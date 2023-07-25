@@ -185,6 +185,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 // Create a copy of the SKContext, update the result with the completion
                 var contextResult = new DefaultSKContext(context);
                 contextResult.Variables.Update(completion);
+                context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
                 return contextResult;
             }
             catch (AIException ex)
@@ -192,14 +193,16 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
-                return DefaultSKContext.FromException(ex);
+                context.Fail(ex.Message, ex);
+                return context;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}";
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message);
-                return DefaultSKContext.FromException(ex);
+                context.Fail(ex.Message, ex);
+                return context;
             }
         }
 
