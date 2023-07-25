@@ -75,6 +75,7 @@ Configure an Azure OpenAI endpoint
 1. Edit the file to add your Azure OpenAI endpoint configuration
 
 ## Running the sample
+
 Before running the sample, make sure you have the [Math Plugin](../MathPlugin/) running locally.
 
 To run the console application just hit `F5`.
