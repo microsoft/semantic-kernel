@@ -2,12 +2,12 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 
 import java.io.IOException;

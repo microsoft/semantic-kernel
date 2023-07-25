@@ -73,8 +73,7 @@ public class Example_PlanWithNativeFunctions {
                 name = "stringReplace",
                 description = "Takes a message and substitutes string 'from' to 'to'")
         public String stringReplace(
-                @SKFunctionInputAttribute
-                @SKFunctionParameters(name = "input", description = "The string to perform the replacement on")
+                @SKFunctionInputAttribute(description = "The string to perform the replacement on")
                 String input,
                 @SKFunctionParameters(name = "from", description = "The string to replace")
                 String from,
@@ -88,8 +87,7 @@ public class Example_PlanWithNativeFunctions {
     public static class Names {
         @DefineSKFunction(name = "getNickName", description = "Retrieves the nick name for a given user")
         public String getNickName(
-                @SKFunctionInputAttribute
-                @SKFunctionParameters(name = "name", description = "The name of the person to get an nick name for")
+                @SKFunctionInputAttribute(description = "The name of the person to get an nick name for")
                 String name) {
             switch (name) {
                 case "Steven":
@@ -104,8 +102,7 @@ public class Example_PlanWithNativeFunctions {
     public static class Emailer {
         @DefineSKFunction(name = "getEmailAddress", description = "Retrieves the email address for a given user")
         public String getEmailAddress(
-                @SKFunctionInputAttribute
-                @SKFunctionParameters(name = "name", description = "The name of the person to get an email address for")
+                @SKFunctionInputAttribute(description = "The name of the person to get an email address for")
                 String name) {
             switch (name) {
                 case "Steven":

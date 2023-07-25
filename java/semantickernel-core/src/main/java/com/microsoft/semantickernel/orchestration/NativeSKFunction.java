@@ -22,7 +22,11 @@ import reactor.core.scheduler.Schedulers;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -181,7 +185,11 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                                                 annotation.description(),
                                                 annotation.defaultValue());
                                     } else {
-                                        return new ParameterView("input");
+                                        SKFunctionInputAttribute annotation =
+                                                parameter.getAnnotation(
+                                                        SKFunctionInputAttribute.class);
+                                        return new ParameterView(
+                                                "input", annotation.description(), "");
                                     }
                                 })
                         .collect(Collectors.toList());

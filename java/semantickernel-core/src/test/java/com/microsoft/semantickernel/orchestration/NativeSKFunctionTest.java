@@ -42,7 +42,7 @@ public class NativeSKFunctionTest {
         class With2Inputs {
             @DefineSKFunction
             public String doSomething(
-                    @SKFunctionInputAttribute String anInput,
+                    @SKFunctionInputAttribute(description = "") String anInput,
                     @SKFunctionParameters(name = "secondInput") String secondInput) {
                 return "";
             }

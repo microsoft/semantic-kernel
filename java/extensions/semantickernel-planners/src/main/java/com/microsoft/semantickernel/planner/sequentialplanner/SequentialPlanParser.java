@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.planner.sequentialplanner;
 
 import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
 import com.microsoft.semantickernel.planner.PlanningException;
@@ -56,11 +55,11 @@ public class SequentialPlanParser {
      *
      * @param xmlString The plan xml string
      * @param goal The goal for the plan
-     * @param context The semantic kernel context
+     * @param skills The skills to use
      * @return The plan
      * @throws PlanningException
      */
-    public static Plan toPlanFromXml(String xmlString, String goal, SKContext context)
+    public static Plan toPlanFromXml(String xmlString, String goal, ReadOnlySkillCollection skills)
             throws PlanningException {
 
         try {
@@ -74,7 +73,7 @@ public class SequentialPlanParser {
 
             NodeList solution = doc.getElementsByTagName(SolutionTag);
 
-            Plan plan = new Plan(goal, context::getSkills);
+            Plan plan = new Plan(goal, () -> skills);
 
             for (int i = 0; i < solution.getLength(); i++) {
                 Node solutionNode = solution.item(i);
@@ -85,8 +84,7 @@ public class SequentialPlanParser {
                     if (childNode.getNodeName().equals("#text")) {
                         if (childNode.getNodeValue() != null
                                 && !childNode.getNodeValue().trim().isEmpty()) {
-                            plan.addSteps(
-                                    new Plan(childNode.getNodeValue().trim(), context::getSkills));
+                            plan.addSteps(new Plan(childNode.getNodeValue().trim(), () -> skills));
                         }
                         continue;
                     }
@@ -103,13 +101,11 @@ public class SequentialPlanParser {
                         String skillName = getSkillName(skillFunctionName);
                         String functionName = getFunctionName(skillFunctionName);
 
-                        ReadOnlySkillCollection skills = context.getSkills();
                         if (functionName != null
                                 && !functionName.isEmpty()
                                 && skills.hasFunction(skillName, functionName)) {
                             SKFunction skillFunction =
-                                    Objects.requireNonNull(
-                                                    context.getSkills().getFunctions(skillName))
+                                    Objects.requireNonNull(skills.getFunctions(skillName))
                                             .getFunction(functionName, SKFunction.class);
 
                             WritableContextVariables functionVariables =
@@ -123,7 +119,7 @@ public class SequentialPlanParser {
                                             functionVariables,
                                             SKBuilders.variables().build(),
                                             functionOutputs,
-                                            context::getSkills);
+                                            () -> skills);
 
                             plan.addOutputs(functionResults);
                             plan.addSteps(planStep);
@@ -132,13 +128,13 @@ public class SequentialPlanParser {
                                     "{}: appending function node {}",
                                     parentNodeName,
                                     skillFunctionName);
-                            plan.addSteps(new Plan(childNode.getTextContent(), context::getSkills));
+                            plan.addSteps(new Plan(childNode.getTextContent(), () -> skills));
                         }
 
                         continue;
                     }
 
-                    plan.addSteps(new Plan(childNode.getTextContent(), context::getSkills));
+                    plan.addSteps(new Plan(childNode.getTextContent(), () -> skills));
                 }
             }
             return plan;

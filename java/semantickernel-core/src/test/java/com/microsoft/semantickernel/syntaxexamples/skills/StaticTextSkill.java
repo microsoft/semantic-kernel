@@ -13,17 +13,13 @@ public class StaticTextSkill {
 
     @DefineSKFunction(description = "Change all string chars to uppercase.", name = "Uppercase")
     public static Mono<String> uppercase(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(description = "Text to uppercase", name = "input")
-                    String text) {
+            @SKFunctionInputAttribute(description = "Text to uppercase") String text) {
         return Mono.just(text.toUpperCase(Locale.ROOT));
     }
 
     @DefineSKFunction(description = "Append the day variable", name = "appendDay")
     public Mono<String> appendDay(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(description = "Text to append to", name = "input")
-                    String input,
+            @SKFunctionInputAttribute(description = "Text to append to") String input,
             @SKFunctionParameters(description = "Current day", name = "day") String day) {
         return Mono.just(input + day);
     }

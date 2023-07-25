@@ -45,9 +45,7 @@ public class MathSkill {
      */
     @DefineSKFunction(description = "Adds amount to a value.", name = "add")
     public String add(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(name = "input", description = "The value to add to.")
-                    String input,
+            @SKFunctionInputAttribute(description = "The value to add to.") String input,
             @SKFunctionParameters(name = "amount", description = "The amount to be added to value.")
                     String amount) {
 
@@ -69,11 +67,7 @@ public class MathSkill {
      */
     @DefineSKFunction(description = "Subtracts amount from value.", name = "Subtract")
     public String subtract(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(
-                            name = "input",
-                            description = "The value to subtract from.")
-                    String input,
+            @SKFunctionInputAttribute(description = "The value to subtract from.") String input,
             @SKFunctionParameters(
                             name = "amount",
                             description = "The amount to be subtracted from value.")
