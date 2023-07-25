@@ -1,10 +1,11 @@
-import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAITextCompletion,
-    AzureTextCompletion,
-)
 from plugins.MathPlugin.MathPlugin import MathPlugin
 from plugins.OrchestratorPlugin.OrchestratorPlugin import OrchestratorPlugin
+
+import semantic_kernel as sk
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureTextCompletion,
+    OpenAITextCompletion,
+)
 
 
 async def main():
@@ -31,7 +32,7 @@ async def main():
     kernel.import_semantic_skill_from_directory(pluginsDirectory, "SummarizeSkill")
 
     # Import the native functions
-    mathPlugin = kernel.import_skill(MathPlugin(), "MathPlugin")
+    mathPlugin = kernel.import_skill(MathPlugin(), "MathPlugin") # noqa: F841
     orchestratorPlugin = kernel.import_skill(
         OrchestratorPlugin(kernel), "OrchestratorPlugin"
     )

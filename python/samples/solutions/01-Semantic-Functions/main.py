@@ -1,7 +1,7 @@
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import (
-    OpenAITextCompletion,
     AzureTextCompletion,
+    OpenAITextCompletion,
 )
 
 
@@ -26,7 +26,7 @@ async def main():
 
     # Import the OrchestratorPlugin and SummarizeSkill from the plugins directory.
     orchestrator_plugin = kernel.import_semantic_skill_from_directory(plugins_directory, "OrchestratorPlugin")
-    summarization_plugin = kernel.import_semantic_skill_from_directory(plugins_directory, "SummarizeSkill")
+    summarization_plugin = kernel.import_semantic_skill_from_directory(plugins_directory, "SummarizeSkill") # noqa: F841
     get_intent_function = orchestrator_plugin["GetIntent"]
 
     # Create a new context and set the input, history, and options variables.

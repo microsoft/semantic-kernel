@@ -1,9 +1,10 @@
+from plugins.MathPlugin.MathPlugin import MathPlugin
+
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import (
-    OpenAITextCompletion,
     AzureTextCompletion,
+    OpenAITextCompletion,
 )
-from plugins.MathPlugin.MathPlugin import MathPlugin
 from semantic_kernel.planning.basic_planner import BasicPlanner
 
 
@@ -27,7 +28,7 @@ async def main():
     planner = BasicPlanner()
 
     # Import the native functions
-    mathPlugin = kernel.import_skill(MathPlugin(), "MathPlugin")
+    mathPlugin = kernel.import_skill(MathPlugin(), "MathPlugin") # noqa: F841
 
     ask = "If my investment of 2130.23 dollars increased by 23%, how much would I have after I spent $5 on a latte?"
     plan = await planner.create_plan_async(ask, kernel)
