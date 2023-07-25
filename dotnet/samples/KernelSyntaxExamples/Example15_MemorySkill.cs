@@ -32,8 +32,8 @@ public static class Example15_MemorySkill
         // ========= Store memories using semantic function =========
 
         // Add Memory as a skill for other functions
-        var memorySkill = new TextMemorySkill();
-        kernel.ImportSkill(new TextMemorySkill());
+        var memorySkill = new TextMemorySkill(kernel.Memory);
+        kernel.ImportSkill(memorySkill);
 
         // Build a semantic function that saves info to memory
         const string SaveFunctionDefinition = "{{save $info}}";
@@ -48,7 +48,7 @@ public static class Example15_MemorySkill
         // ========= Test memory remember =========
         Console.WriteLine("========= Example: Recalling a Memory =========");
 
-        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info5", context);
+        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info5", logger: context.Log);
         Console.WriteLine("Memory associated with 'info1': {0}", answer);
         /*
         Output:
@@ -58,11 +58,11 @@ public static class Example15_MemorySkill
         // ========= Test memory recall =========
         Console.WriteLine("========= Example: Recalling an Idea =========");
 
-        answer = await memorySkill.RecallAsync("where did I grow up?", MemoryCollectionName, relevance: null, limit: 2, context: context);
+        answer = await memorySkill.RecallAsync("where did I grow up?", MemoryCollectionName, relevance: null, limit: 2, logger: context.Log);
         Console.WriteLine("Ask: where did I grow up?");
         Console.WriteLine("Answer:\n{0}", answer);
 
-        answer = await memorySkill.RecallAsync("where do I live?", MemoryCollectionName, relevance: null, limit: 2, context: context);
+        answer = await memorySkill.RecallAsync("where do I live?", MemoryCollectionName, relevance: null, limit: 2, logger: context.Log);
         Console.WriteLine("Ask: where do I live?");
         Console.WriteLine("Answer:\n{0}", answer);
 
@@ -131,7 +131,7 @@ Answer:
         */
 
         context[TextMemorySkill.KeyParam] = "info1";
-        await memorySkill.RemoveAsync(MemoryCollectionName, "info1", context);
+        await memorySkill.RemoveAsync(MemoryCollectionName, "info1", logger: context.Log);
 
         result = await aboutMeOracle.InvokeAsync("Tell me a bit about myself", context);
 

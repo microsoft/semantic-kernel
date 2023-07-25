@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Planning.Stepwise;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
-using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -132,8 +131,6 @@ public sealed class StepwisePlannerTests : IDisposable
         }
 
         var kernel = builder.Build();
-
-        _ = kernel.ImportSkill(new EmailSkillFake());
 
         return kernel;
     }
