@@ -129,20 +129,21 @@ public class DefaultCompletionSKFunction
                 (contextInput, input) ->
                         contextInput.concatMap(
                                 newContext -> {
-                                    SKContext updated = newContext.update(input);
+                                    SKContext updated = newContext.copy().update(input);
                                     return invokeAsync(updated, null);
                                 });
 
-        Mono<List<SKContext>> results =
+        Flux<SKContext> results =
                 Flux.fromIterable(partitionedInput)
-                        .reduceWith(() -> Flux.just(context), executeNextChunk)
-                        .flatMap(Flux::collectList);
+                        .scanWith(() -> Flux.just(context), executeNextChunk)
+                        .skip(1) // Skip the first element, which is the initial context
+                        .concatMap(it -> it);
 
         return results.map(
-                        list ->
-                                list.stream()
-                                        .map(SKContext::getResult)
-                                        .collect(Collectors.joining("\n")))
+                        result -> {
+                            return result.getResult();
+                        })
+                .collect(Collectors.joining("\n"))
                 .map(context::update);
     }
 
