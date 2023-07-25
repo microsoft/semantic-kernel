@@ -652,6 +652,7 @@ public sealed class Plan : ISKFunction
         }
     }
 
+    #region Telemetry
 
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for plan-related activities.
@@ -663,23 +664,37 @@ public sealed class Plan : ISKFunction
     /// </summary>
     private static Meter s_meter = new(nameof(Plan));
 
+    /// <summary>
+    /// Histogram to measure and track the execution time of invoking the plan.
+    /// </summary>
     private static Histogram<double> s_executionTimeHistogram = s_meter.CreateHistogram<double>(
             name: "SK.Plan.Invoke.ExecutionTime",
             unit: "ms",
-            description: "Plan execution time");
+            description: "Tracks the execution time (in milliseconds) of the plan invocation.");
 
+    /// <summary>
+    /// Counter for the total number of invocations of the plan.
+    /// </summary>
     private static Counter<int> s_executionTotalCounter = s_meter.CreateCounter<int>(
             name: "SK.Plan.Invoke.ExecutionTotal",
             unit: "Executions",
-            description: "Total plan execution counter");
+            description: "Keeps count of the total number of plan invocations.");
 
+    /// <summary>
+    /// Counter for the number of successful invocations of the plan.
+    /// </summary>
     private static Counter<int> s_executionSuccessCounter = s_meter.CreateCounter<int>(
             name: "SK.Plan.Invoke.ExecutionSuccess",
             unit: "Executions",
-            description: "Success plan execution counter");
+            description: "Keeps count of the number of successful plan invocations.");
 
+    /// <summary>
+    /// Counter for the number of failed invocations of the plan.
+    /// </summary>
     private static Counter<int> s_executionFailureCounter = s_meter.CreateCounter<int>(
             name: "SK.Plan.Invoke.ExecutionFailure",
             unit: "Executions",
-            description: "Failure plan execution counter");
+            description: "Keeps count of the number of failed plan invocations.");
+
+    #endregion
 }

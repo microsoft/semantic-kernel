@@ -1034,21 +1034,33 @@ public sealed class SKFunction : ISKFunction, IDisposable
         }
     }
 
-    private const string ExecutionTimeMetricFormat = "SK.{0}.{1}.ExecutionTime";
+    #endregion
 
-    private const string ExecutionTotalMetricFormat = "SK.{0}.{1}.ExecutionTotal";
+    #region Telemetry
 
-    private const string ExecutionCountFailureMetricFormat = "SK.{0}.{1}.ExecutionFailure";
+    /// <summary>
+    /// A format string for creating the metric name of execution time.
+    /// It includes placeholders for the skill name and the function name.
+    /// </summary>
+    private const string ExecutionTimeMetricFormat = "SK.{Skill}.{Function}.ExecutionTime";
 
-    private const string ExecutionSuccessMetricFormat = "SK.{0}.{1}.ExecutionSuccess";
+    /// <summary>
+    /// A format string for creating the metric name of total execution count.
+    /// It includes placeholders for the skill name and the function name.
+    /// </summary>
+    private const string ExecutionTotalMetricFormat = "SK.{Skill}.{Function}.ExecutionTotal";
 
-    private Histogram<double> ExecutionTimeHistogram;
+    /// <summary>
+    /// A format string for creating the metric name of execution failure count.
+    /// It includes placeholders for the skill name and the function name.
+    /// </summary>
+    private const string ExecutionCountFailureMetricFormat = "SK.{Skill}.{Function}.ExecutionFailure";
 
-    private Counter<int> ExecutionTotalCounter;
-
-    private Counter<int> ExecutionSuccessCounter;
-
-    private Counter<int> ExecutionFailureCounter;
+    /// <summary>
+    /// A format string for creating the metric name of execution success count.
+    /// It includes placeholders for the skill name and the function name.
+    /// </summary>
+    private const string ExecutionSuccessMetricFormat = "SK.{Skill}.{Function}.ExecutionSuccess";
 
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for plan-related activities.
@@ -1059,6 +1071,26 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// Instance of <see cref="Meter"/> for planner-related metrics.
     /// </summary>
     private static Meter s_plan_meter = new(nameof(Plan));
+
+    /// <summary>
+    /// Histogram to measure and track the execution time of invoking the SKFunction.
+    /// </summary>
+    private Histogram<double> ExecutionTimeHistogram;
+
+    /// <summary>
+    /// Counter for the total number of invocations of the SKFunction.
+    /// </summary>
+    private Counter<int> ExecutionTotalCounter;
+
+    /// <summary>
+    /// Counter for the number of successful invocations of the SKFunction.
+    /// </summary>
+    private Counter<int> ExecutionSuccessCounter;
+
+    /// <summary>
+    /// Counter for the number of failed invocations of the SKFunction.
+    /// </summary>
+    private Counter<int> ExecutionFailureCounter;
 
     #endregion
 }
