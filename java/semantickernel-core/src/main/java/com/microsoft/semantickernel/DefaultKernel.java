@@ -13,7 +13,11 @@ import com.microsoft.semantickernel.memory.MemoryConfiguration;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.*;
+import com.microsoft.semantickernel.orchestration.ContextVariables;
+import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
+import com.microsoft.semantickernel.orchestration.RegistrableSkFunction;
+import com.microsoft.semantickernel.orchestration.SKContext;
+import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceProvider;
@@ -77,8 +81,16 @@ public class DefaultKernel implements Kernel {
         }
 
         if (TextCompletion.class.isAssignableFrom(clazz)) {
-            Function<Kernel, TextCompletion> factory =
-                    kernelConfig.getTextCompletionServiceOrDefault(serviceId);
+            Function<Kernel, ? extends TextCompletion> factory = null;
+            try {
+                factory = kernelConfig.getTextCompletionServiceOrDefault(serviceId);
+            } catch (KernelException e) {
+                if (e.getErrorCode() == KernelException.ErrorCodes.ServiceNotFound) {
+                    // Could not find text completion service, try to find a chat completion service
+                    factory = kernelConfig.getChatCompletionServiceOrDefault(serviceId);
+                }
+            }
+
             if (factory == null) {
                 throw new KernelException(
                         KernelException.ErrorCodes.ServiceNotFound,
@@ -266,6 +278,21 @@ public class DefaultKernel implements Kernel {
     public ReadOnlyFunctionCollection importSkillFromDirectory(
             String skillName, String parentDirectory) {
         return importSkillFromDirectory(skillName, parentDirectory, skillName);
+    }
+
+    @Override
+    public ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName) {
+        return importSkillFromResources(pluginDirectory, skillName, functionName, null);
+    }
+
+    @Override
+    public ReadOnlyFunctionCollection importSkillFromResources(
+            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) {
+        Map<String, SemanticFunctionConfig> skills =
+                KernelExtensions.importSemanticSkillFromResourcesDirectory(
+                        pluginDirectory, skillName, functionName, clazz, promptTemplateEngine);
+        return importSkill(skillName, skills);
     }
 
     @Override

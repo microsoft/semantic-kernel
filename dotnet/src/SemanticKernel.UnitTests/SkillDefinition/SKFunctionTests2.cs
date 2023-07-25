@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -898,40 +897,6 @@ public sealed class SKFunctionTests2
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(result.LastException, "g", context.Variables["g"]);
-    }
-
-    [Obsolete("This test tests obsolete functionality and should be removed when that functionality is removed.")]
-    [Fact]
-    public async Task ItStillSupportsObsoleteSKFunctionAttributes()
-    {
-        [SKFunction("Something something")]
-        [SKFunctionInput(Description = "Awesome input")]
-        [SKFunctionName("NotTheAddMethodYouAreLookingFor")]
-        [SKFunctionContextParameter(Name = "y", Description = "Awesome additional input", DefaultValue = "42")]
-        static string Add(string x, SKContext context) =>
-           (int.Parse(x, CultureInfo.InvariantCulture) +
-            int.Parse(context["y"], CultureInfo.InvariantCulture)).ToString(CultureInfo.InvariantCulture);
-
-        // Arrange
-        var context = Kernel.Builder.Build().CreateNewContext();
-        context.Variables.Set("input", "1");
-        context.Variables.Set("y", "2");
-
-        // Act/Assert
-        var func = SKFunction.FromNativeMethod(Method(Add));
-        Assert.NotNull(func);
-        var parameters = func.Describe().Parameters;
-        context = await func.InvokeAsync(context);
-
-        // Assert
-        Assert.Equal("NotTheAddMethodYouAreLookingFor", func.Name);
-        Assert.Equal("Something something", func.Description);
-        Assert.Equal("input", parameters[0].Name);
-        Assert.Equal("Awesome input", parameters[0].Description);
-        Assert.Equal("y", parameters[1].Name);
-        Assert.Equal("Awesome additional input", parameters[1].Description);
-        Assert.Equal("42", parameters[1].DefaultValue);
-        Assert.Equal("3", context.Variables.Input);
     }
 
     private static MethodInfo Method(Delegate method)

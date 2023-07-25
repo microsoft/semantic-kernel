@@ -68,7 +68,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             self._client_settings = chromadb.config.Settings()
             if persist_directory is not None:
                 self._client_settings = chromadb.config.Settings(
-                    chroma_db_impl="duckdb+parquet", persist_directory=persist_directory
+                    is_persistent=True, persist_directory=persist_directory
                 )
         self._client = chromadb.Client(self._client_settings)
         self._persist_directory = persist_directory
@@ -161,7 +161,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         record._key = record._id
         metadata = {
             "timestamp": record._timestamp or "",
-            "is_reference": record._is_reference,
+            "is_reference": str(record._is_reference),
             "external_source_name": record._external_source_name or "",
             "description": record._description or "",
             "additional_metadata": record._additional_metadata or "",
