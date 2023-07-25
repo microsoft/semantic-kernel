@@ -15,6 +15,7 @@ class NullMemory(SemanticTextMemoryBase):
         description: Optional[str] = None,
         additional_metadata: Optional[str] = None,
     ) -> None:
+        """Nullfies behavior of SemanticTextMemoryBase.save_information_async()"""
         return None
 
     async def save_reference_async(
@@ -26,11 +27,13 @@ class NullMemory(SemanticTextMemoryBase):
         description: Optional[str] = None,
         additional_metadata: Optional[str] = None,
     ) -> None:
+        """Nullfies behavior of SemanticTextMemoryBase.save_reference_async()"""
         return None
 
     async def get_async(
         self, collection: str, query: str
     ) -> Optional[MemoryQueryResult]:
+        """Nullfies behavior of SemanticTextMemoryBase.get_async()"""
         return None
 
     async def search_async(
@@ -40,9 +43,11 @@ class NullMemory(SemanticTextMemoryBase):
         limit: int = 1,
         min_relevance_score: float = 0.7,
     ) -> List[MemoryQueryResult]:
+        """Nullfies behavior of SemanticTextMemoryBase.search_async()"""
         return []
 
     async def get_collections_async(self) -> List[str]:
+        """Nullfies behavior of SemanticTextMemoryBase.get_collections_async()"""
         return []
 
 
