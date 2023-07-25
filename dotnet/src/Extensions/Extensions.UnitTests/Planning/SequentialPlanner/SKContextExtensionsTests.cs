@@ -229,7 +229,9 @@ public class SKContextExtensionsTests
             Times.Once);
     }
 
+#pragma warning disable CS1998
     private static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> source)
+#pragma warning restore CS1998
     {
         foreach (var item in source)
         {
