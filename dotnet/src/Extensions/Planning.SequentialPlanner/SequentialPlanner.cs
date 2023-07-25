@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -50,19 +51,19 @@ public sealed class SequentialPlanner : ISequentialPlanner
     }
 
     /// <inheritdoc />
-    public async Task<Plan> CreatePlanAsync(string goal)
+    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(goal))
         {
             throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
         }
 
-        string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config).ConfigureAwait(false);
+        string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
         this._context.Variables.Set("available_functions", relevantFunctionsManual);
 
         this._context.Variables.Update(goal);
 
-        var planResult = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
+        var planResult = await this._functionFlowFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (planResult.ErrorOccurred)
         {
