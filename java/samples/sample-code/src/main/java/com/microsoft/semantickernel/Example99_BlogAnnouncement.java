@@ -22,8 +22,7 @@ public class Example99_BlogAnnouncement {
   }
 
   public static void main(String[] args) throws IOException {
-    // OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromSystemProperties();
-    OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromFile("/Users/brunoborges/.sk/conf.properties");
+    OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromSystemProperties();
 
     NonAzureOpenAIKeyCredential credential = new NonAzureOpenAIKeyCredential(settings.getKey());
 
