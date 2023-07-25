@@ -53,6 +53,7 @@ jobs:
       run: |
         for project in ${{ env.testprojects }}; do
           docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
+        done
 
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v3
