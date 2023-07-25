@@ -12,7 +12,7 @@ public class FlowSerializerTests
     public void CanDeserializeFromYaml()
     {
         // Arrange
-        var yamlFile = @"TestData\Flow\flow.yml";
+        var yamlFile = @"Planning\FlowPlanner\TestData\Flow\flow.yml";
         var content = File.ReadAllText(yamlFile);
 
         // Act
@@ -26,7 +26,7 @@ public class FlowSerializerTests
     public void CanDeserializeFromJson()
     {
         // Arrange
-        var yamlFile = @"TestData\Flow\flow.json";
+        var yamlFile = @"Planning\FlowPlanner\TestData\Flow\flow.json";
         var content = File.ReadAllText(yamlFile);
 
         // Act
