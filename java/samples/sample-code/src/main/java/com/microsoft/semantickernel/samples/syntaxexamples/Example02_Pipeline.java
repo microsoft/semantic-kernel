@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.syntaxexamples;
+package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;

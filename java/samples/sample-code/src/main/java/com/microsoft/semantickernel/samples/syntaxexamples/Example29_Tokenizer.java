@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.syntaxexamples;
+package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.GPT3Tokenizer;
 public class Example29_Tokenizer {

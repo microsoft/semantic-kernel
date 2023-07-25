@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.syntaxexamples;
+package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
@@ -19,7 +19,7 @@ import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISetting
 import java.io.IOException;
 import java.time.Duration;
 
-import static com.microsoft.semantickernel.Config.CONF_PROPERTIES;
+import static com.microsoft.semantickernel.samples.Config.CONF_PROPERTIES;
 
 public class Example08_RetryHandler {
 

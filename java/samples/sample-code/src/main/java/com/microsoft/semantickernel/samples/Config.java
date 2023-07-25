@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel;
+package com.microsoft.semantickernel.samples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.connectors.ai.openai.util.ClientSettings;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAISettings;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,7 +26,7 @@ public class Config {
 
     private static final List<String> DEFAULT_PROPERTIES_LOCATIONS = Arrays.asList(
             "java/samples/conf.properties",
-            System.getProperty("user.home") + "/.sk/conf.properties"
+            System.getProperty("user.home") + File.separator + ".sk" + File.separator + "conf.properties"
     );
 
     public static final String CONF_PROPERTIES = getEnvOrProperty("CONF_PROPERTIES", "java/samples/conf.properties");
@@ -65,8 +66,10 @@ public class Config {
 
     private static Supplier<ClientSettings<?>> getOpenAIClientFromDefaultPropertiesLocations(ClientType type) {
         return () -> {
+            LOGGER.debug("Create supplier for settings of " + type);
             try {
                 for (String location : DEFAULT_PROPERTIES_LOCATIONS) {
+                    LOGGER.debug("Attempting config file at "+location);
                     if (Files.isRegularFile(Path.of(location))) {
                         return switch (type) {
                             case OPEN_AI -> AIProviderSettings.getOpenAISettingsFromFile(location);
@@ -89,6 +92,7 @@ public class Config {
             public OpenAIAsyncClient getClient() throws IOException {
                 return buildClient(
                         () -> {
+                            LOGGER.debug("Loading AI provider settings from "+CONF_PROPERTIES);
                             try {
                                 return AIProviderSettings.getOpenAISettingsFromFile(CONF_PROPERTIES);
                             } catch (IOException e) {
@@ -127,6 +131,7 @@ public class Config {
             public OpenAIAsyncClient getClient() throws IOException {
                 return buildClient(
                         () -> {
+                            LOGGER.debug("Loading AI provider settings from "+CONF_PROPERTIES);
                             try {
                                 return AIProviderSettings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
                             } catch (IOException e) {

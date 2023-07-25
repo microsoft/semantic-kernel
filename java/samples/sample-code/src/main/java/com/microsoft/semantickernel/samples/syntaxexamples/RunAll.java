@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.syntaxexamples;
+package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import java.util.Arrays;
 import java.util.List;
