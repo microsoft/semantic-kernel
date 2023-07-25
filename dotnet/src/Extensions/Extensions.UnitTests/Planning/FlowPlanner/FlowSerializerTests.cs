@@ -1,18 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 namespace SemanticKernel.Extensions.UnitTests.Planning.FlowPlanner;
 
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.SemanticKernel.Planning.Flow;
 using Xunit;
 
 public class FlowSerializerTests
 {
+    private readonly string _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
+
     [Fact]
     public void CanDeserializeFromYaml()
     {
         // Arrange
-        var yamlFile = @"Planning\FlowPlanner\TestData\Flow\flow.yml";
+        var yamlFile = Path.Combine(this._currentDirectory, @"Planning\FlowPlanner\TestData\Flow\flow.yml");
         var content = File.ReadAllText(yamlFile);
 
         // Act
@@ -26,7 +30,7 @@ public class FlowSerializerTests
     public void CanDeserializeFromJson()
     {
         // Arrange
-        var yamlFile = @"Planning\FlowPlanner\TestData\Flow\flow.json";
+        var yamlFile = Path.Combine(this._currentDirectory, @"Planning\FlowPlanner\TestData\Flow\flow.json");
         var content = File.ReadAllText(yamlFile);
 
         // Act

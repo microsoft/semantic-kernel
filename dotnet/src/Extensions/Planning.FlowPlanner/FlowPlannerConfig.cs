@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.Planning.Flow;
 
@@ -33,4 +34,14 @@ public sealed class FlowPlannerConfig
     /// The minimum time to wait between iterations in milliseconds.
     /// </summary>
     public int MinIterationTimeMs { get; set; } = 0;
+
+    /// <summary>
+    /// Optional. The prompt template override for ReAct engine.
+    /// </summary>
+    public string? ReActPromptTemplate { get; set; } = null;
+
+    /// <summary>
+    /// Optional. The prompt template configuration override for the ReAct engine.
+    /// </summary>
+    public PromptTemplateConfig? ReActPromptTemplateConfig { get; set; } = null;
 }

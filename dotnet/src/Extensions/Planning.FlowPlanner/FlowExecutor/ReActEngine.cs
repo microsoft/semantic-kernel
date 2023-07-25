@@ -94,17 +94,27 @@ internal sealed class ReActEngine
         this._config = config;
         this._config.ExcludedSkills.Add(RestrictedSkillName);
 
-        var promptConfig = new PromptTemplateConfig();
-        var promptTemplate = EmbeddedResource.Read("Skills.ReActEngine.skprompt.txt");
-        string promptConfigString = EmbeddedResource.Read("Skills.ReActEngine.config.json");
-        if (!string.IsNullOrEmpty(promptConfigString))
+        var promptConfig = config.ReActPromptTemplateConfig;
+        if (promptConfig == null)
         {
-            promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
+            promptConfig = new PromptTemplateConfig();
+
+            string promptConfigString = EmbeddedResource.Read("Skills.ReActEngine.config.json");
+            if (!string.IsNullOrEmpty(promptConfigString))
+            {
+                promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
+            }
+
+            promptConfig.Completion.MaxTokens = config.MaxTokens;
         }
 
-        promptConfig.Completion.MaxTokens = config.MaxTokens;
+        var promptTemplate = config.ReActPromptTemplate;
+        if (string.IsNullOrEmpty(promptTemplate))
+        {
+            promptTemplate = EmbeddedResource.Read("Skills.ReActEngine.skprompt.txt");
+        }
 
-        this._reActFunction = this.ImportSemanticFunction(systemKernel, "ReActFunction", promptTemplate, promptConfig);
+        this._reActFunction = this.ImportSemanticFunction(systemKernel, "ReActFunction", promptTemplate!, promptConfig);
     }
 
     internal async Task<ReActStep?> GetNextStepAsync(SKContext context, string question, List<ReActStep> previousSteps)
