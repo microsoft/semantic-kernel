@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.memory;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
-import com.microsoft.semantickernel.exceptions.NotSupportedException;
 
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -60,7 +59,15 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                             MemoryRecord memoryRecord =
                                     new MemoryRecord(
                                             data, embeddings.iterator().next(), collection, null);
-                            return _storage.upsertAsync(collection, memoryRecord);
+
+                            return _storage.upsertAsync(collection, memoryRecord)
+                                    .onErrorResume(
+                                            e -> {
+                                                return _storage.createCollectionAsync(collection)
+                                                        .then(
+                                                                _storage.upsertAsync(
+                                                                        collection, memoryRecord));
+                                            });
                         });
     }
 
@@ -72,8 +79,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
 
     @Override
     public Mono<Void> removeAsync(@Nonnull String collection, @Nonnull String key) {
-        return Mono.error(new NotSupportedException("Pending implementation"));
-        //        await this._storage.RemoveAsync(collection, key, cancel);
+        return _storage.removeAsync(collection, key);
     }
 
     private static final Function<

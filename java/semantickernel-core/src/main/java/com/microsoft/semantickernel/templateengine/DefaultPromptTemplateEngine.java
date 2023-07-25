@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.templateengine;
 
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
-import com.microsoft.semantickernel.templateengine.blocks.CodeBlock;
 import com.microsoft.semantickernel.templateengine.blocks.CodeRendering;
 import com.microsoft.semantickernel.templateengine.blocks.TextRendering;
 
@@ -75,7 +74,7 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
                                 return Mono.just(
                                         ((TextRendering) block).render(context.getVariables()));
                             } else if (block instanceof CodeRendering) {
-                                return ((CodeBlock) block).renderCodeAsync(context);
+                                return ((CodeRendering) block).renderCodeAsync(context);
                             } else {
                                 String message =
                                         "Unexpected block type, the block doesn't have a rendering"
