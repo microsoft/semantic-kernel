@@ -34,8 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		..\.github\workflows\dotnet-format.yml = ..\.github\workflows\dotnet-format.yml
-		..\README.md = ..\README.md
 		..\nuget.config = ..\nuget.config
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.UnitTests", "src\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj", "{37E39C68-5A40-4E63-9D3C-0C66AD98DFCB}"
@@ -150,7 +150,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AI.Oobabooga", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning.StepwisePlanner", "src\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj", "{4762BCAF-E1C5-4714-B88D-E50FA333C50E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationInsightsExample", "samples\ApplicationInsightsExample\ApplicationInsightsExample.csproj", "{C754950A-E16C-4F96-9CC7-9328E361B5AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationInsightsExample", "samples\ApplicationInsightsExample\ApplicationInsightsExample.csproj", "{C754950A-E16C-4F96-9CC7-9328E361B5AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -365,8 +365,7 @@ Global
 		{4762BCAF-E1C5-4714-B88D-E50FA333C50E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Publish|Any CPU.ActiveCfg = Release|Any CPU
 		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
