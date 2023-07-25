@@ -90,7 +90,7 @@ public sealed class AzureContentModerator : IDisposable
     }
 
     /// <summary>
-    /// Prase the analysis result and return the violated categories.
+    /// Parse the analysis result and return the violated categories.
     /// </summary>
     /// <param name="analysisResult">The content analysis result.</param>
     /// <param name="threshold">The violation threshold.</param>
