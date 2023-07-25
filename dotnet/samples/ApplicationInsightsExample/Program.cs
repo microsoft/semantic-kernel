@@ -63,7 +63,7 @@ public sealed class Program
             Console.WriteLine("Original plan:");
             Console.WriteLine(plan.ToPlanString());
 
-            var result = await kernel.RunAsync(plan);
+            var result = await kernel.RunAsync(plan.WithInstrumentation(logger));
 
             Console.WriteLine("Result:");
             Console.WriteLine(result.Result);
@@ -174,14 +174,22 @@ public sealed class Program
             }
         };
 
-        MeasurementCallback<double> measurementCallback = (instrument, measurement, tags, state) =>
+        meterListener.SetMeasurementEventCallback(GetMeasurementCallback<int>(telemetryClient));
+        meterListener.SetMeasurementEventCallback(GetMeasurementCallback<double>(telemetryClient));
+
+        meterListener.Start();
+    }
+
+    /// <summary>
+    /// The callback which can be used to get measurement recording.
+    /// </summary>
+    /// <param name="telemetryClient">Instance of Application Insights <see cref="TelemetryClient"/>.</param>
+    private static MeasurementCallback<T> GetMeasurementCallback<T>(TelemetryClient telemetryClient) where T : struct
+    {
+        return (instrument, measurement, tags, state) =>
         {
             telemetryClient.GetMetric(instrument.Name).TrackValue(measurement);
         };
-
-        meterListener.SetMeasurementEventCallback(measurementCallback);
-
-        meterListener.Start();
     }
 
     /// <summary>
