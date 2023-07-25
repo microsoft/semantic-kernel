@@ -49,6 +49,8 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 
             var plan = await this._planner.CreatePlanAsync(goal, cancellationToken).ConfigureAwait(false);
 
+            stopwatch.Stop();
+
             s_executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
 
             s_executionSuccessCounter.Add(1);
@@ -73,11 +75,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         }
         finally
         {
-            stopwatch.Stop();
-            
             this._logger.LogInformation("{PlannerType}: Plan creation finished in {ExecutionTime}ms.", PlannerType, stopwatch.ElapsedMilliseconds);
-            
-            throw;
         }
     }
 
