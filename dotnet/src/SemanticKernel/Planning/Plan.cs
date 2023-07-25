@@ -318,7 +318,13 @@ public sealed class Plan : ISKFunction
         return this.InvokeAsync(context, settings, cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Invoke business logic of the <see cref="ISKFunction"/>.
+    /// </summary>
+    /// <param name="context">SK context</param>
+    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     private async Task<SKContext> InvokeLogicAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
@@ -353,6 +359,7 @@ public sealed class Plan : ISKFunction
         return context;
     }
 
+    /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
@@ -675,36 +682,45 @@ public sealed class Plan : ISKFunction
     private static Meter s_meter = new(typeof(Plan).FullName);
 
     /// <summary>
-    /// Histogram to measure and track the execution time of invoking the plan.
+    /// Instance of <see cref="Histogram{T}"/> to measure and track the execution time of invoking the plan.
     /// </summary>
-    private static Histogram<double> s_executionTimeHistogram = s_meter.CreateHistogram<double>(
+    private static Histogram<double> s_executionTimeHistogram =
+        s_meter.CreateHistogram<double>(
             name: "SK.Plan.Invoke.ExecutionTime",
             unit: "ms",
-            description: "Tracks the execution time (in milliseconds) of the plan invocation.");
+            description: "Tracks the execution time (in milliseconds) of the plan invocation."
+        );
 
     /// <summary>
-    /// Counter for the total number of invocations of the plan.
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of invocations of the plan.
     /// </summary>
-    private static Counter<int> s_executionTotalCounter = s_meter.CreateCounter<int>(
+    private static Counter<int> s_executionTotalCounter =
+        s_meter.CreateCounter<int>(
             name: "SK.Plan.Invoke.ExecutionTotal",
             unit: "Executions",
-            description: "Keeps count of the total number of plan invocations.");
+            description: "Keeps count of the total number of plan invocations."
+        );
 
     /// <summary>
-    /// Counter for the number of successful invocations of the plan.
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful invocations of the plan.
     /// </summary>
-    private static Counter<int> s_executionSuccessCounter = s_meter.CreateCounter<int>(
+    private static Counter<int> s_executionSuccessCounter =
+        s_meter.CreateCounter<int>(
             name: "SK.Plan.Invoke.ExecutionSuccess",
             unit: "Executions",
-            description: "Keeps count of the number of successful plan invocations.");
+            description: "Keeps count of the number of successful plan invocations."
+        );
 
     /// <summary>
-    /// Counter for the number of failed invocations of the plan.
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed invocations of the plan.
     /// </summary>
-    private static Counter<int> s_executionFailureCounter = s_meter.CreateCounter<int>(
+    private static Counter<int> s_executionFailureCounter =
+        s_meter.CreateCounter<int>(
             name: "SK.Plan.Invoke.ExecutionFailure",
             unit: "Executions",
-            description: "Keeps count of the number of failed plan invocations.");
+            description: "Keeps count of the number of failed plan invocations."
+        );
+
 
     #endregion
 }

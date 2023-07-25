@@ -1073,22 +1073,22 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private const string ExecutionSuccessMetricFormat = "SK.{0}.{1}.ExecutionSuccess";
 
     /// <summary>
-    /// Histogram to measure and track the execution time of invoking the SKFunction.
+    /// Instance of <see cref="Histogram{T}"/> to measure and track the execution time of invoking the SKFunction.
     /// </summary>
     private Histogram<double> ExecutionTimeHistogram;
 
     /// <summary>
-    /// Counter for the total number of invocations of the SKFunction.
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of invocations of the SKFunction.
     /// </summary>
     private Counter<int> ExecutionTotalCounter;
 
     /// <summary>
-    /// Counter for the number of successful invocations of the SKFunction.
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful invocations of the SKFunction.
     /// </summary>
     private Counter<int> ExecutionSuccessCounter;
 
     /// <summary>
-    /// Counter for the number of failed invocations of the SKFunction.
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed invocations of the SKFunction.
     /// </summary>
     private Counter<int> ExecutionFailureCounter;
 

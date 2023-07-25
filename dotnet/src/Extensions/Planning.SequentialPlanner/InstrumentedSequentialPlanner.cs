@@ -101,36 +101,43 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     private static Meter s_meter = new(typeof(InstrumentedSequentialPlanner).FullName);
 
     /// <summary>
-    /// Histogram to measure and track the execution time of the plan creation.
+    /// Instance of <see cref="Histogram{T}"/> to record plan creation execution time.
     /// </summary>
-    private static Histogram<double> s_executionTimeHistogram = s_meter.CreateHistogram<double>(
+    private static Histogram<double> s_executionTimeHistogram =
+        s_meter.CreateHistogram<double>(
             name: $"SK.{PlannerType}.CreatePlan.ExecutionTime",
             unit: "ms",
-            description: "Tracks the execution time (in milliseconds) of the CreatePlan function.");
+            description: "Execution time of plan creation");
 
     /// <summary>
-    /// Counter for the total number of executions of the plan creation.
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of plan creation executions.
     /// </summary>
-    private static Counter<int> s_executionTotalCounter = s_meter.CreateCounter<int>(
+    private static Counter<int> s_executionTotalCounter =
+        s_meter.CreateCounter<int>(
             name: $"SK.{PlannerType}.CreatePlan.ExecutionTotal",
             unit: "Executions",
-            description: "Keeps count of the total number of plan creation executions.");
+            description: "Keeps count of the total number of plan creation executions."
+        );
 
     /// <summary>
-    /// Counter for the number of successful executions of the plan creation.
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful plan creation executions.
     /// </summary>
-    private static Counter<int> s_executionSuccessCounter = s_meter.CreateCounter<int>(
+    private static Counter<int> s_executionSuccessCounter =
+        s_meter.CreateCounter<int>(
             name: $"SK.{PlannerType}.CreatePlan.ExecutionSuccess",
             unit: "Executions",
-            description: "Keeps count of the number of successful plan creation executions.");
+            description: "Keeps count of the number of successful plan creation executions."
+        );
 
     /// <summary>
-    /// Counter for the number of failed executions of the plan creation.
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed plan creation executions.
     /// </summary>
-    private static Counter<int> s_executionFailureCounter = s_meter.CreateCounter<int>(
+    private static Counter<int> s_executionFailureCounter =
+        s_meter.CreateCounter<int>(
             name: $"SK.{PlannerType}.CreatePlan.ExecutionFailure",
             unit: "Executions",
-            description: "Keeps count of the number of failed plan creation executions.");
+            description: "Keeps count of the number of failed plan creation executions."
+        );
 
     #endregion
 }
