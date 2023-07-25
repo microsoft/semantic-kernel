@@ -29,8 +29,18 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
+    <ProjectReference Include="..\Planning.FlowPlanner\Planning.FlowPlanner.csproj" />
     <ProjectReference Include="..\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
     <ProjectReference Include="..\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Planning\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Planning\**\*.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

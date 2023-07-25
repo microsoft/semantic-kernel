@@ -152,6 +152,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationInsightsExample"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Kusto", "src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj", "{E07608CC-D710-4655-BB9E-D22CF3CDD193}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning.FlowPlanner", "src\Extensions\Planning.FlowPlanner\Planning.FlowPlanner.csproj", "{B2E86D65-D94B-43B5-A38B-59DF2B90CC5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -369,6 +371,12 @@ Global
 		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2E86D65-D94B-43B5-A38B-59DF2B90CC5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2E86D65-D94B-43B5-A38B-59DF2B90CC5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2E86D65-D94B-43B5-A38B-59DF2B90CC5E}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2E86D65-D94B-43B5-A38B-59DF2B90CC5E}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{B2E86D65-D94B-43B5-A38B-59DF2B90CC5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2E86D65-D94B-43B5-A38B-59DF2B90CC5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -422,6 +430,7 @@ Global
 		{4762BCAF-E1C5-4714-B88D-E50FA333C50E} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{C754950A-E16C-4F96-9CC7-9328E361B5AF} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{E07608CC-D710-4655-BB9E-D22CF3CDD193} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
+		{B2E86D65-D94B-43B5-A38B-59DF2B90CC5E} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
