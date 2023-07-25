@@ -46,14 +46,13 @@ jobs:
         
     - name: Find test projects
       shell: bash
-      run: echo "projects=$(find ./dotnet -type f -name "*Tests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+      run: echo "testprojects=$(find ./dotnet -type f -name "*Tests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
 
     - name: Run Tests
       shell: bash
       run: |
-        for project in ${{ env.projects }}; do
-          dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
-        done
+        for project in ${{ env.testprojects }}; do
+          docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
 
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v3
@@ -112,12 +111,12 @@ jobs:
 
     - name: Find test projects
       shell: bash
-      run: echo "projects=$(find ./dotnet -type f -name "*Tests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+      run: echo "testprojects=$(find ./dotnet -type f -name "*Tests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
 
     - name: Run Tests
       shell: bash
       run: |
-        for project in ${{ env.projects }}; do
+        for project in ${{ env.testprojects }}; do
           dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
         done
 
