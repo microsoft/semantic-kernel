@@ -3,6 +3,7 @@
 from unittest.mock import Mock
 
 import pytest
+
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.planning.planning_exception import PlanningException
@@ -64,7 +65,8 @@ def test_can_call_to_plan_from_xml():
     plan_string = """<plan>
     <function.SummarizeSkill.Summarize/>
     <function.WriterSkill.Translate language="French" setContextVariable="TRANSLATED_SUMMARY"/>
-    <function.email.GetEmailAddressAsync input="John Doe" setContextVariable="EMAIL_ADDRESS" appendToResult="PLAN_RESULT"/>
+    <function.email.GetEmailAddressAsync input="John Doe" setContextVariable="EMAIL_ADDRESS" \
+        appendToResult="PLAN_RESULT"/>
     <function.email.SendEmailAsync input="$TRANSLATED_SUMMARY" email_address="$EMAIL_ADDRESS"/>
 </plan>"""
     goal = "Summarize an input, translate to french, and e-mail to John Doe"
@@ -268,12 +270,24 @@ def test_can_create_plan_with_other_text():
 @pytest.mark.parametrize(
     "plan_text",
     [
-        """<plan> <function.CodeSearch.codesearchresults_post organization="MyOrg" project="Proj" api_version="7.1-preview.1" server_url="https://faketestorg.dev.azure.com/" payload="{&quot;searchText&quot;:&quot;test&quot;,&quot;$top&quot;:3,&quot;filters&quot;:{&quot;Repository/Project&quot;:[&quot;Proj&quot;],&quot;Repository/Repository&quot;:[&quot;Repo&quot;]}}" content_type="application/json" appendToResult="RESULT__TOP_THREE_RESULTS" /> </plan>""",
+        """<plan> <function.CodeSearch.codesearchresults_post organization="MyOrg" project="Proj" \
+            api_version="7.1-preview.1" server_url="https://faketestorg.dev.azure.com/" \
+                payload="{&quot;searchText&quot;:&quot;test&quot;,&quot;$top&quot;:3,&quot;filters&quot;\
+                    :{&quot;Repository/Project&quot;:[&quot;Proj&quot;],&quot;Repository/Repository&quot;\
+                        :[&quot;Repo&quot;]}}" content_type="application/json" appendToResult=\
+                            "RESULT__TOP_THREE_RESULTS" /> </plan>""",
         """<plan>
-  <function.CodeSearch.codesearchresults_post organization="MyOrg" project="MyProject" api_version="7.1-preview.1" payload="{&quot;searchText&quot;: &quot;MySearchText&quot;, &quot;filters&quot;: {&quot;pathFilters&quot;: [&quot;MyRepo&quot;]} }" setContextVariable="SEARCH_RESULTS"/>
+  <function.CodeSearch.codesearchresults_post organization="MyOrg" project="MyProject" \
+    api_version="7.1-preview.1" payload="{&quot;searchText&quot;: &quot;MySearchText&quot;, \
+        &quot;filters&quot;: {&quot;pathFilters&quot;: [&quot;MyRepo&quot;]} }" \
+            setContextVariable="SEARCH_RESULTS"/>
 </plan><!-- END -->""",
         """<plan>
-  <function.CodeSearch.codesearchresults_post organization="MyOrg" project="MyProject" api_version="7.1-preview.1" server_url="https://faketestorg.dev.azure.com/" payload="{ 'searchText': 'MySearchText', 'filters': { 'Project': ['MyProject'], 'Repository': ['MyRepo'] }, 'top': 3, 'skip': 0 }" content_type="application/json" appendToResult="RESULT__TOP_THREE_RESULTS" />
+  <function.CodeSearch.codesearchresults_post organization="MyOrg" project="MyProject" \
+    api_version="7.1-preview.1" server_url="https://faketestorg.dev.azure.com/" \
+        payload="{ 'searchText': 'MySearchText', 'filters': { 'Project': ['MyProject'], \
+            'Repository': ['MyRepo'] }, 'top': 3, 'skip': 0 }" content_type="application/json" \
+                appendToResult="RESULT__TOP_THREE_RESULTS" />
 </plan><!-- END -->""",
     ],
 )

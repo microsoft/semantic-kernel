@@ -396,10 +396,8 @@ class Plan(SKFunctionBase):
 
             if variables.contains_key(param.name):
                 step_variables.set(param.name, variables[param.name])
-            elif (
-                self._state.contains_key(param.name)
-                and (self._state[param.name] is not None
-                     and self._state[param.name] != "")
+            elif self._state.contains_key(param.name) and (
+                self._state[param.name] is not None and self._state[param.name] != ""
             ):
                 step_variables.set(param.name, self._state[param.name])
 
