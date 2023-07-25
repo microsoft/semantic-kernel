@@ -46,7 +46,7 @@ jobs:
         
     - name: Find test projects
       shell: bash
-      run: echo "testprojects=$(find ./dotnet -type f -name "*Tests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+      run: echo "testprojects=$(find ./dotnet -type f -name "*UnitTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
 
     - name: Run Tests
       shell: bash
