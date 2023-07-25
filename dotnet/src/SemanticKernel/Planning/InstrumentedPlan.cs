@@ -53,14 +53,21 @@ public sealed class InstrumentedPlan : IPlan
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
             this._plan.InvokeAsync(context, settings, cancellationToken)).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(string? input = null, CompleteRequestSettings? settings = null, ILogger? logger = null, CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(
+        string? input = null,
+        CompleteRequestSettings? settings = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
             this._plan.InvokeAsync(input, settings, logger ?? this._logger, cancellationToken)).ConfigureAwait(false);
@@ -128,7 +135,7 @@ public sealed class InstrumentedPlan : IPlan
             description: "Number of failed plan executions");
 
     /// <summary>
-    /// Wrapper for instrumentation to be re-used in multiple invocation places.
+    /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
     private async Task<SKContext> InvokeWithInstrumentationAsync(Func<Task<SKContext>> func)

@@ -62,33 +62,46 @@ public sealed class InstrumentedSKFunction : ISKFunction
             description: "Number of failed function executions");
     }
 
+    /// <inheritdoc/>
     public FunctionView Describe()
     {
         return this._function.Describe();
     }
 
-    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async Task<SKContext> InvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
             this._function.InvokeAsync(context, settings, cancellationToken)).ConfigureAwait(false);
     }
 
-    public async Task<SKContext> InvokeAsync(string? input = null, CompleteRequestSettings? settings = null, ILogger? logger = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async Task<SKContext> InvokeAsync(
+        string? input = null,
+        CompleteRequestSettings? settings = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
             this._function.InvokeAsync(input, settings, logger ?? this._logger, cancellationToken)).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
     {
         return this._function.SetAIConfiguration(settings);
     }
 
+    /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
         return this._function.SetAIService(serviceFactory);
     }
 
+    /// <inheritdoc/>
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {
         return this._function.SetDefaultSkillCollection(skills);
@@ -130,7 +143,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     private Counter<int> _executionFailureCounter;
 
     /// <summary>
-    /// Wrapper for instrumentation to be re-used in multiple invocation places.
+    /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
     private async Task<SKContext> InvokeWithInstrumentationAsync(Func<Task<SKContext>> func)
