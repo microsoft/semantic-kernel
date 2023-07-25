@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <remark>
 /// An implementation of a Mrkl system as described in https://arxiv.org/pdf/2205.00445.pdf
 /// </remark>
-public class StepwisePlanner
+public class StepwisePlanner : IStepwisePlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="StepwisePlanner"/> class.
@@ -68,6 +68,7 @@ public class StepwisePlanner
         this._logger = this._kernel.Log;
     }
 
+    /// <inheritdoc />
     public Plan CreatePlan(string goal)
     {
         if (string.IsNullOrEmpty(goal))
@@ -102,14 +103,12 @@ public class StepwisePlanner
         SKContext context)
     {
         var stepsTaken = new List<SystemStep>();
-        this._logger?.BeginScope("StepwisePlanner");
         if (!string.IsNullOrEmpty(question))
         {
-            this._logger?.LogInformation("Ask: {Question}", question);
             for (int i = 0; i < this.Config.MaxIterations; i++)
             {
                 var scratchPad = this.CreateScratchPad(question, stepsTaken);
-                this._logger?.LogDebug("Scratchpad: {ScratchPad}", scratchPad);
+
                 context.Variables.Set("agentScratchPad", scratchPad);
 
                 var llmResponse = (await this._systemStepFunction.InvokeAsync(context).ConfigureAwait(false));
@@ -125,14 +124,15 @@ public class StepwisePlanner
                 }
 
                 string actionText = llmResponse.Result.Trim();
-                this._logger?.LogDebug("Response : {ActionText}", actionText);
+                this._logger?.LogTrace("Response: {ActionText}", actionText);
 
                 var nextStep = this.ParseResult(actionText);
                 stepsTaken.Add(nextStep);
 
                 if (!string.IsNullOrEmpty(nextStep.FinalAnswer))
                 {
-                    this._logger?.LogInformation("Final Answer: {FinalAnswer}", nextStep.FinalAnswer);
+                    this._logger?.LogTrace("Final Answer: {FinalAnswer}", nextStep.FinalAnswer);
+
                     context.Variables.Update(nextStep.FinalAnswer);
                     var updatedScratchPlan = this.CreateScratchPad(question, stepsTaken);
                     context.Variables.Set("agentScratchPad", updatedScratchPlan);
@@ -143,11 +143,14 @@ public class StepwisePlanner
                     return context;
                 }
 
-                this._logger?.LogInformation("Thought: {Thought}", nextStep.Thought);
+                this._logger?.LogTrace("Thought: {Thought}", nextStep.Thought);
 
                 if (!string.IsNullOrEmpty(nextStep!.Action!))
                 {
-                    this._logger?.LogInformation("Action: {Action}({ActionVariables})", nextStep.Action, JsonSerializer.Serialize(nextStep.ActionVariables));
+                    this._logger?.LogInformation("Action: {Action}. Iteration: {Iteration}.", nextStep.Action, i + 1);
+                    this._logger?.LogTrace("Action: {Action}({ActionVariables}). Iteration: {Iteration}.",
+                        nextStep.Action, JsonSerializer.Serialize(nextStep.ActionVariables), i + 1);
+
                     try
                     {
                         await Task.Delay(this.Config.MinIterationTimeMs).ConfigureAwait(false);
@@ -165,10 +168,10 @@ public class StepwisePlanner
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
                         nextStep.Observation = $"Error invoking action {nextStep.Action} : {ex.Message}";
-                        this._logger?.LogDebug(ex, "Error invoking action {Action}", nextStep.Action);
+                        this._logger?.LogWarning(ex, "Error invoking action {Action}", nextStep.Action);
                     }
 
-                    this._logger?.LogInformation("Observation: {Observation}", nextStep.Observation);
+                    this._logger?.LogTrace("Observation: {Observation}", nextStep.Observation);
                 }
                 else
                 {
@@ -325,7 +328,14 @@ public class StepwisePlanner
             }
         }
 
-        return string.Join("\n", scratchPadLines).Trim();
+        var scratchPad = string.Join("\n", scratchPadLines).Trim();
+
+        if (!string.IsNullOrWhiteSpace(scratchPad))
+        {
+            this._logger.LogTrace("Scratchpad: {ScratchPad}", scratchPad);
+        }
+
+        return scratchPad;
     }
 
     private async Task<string> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables)
@@ -350,7 +360,7 @@ public class StepwisePlanner
                 return $"Error occurred: {result.LastException}";
             }
 
-            this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
+            this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
 
             return result.Result;
         }
