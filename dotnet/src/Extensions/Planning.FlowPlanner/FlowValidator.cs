@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
 using Microsoft.SemanticKernel.Diagnostics;
 
 // ReSharper disable once CheckNamespace

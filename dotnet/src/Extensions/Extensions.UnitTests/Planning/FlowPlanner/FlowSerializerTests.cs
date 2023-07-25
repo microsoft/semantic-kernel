@@ -3,8 +3,8 @@ namespace SemanticKernel.Extensions.UnitTests.Planning.FlowPlanner;
 
 using System.IO;
 using System.Linq;
-using Xunit;
 using Microsoft.SemanticKernel.Planning.Flow;
+using Xunit;
 
 public class FlowSerializerTests
 {

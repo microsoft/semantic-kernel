@@ -2,16 +2,16 @@
 
 namespace SemanticKernel.IntegrationTests.Planning.FlowPlanner;
 
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning.Flow;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning.Flow;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 public sealed class CollectEmailSkill : ChatSkill
 {
