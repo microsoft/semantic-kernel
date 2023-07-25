@@ -21,7 +21,7 @@ To learn more about using this starter, see the Semantic Kernel documentation th
 To configure the starter, you need to provide the following information:
 
 - Define the properties of the plugin in the [appsettings.json](./azure-function/appsettings.json) file.
-- Enter the API key for your AI endpoint in the [local.settings.json](./azure-function/local.settings.json) file.
+- Enter the API key for your AI endpoint in the [local.settings.json](./azure-function/local.settings.json.example) file.
 
 For Debugging the console application alone, we suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) to avoid the risk of leaking secrets into the repository, branches and pull requests.
 
