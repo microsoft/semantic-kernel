@@ -1,0 +1,110 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "clean (functions)",
+			"command": "dotnet",
+			"args": [
+				"clean",
+        		"${workspaceFolder}/azure-function/sk-chatgpt-azure-function.csproj",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary",
+			],
+			"type": "process",
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "build (functions)",
+			"command": "dotnet",
+			"args": [
+				"build",
+        		"${workspaceFolder}/azure-function/sk-chatgpt-azure-function.csproj",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"dependsOn": "clean (functions)",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "clean release (functions)",
+			"command": "dotnet",
+			"args": [
+				"clean",
+        		"${workspaceFolder}/azure-function/sk-chatgpt-azure-function.csproj",
+				"--configuration",
+				"Release",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "publish (functions)",
+			"command": "dotnet",
+			"args": [
+				"publish",
+				"${workspaceFolder}/azure-function/sk-chatgpt-azure-function.csproj",
+				"--configuration",
+				"Release",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"dependsOn": "clean release (functions)",
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"type": "func",
+			"dependsOn": "build (functions)",
+			"options": {
+				"cwd": "${workspaceFolder}/azure-function/bin/Debug/net6.0"
+			},
+			"command": "host start",
+			"isBackground": true,
+			"problemMatcher": "$func-dotnet-watch"
+        },
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/azure-function/sk-chatgpt-azure-function.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/azure-function/sk-chatgpt-azure-function.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watch",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/azure-function/sk-chatgpt-azure-function.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+	]
+}
+

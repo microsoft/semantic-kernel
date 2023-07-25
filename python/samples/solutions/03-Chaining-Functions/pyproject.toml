@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "sk-python-hello-world"
+version = "0.1.0"
+description = "A starter application using the semantic kernel"
+authors = ["Microsoft <SK-Support@microsoft.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+semantic-kernel = "^0.2.7.dev0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

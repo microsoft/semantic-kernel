@@ -1,0 +1,18 @@
+// Create a task to run poetry install
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "install",
+            "type": "shell",
+            "command": "poetry",
+            "args": [
+                "install"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

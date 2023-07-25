@@ -1,0 +1,16 @@
+{
+    "python.analysis.extraPaths": [
+        "./src"
+    ],
+    "explorer.compactFolders": false,
+    "editor.formatOnType": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "python.formatting.provider": "none",
+    "python.formatting.autopep8Args": [
+        "--max-line-length=160"
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    }
+}

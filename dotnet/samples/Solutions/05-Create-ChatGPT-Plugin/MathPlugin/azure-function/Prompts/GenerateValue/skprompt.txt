@@ -1,0 +1,10 @@
+INSTURCTIONS:
+Provide a realistic value for the missing parameter. If you don't know the answer, provide a best guess using the limited information provided.
+
+MISSING PARAMETER DESCRIPTION:
+{{$input}}
+
+PARAMETER UNITS:
+{{$units}}
+
+ANSWER:

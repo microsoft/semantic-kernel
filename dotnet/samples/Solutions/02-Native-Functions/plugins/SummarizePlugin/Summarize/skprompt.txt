@@ -1,0 +1,7 @@
+[INSTRUCTIONS]
+Summarize the following conversation in 2-3 sentences. After summarizing, create a [LAST 3 MESSAGES] section that copy and pastes last 3 messages.
+
+[CONVERSATION HISTORY]
+{{$input}}
+
+[SUMMARY]

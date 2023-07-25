@@ -1,0 +1,5 @@
+The answer to the users request is: {{$input}}
+The bot should provide the answer back to the user.
+
+User: {{$original_request}}
+Bot: 

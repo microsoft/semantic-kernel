@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace></RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>395e5318-226a-4ec4-af9b-7f6e2afb7525</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <!-- <ItemGroup>
+    <PackageReference Include="Microsoft.SemanticKernel" />
+  </ItemGroup> -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\..\..\src\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="config\appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="plugins\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

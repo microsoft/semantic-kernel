@@ -1,0 +1,26 @@
+{
+     "schema": 1,
+     "type": "completion",
+     "description": "Creates a response based on the original request and the output of the pipeline",
+     "completion": {
+          "max_tokens": 256,
+          "temperature": 0.0,
+          "top_p": 0.0,
+          "presence_penalty": 0.0,
+          "frequency_penalty": 0.0
+     },
+     "input": {
+          "parameters": [
+               {
+                    "name": "input",
+                    "description": "The user's request.",
+                    "defaultValue": ""
+               },
+               {
+                    "name": "original_request",
+                    "description": "The original request from the user.",
+                    "defaultValue": ""
+               }
+          ]
+     }
+}
