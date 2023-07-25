@@ -30,7 +30,7 @@ public static class TextChunker
     /// <returns>List of lines.</returns>
     public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null)
     {
-        tokenCounter ??= FallbackTokenCounter;
+        tokenCounter ??= DefaultTokenCounter;
 
         return InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions, tokenCounter);
     }
@@ -44,7 +44,7 @@ public static class TextChunker
     /// <returns>List of lines.</returns>
     public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null)
     {
-        tokenCounter ??= FallbackTokenCounter;
+        tokenCounter ??= DefaultTokenCounter;
 
         return InternalSplitLines(text, maxTokensPerLine, trim: true, s_markdownSplitOptions, tokenCounter);
     }
@@ -59,7 +59,7 @@ public static class TextChunker
     /// <returns>List of paragraphs.</returns>
     public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, TokenCounter? tokenCounter = null)
     {
-        tokenCounter ??= FallbackTokenCounter;
+        tokenCounter ??= DefaultTokenCounter;
 
         return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, (text, maxTokens) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions, tokenCounter), tokenCounter);
     }
@@ -74,7 +74,7 @@ public static class TextChunker
     /// <returns>List of paragraphs.</returns>
     public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, TokenCounter? tokenCounter = null)
     {
-        tokenCounter ??= FallbackTokenCounter;
+        tokenCounter ??= DefaultTokenCounter;
 
         return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, (text, maxTokens) => InternalSplitLines(text, maxTokens, trim: false, s_markdownSplitOptions, tokenCounter), tokenCounter);
     }
@@ -273,7 +273,7 @@ public static class TextChunker
         return (result, inputWasSplit);
     }
 
-    private static int FallbackTokenCounter(string input)
+    private static int DefaultTokenCounter(string input)
     {
         return input.Length / 4;
     }
