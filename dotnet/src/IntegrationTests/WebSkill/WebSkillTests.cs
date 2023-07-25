@@ -98,7 +98,7 @@ public sealed class WebSkillTests : IDisposable
         var webPages = JsonConvert.DeserializeObject<List<WebPage>>(task.Result);
 
         // Assert
-        Assert.True(webPages.Count > 0);
+        Assert.True(webPages != null && webPages.Count > 0);
     }
 
     [Fact]

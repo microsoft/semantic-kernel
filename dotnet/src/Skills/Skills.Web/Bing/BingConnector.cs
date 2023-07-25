@@ -30,6 +30,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// Initializes a new instance of the <see cref="BingConnector"/> class.
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
+    /// <param name="uri"></param>
     /// <param name="logger">An optional logger to log connector-related information.</param>
     public BingConnector(string apiKey, string uri = DefaultUri, ILogger<BingConnector>? logger = null) :
         this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), uri, logger)
@@ -41,6 +42,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
+    /// <param name="uri"></param>
     /// <param name="logger">An optional logger to log connector-related information.</param>
     public BingConnector(string apiKey, HttpClient httpClient, string uri = DefaultUri, ILogger<BingConnector>? logger = null)
     {
@@ -78,7 +80,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
 
-        List<T> returnValues = new();
+        List<T>? returnValues = new();
         if (data?.WebPages?.Value != null)
         {
             if (typeof(T) == typeof(string))
@@ -88,7 +90,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
             }
             else if (typeof(T) == typeof(WebPage))
             {
-                List<WebPage> webPages = new();
+                List<WebPage>? webPages = new();
                 foreach (var webPage in data?.WebPages?.Value)
                 {
                     webPages.Add(webPage);
@@ -100,7 +102,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
                 throw new NotSupportedException($"Type {typeof(T)} is not supported.");
             }
         }
-        return returnValues.Count == 0 ? returnValues : returnValues.Take(count);
+        return returnValues != null && returnValues.Count == 0 ? returnValues : returnValues.Take(count);
     }
 
     /// <summary>

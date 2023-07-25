@@ -77,7 +77,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 
         var results = await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
-        List<T> returnValues = new();
+        List<T>? returnValues = new();
         if (results.Items != null)
         {
             if (typeof(T) == typeof(string))
@@ -104,7 +104,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
                 throw new NotSupportedException($"Type {typeof(T)} is not supported.");
             }
         }
-        return returnValues.Count == 0 ? returnValues : returnValues.Take(count);
+        return returnValues != null && returnValues.Count == 0 ? returnValues : returnValues.Take(count);
     }
 
     private void Dispose(bool disposing)

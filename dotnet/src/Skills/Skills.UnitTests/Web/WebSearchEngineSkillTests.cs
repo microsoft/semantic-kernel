@@ -34,8 +34,6 @@ public sealed class WebSearchEngineSkillTests
         connectorMock.VerifyAll();
     }
 
-
-    // I do not know why this fails. Anyone able to advise?
     [Fact]
     public async Task GetSearchResultsSucceedsAsync()
     {

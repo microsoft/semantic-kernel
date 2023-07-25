@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Newtonsoft.Json.Linq;
 using static Microsoft.SemanticKernel.Skills.Web.Bing.BingConnector;
 
 namespace Microsoft.SemanticKernel.Skills.Web;
@@ -67,7 +66,7 @@ public sealed class WebSearchEngineSkill
         [Description("Number of results to skip")] int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<WebPage> results = null;
+        IEnumerable<WebPage>? results = null;
         try
         {
             results = await this._connector.SearchAsync<WebPage>(query, count, offset, cancellationToken).ConfigureAwait(false);
@@ -76,7 +75,7 @@ public sealed class WebSearchEngineSkill
                 throw new InvalidOperationException("Failed to get a response from the web search engine.");
             }
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             Console.WriteLine(ex.Message);
         }
