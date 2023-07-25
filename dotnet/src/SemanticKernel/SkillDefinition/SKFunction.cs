@@ -1046,7 +1046,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <summary>
     /// Instance of <see cref="Meter"/> for plan-related metrics.
     /// </summary>
-    private static Meter s_plan_meter = new(nameof(Plan));
+    private static Meter s_plan_meter = new(typeof(Plan).FullName);
 
     /// <summary>
     /// A format string for creating the metric name of execution time.
