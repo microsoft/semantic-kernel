@@ -16,21 +16,16 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// The class holds a list of all the functions, native and semantic, known to the kernel instance.
 /// The list is used by the planner and when executing pipelines of function compositions.
 /// </summary>
-[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "It is a collection")]
+[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix")]
 [DebuggerTypeProxy(typeof(IReadOnlySkillCollectionTypeProxy))]
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class SkillCollection : ISkillCollection
 {
     internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
-    /// <inheritdoc/>
-    public IReadOnlySkillCollection ReadOnlySkillCollection { get; }
-
     public SkillCollection(ILogger? logger = null)
     {
         this._logger = logger ?? NullLogger.Instance;
-
-        this.ReadOnlySkillCollection = new ReadOnlySkillCollection(this);
 
         // Important: names are case insensitive
         this._skillCollection = new(StringComparer.OrdinalIgnoreCase);

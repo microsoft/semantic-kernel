@@ -46,7 +46,7 @@ public sealed class Kernel : IKernel, IDisposable
     public ISemanticTextMemory Memory => this._memory;
 
     /// <inheritdoc/>
-    public IReadOnlySkillCollection Skills => this._skillCollection.ReadOnlySkillCollection;
+    public IReadOnlySkillCollection Skills => this._skillCollection;
 
     /// <inheritdoc/>
     public IPromptTemplateEngine PromptTemplateEngine { get; }
@@ -176,7 +176,7 @@ public sealed class Kernel : IKernel, IDisposable
     {
         var context = new SKContext(
             variables,
-            this._skillCollection.ReadOnlySkillCollection,
+            this._skillCollection,
             this.Logger);
 
         int pipelineStepCount = -1;
@@ -226,7 +226,7 @@ public sealed class Kernel : IKernel, IDisposable
     public SKContext CreateNewContext()
     {
         return new SKContext(
-            skills: this._skillCollection.ReadOnlySkillCollection,
+            skills: this._skillCollection,
             logger: this.Logger);
     }
 
