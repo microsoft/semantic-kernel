@@ -26,7 +26,6 @@ jobs:
         matrix:
           include:
           - { dotnet: '6.0', configuration: Debug, os: ubuntu-latest}
-          - { dotnet: '6.0', configuration: Release, os: ubuntu-latest }
           - { dotnet: '7.0', configuration: Release, os: ubuntu-latest }
           - { dotnet: '8.0-preview', configuration: Release, os: ubuntu-latest }
 
