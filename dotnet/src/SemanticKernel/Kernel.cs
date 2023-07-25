@@ -42,7 +42,7 @@ public sealed class Kernel : IKernel, IDisposable
     public ISemanticTextMemory Memory => this._memory;
 
     /// <inheritdoc/>
-    public IReadOnlySkillCollection Skills => this._skillCollection.ReadOnlySkillCollection;
+    public IReadOnlySkillCollection Skills => this._skillCollection;
 
     /// <inheritdoc/>
     public IPromptTemplateEngine PromptTemplateEngine { get; }
@@ -173,9 +173,8 @@ public sealed class Kernel : IKernel, IDisposable
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
         SKContext context = new DefaultSKContext(
             variables,
-            this._skillCollection.ReadOnlySkillCollection,
+            this._skillCollection,
             logger: this.Log);
-#pragma warning restore CA1859 // Use concrete types when possible for improved performance
 
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
@@ -223,8 +222,8 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public SKContext CreateNewContext()
     {
-        return new DefaultSKContext(
-            skills: this._skillCollection.ReadOnlySkillCollection,
+        return new SKContext(
+            skills: this._skillCollection,
             logger: this.Log);
     }
 
