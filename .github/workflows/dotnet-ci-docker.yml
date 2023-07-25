@@ -1,9 +1,9 @@
 #
-# This workflow will build and run all unit tests using dotnet docker containers,
+# This workflow will build and run all tests using dotnet docker containers,
 # each targeting a single version of the dotnet SDK.
 #
 
-name: dotnet-ci-docker
+name: dotnet-ci
 
 on:
   workflow_dispatch:
