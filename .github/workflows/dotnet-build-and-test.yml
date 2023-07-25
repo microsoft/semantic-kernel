@@ -47,16 +47,10 @@ jobs:
     - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
       run: docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
 
-    - name: Build dotnet solutions
+    - name: Build & test dotnet
       run: |
         export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
         for solution in $SOLUTIONS; do
-          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' $DOTNET_DOCKER_IMG /bin/sh -c "dotnet build -c ${{ matrix.configuration }} /warnaserror /app/$solution"
+          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' $DOTNET_DOCKER_IMG /bin/sh -c "dotnet build -c ${{ matrix.configuration }} /warnaserror /app/$solution && dotnet test -c ${{ matrix.configuration }} /app/$solution --no-build -v Normal --logger trx"
         done
-      
-    - name: Run Unit Tests
-      run: |
-        export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')
-        for project in $UT_PROJECTS; do
-          docker run --rm -v $(pwd):/app -w /app $DOTNET_DOCKER_IMG /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
-        done
+  
