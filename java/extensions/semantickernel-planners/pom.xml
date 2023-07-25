@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -7,21 +7,17 @@
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
         <version>0.2.8-alpha-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>semantickernel-api</artifactId>
-    <packaging>jar</packaging>
-    <name>Semantic Kernel API</name>
-    <description>Defines the public interface for the Semantic Kernel</description>
+    <artifactId>semantickernel-planners</artifactId>
+    <name>Semantic Kernel Planners Extension</name>
+    <description>Planner implementation for Semantic Kernel</description>
+
     <dependencies>
         <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-ai-openai</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -33,13 +29,6 @@
             <artifactId>jackson-core</artifactId>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-        </dependency>
     </dependencies>
+
 </project>

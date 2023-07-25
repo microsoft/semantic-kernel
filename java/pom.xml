@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -64,13 +65,16 @@
     </properties>
 
     <modules>
+        <module>connectors/semantickernel-connectors-ai-openai</module>
+
+        <module>extensions/semantickernel-planners</module>
+        <module>extensions/semantickernel-gpt3-tokenizer</module>
+
+        <module>plugins/semantickernel-plugin-core</module>
+
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
         <module>semantickernel-core</module>
-        <module>semantickernel-extensions-parent</module>
-        <module>semantickernel-connectors-parent</module>
-        <module>semantickernel-core-skills</module>
-        <module>semantickernel-gpt3-tokenizer</module>
     </modules>
 
     <dependencyManagement>
@@ -124,8 +128,8 @@
                 <version>${azure-ai-openai.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.microsoft.semantic-kernel.connectors</groupId>
-                <artifactId>semantickernel-connectors</artifactId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-ai-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -427,10 +431,6 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <executions>
@@ -456,7 +456,6 @@
                 </executions>
             </plugin>
         </plugins>
-
     </build>
 
     <!-- 
@@ -580,16 +579,6 @@
             </snapshots>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
-        <repository>
-            <id>azure-sdk-for-java</id>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-java/maven/v1</url>
-        </repository>
     </repositories>
 
     <profiles>
@@ -685,7 +674,7 @@
                                 <licenseHeader>
                                     <content>// Copyright (c) Microsoft. All rights reserved.</content>
                                 </licenseHeader>
-                                <toggleOffOn />
+                                <toggleOffOn/>
                             </java>
                         </configuration>
                     </plugin>
@@ -808,6 +797,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-0.2.7-alpha</tag>
+        <tag>HEAD</tag>
     </scm>
 </project>
