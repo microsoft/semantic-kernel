@@ -63,7 +63,7 @@ public sealed class Program
             Console.WriteLine("Original plan:");
             Console.WriteLine(plan.ToPlanString());
 
-            var result = await kernel.RunAsync(plan.WithInstrumentation(logger));
+            var result = await kernel.RunAsync(plan);
 
             Console.WriteLine("Result:");
             Console.WriteLine(result.Result);
