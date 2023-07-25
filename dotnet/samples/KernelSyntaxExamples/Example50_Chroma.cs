@@ -19,7 +19,7 @@ public static class Example50_Chroma
         var memoryStore = new ChromaMemoryStore(endpoint);
 
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             .WithOpenAITextCompletionService(
                 modelId: TestConfiguration.OpenAI.ModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
