@@ -190,7 +190,12 @@ class Kernel:
 
         try:
             client: ChatCompletionClientBase | TextCompletionClientBase
-            client = stream_function._ai_service
+
+            if stream_function._ai_service:
+                client = stream_function._ai_service
+            if stream_function._chat_service:
+                client = stream_function._chat_service
+
 
             # Get the closure variables from function for finding function_config
             closure_vars = stream_function._function.__closure__
