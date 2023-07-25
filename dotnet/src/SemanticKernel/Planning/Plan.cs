@@ -721,6 +721,5 @@ public sealed class Plan : ISKFunction
             description: "Keeps count of the number of failed plan invocations."
         );
 
-
     #endregion
 }
