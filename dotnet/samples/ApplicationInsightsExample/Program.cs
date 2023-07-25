@@ -33,7 +33,7 @@ public sealed class Program
     /// <see cref="LogLevel.Information"/> is set by default. <para />
     /// <see cref="LogLevel.Trace"/> will enable logging with more detailed information, including sensitive data. Should not be used in production. <para />
     /// </remarks>
-    private static LogLevel LogLevel = LogLevel.Trace;
+    private static LogLevel LogLevel = LogLevel.Information;
 
     public static async Task Main()
     {
