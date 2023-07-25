@@ -58,7 +58,6 @@ public class ChatSkill
 
     /// <summary>
     /// Content moderator.
-    /// TODO: We probably need an interface in SK.
     /// </summary>
     private readonly AzureContentModerator? _contentModerator = null;
 

@@ -88,7 +88,7 @@ const useClasses = makeStyles({
         backgroundColor: tokens.colorNeutralBackground1,
     },
     protectedIcon: {
-        color: '#6BB700',
+        color: tokens.colorPaletteLightGreenBorder1,
         verticalAlign: 'text-bottom',
         marginLeft: tokens.spacingHorizontalXS,
     },

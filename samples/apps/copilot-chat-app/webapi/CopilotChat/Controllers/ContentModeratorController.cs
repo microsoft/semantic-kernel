@@ -28,12 +28,12 @@ public class ContentModeratorController : ControllerBase
     /// <param name="contentModerator">The content moderation service.</param>
     public ContentModeratorController(
         ILogger<ContentModeratorController> logger,
-        IOptions<ContentModeratorOptions> ContentModeratorOptions,
+        IOptions<ContentModeratorOptions> contentModeratorOptions,
         AzureContentModerator? contentModerator = null)
     {
         this._logger = logger;
         this._contentModerator = contentModerator;
-        this._options = ContentModeratorOptions.Value;
+        this._options = contentModeratorOptions.Value;
     }
 
     /// <summary>

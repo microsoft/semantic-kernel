@@ -112,6 +112,7 @@ public sealed class AzureContentModerator : IDisposable
     /// <summary>
     /// Invokes a sync API to perform harmful content analysis on image.
     /// <param name="base64Image">Base64 envoding content of image</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// </summary>
     /// <returns>SKContext containing the image analysis result.</returns>
     public async Task<Dictionary<string, AnalysisResult>> ImageAnalysisAsync(string base64Image, CancellationToken cancellationToken)
