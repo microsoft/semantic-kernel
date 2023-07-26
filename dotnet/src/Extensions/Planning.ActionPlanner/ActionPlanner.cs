@@ -30,7 +30,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// The rationale is currently available only in the prompt, we might include it in
 /// the Plan object in future.
 /// </summary>
-public sealed class ActionPlanner
+public sealed class ActionPlanner : IActionPlanner
 {
     private const string StopSequence = "#END-OF-PLAN";
     private const string SkillName = "this";
@@ -78,6 +78,7 @@ public sealed class ActionPlanner
         this._context = kernel.CreateNewContext();
     }
 
+    /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(goal))
