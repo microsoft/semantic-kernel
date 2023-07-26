@@ -43,8 +43,8 @@ public sealed class SequentialPlannerTests
             functionsView.AddFunction(functionView);
 
             mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, CompleteRequestSettings, CancellationToken>((context, settings, cancellationToken) =>
+                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<ITextCompletion?>(), It.IsAny<CancellationToken>()))
+                .Returns<SKContext, CompleteRequestSettings, ITextCompletion, CancellationToken>((context, settings, textCompletion, cancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(context);
@@ -87,9 +87,10 @@ public sealed class SequentialPlannerTests
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
             null,
+            null,
             default
-        )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
-            (c, s, ct) => c.Variables.Update("Hello world!")
+        )).Callback<SKContext, CompleteRequestSettings, ITextCompletion, CancellationToken>(
+            (c, s, tc, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
@@ -171,9 +172,10 @@ public sealed class SequentialPlannerTests
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
             It.IsAny<SKContext>(),
             null,
+            null,
             default
-        )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
-            (c, s, ct) => c.Variables.Update("Hello world!")
+        )).Callback<SKContext, CompleteRequestSettings, ITextCompletion, CancellationToken>(
+            (c, s, tc, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills

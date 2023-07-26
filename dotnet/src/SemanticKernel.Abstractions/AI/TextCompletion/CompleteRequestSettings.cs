@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
@@ -81,5 +82,22 @@ public class CompleteRequestSettings
             MaxTokens = config.MaxTokens,
             StopSequences = config.StopSequences,
         };
+    }
+
+    /// <summary>
+    /// Create a new CompleteRequestSettings instance with the values from a JSON string
+    /// or the default values if the string is null or empty.
+    /// </summary>
+    /// <param name="json">JSON string containing the completion request settings</param>
+    /// <returns>An instance of <see cref="CompleteRequestSettings"/> </returns>
+    public static CompleteRequestSettings FromJson(string? json)
+    {
+        if (string.IsNullOrEmpty(json))
+        {
+            return new CompleteRequestSettings();
+        }
+
+        var result = Json.Deserialize<CompleteRequestSettings>(json);
+        return result ?? throw new ArgumentException("Unable to deserialize complete request settings from argument. The deserialization returned null.", nameof(json));
     }
 }

@@ -115,5 +115,10 @@ public class KernelException : SKException
         /// Represents an error that occurs when invoking a function.
         /// </summary>
         FunctionInvokeError,
+
+        /// <summary>
+        /// Invalid function template.
+        /// </summary>
+        InvalidTemplate,
     }
 }

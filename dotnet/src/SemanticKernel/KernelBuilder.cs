@@ -24,6 +24,7 @@ public sealed class KernelBuilder
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
+    private SkillCollection? _skillCollection = null;
 
     /// <summary>
     /// Create a new kernel instance
@@ -47,7 +48,7 @@ public sealed class KernelBuilder
         }
 
         var instance = new Kernel(
-            new SkillCollection(this._logger),
+            this._skillCollection ?? new SkillCollection(this._logger),
             this._aiServices.Build(),
             this._promptTemplateEngine ?? new PromptTemplateEngine(this._logger),
             this._memoryFactory.Invoke(),

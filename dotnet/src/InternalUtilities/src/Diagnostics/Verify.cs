@@ -61,6 +61,15 @@ internal static class Verify
         }
     }
 
+    internal static void ValidPluginName([NotNull] string? pluginName)
+    {
+        NotNullOrWhiteSpace(pluginName);
+        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(pluginName))
+        {
+            ThrowInvalidName("plugin name", pluginName);
+        }
+    }
+
     internal static void StartsWith(string text, string prefix, string message, [CallerArgumentExpression("text")] string? textParamName = null)
     {
         Debug.Assert(prefix is not null);

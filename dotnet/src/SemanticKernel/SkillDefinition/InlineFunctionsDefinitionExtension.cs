@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -148,5 +149,26 @@ public static class InlineFunctionsDefinitionExtension
         return skfunction.InvokeAsync();
     }
 
-    private static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");
+    /// <summary>
+    /// Create a semantic function and associated with the specified skill collection.
+    /// </summary>
+    /// <param name="kernel">IKernel instance</param>
+    /// <param name="promptConfig">Prompt configuration</param>
+    /// <returns>A function ready to use</returns>
+    public static ISKFunction CreateSemanticFunction(
+        this IKernel kernel,
+        PromptConfig promptConfig)
+    {
+        ISKFunction func = SKFunction.FromPromptConfig(promptConfig, kernel.PromptTemplateEngine);
+
+        // Temporary support for using the default prompt request settings
+        func.SetAIConfiguration(CompleteRequestSettings.FromJson(promptConfig.GetDefaultRequestSettingsAsJson()));
+
+        // Register the function for use with the kernel.
+        kernel.RegisterCustomFunction(func);
+
+        return func;
+    }
+
+    internal static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");
 }

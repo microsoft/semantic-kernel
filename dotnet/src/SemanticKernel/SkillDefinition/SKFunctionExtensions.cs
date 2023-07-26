@@ -109,12 +109,14 @@ public static class SKFunctionExtensions
     /// <param name="context">Execution context, including variables other than input</param>
     /// <param name="mutableContext">Whether the function can modify the context variables, True by default</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="textCompletion">Text completion service</param>
     /// <returns>The result of the function execution</returns>
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
         string input,
         SKContext context,
         bool mutableContext = true,
-        CompleteRequestSettings? settings = null)
+        CompleteRequestSettings? settings = null,
+        ITextCompletion? textCompletion = null)
     {
         // Log a warning if the given input is overriding a different input in the context
         var inputInContext = context.Variables.Input;
@@ -133,6 +135,6 @@ public static class SKFunctionExtensions
 
         // Store the input in the context
         context.Variables.Update(input);
-        return function.InvokeAsync(context, settings);
+        return function.InvokeAsync(context, settings, textCompletion);
     }
 }

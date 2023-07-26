@@ -52,11 +52,13 @@ public interface ISKFunction
     /// </summary>
     /// <param name="context">SK context</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="textCompletion">Text completion service</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
+        ITextCompletion? textCompletion = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -64,12 +66,14 @@ public interface ISKFunction
     /// </summary>
     /// <param name="input">String input</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="textCompletion">Text completion service</param>
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
+        ITextCompletion? textCompletion = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default);
 

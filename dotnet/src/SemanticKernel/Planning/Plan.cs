@@ -308,6 +308,7 @@ public sealed class Plan : ISKFunction
     public Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
+        ITextCompletion? textCompletion = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
@@ -317,18 +318,19 @@ public sealed class Plan : ISKFunction
             this.State,
             logger: logger);
 
-        return this.InvokeAsync(context, settings, cancellationToken);
+        return this.InvokeAsync(context, settings, textCompletion, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
+        ITextCompletion? textCompletion = null,
         CancellationToken cancellationToken = default)
     {
         if (this.Function is not null)
         {
-            var result = await this.InstrumentedInvokeAsync(this.Function, context, settings, cancellationToken).ConfigureAwait(false);
+            var result = await this.InstrumentedInvokeAsync(this.Function, context, settings, textCompletion, cancellationToken).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -588,6 +590,7 @@ public sealed class Plan : ISKFunction
         ISKFunction function,
         SKContext context,
         CompleteRequestSettings? settings = null,
+        ITextCompletion? textCompletion = null,
         CancellationToken cancellationToken = default)
     {
         using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
@@ -598,7 +601,7 @@ public sealed class Plan : ISKFunction
 
         stopwatch.Start();
 
-        var result = await function.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
+        var result = await function.InvokeAsync(context, settings, textCompletion, cancellationToken).ConfigureAwait(false);
 
         stopwatch.Stop();
 

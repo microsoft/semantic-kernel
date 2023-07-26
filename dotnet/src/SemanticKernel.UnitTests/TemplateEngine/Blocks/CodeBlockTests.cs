@@ -49,7 +49,7 @@ public class CodeBlockTests
         var context = new SKContext(skills: this._skills.Object, logger: this._log.Object);
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<ITextCompletion?>(), It.IsAny<CancellationToken>()))
             .Throws(new RuntimeWrappedException("error"));
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
@@ -197,8 +197,8 @@ public class CodeBlockTests
         var canary2 = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((ctx, _, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<ITextCompletion?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings?, ITextCompletion?, CancellationToken>((ctx, _, _, _) =>
             {
                 canary0 = ctx!["input"];
                 canary1 = ctx["var1"];
@@ -208,7 +208,7 @@ public class CodeBlockTests
                 ctx["var1"] = "overridden";
                 ctx["var2"] = "overridden";
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _, CancellationToken _) => inputCtx);
+            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _, ITextCompletion _, CancellationToken _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -245,12 +245,12 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((ctx, _, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<ITextCompletion?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings?, ITextCompletion?, CancellationToken>((ctx, _, _, _) =>
             {
                 canary = ctx!["input"];
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _, CancellationToken _) => inputCtx);
+            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _, ITextCompletion _, CancellationToken _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -279,12 +279,12 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((ctx, _, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<ITextCompletion?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings?, ITextCompletion?, CancellationToken>((ctx, _, _, _) =>
             {
                 canary = ctx!["input"];
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _, CancellationToken _) => inputCtx);
+            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _, ITextCompletion _, CancellationToken _) => inputCtx);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);

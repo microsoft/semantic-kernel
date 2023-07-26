@@ -191,7 +191,15 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                if (f.IsSemantic && f is SKFunction func && !func.HasAIService())
+                {
+                    context = await f.InvokeAsync(context, textCompletion: this.GetService<ITextCompletion>(), cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
 
                 if (context.ErrorOccurred)
                 {

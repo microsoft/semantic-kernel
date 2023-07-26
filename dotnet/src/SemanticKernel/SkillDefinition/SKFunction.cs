@@ -20,6 +20,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -128,7 +129,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <summary>
-    /// Create a native function instance, given a semantic function configuration.
+    /// Create a function instance, given a semantic function configuration.
     /// </summary>
     /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
@@ -211,6 +212,88 @@ public sealed class SKFunction : ISKFunction, IDisposable
         return func;
     }
 
+    /// <summary>
+    /// Create a function instance, given a prompt configuration.
+    /// </summary>
+    /// <param name="promptConfig">Prompt configuration.</param>
+    /// <param name="engine">Prompt template engine</param>
+    /// <param name="logger">Optional logger for the function.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>SK function instance.</returns>
+    public static ISKFunction FromPromptConfig(
+        PromptConfig promptConfig,
+        IPromptTemplateEngine engine,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(promptConfig);
+
+        Task<SKContext> LocalFuncTmp(
+            ITextCompletion? client,
+            CompleteRequestSettings? requestSettings,
+            SKContext context,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(context);
+        }
+
+        var func = new SKFunction(
+            // Start with an empty delegate, so we can have a reference to func
+            // to be used in the LocalFunc below
+            // Before returning the delegateFunction will be updated to be LocalFunc
+            delegateFunction: LocalFuncTmp,
+            parameters: promptConfig.GetParameters(),
+            description: promptConfig.Description,
+            skillName: promptConfig.PluginName ?? SkillCollection.GlobalSkill,
+            functionName: promptConfig.FunctionName ?? InlineFunctionsDefinitionExtension.RandomFunctionName(),
+            isSemantic: true,
+            logger: logger
+        );
+
+        async Task<SKContext> LocalFunc(
+            ITextCompletion? client,
+            CompleteRequestSettings? requestSettings,
+            SKContext context,
+            CancellationToken cancellationToken)
+        {
+            Verify.NotNull(client);
+            Verify.NotNull(requestSettings);
+
+            try
+            {
+                string renderedPrompt = await promptConfig.RenderAsync(engine, context, cancellationToken).ConfigureAwait(false);
+                var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+                string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
+
+                // Update the result with the completion
+                context.Variables.Update(completion);
+
+                context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
+            }
+            catch (AIException ex)
+            {
+                const string Message = "Something went wrong while rendering the semantic function" +
+                                       " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
+                logger?.LogError(ex, Message, promptConfig.PluginName, promptConfig.FunctionName, ex.Message, ex.Detail);
+                context.Fail(ex.Message, ex);
+            }
+            catch (Exception ex) when (!ex.IsCriticalException())
+            {
+                const string Message = "Something went wrong while rendering the semantic function" +
+                                       " or while executing the text completion. Function: {0}.{1}. Error: {2}";
+                logger?.LogError(ex, Message, promptConfig.PluginName, promptConfig.FunctionName, ex.Message);
+                context.Fail(ex.Message, ex);
+            }
+
+            return context;
+        }
+
+        // Update delegate function with a reference to the LocalFunc created
+        func._function = LocalFunc;
+
+        return func;
+    }
+
     /// <inheritdoc/>
     public FunctionView Describe()
     {
@@ -225,13 +308,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, ITextCompletion? textCompletion = null, CancellationToken cancellationToken = default)
     {
         if (this.IsSemantic)
         {
             this.AddDefaultValues(context.Variables);
 
-            var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
+            var resultContext = await this._function(textCompletion ?? this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
             context.Variables.Update(resultContext.Variables);
         }
         else
@@ -255,6 +338,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     public Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
+        ITextCompletion? textCompletion = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
@@ -263,7 +347,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             skills: this._skillCollection,
             logger: logger);
 
-        return this.InvokeAsync(context, settings, cancellationToken: cancellationToken);
+        return this.InvokeAsync(context, settings, textCompletion, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -313,6 +397,15 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// </summary>
     public string ToString(bool writeIndented)
         => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
+
+    /// <summary>
+    /// Return true if an AIService has been set for this function and otherwise false.
+    /// </summary>
+    /// <returns>True if an AIService has been set for this function and otherwise false</returns>
+    internal bool HasAIService()
+    {
+        return this._aiService != null;
+    }
 
     #region private
 
