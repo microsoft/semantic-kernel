@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -21,6 +22,9 @@ public sealed class WebSearchEngineSkill
     /// <summary>
     /// <see cref="ContextVariables"/> parameter names.
     /// </summary>
+    [SuppressMessage("Performance", "CA1724:Type names should not match namespaces",
+    Justification = "Class name is required for consistancy across SK." +
+        "The 'Google.Apis.Requests.Parameters' namespace is not directly impacted by this class name.")]
     public static class Parameters
     {
         /// <summary>

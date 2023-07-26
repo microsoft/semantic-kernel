@@ -32,6 +32,8 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="uri"></param>
     /// <param name="logger">An optional logger to log connector-related information.</param>
+    [SuppressMessage("Performance", "CA1054:Change the type of parameter 'uri'...",
+        Justification = "A constant Uri cannot be defined, as required by this class")]
     public BingConnector(string apiKey, string uri = DefaultUri, ILogger<BingConnector>? logger = null) :
         this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), uri, logger)
     {
@@ -44,6 +46,8 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
     /// <param name="uri"></param>
     /// <param name="logger">An optional logger to log connector-related information.</param>
+    [SuppressMessage("Performance", "CA1054:Change the type of parameter 'uri'...",
+        Justification = "A constant Uri cannot be defined, as required by this class")]
     public BingConnector(string apiKey, HttpClient httpClient, string uri = DefaultUri, ILogger<BingConnector>? logger = null)
     {
         Verify.NotNull(httpClient);
@@ -91,7 +95,9 @@ public sealed class BingConnector : IWebSearchEngineConnector
             else if (typeof(T) == typeof(WebPage))
             {
                 List<WebPage>? webPages = new();
+#pragma warning disable 8602 // Disable null check warning for data?.WebPages?.Value which is not null here.
                 foreach (var webPage in data?.WebPages?.Value)
+#pragma warning restore 8602
                 {
                     webPages.Add(webPage);
                 }
@@ -133,14 +139,21 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
     [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
         Justification = "Class is instantiated through deserialization.")]
-    public sealed class WebPages
+    private sealed class WebPages
     {
         [JsonPropertyName("value")]
         public WebPage[]? Value { get; set; }
     }
 
+    /// <summary>
+    /// A sealed class containing the deserialized response from the Bing Search API.
+    /// </summary>
+    /// <returns>A WebPage object containing the Bing Search API response data.</returns>
+    /// <remarks><b>Note:</b> Complex types are not compatible with the kernel for chaining yet. See <see href="https://github.com/microsoft/semantic-kernel/pull/2053#discussion_r1274782835">PR#2053</see></remarks>
     [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-        Justification = "Class is instantiated through deserialization.")]
+        Justification = "Class is instantiated through deserialization."),
+        SuppressMessage("Performance", "CA1056:Change the type of parameter 'uri'...",
+        Justification = "A constant Uri cannot be defined, as required by this class")]
     public sealed class WebPage
     {
         [JsonPropertyName("name")]
