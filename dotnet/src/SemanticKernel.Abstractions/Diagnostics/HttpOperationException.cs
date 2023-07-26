@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Diagnostics;
 /// <summary>
 /// Represents an exception specific to HTTP operations.
 /// </summary>
-public class HttpOperationException : SKException
+public class HttpOperationException : Exception
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpOperationException"/> class.

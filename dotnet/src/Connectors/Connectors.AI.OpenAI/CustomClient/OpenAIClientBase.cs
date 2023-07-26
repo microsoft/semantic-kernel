@@ -113,17 +113,16 @@ public abstract class OpenAIClientBase
 
     private protected async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod method, HttpContent? content, CancellationToken cancellationToken = default)
     {
-        HttpResponseMessage? response = null;
-        using (var request = new HttpRequestMessage(method, url))
-        {
-            this.AddRequestHeaders(request);
-            if (content != null)
-            {
-                request.Content = content;
-            }
+        using var request = new HttpRequestMessage(method, url);
 
-            response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        this.AddRequestHeaders(request);
+
+        if (content != null)
+        {
+            request.Content = content;
         }
+
+        var response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         this._log.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 

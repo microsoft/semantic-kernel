@@ -109,14 +109,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
         var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        try
-        {
-            response.EnsureSuccessStatusCode();
-        }
-        catch (HttpRequestException e)
-        {
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
-        }
+        response.EnsureSuccess(responseContent);
 
         var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(responseContent);
 
