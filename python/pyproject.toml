@@ -17,16 +17,19 @@ google-generativeai = "v0.1.0rc2"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "3.3.3"
-black = {version = "23.3.0", allow-prereleases = true}
+black = {version = "23.7.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
 pytest = "7.4.0"
-ruff = "0.0.278"
-pytest-asyncio = "0.21.0"
+ruff = "0.0.280"
+pytest-asyncio = "0.21.1"
 
 [tool.poetry.group.hugging_face.dependencies]
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
 torch = "2.0.0"
+
+[tool.poetry.group.qdrant.dependencies]
+qdrant-client = {version = "^1.1.7", python = ">=3.8,<3.12"}
 
 [tool.poetry.group.chromadb.dependencies]
 chromadb = "^0.4.0"
