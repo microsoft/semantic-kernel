@@ -15,11 +15,11 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.Tokenizers;
 #pragma warning disable CA5394
 public class GPT3TokenizerTests
 {
-    private readonly ITestOutputHelper _log;
+    private readonly ITestOutputHelper _logger;
 
-    public GPT3TokenizerTests(ITestOutputHelper log)
+    public GPT3TokenizerTests(ITestOutputHelper logger)
     {
-        this._log = log;
+        this._logger = logger;
     }
 
     // ReSharper disable StringLiteralTypo
@@ -110,13 +110,13 @@ más pequeñas de los programas informáticos", 68)]
         }
 
         watch.Stop();
-        this._log.WriteLine($"Text size: {text.Length}. Text generated in: {watch.ElapsedMilliseconds} msecs.");
+        this._logger.WriteLine($"Text size: {text.Length}. Text generated in: {watch.ElapsedMilliseconds} msecs.");
 
         // Act + Assert no exception occurs
         watch.Restart();
         GPT3Tokenizer.Encode(text);
         watch.Stop();
-        this._log.WriteLine($"Text size: {text.Length}. Text tokenized in: {watch.ElapsedMilliseconds} msecs.");
+        this._logger.WriteLine($"Text size: {text.Length}. Text tokenized in: {watch.ElapsedMilliseconds} msecs.");
     }
 
     // Try to generate some random text to reduce the tokenizer cache hits.
