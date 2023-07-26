@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -29,8 +30,8 @@ import javax.annotation.Nullable;
  * sources in the order of precedence (lower number in this list overrides a higher number):
  *
  * <ul>
- *   <li>1. Environment variables.
- *   <li>2. System properties.
+ *   <li>1. System properties.
+ *   <li>2. Environment variables.
  *   <li>3. Properties file set via CONF_PROPERTIES environment variable.
  *   <li>4. Properties file: ./conf.properties (Not used if CONF_PROPERTIES was set).
  *   <li>5. Properties file: ~/.sk/conf.properties (Not used if CONF_PROPERTIES was set).
@@ -137,11 +138,19 @@ public class SettingsMap {
                     });
         }
 
-        // Overlay system properties
-        properties.putAll(System.getProperties());
+        // lowercase and replace _ with ., to convert environment variables to properties
+        Map<String, Map.Entry<String, String>> envVariables =
+                System.getenv().entrySet().stream()
+                        .collect(
+                                Collectors.toMap(
+                                        key -> key.getKey().toLowerCase().replace("_", "."),
+                                        value -> value));
 
         // Overlay environment variables
-        properties.putAll(System.getenv());
+        properties.putAll(envVariables);
+
+        // Overlay system properties
+        properties.putAll(System.getProperties());
 
         return properties.stringPropertyNames().stream()
                 .collect(
