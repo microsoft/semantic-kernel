@@ -7,14 +7,14 @@ import numpy as np
 from numpy import ndarray
 
 import redis
-from redis.commands.search.field import NumericField, TextField, VectorField
+from redis.commands.search.field import TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
 from semantic_kernel.connectors.memory.redis.utils import (
     deserialize_document_to_record,
     deserialize_redis_to_record,
-    redis_key,
+    get_redis_key,
     serialize_record_to_redis,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -88,13 +88,16 @@ class RedisMemoryStore(MemoryStoreBase):
                 prefix=f"{collection_name}:", index_type=IndexType.HASH
             )
             schema = (
+                # TextField(name="timestamp"),
+                # NumericField(name="is_reference"),
+                # TextField(name="external_source_name"),
+                # TextField(name="id"),
+                # TextField(name="description"),
+                # TextField(name="text"),
+                # TextField(name="additional_metadata"),
+                TextField(name="key"),
+                TextField("metadata"),
                 TextField(name="timestamp"),
-                NumericField(name="is_reference"),
-                TextField(name="external_source_name"),
-                TextField(name="id"),
-                TextField(name="description"),
-                TextField(name="text"),
-                TextField(name="additional_metadata"),
                 VectorField(
                     name="embedding",
                     algorithm=self._vector_index_algorithm,
@@ -177,7 +180,7 @@ class RedisMemoryStore(MemoryStoreBase):
             raise Exception(f'Collection "{collection_name}" does not exist')
 
         # Typical Redis key structure: collection_name:{some identifier}
-        record._key = redis_key(collection_name, record._id)
+        record._key = get_redis_key(collection_name, record._id)
 
         # Overwrites previous data or inserts new key if not present
         # Index registers any hash matching its schema and prefixed with collection_name:
@@ -236,7 +239,7 @@ class RedisMemoryStore(MemoryStoreBase):
             self._logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
-        internal_key = redis_key(collection_name, key)
+        internal_key = get_redis_key(collection_name, key)
         raw_fields = self._database.hgetall(internal_key)
 
         # Did not find the record
@@ -286,7 +289,7 @@ class RedisMemoryStore(MemoryStoreBase):
             self._logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
-        self._database.delete(redis_key(collection_name, key))
+        self._database.delete(get_redis_key(collection_name, key))
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
         """
@@ -300,7 +303,7 @@ class RedisMemoryStore(MemoryStoreBase):
             self._logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
-        self._database.delete(*[redis_key(collection_name, key) for key in keys])
+        self._database.delete(*[get_redis_key(collection_name, key) for key in keys])
 
     async def get_nearest_matches_async(
         self,
@@ -334,12 +337,9 @@ class RedisMemoryStore(MemoryStoreBase):
             .dialect(self._query_dialect)
             .paging(offset=0, num=limit)
             .return_fields(
-                "id",
-                "text",
-                "description",
-                "additional_metadata",
-                "embedding",
+                "metadata",
                 "timestamp",
+                "embedding",
                 "vector_score",
             )
             .sort_by("vector_score", asc=False)

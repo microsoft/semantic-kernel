@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 import numpy as np
 
@@ -10,31 +11,49 @@ from redis.commands.search.document import Document
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
-def redis_key(collection_name: str, key: str) -> str:
+def get_redis_key(collection_name: str, record_id: str) -> str:
     """
     Returns the Redis key for an element called key within collection_name
 
     Arguments:
         collection_name {str} -- Name for a collection of embeddings
-        key {str} -- ID associated with a memory record
+        record_id {str} -- ID associated with a memory record
 
     Returns:
         str -- Redis key in the format collection_name:key
     """
-    return f"{collection_name}:{key}"
+    return f"{collection_name}:{record_id}"
+
+
+def split_redis_key(redis_key: str) -> Tuple[str, str]:
+    """
+    Split a Redis key into its collection name and record ID
+
+    Arguments:
+        collection_name {str} -- Redis key
+
+    Returns:
+        Tuple[str, str] -- Tuple of the collection name and ID
+    """
+    col, record_id = redis_key.split(":")
+    return col, record_id
 
 
 def serialize_record_to_redis(
     record: MemoryRecord, vector_type: np.dtype
 ) -> Dict[str, Any]:
-    mapping = {
-        "timestamp": record._timestamp.isoformat() if record._timestamp else "",
-        "is_reference": 1 if record._is_reference else 0,
+    comb_metadata = {
+        "is_reference": record._is_reference,
         "external_source_name": record._external_source_name or "",
         "id": record._id or "",
         "description": record._description or "",
         "text": record._text or "",
         "additional_metadata": record._additional_metadata or "",
+    }
+    mapping = {
+        "key": record._key or "",
+        "timestamp": record._timestamp.isoformat() if record._timestamp else "",
+        "metadata": json.dumps(comb_metadata),
         "embedding": (
             record._embedding.astype(vector_type).tobytes()
             if record._embedding is not None
@@ -47,13 +66,14 @@ def serialize_record_to_redis(
 def deserialize_redis_to_record(
     fields: Dict[str, Any], vector_type: np.dtype, with_embedding: bool
 ) -> MemoryRecord:
+    metadata = json.loads(fields[b"metadata"])
     record = MemoryRecord(
-        id=fields[b"id"].decode(),
-        is_reference=bool(int(fields[b"is_reference"].decode())),
-        external_source_name=fields[b"external_source_name"].decode(),
-        description=fields[b"description"].decode(),
-        text=fields[b"text"].decode(),
-        additional_metadata=fields[b"additional_metadata"].decode(),
+        id=metadata["id"],
+        is_reference=True if metadata["is_reference"] is True else False,
+        description=metadata["description"],
+        external_source_name=metadata["external_source_name"],
+        text=metadata["text"],
+        additional_metadata=metadata["additional_metadata"],
         embedding=None,
     )
 
@@ -72,18 +92,18 @@ def deserialize_redis_to_record(
 def deserialize_document_to_record(
     database: Redis, doc: Document, vector_type: np.dtype, with_embedding: bool
 ) -> MemoryRecord:
-    # Parse collection name out of ID
-    key_str = doc["id"]
-    colon_index = key_str.index(":")
-    id_str = key_str[colon_index + 1 :]
+    print(doc)
+    # Document ID refers to the Redis key
+    redis_key = doc["id"]
+    _, id_str = split_redis_key(redis_key)
 
+    metadata = json.loads(doc["metadata"])
     record = MemoryRecord.local_record(
         id=id_str,
-        text=doc["text"],
-        description=doc["description"],
-        additional_metadata=doc["additional_metadata"],
+        text=metadata["text"],
+        description=metadata["description"],
+        additional_metadata=metadata["additional_metadata"],
         embedding=None,
-        timestamp=None,
     )
 
     if doc["timestamp"] != "":
@@ -91,7 +111,7 @@ def deserialize_document_to_record(
 
     if with_embedding:
         # Some bytes are lost when retrieving a document, fetch raw embedding
-        eb = database.hget(key_str, "embedding")
+        eb = database.hget(redis_key, "embedding")
         record._embedding = np.frombuffer(eb, dtype=vector_type).astype(float)
 
     return record
