@@ -60,7 +60,7 @@ Semantic Kernel is available to explore AI and build apps with C#, Python and Ja
         </div>
       </td>
       <td>
-        [<img align="left" width=52px src="https://en.wikipedia.org/wiki/Java_(programming_language)#/media/File:Java_programming_language_logo.svg" alt="Java logo">](https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/README.md)
+        [<img align="left" width=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" alt="Java logo">](https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/README.md)
         <div>
           <a href="https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/README.md">Using Semantic Kernel in Java</a>
         </div>
