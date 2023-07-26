@@ -500,7 +500,7 @@ public sealed class SKFunctionTests2
         Assert.True(newContext.Variables.ContainsKey("canary2"));
 
         Assert.Equal(s_expected, oldContext.Variables["canary"]);
-        Assert.Equal("222", oldContext.Variables["canary2"]);
+        Assert.Equal("222", newContext.Variables["canary2"]);
 
         Assert.True(oldContext.Variables.ContainsKey("legacy"));
         Assert.False(newContext.Variables.ContainsKey("legacy"));
