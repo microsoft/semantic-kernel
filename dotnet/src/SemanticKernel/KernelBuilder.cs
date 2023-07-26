@@ -67,12 +67,12 @@ public sealed class KernelBuilder
     /// <summary>
     /// Add a logger to the kernel to be built.
     /// </summary>
-    /// <param name="log">Logger to add.</param>
+    /// <param name="logger">Logger to add.</param>
     /// <returns>Updated kernel builder including the logger.</returns>
-    public KernelBuilder WithLogger(ILogger log)
+    public KernelBuilder WithLogger(ILogger logger)
     {
-        Verify.NotNull(log);
-        this._logger = log;
+        Verify.NotNull(logger);
+        this._logger = logger;
         return this;
     }
 
