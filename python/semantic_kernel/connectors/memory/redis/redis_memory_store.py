@@ -26,75 +26,64 @@ class RedisMemoryStore(MemoryStoreBase):
     """A memory store implementation using Redis"""
 
     _database: "redis.Redis"
-    _vector_size: int
-    _vector_type: "np.dtype"
     _ft: "redis.Redis.ft"
     _logger: Logger
-
-    # For more information on vector attributes: https://redis.io/docs/stack/search/reference/vectors
     # Without RedisAI, it is currently not possible to retrieve index-specific vector attributes to have
-    # fully independent collections. The user can chose a different vector dimensionality per collection,
-    # but it is solely their responsibility to ensure proper dimensions of a vector to be indexed correctly.
-
-    # Vector similarity index algorithm. The supported types are "FLAT" and "HNSW", the default being "HNSW".
-    VECTOR_INDEX_ALGORITHM = "HNSW"
-
-    # Type for vectors. The supported types are FLOAT32 and FLOAT64, the default being "FLOAT32"
-    VECTOR_TYPE = "FLOAT32"
-
-    # Metric for measuring vector distance. Supported types are L2, IP, COSINE, the default being "COSINE".
-    VECTOR_DISTANCE_METRIC = "COSINE"
-
-    # Query dialect. Must specify DIALECT 2 or higher to use a vector similarity query, the default being 2
-    QUERY_DIALECT = 2
+    # fully independent collections.
+    _query_dialect: int
+    _vector_distance_metric: str
+    _vector_index_algorithm: str
+    _vector_size: int
+    _vector_type: "np.dtype"
+    _vector_type_str: str
 
     def __init__(
         self,
         database: redis.Redis,
         logger: Optional[Logger] = None,
+        vector_distance_metric: str = "COSINE",
+        vector_type: str = "FLOAT32",
+        vector_size: int = 1536,
+        vector_index_algorithm: str = "HNSW",
+        query_dialect: int = 2,
     ) -> None:
         """
         RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
         See documentation about connections: https://redis-py.readthedocs.io/en/stable/connections.html
+        See documentation about vector attributes: https://redis.io/docs/stack/search/reference/vectors
 
         Arguments:
             database {redis.Redis} -- Provide specific instance of a Redis connection
             logger {Optional[Logger]} -- Logger, defaults to None
 
         """
+        if vector_size <= 0:
+            raise ValueError("Vector dimension must be a positive integer")
 
         self._database = database
         self._ft = self._database.ft
         self._logger = logger or NullLogger()
-        self._vector_type = (
-            np.float32 if RedisMemoryStore.VECTOR_TYPE == "FLOAT32" else np.float64
-        )
 
-    async def create_collection_async(
-        self,
-        collection_name: str,
-        vector_dimension: int = 128,
-    ) -> None:
+        self._query_dialect = query_dialect
+        self._vector_distance_metric = vector_distance_metric
+        self._vector_index_algorithm = vector_index_algorithm
+        self._vector_type_str = vector_type
+        self._vector_type = np.float32 if vector_type == "FLOAT32" else np.float64
+        self._vector_size = vector_size
+
+    async def create_collection_async(self, collection_name: str) -> None:
         """
         Creates a collection, implemented as a Redis index containing hashes
         prefixed with "collection_name:".
         If a collection of the name exists, it is left unchanged.
 
-        Note: vector dimensionality for a collection cannot be altered after creation.
-
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
-            vector_dimension {int} -- Size of each vector, default to 128
         """
-        try:
-            self._ft(collection_name).info()
-            self._logger.info(f'Collection "{collection_name}" already exists.')
-            print(f'Collection "{collection_name}" already exists.')
-        except ResponseError:
-            if vector_dimension <= 0:
-                self._logger.error("Vector dimension must be a positive integer")
-                raise Exception("Vector dimension must be a positive integer")
 
+        if await self.does_collection_exist_async(collection_name):
+            self._logger.info(f'Collection "{collection_name}" already exists.')
+        else:
             index_def = IndexDefinition(
                 prefix=f"{collection_name}:", index_type=IndexType.HASH
             )
@@ -108,11 +97,11 @@ class RedisMemoryStore(MemoryStoreBase):
                 TextField(name="additional_metadata"),
                 VectorField(
                     name="embedding",
-                    algorithm=RedisMemoryStore.VECTOR_INDEX_ALGORITHM,
+                    algorithm=self._vector_index_algorithm,
                     attributes={
-                        "TYPE": RedisMemoryStore.VECTOR_TYPE,
-                        "DIM": vector_dimension,
-                        "DISTANCE_METRIC": RedisMemoryStore.VECTOR_DISTANCE_METRIC,
+                        "TYPE": self._vector_type_str,
+                        "DIM": self._vector_size,
+                        "DISTANCE_METRIC": self._vector_distance_metric,
                     },
                 ),
             )
@@ -352,7 +341,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
         query = (
             Query(f"*=>[KNN {limit} @embedding $embedding AS vector_score]")
-            .dialect(RedisMemoryStore.QUERY_DIALECT)
+            .dialect(self._query_dialect)
             .paging(offset=0, num=limit)
             .return_fields(
                 "id",
