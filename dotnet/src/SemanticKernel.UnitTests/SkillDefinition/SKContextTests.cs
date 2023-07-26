@@ -16,12 +16,12 @@ namespace SemanticKernel.UnitTests.SkillDefinition;
 public class SKContextTests
 {
     private readonly Mock<IReadOnlySkillCollection> _skills;
-    private readonly Mock<ILogger> _log;
+    private readonly Mock<ILogger> _logger;
 
     public SKContextTests()
     {
         this._skills = new Mock<IReadOnlySkillCollection>();
-        this._log = new Mock<ILogger>();
+        this._logger = new Mock<ILogger>();
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(variables, skills: this._skills.Object, logger: this._log.Object);
+        var target = new SKContext(variables, skills: this._skills.Object, logger: this._logger.Object);
         variables.Set("foo1", "bar1");
 
         // Act
@@ -53,7 +53,7 @@ public class SKContextTests
         // Arrange
         IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new Parrot(), "test");
         this._skills.Setup(x => x.GetFunction("func")).Returns(skill["say"]);
-        var target = new SKContext(new ContextVariables(), this._skills.Object, this._log.Object);
+        var target = new SKContext(new ContextVariables(), this._skills.Object, this._logger.Object);
         Assert.NotNull(target.Skills);
 
         // Act
