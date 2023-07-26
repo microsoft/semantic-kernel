@@ -35,7 +35,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         var retryConfig = new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true };
 
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
             .Build();
 
@@ -64,7 +64,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
 
     public static async Task AddSecretToAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
 
         var type = typeof(SkillResourceNames);
         var resourceName = $"{SkillResourceNames.AzureKeyVault}.openapi.json";

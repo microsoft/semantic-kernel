@@ -24,20 +24,20 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 /// </summary>
 public class PromptTemplateEngine : IPromptTemplateEngine
 {
-    private readonly ILogger _log;
+    private readonly ILogger _logger;
 
     private readonly TemplateTokenizer _tokenizer;
 
-    public PromptTemplateEngine(ILogger? log = null)
+    public PromptTemplateEngine(ILogger? logger = null)
     {
-        this._log = log ?? NullLogger.Instance;
-        this._tokenizer = new TemplateTokenizer(this._log);
+        this._logger = logger ?? NullLogger.Instance;
+        this._tokenizer = new TemplateTokenizer(this._logger);
     }
 
     /// <inheritdoc/>
     public IList<Block> ExtractBlocks(string? templateText, bool validate = true)
     {
-        this._log.LogTrace("Extracting blocks from template: {0}", templateText);
+        this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
         var blocks = this._tokenizer.Tokenize(templateText);
 
         if (validate)
@@ -57,7 +57,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     /// <inheritdoc/>
     public async Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
     {
-        this._log.LogTrace("Rendering string template: {0}", templateText);
+        this._logger.LogTrace("Rendering string template: {0}", templateText);
         var blocks = this.ExtractBlocks(templateText);
         return await this.RenderAsync(blocks, context, cancellationToken).ConfigureAwait(false);
     }
@@ -71,7 +71,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     /// <returns>The prompt template ready to be used for an AI request</returns>
     internal async Task<string> RenderAsync(IList<Block> blocks, SKContext context, CancellationToken cancellationToken = default)
     {
-        this._log.LogTrace("Rendering list of {0} blocks", blocks.Count);
+        this._logger.LogTrace("Rendering list of {0} blocks", blocks.Count);
         var tasks = new List<Task<string>>(blocks.Count);
         foreach (var block in blocks)
         {
@@ -87,7 +87,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
 
                 default:
                     const string Error = "Unexpected block type, the block doesn't have a rendering method";
-                    this._log.LogError(Error);
+                    this._logger.LogError(Error);
                     throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, Error);
             }
         }
@@ -99,7 +99,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         }
 
         // Sensitive data, logging as trace, disabled by default
-        this._log.LogTrace("Rendered prompt: {0}", result);
+        this._logger.LogTrace("Rendered prompt: {0}", result);
 
         return result.ToString();
     }
@@ -112,9 +112,9 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     /// <returns>An updated list of blocks where Variable Blocks have rendered to Text Blocks</returns>
     internal IList<Block> RenderVariables(IList<Block> blocks, ContextVariables? variables)
     {
-        this._log.LogTrace("Rendering variables");
+        this._logger.LogTrace("Rendering variables");
         return blocks.Select(block => block.Type != BlockTypes.Variable
             ? block
-            : new TextBlock(((ITextRendering)block).Render(variables), this._log)).ToList();
+            : new TextBlock(((ITextRendering)block).Render(variables), this._logger)).ToList();
     }
 }
