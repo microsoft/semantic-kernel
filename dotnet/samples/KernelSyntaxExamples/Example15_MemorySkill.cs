@@ -40,9 +40,9 @@ public static class Example15_MemorySkill
         var memorySaver = kernel.CreateSemanticFunction(SaveFunctionDefinition);
 
         var context = kernel.CreateNewContext();
-        context[TextMemorySkill.CollectionParam] = MemoryCollectionName;
-        context[TextMemorySkill.KeyParam] = "info5";
-        context["info"] = "My family is from New York";
+        context.Variables[TextMemorySkill.CollectionParam] = MemoryCollectionName;
+        context.Variables[TextMemorySkill.KeyParam] = "info5";
+        context.Variables["info"] = "My family is from New York";
         await memorySaver.InvokeAsync(context);
 
         // ========= Test memory remember =========
@@ -96,8 +96,8 @@ Answer:
         var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, maxTokens: 100);
 
         context = kernel.CreateNewContext();
-        context[TextMemorySkill.CollectionParam] = MemoryCollectionName;
-        context[TextMemorySkill.RelevanceParam] = "0.8";
+        context.Variables[TextMemorySkill.CollectionParam] = MemoryCollectionName;
+        context.Variables[TextMemorySkill.RelevanceParam] = "0.8";
         var result = await aboutMeOracle.InvokeAsync("Do I live in the same town where I grew up?", context);
 
         Console.WriteLine("Do I live in the same town where I grew up?\n");
@@ -114,9 +114,9 @@ Answer:
         // ========= Remove a memory =========
         Console.WriteLine("========= Example: Forgetting a Memory =========");
 
-        context["fact1"] = "What is my name?";
-        context["fact2"] = "What do I do for a living?";
-        context[TextMemorySkill.RelevanceParam] = ".75";
+        context.Variables["fact1"] = "What is my name?";
+        context.Variables["fact2"] = "What do I do for a living?";
+        context.Variables[TextMemorySkill.RelevanceParam] = ".75";
 
         result = await aboutMeOracle.InvokeAsync("Tell me a bit about myself", context);
 
@@ -130,7 +130,7 @@ Answer:
             My name is Andrea and my family is from New York. I work as a tourist operator.
         */
 
-        context[TextMemorySkill.KeyParam] = "info1";
+        context.Variables[TextMemorySkill.KeyParam] = "info1";
         await memorySkill.RemoveAsync(MemoryCollectionName, "info1", logger: context.Log);
 
         result = await aboutMeOracle.InvokeAsync("Tell me a bit about myself", context);

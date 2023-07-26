@@ -13,13 +13,13 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// Usage: kernel.ImportSkill("text", new TextSkill());
 ///
 /// Examples:
-/// SKContext["input"] = "  hello world  "
+/// SKcontext.Variables["input"] = "  hello world  "
 /// {{text.trim $input}} => "hello world"
 /// {{text.trimStart $input} => "hello world  "
 /// {{text.trimEnd $input} => "  hello world"
-/// SKContext["input"] = "hello world"
+/// SKcontext.Variables["input"] = "hello world"
 /// {{text.uppercase $input}} => "HELLO WORLD"
-/// SKContext["input"] = "HELLO WORLD"
+/// SKcontext.Variables["input"] = "HELLO WORLD"
 /// {{text.lowercase $input}} => "hello world"
 /// </example>
 public sealed class TextSkill
@@ -28,7 +28,7 @@ public sealed class TextSkill
     /// Trim whitespace from the start and end of a string.
     /// </summary>
     /// <example>
-    /// SKContext["input"] = "  hello world  "
+    /// SKcontext.Variables["input"] = "  hello world  "
     /// {{text.trim $input}} => "hello world"
     /// </example>
     /// <param name="input"> The string to trim. </param>
@@ -40,7 +40,7 @@ public sealed class TextSkill
     /// Trim whitespace from the start of a string.
     /// </summary>
     /// <example>
-    /// SKContext["input"] = "  hello world  "
+    /// SKcontext.Variables["input"] = "  hello world  "
     /// {{text.trimStart $input} => "hello world  "
     /// </example>
     /// <param name="input"> The string to trim. </param>
@@ -52,7 +52,7 @@ public sealed class TextSkill
     /// Trim whitespace from the end of a string.
     /// </summary>
     /// <example>
-    /// SKContext["input"] = "  hello world  "
+    /// SKcontext.Variables["input"] = "  hello world  "
     /// {{text.trimEnd $input} => "  hello world"
     /// </example>
     /// <param name="input"> The string to trim. </param>
@@ -64,7 +64,7 @@ public sealed class TextSkill
     /// Convert a string to uppercase.
     /// </summary>
     /// <example>
-    /// SKContext["input"] = "hello world"
+    /// SKcontext.Variables["input"] = "hello world"
     /// {{text.uppercase $input}} => "HELLO WORLD"
     /// </example>
     /// <param name="input"> The string to convert. </param>
@@ -77,7 +77,7 @@ public sealed class TextSkill
     /// Convert a string to lowercase.
     /// </summary>
     /// <example>
-    /// SKContext["input"] = "HELLO WORLD"
+    /// SKcontext.Variables["input"] = "HELLO WORLD"
     /// {{text.lowercase $input}} => "hello world"
     /// </example>
     /// <param name="input"> The string to convert. </param>
@@ -90,7 +90,7 @@ public sealed class TextSkill
     /// Get the length of a string. Returns 0 if null or empty
     /// </summary>
     /// <example>
-    /// SKContext["input"] = "HELLO WORLD"
+    /// SKcontext.Variables["input"] = "HELLO WORLD"
     /// {{text.length $input}} => "11"
     /// </example>
     /// <param name="input"> The string to get length. </param>
@@ -103,7 +103,7 @@ public sealed class TextSkill
     /// </summary>
     /// <example>
     /// text = "HELLO "
-    /// SKContext["input2"] = "WORLD"
+    /// SKcontext.Variables["input2"] = "WORLD"
     /// Result: "HELLO WORLD"
     /// </example>
     /// <param name="input">First input to concatenate with</param>

@@ -140,7 +140,7 @@ Answer: ";
         var oracle = kernel.CreateSemanticFunction(SemanticFunction, maxTokens: 200, temperature: 0, topP: 1);
 
         var context = kernel.CreateNewContext();
-        context["externalInformation"] = "";
+        context.Variables["externalInformation"] = "";
         var answer = await oracle.InvokeAsync(questions, context);
 
         // If the answer contains commands, execute them using the prompt renderer.
@@ -155,7 +155,7 @@ Answer: ";
             Console.WriteLine(information);
 
             // The rendered prompt contains the information retrieved from search engines
-            context["externalInformation"] = information;
+            context.Variables["externalInformation"] = information;
 
             // Run the semantic function again, now including information from Bing
             answer = await oracle.InvokeAsync(questions, context);

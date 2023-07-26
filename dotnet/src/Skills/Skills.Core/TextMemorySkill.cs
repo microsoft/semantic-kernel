@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// <example>
 /// Usage: kernel.ImportSkill("memory", new TextMemorySkill());
 /// Examples:
-/// SKContext["input"] = "what is the capital of France?"
+/// SKcontext.Variables["input"] = "what is the capital of France?"
 /// {{memory.recall $input }} => "Paris"
 /// </example>
 public sealed class TextMemorySkill
@@ -67,7 +67,7 @@ public sealed class TextMemorySkill
     /// <param name="logger">Application logger</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <example>
-    /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
+    /// SKcontext.Variables[TextMemorySkill.KeyParam] = "countryInfo1"
     /// {{memory.retrieve }}
     /// </example>
     [SKFunction, Description("Key-based lookup for a specific memory")]
@@ -92,7 +92,7 @@ public sealed class TextMemorySkill
     /// Semantic search and return up to N memories related to the input text
     /// </summary>
     /// <example>
-    /// SKContext["input"] = "what is the capital of France?"
+    /// SKcontext.Variables["input"] = "what is the capital of France?"
     /// {{memory.recall $input }} => "Paris"
     /// </example>
     /// <param name="input">The input text to find related memories for.</param>
@@ -137,8 +137,8 @@ public sealed class TextMemorySkill
     /// Save information to semantic memory
     /// </summary>
     /// <example>
-    /// SKContext["input"] = "the capital of France is Paris"
-    /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
+    /// SKcontext.Variables["input"] = "the capital of France is Paris"
+    /// SKcontext.Variables[TextMemorySkill.KeyParam] = "countryInfo1"
     /// {{memory.save $input }}
     /// </example>
     /// <param name="input">The information to save</param>
@@ -167,7 +167,7 @@ public sealed class TextMemorySkill
     /// Remove specific memory
     /// </summary>
     /// <example>
-    /// SKContext[TextMemorySkill.KeyParam] = "countryInfo1"
+    /// SKcontext.Variables[TextMemorySkill.KeyParam] = "countryInfo1"
     /// {{memory.remove }}
     /// </example>
     /// <param name="collection">Memories collection associated with the information to save</param>
