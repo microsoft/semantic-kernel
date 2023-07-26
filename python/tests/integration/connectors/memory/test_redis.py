@@ -133,7 +133,9 @@ async def test_does_collection_exist_async(connection_string):
 
 @pytest.mark.asyncio
 async def test_upsert_async_and_get_async(connection_string, memory_record1):
-    memory = RedisMemoryStore(database=redis.Redis.from_url(connection_string), vector_size=2)
+    memory = RedisMemoryStore(
+        database=redis.Redis.from_url(connection_string), vector_size=2
+    )
 
     await memory.create_collection_async("test_collection")
 
@@ -165,7 +167,9 @@ async def test_upsert_async_and_get_async(connection_string, memory_record1):
 async def test_upsert_batch_async_and_get_batch_async(
     connection_string, memory_record1, memory_record2
 ):
-    memory = RedisMemoryStore(database=redis.Redis.from_url(connection_string), vector_size=2)
+    memory = RedisMemoryStore(
+        database=redis.Redis.from_url(connection_string), vector_size=2
+    )
 
     await memory.create_collection_async("test_collection")
 
@@ -180,7 +184,9 @@ async def test_upsert_batch_async_and_get_batch_async(
 
 @pytest.mark.asyncio
 async def test_remove_async(connection_string, memory_record1):
-    memory = RedisMemoryStore(database=redis.Redis.from_url(connection_string), vector_size=2)
+    memory = RedisMemoryStore(
+        database=redis.Redis.from_url(connection_string), vector_size=2
+    )
 
     await memory.create_collection_async("test_collection")
 
@@ -192,7 +198,9 @@ async def test_remove_async(connection_string, memory_record1):
 
 @pytest.mark.asyncio
 async def test_remove_batch_async(connection_string, memory_record1, memory_record2):
-    memory = RedisMemoryStore(database=redis.Redis.from_url(connection_string), vector_size=2)
+    memory = RedisMemoryStore(
+        database=redis.Redis.from_url(connection_string), vector_size=2
+    )
 
     await memory.create_collection_async("test_collection")
 
@@ -207,7 +215,9 @@ async def test_remove_batch_async(connection_string, memory_record1, memory_reco
 async def test_get_nearest_match_async(
     connection_string, memory_record1, memory_record2
 ):
-    memory = RedisMemoryStore(database=redis.Redis.from_url(connection_string), vector_size=2)
+    memory = RedisMemoryStore(
+        database=redis.Redis.from_url(connection_string), vector_size=2
+    )
 
     await memory.create_collection_async("test_collection")
 
@@ -232,7 +242,9 @@ async def test_get_nearest_match_async(
 async def test_get_nearest_matches_async(
     connection_string, memory_record1, memory_record2, memory_record3
 ):
-    memory = RedisMemoryStore(database=redis.Redis.from_url(connection_string), vector_size=2)
+    memory = RedisMemoryStore(
+        database=redis.Redis.from_url(connection_string), vector_size=2
+    )
 
     await memory.create_collection_async("test_collection")
 

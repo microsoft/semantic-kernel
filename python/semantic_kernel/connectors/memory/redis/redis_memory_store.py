@@ -139,16 +139,6 @@ class RedisMemoryStore(MemoryStoreBase):
         if await self.does_collection_exist_async(collection_name):
             self._ft(collection_name).dropindex(delete_documents=delete_records)
 
-    async def delete_all_collections_async(self, delete_records: bool = True) -> None:
-        """
-        Deletes all collections present in the data store.
-
-        Arguments:
-            delete_records {bool} -- Delete all data associated with the collections, default to True
-        """
-        for col_name in await self.get_collections_async():
-            self._ft(col_name).dropindex(delete_documents=delete_records)
-
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """
         Determines if a collection exists in the data store.
