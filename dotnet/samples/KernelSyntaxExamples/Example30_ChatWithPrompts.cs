@@ -77,13 +77,13 @@ public static class Example30_ChatWithPrompts
         var context = kernel.CreateNewContext();
 
         // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
-        context["selectedText"] = selectedText;
+        context.Variables["selectedText"] = selectedText;
 
         // Demo another variable, e.g. when the chat started, used by the system prompt (see 28-system-prompt.txt).
-        context["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture);
+        context.Variables["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture);
 
         // This is the user message, store it in the variable used by 28-user-prompt.txt
-        context["userMessage"] = "extract locations as a bullet point list";
+        context.Variables["userMessage"] = "extract locations as a bullet point list";
 
         // Instantiate the prompt renderer, which we will use to turn prompt templates
         // into strings, that we will store into a Chat history object, which is then sent
