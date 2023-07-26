@@ -64,6 +64,22 @@ public interface ContextVariables {
          * @return an instantiation of ContextVariables
          */
         ContextVariables build(Map<String, String> map);
+
+        /**
+         * Builds a mutable instance with the given variables
+         *
+         * @return an instantiation of ContextVariables
+         */
+        WritableContextVariables buildWritable();
+
+        /**
+         * Set variable
+         *
+         * @param key variable name
+         * @param value variable value
+         * @return builder for fluent chaining
+         */
+        Builder setVariable(String key, String value);
     }
 
     /**
