@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// <example>
 /// Usage: kernel.ImportSkill("http", new HttpSkill());
 /// Examples:
-/// SKcontext.Variables["url"] = "https://www.bing.com"
+/// SKContext.Variables["url"] = "https://www.bing.com"
 /// {{http.getAsync $url}}
 /// {{http.postAsync $url}}
 /// {{http.putAsync $url}}

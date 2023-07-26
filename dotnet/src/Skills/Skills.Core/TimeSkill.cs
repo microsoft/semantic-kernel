@@ -152,7 +152,7 @@ public sealed class TimeSkill
     /// Get the date a provided number of days in the past
     /// </summary>
     /// <example>
-    /// SKcontext.Variables["input"] = "3"
+    /// SKContext.Variables["input"] = "3"
     /// {{time.daysAgo}} => Sunday, January 12, 2025 9:15 PM
     /// </example>
     /// <returns> The date the provided number of days before today </returns>
