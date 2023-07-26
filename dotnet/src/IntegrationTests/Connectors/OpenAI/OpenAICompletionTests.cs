@@ -99,7 +99,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var result = await func.InvokeAsync("Jupiter");
 
         Assert.NotNull(result);
-        Assert.False(result.ErrorOccurred, result.LastErrorDescription);
+        Assert.False(result.ErrorOccurred);
         Assert.Contains("Saturn", result.Result, StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("Uranus", result.Result, StringComparison.InvariantCultureIgnoreCase);
     }
@@ -133,7 +133,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
 
         // Assert
-        Assert.Empty(actual.LastErrorDescription);
+        Assert.Null(actual.LastException);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
@@ -331,7 +331,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
 
         // Assert
-        Assert.Empty(actual.LastErrorDescription);
+        Assert.Null(actual.LastException);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains("Pike Place", actual.Result, StringComparison.OrdinalIgnoreCase);
     }
@@ -353,7 +353,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(skill["Limerick"]);
 
         // Assert
-        Assert.Empty(actual.LastErrorDescription);
+        Assert.Null(actual.LastException?.Message);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains("Bob", actual.Result, StringComparison.OrdinalIgnoreCase);
     }
