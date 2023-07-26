@@ -74,22 +74,16 @@ public sealed class InstrumentedPlan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
-    {
-        return this._plan.SetAIConfiguration(settings);
-    }
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings) =>
+        this._plan.SetAIConfiguration(settings);
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        return this._plan.SetAIService(serviceFactory);
-    }
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
+        this._plan.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
-    {
-        return this._plan.SetDefaultSkillCollection(skills);
-    }
+    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
+        this._plan.SetDefaultSkillCollection(skills);
 
     #region private ================================================================================
 

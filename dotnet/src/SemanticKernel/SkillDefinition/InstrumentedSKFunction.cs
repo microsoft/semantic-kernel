@@ -63,10 +63,8 @@ public sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public FunctionView Describe()
-    {
-        return this._function.Describe();
-    }
+    public FunctionView Describe() =>
+        this._function.Describe();
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
@@ -90,22 +88,16 @@ public sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
-    {
-        return this._function.SetAIConfiguration(settings);
-    }
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings) =>
+        this._function.SetAIConfiguration(settings);
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
-    {
-        return this._function.SetAIService(serviceFactory);
-    }
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
+        this._function.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
-    {
-        return this._function.SetDefaultSkillCollection(skills);
-    }
+    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
+        this._function.SetDefaultSkillCollection(skills);
 
     #region private ================================================================================
 
