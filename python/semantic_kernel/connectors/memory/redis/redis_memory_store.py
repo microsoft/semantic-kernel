@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from datetime import datetime
 from logging import Logger
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -12,23 +11,15 @@ from redis.commands.search.field import NumericField, TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
+from semantic_kernel.connectors.memory.redis.utils import (
+    deserialize_document_to_record,
+    deserialize_redis_to_record,
+    redis_key,
+    serialize_record_to_redis,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
-
-
-def redis_key(collection_name: str, key: str) -> str:
-    """
-    Returns the Redis key for an element called key within collection_name
-
-    Arguments:
-        collection_name {str} -- Name for a collection of embeddings
-        key {str} -- ID associated with a memory record
-
-    Returns:
-        str -- Redis key in the format collection_name:key
-    """
-    return f"{collection_name}:{key}"
 
 
 class RedisMemoryStore(MemoryStoreBase):
@@ -59,7 +50,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
     def __init__(
         self,
-        connection_string: str = "redis://localhost:6379",
+        connection_string: str,
         settings: Dict[str, Any] = None,
         logger: Optional[Logger] = None,
     ) -> None:
@@ -68,7 +59,7 @@ class RedisMemoryStore(MemoryStoreBase):
         See documentation about connections: https://redis-py.readthedocs.io/en/stable/connections.html
 
         Arguments:
-            connection_string {str} -- Specify the connection string of the Redis connection, default to redis://localhost:6379
+            connection_string {str} -- Specify the connection string of the Redis connection
             settings {Dict[str, Any]} -- Configuration settings, default to None for a basic connection
             logger {Optional[Logger]} -- Logger, defaults to None
 
@@ -279,8 +270,7 @@ class RedisMemoryStore(MemoryStoreBase):
             # Overwrites previous data or inserts new key if not present
             # Index registers any hash matching its schema and prefixed with collection_name:
             self._database.hset(
-                rec._key,
-                mapping=self._serialize_record_to_redis(rec),
+                rec._key, mapping=serialize_record_to_redis(rec, self._vector_type)
             )
             keys.append(rec._key)
 
@@ -331,7 +321,9 @@ class RedisMemoryStore(MemoryStoreBase):
             if len(raw_fields) == 0:
                 continue
 
-            rec = self._deserialize_redis_to_record(raw_fields, with_embeddings)
+            rec = deserialize_redis_to_record(
+                raw_fields, self._vector_type, with_embeddings
+            )
             rec._key = internal_key
             records.append(rec)
 
@@ -419,7 +411,9 @@ class RedisMemoryStore(MemoryStoreBase):
             if score < min_relevance_score:
                 break
 
-            record = self._deserialize_document_to_record(match, with_embeddings)
+            record = deserialize_document_to_record(
+                self._database, match, self._vector_type, with_embeddings
+            )
             relevant_records.append((record, score))
 
         return relevant_records
@@ -453,79 +447,3 @@ class RedisMemoryStore(MemoryStoreBase):
         )
 
         return matches[0] if len(matches) else None
-
-    def _serialize_record_to_redis(self, record: MemoryRecord) -> Dict[str, Any]:
-        if not record._key:
-            self._logger.error("Record must have a valid key associated with it")
-            raise Exception("Record must have a valid key associated with it")
-
-        mapping = {
-            "timestamp": record._timestamp.isoformat() if record._timestamp else "",
-            "is_reference": 1 if record._is_reference else 0,
-            "external_source_name": record._external_source_name or "",
-            "id": record._id or "",
-            "description": record._description or "",
-            "text": record._text or "",
-            "additional_metadata": record._additional_metadata or "",
-            "embedding": (
-                record._embedding.astype(self._vector_type).tobytes()
-                if record._embedding is not None
-                else ""
-            ),
-        }
-        return mapping
-
-    def _deserialize_redis_to_record(
-        self, fields: Dict[str, Any], with_embedding: bool
-    ) -> MemoryRecord:
-        if not fields.get(b"id"):
-            self._logger.error("ID not present in serialized data")
-            raise Exception("ID not present in serialized data")
-
-        record = MemoryRecord(
-            id=fields[b"id"].decode(),
-            is_reference=bool(int(fields[b"is_reference"].decode())),
-            external_source_name=fields[b"external_source_name"].decode(),
-            description=fields[b"description"].decode(),
-            text=fields[b"text"].decode(),
-            additional_metadata=fields[b"additional_metadata"].decode(),
-            embedding=None,
-        )
-
-        if fields[b"timestamp"] != b"":
-            record._timestamp = datetime.fromisoformat(fields[b"timestamp"].decode())
-
-        if with_embedding:
-            # Extract using the vector type, then convert to regular Python float type
-            record._embedding = np.frombuffer(
-                fields[b"embedding"], dtype=self._vector_type
-            ).astype(float)
-
-        return record
-
-    def _deserialize_document_to_record(
-        self, doc: redis.commands.search.document.Document, with_embedding: bool
-    ) -> MemoryRecord:
-        # Parse collection name out of ID
-        key_str = doc["id"]
-        colon_index = key_str.index(":")
-        id_str = key_str[colon_index + 1 :]
-
-        record = MemoryRecord.local_record(
-            id=id_str,
-            text=doc["text"],
-            description=doc["description"],
-            additional_metadata=doc["additional_metadata"],
-            embedding=None,
-            timestamp=None,
-        )
-
-        if doc["timestamp"] != "":
-            record._timestamp = datetime.fromisoformat(doc["timestamp"])
-
-        if with_embedding:
-            # Some bytes are lost when retrieving a document, fetch raw embedding
-            eb = self._database.hget(key_str, "embedding")
-            record._embedding = np.frombuffer(eb, dtype=self._vector_type).astype(float)
-
-        return record
