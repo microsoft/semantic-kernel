@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 from numpy import ndarray
@@ -50,8 +50,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
     def __init__(
         self,
-        connection_string: str,
-        settings: Dict[str, Any] = None,
+        database: redis.Redis,
         logger: Optional[Logger] = None,
     ) -> None:
         """
@@ -59,60 +58,17 @@ class RedisMemoryStore(MemoryStoreBase):
         See documentation about connections: https://redis-py.readthedocs.io/en/stable/connections.html
 
         Arguments:
-            connection_string {str} -- Specify the connection string of the Redis connection
-            settings {Dict[str, Any]} -- Configuration settings, default to None for a basic connection
+            database {redis.Redis} -- Provide specific instance of a Redis connection
             logger {Optional[Logger]} -- Logger, defaults to None
 
-        Note:
-            Connection parameters in settings may override connection_string if both are defined
         """
 
-        self._database = redis.Redis.from_url(connection_string)
-        if settings:
-            self.configure(settings)
-        assert self.ping(), "Redis could not establish a connection"
-
+        self._database = database
         self._ft = self._database.ft
         self._logger = logger or NullLogger()
         self._vector_type = (
             np.float32 if RedisMemoryStore.VECTOR_TYPE == "FLOAT32" else np.float64
         )
-
-    def configure(self, settings: Dict[str, Any]) -> None:
-        """
-        Configures the Redis database connection.
-        See documentation for accepted parameters: https://redis.io/commands/config-set/
-
-        Arguments:
-            settings {Dict[str, Any]} -- Desired configuration formatted each as {parameter: value}
-
-        Example:
-            ```
-            # Create a default Redis data store
-            redis_ds = RedisMemoryStore()
-
-            # Set the host and port to be localhost:6369 and authenticate with the password "redis"
-            redis_ds.configure({"bind":"localhost", "port":6379, password="redis"})
-            ```
-
-        Exceptions:
-            Redis documentation for exceptions that can occur: https://redis.readthedocs.io/en/stable/exceptions.html
-        """
-        for param, val in settings.items():
-            try:
-                self._database.config_set(param, val)
-            except Exception as e:
-                self._logger.error(e)
-                raise e
-
-    def ping(self) -> bool:
-        """
-        Pings the Redis database connection.
-
-        Returns:
-            True if the connection is reachable, False if not
-        """
-        return self._database.ping()
 
     async def create_collection_async(
         self,
