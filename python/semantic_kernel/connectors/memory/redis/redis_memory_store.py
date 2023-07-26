@@ -236,8 +236,24 @@ class RedisMemoryStore(MemoryStoreBase):
         Returns
             str -- Redis key associated with the upserted memory record, or None if an error occured
         """
-        batch = await self.upsert_batch_async(collection_name, [record])
-        return batch[0] if len(batch) else None
+
+        if not await self.does_collection_exist_async(collection_name):
+            self._logger.error(f'Collection "{collection_name}" does not exist')
+            raise Exception(f'Collection "{collection_name}" does not exist')
+
+        # Typical Redis key structure: collection_name:{some identifier}
+        record._key = redis_key(collection_name, record._id)
+
+        # Overwrites previous data or inserts new key if not present
+        # Index registers any hash matching its schema and prefixed with collection_name:
+        try:
+            self._database.hset(
+                record._key,
+                mapping=serialize_record_to_redis(record, self._vector_type),
+            )
+            return record._key
+        except Exception:
+            return None
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -258,21 +274,11 @@ class RedisMemoryStore(MemoryStoreBase):
             List[str] -- Redis keys associated with the upserted memory records, or an empty list if an error occured
         """
 
-        if not await self.does_collection_exist_async(collection_name):
-            self._logger.error(f'Collection "{collection_name}" does not exist')
-            raise Exception(f'Collection "{collection_name}" does not exist')
-
         keys = list()
-        for rec in records:
-            # Typical Redis key structure: collection_name:{some identifier}
-            rec._key = redis_key(collection_name, rec._id)
-
-            # Overwrites previous data or inserts new key if not present
-            # Index registers any hash matching its schema and prefixed with collection_name:
-            self._database.hset(
-                rec._key, mapping=serialize_record_to_redis(rec, self._vector_type)
-            )
-            keys.append(rec._key)
+        for record in records:
+            rec_key = await self.upsert_async(collection_name, record)
+            if rec_key:
+                keys.append(rec_key)
 
         return keys
 
@@ -291,8 +297,23 @@ class RedisMemoryStore(MemoryStoreBase):
             MemoryRecord -- The memory record if found, else None
         """
 
-        batch = await self.get_batch_async(collection_name, [key], with_embedding)
-        return batch[0] if len(batch) else None
+        if not await self.does_collection_exist_async(collection_name):
+            self._logger.error(f'Collection "{collection_name}" does not exist')
+            raise Exception(f'Collection "{collection_name}" does not exist')
+
+        internal_key = redis_key(collection_name, key)
+        raw_fields = self._database.hgetall(internal_key)
+
+        # Did not find the record
+        if len(raw_fields) == 0:
+            return None
+
+        record = deserialize_redis_to_record(
+            raw_fields, self._vector_type, with_embedding
+        )
+        record._key = internal_key
+
+        return record
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
@@ -308,24 +329,12 @@ class RedisMemoryStore(MemoryStoreBase):
         Returns:
             List[MemoryRecord] -- The memory records if found, else an empty list
         """
-        if not await self.does_collection_exist_async(collection_name):
-            self._logger.error(f'Collection "{collection_name}" does not exist')
-            raise Exception(f'Collection "{collection_name}" does not exist')
 
         records = list()
         for key in keys:
-            internal_key = redis_key(collection_name, key)
-            raw_fields = self._database.hgetall(internal_key)
-
-            # Did not find the record
-            if len(raw_fields) == 0:
-                continue
-
-            rec = deserialize_redis_to_record(
-                raw_fields, self._vector_type, with_embeddings
-            )
-            rec._key = internal_key
-            records.append(rec)
+            record = await self.get_async(collection_name, key, with_embeddings)
+            if record:
+                records.append(record)
 
         return records
 

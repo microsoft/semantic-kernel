@@ -2,12 +2,13 @@
 
 from datetime import datetime
 from typing import Any, Dict
+
 import numpy as np
 
-import redis
 from redis import Redis
 from redis.commands.search.document import Document
 from semantic_kernel.memory.memory_record import MemoryRecord
+
 
 def redis_key(collection_name: str, key: str) -> str:
     """
@@ -22,7 +23,10 @@ def redis_key(collection_name: str, key: str) -> str:
     """
     return f"{collection_name}:{key}"
 
-def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> Dict[str, Any]:
+
+def serialize_record_to_redis(
+    record: MemoryRecord, vector_type: np.dtype
+) -> Dict[str, Any]:
     mapping = {
         "timestamp": record._timestamp.isoformat() if record._timestamp else "",
         "is_reference": 1 if record._is_reference else 0,
@@ -39,7 +43,10 @@ def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> Di
     }
     return mapping
 
-def deserialize_redis_to_record(fields: Dict[str, Any], vector_type: np.dtype, with_embedding: bool) -> MemoryRecord:
+
+def deserialize_redis_to_record(
+    fields: Dict[str, Any], vector_type: np.dtype, with_embedding: bool
+) -> MemoryRecord:
     record = MemoryRecord(
         id=fields[b"id"].decode(),
         is_reference=bool(int(fields[b"is_reference"].decode())),
@@ -55,11 +62,16 @@ def deserialize_redis_to_record(fields: Dict[str, Any], vector_type: np.dtype, w
 
     if with_embedding:
         # Extract using the vector type, then convert to regular Python float type
-        record._embedding = np.frombuffer(fields[b"embedding"], dtype=vector_type).astype(float)
+        record._embedding = np.frombuffer(
+            fields[b"embedding"], dtype=vector_type
+        ).astype(float)
 
     return record
 
-def deserialize_document_to_record(database: Redis, doc: Document, vector_type: np.dtype, with_embedding: bool) -> MemoryRecord:
+
+def deserialize_document_to_record(
+    database: Redis, doc: Document, vector_type: np.dtype, with_embedding: bool
+) -> MemoryRecord:
     # Parse collection name out of ID
     key_str = doc["id"]
     colon_index = key_str.index(":")
@@ -83,5 +95,3 @@ def deserialize_document_to_record(database: Redis, doc: Document, vector_type: 
         record._embedding = np.frombuffer(eb, dtype=vector_type).astype(float)
 
     return record
-
-
