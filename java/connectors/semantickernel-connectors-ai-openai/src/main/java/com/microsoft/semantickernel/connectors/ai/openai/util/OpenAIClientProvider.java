@@ -182,23 +182,23 @@ public class OpenAIClientProvider {
     public OpenAIAsyncClient getAsyncClient() throws ConfigurationException {
         // No client type is specified, search for a valid client type
         if (clientType == null) {
-            LOGGER.info("No OpenAI client type specified, searching for a valid client type");
+            LOGGER.debug("No OpenAI client type specified, searching for a valid client type");
             try {
-                LOGGER.info("Trying OpenAI client");
+                LOGGER.debug("Trying OpenAI client");
                 OpenAIAsyncClient client = buildOpenAIClient();
-                LOGGER.info("Successfully instantiated OpenAI client");
+                LOGGER.debug("Successfully instantiated OpenAI client");
                 return client;
             } catch (ConfigurationException e) {
-                LOGGER.info("No OpenAI client found");
+                LOGGER.debug("No OpenAI client found");
             }
 
             try {
-                LOGGER.info("Trying Azure OpenAI client");
+                LOGGER.debug("Trying Azure OpenAI client");
                 OpenAIAsyncClient client = buildAzureOpenAIClient();
-                LOGGER.info("Successfully instantiated Azure OpenAI client");
+                LOGGER.debug("Successfully instantiated Azure OpenAI client");
                 return client;
             } catch (ConfigurationException e) {
-                LOGGER.info("No Azure OpenAI client found");
+                LOGGER.debug("No Azure OpenAI client found");
                 throw new ConfigurationException(NoValidConfigurationsFound);
             }
         } else {
@@ -218,7 +218,7 @@ public class OpenAIClientProvider {
         try {
             settings.assertIsValid();
         } catch (ConfigurationException e) {
-            LOGGER.warn("Could not instantiate OpenAI client");
+            LOGGER.warn("Settings are not valid for OpenAI client");
             LOGGER.warn(e.getMessage());
             throw e;
         }

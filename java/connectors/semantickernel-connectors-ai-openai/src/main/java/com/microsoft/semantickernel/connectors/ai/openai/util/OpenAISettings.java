@@ -25,16 +25,18 @@ public class OpenAISettings extends AbstractOpenAIClientSettings {
         organizationId = settings.get(settingsPrefix + "." + OPEN_AI_ORGANIZATION_SUFFIX);
     }
 
-    public String getKey() {
+    public String getKey() throws ConfigurationException {
         if (key == null) {
-            throw new RuntimeException("OpenAI key is not set");
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound, "key");
         }
         return key;
     }
 
-    public String getOrganizationId() {
+    public String getOrganizationId() throws ConfigurationException {
         if (organizationId == null) {
-            throw new RuntimeException("OpenAI organization id is not set");
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound, "organizationid");
         }
         return organizationId;
     }

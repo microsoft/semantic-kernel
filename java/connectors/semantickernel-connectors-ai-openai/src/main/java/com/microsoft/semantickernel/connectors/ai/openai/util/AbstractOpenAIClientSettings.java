@@ -23,5 +23,5 @@ public abstract class AbstractOpenAIClientSettings {
      *
      * @return OpenAI client key
      */
-    public abstract String getKey();
+    public abstract String getKey() throws ConfigurationException;
 }

@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.exceptions;
 
+import com.microsoft.semantickernel.SKCheckedException;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Kernel logic exception */
-public class ConfigurationException extends Exception {
+public class ConfigurationException extends SKCheckedException {
 
     @Nonnull private final ErrorCodes errorCode;
 

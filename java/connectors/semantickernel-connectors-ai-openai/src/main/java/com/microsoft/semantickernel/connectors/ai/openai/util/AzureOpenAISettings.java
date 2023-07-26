@@ -36,9 +36,10 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
      *
      * @return Azure OpenAI endpoint
      */
-    public String getEndpoint() {
+    public String getEndpoint() throws ConfigurationException {
         if (endpoint == null) {
-            throw new IllegalStateException("Azure OpenAI endpoint is not set");
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound, AZURE_OPEN_AI_ENDPOINT_SUFFIX);
         }
         return endpoint;
     }
@@ -48,16 +49,19 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
      *
      * @return Azure OpenAI deployment name
      */
-    public String getDeploymentName() {
+    public String getDeploymentName() throws ConfigurationException {
         if (deploymentName == null) {
-            throw new IllegalStateException("Azure OpenAI deployment name is not set");
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound,
+                    AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX);
         }
         return deploymentName;
     }
 
-    public String getKey() {
+    public String getKey() throws ConfigurationException {
         if (key == null) {
-            throw new IllegalStateException("Azure OpenAI key is not set");
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound, KEY_SUFFIX);
         }
         return key;
     }
