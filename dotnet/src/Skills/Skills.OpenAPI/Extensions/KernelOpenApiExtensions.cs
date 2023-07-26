@@ -63,14 +63,7 @@ public static class KernelOpenApiExtensions
 
         using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        try
-        {
-            response.EnsureSuccessStatusCode();
-        }
-        catch (HttpRequestException e)
-        {
-            throw new HttpOperationException(response.StatusCode, null, e.Message, e);
-        }
+        response.EnsureSuccess(logger: kernel.Log);
 
         var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         if (stream == null)

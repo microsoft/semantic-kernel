@@ -85,14 +85,7 @@ public class OneDriveConnector : ICloudDriveConnector
             .ItemWithPath(destinationPath).Content
             .Request().PutResponseAsync<DriveItem>(fileContentStream, cancellationToken, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false);
 
-        try
-        {
-            response.ToHttpResponseMessage().EnsureSuccessStatusCode();
-        }
-        catch (HttpRequestException e)
-        {
-            throw new HttpOperationException(response.StatusCode, null, e.Message, e);
-        }
+        response.ToHttpResponseMessage().EnsureSuccess();
     }
 
     /// <inheritdoc/>
@@ -109,14 +102,7 @@ public class OneDriveConnector : ICloudDriveConnector
             .CreateLink(type, scope)
             .Request().PostResponseAsync(cancellationToken).ConfigureAwait(false);
 
-        try
-        {
-            response.ToHttpResponseMessage().EnsureSuccessStatusCode();
-        }
-        catch (HttpRequestException e)
-        {
-            throw new HttpOperationException(response.StatusCode, null, e.Message, e);
-        }
+        response.ToHttpResponseMessage().EnsureSuccess();
 
         string? result = (await response.GetResponseObjectAsync().ConfigureAwait(false)).Link?.WebUrl;
         if (string.IsNullOrWhiteSpace(result))

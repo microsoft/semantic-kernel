@@ -108,21 +108,22 @@ public class WeaviateMemoryStore : IMemoryStore
 
         try
         {
-            CreateClassSchemaResponse? result = JsonSerializer.Deserialize<CreateClassSchemaResponse>(responseContent, s_jsonSerializerOptions);
-            response.EnsureSuccessStatusCode();
-
-            if (result == null || result.Description != description)
-            {
-                throw new SKException($"Name conflict for collection: {collectionName} with class name: {className}");
-            }
-
-            this._logger.LogDebug("Created collection: {0}, with class name: {1}", collectionName, className);
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Unable to create collection: {0}, with class name: {1}", collectionName, className);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
+
+        CreateClassSchemaResponse? result = JsonSerializer.Deserialize<CreateClassSchemaResponse>(responseContent, s_jsonSerializerOptions);
+
+        if (result == null || result.Description != description)
+        {
+            throw new SKException($"Name conflict for collection: {collectionName} with class name: {className}");
+        }
+
+        this._logger.LogDebug("Created collection: {0}, with class name: {1}", collectionName, className);
     }
 
     /// <inheritdoc />
@@ -146,21 +147,21 @@ public class WeaviateMemoryStore : IMemoryStore
 
         try
         {
-            response.EnsureSuccessStatusCode();
-
-            GetClassResponse? existing = JsonSerializer.Deserialize<GetClassResponse>(responseContent, s_jsonSerializerOptions);
-            if (existing != null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
-            {
-                throw new SKException($"Unable to verify existing collection: {collectionName} with class name: {className}");
-            }
-
-            return true;
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Unable to verify existing collection: {0}, with class name: {1}", collectionName, className);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
+
+        GetClassResponse? existing = JsonSerializer.Deserialize<GetClassResponse>(responseContent, s_jsonSerializerOptions);
+        if (existing != null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
+        {
+            throw new SKException($"Unable to verify existing collection: {collectionName} with class name: {className}");
+        }
+
+        return true;
     }
 
     /// <inheritdoc />
@@ -174,12 +175,12 @@ public class WeaviateMemoryStore : IMemoryStore
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Unable to list collections");
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
 
         GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
@@ -211,12 +212,12 @@ public class WeaviateMemoryStore : IMemoryStore
 
             try
             {
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccess(responseContent, this._logger);
             }
-            catch (HttpRequestException e)
+            catch (HttpOperationException e)
             {
                 this._logger.LogError(e, "Collection deletion failed");
-                throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+                throw;
             }
         }
     }
@@ -250,12 +251,12 @@ public class WeaviateMemoryStore : IMemoryStore
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Failed to upsert vectors");
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
 
         BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonSerializerOptions);
@@ -289,17 +290,17 @@ public class WeaviateMemoryStore : IMemoryStore
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException) when (response.StatusCode == HttpStatusCode.NotFound)
+        catch (HttpOperationException) when (response.StatusCode == HttpStatusCode.NotFound)
         {
             this._logger.LogDebug("No vector with key: {0} is found", key);
             return null;
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError("Request for vector failed {0}", e.Message);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
 
         WeaviateObject? weaviateObject = JsonSerializer.Deserialize<WeaviateObject>(responseContent, s_jsonSerializerOptions);
@@ -366,15 +367,15 @@ public class WeaviateMemoryStore : IMemoryStore
 
         try
         {
-            response.EnsureSuccessStatusCode();
-
-            this._logger.LogDebug("Vector deleted");
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Vector delete request failed");
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
+
+        this._logger.LogDebug("Vector deleted");
     }
 
     /// <inheritdoc />
@@ -413,12 +414,12 @@ public class WeaviateMemoryStore : IMemoryStore
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Nearest vectors search failed: {0}", e.Message);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
 
         try

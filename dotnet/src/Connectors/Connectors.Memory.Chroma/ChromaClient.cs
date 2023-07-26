@@ -177,15 +177,7 @@ public class ChromaClient : IChromaClient
 
         string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        try
-        {
-            response.EnsureSuccessStatusCode();
-        }
-        catch (HttpRequestException e)
-        {
-            this._logger.LogError(e, "{0} {1} operation failed: {2}, {3}", request.Method.Method, operationName, e.Message, responseContent);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
-        }
+        response.EnsureSuccess(responseContent, this._logger);
 
         return (response, responseContent);
     }

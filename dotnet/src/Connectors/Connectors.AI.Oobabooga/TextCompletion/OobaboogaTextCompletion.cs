@@ -215,14 +215,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            try
-            {
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException e)
-            {
-                throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
-            }
+            response.EnsureSuccess(responseContent, this._logger);
 
             TextCompletionResponse? completionResponse = JsonSerializer.Deserialize<TextCompletionResponse>(responseContent);
 

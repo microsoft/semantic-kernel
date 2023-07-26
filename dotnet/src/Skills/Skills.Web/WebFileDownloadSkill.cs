@@ -68,15 +68,7 @@ public sealed class WebFileDownloadSkill
 
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
-        try
-        {
-            response.EnsureSuccessStatusCode();
-        }
-        catch (HttpRequestException e)
-        {
-            this._logger.LogError(e, "Request failed: {0} {1}", response.StatusCode, e.Message);
-            throw new HttpOperationException(response.StatusCode, null, e.Message, e);
-        }
+        response.EnsureSuccess(logger: this._logger);
 
         using Stream webStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         using FileStream outputFileStream = new(Environment.ExpandEnvironmentVariables(filePath), FileMode.Create);

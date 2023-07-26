@@ -81,12 +81,12 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
         try
         {
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogDebug("Vectors not found {0}", e.Message);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
 
         var data = JsonSerializer.Deserialize<GetVectorsResponse>(responseContent);
@@ -131,12 +131,12 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
         try
         {
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogDebug("Request for vector with payload ID failed {0}", e.Message);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
 
         var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
@@ -180,21 +180,22 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         try
         {
-            response.EnsureSuccessStatusCode();
-            var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
-            if (result?.Status == "ok")
-            {
-                this._logger.LogDebug("Vector being deleted");
-            }
-            else
-            {
-                this._logger.LogWarning("Vector delete failed");
-            }
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Vector delete request failed: {0}", e.Message);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
+        }
+
+        var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+        if (result?.Status == "ok")
+        {
+            this._logger.LogDebug("Vector being deleted");
+        }
+        else
+        {
+            this._logger.LogWarning("Vector delete failed");
         }
     }
 
@@ -220,21 +221,22 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         try
         {
-            response.EnsureSuccessStatusCode();
-            var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
-            if (result?.Status == "ok")
-            {
-                this._logger.LogDebug("Vector being deleted");
-            }
-            else
-            {
-                this._logger.LogWarning("Vector delete failed");
-            }
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Vector delete request failed: {0}", e.Message);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
+        }
+
+        var result = JsonSerializer.Deserialize<QdrantResponse>(responseContent);
+        if (result?.Status == "ok")
+        {
+            this._logger.LogDebug("Vector being deleted");
+        }
+        else
+        {
+            this._logger.LogWarning("Vector delete failed");
         }
     }
 
@@ -252,21 +254,22 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         try
         {
-            response.EnsureSuccessStatusCode();
-            var result = JsonSerializer.Deserialize<UpsertVectorResponse>(responseContent);
-            if (result?.Status == "ok")
-            {
-                this._logger.LogDebug("Vectors upserted");
-            }
-            else
-            {
-                this._logger.LogWarning("Vector upserts failed");
-            }
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Vector upserts request failed: {0}", e.Message);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
+        }
+
+        var result = JsonSerializer.Deserialize<UpsertVectorResponse>(responseContent);
+        if (result?.Status == "ok")
+        {
+            this._logger.LogDebug("Vectors upserted");
+        }
+        else
+        {
+            this._logger.LogWarning("Vector upserts failed");
         }
     }
 
@@ -304,12 +307,12 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Nearest vectors search failed: {0}", e.Message);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
 
         var data = JsonSerializer.Deserialize<SearchVectorsResponse>(responseContent);
@@ -365,12 +368,12 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Collection upsert failed: {0}, {1}", e.Message, responseContent);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
     }
 
@@ -390,12 +393,12 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Collection deletion failed: {0}, {1}", e.Message, responseContent);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
     }
 
@@ -431,17 +434,17 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        var collections = JsonSerializer.Deserialize<ListCollectionsResponse>(responseContent);
-
         try
         {
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccess(responseContent, this._logger);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
             this._logger.LogError(e, "Unable to list collections: {0}, {1}", e.Message, responseContent);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
+            throw;
         }
+
+        var collections = JsonSerializer.Deserialize<ListCollectionsResponse>(responseContent);
 
         foreach (var collection in collections?.Result?.Collections ?? Enumerable.Empty<ListCollectionsResponse.CollectionResult.CollectionDescription>())
         {

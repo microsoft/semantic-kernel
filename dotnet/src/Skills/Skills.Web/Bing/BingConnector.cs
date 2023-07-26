@@ -70,15 +70,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         this._logger.LogTrace("Response content received: {0}", json);
 
-        try
-        {
-            response.EnsureSuccessStatusCode();
-        }
-        catch (HttpRequestException e)
-        {
-            this._logger.LogError(e, "Request failed: {0} {1}", response.StatusCode, json);
-            throw new HttpOperationException(response.StatusCode, json, e.Message, e);
-        }
+        response.EnsureSuccess(json, this._logger);
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
 

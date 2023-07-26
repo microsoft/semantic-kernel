@@ -58,14 +58,7 @@ public static class KernelChatGptPluginExtensions
 
         string gptPluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        try
-        {
-            response.EnsureSuccessStatusCode();
-        }
-        catch (HttpRequestException e)
-        {
-            throw new HttpOperationException(response.StatusCode, gptPluginJson, e.Message, e);
-        }
+        response.EnsureSuccess(gptPluginJson, kernel.Log);
 
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 

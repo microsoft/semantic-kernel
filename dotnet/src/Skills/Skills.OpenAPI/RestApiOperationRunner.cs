@@ -114,14 +114,7 @@ internal sealed class RestApiOperationRunner
 
         var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        try
-        {
-            response.EnsureSuccessStatusCode();
-        }
-        catch (HttpRequestException e)
-        {
-            throw new HttpOperationException(response.StatusCode, content, e.Message, e);
-        }
+        response.EnsureSuccess(content);
 
         // First iteration allowing to associate additional metadata with the returned content.
         var result = new RestApiOperationResponse(

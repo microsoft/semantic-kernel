@@ -127,23 +127,11 @@ public abstract class OpenAIClientBase
 
         this._log.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
-        if (response.IsSuccessStatusCode)
-        {
-            return response;
-        }
-
         string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        try
-        {
-            response.EnsureSuccessStatusCode();
-            return response;
-        }
-        catch (HttpRequestException e)
-        {
-            this._log.LogError(e, "HTTP request failed: {0} {1}", response.StatusCode, e.Message);
-            throw new HttpOperationException(response.StatusCode, responseContent, e.Message, e);
-        }
+        response.EnsureSuccess(responseContent);
+
+        return response;
     }
 
     #endregion
