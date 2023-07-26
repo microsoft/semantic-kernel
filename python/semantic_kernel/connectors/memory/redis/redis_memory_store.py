@@ -23,7 +23,7 @@ def redis_key(collection_name: str, key: str) -> str:
 
     Arguments:
         collection_name {str} -- Name for a collection of embeddings
-        key {str} -- ID associated wtih a memory record
+        key {str} -- ID associated with a memory record
 
     Returns:
         str -- Redis key in the format collection_name:key
@@ -32,7 +32,7 @@ def redis_key(collection_name: str, key: str) -> str:
 
 
 class RedisMemoryStore(MemoryStoreBase):
-    """A memory store implmentation using Redis"""
+    """A memory store implementation using Redis"""
 
     _database: "redis.Redis"
     _vector_size: int
@@ -41,8 +41,8 @@ class RedisMemoryStore(MemoryStoreBase):
     _logger: Logger
 
     # For more information on vector attributes: https://redis.io/docs/stack/search/reference/vectors
-    # Without RedisAI, it is currently not possible to retreive index-specific vector attributes to have
-    # fully independent collections. The user can chooes a different vector dimensionality per collection,
+    # Without RedisAI, it is currently not possible to retrieve index-specific vector attributes to have
+    # fully independent collections. The user can chose a different vector dimensionality per collection,
     # but it is solely their responsibility to ensure proper dimensions of a vector to be indexed correctly.
 
     # Vector similarity index algorithm. The supported types are "FLAT" and "HNSW", the default being "HNSW".
@@ -54,7 +54,7 @@ class RedisMemoryStore(MemoryStoreBase):
     # Metric for measuring vector distance. Supported types are L2, IP, COSINE, the default being "COSINE".
     VECTOR_DISTANCE_METRIC = "COSINE"
 
-    # Query dialect. Must specify DIALECT 2 or higher to use a vector similarity query., the default being 2
+    # Query dialect. Must specify DIALECT 2 or higher to use a vector similarity query, the default being 2
     QUERY_DIALECT = 2
 
     def __init__(
@@ -231,14 +231,14 @@ class RedisMemoryStore(MemoryStoreBase):
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         """
-        Upsert a memory record into the data store. Does not gurantee that the collection exists.
+        Upsert a memory record into the data store. Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
             * If the record does not exist, it will be created.
 
         Note: if the record do not have the same dimensionality configured for the collection,
         it will not be detected to belong to the collection in Redis.
 
-        Arguemnts:
+        Arguments:
             collection_name {str} -- Name for a collection of embeddings
             record {MemoryRecord} -- Memory record to upsert
 
@@ -252,14 +252,14 @@ class RedisMemoryStore(MemoryStoreBase):
         self, collection_name: str, records: List[MemoryRecord]
     ) -> List[str]:
         """
-        Upserts a group of memory records into the data store. Does not gurantee that the collection exists.
+        Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
             * If the record does not exist, it will be created.
 
         Note: if the records do not have the same dimensionality configured for the collection,
         they will not be detected to belong to the collection in Redis.
 
-        Arguemnts:
+        Arguments:
             collection_name {str} -- Name for a collection of embeddings
             records {List[MemoryRecord]} -- List of memory records to upsert
 
@@ -308,7 +308,7 @@ class RedisMemoryStore(MemoryStoreBase):
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
         """
-        Gets a batch of memory records from the data store. Does not guarantee that the collection exists
+        Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
@@ -319,6 +319,7 @@ class RedisMemoryStore(MemoryStoreBase):
             List[MemoryRecord] -- The memory records if found, else an empty list
         """
         if not await self.does_collection_exist_async(collection_name):
+            self._logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
         records = list()
