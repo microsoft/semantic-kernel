@@ -318,7 +318,7 @@ public abstract class ClientBase
             NucleusSamplingFactor = (float?)requestSettings.TopP,
             FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
             PresencePenalty = (float?)requestSettings.PresencePenalty,
-            ChoicesPerPrompt = requestSettings.ResultsPerPrompt
+            ChoiceCount = requestSettings.ResultsPerPrompt
         };
 
         foreach (var keyValue in requestSettings.TokenSelectionBiases)
