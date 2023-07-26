@@ -120,7 +120,7 @@ public static class SKFunctionExtensions
         var inputInContext = context.Variables.Input;
         if (!string.IsNullOrEmpty(inputInContext) && !string.Equals(input, inputInContext, StringComparison.Ordinal))
         {
-            context.Log.LogWarning(
+            context.Logger.LogWarning(
                 "Function {0}.{1} has been invoked with an explicit input text that is different and overrides the input text defined in the context",
                 function.SkillName, function.Name);
         }

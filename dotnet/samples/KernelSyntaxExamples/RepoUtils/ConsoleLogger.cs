@@ -10,7 +10,7 @@ namespace RepoUtils;
 /// </summary>
 internal static class ConsoleLogger
 {
-    internal static ILogger Log => LogFactory.CreateLogger<object>();
+    internal static ILogger Logger => LogFactory.CreateLogger<object>();
 
     private static ILoggerFactory LogFactory => s_loggerFactory.Value;
 
