@@ -354,7 +354,7 @@ class Plan(SKFunctionBase):
         context.variables.update(result_string)
 
         for item in self._steps[self._next_step_index - 1]._outputs:
-            if item in self._state.contains_key(item):
+            if self._state.contains_key(item):
                 context.variables.set(item, self._state[item])
             else:
                 context.variables.set(item, result_string)
@@ -389,6 +389,7 @@ class Plan(SKFunctionBase):
         # Priority for remaining stepVariables is:
         # - Function Parameters (pull from variables or state by a key value)
         # - Step Parameters (pull from variables or state by a key value)
+        # - All other variables. These are carried over in case the function wants access to the ambient content.
         function_params = step.describe()
         for param in function_params._parameters:
             if param.name.lower() == variables._main_key.lower():
@@ -414,6 +415,10 @@ class Plan(SKFunctionBase):
                 step_variables.set(param_var, self._state[param_var])
             else:
                 step_variables.set(param_var, expanded_value)
+
+        for item in variables._variables:
+            if not step_variables.contains_key(item):
+                step_variables.set(item, variables[item])
 
         return step_variables
 
