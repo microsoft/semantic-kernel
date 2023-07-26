@@ -511,19 +511,19 @@ public sealed class SKFunction : ISKFunction, IDisposable
         if (type == typeof(SKContext))
         {
             TrackUniqueParameterType(ref hasSKContextParam, method, $"At most one {nameof(SKContext)} parameter is permitted.");
-            return (static (SKContext ctx, CancellationToken _) => ctx, null);
+            return (static (SKContext context, CancellationToken _) => context, null);
         }
 
         if (type == typeof(ILogger))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)} parameter is permitted.");
-            return (static (SKContext ctx, CancellationToken _) => ctx.Logger, null);
+            return (static (SKContext context, CancellationToken _) => context.Logger, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             TrackUniqueParameterType(ref hasCultureParam, method, $"At most one {nameof(CultureInfo)}/{nameof(IFormatProvider)} parameter is permitted.");
-            return (static (SKContext ctx, CancellationToken _) => ctx.Culture, null);
+            return (static (SKContext context, CancellationToken _) => context.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
@@ -580,10 +580,10 @@ public sealed class SKFunction : ISKFunction, IDisposable
             }
 
             bool fallBackToInput = !sawFirstParameter && !nameIsInput;
-            Func<SKContext, CancellationToken, object?> parameterFunc = (SKContext ctx, CancellationToken _) =>
+            Func<SKContext, CancellationToken, object?> parameterFunc = (SKContext context, CancellationToken _) =>
             {
                 // 1. Use the value of the variable if it exists.
-                if (ctx.Variables.TryGetValue(name, out string? value))
+                if (context.Variables.TryGetValue(name, out string? value))
                 {
                     return Process(value);
                 }
@@ -597,7 +597,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 // 3. Otherwise, use "input" if this is the first (or only) parameter.
                 if (fallBackToInput)
                 {
-                    return Process(ctx.Variables.Input);
+                    return Process(context.Variables.Input);
                 }
 
                 // 4. Otherwise, fail.
@@ -612,7 +612,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
                     try
                     {
-                        return parser(value, ctx.Culture);
+                        return parser(value, context.Culture);
                     }
                     catch (Exception e) when (!e.IsCriticalException())
                     {
