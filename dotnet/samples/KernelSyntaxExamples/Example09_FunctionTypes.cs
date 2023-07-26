@@ -16,10 +16,10 @@ public static class Example09_FunctionTypes
     {
         Console.WriteLine("======== Native function types ========");
 
-        var fakeContext = new SKContext(logger: ConsoleLogger.Log);
+        var fakeContext = new SKContext(logger: ConsoleLogger.Logger);
 
         var kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
