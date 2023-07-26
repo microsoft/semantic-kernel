@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -65,5 +66,15 @@ public static class PlanExtensions
         }));
 
         return planString;
+    }
+
+    /// <summary>
+    /// Returns decorated instance of <see cref="IPlan"/> with enabled instrumentation.
+    /// </summary>
+    /// <param name="plan">Instance of <see cref="IPlan"/> to decorate.</param>
+    /// <param name="logger">Optional logger.</param>
+    public static IPlan WithInstrumentation(this IPlan plan, ILogger? logger = null)
+    {
+        return new InstrumentedPlan(plan, logger);
     }
 }
