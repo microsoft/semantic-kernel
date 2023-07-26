@@ -97,11 +97,8 @@ public class AIServiceCollection {
                         serviceType -> {
                             // Get or create the nested dictionary for the service type
                             Map<String, Supplier<? extends AIService>> namedServices =
-                                    this.services.get(serviceType);
-                            if (namedServices == null) {
-                                namedServices = new HashMap<>();
-                                services.put(serviceType, namedServices);
-                            }
+                                    this.services.computeIfAbsent(
+                                            serviceType, (ignore) -> new HashMap<>());
 
                             // Set as the default if the name is empty, or the default flag is true,
                             // or there is no default name for the service type.
@@ -117,14 +114,13 @@ public class AIServiceCollection {
 
     private <T extends AIService> List<Class<? extends AIService>> getKnownServiceTypes(
             Class<T> serviceType) {
-        List<Class<? extends AIService>> knownServices =
+        ArrayList<Class<? extends AIService>> knownServices =
                 KNOWN_SERVICES.stream()
                         .filter(knownServiceType -> knownServiceType.isAssignableFrom(serviceType))
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toCollection(ArrayList::new));
 
-        List<Class<? extends AIService>> services = new ArrayList<>(knownServices);
-        services.add(serviceType);
-        return services;
+        knownServices.add(serviceType);
+        return knownServices;
     }
 
     /**
