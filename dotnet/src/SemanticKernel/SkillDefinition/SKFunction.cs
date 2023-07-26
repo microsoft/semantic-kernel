@@ -59,13 +59,13 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="method">Signature of the method to invoke</param>
     /// <param name="target">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeMethod(
         MethodInfo method,
         object? target = null,
         string? skillName = null,
-        ILogger? log = null)
+        ILogger? logger = null)
     {
         if (!method.IsStatic && target is null)
         {
@@ -77,7 +77,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             skillName = SkillCollection.GlobalSkill;
         }
 
-        MethodDetails methodDetails = GetMethodDetails(method, target, log);
+        MethodDetails methodDetails = GetMethodDetails(method, target, logger);
 
         return new SKFunction(
             delegateFunction: methodDetails.Function,
@@ -86,7 +86,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             functionName: methodDetails.Name,
             isSemantic: false,
             description: methodDetails.Description,
-            logger: log);
+            logger: logger);
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
         Delegate nativeFunction,
@@ -105,9 +105,9 @@ public sealed class SKFunction : ISKFunction, IDisposable
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
-        ILogger? log = null)
+        ILogger? logger = null)
     {
-        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, log);
+        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, logger);
 
         functionName ??= nativeFunction.Method.Name;
         description ??= string.Empty;
@@ -124,7 +124,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             skillName: skillName!,
             functionName: functionName,
             isSemantic: false,
-            logger: log);
+            logger: logger);
     }
 
     /// <summary>
@@ -243,7 +243,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
             catch (Exception e) when (!e.IsCriticalException())
             {
                 const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-                this._log.LogError(e, Message, this._function.Method.Name, e.Message);
+                this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
                 context.Fail(e.Message, e);
             }
         }
@@ -319,7 +319,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> _function;
-    private readonly ILogger _log;
+    private readonly ILogger _logger;
     private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
     private CompleteRequestSettings _aiRequestSettings = new();
@@ -352,7 +352,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         Verify.ValidFunctionName(functionName);
         Verify.ParametersUniqueness(parameters);
 
-        this._log = logger ?? NullLogger.Instance;
+        this._logger = logger ?? NullLogger.Instance;
 
         this._function = delegateFunction;
         this.Parameters = parameters;
@@ -371,7 +371,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         if (this.IsSemantic) { return; }
 
-        this._log.LogError("The function is not semantic");
+        this._logger.LogError("The function is not semantic");
         throw new KernelException(
             KernelException.ErrorCodes.InvalidFunctionType,
             "Invalid operation, the method requires a semantic function");
@@ -380,7 +380,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     private static MethodDetails GetMethodDetails(
         MethodInfo method,
         object? target,
-        ILogger? log = null)
+        ILogger? logger = null)
     {
         Verify.NotNull(method);
 
@@ -414,7 +414,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
 
         (result.Function, result.Parameters) = GetDelegateInfo(target, method);
 
-        log?.LogTrace("Method '{0}' found", result.Name);
+        logger?.LogTrace("Method '{0}' found", result.Name);
 
         return result;
     }
@@ -517,7 +517,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         if (type == typeof(ILogger))
         {
             TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)} parameter is permitted.");
-            return (static (SKContext context, CancellationToken _) => context.Log, null);
+            return (static (SKContext context, CancellationToken _) => context.Logger, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))

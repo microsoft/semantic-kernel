@@ -67,9 +67,15 @@ public sealed class SKContext
     }
 
     /// <summary>
+    /// App logger (obsolete - use 'Logger' instead).
+    /// </summary>
+    [Obsolete("Use SKContext.Logger instead. This will be removed in a future release.")]
+    public ILogger Log => this.Logger;
+
+    /// <summary>
     /// App logger
     /// </summary>
-    public ILogger Log { get; }
+    public ILogger Logger { get; }
 
     /// <summary>
     /// Constructor for the context.
@@ -84,7 +90,7 @@ public sealed class SKContext
     {
         this.Variables = variables ?? new();
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
-        this.Log = logger ?? NullLogger.Instance;
+        this.Logger = logger ?? NullLogger.Instance;
         this._culture = CultureInfo.CurrentCulture;
     }
 
@@ -108,7 +114,7 @@ public sealed class SKContext
         return new SKContext(
             variables: this.Variables.Clone(),
             skills: this.Skills,
-            logger: this.Log)
+            logger: this.Logger)
         {
             Culture = this.Culture,
             ErrorOccurred = this.ErrorOccurred,

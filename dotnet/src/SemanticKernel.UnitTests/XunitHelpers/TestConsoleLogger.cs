@@ -10,7 +10,7 @@ namespace SemanticKernel.UnitTests.XunitHelpers;
 /// </summary>
 internal static class TestConsoleLogger
 {
-    internal static ILogger Log => LogFactory.CreateLogger<object>();
+    internal static ILogger Logger => LogFactory.CreateLogger<object>();
 
     private static ILoggerFactory LogFactory => s_loggerFactory.Value;
     private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
