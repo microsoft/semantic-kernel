@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class ParameterView
 {
-    private string _name = "";
+    private string _name = string.Empty;
 
     /// <summary>
     /// Parameter name. Alphanumeric chars + "_" only.
@@ -30,12 +30,12 @@ public sealed class ParameterView
     /// <summary>
     /// Parameter description.
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    public string? Description { get; set; }
 
     /// <summary>
     /// Default value when the value is not provided.
     /// </summary>
-    public string DefaultValue { get; set; } = string.Empty;
+    public string? DefaultValue { get; set; }
 
     /// <summary>
     /// Constructor
@@ -52,11 +52,9 @@ public sealed class ParameterView
     /// <param name="defaultValue">Default parameter value, if not provided</param>
     public ParameterView(
         string name,
-        string description,
-        string defaultValue)
+        string? description = null,
+        string? defaultValue = null)
     {
-        Verify.ValidFunctionParamName(name);
-
         this.Name = name;
         this.Description = description;
         this.DefaultValue = defaultValue;

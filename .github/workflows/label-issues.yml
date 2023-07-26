@@ -25,15 +25,24 @@ jobs:
             let labels = ["triage"]
             
             // Check if the body or the title contains the word 'python' (case-insensitive)
-            if (body.match(/python/i) || title.match(/python/i)) {
+            if ((body != null && body.match(/python/i)) || (title != null && title.match(/python/i))) {
               // Add the 'python' label to the array
               labels.push("python")
             }
             
             // Check if the body or the title contains the word 'java' (case-insensitive)
-            if (body.match(/java/i) || title.match(/java/i)) {
+            if ((body != null && body.match(/java/i)) || (title != null && title.match(/java/i))) {
               // Add the 'java' label to the array
               labels.push("java")
+            }
+            
+            // Check if the body or the title contains the words 'dotnet', '.net', 'c#' or 'csharp' (case-insensitive)
+            if ((body != null && body.match(/.net/i)) || (title != null && title.match(/.net/i)) ||
+                (body != null && body.match(/dotnet/i)) || (title != null && title.match(/dotnet/i)) ||
+                (body != null && body.match(/C#/i)) || (title != null && title.match(/C#/i)) ||
+                (body != null && body.match(/csharp/i)) || (title != null && title.match(/csharp/i))) {
+              // Add the '.NET' label to the array
+              labels.push(".NET")
             }
 
             // Add the labels to the issue
