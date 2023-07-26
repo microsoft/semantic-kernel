@@ -33,18 +33,18 @@ public class SKContextTests
         variables.Set("foo1", "bar1");
 
         // Act
-        target["foo2"] = "bar2";
-        target["INPUT"] = Guid.NewGuid().ToString("N");
+        target.Variables["foo2"] = "bar2";
+        target.Variables["INPUT"] = Guid.NewGuid().ToString("N");
 
         // Assert
-        Assert.Equal("bar1", target["foo1"]);
         Assert.Equal("bar1", target.Variables["foo1"]);
-        Assert.Equal("bar2", target["foo2"]);
+        Assert.Equal("bar1", target.Variables["foo1"]);
         Assert.Equal("bar2", target.Variables["foo2"]);
-        Assert.Equal(target["INPUT"], target.Result);
-        Assert.Equal(target["INPUT"], target.ToString());
-        Assert.Equal(target["INPUT"], target.Variables.Input);
-        Assert.Equal(target["INPUT"], target.Variables.ToString());
+        Assert.Equal("bar2", target.Variables["foo2"]);
+        Assert.Equal(target.Variables["INPUT"], target.Result);
+        Assert.Equal(target.Variables["INPUT"], target.ToString());
+        Assert.Equal(target.Variables["INPUT"], target.Variables.Input);
+        Assert.Equal(target.Variables["INPUT"], target.Variables.ToString());
     }
 
     [Fact]

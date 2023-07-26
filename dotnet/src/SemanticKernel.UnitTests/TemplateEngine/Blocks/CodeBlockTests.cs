@@ -198,17 +198,17 @@ public class CodeBlockTests
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((ctx, _, _) =>
+            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((context, _, _) =>
             {
-                canary0 = ctx!["input"];
-                canary1 = ctx["var1"];
-                canary2 = ctx["var2"];
+                canary0 = context!.Variables["input"];
+                canary1 = context.Variables["var1"];
+                canary2 = context.Variables["var2"];
 
-                ctx["input"] = "overridden";
-                ctx["var1"] = "overridden";
-                ctx["var2"] = "overridden";
+                context.Variables["input"] = "overridden";
+                context.Variables["var1"] = "overridden";
+                context.Variables["var2"] = "overridden";
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _, CancellationToken _) => inputCtx);
+            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -246,11 +246,11 @@ public class CodeBlockTests
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((ctx, _, _) =>
+            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((context, _, _) =>
             {
-                canary = ctx!["input"];
+                canary = context!.Variables["input"];
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _, CancellationToken _) => inputCtx);
+            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -280,11 +280,11 @@ public class CodeBlockTests
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((ctx, _, _) =>
+            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((context, _, _) =>
             {
-                canary = ctx!["input"];
+                canary = context!.Variables["input"];
             })
-            .ReturnsAsync((SKContext inputCtx, CompleteRequestSettings _, CancellationToken _) => inputCtx);
+            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
