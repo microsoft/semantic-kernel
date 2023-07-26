@@ -89,7 +89,13 @@ class ActionPlanner:
 
         # Ignore additional text around JSON recursively
         json_regex = r"\{(?:[^{}]|(?R))*\}"
-        generated_plan_str = regex.search(json_regex, generated_plan_raw_str).group()
+        generated_plan_str = regex.search(json_regex, generated_plan_raw_str)
+
+        if not generated_plan_str:
+            self._logger.error("No valid plan has been generated.")
+            return Plan(description=goal)
+
+        generated_plan_str = generated_plan_str.group()
         generated_plan_str = generated_plan_str.replace('""', '"')
 
         try:
