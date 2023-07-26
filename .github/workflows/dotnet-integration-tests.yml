@@ -36,7 +36,7 @@ jobs:
       - name: Find projects
         shell: bash
         if: ${{ github.event_name != 'pull_request' }}
-        run: echo "projects=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+        run: echo "projects=$(find ./dotnet -type f -name "*Tests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
 
       - name: Integration Tests
         shell: bash

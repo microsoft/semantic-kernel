@@ -15,7 +15,7 @@ namespace SemanticKernel.UnitTests.SkillDefinition;
 
 public sealed class SKFunctionTests2
 {
-    private readonly Mock<ILogger> _log;
+    private readonly Mock<ILogger> _logger;
     private readonly Mock<IReadOnlySkillCollection> _skills;
 
     private static string s_expected = string.Empty;
@@ -23,7 +23,7 @@ public sealed class SKFunctionTests2
 
     public SKFunctionTests2()
     {
-        this._log = new Mock<ILogger>();
+        this._logger = new Mock<ILogger>();
         this._skills = new Mock<IReadOnlySkillCollection>();
 
         s_expected = Guid.NewGuid().ToString("D");
@@ -41,7 +41,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(Test), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -63,7 +63,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(Test), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -87,7 +87,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(Test), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -112,7 +112,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(Test), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -127,41 +127,41 @@ public sealed class SKFunctionTests2
     public async Task ItSupportsStaticContextVoidAsync()
     {
         // Arrange
-        static void Test(SKContext cx)
+        static void Test(SKContext context)
         {
             s_actual = s_expected;
-            cx["canary"] = s_expected;
+            context.Variables["canary"] = s_expected;
         }
 
         var context = this.MockContext("xy");
-        context["someVar"] = "qz";
+        context.Variables["someVar"] = "qz";
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(Test), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
         // Assert
         Assert.False(result.ErrorOccurred);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context["canary"]);
+        Assert.Equal(s_expected, context.Variables["canary"]);
     }
 
     [Fact]
     public async Task ItSupportsStaticContextStringAsync()
     {
         // Arrange
-        static string Test(SKContext cx)
+        static string Test(SKContext context)
         {
-            s_actual = cx["someVar"];
+            s_actual = context.Variables["someVar"];
             return "abc";
         }
 
         var context = this.MockContext("");
-        context["someVar"] = s_expected;
+        context.Variables["someVar"] = s_expected;
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(Test), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -177,19 +177,19 @@ public sealed class SKFunctionTests2
         // Arrange
         int invocationCount = 0;
 
-        string? Test(SKContext cx)
+        string? Test(SKContext context)
         {
             invocationCount++;
-            s_actual = cx["someVar"];
+            s_actual = context.Variables["someVar"];
             return "abc";
         }
 
         var context = this.MockContext("");
-        context["someVar"] = s_expected;
+        context.Variables["someVar"] = s_expected;
 
         // Act
         Func<SKContext, string?> method = Test;
-        var function = SKFunction.FromNativeMethod(Method(method), method.Target, log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(method), method.Target, logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -206,11 +206,11 @@ public sealed class SKFunctionTests2
         // Arrange
         int invocationCount = 0;
 
-        Task<string> Test(SKContext cx)
+        Task<string> Test(SKContext context)
         {
             invocationCount++;
             s_actual = s_expected;
-            cx.Variables["canary"] = s_expected;
+            context.Variables["canary"] = s_expected;
             return Task.FromResult(s_expected);
         }
 
@@ -218,7 +218,7 @@ public sealed class SKFunctionTests2
 
         // Act
         Func<SKContext, Task<string>> method = Test;
-        var function = SKFunction.FromNativeMethod(Method(method), method.Target, log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(method), method.Target, logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -227,7 +227,7 @@ public sealed class SKFunctionTests2
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_actual, context.Result);
-        Assert.Equal(s_expected, context["canary"]);
+        Assert.Equal(s_expected, context.Variables["canary"]);
     }
 
     [Fact]
@@ -236,21 +236,21 @@ public sealed class SKFunctionTests2
         // Arrange
         int invocationCount = 0;
 
-        async Task<SKContext> TestAsync(SKContext cx)
+        async Task<SKContext> TestAsync(SKContext context)
         {
             await Task.Delay(0);
             invocationCount++;
             s_actual = s_expected;
-            cx.Variables.Update("foo");
-            cx["canary"] = s_expected;
-            return cx;
+            context.Variables.Update("foo");
+            context.Variables["canary"] = s_expected;
+            return context;
         }
 
         var context = this.MockContext("");
 
         // Act
         Func<SKContext, Task<SKContext>> method = TestAsync;
-        var function = SKFunction.FromNativeMethod(Method(method), method.Target, log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(method), method.Target, logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -258,7 +258,7 @@ public sealed class SKFunctionTests2
         Assert.False(result.ErrorOccurred);
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context["canary"]);
+        Assert.Equal(s_expected, context.Variables["canary"]);
         Assert.Equal("foo", context.Result);
     }
 
@@ -278,7 +278,7 @@ public sealed class SKFunctionTests2
 
         // Act
         Action<string> method = Test;
-        var function = SKFunction.FromNativeMethod(Method(method), method.Target, log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(method), method.Target, logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -305,7 +305,7 @@ public sealed class SKFunctionTests2
 
         // Act
         Func<string, string> method = Test;
-        var function = SKFunction.FromNativeMethod(Method(method), method.Target, log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(method), method.Target, logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -333,7 +333,7 @@ public sealed class SKFunctionTests2
 
         // Act
         Func<string, Task<string>> method = Test;
-        var function = SKFunction.FromNativeMethod(Method(method), method.Target, log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(method), method.Target, logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -350,19 +350,19 @@ public sealed class SKFunctionTests2
         // Arrange
         int invocationCount = 0;
 
-        void Test(string input, SKContext cx)
+        void Test(string input, SKContext context)
         {
             invocationCount++;
             s_actual = s_expected;
-            cx.Variables.Update("x y z");
-            cx["canary"] = s_expected;
+            context.Variables.Update("x y z");
+            context.Variables["canary"] = s_expected;
         }
 
         var context = this.MockContext("");
 
         // Act
         Action<string, SKContext> method = Test;
-        var function = SKFunction.FromNativeMethod(Method(method), method.Target, log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(method), method.Target, logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -370,7 +370,7 @@ public sealed class SKFunctionTests2
         Assert.False(result.ErrorOccurred);
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context["canary"]);
+        Assert.Equal(s_expected, context.Variables["canary"]);
         Assert.Equal("x y z", context.Result);
     }
 
@@ -380,19 +380,19 @@ public sealed class SKFunctionTests2
         // Arrange
         int invocationCount = 0;
 
-        void Test(SKContext cx, string input)
+        void Test(SKContext context, string input)
         {
             invocationCount++;
             s_actual = s_expected;
-            cx.Variables.Update("x y z");
-            cx["canary"] = s_expected;
+            context.Variables.Update("x y z");
+            context.Variables["canary"] = s_expected;
         }
 
         var context = this.MockContext("");
 
         // Act
         Action<SKContext, string> method = Test;
-        var function = SKFunction.FromNativeMethod(Method(method), method.Target, log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(method), method.Target, logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -400,7 +400,7 @@ public sealed class SKFunctionTests2
         Assert.False(result.ErrorOccurred);
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context["canary"]);
+        Assert.Equal(s_expected, context.Variables["canary"]);
         Assert.Equal("x y z", context.Result);
     }
 
@@ -408,11 +408,11 @@ public sealed class SKFunctionTests2
     public async Task ItSupportsStaticStringContextStringAsync()
     {
         // Arrange
-        static string Test(string input, SKContext cx)
+        static string Test(string input, SKContext context)
         {
             s_actual = s_expected;
-            cx["canary"] = s_expected;
-            cx.Variables.Update("x y z");
+            context.Variables["canary"] = s_expected;
+            context.Variables.Update("x y z");
             // This value should overwrite "x y z"
             return "new data";
         }
@@ -420,14 +420,14 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(Test), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
         // Assert
         Assert.False(result.ErrorOccurred);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context["canary"]);
+        Assert.Equal(s_expected, context.Variables["canary"]);
         Assert.Equal("new data", context.Result);
     }
 
@@ -435,11 +435,11 @@ public sealed class SKFunctionTests2
     public async Task ItSupportsStaticStringContextTaskStringAsync()
     {
         // Arrange
-        static Task<string> Test(string input, SKContext cx)
+        static Task<string> Test(string input, SKContext context)
         {
             s_actual = s_expected;
-            cx["canary"] = s_expected;
-            cx.Variables.Update("x y z");
+            context.Variables["canary"] = s_expected;
+            context.Variables.Update("x y z");
             // This value should overwrite "x y z"
             return Task.FromResult("new data");
         }
@@ -447,14 +447,14 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(Test), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
         // Assert
         Assert.False(result.ErrorOccurred);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context["canary"]);
+        Assert.Equal(s_expected, context.Variables["canary"]);
         Assert.Equal("new data", context.Result);
     }
 
@@ -462,28 +462,28 @@ public sealed class SKFunctionTests2
     public async Task ItSupportsStaticStringContextTaskContextAsync()
     {
         // Arrange
-        static Task<SKContext> Test(string input, SKContext cx)
+        static Task<SKContext> Test(string input, SKContext context)
         {
             s_actual = s_expected;
-            cx["canary"] = s_expected;
-            cx.Variables.Update("x y z");
+            context.Variables["canary"] = s_expected;
+            context.Variables.Update("x y z");
 
             // This value should overwrite "x y z". Contexts are merged.
-            var newCx = new SKContext(
+            var newContext = new SKContext(
                 new ContextVariables(input),
                 skills: new Mock<IReadOnlySkillCollection>().Object);
 
-            newCx.Variables.Update("new data");
-            newCx["canary2"] = "222";
+            newContext.Variables.Update("new data");
+            newContext.Variables["canary2"] = "222";
 
-            return Task.FromResult(newCx);
+            return Task.FromResult(newContext);
         }
 
         var oldContext = this.MockContext("");
-        oldContext["legacy"] = "something";
+        oldContext.Variables["legacy"] = "something";
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(Test), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext newContext = await function.InvokeAsync(oldContext);
 
@@ -499,8 +499,8 @@ public sealed class SKFunctionTests2
         Assert.False(newContext.Variables.ContainsKey("canary"));
         Assert.True(newContext.Variables.ContainsKey("canary2"));
 
-        Assert.Equal(s_expected, oldContext["canary"]);
-        Assert.Equal("222", newContext["canary2"]);
+        Assert.Equal(s_expected, oldContext.Variables["canary"]);
+        Assert.Equal("222", newContext.Variables["canary2"]);
 
         Assert.True(oldContext.Variables.ContainsKey("legacy"));
         Assert.False(newContext.Variables.ContainsKey("legacy"));
@@ -513,7 +513,7 @@ public sealed class SKFunctionTests2
     public async Task ItSupportsStaticContextValueTaskContextAsync()
     {
         // Arrange
-        static ValueTask<SKContext> Test(string input, SKContext cx)
+        static ValueTask<SKContext> Test(string input, SKContext context)
         {
             // This value should overwrite "x y z". Contexts are merged.
             var newCx = new SKContext(
@@ -526,7 +526,7 @@ public sealed class SKFunctionTests2
         var oldContext = this.MockContext("test");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(Test), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(Test), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext newContext = await function.InvokeAsync(oldContext);
 
@@ -547,7 +547,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestAsync), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(TestAsync), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -569,7 +569,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestAsync), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(TestAsync), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -582,25 +582,25 @@ public sealed class SKFunctionTests2
     public async Task ItSupportsStaticContextTaskAsync()
     {
         // Arrange
-        static Task TestAsync(SKContext cx)
+        static Task TestAsync(SKContext context)
         {
             s_actual = s_expected;
-            cx["canary"] = s_expected;
-            cx.Variables.Update("x y z");
+            context.Variables["canary"] = s_expected;
+            context.Variables.Update("x y z");
             return Task.CompletedTask;
         }
 
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestAsync), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(TestAsync), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
         // Assert
         Assert.False(result.ErrorOccurred);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context["canary"]);
+        Assert.Equal(s_expected, context.Variables["canary"]);
         Assert.Equal("x y z", context.Result);
     }
 
@@ -608,25 +608,25 @@ public sealed class SKFunctionTests2
     public async Task ItSupportsStaticStringContextTaskAsync()
     {
         // Arrange
-        static Task TestAsync(string input, SKContext cx)
+        static Task TestAsync(string input, SKContext context)
         {
             s_actual = s_expected;
-            cx["canary"] = s_expected;
-            cx.Variables.Update(input + "x y z");
+            context.Variables["canary"] = s_expected;
+            context.Variables.Update(input + "x y z");
             return Task.CompletedTask;
         }
 
         var context = this.MockContext("input:");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestAsync), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(TestAsync), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
         // Assert
         Assert.False(result.ErrorOccurred);
         Assert.Equal(s_expected, s_actual);
-        Assert.Equal(s_expected, context["canary"]);
+        Assert.Equal(s_expected, context.Variables["canary"]);
         Assert.Equal("input:x y z", context.Result);
     }
 
@@ -643,7 +643,7 @@ public sealed class SKFunctionTests2
         var context = this.MockContext("");
 
         // Act
-        var function = SKFunction.FromNativeMethod(Method(TestAsync), log: this._log.Object);
+        var function = SKFunction.FromNativeMethod(Method(TestAsync), logger: this._logger.Object);
         Assert.NotNull(function);
         SKContext result = await function.InvokeAsync(context);
 
@@ -909,6 +909,6 @@ public sealed class SKFunctionTests2
         return new SKContext(
             new ContextVariables(input),
             skills: this._skills.Object,
-            logger: this._log.Object);
+            logger: this._logger.Object);
     }
 }
