@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITe
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
+
 import org.junit.jupiter.api.condition.EnabledIf;
 
 import java.io.File;
