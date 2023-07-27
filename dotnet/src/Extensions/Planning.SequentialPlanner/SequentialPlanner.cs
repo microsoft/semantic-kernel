@@ -66,7 +66,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
         if (planResult.ErrorOccurred)
         {
-            throw new SKException($"Error creating plan for goal: {planResult.LastErrorDescription}", planResult.LastException);
+            throw new SKException($"Error creating plan for goal: {planResult.LastException?.Message}", planResult.LastException);
         }
 
         string planResultString = planResult.Result.Trim();

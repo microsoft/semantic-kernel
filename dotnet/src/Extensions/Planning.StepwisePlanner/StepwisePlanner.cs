@@ -115,9 +115,7 @@ public class StepwisePlanner : IStepwisePlanner
 
                 if (llmResponse.ErrorOccurred)
                 {
-                    var exception = new SKException($"Error occurred while executing stepwise plan: {llmResponse.LastErrorDescription}", llmResponse.LastException);
-                    context.Fail(exception.Message, exception);
-                    return context;
+                    throw new SKException($"Error occurred while executing stepwise plan: {llmResponse.LastException?.Message}", llmResponse.LastException);
                 }
 
                 string actionText = llmResponse.Result.Trim();

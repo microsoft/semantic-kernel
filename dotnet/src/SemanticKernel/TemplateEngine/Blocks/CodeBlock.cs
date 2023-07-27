@@ -147,12 +147,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
         {
             this.Logger.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}",
                 function.SkillName, function.Name, ex.Message);
-            contextClone.Fail(ex.Message, ex);
+            contextClone.LastException = ex;
         }
 
         if (contextClone.ErrorOccurred)
         {
-            var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastErrorDescription}";
+            var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastException?.Message}";
             this.Logger.LogError(errorMsg);
             throw new SKException(errorMsg, contextClone.LastException);
         }

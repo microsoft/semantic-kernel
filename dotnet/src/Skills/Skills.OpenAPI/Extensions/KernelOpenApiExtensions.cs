@@ -281,7 +281,7 @@ public static class KernelOpenApiExtensions
             {
                 logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
                     ex.Message);
-                context.Fail(ex.Message, ex);
+                throw;
             }
 
             return context;

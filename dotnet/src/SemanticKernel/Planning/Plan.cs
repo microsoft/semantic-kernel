@@ -258,7 +258,7 @@ public sealed class Plan : IPlan
 
             if (result.ErrorOccurred)
             {
-                throw new SKException($"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
+                throw new SKException($"Error occurred while running plan step: {result.LastException?.Message}", result.LastException);
             }
 
             #region Update State
