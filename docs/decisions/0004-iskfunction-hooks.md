@@ -91,7 +91,7 @@ Pros:
 
 Cons:
 
-- Functions can run on their own instance, middlewares suggest more complexity and the existance of an external container/manager (Kernel) to intercept/observe function calls.
+- Functions can run on their own instance, middlewares suggest more complexity and the existence of an external container/manager (Kernel) to intercept/observe function calls.
 
 ## Open Questions
 
