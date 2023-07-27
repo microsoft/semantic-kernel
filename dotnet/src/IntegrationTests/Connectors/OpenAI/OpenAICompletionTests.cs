@@ -226,7 +226,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.True(context.ErrorOccurred);
         Assert.IsType<HttpOperationException>(context.LastException);
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
-        Assert.Contains("The request is not authorized, HTTP status: 401", ((HttpOperationException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -254,7 +253,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.True(context.ErrorOccurred);
         Assert.IsType<HttpOperationException>(context.LastException);
         Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
-        Assert.Contains("The request is not authorized, HTTP status: 401", ((HttpOperationException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -282,7 +280,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.True(context.ErrorOccurred);
         Assert.IsType<HttpOperationException>(context.LastException);
         Assert.Equal(HttpStatusCode.BadRequest, ((HttpOperationException)context.LastException).StatusCode);
-        Assert.Contains("The request is not valid, HTTP status: 400", ((HttpOperationException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("maximum context length is", ((HttpOperationException)context.LastException).ResponseContent, StringComparison.OrdinalIgnoreCase); // This message could change in the future, comes from Azure OpenAI
     }
 

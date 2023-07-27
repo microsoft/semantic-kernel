@@ -22,7 +22,7 @@ public static class RequestFailedExceptionExtensions
 
         return new HttpOperationException(
             original.Status == NoResponseReceived ? null : (HttpStatusCode?)original.Status,
-            null,
+            original.Message,
             original.Message,
             original);
     }
