@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -29,14 +30,14 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     }
 
     /// <inheritdoc />
-    public async Task<Plan> CreatePlanAsync(string goal)
+    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        using var activity = s_activitySource.StartActivity("SequentialPlanner.CreatePlan");
+        using var activity = s_activitySource.StartActivity($"{PlannerType}.CreatePlan");
 
-        this._logger.LogInformation("Plan creation started.");
+        this._logger.LogInformation("{PlannerType}: Plan creation started.", PlannerType);
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Plan Goal: {Goal}", goal);
+        this._logger.LogTrace("{PlannerType}: Plan Goal: {Goal}", PlannerType, goal);
 
         var stopwatch = new Stopwatch();
 
@@ -44,35 +45,37 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         {
             stopwatch.Start();
 
-            var plan = await this._planner.CreatePlanAsync(goal).ConfigureAwait(false);
+            var plan = await this._planner.CreatePlanAsync(goal, cancellationToken).ConfigureAwait(false);
 
             stopwatch.Stop();
 
-            this._logger.LogInformation("Plan creation status: {Status}", "Success");
+            this._logger.LogInformation("{PlannerType}: Plan creation status: {Status}", PlannerType, "Success");
 
-            this._logger.LogInformation("Created plan: \n {Plan}", plan.ToSafePlanString());
+            this._logger.LogInformation("{PlannerType}: Created plan: \n {Plan}", PlannerType, plan.ToSafePlanString());
 
             // Sensitive data, logging as trace, disabled by default
-            this._logger.LogTrace("Created plan with details: \n {Plan}", plan.ToPlanString());
+            this._logger.LogTrace("{PlannerType}: Created plan with details: \n {Plan}", PlannerType, plan.ToPlanString());
 
             return plan;
         }
         catch (Exception ex)
         {
-            this._logger.LogInformation("Plan creation status: {Status}", "Failed");
-            this._logger.LogError(ex, "Plan creation exception details: {Message}", ex.Message);
+            this._logger.LogInformation("{PlannerType}: Plan creation status: {Status}", PlannerType, "Failed");
+            this._logger.LogError(ex, "{PlannerType}: Plan creation exception details: {Message}", PlannerType, ex.Message);
 
             throw;
         }
         finally
         {
-            this._logger.LogInformation("Plan creation finished in {ExecutionTime}ms.", stopwatch.ElapsedMilliseconds);
+            this._logger.LogInformation("{PlannerType}: Plan creation finished in {ExecutionTime}ms.", PlannerType, stopwatch.ElapsedMilliseconds);
 
             s_createPlanExecutionTime.Record(stopwatch.ElapsedMilliseconds);
         }
     }
 
     #region private ================================================================================
+
+    private const string PlannerType = nameof(SequentialPlanner);
 
     private readonly ISequentialPlanner _planner;
     private readonly ILogger _logger;
@@ -92,7 +95,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
     /// </summary>
     private static Histogram<double> s_createPlanExecutionTime =
         s_meter.CreateHistogram<double>(
-            name: "SK.SequentialPlanner.CreatePlan.ExecutionTime",
+            name: $"SK.{PlannerType}.CreatePlan.ExecutionTime",
             unit: "ms",
             description: "Execution time of plan creation");
 

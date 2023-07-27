@@ -22,16 +22,16 @@ public abstract class Block
     /// <summary>
     /// App logger
     /// </summary>
-    protected ILogger Log { get; } = NullLogger.Instance;
+    protected ILogger Logger { get; } = NullLogger.Instance;
 
     /// <summary>
     /// Base constructor
     /// </summary>
     /// <param name="content">Block content</param>
-    /// <param name="log">App logger</param>
-    protected Block(string? content, ILogger? log = null)
+    /// <param name="logger">App logger</param>
+    protected Block(string? content, ILogger? logger = null)
     {
-        if (log != null) { this.Log = log; }
+        if (logger != null) { this.Logger = logger; }
 
         this.Content = content ?? string.Empty;
     }
