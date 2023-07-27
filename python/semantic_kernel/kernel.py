@@ -371,11 +371,11 @@ class Kernel:
         functions = []
 
         if isinstance(skill_instance, dict):
-            candidates = skill_instance.values()
+            candidates = skill_instance.items()
         else:
             candidates = inspect.getmembers(skill_instance, inspect.ismethod)
         # Read every method from the skill instance
-        for candidate in candidates:
+        for _, candidate in candidates:
             # If the method is a semantic function, register it
             if not hasattr(candidate, "__sk_function__"):
                 continue
