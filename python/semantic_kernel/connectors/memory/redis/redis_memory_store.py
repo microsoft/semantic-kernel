@@ -88,13 +88,6 @@ class RedisMemoryStore(MemoryStoreBase):
                 prefix=f"{collection_name}:", index_type=IndexType.HASH
             )
             schema = (
-                # TextField(name="timestamp"),
-                # NumericField(name="is_reference"),
-                # TextField(name="external_source_name"),
-                # TextField(name="id"),
-                # TextField(name="description"),
-                # TextField(name="text"),
-                # TextField(name="additional_metadata"),
                 TextField(name="key"),
                 TextField("metadata"),
                 TextField(name="timestamp"),
@@ -172,7 +165,7 @@ class RedisMemoryStore(MemoryStoreBase):
             record {MemoryRecord} -- Memory record to upsert
 
         Returns
-            str -- Redis key associated with the upserted memory record, or None if an error occured
+            str -- Redis key associated with the upserted memory record, or None if an error occurred
         """
 
         if not await self.does_collection_exist_async(collection_name):
@@ -209,7 +202,7 @@ class RedisMemoryStore(MemoryStoreBase):
             records {List[MemoryRecord]} -- List of memory records to upsert
 
         Returns
-            List[str] -- Redis keys associated with the upserted memory records, or an empty list if an error occured
+            List[str] -- Redis keys associated with the upserted memory records, or an empty list if an error occurred
         """
 
         keys = list()
