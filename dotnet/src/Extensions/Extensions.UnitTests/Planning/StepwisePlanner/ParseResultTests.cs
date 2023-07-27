@@ -23,7 +23,7 @@ public sealed class ParseResultTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.Log).Returns(new Mock<ILogger>().Object);
+        kernel.Setup(x => x.Logger).Returns(new Mock<ILogger>().Object);
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel.Object);
 
@@ -50,7 +50,7 @@ public sealed class ParseResultTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.Log).Returns(new Mock<ILogger>().Object);
+        kernel.Setup(x => x.Logger).Returns(new Mock<ILogger>().Object);
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel.Object);
 

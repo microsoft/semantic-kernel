@@ -16,13 +16,13 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 
     internal string FunctionName { get; } = string.Empty;
 
-    public FunctionIdBlock(string? text, ILogger? log = null)
-        : base(text?.Trim(), log)
+    public FunctionIdBlock(string? text, ILogger? logger = null)
+        : base(text?.Trim(), logger)
     {
         var functionNameParts = this.Content.Split('.');
         if (functionNameParts.Length > 2)
         {
-            this.Log.LogError("Invalid function name `{0}`", this.Content);
+            this.Logger.LogError("Invalid function name `{0}`", this.Content);
             throw new SKException("A function name can contain at most one dot separating the skill name from the function name");
         }
 

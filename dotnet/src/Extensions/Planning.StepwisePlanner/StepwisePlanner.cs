@@ -65,7 +65,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._nativeFunctions = this._kernel.ImportSkill(this, RestrictedSkillName);
 
         this._context = this._kernel.CreateNewContext();
-        this._logger = this._kernel.Log;
+        this._logger = this._kernel.Logger;
     }
 
     /// <inheritdoc />

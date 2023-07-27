@@ -28,7 +28,7 @@ public abstract class OpenAIClientBase
     private protected OpenAIClientBase(HttpClient? httpClient, ILogger? logger = null)
     {
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._log = logger ?? NullLogger.Instance;
+        this._logger = logger ?? NullLogger.Instance;
     }
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
@@ -84,7 +84,7 @@ public abstract class OpenAIClientBase
     /// <summary>
     /// Logger
     /// </summary>
-    private readonly ILogger _log;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// The HttpClient used for making HTTP requests.
@@ -124,7 +124,7 @@ public abstract class OpenAIClientBase
 
         var response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        this._log.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+        this._logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
         string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 

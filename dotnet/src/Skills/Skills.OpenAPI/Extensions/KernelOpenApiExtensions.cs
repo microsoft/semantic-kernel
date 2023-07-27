@@ -51,7 +51,7 @@ public static class KernelOpenApiExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
@@ -63,7 +63,7 @@ public static class KernelOpenApiExtensions
 
         using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        response.EnsureSuccess(logger: kernel.Log);
+        response.EnsureSuccess(logger: kernel.Logger);
 
         var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         if (stream == null)
@@ -132,7 +132,7 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {openApiDocumentPath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document", openApiDocumentPath);
+        kernel.Logger.LogTrace("Registering Rest functions from {0} OpenApi document", openApiDocumentPath);
 
         var skill = new Dictionary<string, ISKFunction>();
 
@@ -162,7 +162,7 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
+        kernel.Logger.LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
@@ -189,11 +189,11 @@ public static class KernelOpenApiExtensions
         Verify.ValidSkillName(skillName);
 
         // Parse
-        var parser = new OpenApiDocumentParser(kernel.Log);
+        var parser = new OpenApiDocumentParser(kernel.Logger);
 
         var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 
         var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
 
@@ -203,14 +203,14 @@ public static class KernelOpenApiExtensions
         {
             try
             {
-                kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
+                kernel.Logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
                 var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other Rest functions
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                kernel.Logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
                     skillName, operation.Id, ex.Message);
             }
         }
@@ -240,7 +240,7 @@ public static class KernelOpenApiExtensions
     {
         var restOperationParameters = operation.GetParameters(serverUrlOverride);
 
-        var logger = kernel.Log ?? NullLogger.Instance;
+        var logger = kernel.Logger ?? NullLogger.Instance;
 
         async Task<SKContext> ExecuteAsync(SKContext context)
         {
@@ -302,7 +302,7 @@ public static class KernelOpenApiExtensions
             description: operation.Description,
             skillName: skillName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
-            log: logger);
+            logger: logger);
 
         return kernel.RegisterCustomFunction(function);
     }
