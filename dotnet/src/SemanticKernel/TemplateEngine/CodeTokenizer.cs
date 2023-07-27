@@ -43,11 +43,11 @@ internal sealed class CodeTokenizer
         FunctionId = 3,
     }
 
-    private readonly ILogger _log;
+    private readonly ILogger _logger;
 
-    public CodeTokenizer(ILogger? log = null)
+    public CodeTokenizer(ILogger? logger = null)
     {
-        this._log = log ?? NullLogger.Instance;
+        this._logger = logger ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -83,16 +83,16 @@ internal sealed class CodeTokenizer
             switch (nextChar)
             {
                 case Symbols.VarPrefix:
-                    blocks.Add(new VarBlock(text, this._log));
+                    blocks.Add(new VarBlock(text, this._logger));
                     break;
 
                 case Symbols.DblQuote:
                 case Symbols.SglQuote:
-                    blocks.Add(new ValBlock(text, this._log));
+                    blocks.Add(new ValBlock(text, this._logger));
                     break;
 
                 default:
-                    blocks.Add(new FunctionIdBlock(text, this._log));
+                    blocks.Add(new FunctionIdBlock(text, this._logger));
                     break;
             }
 
@@ -151,7 +151,7 @@ internal sealed class CodeTokenizer
                 // When we reach the end of the value
                 if (currentChar == textValueDelimiter)
                 {
-                    blocks.Add(new ValBlock(currentTokenContent.ToString(), this._log));
+                    blocks.Add(new ValBlock(currentTokenContent.ToString(), this._logger));
                     currentTokenContent.Clear();
                     currentTokenType = TokenTypes.None;
                     spaceSeparatorFound = false;
@@ -166,12 +166,12 @@ internal sealed class CodeTokenizer
             {
                 if (currentTokenType == TokenTypes.Variable)
                 {
-                    blocks.Add(new VarBlock(currentTokenContent.ToString(), this._log));
+                    blocks.Add(new VarBlock(currentTokenContent.ToString(), this._logger));
                     currentTokenContent.Clear();
                 }
                 else if (currentTokenType == TokenTypes.FunctionId)
                 {
-                    blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._log));
+                    blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._logger));
                     currentTokenContent.Clear();
                 }
 
@@ -216,15 +216,15 @@ internal sealed class CodeTokenizer
         switch (currentTokenType)
         {
             case TokenTypes.Value:
-                blocks.Add(new ValBlock(currentTokenContent.ToString(), this._log));
+                blocks.Add(new ValBlock(currentTokenContent.ToString(), this._logger));
                 break;
 
             case TokenTypes.Variable:
-                blocks.Add(new VarBlock(currentTokenContent.ToString(), this._log));
+                blocks.Add(new VarBlock(currentTokenContent.ToString(), this._logger));
                 break;
 
             case TokenTypes.FunctionId:
-                blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._log));
+                blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._logger));
                 break;
 
             case TokenTypes.None:

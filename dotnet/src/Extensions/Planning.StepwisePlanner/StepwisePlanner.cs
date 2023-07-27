@@ -65,7 +65,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._nativeFunctions = this._kernel.ImportSkill(this, RestrictedSkillName);
 
         this._context = this._kernel.CreateNewContext();
-        this._logger = this._kernel.Log;
+        this._logger = this._kernel.Logger;
     }
 
     /// <inheritdoc />
@@ -115,9 +115,7 @@ public class StepwisePlanner : IStepwisePlanner
 
                 if (llmResponse.ErrorOccurred)
                 {
-                    var exception = new PlanningException(PlanningException.ErrorCodes.UnknownError, $"Error occurred while executing stepwise plan: {llmResponse.LastErrorDescription}", llmResponse.LastException);
-                    context.Fail(exception.Message, exception);
-                    return context;
+                    throw new PlanningException(PlanningException.ErrorCodes.UnknownError, $"Error occurred while executing stepwise plan: {llmResponse.LastException?.Message}", llmResponse.LastException);
                 }
 
                 string actionText = llmResponse.Result.Trim();

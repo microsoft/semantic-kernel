@@ -7,7 +7,7 @@ using System.Linq;
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
-/// Debugger type proxy for <see cref="SkillCollection"/> and <see cref="ReadOnlySkillCollection"/>.
+/// Debugger type proxy for <see cref="SkillCollection"/>.
 /// </summary>
 // ReSharper disable once InconsistentNaming
 internal sealed class IReadOnlySkillCollectionTypeProxy

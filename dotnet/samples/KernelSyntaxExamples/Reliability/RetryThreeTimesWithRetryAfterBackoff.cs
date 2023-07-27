@@ -16,9 +16,9 @@ namespace Reliability;
 /// </summary>
 public class RetryThreeTimesWithRetryAfterBackoffFactory : IDelegatingHandlerFactory
 {
-    public DelegatingHandler Create(ILogger? log)
+    public DelegatingHandler Create(ILogger? logger)
     {
-        return new RetryThreeTimesWithRetryAfterBackoff(log);
+        return new RetryThreeTimesWithRetryAfterBackoff(logger);
     }
 }
 
@@ -29,9 +29,9 @@ public class RetryThreeTimesWithRetryAfterBackoff : DelegatingHandler
 {
     private readonly AsyncRetryPolicy<HttpResponseMessage> _policy;
 
-    public RetryThreeTimesWithRetryAfterBackoff(ILogger? log)
+    public RetryThreeTimesWithRetryAfterBackoff(ILogger? logger)
     {
-        this._policy = GetPolicy(log);
+        this._policy = GetPolicy(logger);
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -43,7 +43,7 @@ public class RetryThreeTimesWithRetryAfterBackoff : DelegatingHandler
         });
     }
 
-    private static AsyncRetryPolicy<HttpResponseMessage> GetPolicy(ILogger? log)
+    private static AsyncRetryPolicy<HttpResponseMessage> GetPolicy(ILogger? logger)
     {
         // Handle 429 and 401 errors
         // Typically 401 would not be something we retry but for demonstration
@@ -61,7 +61,7 @@ public class RetryThreeTimesWithRetryAfterBackoff : DelegatingHandler
                 },
                 (outcome, timespan, retryCount, _) =>
                 {
-                    log?.LogWarning(
+                    logger?.LogWarning(
                         "Error executing action [attempt {0} of 3], pausing {1}ms. Outcome: {2}",
                         retryCount,
                         timespan.TotalMilliseconds,

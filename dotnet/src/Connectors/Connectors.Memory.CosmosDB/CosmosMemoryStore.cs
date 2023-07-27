@@ -26,7 +26,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
 {
     private Database _database;
     private string _databaseName;
-    private ILogger _log;
+    private ILogger _logger;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized: Class instance is created and populated via factory method.
     private CosmosMemoryStore()
@@ -39,24 +39,24 @@ public sealed class CosmosMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="client">Client with endpoint and authentication to the Azure CosmosDB Account.</param>
     /// <param name="databaseName">The name of the database to back the memory store.</param>
-    /// <param name="log">Optional logger.</param>
+    /// <param name="logger">Optional logger.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <exception cref="CosmosException"></exception>
-    public static async Task<CosmosMemoryStore> CreateAsync(CosmosClient client, string databaseName, ILogger? log = null, CancellationToken cancellationToken = default)
+    public static async Task<CosmosMemoryStore> CreateAsync(CosmosClient client, string databaseName, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         var newStore = new CosmosMemoryStore();
 
         newStore._databaseName = databaseName;
-        newStore._log = log ?? NullLogger<CosmosMemoryStore>.Instance;
+        newStore._logger = logger ?? NullLogger<CosmosMemoryStore>.Instance;
         var response = await client.CreateDatabaseIfNotExistsAsync(newStore._databaseName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
-            newStore._log.LogDebug("Created database {0}", newStore._databaseName);
+            newStore._logger.LogDebug("Created database {0}", newStore._databaseName);
         }
         else if (response.StatusCode == HttpStatusCode.OK)
         {
-            newStore._log.LogDebug("Database {0}", newStore._databaseName);
+            newStore._logger.LogDebug("Database {0}", newStore._databaseName);
         }
         else
         {
@@ -72,7 +72,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
         // Azure Cosmos DB does not support listing all Containers, this does not break the interface but it is not ideal.
-        this._log.LogWarning("Listing all containers is not supported by Azure Cosmos DB, returning empty list.");
+        this._logger.LogWarning("Listing all containers is not supported by Azure Cosmos DB, returning empty list.");
 
         return Enumerable.Empty<string>().ToAsyncEnumerable();
     }
@@ -84,11 +84,11 @@ public sealed class CosmosMemoryStore : IMemoryStore
 
         if (response.StatusCode == HttpStatusCode.Created)
         {
-            this._log.LogDebug("Created collection {0}", collectionName);
+            this._logger.LogDebug("Created collection {0}", collectionName);
         }
         else if (response.StatusCode == HttpStatusCode.OK)
         {
-            this._log.LogDebug("Collection {0} already exists", collectionName);
+            this._logger.LogDebug("Collection {0} already exists", collectionName);
         }
         else
         {
@@ -114,7 +114,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
         }
         catch (CosmosException ex)
         {
-            this._log.LogError(ex, "Failed to delete collection {0}: {2} - {3}", collectionName, ex.StatusCode, ex.Message);
+            this._logger.LogError(ex, "Failed to delete collection {0}: {2} - {3}", collectionName, ex.StatusCode, ex.Message);
         }
     }
 
@@ -131,11 +131,11 @@ public sealed class CosmosMemoryStore : IMemoryStore
 
         if (response == null)
         {
-            this._log?.LogWarning("Received no get response collection {1}", collectionName);
+            this._logger?.LogWarning("Received no get response collection {1}", collectionName);
         }
         else if (response.StatusCode != HttpStatusCode.OK)
         {
-            this._log?.LogWarning("Failed to get record from collection {1} with status code {2}", collectionName, response.StatusCode);
+            this._logger?.LogWarning("Failed to get record from collection {1} with status code {2}", collectionName, response.StatusCode);
         }
         else
         {
@@ -191,7 +191,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
 
         if (response.StatusCode is HttpStatusCode.OK or HttpStatusCode.Created)
         {
-            this._log.LogDebug("Upserted item to collection {0}", collectionName);
+            this._logger.LogDebug("Upserted item to collection {0}", collectionName);
         }
         else
         {
@@ -221,7 +221,7 @@ public sealed class CosmosMemoryStore : IMemoryStore
 
         if (response.StatusCode == HttpStatusCode.OK)
         {
-            this._log.LogDebug("Record deleted from {0}", collectionName);
+            this._logger.LogDebug("Record deleted from {0}", collectionName);
         }
         else
         {
