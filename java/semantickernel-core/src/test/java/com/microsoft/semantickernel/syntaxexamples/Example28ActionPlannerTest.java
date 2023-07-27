@@ -123,14 +123,9 @@ public class Example28ActionPlannerTest {
     public static ActionPlanner createPlanner(OpenAIAsyncClient client) {
         Kernel kernel =
                 SKBuilders.kernel()
-                        .withKernelConfig(
-                                SKBuilders.kernelConfig()
-                                        .addTextCompletionService(
-                                                "text-davinci-002",
-                                                kernel1 ->
-                                                        SKBuilders.textCompletionService()
-                                                                .build(client, "text-davinci-002"))
-                                        .build())
+                        .withDefaultAIService(
+                                SKBuilders.textCompletionService()
+                                        .build(client, "text-davinci-002"))
                         .build();
 
         kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");

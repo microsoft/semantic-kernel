@@ -39,9 +39,7 @@ public class FileIOSkill {
      */
     @DefineSKFunction(description = "Read a file", name = "readAsync")
     public String readFileAsync(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(name = "path", description = "Source file")
-                    String path,
+            @SKFunctionInputAttribute(description = "Source file") String path,
             @SKFunctionParameters(
                             name = "charset",
                             description = "Character set to use to read the file",
@@ -69,9 +67,7 @@ public class FileIOSkill {
      */
     @DefineSKFunction(description = "Write a file", name = "writeAsync")
     public void writeFileAsync(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(name = "path", description = "Destination file")
-                    String path,
+            @SKFunctionInputAttribute(description = "Destination file") String path,
             @SKFunctionParameters(
                             name = "content",
                             description = "File content",

@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.guice;
 
-import javax.annotation.Nullable;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.util.Providers;
-import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
@@ -20,6 +17,8 @@ import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
+
+import javax.annotation.Nullable;
 
 public class SemanticKernelModule extends AbstractModule {
 
@@ -89,18 +88,13 @@ public class SemanticKernelModule extends AbstractModule {
 
         bind(OpenAIAsyncClient.class).toInstance(client);
 
-        if (textCompletionModelId != null) {
-            kernelConfig.addTextCompletionService(
-                    textCompletionModelId,
-                    kernel -> new OpenAITextCompletion(client, textCompletionModelId));
-        }
-
         if (embeddingsGenerationServiceId != null) {
             OpenAITextEmbeddingGeneration embeddings = new OpenAITextEmbeddingGeneration(client,
                     embeddingsGenerationServiceId);
             bind(new TypeLiteral<EmbeddingGeneration<String, Float>>() {
             }).toInstance(embeddings);
         }
+
 
         bind(KernelConfig.class).toInstance(kernelConfig.build());
         bind(PromptTemplateEngine.class).toInstance(promptTemplateEngine);
@@ -112,7 +106,14 @@ public class SemanticKernelModule extends AbstractModule {
             bind(SemanticTextMemory.class).toInstance(NullMemory.getInstance());
         }
 
-        bind(Kernel.class).to(DefaultKernel.class);
+        bind(Kernel.class).toProvider(() -> {
+            Kernel.Builder builder = SKBuilders.kernel();
+            if (textCompletionModelId != null) {
+                builder.withDefaultAIService(new OpenAITextCompletion(client, textCompletionModelId));
+            }
+            return builder.build();
+        });
+
         bind(CompletionFunctionFactory.class)
                 .to(CompletionFunctionFactory.CompletionFunctionFactoryImpl.class);
     }
