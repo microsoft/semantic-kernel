@@ -486,14 +486,21 @@ class SKFunction(SKFunctionBase):
         if input is not None:
             context.variables.update(input)
 
-        if self.is_semantic:
-            async for stream_msg in self._invoke_semantic_stream_async(
-                context, settings
-            ):
-                yield stream_msg
-        else:
-            async for stream_msg in self._invoke_native_stream_async(context):
-                yield stream_msg
+        try:
+            if self.is_semantic:
+                async for stream_msg in self._invoke_semantic_stream_async(
+                    context, settings
+                ):
+                    yield stream_msg
+            else:
+                async for stream_msg in self._invoke_native_stream_async(context):
+                    yield stream_msg
+        except Exception as e:
+            context.fail(str(e), e)
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionInvokeError,
+                "Error occured while invoking stream function",
+            )
 
     async def _invoke_semantic_stream_async(self, context, settings):
         self._verify_is_semantic()
