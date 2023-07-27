@@ -37,7 +37,6 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to "COSINE"</param>
     /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
     public RedisMemoryStore(IDatabase database, int vectorSize = 1536, string vectorIndexAlgorithm = "HNSW", string vectorType = "FLOAT32", string vectorDistanceMetric = "COSINE", int queryDialect = 2)
-
     {
         this._database = database;
         this._vectorSize = vectorSize;
@@ -60,7 +59,6 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to "COSINE"</param>
     /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
     public RedisMemoryStore(string connectionString, int vectorSize = 1536, string vectorIndexAlgorithm = "HNSW", string vectorType = "FLOAT32", string vectorDistanceMetric = "COSINE", int queryDialect = 2)
-
     {
         this._database = ConnectionMultiplexer.Connect(connectionString).GetDatabase();
         this._vectorSize = vectorSize;
@@ -141,10 +139,9 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        RedisKey redisKey = GetRedisKey(collectionName, record.Metadata.Id);
-        record.Key = redisKey.ToString();
+        record.Key = record.Metadata.Id;
 
-        await this._database.HashSetAsync(redisKey, new[] {
+        await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), new[] {
             new HashEntry("key", record.Key),
             new HashEntry("metadata", record.GetSerializedMetadata()),
             new HashEntry("embedding", MemoryMarshal.Cast<float, byte>(record.Embedding.AsReadOnlySpan()).ToArray()),
