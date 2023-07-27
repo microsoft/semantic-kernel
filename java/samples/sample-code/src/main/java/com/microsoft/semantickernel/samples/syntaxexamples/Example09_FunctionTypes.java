@@ -21,11 +21,7 @@ public class Example09_FunctionTypes {
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
-        KernelConfig kernelConfig = new KernelConfig.Builder()
-                .addTextCompletionService("text-davinci-003", kernel -> textCompletion)
-                .build();
-
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
 
         System.out.println("======== Native function types ========");
 

@@ -14,7 +14,6 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * Define a Semantic Function inline with Java code.

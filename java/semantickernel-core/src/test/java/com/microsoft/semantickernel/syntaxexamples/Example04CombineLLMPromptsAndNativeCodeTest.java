@@ -5,11 +5,11 @@ import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenA
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.syntaxexamples.skills.SearchEngineSkill;
+import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,18 +27,20 @@ public class Example04CombineLLMPromptsAndNativeCodeTest {
                                 "Gran Torre Santiago is the tallest building in South America",
                                 "A-SUMMARY"));
 
-        KernelConfig kernelConfig =
-                SKBuilders.kernelConfig()
-                        .addTextCompletionService(
+        Kernel kernel =
+                SKBuilders.kernel()
+                        .withAIService(
                                 "text-davinci-002",
-                                kernel -> new OpenAITextCompletion(client, "text-davinci-002"))
-                        .addTextCompletionService(
+                                new OpenAITextCompletion(client, "text-davinci-002"),
+                                false,
+                                TextCompletion.class)
+                        .withAIService(
                                 "text-davinci-003",
-                                kernel -> new OpenAITextCompletion(client, "text-davinci-003"))
-                        .setDefaultTextCompletionService("text-davinci-003")
+                                new OpenAITextCompletion(client, "text-davinci-003"),
+                                true,
+                                TextCompletion.class)
                         .build();
 
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
         kernel.importSkill(new SearchEngineSkill(), null);
         kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
 

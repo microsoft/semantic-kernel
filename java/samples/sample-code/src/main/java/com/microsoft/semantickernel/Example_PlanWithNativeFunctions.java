@@ -32,13 +32,8 @@ public class Example_PlanWithNativeFunctions {
 
         TextCompletion textCompletionService = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
-        KernelConfig config = SKBuilders.kernelConfig()
-                .addTextCompletionService("davinci",
-                        kernel -> textCompletionService)
-                .build();
-
         Kernel kernel = SKBuilders.kernel()
-                .withKernelConfig(config)
+                .withDefaultAIService(textCompletionService)
                 .build();
 
         kernel.importSkill(new StringFunctions(), "StringFunctions");

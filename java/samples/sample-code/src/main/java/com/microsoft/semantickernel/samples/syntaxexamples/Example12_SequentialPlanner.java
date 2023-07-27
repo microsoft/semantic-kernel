@@ -174,15 +174,8 @@ public class Example12_SequentialPlanner {
     private static Kernel initializeKernel() throws IOException {
         OpenAIAsyncClient client = Config.getClient();
         var kernel = SKBuilders.kernel()
-                .withKernelConfig(SKBuilders
-                        .kernelConfig()
-                        .addChatCompletionService(
-                                "gpt-35-turbo",
-                                kernel1 ->
-                                        SKBuilders.chatCompletion()
-                                                .build(client, "gpt-35-turbo"))
-
-                        .build())
+                .withDefaultAIService(SKBuilders.chatCompletion()
+                        .build(client, "gpt-35-turbo"))
                 .withMemory(SKBuilders
                         .semanticTextMemory()
                         .setEmbeddingGenerator(

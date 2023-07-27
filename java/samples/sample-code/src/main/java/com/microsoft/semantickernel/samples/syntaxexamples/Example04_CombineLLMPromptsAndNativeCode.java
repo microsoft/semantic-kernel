@@ -31,11 +31,7 @@ public class Example04_CombineLLMPromptsAndNativeCode {
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
-        KernelConfig kernelConfig = new KernelConfig.Builder()
-                .addTextCompletionService("text-davinci-003", kernel -> textCompletion)
-                .build();
-
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
         kernel.importSkill(new SearchEngineSkill(), null);
         kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");
 

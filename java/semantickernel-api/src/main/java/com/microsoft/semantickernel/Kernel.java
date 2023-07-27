@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
+import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.MemoryStore;
+import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -87,11 +90,12 @@ public interface Kernel extends SkillExecutor {
     SKFunction getFunction(String skill, String function);
 
     class Builder {
-        @Nullable private KernelConfig kernelConfig = null;
+        @Nullable private KernelConfig config = null;
         @Nullable private PromptTemplateEngine promptTemplateEngine = null;
-        @Nullable private MemoryStore memoryStore = null;
         @Nullable private AIServiceCollection aiServices = new AIServiceCollection();
-        @Nullable private SemanticTextMemory memory = null;
+        private Supplier<SemanticTextMemory> memoryFactory = () -> new NullMemory();
+        private Supplier<MemoryStore> memoryStorageFactory = null;
+        ;
 
         /**
          * Set the kernel configuration
@@ -99,30 +103,56 @@ public interface Kernel extends SkillExecutor {
          * @param kernelConfig Kernel configuration
          * @return Builder
          */
-        public Builder withKernelConfig(KernelConfig kernelConfig) {
-            this.kernelConfig = kernelConfig;
+        public Builder withConfiguration(KernelConfig kernelConfig) {
+            this.config = kernelConfig;
             return this;
         }
 
         /**
-         * Set the prompt template engine
+         * Add prompt template engine to the kernel to be built.
          *
-         * @param promptTemplateEngine Prompt template engine
-         * @return Builder
+         * @param promptTemplateEngine Prompt template engine to add.
+         * @return Updated kernel builder including the prompt template engine.
          */
         public Builder withPromptTemplateEngine(PromptTemplateEngine promptTemplateEngine) {
+            Verify.notNull(promptTemplateEngine);
             this.promptTemplateEngine = promptTemplateEngine;
             return this;
         }
 
         /**
-         * Set the memory store
+         * Add memory storage to the kernel to be built.
          *
-         * @param memoryStore Memory store
-         * @return Builder
+         * @param storage Storage to add.
+         * @return Updated kernel builder including the memory storage.
          */
-        public Builder withMemoryStore(MemoryStore memoryStore) {
-            this.memoryStore = memoryStore;
+        public Builder withMemoryStorage(MemoryStore storage) {
+            Verify.notNull(storage);
+            this.memoryStorageFactory = () -> storage;
+            return this;
+        }
+
+        /**
+         * Add memory storage factory to the kernel.
+         *
+         * @param factory The storage factory.
+         * @return Updated kernel builder including the memory storage.
+         */
+        public Builder withMemoryStorage(Supplier<MemoryStore> factory) {
+            Verify.notNull(factory);
+            this.memoryStorageFactory = factory::get;
+            return this;
+        }
+
+        /**
+         * Adds an instance to the services collection
+         *
+         * @param instance The instance.
+         * @return The builder.
+         */
+        public <T extends AIService> Builder withDefaultAIService(T instance) {
+            Class<T> clazz = (Class<T>) instance.getClass();
+            this.aiServices.setService(instance, clazz);
             return this;
         }
 
@@ -135,6 +165,18 @@ public interface Kernel extends SkillExecutor {
          */
         public <T extends AIService> Builder withDefaultAIService(T instance, Class<T> clazz) {
             this.aiServices.setService(instance, clazz);
+            return this;
+        }
+
+        /**
+         * Adds a factory method to the services collection
+         *
+         * @param factory The factory method that creates the AI service instances of type T.
+         * @param clazz The class of the instance.
+         */
+        public <T extends AIService> Builder withDefaultAIService(
+                Supplier<T> factory, Class<T> clazz) {
+            this.aiServices.setService(factory, clazz);
             return this;
         }
 
@@ -156,38 +198,50 @@ public interface Kernel extends SkillExecutor {
         /**
          * Adds a factory method to the services collection
          *
-         * @param factory The factory method that creates the AI service instances of type T.
-         * @param clazz The class of the instance.
-         */
-        public <T extends AIService> Builder withDefaultAIService(
-                Supplier<T> factory, Class<T> clazz) {
-            this.aiServices.setService(factory, clazz);
-            return this;
-        }
-
-        /**
-         * Adds a factory method to the services collection
-         *
          * @param serviceId The service ID
          * @param factory The factory method that creates the AI service instances of type T.
          * @param setAsDefault Optional: set as the default AI service for type T
          * @param clazz The class of the instance.
          */
-        public <T extends AIService> Builder withAIService(
+        public <T extends AIService> Builder withAIServiceFactory(
                 @Nullable String serviceId,
                 Function<KernelConfig, T> factory,
                 boolean setAsDefault,
                 Class<T> clazz) {
             this.aiServices.setService(
-                    serviceId,
-                    (Supplier<T>) () -> factory.apply(this.kernelConfig),
-                    setAsDefault,
-                    clazz);
+                    serviceId, (Supplier<T>) () -> factory.apply(this.config), setAsDefault, clazz);
             return this;
         }
 
+        /**
+         * Add a semantic text memory entity to the kernel to be built.
+         *
+         * @param memory Semantic text memory entity to add.
+         * @return Updated kernel builder including the semantic text memory entity.
+         */
         public Builder withMemory(SemanticTextMemory memory) {
-            this.memory = memory;
+            Verify.notNull(memory);
+            this.memoryFactory = () -> memory;
+            return this;
+        }
+
+        /**
+         * Add memory storage and an embedding generator to the kernel to be built.
+         *
+         * @param storage Storage to add.
+         * @param embeddingGenerator Embedding generator to add.
+         * @return Updated kernel builder including the memory storage and embedding generator.
+         */
+        public Builder withMemoryStorageAndTextEmbeddingGeneration(
+                MemoryStore storage, TextEmbeddingGeneration embeddingGenerator) {
+            Verify.notNull(storage);
+            Verify.notNull(embeddingGenerator);
+            this.memoryFactory =
+                    () ->
+                            SKBuilders.semanticTextMemory()
+                                    .setEmbeddingGenerator(embeddingGenerator)
+                                    .setStorage(storage)
+                                    .build();
             return this;
         }
 
@@ -197,17 +251,17 @@ public interface Kernel extends SkillExecutor {
          * @return Kernel
          */
         public Kernel build() {
-            if (kernelConfig == null) {
-                throw new IllegalStateException("Must provide a kernel configuration");
+            if (config == null) {
+                config = SKBuilders.kernelConfig().build();
             }
 
             return BuildersSingleton.INST
                     .getKernelBuilder()
                     .build(
-                            kernelConfig,
+                            config,
                             promptTemplateEngine,
-                            memory,
-                            memoryStore,
+                            memoryFactory.get(),
+                            memoryStorageFactory == null ? null : memoryStorageFactory.get(),
                             aiServices.build());
         }
     }

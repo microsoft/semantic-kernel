@@ -29,6 +29,9 @@ internal static class Example31_CustomPlanner
         IDictionary<string, ISKFunction> skills = LoadQASkill(kernel);
         SKContext context = CreateContextQueryContext(kernel);
 
+        // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
+        kernel.ImportSkill(new TextMemorySkill(kernel.Memory));
+
         // Setup defined memories for recall
         await RememberFactsAsync(kernel);
 
@@ -84,7 +87,7 @@ internal static class Example31_CustomPlanner
 
     private static async Task RememberFactsAsync(IKernel kernel)
     {
-        kernel.ImportSkill(new TextMemorySkill());
+        kernel.ImportSkill(new TextMemorySkill(kernel.Memory));
 
         List<string> memoriesToSave = new()
         {
@@ -124,7 +127,7 @@ internal static class Example31_CustomPlanner
     private static IKernel InitializeKernel()
     {
         return new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             .WithAzureTextCompletionService(
                 TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,

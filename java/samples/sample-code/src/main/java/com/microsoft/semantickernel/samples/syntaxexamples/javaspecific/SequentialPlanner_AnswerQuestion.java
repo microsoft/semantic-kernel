@@ -7,7 +7,6 @@ import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
-import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +35,7 @@ public class SequentialPlanner_AnswerQuestion {
 
         var kernel = SKBuilders.kernel()
                 .withDefaultAIService(SKBuilders.textCompletionService()
-                        .build(client, "text-davinci-003"), TextCompletion.class)
+                        .build(client, "text-davinci-003"))
                 .build();
 
 

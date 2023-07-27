@@ -177,8 +177,7 @@ public class SequentialPlanTest {
     }
 
     private static Plan makePlan(String planString) {
-        Kernel kernel =
-                SKBuilders.kernel().withKernelConfig(SKBuilders.kernelConfig().build()).build();
+        Kernel kernel = SKBuilders.kernel().build();
         kernel.importSkill(new Skills(), "Skills");
 
         return SequentialPlanParser.toPlanFromXml(planString.stripIndent(), "", kernel.getSkills());
