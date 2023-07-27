@@ -41,11 +41,11 @@ class RedisMemoryStore(MemoryStoreBase):
         self,
         connection_string: str,
         logger: Optional[Logger] = None,
+        query_dialect: int = 2,
         vector_distance_metric: str = "COSINE",
         vector_type: str = "FLOAT32",
         vector_size: int = 1536,
         vector_index_algorithm: str = "HNSW",
-        query_dialect: int = 2,
     ) -> None:
         """
         RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
@@ -53,8 +53,13 @@ class RedisMemoryStore(MemoryStoreBase):
         See documentation about vector attributes: https://redis.io/docs/stack/search/reference/vectors
 
         Arguments:
-            database {redis.Redis} -- Provide specific instance of a Redis connection
+            connection_string {str} -- Provide connection URL to a Redis instance
             logger {Optional[Logger]} -- Logger, defaults to None
+            query_dialect {int} -- Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
+            vector_distance_metric {str} -- Metric for measuring vector distances, defaults to COSINE
+            vector_type {str} -- Float type for vector, defaults to FLOAT32
+            vector_size {str} -- Size of vectors, defaults to 1536
+            vector_index_algorithm {str} -- Indexing algorithm for vectors, defaults to HNSW
 
         """
         if vector_size <= 0:
