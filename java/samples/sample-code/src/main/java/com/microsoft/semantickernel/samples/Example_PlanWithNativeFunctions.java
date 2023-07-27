@@ -1,8 +1,9 @@
-package com.microsoft.semantickernel;
+package com.microsoft.semantickernel.samples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.util.AIProviderSettings;
 import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISettings;
