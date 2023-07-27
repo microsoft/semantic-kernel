@@ -22,8 +22,10 @@ import { DocumentPdfRegular, DocumentTextRegular, FluentIconsProps } from '@flue
 import * as React from 'react';
 import { ChatMemorySource } from '../../libs/models/ChatMemorySource';
 import { useChat } from '../../libs/useChat';
+import { useFile } from '../../libs/useFile';
 import { SharedStyles } from '../../styles';
 import { timestampToDateString } from '../utils/TextUtils';
+
 
 const EmptyGuid = '00000000-0000-0000-0000-000000000000';
 
@@ -61,6 +63,7 @@ interface TableItem {
 export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) => {
     const classes = useClasses();
     const chat = useChat();
+    const fileHandler = useFile();
     const [resources, setResources] = React.useState<ChatMemorySource[]>([]);
 
     React.useEffect(() => {
@@ -70,7 +73,17 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [chatId]);
 
-    const { columns, rows } = useTable(resources);
+    const handleDelete = async (chatId: string, fileId: string) => {
+        try {
+            await fileHandler.deleteFile(chatId, fileId);
+            // Update the state immediately after deleting the file
+            setResources((prevResources) => prevResources.filter((resource) => resource.id !== fileId));
+          } catch (error) {
+            console.error('Failed to delete the file:', error);
+          }
+    };
+
+    const { columns, rows } = useTable(resources, handleDelete);
     return (
         <div className={classes.root}>
             <Table aria-label="External resource table" className={classes.table}>
@@ -87,7 +100,11 @@ export const ChatResourceList: React.FC<ChatResourceListProps> = ({ chatId }) =>
     );
 };
 
-function useTable(resources: ChatMemorySource[]) {
+function useTable(
+    resources: ChatMemorySource[],
+    handleDelete: (chatId: string, fileId: string) => Promise<void>
+    ) {
+
     const headerSortProps = (columnId: TableColumnId): TableHeaderCellProps => ({
         onClick: (e: React.MouseEvent) => {
             toggleColumnSort(e, columnId);
@@ -149,6 +166,20 @@ function useTable(resources: ChatMemorySource[]) {
                 return getSortDirection('access') === 'ascending' ? comparison : comparison * -1;
             },
         }),
+        // Add a new column for the delete button
+        createTableColumn<TableItem>({
+            columnId: 'delete',
+            renderHeaderCell: () => (
+                <TableHeaderCell key="delete">
+                    Delete
+                </TableHeaderCell>
+            ),
+            renderCell: (item) => (
+                <TableCell key={`${item.id}-delete`}>
+                    <button onClick={() => handleDelete(item.chatId, item.id)}>Delete</button>
+                </TableCell>
+            ),
+        }),
     ];
 
     const items = resources.map((item) => ({
@@ -186,7 +217,7 @@ function useTable(resources: ChatMemorySource[]) {
         });
     }
 
-    return { columns, rows: items };
+    return { columns, rows: items, handleDelete};
 }
 
 function getAccessString(chatId: string) {
