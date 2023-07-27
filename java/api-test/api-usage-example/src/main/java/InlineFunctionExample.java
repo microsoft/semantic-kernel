@@ -3,7 +3,6 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -102,12 +101,7 @@ public class InlineFunctionExample {
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, MODEL);
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
-        KernelConfig kernelConfig =
-                new KernelConfig.Builder()
-                        .addTextCompletionService(MODEL, kernel -> textCompletion)
-                        .build();
-
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
 
         CompletionSKFunction summarize =
                 kernel.getSemanticFunctionBuilder()

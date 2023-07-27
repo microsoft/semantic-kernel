@@ -2,10 +2,8 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.ai.AIException;
-import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.builders.FunctionBuilders;
 import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
@@ -28,7 +26,6 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 import jakarta.inject.Inject;
 
@@ -36,7 +33,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,59 +72,7 @@ public class DefaultKernel implements Kernel {
 
         T service = aiServiceProvider.getService(serviceId, clazz);
 
-        if (service != null) {
-            return service;
-        }
-
-        if (TextCompletion.class.isAssignableFrom(clazz)) {
-            Function<Kernel, ? extends TextCompletion> factory = null;
-            try {
-                factory = kernelConfig.getTextCompletionServiceOrDefault(serviceId);
-            } catch (KernelException e) {
-                if (e.getErrorCode() == KernelException.ErrorCodes.ServiceNotFound) {
-                    // Could not find text completion service, try to find a chat completion service
-                    factory = kernelConfig.getChatCompletionServiceOrDefault(serviceId);
-                }
-            }
-
-            if (factory == null) {
-                throw new KernelException(
-                        KernelException.ErrorCodes.ServiceNotFound,
-                        "No text completion service available");
-            }
-
-            return (T) factory.apply(this);
-        } else if (ChatCompletion.class.isAssignableFrom(clazz)) {
-            Function<Kernel, ChatCompletion> factory =
-                    kernelConfig.getChatCompletionServiceOrDefault(serviceId);
-            if (factory == null) {
-                throw new KernelException(
-                        KernelException.ErrorCodes.ServiceNotFound,
-                        "No chat completion service available");
-            }
-
-            return (T) factory.apply(this);
-        } else if (EmbeddingGeneration.class.isAssignableFrom(clazz)) {
-            Function<Kernel, EmbeddingGeneration<String, Float>> factory =
-                    kernelConfig.getTextEmbeddingGenerationServiceOrDefault(serviceId);
-            if (factory == null) {
-                throw new KernelException(
-                        KernelException.ErrorCodes.ServiceNotFound,
-                        "No chat completion service available");
-            }
-
-            return (T) factory.apply(this);
-        } else if (EmbeddingGeneration.class.isAssignableFrom(clazz)) {
-            Function<Kernel, EmbeddingGeneration<String, Float>> factory =
-                    kernelConfig.getTextEmbeddingGenerationServiceOrDefault(serviceId);
-            if (factory == null) {
-                throw new KernelException(
-                        KernelException.ErrorCodes.ServiceNotFound,
-                        "No chat completion service available");
-            }
-
-            return (T) factory.apply(this);
-        } else {
+        if (service == null) {
             throw new KernelException(
                     KernelException.ErrorCodes.ServiceNotFound,
                     "Service of type "
@@ -136,6 +80,8 @@ public class DefaultKernel implements Kernel {
                             + " and name "
                             + serviceId
                             + " not registered");
+        } else {
+            return service;
         }
     }
 

@@ -72,13 +72,9 @@ public class Example08_RetryHandler {
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
-        KernelConfig kernelConfig = new KernelConfig.Builder()
-                .addTextCompletionService("text-davinci-003", kernel -> textCompletion)
-                .build();
-
         Kernel kernel = SKBuilders
                 .kernel()
-                .withKernelConfig(kernelConfig)
+                .withDefaultAIService(textCompletion)
                 .build();
 
         CompletionSKFunction summarizeFunc = SKBuilders.completionFunctions(kernel)

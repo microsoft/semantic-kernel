@@ -303,7 +303,7 @@ class VolatileMemoryStoreTests {
                         .toArray(String[]::new);
 
         Flux.fromArray(testCollections)
-                .flatMap(collection -> this._db.createCollectionAsync(collection))
+                .concatMap(collection -> this._db.createCollectionAsync(collection))
                 .blockLast();
 
         // Act
@@ -896,7 +896,7 @@ class VolatileMemoryStoreTests {
                         .toArray(String[]::new);
 
         Flux.fromArray(testCollections)
-                .flatMap(collection -> this._db.createCollectionAsync(collection))
+                .concatMap(collection -> this._db.createCollectionAsync(collection))
                 .blockLast();
 
         // Act

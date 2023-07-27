@@ -56,8 +56,7 @@ public class Example12_SequentialPlanner {
     public static class EmailSkill {
         @DefineSKFunction(name = "SendEmail", description = "Given an e-mail and message body, send an email")
         public void sendEmail(
-                @SKFunctionInputAttribute()
-                @SKFunctionParameters(description = "The body of the email message to send.", name = "input")
+                @SKFunctionInputAttribute(description = "The body of the email message to send.")
                 String input,
                 @SKFunctionParameters(description = "The email address to send email to.", name = "email_address")
                 String emailAddress
@@ -67,8 +66,7 @@ public class Example12_SequentialPlanner {
 
         @DefineSKFunction(name = "GetEmailAddressAsync", description = "Lookup an email address for a person given a name")
         public String getEmailAddressAsync(
-                @SKFunctionInputAttribute()
-                @SKFunctionParameters(description = "The name of the person to email.", name = "input")
+                @SKFunctionInputAttribute(description = "The name of the person to email.")
                 String input) {
             return "fake@example.com";
         }
@@ -110,7 +108,7 @@ public class Example12_SequentialPlanner {
                         "They ruled the kingdom together, ruling with fairness and compassion, just as Arjun had done before. They lived " +
                         "happily ever after, with the people of the kingdom remembering Mira as the brave young woman who saved them from the dragon.";
 
-        System.out.println(plan.invokeAsync(input).block());
+        plan.invokeAsync(input).blockOptional();
     }
 
     private static void bookSamplesAsync() throws ConfigurationException {
@@ -176,15 +174,8 @@ public class Example12_SequentialPlanner {
     private static Kernel initializeKernel() throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();
         var kernel = SKBuilders.kernel()
-                .withKernelConfig(SKBuilders
-                        .kernelConfig()
-                        .addChatCompletionService(
-                                "gpt-35-turbo",
-                                kernel1 ->
-                                        SKBuilders.chatCompletion()
-                                                .build(client, "gpt-35-turbo"))
-
-                        .build())
+                .withDefaultAIService(SKBuilders.chatCompletion()
+                        .build(client, "gpt-35-turbo"))
                 .withMemory(SKBuilders
                         .semanticTextMemory()
                         .setEmbeddingGenerator(

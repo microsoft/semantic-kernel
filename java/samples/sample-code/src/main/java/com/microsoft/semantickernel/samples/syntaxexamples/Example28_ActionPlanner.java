@@ -15,11 +15,7 @@ public class Example28_ActionPlanner {
         System.out.println("======== Action Planner ========");
 
         var kernel = SKBuilders.kernel()
-                .withKernelConfig(SKBuilders
-                        .kernelConfig()
-                        .addTextCompletionService("text-davinci-002", kernel1 -> SKBuilders.textCompletionService()
-                                .build(client, "text-davinci-002"))
-                        .build())
+                .withDefaultAIService(SKBuilders.textCompletionService().build(client, "text-davinci-002"))
                 .build();
 
         kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");

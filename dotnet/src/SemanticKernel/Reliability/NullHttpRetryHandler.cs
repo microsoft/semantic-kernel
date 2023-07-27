@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Reliability;
 
 public class NullHttpRetryHandlerFactory : IDelegatingHandlerFactory
 {
-    public DelegatingHandler Create(ILogger? log)
+    public DelegatingHandler Create(ILogger? logger)
     {
         return new NullHttpRetryHandler();
     }

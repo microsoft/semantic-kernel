@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.ConversationSummarySkill;
@@ -181,12 +180,7 @@ public class Example13_ConversationSummarySkill {
     private static Kernel initializeKernel(OpenAIAsyncClient client) {
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
-        KernelConfig kernelConfig =
-                new KernelConfig.Builder()
-                        .build();
-
         return SKBuilders.kernel()
-                .withKernelConfig(kernelConfig)
                 .withAIService("text-davinci-003", textCompletion, true, TextCompletion.class).build();
     }
 }

@@ -19,8 +19,7 @@ public class Example04_CombineLLMPromptsAndNativeCode {
     public static class SearchEngineSkill {
         @DefineSKFunction(description = "Append the day variable", name = "search")
         public Mono<String> search(
-                @SKFunctionInputAttribute
-                @SKFunctionParameters(description = "Text to search", name = "input")
+                @SKFunctionInputAttribute(description = "Text to search")
                 String input) {
             return Mono.just("Gran Torre Santiago is the tallest building in South America");
         }
@@ -31,11 +30,7 @@ public class Example04_CombineLLMPromptsAndNativeCode {
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
-        KernelConfig kernelConfig = new KernelConfig.Builder()
-                .addTextCompletionService("text-davinci-003", kernel -> textCompletion)
-                .build();
-
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
         kernel.importSkill(new SearchEngineSkill(), null);
         kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");
 

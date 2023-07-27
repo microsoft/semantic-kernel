@@ -298,10 +298,7 @@ public class TimeSkill {
             name = "daysAgo",
             description = "Get the date of offset from today by a provided number of days")
     public String daysAgo(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(
-                            name = "input",
-                            description = "Number of days to offset from today.")
+            @SKFunctionInputAttribute(description = "Number of days to offset from today.")
                     String days,
             @SKFunctionParameters(
                             name = "locale",
@@ -326,9 +323,7 @@ public class TimeSkill {
             name = "dateMatchingLastDayName",
             description = "Get the date of the last day matching the supplied week day name")
     public String dateMatchingLastDayName(
-            @SKFunctionInputAttribute
-                    @SKFunctionParameters(name = "input", description = "Week name day.")
-                    String dayName,
+            @SKFunctionInputAttribute(description = "Week name day.") String dayName,
             @SKFunctionParameters(
                             name = "locale",
                             description = "Locale to use when formatting the date",

@@ -51,14 +51,9 @@ public class ActionPlannerTest {
 
         Kernel kernel =
                 SKBuilders.kernel()
-                        .withKernelConfig(
-                                SKBuilders.kernelConfig()
-                                        .addTextCompletionService(
-                                                "text-davinci-002",
-                                                kernel1 ->
-                                                        SKBuilders.textCompletionService()
-                                                                .build(client, "text-davinci-002"))
-                                        .build())
+                        .withDefaultAIService(
+                                SKBuilders.textCompletionService()
+                                        .build(client, "text-davinci-002"))
                         .build();
 
         SkillWithSomeArgs skill = Mockito.spy(new SkillWithSomeArgs());

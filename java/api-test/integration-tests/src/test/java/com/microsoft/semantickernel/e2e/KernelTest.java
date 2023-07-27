@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.e2e;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
@@ -50,15 +49,9 @@ public class KernelTest extends AbstractKernelTest {
     }
 
     public static Kernel buildKernel(OpenAIAsyncClient client, String model) {
-
         TextCompletion textCompletion = new OpenAITextCompletion(client, model);
 
-        KernelConfig kernelConfig =
-                SKBuilders.kernelConfig()
-                        .addTextCompletionService(model, kernel -> textCompletion)
-                        .build();
-
-        return SKBuilders.kernel().withKernelConfig(kernelConfig).build();
+        return SKBuilders.kernel().withDefaultAIService(textCompletion).build();
     }
 
     @Test

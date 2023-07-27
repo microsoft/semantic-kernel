@@ -38,10 +38,7 @@ public class Example14_SemanticMemory
          * Azure Cognitive Search automatically indexes your data semantically, so you don't
          * need to worry about embedding generation.
          */
-        var kernelConfig = SKBuilders.kernelConfig().build();
-
         var kernelWithACS = SKBuilders.kernel()
-                .withKernelConfig(kernelConfig)
                 .withMemory(new AzureCognitiveSearchMemory(System.getenv("ACS_ENDPOINT"), System.getenv("ACS_API_KEY")))
                 .build();
 
@@ -61,15 +58,9 @@ public class Example14_SemanticMemory
          */
         var openAIAsyncClient = SamplesConfig.getClient();
 
-        var kernelConfigWithTextEmbedding = SKBuilders.kernelConfig()
-                .addTextEmbeddingsGenerationService(
-                        "ada",
-                        kernel -> SKBuilders.textEmbeddingGenerationService().build(openAIAsyncClient, "text-embedding-ada-002"))
-                .build();
-
         var kernelWithCustomDb = SKBuilders.kernel()
-                .withKernelConfig(kernelConfigWithTextEmbedding)
-                .withMemoryStore(SKBuilders.memoryStore().build())
+                .withDefaultAIService(SKBuilders.textEmbeddingGenerationService().build(openAIAsyncClient, "text-embedding-ada-002"))
+                .withMemoryStorage(SKBuilders.memoryStore().build())
                 .build();
 
         runExampleAsync(kernelWithCustomDb).block();
