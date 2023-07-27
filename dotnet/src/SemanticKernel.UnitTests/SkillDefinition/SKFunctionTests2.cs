@@ -824,7 +824,7 @@ public sealed class SKFunctionTests2
         static async Task AssertResult(Delegate d, SKContext context, string expected)
         {
             context = await SKFunction.FromNativeFunction(d, functionName: "Test")!.InvokeAsync(context);
-            Assert.False(context.ErrorOccurred, context.LastErrorDescription);
+            Assert.False(context.ErrorOccurred);
             Assert.Equal(expected, context.Variables.Input);
         }
 
