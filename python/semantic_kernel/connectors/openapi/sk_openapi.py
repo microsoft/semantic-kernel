@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Optional, Union
+from typing import Dict, Mapping, Optional, Union
 from urllib.parse import urljoin
 
 import aiohttp
@@ -7,7 +7,7 @@ import requests
 from openapi_core import Spec, unmarshal_request
 from openapi_core.contrib.requests import RequestsOpenAPIRequest
 from openapi_core.exceptions import OpenAPIError
-from prance import ResolvingParser, ValidationError
+from prance import ResolvingParser
 
 from semantic_kernel import Kernel, SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
@@ -16,12 +16,12 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 
 class PreparedRestApiRequest:
-    def __init__(self, method: str, url: str, params=None, headers=None, data=None):
+    def __init__(self, method: str, url: str, params=None, headers=None, payload=None):
         self.method = method
         self.url = url
         self.params = params
         self.headers = headers
-        self.data = data
+        self.payload = payload
 
     def __repr__(self):
         return (
@@ -30,7 +30,7 @@ class PreparedRestApiRequest:
             f"url={self.url}, "
             f"params={self.params}, "
             f"headers={self.headers}, "
-            f"data={self.data})"
+            f"payload={self.payload})"
         )
 
     def validate_request(self, spec: Spec, logger: logging.Logger = NullLogger()):
@@ -39,7 +39,7 @@ class PreparedRestApiRequest:
             self.url,
             params=self.params,
             headers=self.headers,
-            json=self.data,
+            json=self.payload,
         )
         openapi_request = RequestsOpenAPIRequest(request=request)
         try:
@@ -53,25 +53,23 @@ class PreparedRestApiRequest:
 class RestApiOperation:
     def __init__(
         self,
-        id,
-        method,
-        server_url,
-        path,
-        parameters=None,
-        headers=None,
-        payload=None,
-        summary=None,
-        description=None,
+        id: str,
+        method: str,
+        server_url: str,
+        path: str,
+        summary: Optional[str] = None,
+        description: Optional[str] = None,
+        parameters: Optional[Mapping[str, str]] = None,
+        request_body: Optional[Mapping[str, str]] = None
     ):
         self.id = id
         self.method = method
         self.server_url = server_url
         self.path = path
-        self.parameters = parameters
-        self.headers = headers
-        self.payload = payload
         self.summary = summary
         self.description = description
+        self.parameters = parameters
+        self.request_body = request_body
 
     """
     Fills in this RestApiOperation's parameters and payload with the provided values
@@ -114,8 +112,14 @@ class RestApiOperation:
                     )
 
         processed_payload = None
-        if self.payload:
-            content = self.payload["content"]
+        if self.request_body:
+            if (
+                payload is None
+                and "required" in self.request_body
+                and self.request_body["required"]
+            ):
+                raise ValueError("Payload is required but was not provided")
+            content = self.request_body["content"]
             content_type = list(content.keys())[0]
             processed_headers["Content-Type"] = content_type
             processed_payload = payload
@@ -125,7 +129,7 @@ class RestApiOperation:
             url=url,
             params=processed_query_params,
             headers=processed_headers,
-            data=processed_payload,
+            payload=processed_payload,
         )
         return req
 
@@ -137,8 +141,7 @@ class RestApiOperation:
             f"server_url={self.server_url}, "
             f"path={self.path}, "
             f"parameters={self.parameters}, "
-            f"headers={self.headers}, "
-            f"payload={self.payload}, "
+            f"payload={self.request_body}, "
             f"summary={self.summary}, "
             f"description={self.description})"
         )
@@ -155,12 +158,8 @@ class OpenApiParser:
     """
 
     def parse(self, openapi_document):
-        try:
-            parser = ResolvingParser(openapi_document)
-            return parser.specification
-        except ValidationError as e:
-            self.logger.debug(f"Error parsing OpenAPI document: {e}", exc_info=True)
-            raise e
+        parser = ResolvingParser(openapi_document)
+        return parser.specification
 
     """
     Creates a RestApiOperation object for each path/method combination
@@ -190,7 +189,7 @@ class OpenApiParser:
                     server_url=server_url,
                     path=path,
                     parameters=parameters,
-                    payload=details.get("requestBody", None),
+                    request_body=details.get("requestBody", None),
                     summary=summary,
                     description=description,
                 )
@@ -202,11 +201,11 @@ class OpenApiParser:
 class OpenApiRunner:
     def __init__(
         self,
-        openapi_document: Dict[str, Union[str, List[str], Dict[str, str]]],
+        parsed_openapi_document: Mapping[str, str],
         logger: logging.Logger = NullLogger(),
     ):
         self.logger = logger
-        self.spec = Spec.from_dict(openapi_document)
+        self.spec = Spec.from_dict(parsed_openapi_document)
 
     async def run_operation(
         self,
@@ -225,26 +224,23 @@ class OpenApiRunner:
         is_valid = prepared_request.validate_request(spec=self.spec, logger=self.logger)
         if not is_valid:
             return None
-        try:
-            async with aiohttp.ClientSession(raise_for_status=True) as session:
-                async with session.request(
-                    prepared_request.method,
-                    prepared_request.url,
-                    params=prepared_request.params,
-                    headers=prepared_request.headers,
-                    json=prepared_request.data,
-                ) as response:
-                    return await response.text()
-        except Exception as e:
-            self.logger.debug(f"Error running operation: {e}", exc_info=True)
-            raise e
+
+        async with aiohttp.ClientSession(raise_for_status=True) as session:
+            async with session.request(
+                prepared_request.method,
+                prepared_request.url,
+                params=prepared_request.params,
+                headers=prepared_request.headers,
+                json=prepared_request.payload,
+            ) as response:
+                return await response.text()
 
 
 """
 Registers a skill with the kernel that can run OpenAPI operations.
 :param kernel: The kernel to register the skill with
 :param skill_name: The name of the skill
-:param openapi_document: The OpenAPI document to register
+:param openapi_document: The OpenAPI document to register. Can be a filename or URL
 :return: A dictionary of SKFunctions keyed by operationId
 """
 
@@ -257,7 +253,9 @@ def register_openapi_skill(
     parser = OpenApiParser(logger=kernel.logger)
     parsed_doc = parser.parse(openapi_document)
     operations = parser.create_rest_api_operations(parsed_doc)
-    openapi_runner = OpenApiRunner(openapi_document=parsed_doc, logger=kernel.logger)
+    openapi_runner = OpenApiRunner(
+        parsed_openapi_document=parsed_doc, logger=kernel.logger
+    )
 
     skill = {}
 
