@@ -132,7 +132,7 @@ public class LocalExampleSkill
     [SKFunction]
     public async Task<string> Type06Async(SKContext context)
     {
-        var summarizer = context.Func("SummarizeSkill", "Summarize");
+        var summarizer = context.Skills.GetFunction("SummarizeSkill", "Summarize");
 
         var summary = await summarizer.InvokeAsync("blah blah blah");
 

@@ -349,7 +349,7 @@ public sealed class PlanTests
             new ContextVariables(stepOutput)
         );
 
-        returnContext.Fail("Error description", new ArgumentException("Error message"));
+        returnContext.LastException = new ArgumentException("Error message");
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -378,7 +378,7 @@ public sealed class PlanTests
 
         var returnContext = new SKContext();
 
-        returnContext.Fail("Error description", new ArgumentException("Error message"));
+        returnContext.LastException = new ArgumentException("Error message");
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
