@@ -130,7 +130,7 @@ public sealed class Program
         ILogger logger,
         int maxTokens = 1024)
     {
-        var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
+        var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens, Memory = kernel.Memory };
 
         return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(logger);
     }
