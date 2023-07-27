@@ -137,9 +137,10 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        record.Key = record.Metadata.Id;
+        RedisKey redisKey = GetRedisKey(collectionName, record.Metadata.Id);
+        record.Key = redisKey.ToString();
 
-        await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), new[] {
+        await this._database.HashSetAsync(redisKey, new[] {
             new HashEntry("key", record.Key),
             new HashEntry("metadata", record.GetSerializedMetadata()),
             new HashEntry("embedding", MemoryMarshal.Cast<float, byte>(record.Embedding.AsReadOnlySpan()).ToArray()),
