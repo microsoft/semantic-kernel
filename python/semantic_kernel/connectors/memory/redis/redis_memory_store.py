@@ -39,7 +39,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
     def __init__(
         self,
-        database: redis.Redis,
+        connection_string: str,
         logger: Optional[Logger] = None,
         vector_distance_metric: str = "COSINE",
         vector_type: str = "FLOAT32",
@@ -60,7 +60,7 @@ class RedisMemoryStore(MemoryStoreBase):
         if vector_size <= 0:
             raise ValueError("Vector dimension must be a positive integer")
 
-        self._database = database
+        self._database = redis.Redis.from_url(connection_string)
         self._ft = self._database.ft
         self._logger = logger or NullLogger()
 
