@@ -31,7 +31,7 @@ public static class KernelAIPluginExtensions
     /// <param name="filePath">The file path to the AI Plugin</param>
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A collection of invokable functions</returns>
+    /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
         this IKernel kernel,
         string skillName,
@@ -70,7 +70,7 @@ public static class KernelAIPluginExtensions
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A collection of invokable functions</returns>
+    /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
         this IKernel kernel,
         string skillName,
@@ -109,7 +109,7 @@ public static class KernelAIPluginExtensions
     /// <param name="stream">A stream representing the AI Plugin</param>
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A collection of invokable functions</returns>
+    /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
         this IKernel kernel,
         string skillName,
