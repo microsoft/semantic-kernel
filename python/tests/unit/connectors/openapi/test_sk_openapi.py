@@ -78,7 +78,6 @@ put_operation = RestApiOperation(
             }
         },
     },
-    responses={"200": {"description": "OK"}},
 )
 
 """RestApiOperation tests"""

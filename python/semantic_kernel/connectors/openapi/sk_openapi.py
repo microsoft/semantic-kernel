@@ -60,7 +60,7 @@ class RestApiOperation:
         summary: Optional[str] = None,
         description: Optional[str] = None,
         parameters: Optional[Mapping[str, str]] = None,
-        request_body: Optional[Mapping[str, str]] = None
+        request_body: Optional[Mapping[str, str]] = None,
     ):
         self.id = id
         self.method = method
