@@ -27,12 +27,14 @@ public sealed class RedisMemoryStore : IMemoryStore
 {
     /// <summary>
     /// Create a new instance of semantic memory using Redis.
+    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#creation-attributes-per-algorithm"/>
+    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#querying-vector-fields"/>
     /// </summary>
     /// <param name="database">The database of the Redis server.</param>
     /// <param name="vectorSize">Embedding vector size, defaults to 1536</param>
-    /// <param name="vectorIndexAlgorithm">Indexing algorithm for vectors, defaults to HNSW</param>
-    /// <param name="vectorType">Vector type, defaults to FLOAT32</param>
-    /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to COSINE</param>
+    /// <param name="vectorIndexAlgorithm">Indexing algorithm for vectors, defaults to "HNSW"</param>
+    /// <param name="vectorType">Vector type, defaults to "FLOAT32"</param>
+    /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to "COSINE"</param>
     /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
     public RedisMemoryStore(IDatabase database, int vectorSize = 1536, string vectorIndexAlgorithm = "HNSW", string vectorType = "FLOAT32", string vectorDistanceMetric = "COSINE", int queryDialect = 2)
 
@@ -48,12 +50,14 @@ public sealed class RedisMemoryStore : IMemoryStore
 
     /// <summary>
     /// Create a new instance of semantic memory using Redis.
+    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#creation-attributes-per-algorithm"/>
+    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#querying-vector-fields"/>
     /// </summary>
     /// <param name="connectionString">Provide connection URL to a Redis instance</param>
     /// <param name="vectorSize">Embedding vector size, defaults to 1536</param>
-    /// <param name="vectorIndexAlgorithm">Indexing algorithm for vectors, defaults to HNSW</param>
-    /// <param name="vectorType">Vector type, defaults to FLOAT32</param>
-    /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to COSINE</param>
+    /// <param name="vectorIndexAlgorithm">Indexing algorithm for vectors, defaults to "HNSW"</param>
+    /// <param name="vectorType">Vector type, defaults to "FLOAT32"</param>
+    /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to "COSINE"</param>
     /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
     public RedisMemoryStore(string connectionString, int vectorSize = 1536, string vectorIndexAlgorithm = "HNSW", string vectorType = "FLOAT32", string vectorDistanceMetric = "COSINE", int queryDialect = 2)
 
@@ -232,30 +236,8 @@ public sealed class RedisMemoryStore : IMemoryStore
     #region constants  ================================================================================
 
     /// <summary>
-    /// Vector similarity index algorithm. The default value is "HNSW".
-    /// <see href="https://redis.io/docs/stack/search/reference/vectors/#create-a-vector-field"/>
-    /// </summary>
-    internal const Schema.VectorField.VectorAlgo VECTOR_INDEX_ALGORITHM = Schema.VectorField.VectorAlgo.HNSW;
-
-    /// <summary>
-    /// Vector type. Supported types are FLOAT32 and FLOAT64. The default value is "FLOAT32".
-    /// </summary>
-    internal const string VECTOR_TYPE = "FLOAT32";
-
-    /// <summary>
-    /// Supported distance metric, one of {L2, IP, COSINE}. The default value is "COSINE".
-    /// </summary>
-    internal const string VECTOR_DISTANCE_METRIC = "COSINE";
-
-    /// <summary>
-    /// Query dialect. To use a vector similarity query, specify DIALECT 2 or higher. The default value is "2".
-    /// <see href="https://redis.io/docs/stack/search/reference/vectors/#querying-vector-fields"/>
-    /// </summary>
-    internal const int QUERY_DIALECT = 2;
-
-    /// <summary>
     /// Message when index does not exist.
-    /// <see href="https://github.com/RediSearch/RediSearch/blob/master/src/info_command.c#L96"/>
+    /// <see href="https://github.com/RediSearch/RediSearch/blob/master/src/info_command.c#L97"/>
     /// </summary>
     internal const string MESSAGE_WHEN_INDEX_DOES_NOT_EXIST = "Unknown Index name";
 
