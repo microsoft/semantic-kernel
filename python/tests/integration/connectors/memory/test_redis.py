@@ -227,10 +227,12 @@ async def test_get_nearest_match_async(
 
     assert result is not None
     assert result[0]._id == memory_record1._id
-    assert result[0]._text == memory_record1._text
-    assert result[0]._description == memory_record1._description
-    assert result[0]._additional_metadata == memory_record1._additional_metadata
     assert result[0]._timestamp == memory_record1._timestamp
+    assert result[0]._is_reference == memory_record1._is_reference
+    assert result[0]._external_source_name == memory_record1._external_source_name
+    assert result[0]._description == memory_record1._description
+    assert result[0]._text == memory_record1._text
+    assert result[0]._additional_metadata == memory_record1._additional_metadata
     for i in range(len(result[0]._embedding)):
         assert result[0]._embedding[i] == memory_record1._embedding[i]
 

@@ -92,16 +92,17 @@ def deserialize_redis_to_record(
 def deserialize_document_to_record(
     database: Redis, doc: Document, vector_type: np.dtype, with_embedding: bool
 ) -> MemoryRecord:
-    print(doc)
     # Document ID refers to the Redis key
     redis_key = doc["id"]
     _, id_str = split_redis_key(redis_key)
 
     metadata = json.loads(doc["metadata"])
-    record = MemoryRecord.local_record(
+    record = MemoryRecord(
         id=id_str,
-        text=metadata["text"],
+        is_reference=True if metadata["is_reference"] is True else False,
         description=metadata["description"],
+        external_source_name=metadata["external_source_name"],
+        text=metadata["text"],
         additional_metadata=metadata["additional_metadata"],
         embedding=None,
     )
