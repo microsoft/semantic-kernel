@@ -42,7 +42,7 @@ in the history of computing.
 
 ## Get Started with Semantic Kernel ⚡
 
-Semantic Kernel is available to explore AI and build apps with C# and Python:
+Semantic Kernel is available to explore AI and build apps with C#, Python and Java:
 
 <table width=100%>
   <tbody>
@@ -59,6 +59,12 @@ Semantic Kernel is available to explore AI and build apps with C# and Python:
           <a href="python/README.md">Using Semantic Kernel in Python</a>
         </div>
       </td>
+      <td>
+        <img align="left" width=52px height=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" alt="Java logo">
+        <div>
+          <a href="https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/README.md">Using Semantic Kernel in Java</a>
+        </div>
+      </td>
     </tr>
   </tbody>
 </table>
@@ -67,7 +73,7 @@ See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-s
 
 The quickest way to get started with the basics is to get an API key
 (OpenAI or Azure OpenAI)
-and to run one of the C# or Python console applications/scripts:
+and to run one of the C#, Python, and Java console applications/scripts:
 
 ### For C#:
 
@@ -84,6 +90,12 @@ and to run one of the C# or Python console applications/scripts:
 3. Store your API key and settings in an `.env` file as described [here](python/README.md).
 4. Copy the code from [here](python/README.md) into the `hello-world.py` script.
 5. Run the python script.
+
+### For Java:
+
+1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
+2. Switch to `semantic-kernel` directory and then checkout experimental Java branch: `git checkout experimental-java`
+3. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md)
 
 ## Sample apps ⚡
 
