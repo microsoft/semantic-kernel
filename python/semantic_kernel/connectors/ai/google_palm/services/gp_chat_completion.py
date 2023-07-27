@@ -7,10 +7,12 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
 from typing import Union, List, Tuple, Optional
 from semantic_kernel.connectors.ai.ai_exception import AIException
 import google.generativeai as palm
-import asyncio
 from google.generativeai.types import ChatResponse
+from semantic_kernel.connectors.ai.text_completion_client_base import (
+    TextCompletionClientBase,
+)
 
-class GooglePalmChatCompletion(ChatCompletionClientBase):
+class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     _model_id: str
     _api_key: str
     _message_history: ChatResponse
