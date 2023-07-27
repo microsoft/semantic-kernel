@@ -31,7 +31,7 @@ public static class KernelAIPluginExtensions
     /// <param name="filePath">The file path to the AI Plugin</param>
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
+    /// <returns>A collection of invokable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
         this IKernel kernel,
         string skillName,
@@ -43,7 +43,7 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromFilePath(
@@ -70,7 +70,7 @@ public static class KernelAIPluginExtensions
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
+    /// <returns>A collection of invokable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
         this IKernel kernel,
         string skillName,
@@ -82,7 +82,7 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromUri(
@@ -101,6 +101,15 @@ public static class KernelAIPluginExtensions
             cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance.</param>
+    /// <param name="skillName">Skill name.</param>
+    /// <param name="stream">A stream representing the AI Plugin</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A collection of invokable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
         this IKernel kernel,
         string skillName,
@@ -112,7 +121,7 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Log);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromStream(kernel, stream).ConfigureAwait(false);
@@ -164,7 +173,7 @@ public static class KernelAIPluginExtensions
         string pluginJson,
         CancellationToken cancellationToken)
     {
-        var parser = new OpenApiDocumentParser(kernel.Log);
+        var parser = new OpenApiDocumentParser(kernel.Logger);
 
         using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
         {
@@ -178,14 +187,14 @@ public static class KernelAIPluginExtensions
             {
                 try
                 {
-                    kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
+                    kernel.Logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
                     var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
                     skill[function.Name] = function;
                 }
                 catch (Exception ex) when (!ex.IsCriticalException())
                 {
                     //Logging the exception and keep registering other Rest functions
-                    kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                    kernel.Logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
                         skillName, operation.Id, ex.Message);
                 }
             }
@@ -228,7 +237,7 @@ public static class KernelAIPluginExtensions
             throw new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
         }
 
-        kernel.Log.LogTrace("Importing AI Plugin from {0}", filePath);
+        kernel.Logger.LogTrace("Importing AI Plugin from {0}", filePath);
 
         using (var sr = File.OpenText(filePath))
         {
@@ -296,7 +305,7 @@ public static class KernelAIPluginExtensions
     {
         var restOperationParameters = operation.GetParameters(serverUrlOverride);
 
-        var logger = kernel.Log ?? NullLogger.Instance;
+        var logger = kernel.Logger ?? NullLogger.Instance;
 
         async Task<SKContext> ExecuteAsync(SKContext context)
         {
@@ -358,7 +367,7 @@ public static class KernelAIPluginExtensions
             description: operation.Description,
             skillName: skillName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
-            log: logger);
+            logger: logger);
 
         return kernel.RegisterCustomFunction(function);
     }
