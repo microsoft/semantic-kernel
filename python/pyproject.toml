@@ -53,6 +53,9 @@ azure-search-documents = {version = "11.4.0b6", allow-prereleases = true}
 azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
 
+[tool.poetry.group.sqlite.dependencies]
+aiosqlite = "^0.19.0"
+
 [tool.isort]
 profile = "black"
 
