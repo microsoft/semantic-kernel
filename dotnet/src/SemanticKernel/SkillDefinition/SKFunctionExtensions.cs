@@ -122,7 +122,7 @@ public static class SKFunctionExtensions
         var inputInContext = context.Variables.Input;
         if (!string.IsNullOrEmpty(inputInContext) && !string.Equals(input, inputInContext, StringComparison.Ordinal))
         {
-            context.Log.LogWarning(
+            context.Logger.LogWarning(
                 "Function {0}.{1} has been invoked with an explicit input text that is different and overrides the input text defined in the context",
                 function.SkillName, function.Name);
         }
@@ -136,5 +136,15 @@ public static class SKFunctionExtensions
         // Store the input in the context
         context.Variables.Update(input);
         return function.InvokeAsync(context, settings, textCompletion);
+    }
+
+    /// <summary>
+    /// Returns decorated instance of <see cref="ISKFunction"/> with enabled instrumentation.
+    /// </summary>
+    /// <param name="function">Instance of <see cref="ISKFunction"/> to decorate.</param>
+    /// <param name="logger">Optional logger.</param>
+    public static ISKFunction WithInstrumentation(this ISKFunction function, ILogger? logger = null)
+    {
+        return new InstrumentedSKFunction(function, logger);
     }
 }

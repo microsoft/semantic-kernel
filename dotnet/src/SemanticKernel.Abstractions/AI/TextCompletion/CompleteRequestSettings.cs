@@ -97,7 +97,7 @@ public class CompleteRequestSettings
             return new CompleteRequestSettings();
         }
 
-        var result = Json.Deserialize<CompleteRequestSettings>(json);
+        var result = Json.Deserialize<CompleteRequestSettings>(json!);
         return result ?? throw new ArgumentException("Unable to deserialize complete request settings from argument. The deserialization returned null.", nameof(json));
     }
 }
