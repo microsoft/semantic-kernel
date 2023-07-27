@@ -28,13 +28,43 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <summary>
     /// Create a new instance of semantic memory using Redis.
     /// </summary>
-    /// <param name="database">The database of the redis server.</param>
-    /// <param name="vectorSize">Embedding vector size</param>
-    public RedisMemoryStore(IDatabase database, int vectorSize)
+    /// <param name="database">The database of the Redis server.</param>
+    /// <param name="vectorSize">Embedding vector size, defaults to 1536</param>
+    /// <param name="vectorIndexAlgorithm">Indexing algorithm for vectors, defaults to HNSW</param>
+    /// <param name="vectorType">Vector type, defaults to FLOAT32</param>
+    /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to COSINE</param>
+    /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
+    public RedisMemoryStore(IDatabase database, int vectorSize = 1536, string vectorIndexAlgorithm = "HNSW", string vectorType = "FLOAT32", string vectorDistanceMetric = "COSINE", int queryDialect = 2)
+
     {
         this._database = database;
         this._vectorSize = vectorSize;
         this._ft = database.FT();
+        this._vectorIndexAlgorithm = vectorIndexAlgorithm == "HNSW" ? Schema.VectorField.VectorAlgo.HNSW : Schema.VectorField.VectorAlgo.FLAT;
+        this._vectorType = vectorType;
+        this._vectorDistanceMetric = vectorDistanceMetric;
+        this._queryDialect = queryDialect;
+    }
+
+    /// <summary>
+    /// Create a new instance of semantic memory using Redis.
+    /// </summary>
+    /// <param name="connectionString">Provide connection URL to a Redis instance</param>
+    /// <param name="vectorSize">Embedding vector size, defaults to 1536</param>
+    /// <param name="vectorIndexAlgorithm">Indexing algorithm for vectors, defaults to HNSW</param>
+    /// <param name="vectorType">Vector type, defaults to FLOAT32</param>
+    /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to COSINE</param>
+    /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
+    public RedisMemoryStore(string connectionString, int vectorSize = 1536, string vectorIndexAlgorithm = "HNSW", string vectorType = "FLOAT32", string vectorDistanceMetric = "COSINE", int queryDialect = 2)
+
+    {
+        this._database = ConnectDatabase(connectionString);
+        this._vectorSize = vectorSize;
+        this._ft = this._database.FT();
+        this._vectorIndexAlgorithm = vectorIndexAlgorithm == "HNSW" ? Schema.VectorField.VectorAlgo.HNSW : Schema.VectorField.VectorAlgo.FLAT;
+        this._vectorType = vectorType;
+        this._vectorDistanceMetric = vectorDistanceMetric;
+        this._queryDialect = queryDialect;
     }
 
     /// <inheritdoc />
@@ -235,6 +265,10 @@ public sealed class RedisMemoryStore : IMemoryStore
     private readonly IDatabase _database;
     private readonly int _vectorSize;
     private readonly SearchCommands _ft;
+    private readonly Schema.VectorField.VectorAlgo _vectorIndexAlgorithm;
+    private readonly string _vectorType;
+    private readonly string _vectorDistanceMetric;
+    private readonly int _queryDialect;
 
     private static long ToTimestampLong(DateTimeOffset? timestamp)
     {
@@ -293,6 +327,13 @@ public sealed class RedisMemoryStore : IMemoryStore
         }
 
         return 1 - vectorScore;
+    }
+
+    private static async Task<IDatabase?> ConnectDatabase(string connectionString)
+    {
+        await using ConnectionMultiplexer connectionMultiplexer = (await ConnectionMultiplexer.ConnectAsync(connectionString).ConfigureAwait(false)).ConfigureAwait(false).ConfigureAwait(false);
+        IDatabase database = connectionMultiplexer.GetDatabase();
+        return database;
     }
 
     #endregion
