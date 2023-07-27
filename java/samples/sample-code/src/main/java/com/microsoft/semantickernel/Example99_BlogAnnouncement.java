@@ -1,13 +1,9 @@
 package com.microsoft.semantickernel;
 
-import java.io.IOException;
-
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.azure.ai.openai.OpenAIClientBuilder;
-import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
 import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.connectors.ai.openai.util.AIProviderSettings;
-import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAISettings;
+import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
@@ -15,27 +11,20 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputA
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
+import java.io.IOException;
+
 public class Example99_BlogAnnouncement {
 
   static {
     System.setProperty("client.openai.key", "");
   }
 
-  public static void main(String[] args) throws IOException {
-    OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromSystemProperties();
-
-    NonAzureOpenAIKeyCredential credential = new NonAzureOpenAIKeyCredential(settings.getKey());
-
-    OpenAIAsyncClient client = new OpenAIClientBuilder()
-        .credential(credential)
-        .buildAsyncClient();
+  public static void main(String[] args) throws IOException, ConfigurationException {
+    OpenAIAsyncClient client = OpenAIClientProvider.getClient();
 
     TextCompletion textCompletionService = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
-    KernelConfig config = SKBuilders.kernelConfig().addTextCompletionService("textCompletion", k -> textCompletionService)
-        .build();
-
-    Kernel kernel = SKBuilders.kernel().withKernelConfig(config).build();
+    Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletionService).build();
     kernel.importSkill(new MyAppSkills(), "MyAppSkills");
 
     SequentialPlanner planner = new SequentialPlanner(kernel, null, null);
@@ -56,7 +45,9 @@ public class Example99_BlogAnnouncement {
   public static class MyAppSkills {
     @DefineSKFunction(name = "redactPassword", description = "Redacts passwords from a message")
     public String redactPassword(
-        @SKFunctionInputAttribute String input) {
+        @SKFunctionInputAttribute(
+            description = "The input message to redact passwords from"
+        ) String input) {
       System.out.println("[redactPassword] Redacting passwords from input: " + input);
       return input.replaceAll("password.*", "******");
     }

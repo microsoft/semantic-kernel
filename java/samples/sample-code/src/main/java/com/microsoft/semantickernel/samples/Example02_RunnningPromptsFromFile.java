@@ -7,13 +7,12 @@
 package com.microsoft.semantickernel.samples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
+import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
-import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
 
 import java.io.IOException;
 
