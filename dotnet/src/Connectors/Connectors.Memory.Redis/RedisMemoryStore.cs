@@ -58,7 +58,7 @@ public sealed class RedisMemoryStore : IMemoryStore
     public RedisMemoryStore(string connectionString, int vectorSize = 1536, string vectorIndexAlgorithm = "HNSW", string vectorType = "FLOAT32", string vectorDistanceMetric = "COSINE", int queryDialect = 2)
 
     {
-        this._database = ConnectDatabase(connectionString);
+        this._database = ConnectionMultiplexer.Connect(connectionString).GetDatabase();
         this._vectorSize = vectorSize;
         this._ft = this._database.FT();
         this._vectorIndexAlgorithm = vectorIndexAlgorithm == "HNSW" ? Schema.VectorField.VectorAlgo.HNSW : Schema.VectorField.VectorAlgo.FLAT;
@@ -84,10 +84,10 @@ public sealed class RedisMemoryStore : IMemoryStore
             .AddTextField("key")
             .AddTextField("metadata")
             .AddNumericField("timestamp")
-            .AddVectorField("embedding", VECTOR_INDEX_ALGORITHM, new Dictionary<string, object> {
-                    {"TYPE", VECTOR_TYPE},
+            .AddVectorField("embedding", this._vectorIndexAlgorithm, new Dictionary<string, object> {
+                    {"TYPE", this._vectorType},
                     {"DIM", this._vectorSize},
-                    {"DISTANCE_METRIC", VECTOR_DISTANCE_METRIC},
+                    {"DISTANCE_METRIC", this._vectorDistanceMetric},
                 });
 
         await this._ft.CreateAsync(collectionName, ftCreateParams, schema).ConfigureAwait(false);
@@ -189,7 +189,7 @@ public sealed class RedisMemoryStore : IMemoryStore
                     .SetSortBy("vector_score")
                     .ReturnFields("key", "metadata", "embedding", "timestamp", "vector_score")
                     .Limit(0, limit)
-                    .Dialect(QUERY_DIALECT);
+                    .Dialect(this._queryDialect);
 
         var results = await this._ft.SearchAsync(collectionName, query).ConfigureAwait(false);
 
@@ -327,13 +327,6 @@ public sealed class RedisMemoryStore : IMemoryStore
         }
 
         return 1 - vectorScore;
-    }
-
-    private static async Task<IDatabase?> ConnectDatabase(string connectionString)
-    {
-        await using ConnectionMultiplexer connectionMultiplexer = (await ConnectionMultiplexer.ConnectAsync(connectionString).ConfigureAwait(false)).ConfigureAwait(false).ConfigureAwait(false);
-        IDatabase database = connectionMultiplexer.GetDatabase();
-        return database;
     }
 
     #endregion
