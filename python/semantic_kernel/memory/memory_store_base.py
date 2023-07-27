@@ -111,7 +111,7 @@ class MemoryStoreBase(ABC):
             with_embedding {bool} -- If true, the embedding will be returned in the memory record.
 
         Returns:
-            MemoryRecord -- The memory record if found, otherwise None.
+            MemoryRecord -- The memory record if found
         """
         pass
 
@@ -199,6 +199,5 @@ class MemoryStoreBase(ABC):
 
         Returns:
             Tuple[MemoryRecord, float] -- A tuple consisting of the MemoryRecord and the similarity score as a float.
-                None if no nearest match found.
         """
         pass
