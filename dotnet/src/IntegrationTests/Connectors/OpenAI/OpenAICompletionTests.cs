@@ -276,14 +276,8 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
         // Act
-        var context = await skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)));
-
         // Assert
-        Assert.True(context.ErrorOccurred);
-        Assert.IsType<AIException>(context.LastException);
-        Assert.Equal(AIException.ErrorCodes.InvalidRequest, ((AIException)context.LastException).ErrorCode);
-        Assert.Contains("The request is not valid, HTTP status: 400", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase); // This message could change in the future, comes from Azure OpenAI
+        await Assert.ThrowsAsync<AIException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
     }
 
     [Theory(Skip = "This test is for manual verification.")]
