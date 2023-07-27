@@ -90,6 +90,7 @@ class SKFunction(SKFunctionBase):
         return SKFunction(
             delegate_type=DelegateInference.infer_delegate_type(method),
             delegate_function=method,
+            delegate_stream_function=method,
             parameters=parameters,
             description=method.__sk_function_description__,
             skill_name=skill_name,
