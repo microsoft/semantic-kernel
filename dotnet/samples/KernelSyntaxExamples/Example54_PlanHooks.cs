@@ -15,7 +15,7 @@ public static class Example54_PlanHooks
     {
         Console.WriteLine("======== Sequential Planner - Using Step Hooks ========");
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             .WithAzureTextCompletionService(
                 TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,

@@ -85,6 +85,24 @@ public sealed class InstrumentedPlan : IPlan
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
         this._plan.SetDefaultSkillCollection(skills);
 
+    /// <summary>
+    /// Used for setting a pre-execution hook to a plan and its children.
+    /// </summary>
+    /// <remarks>Using more than once in the same function will override the previous pre-execution hook, avoid overriding when possible.</remarks>
+    /// <param name="preHook">Pre-hook delegate</param>
+    /// <returns>Self instance</returns>
+    public ISKFunction SetPreExecutionHook(PreExecutionHook? preHook) =>
+        this._plan.SetPreExecutionHook(preHook);
+
+    /// <summary>
+    /// Used for setting a post-execution hook to a plan and its children.
+    /// </summary>
+    /// <remarks>Using more than once in the same plan will override the previous post-execution hook, avoid overriding when possible.</remarks>
+    /// <param name="postHook">Post-hook delegate</param>
+    /// <returns>Self instance</returns>
+    public ISKFunction SetPostExecutionHook(PostExecutionHook? postHook) =>
+        this._plan.SetPostExecutionHook(postHook);
+
     #region private ================================================================================
 
     private readonly IPlan _plan;

@@ -796,7 +796,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
     {
         if (this._preExecutionHook is not null)
         {
-            this._log?.LogWarning("An existing pre-execution hook was overridden [Skill: {0}, Function: '{1}']", this.SkillName, this.Name);
+            this._logger?.LogWarning("An existing pre-execution hook was overridden [Skill: {0}, Function: '{1}']", this.SkillName, this.Name);
         }
 
         this._preExecutionHook = preHook;
@@ -810,7 +810,7 @@ public sealed class SKFunction : ISKFunction, IDisposable
         if (this._postExecutionHook is not null)
         {
             // Execution hooks override can lead to unexpected behavior, avoid when possible. Logging for visibility.
-            this._log?.LogWarning("An existing post-execution hook was overridden [Skill: {0}, Function: '{1}']", this.SkillName, this.Name);
+            this._logger?.LogWarning("An existing post-execution hook was overridden [Skill: {0}, Function: '{1}']", this.SkillName, this.Name);
         }
 
         this._postExecutionHook = postHook;

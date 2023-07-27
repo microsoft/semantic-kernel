@@ -99,6 +99,14 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
         this._function.SetDefaultSkillCollection(skills);
 
+    /// <inheritdoc />
+    public ISKFunction SetPreExecutionHook(PreExecutionHook? preHook) =>
+        this._function.SetPreExecutionHook(preHook);
+
+    /// <inheritdoc />
+    public ISKFunction SetPostExecutionHook(PostExecutionHook? postHook) =>
+        this._function.SetPostExecutionHook(postHook);
+
     #region private ================================================================================
 
     private readonly ISKFunction _function;
