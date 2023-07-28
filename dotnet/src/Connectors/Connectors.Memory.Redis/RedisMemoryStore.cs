@@ -40,14 +40,18 @@ public sealed class RedisMemoryStore : IMemoryStore
         VectorDistanceMetrics vectorDistanceMetric = VectorDistanceMetric,
         int queryDialect = QueryDialect)
     {
+        if (vectorSize <= 0)
+        {
+            throw new ArgumentException("Vector size must be a positive integer.");
+        }
+        if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
+        {
+            throw new ArgumentException("Unsupported vector indexing algorithm.");
+        }
+
         this._database = database;
         this._vectorSize = vectorSize;
         this._ft = database.FT();
-        // Default to HNSW if parsing error occurs
-        if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
-        {
-            this._vectorIndexAlgorithm = Schema.VectorField.VectorAlgo.HNSW;
-        }
         this._vectorType = vectorType.ToString();
         this._vectorDistanceMetric = vectorDistanceMetric.ToString();
         this._queryDialect = queryDialect;
@@ -68,14 +72,18 @@ public sealed class RedisMemoryStore : IMemoryStore
         VectorDistanceMetrics vectorDistanceMetric = VectorDistanceMetric,
         int queryDialect = QueryDialect)
     {
+        if (vectorSize <= 0)
+        {
+            throw new ArgumentException("Vector size must be a positive integer.");
+        }
+        if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
+        {
+            throw new ArgumentException("Unsupported vector indexing algorithm.");
+        }
+
         this._database = ConnectionMultiplexer.Connect(connectionString).GetDatabase();
         this._vectorSize = vectorSize;
         this._ft = this._database.FT();
-        // Default to HNSW if parsing error occurs
-        if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
-        {
-            this._vectorIndexAlgorithm = Schema.VectorField.VectorAlgo.HNSW;
-        }
         this._vectorType = vectorType.ToString();
         this._vectorDistanceMetric = vectorDistanceMetric.ToString();
         this._queryDialect = queryDialect;
