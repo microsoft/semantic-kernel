@@ -25,7 +25,7 @@ async def main():
     - GOOGLE_API_KEY
     - GOOGLE_SEARCH_ENGINE_ID
 
-    A Google Custom Search API has to be craeted in order to have an API key and a search engine ID.
+    A Google Custom Search API has to be created in order to have an API key and a search engine ID.
     To create a Google Custom Search API, follow the guide - https://developers.google.com/custom-search/v1/overview.
     If you have already created the service, the credentials can be found in the Credentials tab on the page
     https://console.cloud.google.com/apis/api/customsearch.googleapis.com
