@@ -81,7 +81,7 @@ class GoogleConnector(ConnectorBase):
             async with session.get(_request_url, raise_for_status=True) as response:
                 if response.status == 200:
                     data = await response.json()
-                    self._logger.info("Request successfull.")
+                    self._logger.info("Request successful.")
                     self._logger.info(f"API Response: {data}")
                     items = data["items"]
                     result = [x["snippet"] for x in items]
