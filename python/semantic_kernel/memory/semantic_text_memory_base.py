@@ -59,6 +59,7 @@ class SemanticTextMemoryBase(ABC):
         self,
         collection: str,
         query: str,
+        # TODO: with_embedding: bool,
     ) -> Optional[MemoryQueryResult]:
         """Get information from the memory (calls the memory store's get method).
 
