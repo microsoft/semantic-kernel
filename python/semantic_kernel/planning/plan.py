@@ -4,7 +4,7 @@ import asyncio
 import re
 import threading
 from logging import Logger
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Union
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import CompleteRequestSettings
@@ -20,6 +20,7 @@ from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
+from semantic_kernel.utils.null_logger import NullLogger
 
 
 class Plan(SKFunctionBase):
@@ -112,6 +113,16 @@ class Plan(SKFunctionBase):
         if function is not None:
             self.set_function(function)
 
+    @classmethod
+    def from_goal(cls, goal: str) -> "Plan":
+        return cls(description=goal, skill_name=cls.__name__)
+
+    @classmethod
+    def from_function(cls, function: SKFunctionBase) -> "Plan":
+        plan = cls()
+        plan.set_function(function)
+        return plan
+
     async def invoke_async(
         self,
         input: Optional[str] = None,
@@ -121,7 +132,7 @@ class Plan(SKFunctionBase):
         logger: Optional[Logger] = None,
         # TODO: cancellation_token: CancellationToken,
     ) -> SKContext:
-        if input is not None:
+        if input is not None and input != "":
             self._state.update(input)
 
         if context is None:
@@ -129,7 +140,7 @@ class Plan(SKFunctionBase):
                 variables=self._state,
                 skill_collection=None,
                 memory=memory,
-                logger=logger,
+                logger=logger if logger is not None else NullLogger(),
             )
 
         if self._function is not None:
@@ -138,8 +149,8 @@ class Plan(SKFunctionBase):
             )
             if result.error_occurred:
                 result.log.error(
-                    msg="Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self._skill_name, self._name, context.last_error_description
+                    "Something went wrong in plan step {0}.{1}:'{2}'".format(
+                        self._skill_name, self._name, result.last_error_description
                     )
                 )
                 return result
@@ -162,7 +173,7 @@ class Plan(SKFunctionBase):
         memory: Optional[SemanticTextMemoryBase] = None,
         logger: Optional[Logger] = None,
     ) -> SKContext:
-        if input is not None:
+        if input is not None and input != "":
             self._state.update(input)
 
         if context is None:
@@ -244,7 +255,7 @@ class Plan(SKFunctionBase):
 
         return plan
 
-    def add_steps(self, steps: Optional[List[SKFunctionBase]]) -> None:
+    def add_steps(self, steps: Union[List["Plan"], List[SKFunctionBase]]) -> None:
         for step in steps:
             if type(step) is Plan:
                 self._steps.append(step)
@@ -344,7 +355,7 @@ class Plan(SKFunctionBase):
         context.variables.update(result_string)
 
         for item in self._steps[self._next_step_index - 1]._outputs:
-            if item in self._state:
+            if self._state.contains_key(item):
                 context.variables.set(item, self._state[item])
             else:
                 context.variables.set(item, result_string)
@@ -361,17 +372,18 @@ class Plan(SKFunctionBase):
         # - Empty if sending to another plan
         # - Plan.Description
         input_string = ""
-        if step._parameters["input"] is not None:
-            input_string = self.expand_from_variables(
-                variables, step._parameters["input"]
-            )
-        elif variables["input"] is not None:
-            input_string = variables["input"]
-        elif self._state["input"] is not None:
-            input_string = self._state["input"]
+        step_input_exists, step_input_value = step._parameters.get("input")
+        variables_input_exists, variables_input_value = variables.get("input")
+        state_input_exists, state_input_value = self._state.get("input")
+        if step_input_exists and step_input_value != "":
+            input_string = self.expand_from_variables(variables, step_input_value)
+        elif variables_input_exists and variables_input_value != "":
+            input_string = variables_input_value
+        elif state_input_exists and state_input_value != "":
+            input_string = state_input_value
         elif len(step._steps) > 0:
             input_string = ""
-        elif self._description is not None:
+        elif self._description is not None and self._description != "":
             input_string = self._description
 
         step_variables = ContextVariables(input_string)
@@ -379,15 +391,16 @@ class Plan(SKFunctionBase):
         # Priority for remaining stepVariables is:
         # - Function Parameters (pull from variables or state by a key value)
         # - Step Parameters (pull from variables or state by a key value)
+        # - All other variables. These are carried over in case the function wants access to the ambient content.
         function_params = step.describe()
         for param in function_params._parameters:
-            if param.name.lower == "input":
+            if param.name.lower() == variables._main_key.lower():
                 continue
-            if step_variables.contains_key(param.name):
+
+            if variables.contains_key(param.name):
                 step_variables.set(param.name, variables[param.name])
-            elif (
-                self._state.contains_key(param.name)
-                and self._state[param.name] is not None
+            elif self._state.contains_key(param.name) and (
+                self._state[param.name] is not None and self._state[param.name] != ""
             ):
                 step_variables.set(param.name, self._state[param.name])
 
@@ -405,6 +418,10 @@ class Plan(SKFunctionBase):
             else:
                 step_variables.set(param_var, expanded_value)
 
+        for item in variables._variables:
+            if not step_variables.contains_key(item):
+                step_variables.set(item, variables[item])
+
         return step_variables
 
     def expand_from_variables(
@@ -412,7 +429,7 @@ class Plan(SKFunctionBase):
     ) -> str:
         result = input_string
         variables_regex = r"\$(?P<var>\w+)"
-        matches = re.findall(variables_regex, input_string)
+        matches = [m for m in re.finditer(variables_regex, input_string)]
         ordered_matches = sorted(
             matches, key=lambda m: len(m.group("var")), reverse=True
         )

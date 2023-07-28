@@ -36,12 +36,12 @@
       "request": "attach"
     },
     {
-      "cwd":"${workspaceFolder}/python",
+      "cwd": "${workspaceFolder}/python",
       "name": "Python: Test Module",
       "type": "python",
       "request": "launch",
       "module": "pytest",
-      "args": ["${file}"],
+      "args": ["${file}"]
     }
   ]
 }
