@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -79,7 +78,7 @@ public static class Example07_BingAndGoogleSkills
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Func(searchSkillId, "search");
-        var result = await kernel.RunAsync(function, input: question);
+        var result = await kernel.RunAsync(function, question);
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchSkillId}----");
@@ -141,8 +140,7 @@ Answer: ";
         var oracle = kernel.CreateSemanticFunction(SemanticFunction, maxTokens: 200, temperature: 0, topP: 1);
 
         var answer = await kernel.RunAsync(oracle,
-            input: questions,
-            args: new Dictionary<string, string>
+            new(questions)
             {
                 ["externalInformation"] = string.Empty
             });
@@ -161,8 +159,7 @@ Answer: ";
 
             // Run the semantic function again, now including information from Bing
             answer = await kernel.RunAsync(oracle,
-                input: questions,
-                args: new Dictionary<string, string>
+                new(questions)
                 {
                     ["externalInformation"] = information
                 });

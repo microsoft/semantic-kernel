@@ -26,30 +26,10 @@ public sealed class ContextVariables : IDictionary<string, string>
     /// <summary>
     /// Constructor for context variables.
     /// </summary>
-    /// <param name="input">Optional value for the main variable of the context.</param>
-    /// <param name="args">Optional list of key-value pairs to initialize the context with.</param>
-    public ContextVariables(
-        string? input = null,
-        IEnumerable<KeyValuePair<string, string>>? args = null)
+    /// <param name="value">Optional value for the main variable of the context including trust information.</param>
+    public ContextVariables(string? value = null)
     {
-        if (args != null)
-        {
-            this.SetAll(args);
-        }
-
-        // Set 'input' after all the args, in case args contains an "input" string.
-        // If input is null (not provided), do not overwrite, as it may also exist in a args[].
-        if (input != null)
-        {
-            this._variables[MainKey] = input;
-        }
-
-        // Finally, if the main input string is still unset, set it to empty.
-        // This is to be removed, with tests and callers updated (TODO: GitHub Issue #2216)
-        if (!this.TryGetValue(MainKey, out string? value) || value == null)
-        {
-            this._variables[MainKey] = string.Empty;
-        }
+        this._variables[MainKey] = value ?? string.Empty;
     }
 
     /// <summary>

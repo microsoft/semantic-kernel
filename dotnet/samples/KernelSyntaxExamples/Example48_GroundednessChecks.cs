@@ -143,7 +143,7 @@ which are not grounded in the original.
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 
-        var results = await kernel.RunAsync(plan, input: s_groundingText);
+        var results = await kernel.RunAsync(s_groundingText, plan);
         Console.WriteLine(results.Result);
     }
 }

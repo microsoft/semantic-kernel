@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
@@ -43,8 +42,7 @@ public static class Example15_MemorySkill
         var memorySaver = kernel.CreateSemanticFunction(SaveFunctionDefinition);
 
         var result = await kernel.RunAsync(memorySaver,
-            input: "Do I live in the same town where I grew up?",
-            args: new Dictionary<string, string>
+            new("Do I live in the same town where I grew up?")
             {
                 [TextMemorySkill.CollectionParam] = MemoryCollectionName,
                 [TextMemorySkill.KeyParam] = "info5",
@@ -55,7 +53,7 @@ public static class Example15_MemorySkill
         Console.WriteLine("========= Example: Retrieving a memory by key =========");
 
         var answer = await kernel.RunAsync(retrieveFunction,
-            args: new Dictionary<string, string>
+            new()
             {
                 [TextMemorySkill.CollectionParam] = MemoryCollectionName,
                 [TextMemorySkill.KeyParam] = "info5"
@@ -71,8 +69,7 @@ public static class Example15_MemorySkill
         Console.WriteLine("========= Example: Recalling an idea by relevance =========");
 
         answer = await kernel.RunAsync(recallFunction,
-            input: "where did I grow up?",
-            args: new Dictionary<string, string>
+            new("where did I grow up?")
             {
                 [TextMemorySkill.CollectionParam] = MemoryCollectionName,
                 [TextMemorySkill.LimitParam] = "2"
@@ -82,8 +79,7 @@ public static class Example15_MemorySkill
         Console.WriteLine("Answer:\n{0}", answer);
 
         answer = await kernel.RunAsync(recallFunction,
-            input: "where do I live?",
-            args: new Dictionary<string, string>
+            new("where do I live?")
             {
                 [TextMemorySkill.CollectionParam] = MemoryCollectionName,
                 [TextMemorySkill.LimitParam] = "2"
@@ -121,8 +117,7 @@ Answer:
 
         var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, maxTokens: 100);
         result = await kernel.RunAsync(aboutMeOracle,
-            input: "Do I live in the same town where I grew up?",
-            args: new Dictionary<string, string>
+            new("Do I live in the same town where I grew up?")
             {
                 [TextMemorySkill.CollectionParam] = MemoryCollectionName,
                 [TextMemorySkill.RelevanceParam] = "0.8"
@@ -142,14 +137,12 @@ Answer:
         // ========= Remove a memory =========
         Console.WriteLine("========= Example: Forgetting a Memory =========");
 
-        result = await kernel.RunAsync(aboutMeOracle,
-            input: "Tell me a bit about myself",
-            args: new Dictionary<string, string>
-            {
-                ["fact1"] = "What is my name?",
-                ["fact2"] = "What do I do for a living?",
-                [TextMemorySkill.RelevanceParam] = ".75"
-            });
+        result = await kernel.RunAsync(aboutMeOracle, new("Tell me a bit about myself")
+        {
+            ["fact1"] = "What is my name?",
+            ["fact2"] = "What do I do for a living?",
+            [TextMemorySkill.RelevanceParam] = ".75"
+        });
 
         Console.WriteLine("Tell me a bit about myself\n");
         Console.WriteLine(result);
@@ -162,19 +155,16 @@ Answer:
         */
 
         // Remove memory with key "info1"
-        await kernel.RunAsync(removeFunction,
-            args: new Dictionary<string, string>
-            {
-                [TextMemorySkill.CollectionParam] = MemoryCollectionName,
-                [TextMemorySkill.KeyParam] = "info1"
-            });
+        await kernel.RunAsync(removeFunction, new()
+        {
+            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
+            [TextMemorySkill.KeyParam] = "info1"
+        });
 
-        result = await kernel.RunAsync(aboutMeOracle,
-            input: "Tell me a bit about myself",
-            args: new Dictionary<string, string>
-            {
-                [TextMemorySkill.KeyParam] = "info1"
-            });
+        result = await kernel.RunAsync(aboutMeOracle, new("Tell me a bit about myself")
+        {
+            [TextMemorySkill.KeyParam] = "info1"
+        });
 
         Console.WriteLine("Tell me a bit about myself\n");
         Console.WriteLine(result);

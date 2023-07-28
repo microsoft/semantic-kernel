@@ -106,7 +106,7 @@ public static class Example16_CustomLLM
 
         var textValidationFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
-        var result = await kernel.RunAsync(textValidationFunction, input: "I mised the training session this morning");
+        var result = await kernel.RunAsync("I missed the training session this morning", textValidationFunction);
         Console.WriteLine(result);
 
         // Details of the my custom model response
