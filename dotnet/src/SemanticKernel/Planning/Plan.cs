@@ -258,7 +258,7 @@ public sealed class Plan : IPlan
             if (result.ErrorOccurred)
             {
                 throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
-                    $"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
+                    $"Error occurred while running plan step: {result.LastException?.Message}", result.LastException);
             }
 
             #region Update State

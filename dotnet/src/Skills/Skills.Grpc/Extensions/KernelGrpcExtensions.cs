@@ -177,7 +177,7 @@ public static class KernelGrpcExtensions
             {
                 kernel.Logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}", skillName, operation.Name,
                     ex.Message);
-                context.Fail(ex.Message, ex);
+                throw;
             }
 
             return context;
