@@ -22,7 +22,7 @@ async def main():
     planner = SequentialPlanner(kernel)
 
     # the ask for which the sequential planner is going to find a relevant function.
-    ask = "What is the sum of today's year and day?"
+    ask = "What day of the week is today, all uppercase?"
 
     # ask the sequential planner to identify a suitable function from the list of functions available.
     plan = await planner.create_plan_async(goal=ask)

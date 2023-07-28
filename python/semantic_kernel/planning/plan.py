@@ -20,6 +20,7 @@ from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
+from semantic_kernel.utils.null_logger import NullLogger
 
 
 class Plan(SKFunctionBase):
@@ -139,7 +140,7 @@ class Plan(SKFunctionBase):
                 variables=self._state,
                 skill_collection=None,
                 memory=memory,
-                logger=logger,
+                logger=logger if logger is not None else NullLogger(),
             )
 
         if self._function is not None:
@@ -148,8 +149,8 @@ class Plan(SKFunctionBase):
             )
             if result.error_occurred:
                 result.log.error(
-                    msg="Something went wrong in plan step {0}.{1}:'{2}'".format(
-                        self._skill_name, self._name, context.last_error_description
+                    "Something went wrong in plan step {0}.{1}:'{2}'".format(
+                        self._skill_name, self._name, result.last_error_description
                     )
                 )
                 return result
@@ -371,14 +372,15 @@ class Plan(SKFunctionBase):
         # - Empty if sending to another plan
         # - Plan.Description
         input_string = ""
-        if step._parameters["input"] is not None and step._parameters["input"] != "":
-            input_string = self.expand_from_variables(
-                variables, step._parameters["input"]
-            )
-        elif variables["input"] is not None and variables["input"] != "":
-            input_string = variables["input"]
-        elif self._state["input"] is not None and self._state["input"] != "":
-            input_string = self._state["input"]
+        step_input_exists, input_input_value = step._parameters.get("input")
+        variables_input_exists, variables_input_value = variables.get("input")
+        state_input_exists, state_input_value = self._state.get("input")
+        if step_input_exists:
+            input_string = self.expand_from_variables(variables, input_input_value)
+        elif variables_input_exists:
+            input_string = variables_input_value
+        elif state_input_exists:
+            input_string = state_input_value
         elif len(step._steps) > 0:
             input_string = ""
         elif self._description is not None and self._description != "":
