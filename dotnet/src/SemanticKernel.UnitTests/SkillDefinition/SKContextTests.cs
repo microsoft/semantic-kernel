@@ -17,14 +17,12 @@ public class SKContextTests
 {
     private readonly Mock<IKernel> _kernel;
     private readonly Mock<IReadOnlySkillCollection> _skills;
-    private readonly Mock<ILogger> _log;
 
     public SKContextTests()
     {
         this._kernel = new Mock<IKernel>();
         this._skills = new Mock<IReadOnlySkillCollection>();
         this._kernel.Setup(x => x.Skills).Returns(this._skills.Object);
-        this._log = new Mock<ILogger>();
     }
 
     [Fact]

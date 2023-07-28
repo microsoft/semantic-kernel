@@ -27,7 +27,13 @@ public interface IKernel
     /// <summary>
     /// App logger
     /// </summary>
+    [Obsolete("Use Logger instead. This will be removed in a future release.")]
     ILogger Log { get; }
+
+    /// <summary>
+    /// App logger
+    /// </summary>
+    ILogger Logger { get; }
 
     /// <summary>
     /// Semantic memory instance

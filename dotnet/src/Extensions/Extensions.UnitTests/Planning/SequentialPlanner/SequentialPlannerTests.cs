@@ -25,7 +25,7 @@ public sealed class SequentialPlannerTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.Log).Returns(new Mock<ILogger>().Object);
+        kernel.Setup(x => x.Logger).Returns(new Mock<ILogger>().Object);
 
         var input = new List<(string name, string skillName, string description, bool isSemantic)>()
         {
@@ -135,7 +135,7 @@ public sealed class SequentialPlannerTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        // kernel.Setup(x => x.Log).Returns(new Mock<ILogger>().Object);
+        // kernel.Setup(x => x.Logger).Returns(new Mock<ILogger>().Object);
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object);
 

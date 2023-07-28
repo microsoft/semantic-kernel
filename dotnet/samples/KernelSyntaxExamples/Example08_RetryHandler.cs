@@ -17,25 +17,25 @@ public static class Example08_RetryHandler
     {
         var kernel = InitializeKernel();
         var retryHandlerFactory = new RetryThreeTimesWithBackoffFactory();
-        InfoLogger.Log.LogInformation("============================== RetryThreeTimesWithBackoff ==============================");
+        InfoLogger.Logger.LogInformation("============================== RetryThreeTimesWithBackoff ==============================");
         await RunRetryPolicyAsync(kernel, retryHandlerFactory);
 
-        InfoLogger.Log.LogInformation("========================= RetryThreeTimesWithRetryAfterBackoff =========================");
+        InfoLogger.Logger.LogInformation("========================= RetryThreeTimesWithRetryAfterBackoff =========================");
         await RunRetryPolicyBuilderAsync(typeof(RetryThreeTimesWithRetryAfterBackoffFactory));
 
-        InfoLogger.Log.LogInformation("==================================== NoRetryPolicy =====================================");
+        InfoLogger.Logger.LogInformation("==================================== NoRetryPolicy =====================================");
         await RunRetryPolicyBuilderAsync(typeof(NullHttpRetryHandlerFactory));
 
-        InfoLogger.Log.LogInformation("=============================== DefaultHttpRetryHandler ================================");
+        InfoLogger.Logger.LogInformation("=============================== DefaultHttpRetryHandler ================================");
         await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
 
-        InfoLogger.Log.LogInformation("======= DefaultHttpRetryConfig [MaxRetryCount = 3, UseExponentialBackoff = true] =======");
+        InfoLogger.Logger.LogInformation("======= DefaultHttpRetryConfig [MaxRetryCount = 3, UseExponentialBackoff = true] =======");
         await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
     }
 
     private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? httpConfig = null)
     {
-        var kernelBuilder = Kernel.Builder.WithLogger(InfoLogger.Log);
+        var kernelBuilder = Kernel.Builder.WithLogger(InfoLogger.Logger);
         if (httpConfig != null)
         {
             kernelBuilder = kernelBuilder.Configure(c => c.SetDefaultHttpRetryConfig(httpConfig));
@@ -57,7 +57,7 @@ public static class Example08_RetryHandler
     private static IKernel InitializeKernel()
     {
         var kernel = Kernel.Builder
-            .WithLogger(InfoLogger.Log)
+            .WithLogger(InfoLogger.Logger)
             // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
             .WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY")
             .Build();
@@ -73,7 +73,7 @@ public static class Example08_RetryHandler
 
     private static async Task RunRetryPolicyBuilderAsync(Type retryHandlerFactoryType)
     {
-        var kernel = Kernel.Builder.WithLogger(InfoLogger.Log)
+        var kernel = Kernel.Builder.WithLogger(InfoLogger.Logger)
             .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
             // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
             .WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY")
@@ -95,15 +95,15 @@ public static class Example08_RetryHandler
 
         var question = "How popular is Polly library?";
 
-        InfoLogger.Log.LogInformation("Question: {0}", question);
+        InfoLogger.Logger.LogInformation("Question: {0}", question);
         // To see the retry policy in play, you can set the OpenAI.ApiKey to an invalid value
         var answer = await kernel.RunAsync(question, qaSkill["Question"]);
-        InfoLogger.Log.LogInformation("Answer: {0}", answer);
+        InfoLogger.Logger.LogInformation("Answer: {0}", answer);
     }
 
     private static class InfoLogger
     {
-        internal static ILogger Log => LogFactory.CreateLogger<object>();
+        internal static ILogger Logger => LogFactory.CreateLogger<object>();
         private static ILoggerFactory LogFactory => s_loggerFactory.Value;
         private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
 

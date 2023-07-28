@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -23,7 +21,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : ISKFunction
+public sealed class Plan : IPlan
 {
     /// <summary>
     /// State of the plan
@@ -231,7 +229,7 @@ public sealed class Plan : ISKFunction
         var context = new DefaultSKContext(
             variables,
             kernel.Skills,
-            logger: kernel.Log);
+            logger: kernel.Logger);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
     }
@@ -260,7 +258,7 @@ public sealed class Plan : ISKFunction
             if (result.ErrorOccurred)
             {
                 throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
-                    $"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
+                    $"Error occurred while running plan step: {result.LastException!.Message}", result.LastException);
             }
 
             #region Update State
@@ -328,7 +326,10 @@ public sealed class Plan : ISKFunction
     {
         if (this.Function is not null)
         {
-            var result = await this.InstrumentedInvokeAsync(this.Function, context, settings, cancellationToken).ConfigureAwait(false);
+            var result = await this.Function
+                .WithInstrumentation(context.Logger)
+                .InvokeAsync(context, settings, cancellationToken)
+                .ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
@@ -584,58 +585,6 @@ public sealed class Plan : ISKFunction
         return stepVariables;
     }
 
-    private async Task<SKContext> InstrumentedInvokeAsync(
-        ISKFunction function,
-        SKContext context,
-        CompleteRequestSettings? settings = null,
-        CancellationToken cancellationToken = default)
-    {
-        using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
-
-        context.Logger.LogInformation("{SkillName}.{StepName}: Step execution started.", this.SkillName, this.Name);
-
-        var stopwatch = new Stopwatch();
-
-        stopwatch.Start();
-
-        var result = await function.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
-
-        stopwatch.Stop();
-
-        if (!result.ErrorOccurred)
-        {
-            context.Logger.LogInformation(
-                "{SkillName}.{StepName}: Step execution status: {Status}.",
-                this.SkillName, this.Name, "Success");
-        }
-        else
-        {
-            context.Logger.LogInformation(
-                "{SkillName}.{StepName}: Step execution status: {Status}.",
-                this.SkillName, this.Name, "Failed");
-
-            context.Logger.LogError(
-                result.LastException,
-                "Something went wrong in plan step {SkillName}.{StepName}:'{ErrorDescription}'",
-                this.SkillName, this.Name, context.LastErrorDescription);
-        }
-
-        context.Logger.LogInformation(
-            "{SkillName}.{StepName}: Step execution finished in {ExecutionTime}ms.",
-            this.SkillName, this.Name, stopwatch.ElapsedMilliseconds);
-
-        var stepExecutionTimeMetricName = string.Format(CultureInfo.InvariantCulture, StepExecutionTimeMetricFormat, this.SkillName, this.Name);
-
-        var stepExecutionTimeHistogram = s_meter.CreateHistogram<double>(
-            name: stepExecutionTimeMetricName,
-            unit: "ms",
-            description: "Plan step execution time");
-
-        stepExecutionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
-
-        return result;
-    }
-
     private void SetFunction(ISKFunction function)
     {
         this.Function = function;
@@ -674,20 +623,4 @@ public sealed class Plan : ISKFunction
             return display;
         }
     }
-
-    #region Instrumentation
-
-    private const string StepExecutionTimeMetricFormat = "SK.{0}.{1}.ExecutionTime";
-
-    /// <summary>
-    /// Instance of <see cref="ActivitySource"/> for plan-related activities.
-    /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(Plan).FullName);
-
-    /// <summary>
-    /// Instance of <see cref="Meter"/> for planner-related metrics.
-    /// </summary>
-    private static Meter s_meter = new(typeof(Plan).FullName);
-
-    #endregion
 }
