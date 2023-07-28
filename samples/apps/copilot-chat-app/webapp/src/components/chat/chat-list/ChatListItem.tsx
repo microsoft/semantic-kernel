@@ -9,6 +9,7 @@ import {
     Text,
     tokens,
 } from '@fluentui/react-components';
+import { ShieldTask16Regular } from '@fluentui/react-icons';
 import { FC, useState } from 'react';
 import { Constants } from '../../../Constants';
 import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
@@ -86,6 +87,11 @@ const useClasses = makeStyles({
     selected: {
         backgroundColor: tokens.colorNeutralBackground1,
     },
+    protectedIcon: {
+        color: tokens.colorPaletteLightGreenBorder1,
+        verticalAlign: 'text-bottom',
+        marginLeft: tokens.spacingHorizontalXS,
+    },
 });
 
 interface IChatListItemProps {
@@ -142,7 +148,12 @@ export const ChatListItem: FC<IChatListItemProps> = ({
                         <>
                             <div className={classes.body}>
                                 <div className={classes.header}>
-                                    <Text className={classes.title}>{header}</Text>
+                                    <Text className={classes.title}>
+                                        {header}
+                                        {features[FeatureKeys.AzureContentSafety].enabled && (
+                                            <ShieldTask16Regular className={classes.protectedIcon} />
+                                        )}
+                                    </Text>
                                     {!features[FeatureKeys.SimplifiedExperience].enabled && (
                                         <Text className={classes.timestamp} size={300}>
                                             {time}

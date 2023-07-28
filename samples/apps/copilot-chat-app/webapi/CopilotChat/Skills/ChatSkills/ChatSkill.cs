@@ -20,6 +20,7 @@ using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
+using SemanticKernel.Service.Services;
 
 namespace SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 
@@ -54,6 +55,11 @@ public class ChatSkill
     /// Settings containing prompt texts.
     /// </summary>
     private readonly PromptsOptions _promptOptions;
+
+    /// <summary>
+    /// Content moderator.
+    /// </summary>
+    private readonly AzureContentModerator? _contentModerator = null;
 
     /// <summary>
     /// A semantic chat memory skill instance to query semantic memories.
@@ -91,7 +97,8 @@ public class ChatSkill
         IOptions<PromptsOptions> promptOptions,
         IOptions<DocumentMemoryOptions> documentImportOptions,
         CopilotChatPlanner planner,
-        ILogger logger)
+        ILogger logger,
+        AzureContentModerator? contentModerator = null)
     {
         this._kernel = kernel;
         this._chatMessageRepository = chatMessageRepository;
@@ -106,6 +113,7 @@ public class ChatSkill
         this._documentMemorySkill = new DocumentMemorySkill(
             promptOptions,
             documentImportOptions);
+        this._contentModerator = contentModerator;
         this._externalInformationSkill = new ExternalInformationSkill(
             promptOptions,
             planner);
@@ -273,15 +281,15 @@ public class ChatSkill
         [Description("ID of the response message for planner"), DefaultValue(null), SKName("responseMessageId")] string? messageId,
         SKContext context)
     {
+        // Clone the context to avoid modifying the original context variables.
+        var chatContext = Utilities.CopyContextWithVariablesClone(context);
+        chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
+
         // Set the system description in the prompt options
         await this.SetSystemDescriptionAsync(chatId);
 
         // Save this new message to memory such that subsequent chat responses can use it
         await this.SaveNewMessageAsync(message, userId, userName, chatId, messageType);
-
-        // Clone the context to avoid modifying the original context variables.
-        var chatContext = Utilities.CopyContextWithVariablesClone(context);
-        chatContext.Variables.Set("knowledgeCutoff", this._promptOptions.KnowledgeCutoffDate);
 
         // Check if plan exists in ask's context variables.
         // If plan was returned at this point, that means it was approved or cancelled.
@@ -323,7 +331,9 @@ public class ChatSkill
 
         await this.UpdateResponseStatusOnClient(chatId, "Calculating total token usage");
         this.GetTokenUsages(context, chatContext);
+
         context.Variables.Update(response);
+
         return context;
     }
 

@@ -42,7 +42,7 @@ export const conversationsSlice: Slice<ConversationsState> = createSlice({
         },
         editConversationMemoryBalance: (
             state: ConversationsState,
-            action: PayloadAction<{id: string, memoryBalance: number}>,
+            action: PayloadAction<{ id: string; memoryBalance: number }>,
         ) => {
             const id = action.payload.id;
             const newMemoryBalance = action.payload.memoryBalance;

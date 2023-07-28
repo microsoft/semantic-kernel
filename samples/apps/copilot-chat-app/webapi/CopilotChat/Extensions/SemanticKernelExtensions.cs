@@ -11,6 +11,7 @@ using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
 using SemanticKernel.Service.CopilotChat.Storage;
 using SemanticKernel.Service.Options;
+using SemanticKernel.Service.Services;
 
 namespace SemanticKernel.Service.CopilotChat.Extensions;
 
@@ -54,8 +55,10 @@ public static class CopilotChatSemanticKernelExtensions
                 messageRelayHubContext: sp.GetRequiredService<IHubContext<MessageRelayHub>>(),
                 promptOptions: sp.GetRequiredService<IOptions<PromptsOptions>>(),
                 documentImportOptions: sp.GetRequiredService<IOptions<DocumentMemoryOptions>>(),
+                contentModerator: sp.GetService<AzureContentModerator>(),
                 planner: sp.GetRequiredService<CopilotChatPlanner>(),
-                logger: sp.GetRequiredService<ILogger<ChatSkill>>()),
+                logger: sp.GetRequiredService<ILogger<ChatSkill>>()
+                ),
             nameof(ChatSkill));
 
         return kernel;

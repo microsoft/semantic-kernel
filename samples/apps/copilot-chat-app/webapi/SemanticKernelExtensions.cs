@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,8 +17,10 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.Service.CopilotChat.Extensions;
+using SemanticKernel.Service.CopilotChat.Options;
 using SemanticKernel.Service.CopilotChat.Storage;
 using SemanticKernel.Service.Options;
+using SemanticKernel.Service.Services;
 
 namespace SemanticKernel.Service;
 
@@ -52,6 +55,9 @@ internal static class SemanticKernelExtensions
 
         // Semantic memory
         services.AddSemanticTextMemory();
+
+        // Azure Content Moderator
+        services.AddContentModerator();
 
         // Register skills
         services.AddScoped<RegisterSkillsWithKernel>(sp => RegisterSkillsAsync);
@@ -154,6 +160,20 @@ internal static class SemanticKernelExtensions
         // for a lower-level memory implementation (e.g. Qdrant). Lower level memory implementations (i.e., IMemoryStore) allow for reusing embeddings,
         // whereas high level memory implementation (i.e., ISemanticTextMemory) assume embeddings get recalculated on every write.
         services.AddSingleton<OptionalIMemoryStore>(sp => new OptionalIMemoryStore() { MemoryStore = sp.GetService<IMemoryStore>() });
+    }
+
+    /// <summary>
+    /// Adds Azure Content Moderator
+    /// </summary>
+    internal static void AddContentModerator(this IServiceCollection services)
+    {
+        IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+        ContentModeratorOptions options = configuration.GetSection(ContentModeratorOptions.PropertyName).Get<ContentModeratorOptions>();
+
+        if (options.Enabled)
+        {
+            services.AddSingleton<AzureContentModerator>(sp => new AzureContentModerator(new Uri(options.Endpoint), options.Key, options));
+        }
     }
 
     /// <summary>

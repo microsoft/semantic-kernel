@@ -14,9 +14,9 @@ export interface Alert {
 }
 
 interface Feature {
-    enabled: boolean;
+    enabled: boolean; // Whether to show the feature in the UX
     label: string;
-    disabled?: boolean;
+    inactive?: boolean; // Set to true if you don't want the user to control the visibility of this feature or there's no backend support
     description?: string;
 }
 
@@ -70,12 +70,12 @@ export const Features = {
     [FeatureKeys.AzureContentSafety]: {
         enabled: false,
         label: 'Azure Content Safety',
-        disabled: true,
+        inactive: true,
     },
     [FeatureKeys.AzureCognitiveSearch]: {
         enabled: false,
         label: 'Azure Cognitive Search',
-        disabled: true,
+        inactive: true,
     },
     [FeatureKeys.BotAsDocs]: {
         enabled: false,

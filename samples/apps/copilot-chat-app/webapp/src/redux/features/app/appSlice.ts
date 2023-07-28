@@ -22,13 +22,33 @@ export const appSlice = createSlice({
         setActiveUserInfo: (state: AppState, action: PayloadAction<ActiveUserInfo>) => {
             state.activeUserInfo = action.payload;
         },
-        setFeatureFlag: (state: AppState, action: PayloadAction<FeatureKeys>) => {
+        // This sets the feature flag
+        toggleFeatureFlag: (state: AppState, action: PayloadAction<FeatureKeys>) => {
             const feature = state.features[action.payload];
             state.features = {
                 ...state.features,
                 [action.payload]: {
                     ...feature,
                     enabled: !feature.enabled,
+                },
+            };
+        },
+        // This controls feature availability based on the state of backend support
+        toggleFeatureState: (
+            state: AppState,
+            action: PayloadAction<{
+                feature: FeatureKeys;
+                deactivate: boolean;
+                enable: boolean;
+            }>,
+        ) => {
+            const feature = state.features[action.payload.feature];
+            state.features = {
+                ...state.features,
+                [action.payload.feature]: {
+                    ...feature,
+                    enabled: action.payload.deactivate ? false : action.payload.enable,
+                    inactive: action.payload.deactivate,
                 },
             };
         },
@@ -41,7 +61,14 @@ export const appSlice = createSlice({
     },
 });
 
-export const { addAlert, removeAlert, setAlerts, setActiveUserInfo, setFeatureFlag, updateTokenUsage } =
-    appSlice.actions;
+export const {
+    addAlert,
+    removeAlert,
+    setAlerts,
+    setActiveUserInfo,
+    toggleFeatureFlag,
+    toggleFeatureState,
+    updateTokenUsage,
+} = appSlice.actions;
 
 export default appSlice.reducer;

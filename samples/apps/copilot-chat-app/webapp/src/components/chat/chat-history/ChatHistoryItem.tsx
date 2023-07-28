@@ -62,6 +62,12 @@ const useClasses = makeStyles({
         width: '100%',
         textAlign: 'center',
     },
+    image: {
+        maxWidth: '250px',
+    },
+    blur: {
+        filter: 'blur(5px)',
+    },
 });
 
 interface ChatHistoryItemProps {
