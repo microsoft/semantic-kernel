@@ -23,12 +23,11 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
 /// <remarks>The embedded data is saved to the Redis server database specified in the constructor.
 /// Similarity search capability is provided through the RediSearch module. Use RediSearch's "Index" to implement "Collection".
 /// </remarks>
+#pragma warning disable CA1720
 public sealed class RedisMemoryStore : IMemoryStore
 {
     /// <summary>
     /// Create a new instance of semantic memory using Redis.
-    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#creation-attributes-per-algorithm"/>
-    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#querying-vector-fields"/>
     /// </summary>
     /// <param name="database">The database of the Redis server.</param>
     /// <param name="vectorSize">Embedding vector size, defaults to 1536</param>
@@ -36,21 +35,23 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <param name="vectorType">Vector type, defaults to "FLOAT32"</param>
     /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to "COSINE"</param>
     /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
-    public RedisMemoryStore(IDatabase database, int vectorSize = 1536, string vectorIndexAlgorithm = "HNSW", string vectorType = "FLOAT32", string vectorDistanceMetric = "COSINE", int queryDialect = 2)
+    public RedisMemoryStore(IDatabase database, int vectorSize = 1536,
+        VectorIndexAlgorithms vectorIndexAlgorithm = VectorIndexAlgorithm,
+        VectorTypes vectorType = VectorType,
+        VectorDistanceMetrics vectorDistanceMetric = VectorDistanceMetric,
+        int queryDialect = QueryDialect)
     {
         this._database = database;
         this._vectorSize = vectorSize;
         this._ft = database.FT();
-        this._vectorIndexAlgorithm = vectorIndexAlgorithm == "HNSW" ? Schema.VectorField.VectorAlgo.HNSW : Schema.VectorField.VectorAlgo.FLAT;
-        this._vectorType = vectorType;
-        this._vectorDistanceMetric = vectorDistanceMetric;
+        this._vectorIndexAlgorithm = vectorIndexAlgorithm == VectorIndexAlgorithms.HNSW ? Schema.VectorField.VectorAlgo.HNSW : Schema.VectorField.VectorAlgo.FLAT;
+        this._vectorType = vectorType.ToString();
+        this._vectorDistanceMetric = vectorDistanceMetric.ToString();
         this._queryDialect = queryDialect;
     }
 
     /// <summary>
     /// Create a new instance of semantic memory using Redis.
-    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#creation-attributes-per-algorithm"/>
-    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#querying-vector-fields"/>
     /// </summary>
     /// <param name="connectionString">Provide connection URL to a Redis instance</param>
     /// <param name="vectorSize">Embedding vector size, defaults to 1536</param>
@@ -58,14 +59,18 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <param name="vectorType">Vector type, defaults to "FLOAT32"</param>
     /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to "COSINE"</param>
     /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
-    public RedisMemoryStore(string connectionString, int vectorSize = 1536, string vectorIndexAlgorithm = "HNSW", string vectorType = "FLOAT32", string vectorDistanceMetric = "COSINE", int queryDialect = 2)
+    public RedisMemoryStore(string connectionString, int vectorSize = 1536,
+        VectorIndexAlgorithms vectorIndexAlgorithm = VectorIndexAlgorithm,
+        VectorTypes vectorType = VectorType,
+        VectorDistanceMetrics vectorDistanceMetric = VectorDistanceMetric,
+        int queryDialect = QueryDialect)
     {
         this._database = ConnectionMultiplexer.Connect(connectionString).GetDatabase();
         this._vectorSize = vectorSize;
         this._ft = this._database.FT();
-        this._vectorIndexAlgorithm = vectorIndexAlgorithm == "HNSW" ? Schema.VectorField.VectorAlgo.HNSW : Schema.VectorField.VectorAlgo.FLAT;
-        this._vectorType = vectorType;
-        this._vectorDistanceMetric = vectorDistanceMetric;
+        this._vectorIndexAlgorithm = vectorIndexAlgorithm == VectorIndexAlgorithms.HNSW ? Schema.VectorField.VectorAlgo.HNSW : Schema.VectorField.VectorAlgo.FLAT;
+        this._vectorType = vectorType.ToString();
+        this._vectorDistanceMetric = vectorDistanceMetric.ToString();
         this._queryDialect = queryDialect;
     }
 
@@ -236,17 +241,17 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// Vector similarity index algorithm. The default value is "HNSW".
     /// <see href="https://redis.io/docs/stack/search/reference/vectors/#create-a-vector-field"/>
     /// </summary>
-    private const Schema.VectorField.VectorAlgo VectorIndexAlgorithm = Schema.VectorField.VectorAlgo.HNSW;
+    private const VectorIndexAlgorithms VectorIndexAlgorithm = VectorIndexAlgorithms.HNSW;
 
     /// <summary>
     /// Vector type. Supported types are FLOAT32 and FLOAT64. The default value is "FLOAT32".
     /// </summary>
-    private const string VectorType = "FLOAT32";
+    private const VectorTypes VectorType = VectorTypes.FLOAT32;
 
     /// <summary>
     /// Supported distance metric, one of {L2, IP, COSINE}. The default value is "COSINE".
     /// </summary>
-    private const string VectorDistanceMetric = "COSINE";
+    private const VectorDistanceMetrics VectorDistanceMetric = VectorDistanceMetrics.COSINE;
 
     /// <summary>
     /// Query dialect. To use a vector similarity query, specify DIALECT 2 or higher. The default value is "2".
@@ -334,6 +339,22 @@ public sealed class RedisMemoryStore : IMemoryStore
     #endregion
 
     #region enums ================================================================================
+
+    public enum VectorIndexAlgorithms
+    {
+        FLAT,
+        HNSW,
+    }
+
+    public enum VectorTypes
+    {
+        FLOAT32, FLOAT64
+    }
+
+    public enum VectorDistanceMetrics
+    {
+        L2, IP, COSINE
+    }
 
     #endregion
 }
