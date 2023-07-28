@@ -127,7 +127,7 @@ internal static class Example31_CustomPlanner
     private static IKernel InitializeKernel()
     {
         return new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             .WithAzureTextCompletionService(
                 TestConfiguration.AzureOpenAI.DeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
