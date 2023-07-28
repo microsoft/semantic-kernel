@@ -76,7 +76,6 @@ public sealed class RedisMemoryStore : IMemoryStore
         {
             this._vectorIndexAlgorithm = Schema.VectorField.VectorAlgo.HNSW;
         }
-        Console.WriteLine(this._vectorIndexAlgorithm.ToString());
         this._vectorType = vectorType.ToString();
         this._vectorDistanceMetric = vectorDistanceMetric.ToString();
         this._queryDialect = queryDialect;
@@ -246,24 +245,24 @@ public sealed class RedisMemoryStore : IMemoryStore
     #region constants  ================================================================================
 
     /// <summary>
-    /// Vector similarity index algorithm. The default value is "HNSW".
-    /// <see href="https://redis.io/docs/stack/search/reference/vectors/#create-a-vector-field"/>
+    /// Vector similarity index algorithm. Supported algorithms are {FLAT, HNSW}. The default value is "HNSW".
+    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#create-a-vector-field"/>
     /// </summary>
     private const VectorIndexAlgorithms VectorIndexAlgorithm = VectorIndexAlgorithms.HNSW;
 
     /// <summary>
-    /// Vector type. Supported types are FLOAT32 and FLOAT64. The default value is "FLOAT32".
+    /// Vector type. Supported types are {FLOAT32, FLOAT64}. The default value is "FLOAT32".
     /// </summary>
     private const VectorTypes VectorType = VectorTypes.FLOAT32;
 
     /// <summary>
-    /// Supported distance metric, one of {L2, IP, COSINE}. The default value is "COSINE".
+    /// Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".
     /// </summary>
     private const VectorDistanceMetrics VectorDistanceMetric = VectorDistanceMetrics.COSINE;
 
     /// <summary>
     /// Query dialect. To use a vector similarity query, specify DIALECT 2 or higher. The default value is "2".
-    /// <see href="https://redis.io/docs/stack/search/reference/vectors/#querying-vector-fields"/>
+    /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#querying-vector-fields"/>
     /// </summary>
     private const int QueryDialect = 2;
 
