@@ -6,8 +6,12 @@ from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion impor
 from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
     GooglePalmChatCompletion,
 )
+from semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding import (
+    GooglePalmTextEmbedding,
+)
 
 __all__ = [
     "GooglePalmTextCompletion",
-    "GooglePalmChatCompletion"
+    "GooglePalmChatCompletion",
+    "GooglePalmTextEmbedding",
     ]

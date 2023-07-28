@@ -10,9 +10,10 @@ System messages prime the assistant with different personalities or behaviors.
 Google PaLM uses a parameter called "context" to be used at the start of a 
 conversation instead of a system message, as is used in OpenAI. For consistency 
 with the OpenAI service, we will continue to refer to context as a system 
-message. A system message can only be used once at the start of the conversation 
-but can be overwritten by passing a new system message to complete_chat_async. 
-The conversation history persists with the instance of GooglePalmChatCompletion.
+message. A system message can only be used once at the start of the conversation,
+and conversation history persists with the instance of GooglePalmChatCompletion.
+To overwrite the system message and start a new conversation, you must create a 
+new instance of GooglePalmChatCompletion.
 """
 
 system_message = """
