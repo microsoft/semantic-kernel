@@ -6,31 +6,36 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
+using static Microsoft.SemanticKernel.SemanticFunctions.PromptConfig;
 
 namespace SemanticKernel.UnitTests.SkillDefinition;
 
 public sealed class SKFunctionTests1
 {
-    private readonly Mock<IPromptTemplate> _promptTemplate;
+    private readonly Mock<IPromptTemplateEngine> _templateEngine;
 
     public SKFunctionTests1()
     {
-        this._promptTemplate = new Mock<IPromptTemplate>();
-        this._promptTemplate.Setup(x => x.RenderAsync(It.IsAny<SKContext>(), It.IsAny<CancellationToken>())).ReturnsAsync("foo");
-        this._promptTemplate.Setup(x => x.GetParameters()).Returns(new List<ParameterView>());
+        this._templateEngine = new Mock<IPromptTemplateEngine>();
+        this._templateEngine.Setup(x => x.RenderAsync(It.IsAny<string>(), It.IsAny<SKContext>(), It.IsAny<CancellationToken>())).ReturnsAsync("foo");
     }
 
     [Fact]
     public void ItHasDefaultRequestSettings()
     {
         // Arrange
-        var templateConfig = new PromptTemplateConfig();
-        var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
+        var promptConfig = new PromptConfig()
+        {
+            PluginName = "sk",
+            FunctionName = "name",
+            Template = "Say hello in German",
+        };
 
         // Act
-        var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
+        var skFunction = SKFunction.FromPromptConfig(promptConfig, this._templateEngine.Object);
 
         // Assert
         Assert.Equal(0, skFunction.RequestSettings.Temperature);
@@ -41,14 +46,24 @@ public sealed class SKFunctionTests1
     public void ItAllowsToUpdateRequestSettings()
     {
         // Arrange
-        var templateConfig = new PromptTemplateConfig();
-        var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
-        var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
         var settings = new CompleteRequestSettings
         {
             Temperature = 0.9,
             MaxTokens = 2001,
         };
+        var promptRequestSettings = new PromptRequestSettings();
+        promptRequestSettings.Properties["temperature"] = 0.9;
+        promptRequestSettings.Properties["max_tokens"] = 2001;
+        var promptConfig = new PromptConfig()
+        {
+            Description = "Say hello in German",
+            InputParameters = new(),
+            PluginName = "SpeakGermanPlugin",
+            FunctionName = "SayHello",
+            Template = "Say hello in German",
+            RequestSettings = new List<PromptRequestSettings>() { promptRequestSettings },
+        };
+        var skFunction = SKFunction.FromPromptConfig(promptConfig, this._templateEngine.Object);
 
         // Act
         skFunction.RequestSettings.Temperature = 1.3;

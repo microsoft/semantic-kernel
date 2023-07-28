@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -10,6 +11,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.Text;
+using static Microsoft.SemanticKernel.SemanticFunctions.PromptTemplateConfig;
 
 namespace Microsoft.SemanticKernel.SemanticFunctions;
 
@@ -161,6 +163,11 @@ public class PromptConfig
     #region internal
 
     /// <summary>
+    /// Prompt template
+    /// </summary>
+    internal IPromptTemplate? PromptTemplate { get; private set; }
+
+    /// <summary>
     /// Return the list of parameters used by the function as a list of ParameterView instances.
     /// </summary>
     /// <returns>List of parameters</returns>
@@ -183,6 +190,11 @@ public class PromptConfig
     /// <returns>Prompt rendered to string</returns>
     internal Task<string> RenderAsync(IPromptTemplateEngine engine, SKContext executionContext, CancellationToken cancellationToken = default)
     {
+        if (this.PromptTemplate is not null)
+        {
+            return this.PromptTemplate.RenderAsync(executionContext, cancellationToken);
+        }
+
         return engine.RenderAsync(this.GetTemplate(), executionContext, cancellationToken);
     }
 
@@ -221,6 +233,43 @@ public class PromptConfig
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Convert SemanticFunctionConfig to the new abstraction PromptConfig
+    /// </summary>
+    internal static PromptConfig FromSemanticFunctionConfig(string skillName, string functionName, SemanticFunctionConfig functionConfig)
+    {
+        var inputParameters = functionConfig.PromptTemplateConfig.Input.Parameters
+            .Select(p => new InputParameter() { Name = p.Name, Description = p.Description, DefaultValue = p.DefaultValue })
+            .ToList();
+
+        var requestSettings = new List<PromptRequestSettings>();
+        requestSettings.Add(FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+
+        return new PromptConfig()
+        {
+            PluginName = skillName,
+            FunctionName = functionName,
+            Description = functionConfig.PromptTemplateConfig.Description,
+            InputParameters = inputParameters,
+            RequestSettings = requestSettings,
+            PromptTemplate = functionConfig.PromptTemplate,
+        };
+    }
+
+    /// <summary>
+    /// Convert CompletionConfig to PromptRequestSettings
+    /// </summary>
+    internal static PromptRequestSettings FromCompletionConfig(CompletionConfig completionConfig)
+    {
+        var settings = new PromptRequestSettings();
+        var json = completionConfig.ToJson();
+        if (json is not null)
+        {
+            settings.Properties = Json.Deserialize<JsonObject>(json) ?? new JsonObject();
+        }
+        return settings;
     }
 
     #endregion

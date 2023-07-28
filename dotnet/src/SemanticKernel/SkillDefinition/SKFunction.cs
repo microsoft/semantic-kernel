@@ -137,6 +137,8 @@ public sealed class SKFunction : ISKFunction, IDisposable
     /// <param name="logger">Optional logger for the function.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
+    [Obsolete("Use SKFunction.FromPromptConfig instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static ISKFunction FromSemanticConfig(
         string skillName,
         string functionName,
@@ -193,14 +195,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
-                context.Fail(ex.Message, ex);
+                throw;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}";
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message);
-                context.Fail(ex.Message, ex);
+                throw;
             }
 
             return context;
@@ -275,14 +277,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
                 logger?.LogError(ex, Message, promptConfig.PluginName, promptConfig.FunctionName, ex.Message, ex.Detail);
-                context.Fail(ex.Message, ex);
+                throw;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}";
                 logger?.LogError(ex, Message, promptConfig.PluginName, promptConfig.FunctionName, ex.Message);
-                context.Fail(ex.Message, ex);
+                throw;
             }
 
             return context;
@@ -314,24 +316,20 @@ public sealed class SKFunction : ISKFunction, IDisposable
         {
             this.AddDefaultValues(context.Variables);
 
-            var resultContext = await this._function(textCompletion ?? this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
-            context.Variables.Update(resultContext.Variables);
-        }
-        else
-        {
-            try
-            {
-                context = await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception e) when (!e.IsCriticalException())
-            {
-                const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-                this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
-                context.Fail(e.Message, e);
-            }
+            return await this._function(textCompletion ?? this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
         }
 
-        return context;
+        try
+        {
+            return await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception e) when (!e.IsCriticalException())
+        {
+            const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
+            this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
+            context.LastException = e;
+            return context;
+        }
     }
 
     /// <inheritdoc/>

@@ -149,7 +149,7 @@ public sealed class InstrumentedPlan : IPlan
         if (result.ErrorOccurred)
         {
             this._logger.LogWarning("Plan execution status: {Status}", "Failed");
-            this._logger.LogError(result.LastException, "Plan execution exception details: {Message}", result.LastErrorDescription);
+            this._logger.LogError(result.LastException, "Plan execution exception details: {Message}", result.LastException?.Message);
 
             s_executionFailureCounter.Add(1);
         }
