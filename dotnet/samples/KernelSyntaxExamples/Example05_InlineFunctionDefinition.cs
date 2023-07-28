@@ -50,15 +50,15 @@ Event: {{$input}}
 
         var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 100, temperature: 0.4, topP: 1);
 
-        var result = await kernel.RunAsync(excuseFunction, input: "I missed the F1 final race");
+        var result = await excuseFunction.InvokeAsync("I missed the F1 final race");
         Console.WriteLine(result);
 
-        result = await kernel.RunAsync(excuseFunction, input: "sorry I forgot your birthday");
+        result = await excuseFunction.InvokeAsync("sorry I forgot your birthday");
         Console.WriteLine(result);
 
         var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", maxTokens: 100);
 
-        result = await kernel.RunAsync(fixedFunction);
+        result = await fixedFunction.InvokeAsync();
         Console.WriteLine(result);
     }
 }

@@ -59,7 +59,7 @@ Is it weekend time (weekend/not weekend)?
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
-        var result = await kernel.RunAsync(kindOfDay);
+        var result = await kindOfDay.InvokeAsync();
         Console.WriteLine(result);
 
         /* OUTPUT:
