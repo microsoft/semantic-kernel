@@ -32,9 +32,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
     /// </summary>
     /// <param name="tokens">A list of blocks</param>
     /// <param name="content">Block content</param>
-    /// <param name="log">App logger</param>
-    public CodeBlock(List<Block> tokens, string? content, ILogger log)
-        : base(content?.Trim(), log)
+    /// <param name="logger">App logger</param>
+    public CodeBlock(List<Block> tokens, string? content, ILogger logger)
+        : base(content?.Trim(), logger)
     {
         this._tokens = tokens;
     }
@@ -48,7 +48,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         {
             if (!token.IsValid(out errorMsg))
             {
-                this.Log.LogError(errorMsg);
+                this.Logger.LogError(errorMsg);
                 return false;
             }
         }
@@ -58,14 +58,14 @@ internal sealed class CodeBlock : Block, ICodeRendering
             if (this._tokens[0].Type != BlockTypes.FunctionId)
             {
                 errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
-                this.Log.LogError(errorMsg);
+                this.Logger.LogError(errorMsg);
                 return false;
             }
 
             if (this._tokens[1].Type is not BlockTypes.Value and not BlockTypes.Variable)
             {
                 errorMsg = "Functions support only one parameter";
-                this.Log.LogError(errorMsg);
+                this.Logger.LogError(errorMsg);
                 return false;
             }
         }
@@ -73,7 +73,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         if (this._tokens.Count > 2)
         {
             errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
-            this.Log.LogError(errorMsg);
+            this.Logger.LogError(errorMsg);
             return false;
         }
 
@@ -90,7 +90,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
         }
 
-        this.Log.LogTrace("Rendering code: `{0}`", this.Content);
+        this.Logger.LogTrace("Rendering code: `{0}`", this.Content);
 
         switch (this._tokens[0].Type)
         {
@@ -123,7 +123,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))
         {
             var errorMsg = $"Function `{fBlock.Content}` not found";
-            this.Log.LogError(errorMsg);
+            this.Logger.LogError(errorMsg);
             throw new TemplateException(TemplateException.ErrorCodes.FunctionNotFound, errorMsg);
         }
 
@@ -134,7 +134,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         if (this._tokens.Count > 1)
         {
             // Sensitive data, logging as trace, disabled by default
-            this.Log.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
+            this.Logger.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
 
             string input = ((ITextRendering)this._tokens[1]).Render(contextClone.Variables);
             // Keep previous trust information when updating the input
@@ -147,15 +147,15 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            this.Log.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}",
+            this.Logger.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}",
                 function.SkillName, function.Name, ex.Message);
-            contextClone.Fail(ex.Message, ex);
+            contextClone.LastException = ex;
         }
 
         if (contextClone.ErrorOccurred)
         {
-            var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastErrorDescription}";
-            this.Log.LogError(errorMsg);
+            var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastException?.Message}";
+            this.Logger.LogError(errorMsg);
             throw new TemplateException(TemplateException.ErrorCodes.RuntimeError, errorMsg, contextClone.LastException);
         }
 
