@@ -372,14 +372,14 @@ class Plan(SKFunctionBase):
         # - Empty if sending to another plan
         # - Plan.Description
         input_string = ""
-        step_input_exists, input_input_value = step._parameters.get("input")
+        step_input_exists, step_input_value = step._parameters.get("input")
         variables_input_exists, variables_input_value = variables.get("input")
         state_input_exists, state_input_value = self._state.get("input")
-        if step_input_exists:
-            input_string = self.expand_from_variables(variables, input_input_value)
-        elif variables_input_exists:
+        if step_input_exists and step_input_value != "":
+            input_string = self.expand_from_variables(variables, step_input_value)
+        elif variables_input_exists and variables_input_value != "":
             input_string = variables_input_value
-        elif state_input_exists:
+        elif state_input_exists and state_input_value != "":
             input_string = state_input_value
         elif len(step._steps) > 0:
             input_string = ""
