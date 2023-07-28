@@ -28,7 +28,7 @@ public class Example15_MemorySkill
         // ========= Create a kernel =========
         OpenAIAsyncClient client = null;
         try {
-            client = Config.ClientType.AZURE_OPEN_AI.getClient();
+            client = Config.ClientType.OPEN_AI.getClient();
         } catch (Exception e) {
             return Mono.error(e);
         }

@@ -58,7 +58,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                                             true, id, text, description, "", additionalMetadata);
                             MemoryRecord memoryRecord =
                                     new MemoryRecord(
-                                            data, embeddings.iterator().next(), collection, null);
+                                            data, embeddings.iterator().next(), id, null);
 
                             return _storage.upsertAsync(collection, memoryRecord)
                                     .onErrorResume(
