@@ -208,7 +208,7 @@ public sealed class Kernel : IKernel, IDisposable
                     pipelineStepCount, f.SkillName, f.Name, e.Message);
                 var returnContext = new DefaultSKContext(context);
                 returnContext.SetException(e);
-                return context;
+                return returnContext;
             }
         }
 

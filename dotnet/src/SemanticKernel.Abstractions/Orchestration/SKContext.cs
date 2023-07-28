@@ -75,9 +75,19 @@ public abstract class SKContext
             }
 
             display += $", Culture = {this.Culture.EnglishName}";
-            display += $", Culture = {this.Culture.EnglishName}";
+
             return display;
         }
+    }
+
+    /// <summary>
+    /// Print the processed input, aka the current data after any processing occurred.
+    /// If an error occurred, prints the last exception message instead.
+    /// </summary>
+    /// <returns>Processed input, aka result, or last exception message if any</returns>
+    public override string ToString()
+    {
+        return this.ErrorOccurred ? $"Error: {this.LastException!.Message}" : this.Result;
     }
 
     #region Error handling

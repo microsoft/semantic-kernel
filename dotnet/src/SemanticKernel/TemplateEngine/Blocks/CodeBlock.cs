@@ -127,6 +127,8 @@ internal sealed class CodeBlock : Block, ICodeRendering
             throw new TemplateException(TemplateException.ErrorCodes.FunctionNotFound, errorMsg);
         }
 
+        SKContext contextClone = context.Clone();
+
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
         if (this._tokens.Count > 1)
@@ -134,25 +136,33 @@ internal sealed class CodeBlock : Block, ICodeRendering
             // Sensitive data, logging as trace, disabled by default
             this.Logger.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
 
-            string input = ((ITextRendering)this._tokens[1]).Render(context.Variables);
+            string input = ((ITextRendering)this._tokens[1]).Render(contextClone.Variables);
+            // Keep previous trust information when updating the input
+            contextClone.Variables.Update(input);
         }
 
-        SKContext contextResult;
         try
         {
-            contextResult = await function.InvokeAsync(context).ConfigureAwait(false);
-
-            if (contextResult.ErrorOccurred) { throw contextResult.LastException!; }
-
-            return contextResult.Result;
+            contextClone = await function.InvokeAsync(contextClone).ConfigureAwait(false);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            var errorMsg = $"Function `{fBlock.Content}` execution failed. {ex.GetType().FullName}: {ex.Message}";
-            this.Logger.LogError(errorMsg);
+            this.Logger.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}",
+                function.SkillName, function.Name, ex.Message);
 
-            throw new TemplateException(TemplateException.ErrorCodes.RuntimeError, errorMsg, ex);
+            DefaultSKContext failContext = new(contextClone);
+            failContext.SetException(ex);
+            contextClone = failContext;
         }
+
+        if (contextClone.ErrorOccurred)
+        {
+            var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastException?.Message}";
+            this.Logger.LogError(errorMsg);
+            throw new TemplateException(TemplateException.ErrorCodes.RuntimeError, errorMsg, contextClone.LastException);
+        }
+
+        return contextClone.Result;
     }
 
     private bool GetFunctionFromSkillCollection(

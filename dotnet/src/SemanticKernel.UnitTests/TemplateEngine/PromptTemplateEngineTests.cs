@@ -162,14 +162,15 @@ public sealed class PromptTemplateEngineTests
         ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
-        this._variables.Set("myVar", "BAR");
         var template = "foo-{{function $myVar}}-baz";
         {
             ISKFunction? outFunc = func;
             this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
         }
         this._skills.Setup(x => x.GetFunction("function")).Returns(func);
-        var context = this.MockContext();
+
+        SKContext context = new DefaultSKContext(skills: this._skills.Object);
+        context.Variables["myVar"] = "BAR";
 
         // Act
         var result = await this._target.RenderAsync(template, context);
@@ -223,6 +224,7 @@ public sealed class PromptTemplateEngineTests
             context.Variables.Update("foo");
             return "F(OUTPUT-FOO)";
         }
+
         string MyFunction2Async(SKContext context)
         {
             // Input value should be "BAR" because the variable $input is immutable in MyFunction1
@@ -230,6 +232,7 @@ public sealed class PromptTemplateEngineTests
             context.Variables.Set("myVar", "bar");
             return context.Variables.Input;
         }
+
         string MyFunction3Async(SKContext context)
         {
             // Input value should be "BAZ" because the variable $myVar is immutable in MyFunction2

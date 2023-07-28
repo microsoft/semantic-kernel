@@ -33,10 +33,7 @@ internal sealed class DefaultSKContext : SKContext
             ModelResults = this.ModelResults
         };
 
-        if (this.ErrorOccurred)
-        {
-            clone._exception = this.LastException;
-        };
+        clone._exception = this.LastException;
 
         return clone;
     }
@@ -54,7 +51,7 @@ internal sealed class DefaultSKContext : SKContext
     }
 
     internal DefaultSKContext(SKContext other)
-        : this(other.Variables, other.Skills, other.Culture, other.Logger)
+        : this(other.Variables.Clone(), other.Skills, other.Culture, other.Logger)
     {
     }
 
