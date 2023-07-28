@@ -1,14 +1,14 @@
 # Chat Copilot Sample Application
 
-> **IMPORTANT:** This sample is for educational purposes only and is not recommended for production deployments.
-
 This sample allows you to build your own integrated large language model (LLM) chat copilot. The sample uses two applications: a front-end web UI app and a back-end API server. 
 
 These quick-start instructions run the sample locally. To deploy the sample to Azure, please view [Deploying Chat Copilot](https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/copilot-chat-app/deploy/README.md).
 
+> **IMPORTANT:** This sample is for educational purposes only and is not recommended for production deployments.
+
 > **IMPORTANT:** Each chat interaction will call Azure OpenAI/OpenAI which will use tokens that you may be billed for.
 
-<img src="images/UI-Sample.png" alt="Chat Copilot UI" width="600"/>
+<img src="images/UI-Sample.png" alt="Chat Copilot UI" width="800"/>
 
 # Prerequisites
 You will need the following to run the sample:
@@ -25,54 +25,40 @@ You will need the following to run the sample:
 2. Configure environment:
 
     ```powershell
-    cd <path to semantic-kernal>\samples\apps\copilot-chat-app
-    .\scripts\Install-Requirements.ps1
+    cd <path to semantic-kernal>\samples\apps\copilot-chat-app\scripts
+    .\Install-Requirements.ps1
     ```
 
-3. Configure Chat Copilot: **TO DO: link/instruction on where to find application id and endpoint, api key too?
+3. Run Chat Copilot locally. This step configures the sample and starts both the backend API and fronend application.
       
     ```powershell
-    .\scripts\Configure.ps1 -AIService {AI_SERVICE} -APIKey {API_KEY} -ClientId {AZURE_APPLICATION_ID} -Endpoint {AZURE_OPENAI_ENDPOINT} 
+    .\ChatCopilot.ps1 -AIService {AI_SERVICE} -APIKey {API_KEY} -ClientId {AZURE_APPLICATION_ID} -Endpoint {AZURE_OPENAI_ENDPOINT} 
     ```
 
     - `AI_SERVICE`: AzureOpenAI or OpenAI
     - `API_KEY`: The API Key for Azure OpenAI or for OpenAI.
     - `AZURE_APPLICATION_ID`: The application ID associated with the Azure Active Directory [application registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
     - `AZURE_OPENAI_ENDPOINT`: The Azure OpenAI resource Endpoint address (e.g., `http://contoso.openai.azure.com`). Omit this parameter and associated `-Endpoint` flag if using OpenAI.
-
-
-4. Run Chat Copilot locally:
-   
-    ```powershell
-    .\scripts\Start.ps1
-    ```
 
 ## Ubuntu/Debian Linux
 1. Open Bash as an administrator.
 2. Configure environment:
   
     ```bash
-    cd <path to semantic-kernel>/samples/apps/copilot-chat-app/
-    ./scripts/Install-Requirements-UbuntuDebian.sh
+    cd <path to semantic-kernel>/samples/apps/copilot-chat-app/scripts/
+    ./Install-Requirements-UbuntuDebian.sh
     ```
 
-3. Configure Chat Copilot: **TO DO: link/instruction on where to find application id and endpoint, api key too?
+3. Run Chat Copilot locally. This step configures the sample and starts both the backend API and frontend application.
 
     ```bash
-    ./scripts/Configure.sh --aiservice {AI_SERVICE} --apikey {API_KEY} --clientid {AZURE_APPLICATION_ID} --endpoint {AZURE_OPENAI_ENDPOINT}
+    ./ChatCopilot.sh --aiservice {AI_SERVICE} --apikey {API_KEY} --clientid {AZURE_APPLICATION_ID} --endpoint {AZURE_OPENAI_ENDPOINT}
     ```
 
     - `AI_SERVICE`: AzureOpenAI or OpenAI
     - `API_KEY`: The API Key for Azure OpenAI or for OpenAI.
     - `AZURE_APPLICATION_ID`: The application ID associated with the Azure Active Directory [application registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
     - `AZURE_OPENAI_ENDPOINT`: The Azure OpenAI resource Endpoint address (e.g., `http://contoso.openai.azure.com`). Omit this parameter and associated `-Endpoint` flag if using OpenAI.
-    
-4. Run Chat Copilot locally:
-   
-    ```bash
-    chmod +x ./scripts/Start.sh
-    ./scripts/Start.sh
-    ```
 
 ## Other Linux/macOS
 All steps must be completed manually at this time.
@@ -82,7 +68,7 @@ All steps must be completed manually at this time.
    - [Node.js](https://nodejs.org/) 14 or newer
    - [Yarn](https://classic.yarnpkg.com/lang/en/docs/install) classic v1.22.19
 
-2. Configure and run Chat Copilot backend locally
+2. Run Chat Copilot backend locally. This step configures and runs the sample's backend API.
 
     - Open a terminal and set your Azure OpenAI or OpenAI key:
     
@@ -113,13 +99,13 @@ All steps must be completed manually at this time.
             - `Completion`, `Embedding`, `Planner`: The models you will use. 
                 > IMPORTANT: For OpenAI, use a '.' in `gpt-3.5-turbo`.  For Azure OpenAI, omit the '.' (e.g. `gpt-35-turbo`).
 
-    -  Run the backend locally:
+    -  Run the backend:
 
         ```bash
         dotnet build && dotnet run
         ```
 
-3. Configure and run Chat Copilot frontend locally
+3. Run Chat Copilot frontend locally. This step configures and runs the sample's frontend application.
 
     - Open a terminal and create an `.env` file from the template:
     
@@ -139,7 +125,7 @@ All steps must be completed manually at this time.
             REACT_APP_AAD_CLIENT_ID={Your Application (client) ID}
             ```
       
-    - Run the frontend locally:
+    - Run the frontend:
 
         ```bash
         yarn install && yarn start

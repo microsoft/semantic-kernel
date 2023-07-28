@@ -75,5 +75,5 @@ sudo apt remove --assume-yes netstandard*;
 echo -e "Package: *\nPin: origin \"packages.microsoft.com\"\nPin-Priority: 1001" | sudo tee /etc/apt/preferences.d/99microsoft-dotnet.pref;
 # Update and install dotnet
 sudo apt update;
-sudo apt install --assume-yes dotnet-sdk-6.0;
+sudo apt install --assume-yes dotnet-sdk-7.0;
 ```

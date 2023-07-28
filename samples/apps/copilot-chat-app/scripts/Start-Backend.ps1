@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Builds and runs the Copilot Chat backend.
+Builds and runs the Chat Copilot backend.
 #>
 
 # Set defaults and constants

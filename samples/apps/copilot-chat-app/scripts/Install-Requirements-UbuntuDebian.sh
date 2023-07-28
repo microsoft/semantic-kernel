@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Installs the requirements for running Copilot Chat.
+# Installs the requirements for running Chat Copilot.
 
 set -e
 
