@@ -233,6 +233,28 @@ public sealed class RedisMemoryStore : IMemoryStore
     #region constants  ================================================================================
 
     /// <summary>
+    /// Vector similarity index algorithm. The default value is "HNSW".
+    /// <see href="https://redis.io/docs/stack/search/reference/vectors/#create-a-vector-field"/>
+    /// </summary>
+    private const Schema.VectorField.VectorAlgo VectorIndexAlgorithm = Schema.VectorField.VectorAlgo.HNSW;
+
+    /// <summary>
+    /// Vector type. Supported types are FLOAT32 and FLOAT64. The default value is "FLOAT32".
+    /// </summary>
+    private const string VectorType = "FLOAT32";
+
+    /// <summary>
+    /// Supported distance metric, one of {L2, IP, COSINE}. The default value is "COSINE".
+    /// </summary>
+    private const string VectorDistanceMetric = "COSINE";
+
+    /// <summary>
+    /// Query dialect. To use a vector similarity query, specify DIALECT 2 or higher. The default value is "2".
+    /// <see href="https://redis.io/docs/stack/search/reference/vectors/#querying-vector-fields"/>
+    /// </summary>
+    private const int QueryDialect = 2;
+
+    /// <summary>
     /// Message when index does not exist.
     /// <see href="https://github.com/RediSearch/RediSearch/blob/master/src/info_command.c#L97"/>
     /// </summary>
@@ -308,6 +330,10 @@ public sealed class RedisMemoryStore : IMemoryStore
 
         return 1 - vectorScore;
     }
+
+    #endregion
+
+    #region enums ================================================================================
 
     #endregion
 }
