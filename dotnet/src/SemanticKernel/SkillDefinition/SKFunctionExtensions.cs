@@ -99,7 +99,7 @@ public static class SKFunctionExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
-        string input,
+        string? input = null,
         IReadOnlyDictionary<string, string>? variables = null,
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
@@ -116,32 +116,7 @@ public static class SKFunctionExtensions
             }
         }
 
-        return function.InvokeAsync(contextVariables, skills, culture, settings, logger, cancellationToken);
-    }
-
-    /// <summary>
-    /// Execute a function.
-    /// </summary>
-    /// <param name="function">Function to execute</param>
-    /// <param name="variables">Variables other than input</param>
-    /// <param name="skills">Skills that the function can access</param>
-    /// <param name="culture">Culture to use for the function execution</param>
-    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
-    /// <param name="logger">Logger to use for the function execution</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The result of the function execution</returns>
-    public static Task<SKContext> InvokeAsync(this ISKFunction function,
-        ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null,
-        CultureInfo? culture = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        var context = new SKContext(
-            variables: variables,
-            skills: skills,
-            logger: logger)
+        var context = new SKContext(contextVariables, skills, logger)
         {
             Culture = culture!
         };
