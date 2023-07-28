@@ -65,12 +65,12 @@ public class KernelTests
         SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
 
         // Assert - 3 functions, var name is not case sensitive
-        Assert.Equal("Nice fun", result["jk.joker"]);
-        Assert.Equal("Nice fun", result["JK.JOKER"]);
-        Assert.Equal("Just say hello", result["mySk.sayhello"]);
-        Assert.Equal("Just say hello", result["mySk.SayHello"]);
-        Assert.Equal("Export info.", result["mySk.ReadSkillCollectionAsync"]);
-        Assert.Equal("Export info.", result["mysk.readskillcollectionasync"]);
+        Assert.Equal("Nice fun", result.Variables["jk.joker"]);
+        Assert.Equal("Nice fun", result.Variables["JK.JOKER"]);
+        Assert.Equal("Just say hello", result.Variables["mySk.sayhello"]);
+        Assert.Equal("Just say hello", result.Variables["mySk.SayHello"]);
+        Assert.Equal("Export info.", result.Variables["mySk.ReadSkillCollectionAsync"]);
+        Assert.Equal("Export info.", result.Variables["mysk.readskillcollectionasync"]);
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public class KernelTests
             {
                 foreach (FunctionView f in list.Value)
                 {
-                    context[$"{list.Key}.{f.Name}"] = f.Description;
+                    context.Variables[$"{list.Key}.{f.Name}"] = f.Description;
                 }
             }
 
@@ -190,7 +190,7 @@ public class KernelTests
             {
                 foreach (FunctionView f in list.Value)
                 {
-                    context[$"{list.Key}.{f.Name}"] = f.Description;
+                    context.Variables[$"{list.Key}.{f.Name}"] = f.Description;
                 }
             }
 
