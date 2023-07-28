@@ -148,4 +148,14 @@ public static class SKFunctionExtensions
 
         return function.InvokeAsync(context, settings, cancellationToken);
     }
+
+    /// <summary>
+    /// Returns decorated instance of <see cref="ISKFunction"/> with enabled instrumentation.
+    /// </summary>
+    /// <param name="function">Instance of <see cref="ISKFunction"/> to decorate.</param>
+    /// <param name="logger">Optional logger.</param>
+    public static ISKFunction WithInstrumentation(this ISKFunction function, ILogger? logger = null)
+    {
+        return new InstrumentedSKFunction(function, logger);
+    }
 }
