@@ -10,6 +10,7 @@ using Azure.Core.Pipeline;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -36,12 +37,14 @@ public static class Example52_ApimAuth
         // - Custom HttpClient with subscription key header
         // - Diagnostics to log error response headers from APIM to aid problem determination
         // - Authentication using BearerTokenCredential retrieved via interactive browser login
-        var clientOptions = new OpenAIClientOptions()
+        var clientOptions = new OpenAIClientOptions
         {
             Transport = new HttpClientTransport(httpClient),
             Diagnostics =
             {
                 LoggedHeaderNames = { "ErrorSource", "ErrorReason", "ErrorMessage", "ErrorScope", "ErrorSection", "ErrorStatusCode" },
+                ApplicationId = Telemetry.HttpUserAgent,
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
             }
         };
         var openAIClient = new OpenAIClient(apimUri, new BearerTokenCredential(accessToken), clientOptions);

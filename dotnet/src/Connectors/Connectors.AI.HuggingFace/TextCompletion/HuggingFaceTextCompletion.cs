@@ -20,7 +20,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 public sealed class HuggingFaceTextCompletion : ITextCompletion
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
-    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
     private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";
 
     private readonly string _model;
@@ -98,7 +97,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
             using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
 
-            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
+            httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
             if (!string.IsNullOrEmpty(this._apiKey))
             {
                 httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");

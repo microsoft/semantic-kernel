@@ -208,9 +208,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Act
         await sut.RunAsync(operation, arguments);
 
-        // Assert
+        // Assert - 2 headers: 1 from the test and the useragent added internally
         Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
-        Assert.Single(this._httpMessageHandlerStub.RequestHeaders);
+        Assert.Equal(2, this._httpMessageHandlerStub.RequestHeaders.Count());
 
         Assert.Contains(this._httpMessageHandlerStub.RequestHeaders, h => h.Key == "fake-header" && h.Value.Contains("fake-header-value"));
     }

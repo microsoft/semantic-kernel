@@ -55,7 +55,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         var values = this.messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
 
         var value = values.SingleOrDefault();
-        Assert.Equal("Microsoft-Semantic-Kernel", value);
+        Assert.Equal("Semantic-Kernel", value);
     }
 
     [Fact]
