@@ -19,7 +19,7 @@ public class KernelConfigTests
     {
         var kernelConfig = new KernelConfig();
         this._kernel = new Mock<IKernel>();
-        this._kernel.SetupGet(x => x.Log).Returns(NullLogger.Instance);
+        this._kernel.SetupGet(x => x.Logger).Returns(NullLogger.Instance);
         this._kernel.SetupGet(x => x.Config).Returns(kernelConfig);
     }
 

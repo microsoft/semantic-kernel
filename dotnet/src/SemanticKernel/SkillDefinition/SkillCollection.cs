@@ -23,9 +23,9 @@ public class SkillCollection : ISkillCollection
 {
     internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
-    public SkillCollection(ILogger? log = null)
+    public SkillCollection(ILogger? logger = null)
     {
-        this._log = log ?? NullLogger.Instance;
+        this._logger = logger ?? NullLogger.Instance;
 
         // Important: names are case insensitive
         this._skillCollection = new(StringComparer.OrdinalIgnoreCase);
@@ -105,13 +105,13 @@ public class SkillCollection : ISkillCollection
     [DoesNotReturn]
     private void ThrowFunctionNotAvailable(string skillName, string functionName)
     {
-        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        this._logger.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
         throw new KernelException(
             KernelException.ErrorCodes.FunctionNotAvailable,
             $"Function not available {skillName}.{functionName}");
     }
 
-    private readonly ILogger _log;
+    private readonly ILogger _logger;
 
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ISKFunction>> _skillCollection;
 
