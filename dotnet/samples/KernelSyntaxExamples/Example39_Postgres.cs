@@ -23,7 +23,7 @@ public static class Example39_Postgres
         PostgresMemoryStore memoryStore = new(dataSource, vectorSize: 1536, schema: "public");
 
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             .WithOpenAITextCompletionService(
                 modelId: TestConfiguration.OpenAI.ModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)

@@ -164,9 +164,9 @@ public static class Example42_KernelBuilder
     // Example of a basic custom retry handler
     public class RetryThreeTimesFactory : IDelegatingHandlerFactory
     {
-        public DelegatingHandler Create(ILogger? log)
+        public DelegatingHandler Create(ILogger? logger)
         {
-            return new RetryThreeTimes(log);
+            return new RetryThreeTimes(logger);
         }
     }
 
@@ -174,9 +174,9 @@ public static class Example42_KernelBuilder
     {
         private readonly AsyncRetryPolicy _policy;
 
-        public RetryThreeTimes(ILogger? log = null)
+        public RetryThreeTimes(ILogger? logger = null)
         {
-            this._policy = GetPolicy(log ?? NullLogger.Instance);
+            this._policy = GetPolicy(logger ?? NullLogger.Instance);
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -188,7 +188,7 @@ public static class Example42_KernelBuilder
             });
         }
 
-        private static AsyncRetryPolicy GetPolicy(ILogger log)
+        private static AsyncRetryPolicy GetPolicy(ILogger logger)
         {
             return Policy
                 .Handle<AIException>(ex => ex.ErrorCode == AIException.ErrorCodes.Throttling)
@@ -198,7 +198,7 @@ public static class Example42_KernelBuilder
                         TimeSpan.FromSeconds(4),
                         TimeSpan.FromSeconds(8)
                     },
-                    (ex, timespan, retryCount, _) => log.LogWarning(ex,
+                    (ex, timespan, retryCount, _) => logger.LogWarning(ex,
                         "Error executing action [attempt {0} of 3], pausing {1}ms",
                         retryCount, timespan.TotalMilliseconds));
         }
