@@ -305,22 +305,6 @@ public sealed class Plan : ISKFunction
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(
-        string? input = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        if (input != null) { this.State.Update(input); }
-
-        SKContext context = new(
-            this.State,
-            logger: logger);
-
-        return this.InvokeAsync(context, settings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
