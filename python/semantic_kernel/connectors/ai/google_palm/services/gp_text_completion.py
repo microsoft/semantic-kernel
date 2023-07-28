@@ -97,6 +97,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             "The max tokens must be greater than 0, "
             f"but was {request_settings.max_tokens}",
         )
+        print("check prompt", prompt)
         try:
             palm.configure(api_key=self._api_key)
         except Exception as ex:

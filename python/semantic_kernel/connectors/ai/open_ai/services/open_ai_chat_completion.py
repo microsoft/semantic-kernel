@@ -193,6 +193,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         formatted_messages = [
             {"role": role, "content": message} for role, message in messages
         ]
+        print(messages)
 
         try:
             response: Any = await openai.ChatCompletion.acreate(

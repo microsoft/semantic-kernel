@@ -36,9 +36,8 @@ async def chat_request_example(api_key):
     return context_vars
 
 async def main() -> None:
-    kernel = sk.Kernel()
     api_key = sk.google_palm_settings_from_dot_env()
-    chat = await chat_request_example(kernel, api_key)
+    chat = await chat_request_example(api_key)
     print(chat["chat_history"])
     return
 

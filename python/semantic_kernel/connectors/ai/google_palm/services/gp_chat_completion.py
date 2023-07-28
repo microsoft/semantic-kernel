@@ -12,7 +12,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 
-class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
+class GooglePalmChatCompletion(ChatCompletionClientBase):
     _model_id: str
     _api_key: str
     _message_history: ChatResponse
@@ -104,8 +104,23 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 "Google PaLM service failed to configure. Invalid API key provided.",
                 ex,
             )
+        #print(messages)
+        """
+        if self._message_history is None: # If conversation hasn't started yet, check if we need to use context
+            if messages[0][0] == "system" and len(messages) == 1: # If using skill without memory
+                context = messages[0][1] 
+            elif len(messages) > 1 and messages[1][0] != "system": # If using memory without skill
+                context = ""
+                for role, message in messages:
+                    context += role + ": " + message + "\n"    
+            elif len(messages) > 1 and messages[1][0] == "system": # If using memory with skill  
+                context = ""
+                context += "user: " + messages[0][1] + "\n"
+                for role, message in messages[1:]:
+                    context += role + ": " + message + "\n" 
+        """
         if messages[0][0] == "system":
-            context = messages[0][1]            
+            context = messages[0][1]
         try:
             if self._message_history is None:
                 response = palm.chat(
@@ -122,7 +137,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 response = self._message_history.reply(
                     messages[-1][1],
                 )
-            print("check", response.messages)
+            #print("check", response.messages)
             self._message_history = response
         except Exception as ex:
             raise AIException(
