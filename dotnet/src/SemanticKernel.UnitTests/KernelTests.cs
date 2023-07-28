@@ -9,9 +9,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
+using static Microsoft.SemanticKernel.SemanticFunctions.PromptConfig;
 
 // ReSharper disable StringLiteralTypo
 
@@ -150,6 +152,67 @@ public class KernelTests
         kernel.ImportSkill(new MySkill());
         kernel.ImportSkill(new MySkill());
         kernel.ImportSkill(new MySkill());
+    }
+
+    [Fact]
+    public async Task ItUsesDefaultTextCompletionAsync()
+    {
+        // Arrange
+        var service = new Mock<ITextCompletion>();
+        var kernel = Kernel.Builder
+            .WithDefaultAIService<ITextCompletion>(service.Object)
+            .Build();
+
+        var promptConfig = new PromptConfig()
+        {
+            Description = "Say hello in German",
+            InputParameters = new(),
+            PluginName = "SpeakGermanPlugin",
+            FunctionName = "SayHello",
+            Template = "Say hello in German",
+        };
+        var function = kernel.CreateSemanticFunction(promptConfig);
+
+        // Act
+        SKContext result = await kernel.RunAsync(function);
+
+        // Assert
+        Assert.True(function is SKFunction);
+        Assert.False(((SKFunction)function).HasAIService());
+        service.Verify(s => s.GetCompletionsAsync("Say hello in German", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+    }
+
+    [Fact]
+    public async Task ItUsesPromptRequestSettingsAsCompleteRequestSettingsAsync()
+    {
+        // Arrange
+        var service = new Mock<ITextCompletion>();
+        var kernel = Kernel.Builder
+            .WithDefaultAIService<ITextCompletion>(service.Object)
+            .Build();
+
+        var promptRequestSettings = new PromptRequestSettings();
+        promptRequestSettings.Properties["temperature"] = 0.9;
+        promptRequestSettings.Properties["max_tokens"] = 1024;
+
+        var promptConfig = new PromptConfig()
+        {
+            Description = "Say hello in German",
+            InputParameters = new(),
+            PluginName = "SpeakGermanPlugin",
+            FunctionName = "SayHello",
+            Template = "Say hello in German",
+            RequestSettings = new List<PromptRequestSettings>() { promptRequestSettings },
+        };
+
+        // Act
+        var function = kernel.CreateSemanticFunction(promptConfig);
+        SKContext result = await kernel.RunAsync(function);
+
+        // Assert
+        Assert.True(function is SKFunction);
+        Assert.False(((SKFunction)function).HasAIService());
+        service.Verify(s => s.GetCompletionsAsync("Say hello in German", It.Is<CompleteRequestSettings>(crs => crs.Temperature == 0.9 && crs.MaxTokens == 1024), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
     public class MySkill
