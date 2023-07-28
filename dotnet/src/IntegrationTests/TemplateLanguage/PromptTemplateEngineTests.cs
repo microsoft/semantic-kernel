@@ -13,7 +13,6 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.TemplateLanguage;
 
-#pragma warning disable VSTHRD103 // ok to use WriteLine synchronously
 #pragma warning disable CA1849 // ok to use WriteLine synchronously
 
 public sealed class PromptTemplateEngineTests : IDisposable
@@ -212,5 +211,4 @@ public sealed class PromptTemplateEngineTests : IDisposable
     #endregion
 }
 
-#pragma warning restore VSTHRD103
 #pragma warning restore CA1849

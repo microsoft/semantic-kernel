@@ -487,10 +487,9 @@ public sealed class PlanTests
             .Returns(() => Task.FromResult(returnContext));
 
         var plan = new Plan(mockFunction.Object);
-        plan.State.Set("input", "Cleopatra");
 
         // Act
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync(input: "Cleopatra");
 
         // Assert
         Assert.NotNull(result);
@@ -519,11 +518,10 @@ public sealed class PlanTests
         planStep.Parameters.Set("type", string.Empty);
         var plan = new Plan(string.Empty);
         plan.AddSteps(planStep);
-        plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
         // Act
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync(input: "Cleopatra");
 
         // Assert
         Assert.NotNull(result);
@@ -549,11 +547,10 @@ public sealed class PlanTests
             .Returns(() => Task.FromResult(returnContext));
 
         var plan = new Plan(mockFunction.Object);
-        plan.State.Set("input", "Cleopatra");
         plan.State.Set("type", "poem");
 
         // Act
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync(input: "Cleopatra");
 
         // Assert
         Assert.NotNull(result);

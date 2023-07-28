@@ -312,6 +312,7 @@ public sealed class Plan : ISKFunction
     {
         if (this.Function is not null)
         {
+            AddVariablesToContext(this.State, context);
             var result = await this.InstrumentedInvokeAsync(this.Function, context, settings, cancellationToken).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
@@ -326,12 +327,8 @@ public sealed class Plan : ISKFunction
             // loop through steps and execute until completion
             while (this.HasNextStep)
             {
-                var functionContext = context;
-
-                AddVariablesToContext(this.State, functionContext);
-
-                await this.InvokeNextStepAsync(functionContext, cancellationToken).ConfigureAwait(false);
-
+                AddVariablesToContext(this.State, context);
+                await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
                 this.UpdateContextWithOutputs(context);
             }
         }

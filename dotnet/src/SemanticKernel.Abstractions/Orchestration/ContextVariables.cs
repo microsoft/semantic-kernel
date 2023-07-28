@@ -26,10 +26,26 @@ public sealed class ContextVariables : IDictionary<string, string>
     /// <summary>
     /// Constructor for context variables.
     /// </summary>
-    /// <param name="value">Optional value for the main variable of the context including trust information.</param>
-    public ContextVariables(string? value = null)
+    /// <param name="input">Optional value for the main variable of the context including trust information.</param>
+    /// <param name="args">Optional list of key-value pairs to initialize the context with.</param>
+    public ContextVariables(
+        string? input = null,
+        IEnumerable<KeyValuePair<string, string>>? args = null)
     {
-        this._variables[MainKey] = value ?? string.Empty;
+        this.Set(MainKey, input ?? string.Empty);
+
+        if (args != null)
+        {
+            this.SetAll(args);
+        }
+    }
+
+    internal void SetAll(IEnumerable<KeyValuePair<string, string>> values)
+    {
+        foreach (var value in values)
+        {
+            this.Set(value.Key, value.Value);
+        }
     }
 
     /// <summary>

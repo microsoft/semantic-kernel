@@ -83,7 +83,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
         // Act
         var plan = planner.CreatePlan(prompt);
-        var result = await plan.InvokeAsync();
+        var result = await kernel.RunAsync(plan);
 
         // Assert
         // Loose assertion -- we just want to make sure that the plan was executed and that the result contains the name of the current president.

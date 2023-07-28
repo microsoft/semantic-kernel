@@ -27,7 +27,7 @@ public static class Example20_HuggingFace
 
         var questionAnswerFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
-        var result = await questionAnswerFunction.InvokeAsync("What is New York?");
+        var result = await kernel.RunAsync(questionAnswerFunction, input: "What is New York?");
 
         Console.WriteLine(result);
 
