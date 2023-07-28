@@ -8,26 +8,13 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
 /// </summary>
 public enum VectorIndexAlgorithms
 {
+    /// <summary>
+    /// Indexing by brute-force
+    /// </summary>
     FLAT,
+
+    /// <summary>
+    /// Indexing by the Hierarchical Navigable Small World algorithm
+    /// </summary>
     HNSW,
-}
-
-/// <summary>
-/// Vector type. Supported types are {FLOAT32, FLOAT64}. The default value is "FLOAT32".
-/// </summary>
-#pragma warning disable CA1720
-public enum VectorTypes
-{
-    FLOAT32,
-    FLOAT64,
-}
-
-/// <summary>
-/// Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".
-/// </summary>
-public enum VectorDistanceMetrics
-{
-    L2,
-    IP,
-    COSINE,
 }
