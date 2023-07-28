@@ -23,7 +23,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
 /// <remarks>The embedded data is saved to the Redis server database specified in the constructor.
 /// Similarity search capability is provided through the RediSearch module. Use RediSearch's "Index" to implement "Collection".
 /// </remarks>
-#pragma warning disable CA1720
 public sealed class RedisMemoryStore : IMemoryStore
 {
     /// <summary>
@@ -44,7 +43,11 @@ public sealed class RedisMemoryStore : IMemoryStore
         this._database = database;
         this._vectorSize = vectorSize;
         this._ft = database.FT();
-        this._vectorIndexAlgorithm = vectorIndexAlgorithm == VectorIndexAlgorithms.HNSW ? Schema.VectorField.VectorAlgo.HNSW : Schema.VectorField.VectorAlgo.FLAT;
+        // Default to HNSW if parsing error occurs
+        if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
+        {
+            this._vectorIndexAlgorithm = Schema.VectorField.VectorAlgo.HNSW;
+        }
         this._vectorType = vectorType.ToString();
         this._vectorDistanceMetric = vectorDistanceMetric.ToString();
         this._queryDialect = queryDialect;
@@ -68,7 +71,12 @@ public sealed class RedisMemoryStore : IMemoryStore
         this._database = ConnectionMultiplexer.Connect(connectionString).GetDatabase();
         this._vectorSize = vectorSize;
         this._ft = this._database.FT();
-        this._vectorIndexAlgorithm = vectorIndexAlgorithm == VectorIndexAlgorithms.HNSW ? Schema.VectorField.VectorAlgo.HNSW : Schema.VectorField.VectorAlgo.FLAT;
+        // Default to HNSW if parsing error occurs
+        if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
+        {
+            this._vectorIndexAlgorithm = Schema.VectorField.VectorAlgo.HNSW;
+        }
+        Console.WriteLine(this._vectorIndexAlgorithm.ToString());
         this._vectorType = vectorType.ToString();
         this._vectorDistanceMetric = vectorDistanceMetric.ToString();
         this._queryDialect = queryDialect;
@@ -338,23 +346,4 @@ public sealed class RedisMemoryStore : IMemoryStore
 
     #endregion
 
-    #region enums ================================================================================
-
-    public enum VectorIndexAlgorithms
-    {
-        FLAT,
-        HNSW,
-    }
-
-    public enum VectorTypes
-    {
-        FLOAT32, FLOAT64
-    }
-
-    public enum VectorDistanceMetrics
-    {
-        L2, IP, COSINE
-    }
-
-    #endregion
 }
