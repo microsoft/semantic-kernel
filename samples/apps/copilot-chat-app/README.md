@@ -26,10 +26,10 @@ You will need the following to run the sample:
 
     ```powershell
     cd <path to semantic-kernal>\samples\apps\copilot-chat-app\scripts
-    .\Install-Requirements.ps1
+    .\Install.ps1
     ```
 
-3. Run Chat Copilot locally. This step configures the sample and starts both the backend API and fronend application.
+3. Run Chat Copilot locally. This step configures the sample and starts both the backend API and frontend application.
       
     ```powershell
     .\ChatCopilot.ps1 -AIService {AI_SERVICE} -APIKey {API_KEY} -ClientId {AZURE_APPLICATION_ID} -Endpoint {AZURE_OPENAI_ENDPOINT} 
@@ -46,7 +46,7 @@ You will need the following to run the sample:
   
     ```bash
     cd <path to semantic-kernel>/samples/apps/copilot-chat-app/scripts/
-    ./Install-Requirements-UbuntuDebian.sh
+    ./Install.sh
     ```
 
 3. Run Chat Copilot locally. This step configures the sample and starts both the backend API and frontend application.
