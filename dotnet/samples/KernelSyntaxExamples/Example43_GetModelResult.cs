@@ -28,16 +28,16 @@ public static class Example43_GetModelResult
         const string FunctionDefinition = @"Hi, give me 5 book suggestions about: {{$input}}
 ";
 
-        var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition);
+        var myFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var textResult = await excuseFunction.InvokeAsync("Sci-fi", new CompleteRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+        var textResult = await myFunction.InvokeAsync("Sci-fi", new CompleteRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
         Console.WriteLine(textResult);
         Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAITextResult()).AsJson());
         Console.WriteLine();
 
         // Using the Kernel RunAsync
-        textResult = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
+        textResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
         Console.WriteLine(textResult);
         Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAITextResult()?.Usage.AsJson());
         Console.WriteLine();
