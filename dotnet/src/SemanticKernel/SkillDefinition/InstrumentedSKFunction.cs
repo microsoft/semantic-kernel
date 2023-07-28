@@ -158,7 +158,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
                 this.SkillName, this.Name, "Failed");
 
             this._logger.LogError(result.LastException, "{SkillName}.{FunctionName}: Function execution exception details: {Message}",
-                this.SkillName, this.Name, result.LastErrorDescription);
+                this.SkillName, this.Name, result.LastException?.Message);
 
             this._executionFailureCounter.Add(1);
         }
