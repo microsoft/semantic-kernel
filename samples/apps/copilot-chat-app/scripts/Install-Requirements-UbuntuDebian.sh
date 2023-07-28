@@ -19,7 +19,7 @@ curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 # Install the requirements
 sudo apt update;
 sudo apt install yarn -y;
-sudo apt install dotnet-sdk-6.0 -y;
+sudo apt install dotnet-sdk-7.0 -y;
 sudo apt install nodejs -y;
 
 echo ""

@@ -26,7 +26,7 @@ if (!$ChocoInstalled)
 }
 
 # Ensure required packages are installed
-$Packages = 'dotnet-6.0-sdk', 'nodejs', 'yarn'
+$Packages = 'dotnet-7.0-sdk', 'nodejs', 'yarn'
 foreach ($PackageName in $Packages)
 {
     choco install $PackageName -y

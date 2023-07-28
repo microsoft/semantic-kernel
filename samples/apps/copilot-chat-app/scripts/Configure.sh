@@ -3,32 +3,32 @@
 
 set -e
 
-# Defaults
-COMPLETION_MODEL="gpt-3.5-turbo"
-EMBEDDING_MODEL="text-embedding-ada-002"
-PLANNER_MODEL="gpt-3.5-turbo"
-TENANT_ID="common"
+# Set defaults and constants
+SCRIPT_DIRECTORY="$(dirname $0)"
+. $SCRIPT_DIRECTORY/.env
 
 # Argument parsing
 POSITIONAL_ARGS=()
 
-while [[ $# -gt 0 ]]; do
+while [[ $# -gt 0 ]]; do 
   case $1 in
-    --openai)
-      OPENAI=YES
-      shift # past argument
-      ;;
-    --azureopenai)
-      AZURE_OPENAI=YES
+    --aiservice) # Required argument
+      AI_SERVICE="$2"
+      shift
       shift
       ;;
-    -e|--endpoint)
-      ENDPOINT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    -a|--apikey)
+    -a|--apikey) # Required argument
       API_KEY="$2"
+      shift
+      shift
+      ;;
+    -c|--clientid) # Required argument
+      CLIENT_ID="$2"
+      shift
+      shift
+      ;;
+    -e|--endpoint) # Required argument for Azure OpenAI
+      ENDPOINT="$2"
       shift
       shift
       ;;
@@ -44,11 +44,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     --planner)
       PLANNER_MODEL="$2"
-      shift
-      shift
-      ;;
-    -c|--clientid)
-      CLIENT_ID="$2"
       shift
       shift
       ;;
@@ -70,17 +65,45 @@ done
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-SCRIPT_DIRECTORY="$(dirname $0)"
-
 # Validate arguments
+if [ -z "$AI_SERVICE" -o \( "$AI_SERVICE" != "$ENV_OPEN_AI" -a "$AI_SERVICE" != "$ENV_AZURE_OPEN_AI" \) ]; then
+  echo "Please specify an AI service (AzureOpenAI or OpenAI) for --aiservice. "; exit 1;
+fi
 if [ -z "$API_KEY" ]; then
   echo "Please specify an API key with -a or --apikey."; exit 1;
 fi
 if [ -z "$CLIENT_ID" ]; then
   echo "Please specify a client (application) ID with -c or --clientid."; exit 1;
 fi
-if [ "$AZURE_OPENAI" = "YES" ] && [ -z "$ENDPOINT" ]; then
-  echo "When using --azureopenti, please specify an endpoint with -e or --endpoint."; exit 1;
+if [ "$AI_SERVICE" = "$ENV_AZURE_OPEN_AI" ] && [ -z "$ENDPOINT" ]; then
+  echo "When using `--aiservice AzureOpenAI`, please specify an endpoint with -e or --endpoint."; exit 1;
+fi
+
+# Set remaining values from .env if not passed as argument
+if [ "$AI_SERVICE" = "$ENV_OPEN_AI" ]; then
+  if [ -z "$COMPLETION_MODEL" ]; then
+    COMPLETION_MODEL="$ENV_COMPLETION_MODEL_OPEN_AI"
+  fi
+  if [ -z "$PLANNER_MODEL" ]; then
+    PLANNER_MODEL="$ENV_PLANNER_MODEL_OPEN_AI"
+  fi
+  # TO DO: Validate model values if set by command line.
+else # elif [ "$AI_SERVICE" = "$ENV_AZURE_OPEN_AI" ]; then
+    if [ -z "$COMPLETION_MODEL" ]; then
+    COMPLETION_MODEL="$ENV_COMPLETION_MODEL_AZURE_OPEN_AI"
+  fi
+  if [ -z "$PLANNER_MODEL" ]; then
+    PLANNER_MODEL="$ENV_PLANNER_MODEL_AZURE_OPEN_AI"
+  fi
+  # TO DO: Validate model values if set by command line.
+fi
+
+if [ -z "$EMBEDDING_MODEL" ]; then
+  COMPLETION_MODEL="$ENV_EMBEDDING_MODEL"
+  # TO DO: Validate model values if set by command line.
+fi
+if [ -z "$TENANT_ID" ]; then
+  TENANT_ID="$ENV_TENANT_ID"
 fi
 
 echo "#########################"
@@ -103,29 +126,17 @@ case "$OSTYPE" in
     if [ $? -ne 0 ]; then exit 1; fi ;;
 esac
 
-if [ "$OPENAI" = "YES" ]; then
-  AI_SERVICE_TYPE="OpenAI"
-elif [ "$AZURE_OPENAI" = "YES" ]; then
-  # Azure OpenAI has a different model name for gpt-3.5-turbo (no decimal).
-  AI_SERVICE_TYPE="AzureOpenAI"
-  COMPLETION_MODEL="${COMPLETION_MODEL/3.5/"35"}"
-  EMBEDDING_MODEL="${EMBEDDING_MODEL/3.5/"35"}"
-  PLANNER_MODEL="${PLANNER_MODEL/3.5/"35"}"
-else 
-    echo "Please specify either --openai or --azureopenai."
-    exit 1
-fi
-
-APPSETTINGS_JSON="{ \"AIService\": { \"Type\": \"${AI_SERVICE_TYPE}\", \"Endpoint\": \"${ENDPOINT}\", \"Models\": { \"Completion\": \"${COMPLETION_MODEL}\", \"Embedding\": \"${EMBEDDING_MODEL}\", \"Planner\": \"${PLANNER_MODEL}\" } } }"
 WEBAPI_PROJECT_PATH="${SCRIPT_DIRECTORY}/../webapi"
-APPSETTINGS_OVERRIDES_FILEPATH="${WEBAPI_PROJECT_PATH}/appsettings.Development.json"
 
-echo "Setting 'AIService:Key' user secret for $AI_SERVICE_TYPE..."
+echo "Setting 'AIService:Key' user secret for $AI_SERVICE..."
 dotnet user-secrets set --project $WEBAPI_PROJECT_PATH  AIService:Key $API_KEY
 if [ $? -ne 0 ]; then exit 1; fi
 
-echo "Setting up 'appsettings.Development.json' for $AI_SERVICE_TYPE..."
-echo $APPSETTINGS_JSON > $APPSETTINGS_OVERRIDES_FILEPATH
+APPSETTINGS_OVERRIDES="{ \"AIService\": { \"Type\": \"${AI_SERVICE}\", \"Endpoint\": \"${ENDPOINT}\", \"Models\": { \"Completion\": \"${COMPLETION_MODEL}\", \"Embedding\": \"${EMBEDDING_MODEL}\", \"Planner\": \"${PLANNER_MODEL}\" } } }"
+APPSETTINGS_OVERRIDES_FILEPATH="${WEBAPI_PROJECT_PATH}/appsettings.${ENV_ASPNETCORE}.json"
+
+echo "Setting up 'appsettings.${ENV_ASPNETCORE}.json' for $AI_SERVICE..."
+echo $APPSETTINGS_OVERRIDES > $APPSETTINGS_OVERRIDES_FILEPATH
 
 echo "($APPSETTINGS_OVERRIDES_FILEPATH)"
 echo "========"
@@ -137,18 +148,17 @@ echo "##########################"
 echo "# Frontend configuration #"
 echo "##########################"
 
-ENV_FILEPATH="${SCRIPT_DIRECTORY}/../webapp/.env"
+WEBAPP_PROJECT_PATH="${SCRIPT_DIRECTORY}/../webapp"
+WEBAPP_ENV_FILEPATH="${WEBAPP_PROJECT_PATH}/.env"
 
-echo "Setting up '.env'..."
-echo "REACT_APP_BACKEND_URI=https://localhost:40443/" > $ENV_FILEPATH
-echo "REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/$TENANT_ID" >> $ENV_FILEPATH
-echo "REACT_APP_AAD_CLIENT_ID=$CLIENT_ID" >> $ENV_FILEPATH
-echo "# Web Service API key (not required when running locally)" >> $ENV_FILEPATH
-echo  "REACT_APP_SK_API_KEY=" >> $ENV_FILEPATH
+echo "Setting up '.env' for webapp..."
+echo "REACT_APP_BACKEND_URI=https://localhost:40443/" > $WEBAPP_ENV_FILEPATH
+echo "REACT_APP_AAD_AUTHORITY=https://login.microsoftonline.com/$ENV_TENANT_ID" >> $WEBAPP_ENV_FILEPATH
+echo "REACT_APP_AAD_CLIENT_ID=$CLIENT_ID" >> $WEBAPP_ENV_FILEPATH
 
-echo "($ENV_FILEPATH)"
+echo "($WEBAPP_ENV_FILEPATH)"
 echo "========"
-cat $ENV_FILEPATH
+cat $WEBAPP_ENV_FILEPATH
 echo "========"
 
 echo "Done!"
