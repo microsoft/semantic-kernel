@@ -334,7 +334,7 @@ public sealed class PlanTests
         var returnContext = new MockSKContext();
         returnContext.Variables.Update(stepOutput);
 
-        returnContext.Fail("Error description", new ArgumentException("Error message"));
+        returnContext.SetException(new ArgumentException("Error message"));
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -362,7 +362,7 @@ public sealed class PlanTests
         var skills = new Mock<ISkillCollection>();
         var returnContext = new MockSKContext();
 
-        returnContext.Fail("Error description", new ArgumentException("Error message"));
+        returnContext.SetException(new ArgumentException("Error message"));
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))

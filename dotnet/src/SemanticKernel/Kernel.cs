@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,10 +35,6 @@ public sealed class Kernel : IKernel, IDisposable
 {
     /// <inheritdoc/>
     public KernelConfig Config { get; }
-
-    /// <inheritdoc/>
-    [Obsolete("Use Logger instead. This will be removed in a future release.")]
-    public ILogger Log => this.Logger;
 
     /// <inheritdoc/>
     public ILogger Logger { get; }
@@ -232,17 +229,6 @@ public sealed class Kernel : IKernel, IDisposable
             logger: this.Logger);
     }
 
-    /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for operations in context.</param>
-    /// <returns>SK context</returns>
-    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
-    public SKContext CreateNewContext(CancellationToken cancellationToken)
-    {
-        return this.CreateNewContext();
-    }
-
     /// <inheritdoc/>
     public T GetService<T>(string? name = null) where T : IAIService
     {
@@ -338,6 +324,27 @@ public sealed class Kernel : IKernel, IDisposable
         logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
+    }
+
+    #endregion
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Use Logger instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ILogger Log => this.Logger;
+
+    /// <summary>
+    /// Create a new instance of a context, linked to the kernel internal state.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for operations in context.</param>
+    /// <returns>SK context</returns>
+    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public SKContext CreateNewContext(CancellationToken cancellationToken)
+    {
+        return this.CreateNewContext();
     }
 
     #endregion

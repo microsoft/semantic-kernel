@@ -84,7 +84,7 @@ public abstract class SKContext
     /// <summary>
     /// Whether an error occurred while executing functions in the pipeline.
     /// </summary>
-    public abstract bool ErrorOccurred { get; }
+    public bool ErrorOccurred => this.LastException != null;
 
     /// <summary>
     /// When an error occurs, this is the most recent exception.
@@ -110,16 +110,14 @@ public abstract class SKContext
     /// </summary>
     [Obsolete("Use SKContext.Logger instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ILogger Log
-        => this.Logger;
+    public ILogger Log => this.Logger;
 
     /// <summary>
     /// The token to monitor for cancellation requests.
     /// </summary>
     [Obsolete("Add a CancellationToken param to SKFunction method signatures instead of retrieving it from SKContext.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public CancellationToken CancellationToken
-        => default;
+    public CancellationToken CancellationToken => default;
 
     /// <summary>
     /// Semantic memory

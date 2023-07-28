@@ -21,7 +21,6 @@ internal sealed class MockSKContext : SKContext
     public override IReadOnlySkillCollection Skills { get; }
     public override ILogger Logger { get; }
     public override IReadOnlyList<ModelResult> ModelResults { get; set; } = new List<ModelResult>();
-    public override bool ErrorOccurred => this._exception != null;
     public override Exception? LastException => this._exception;
 
     public override MockSKContext Clone()

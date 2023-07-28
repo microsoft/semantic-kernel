@@ -83,7 +83,7 @@ Question: {{ $input }}
 
         if (answer.ErrorOccurred)
         {
-            throw new InvalidOperationException("error in calculator for input " + input + " " + answer.LastException!.Message);
+            throw new InvalidOperationException("error in calculator for input " + input + " " + answer.LastException?.Message);
         }
 
         string pattern = @"```\s*(.*?)\s*```";
