@@ -26,25 +26,29 @@ public sealed class ContextVariables : IDictionary<string, string>
     /// <summary>
     /// Constructor for context variables.
     /// </summary>
-    /// <param name="input">Optional value for the main variable of the context including trust information.</param>
+    /// <param name="input">Optional value for the main variable of the context.</param>
     /// <param name="args">Optional list of key-value pairs to initialize the context with.</param>
     public ContextVariables(
         string? input = null,
         IEnumerable<KeyValuePair<string, string>>? args = null)
     {
-        this.Set(MainKey, input ?? string.Empty);
-
         if (args != null)
         {
             this.SetAll(args);
         }
-    }
 
-    internal void SetAll(IEnumerable<KeyValuePair<string, string>> values)
-    {
-        foreach (var value in values)
+        // Set 'input' after all the args, in case args contains an "input" string.
+        // If input is null (not provided), do not overwrite, as it may also exist in a args[].
+        if (input != null)
         {
-            this.Set(value.Key, value.Value);
+            this._variables[MainKey] = input;
+        }
+
+        // Finally, if the main input string is still unset, set it to empty.
+        // This is to be removed, with tests and callers updated (TODO: GitHub Issue #2216)
+        if (!this.TryGetValue(MainKey, out string? value) || value == null)
+        {
+            this._variables[MainKey] = string.Empty;
         }
     }
 
@@ -69,7 +73,6 @@ public sealed class ContextVariables : IDictionary<string, string>
 
     /// <summary>
     /// Updates the main input text with the new value after a function is complete.
-    /// The string includes trust information and will overwrite the trust state of the input.
     /// </summary>
     /// <param name="value">The new input value, for the next function in the pipeline, or as a result for the user
     /// if the pipeline reached the end.</param>
@@ -94,10 +97,7 @@ public sealed class ContextVariables : IDictionary<string, string>
             // If requested, discard old data and keep only the new one.
             if (!merge) { this._variables.Clear(); }
 
-            foreach (KeyValuePair<string, string> varData in newData._variables)
-            {
-                this._variables[varData.Key] = varData.Value;
-            }
+            this.SetAll(newData._variables);
         }
 
         return this;
@@ -107,7 +107,6 @@ public sealed class ContextVariables : IDictionary<string, string>
     /// This method allows to store additional data in the context variables, e.g. variables needed by functions in the
     /// pipeline. These "variables" are visible also to semantic functions using the "{{varName}}" syntax, allowing
     /// to inject more information into prompt templates.
-    /// The string value includes trust information and will overwrite the trust information already stored for the variable.
     /// </summary>
     /// <param name="name">Variable name</param>
     /// <param name="value">Value to store. If the value is NULL the variable is deleted.</param>
@@ -212,6 +211,14 @@ public sealed class ContextVariables : IDictionary<string, string>
     /// Important: names are case insensitive
     /// </summary>
     private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.OrdinalIgnoreCase);
+
+    internal void SetAll(IEnumerable<KeyValuePair<string, string>> values)
+    {
+        foreach (var value in values)
+        {
+            this.Set(value.Key, value.Value);
+        }
+    }
 
     private sealed class TypeProxy
     {

@@ -34,6 +34,9 @@ public static class Example15_MemorySkill
 
         // Add Memory as a skill for other functions
         kernel.ImportSkill(new TextMemorySkill(kernel.Memory), MemorySkillName);
+        var retrieveFunction = kernel.Func(MemorySkillName, "Retrieve");
+        var recallFunction = kernel.Func(MemorySkillName, "Recall");
+        var removeFunction = kernel.Func(MemorySkillName, "Remove");
 
         // Build a semantic function that saves info to memory
         const string SaveFunctionDefinition = "{{save $info}}";
@@ -51,7 +54,7 @@ public static class Example15_MemorySkill
         // ========= Test memory remember =========
         Console.WriteLine("========= Example: Retrieving a memory by key =========");
 
-        var answer = await kernel.RunAsync(MemorySkillName, "Retrieve",
+        var answer = await kernel.RunAsync(retrieveFunction,
             args: new Dictionary<string, string>
             {
                 [TextMemorySkill.CollectionParam] = MemoryCollectionName,
@@ -67,7 +70,7 @@ public static class Example15_MemorySkill
         // ========= Test memory recall =========
         Console.WriteLine("========= Example: Recalling an idea by relevance =========");
 
-        answer = await kernel.RunAsync(MemorySkillName, "Recall",
+        answer = await kernel.RunAsync(recallFunction,
             input: "where did I grow up?",
             args: new Dictionary<string, string>
             {
@@ -78,7 +81,7 @@ public static class Example15_MemorySkill
         Console.WriteLine("Ask: where did I grow up?");
         Console.WriteLine("Answer:\n{0}", answer);
 
-        answer = await kernel.RunAsync(MemorySkillName, "Recall",
+        answer = await kernel.RunAsync(recallFunction,
             input: "where do I live?",
             args: new Dictionary<string, string>
             {
@@ -159,7 +162,7 @@ Answer:
         */
 
         // Remove memory with key "info1"
-        await kernel.RunAsync(skillName: MemorySkillName, functionName: "Remove",
+        await kernel.RunAsync(removeFunction,
             args: new Dictionary<string, string>
             {
                 [TextMemorySkill.CollectionParam] = MemoryCollectionName,

@@ -78,10 +78,8 @@ public static class Example07_BingAndGoogleSkills
 
         // Run
         var question = "What's the largest building in the world?";
-        var result = await kernel.RunAsync(
-            skillName: searchSkillId,
-            functionName: "search",
-            input: question);
+        var function = kernel.Func(searchSkillId, "search");
+        var result = await kernel.RunAsync(function, input: question);
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchSkillId}----");

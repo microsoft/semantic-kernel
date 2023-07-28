@@ -100,7 +100,7 @@ public static class SKFunctionExtensions
     /// <returns>The result of the function execution</returns>
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
         string? input = null,
-        IReadOnlyDictionary<string, string>? variables = null,
+        IEnumerable<KeyValuePair<string, string>>? variables = null,
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
         CompleteRequestSettings? settings = null,
