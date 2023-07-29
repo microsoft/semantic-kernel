@@ -7,21 +7,15 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
+namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 
-internal sealed class TextCompletionStreamingResult : ITextStreamingResult
+internal class TextCompletionStreamingResult : CompletionStreamingResultBase, ITextStreamingResult
 {
-    private readonly List<TextCompletionStreamingResponse> _modelResponses;
     private readonly Channel<string> _responseChannel;
-
-    public ModelResult ModelResult { get; }
 
     public TextCompletionStreamingResult()
     {
-        this._modelResponses = new();
-        this.ModelResult = new ModelResult(this._modelResponses);
         this._responseChannel = Channel.CreateUnbounded<string>(new UnboundedChannelOptions()
         {
             SingleReader = true,
@@ -30,13 +24,18 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
         });
     }
 
+    public override void AppendResponse(CompletionStreamingResponseBase response)
+    {
+        this.AppendResponse((TextCompletionStreamingResponse)response);
+    }
+
     public void AppendResponse(TextCompletionStreamingResponse response)
     {
-        this._modelResponses.Add(response);
+        this.ModelResponses.Add(response);
         this._responseChannel.Writer.TryWrite(response.Text);
     }
 
-    public void SignalStreamEnd()
+    public override void SignalStreamEnd()
     {
         this._responseChannel.Writer.Complete();
     }

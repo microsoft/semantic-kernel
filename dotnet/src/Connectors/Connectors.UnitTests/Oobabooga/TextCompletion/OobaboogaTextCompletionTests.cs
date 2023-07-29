@@ -13,18 +13,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
+using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace SemanticKernel.Connectors.UnitTests.Oobabooga.TextCompletion;
 
 /// <summary>
-/// Unit tests for <see cref="OobaboogaTextCompletion"/> class.
+/// Unit tests for <see cref="OobaboogaChatCompletion"/> class.
 /// </summary>
 public sealed class OobaboogaTextCompletionTests : IDisposable
 {
-    private readonly XunitLogger<OobaboogaTextCompletion> _logger;
+    private readonly XunitLogger<OobaboogaChatCompletion> _logger;
     private const string EndPoint = "https://fake-random-test-host";
     private const int BlockingPort = 1234;
     private const int StreamingPort = 2345;
@@ -38,7 +40,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
     public OobaboogaTextCompletionTests(ITestOutputHelper output)
     {
-        this._logger = new XunitLogger<OobaboogaTextCompletion>(output);
+        this._logger = new XunitLogger<OobaboogaChatCompletion>(output);
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(OobaboogaTestHelper.GetTestResponse("completion_test_response.json"));
         this._streamCompletionResponseStub = OobaboogaTestHelper.GetTestResponse("completion_test_streaming_response.json");
@@ -118,7 +120,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
 
         //Assert
-        var requestPayload = JsonSerializer.Deserialize<TextCompletionRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<CompletionRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
 
         Assert.Equal(CompletionText, requestPayload.Prompt);

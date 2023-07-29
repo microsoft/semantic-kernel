@@ -8,13 +8,14 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
 
 /// <summary>
-/// Integration tests for <see cref=" OobaboogaTextCompletion"/>.
+/// Integration tests for <see cref=" OobaboogaChatCompletion"/>.
 /// </summary>
 public sealed class OobaboogaTextCompletionTests : IDisposable
 {

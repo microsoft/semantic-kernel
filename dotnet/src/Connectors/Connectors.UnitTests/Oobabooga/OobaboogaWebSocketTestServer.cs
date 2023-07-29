@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
+using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 
 namespace SemanticKernel.Connectors.UnitTests.Oobabooga;
 
@@ -25,7 +26,7 @@ internal sealed class OobaboogaWebSocketTestServer : WebSocketTestServer
     private static List<ArraySegment<byte>> HandleRequest(ArraySegment<byte> request, Func<string, List<string>> stringHandler)
     {
         var requestString = Encoding.UTF8.GetString(request.ToArray());
-        var requestObj = JsonSerializer.Deserialize<TextCompletionRequest>(requestString);
+        var requestObj = JsonSerializer.Deserialize<CompletionRequest>(requestString);
 
         var responseList = stringHandler(requestObj?.Prompt ?? string.Empty);
 
