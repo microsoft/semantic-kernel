@@ -1,4 +1,5 @@
 import aiosqlite as sqlite
+
 from dataclasses import dataclass
 from logging import Logger
 from typing import List, Optional, Tuple
@@ -8,6 +9,11 @@ import numpy as np
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.connectors.memory.sqlite.utils import (
+    deserialize_metadata,
+    deserialize_embedding,
+    deserialize_timestamp,
+)
 
 TABLE_NAME = "SKMemoryTable"
 
@@ -36,7 +42,7 @@ class SQLiteMemoryStore(MemoryStoreBase):
         return store
 
     async def create_table_if_not_exists_async(self) -> None:
-        await self._conn.execute(
+        async with self._conn.execute(
             f"""CREATE TABLE IF NOT EXISTS {TABLE_NAME}(
                 collection TEXT,
                 key TEXT,
@@ -44,56 +50,55 @@ class SQLiteMemoryStore(MemoryStoreBase):
                 embedding TEXT,
                 timestamp TEXT,
                 PRIMARY KEY(collection, key))"""
-        )
+        ):
+            return
 
     async def create_collection_async(self, collection_name: str) -> None:
-        await self._conn.execute_insert(
+        async with await self._conn.execute_insert(
             f"""
             INSERT INTO {TABLE_NAME}(collection)
             VALUES(?);
             """,
-            collection_name,
-        )
-
-        await self._conn.commit()
+            [collection_name],
+        ) as cursor:
+            await cursor.commit()
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
-        rows = await self._conn.execute_fetchall(
+        async with self._conn.execute_fetchall(
             f"""
                 SELECT DISTINCT(collection)
                 FROM {TABLE_NAME}
                 WHERE collection = ?;";
             """,
-            collection_name,
-        )
-        return bool(rows)
+            [collection_name],
+        ) as rows:
+            return bool(rows)
 
     async def get_collections_async(self) -> List[str]:
-        rows = await self._conn.execute_fetchall(
+        async with self._conn.execute_fetchall(
             f"""
                 SELECT DISTINCT(collection)
                 FROM {TABLE_NAME}";
             """
-        )
-        return list(map(lambda r: r["collection"], rows))
+        ) as rows:
+            return list(map(lambda r: r["collection"], rows))
 
     async def delete_collection_async(self, collection_name: str):
-        await self._conn.execute(
+        async with self._conn.execute(
             f"""
                 DELETE FROM {TABLE_NAME}
                 WHERE collection = ?;
             """,
-            collection_name,
-        )
-
-        await self._conn.commit()
+            [collection_name],
+        ) as cursor:
+            await cursor.commit()
 
     async def _update_batch_async(
         self,
         collection: str,
         records: List[MemoryRecord],
     ):
-        await self._conn.executemany(
+        async with self._conn.executemany(
             f"""
                 UPDATE {TABLE_NAME}
                 SET metadata = ?, embedding = ?, timestamp = ?
@@ -103,9 +108,8 @@ class SQLiteMemoryStore(MemoryStoreBase):
                 lambda r: SQLiteMemoryStore.memory_record_to_tuple(collection, r),
                 records,
             ),
-        )
-
-        await self._conn.commit()
+        ) as cursor:
+            await cursor.commit()
 
     @staticmethod
     def memory_record_to_tuple(collection: str, record: MemoryRecord):  # type: ignore
@@ -120,7 +124,7 @@ class SQLiteMemoryStore(MemoryStoreBase):
     async def _insert_or_ignore_batch_async(
         self, collection: str, records: List[MemoryRecord]
     ):
-        await self._conn.executemany(
+        async with self._conn.executemany(
             f"""
                 INSERT OR IGNORE INTO {TABLE_NAME}(collection, key, metadata, embedding, timestamp)
                 VALUES(?, ?, ?, ?, ?);
@@ -129,8 +133,8 @@ class SQLiteMemoryStore(MemoryStoreBase):
                 lambda r: SQLiteMemoryStore.memory_record_to_tuple(collection, r),
                 records,
             ),
-        )
-        await self._conn.commit()
+        ) as cursor:
+            await cursor.commit()
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         await self._update_batch_async(
@@ -159,3 +163,33 @@ class SQLiteMemoryStore(MemoryStoreBase):
         )
 
         return map(lambda r: r._id, records)
+
+    async def get_async(
+        self, collection_name: str, key: str, with_embedding: bool
+    ) -> MemoryRecord:
+        async with self._conn.execute(
+            f"""
+                SELECT metadata, embedding, timestamp FROM {TABLE_NAME} WHERE collection=? and key=?
+            """,
+            (collection_name, key),
+        ) as cursor:
+            record = await cursor.fetchone()
+            if not record:
+                raise Exception(
+                    f"Collection[{collection_name}] or Key[{key}] not found"
+                )
+
+            metadata = deserialize_metadata(record["metadata"])
+
+            return MemoryRecord.local_record(
+                id=key,
+                text=metadata["text"],
+                description=metadata["description"],
+                additional_metadata=metadata["additional_metadata"],
+                embedding=deserialize_embedding(record["embedding"])
+                if with_embedding
+                else None,
+                timestamp=deserialize_timestamp(record["timestamp"])
+                if record["timestamp"]
+                else None,
+            )
