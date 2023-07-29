@@ -18,7 +18,6 @@ You will need the following to run the sample:
 - `Endpoint` address for an Azure Open AI resource (e.g., `http://contoso.openai.azure.com`). This is not needed if using OpenAI.
 - Azure Active Directory (AAD) [application registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
 - `Application (client) ID` of your registered application. (See [application registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) instructions.)
-- [PowerShell 7](https://learn.microsoft.com/en-us/shows/it-ops-talk/how-to-install-powershell-7) (Windows or Debian/Linux)
 
 # Setup Instructions
 ## Windows
