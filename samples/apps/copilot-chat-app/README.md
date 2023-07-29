@@ -14,25 +14,26 @@ These quick-start instructions run the sample locally. To deploy the sample to A
 You will need the following to run the sample:
 
 - An [Azure OpenAI](https://aka.ms/oai/access) resource or [OpenAI](https://platform.openai.com) account.
-- Your `API key` for Azure OpenAI or OpenAI
-- The endpoint address for an Azure Open AI resource (e.g., `http://contoso.openai.azure.com`). This is not needed if using OpenAI.
-- An Azure Active Directory (AAD) [application registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
-- The `Application (client) ID` of your registered application. (See [application registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) instructions.)
+- `API key` for Azure OpenAI or OpenAI
+- `Endpoint` address for an Azure Open AI resource (e.g., `http://contoso.openai.azure.com`). This is not needed if using OpenAI.
+- Azure Active Directory (AAD) [application registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+- `Application (client) ID` of your registered application. (See [application registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) instructions.)
+- [PowerShell 7](https://learn.microsoft.com/en-us/shows/it-ops-talk/how-to-install-powershell-7) (Windows or Debian/Linux)
 
 # Setup Instructions
 ## Windows
 1. Open PowerShell as an administrator.
-2. Configure environment:
+2. Configure environment.
 
     ```powershell
     cd <path to semantic-kernal>\samples\apps\copilot-chat-app\scripts
     .\Install.ps1
     ```
 
-3. Run Chat Copilot locally. This step configures the sample and starts both the backend API and frontend application.
-      
-    ```powershell
-    .\ChatCopilot.ps1 -AIService {AI_SERVICE} -APIKey {API_KEY} -ClientId {AZURE_APPLICATION_ID} -Endpoint {AZURE_OPENAI_ENDPOINT} 
+3. Configure Chat Copilot.
+  
+      ```powershell
+    .\Configure.ps1 -AIService {AI_SERVICE} -APIKey {API_KEY} -ClientId {AZURE_APPLICATION_ID} -Endpoint {AZURE_OPENAI_ENDPOINT} 
     ```
 
     - `AI_SERVICE`: AzureOpenAI or OpenAI
@@ -40,25 +41,37 @@ You will need the following to run the sample:
     - `AZURE_APPLICATION_ID`: The application ID associated with the Azure Active Directory [application registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
     - `AZURE_OPENAI_ENDPOINT`: The Azure OpenAI resource Endpoint address (e.g., `http://contoso.openai.azure.com`). Omit this parameter and associated `-Endpoint` flag if using OpenAI.
 
+4. Run Chat Copilot locally. This step starts both the backend API and frontend application.
+    
+    ```powershell
+    .\Start.ps1 
+    ```
+
 ## Ubuntu/Debian Linux
 1. Open Bash as an administrator.
-2. Configure environment:
+2. Configure environment.
   
     ```bash
     cd <path to semantic-kernel>/samples/apps/copilot-chat-app/scripts/
     ./Install.sh
     ```
 
-3. Run Chat Copilot locally. This step configures the sample and starts both the backend API and frontend application.
+3. Configure Chat Copilot.
 
     ```bash
-    ./ChatCopilot.sh --aiservice {AI_SERVICE} --apikey {API_KEY} --clientid {AZURE_APPLICATION_ID} --endpoint {AZURE_OPENAI_ENDPOINT}
+    ./Configure.sh --aiservice {AI_SERVICE} --apikey {API_KEY} --clientid {AZURE_APPLICATION_ID} --endpoint {AZURE_OPENAI_ENDPOINT}
     ```
 
     - `AI_SERVICE`: AzureOpenAI or OpenAI
     - `API_KEY`: The API Key for Azure OpenAI or for OpenAI.
     - `AZURE_APPLICATION_ID`: The application ID associated with the Azure Active Directory [application registration](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
     - `AZURE_OPENAI_ENDPOINT`: The Azure OpenAI resource Endpoint address (e.g., `http://contoso.openai.azure.com`). Omit this parameter and associated `-Endpoint` flag if using OpenAI.
+
+4. Run Chat Copilot locally. This step starts both the backend API and frontend application.
+
+    ```bash
+    .\Start.sh
+    ```
 
 ## Other Linux/macOS
 All steps must be completed manually at this time.
