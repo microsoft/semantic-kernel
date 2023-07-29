@@ -96,7 +96,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var func = target.CreateSemanticFunction(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.");
 
-        var result = await func.InvokeAsync(new ContextVariables("Jupiter"));
+        var result = await func.InvokeAsync("Jupiter");
 
         Assert.NotNull(result);
         Assert.False(result.ErrorOccurred);

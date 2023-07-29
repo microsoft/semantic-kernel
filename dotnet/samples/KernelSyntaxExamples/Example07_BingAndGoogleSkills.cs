@@ -138,9 +138,10 @@ Answer: ";
 
         var oracle = kernel.CreateSemanticFunction(SemanticFunction, maxTokens: 200, temperature: 0, topP: 1);
 
-        var context = kernel.CreateNewContext();
-        context.Variables["externalInformation"] = "";
-        var answer = await kernel.RunAsync(oracle, questions);
+        var answer = await kernel.RunAsync(oracle, new(questions)
+        {
+            ["externalInformation"] = string.Empty
+        });
 
         // If the answer contains commands, execute them using the prompt renderer.
         if (answer.Result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
@@ -148,16 +149,17 @@ Answer: ";
             var promptRenderer = new PromptTemplateEngine();
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptRenderer.RenderAsync(answer.Result, context);
+            var information = await promptRenderer.RenderAsync(answer.Result, kernel.CreateNewContext());
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);
 
-            // The rendered prompt contains the information retrieved from search engines
-            context.Variables["externalInformation"] = information;
-
             // Run the semantic function again, now including information from Bing
-            answer = await kernel.RunAsync(oracle, questions);
+            answer = await kernel.RunAsync(oracle, new(questions)
+            {
+                // The rendered prompt contains the information retrieved from search engines
+                ["externalInformation"] = information
+            });
         }
         else
         {

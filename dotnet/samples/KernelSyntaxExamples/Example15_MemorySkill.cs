@@ -14,8 +14,10 @@ public static class Example15_MemorySkill
 
     public static async Task RunAsync()
     {
+        var logger = ConsoleLogger.Logger;
+
         var kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLogger(logger)
             .WithOpenAITextCompletionService("text-davinci-003", TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())
@@ -48,7 +50,7 @@ public static class Example15_MemorySkill
         // ========= Test memory remember =========
         Console.WriteLine("========= Example: Recalling a Memory =========");
 
-        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info5", logger: kernel.Logger);
+        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info5", logger: logger);
         Console.WriteLine("Memory associated with 'info1': {0}", answer);
         /*
         Output:
@@ -58,11 +60,11 @@ public static class Example15_MemorySkill
         // ========= Test memory recall =========
         Console.WriteLine("========= Example: Recalling an Idea =========");
 
-        answer = await memorySkill.RecallAsync("where did I grow up?", MemoryCollectionName, relevance: null, limit: 2, logger: kernel.Logger);
+        answer = await memorySkill.RecallAsync("where did I grow up?", MemoryCollectionName, relevance: null, limit: 2, logger: logger);
         Console.WriteLine("Ask: where did I grow up?");
         Console.WriteLine("Answer:\n{0}", answer);
 
-        answer = await memorySkill.RecallAsync("where do I live?", MemoryCollectionName, relevance: null, limit: 2, logger: kernel.Logger);
+        answer = await memorySkill.RecallAsync("where do I live?", MemoryCollectionName, relevance: null, limit: 2, logger: logger);
         Console.WriteLine("Ask: where do I live?");
         Console.WriteLine("Answer:\n{0}", answer);
 
@@ -132,9 +134,9 @@ Answer:
             My name is Andrea and my family is from New York. I work as a tourist operator.
         */
 
-        await memorySkill.RemoveAsync(MemoryCollectionName, "info1", logger: kernel.Logger);
+        await memorySkill.RemoveAsync(MemoryCollectionName, "info1", logger: logger);
 
-        result = await kernel.RunAsync(aboutMeOracle, "Tell me a bit about myself");
+        result = await kernel.RunAsync(aboutMeOracle, new("Tell me a bit about myself"));
 
         Console.WriteLine("Tell me a bit about myself\n");
         Console.WriteLine(result);
