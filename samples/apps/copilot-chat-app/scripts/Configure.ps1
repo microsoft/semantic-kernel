@@ -147,7 +147,7 @@ Write-Host "##########################"
 Write-Host "# Frontend configuration #"
 Write-Host "##########################"
 
-$webappProjectPath = Join-Path "$PSScriptRoot" '../webapi'
+$webappProjectPath = Join-Path "$PSScriptRoot" '../webapp'
 $webappEnvFilePath = Join-Path "$webappProjectPath" '/.env'
 
 Write-Host "Setting up '.env'..."

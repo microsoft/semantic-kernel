@@ -47,6 +47,9 @@ You will need the following to run the sample:
     .\Start.ps1 
     ```
 
+    > **IMPORTANT:** Confirm pop-ups are not bocked and you are logged in with the same account used to register the application.
+    
+
 ## Ubuntu/Debian Linux
 1. Open Bash as an administrator.
 2. Configure environment.
@@ -72,6 +75,8 @@ You will need the following to run the sample:
     ```bash
     .\Start.sh
     ```
+
+    > **IMPORTANT:** Confirm pop-ups are not bocked and you are logged in with the same account used to register the application.
 
 ## Other Linux/macOS
 All steps must be completed manually at this time.
@@ -110,7 +115,7 @@ All steps must be completed manually at this time.
             - `Type`: The AI service you will use (`AzureOpenAI` or `OpenAI`).
             - `Endpoint`: Your Azure OpenAI resource endpoint address (e.g., `http://contoso.openai.azure.com`). For OpenAI, leave this empty.
             - `Completion`, `Embedding`, `Planner`: The models you will use. 
-                > IMPORTANT: For OpenAI, use a '.' in `gpt-3.5-turbo`.  For Azure OpenAI, omit the '.' (e.g. `gpt-35-turbo`).
+                > **IMPORTANT:** For OpenAI, use a '.' in `gpt-3.5-turbo`.  For Azure OpenAI, omit the '.' (e.g. `gpt-35-turbo`).
 
     -  Run the backend:
 
@@ -144,16 +149,17 @@ All steps must be completed manually at this time.
         yarn install && yarn start
         ```
 
-
+        > **IMPORTANT:** Confirm pop-ups are not bocked and you are logged in with the same account used to register the application.
+    
 # Troubleshooting
 
 1. **_Issue:_** Unable to load chats. 
    
-   _Details_: interaction_in_progress: Interaction is currently in progress._ 
+    _Details_: interaction_in_progress: Interaction is currently in progress._ 
 
     _Explanation_: The WebApp can display this error when the application is configured for a different AAD tenant from the browser, (e.g., personal/MSA account vs work/school account). 
     
-    _Solution_: Either use a private/incognito browser tab or clear your browser credentials/cookies.
+    _Solution_: Either use a private/incognito browser tab or clear your browser credentials/cookies. Confirm you are logged in with the same account used to register the application.
 
 2. **_Issue:_**: Challenges using text completion models, such as `text-davinci-003`
 
