@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Core;
 using RepoUtils;
 
@@ -39,16 +38,17 @@ public static class Example15_MemorySkill
         const string SaveFunctionDefinition = "{{save $info}}";
         var memorySaver = kernel.CreateSemanticFunction(SaveFunctionDefinition);
 
-        var context = kernel.CreateNewContext();
-        context.Variables[TextMemorySkill.CollectionParam] = MemoryCollectionName;
-        context.Variables[TextMemorySkill.KeyParam] = "info5";
-        context.Variables["info"] = "My family is from New York";
-        await memorySaver.InvokeAsync(context);
+        await kernel.RunAsync(memorySaver, new()
+        {
+            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
+            [TextMemorySkill.KeyParam] = "info5",
+            ["info"] = "My family is from New York"
+        });
 
         // ========= Test memory remember =========
         Console.WriteLine("========= Example: Recalling a Memory =========");
 
-        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info5", logger: context.Logger);
+        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info5", logger: kernel.Logger);
         Console.WriteLine("Memory associated with 'info1': {0}", answer);
         /*
         Output:
@@ -58,11 +58,11 @@ public static class Example15_MemorySkill
         // ========= Test memory recall =========
         Console.WriteLine("========= Example: Recalling an Idea =========");
 
-        answer = await memorySkill.RecallAsync("where did I grow up?", MemoryCollectionName, relevance: null, limit: 2, logger: context.Logger);
+        answer = await memorySkill.RecallAsync("where did I grow up?", MemoryCollectionName, relevance: null, limit: 2, logger: kernel.Logger);
         Console.WriteLine("Ask: where did I grow up?");
         Console.WriteLine("Answer:\n{0}", answer);
 
-        answer = await memorySkill.RecallAsync("where do I live?", MemoryCollectionName, relevance: null, limit: 2, logger: context.Logger);
+        answer = await memorySkill.RecallAsync("where do I live?", MemoryCollectionName, relevance: null, limit: 2, logger: kernel.Logger);
         Console.WriteLine("Ask: where do I live?");
         Console.WriteLine("Answer:\n{0}", answer);
 
@@ -95,10 +95,11 @@ Answer:
 
         var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, maxTokens: 100);
 
-        context = kernel.CreateNewContext();
-        context.Variables[TextMemorySkill.CollectionParam] = MemoryCollectionName;
-        context.Variables[TextMemorySkill.RelevanceParam] = "0.8";
-        var result = await aboutMeOracle.InvokeAsync("Do I live in the same town where I grew up?", context);
+        var result = await kernel.RunAsync(aboutMeOracle, new("Do I live in the same town where I grew up?")
+        {
+            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
+            [TextMemorySkill.RelevanceParam] = "0.8"
+        });
 
         Console.WriteLine("Do I live in the same town where I grew up?\n");
         Console.WriteLine(result);
@@ -114,11 +115,12 @@ Answer:
         // ========= Remove a memory =========
         Console.WriteLine("========= Example: Forgetting a Memory =========");
 
-        context.Variables["fact1"] = "What is my name?";
-        context.Variables["fact2"] = "What do I do for a living?";
-        context.Variables[TextMemorySkill.RelevanceParam] = ".75";
-
-        result = await aboutMeOracle.InvokeAsync("Tell me a bit about myself", context);
+        result = await kernel.RunAsync(aboutMeOracle, new("Tell me a bit about myself")
+        {
+            ["fact1"] = "What is my name?",
+            ["fact2"] = "What do I do for a living?",
+            [TextMemorySkill.RelevanceParam] = ".75"
+        });
 
         Console.WriteLine("Tell me a bit about myself\n");
         Console.WriteLine(result);
@@ -130,10 +132,9 @@ Answer:
             My name is Andrea and my family is from New York. I work as a tourist operator.
         */
 
-        context.Variables[TextMemorySkill.KeyParam] = "info1";
-        await memorySkill.RemoveAsync(MemoryCollectionName, "info1", logger: context.Logger);
+        await memorySkill.RemoveAsync(MemoryCollectionName, "info1", logger: kernel.Logger);
 
-        result = await aboutMeOracle.InvokeAsync("Tell me a bit about myself", context);
+        result = await kernel.RunAsync(aboutMeOracle, "Tell me a bit about myself");
 
         Console.WriteLine("Tell me a bit about myself\n");
         Console.WriteLine(result);

@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Class that holds extension methods for objects implementing ISKFunction.
@@ -90,8 +92,7 @@ public static class SKFunctionExtensions
     /// Execute a function allowing to pass the main input separately from the rest of the context.
     /// </summary>
     /// <param name="function">Function to execute</param>
-    /// <param name="input">Main input string</param>
-    /// <param name="variables">Variables other than input</param>
+    /// <param name="variables">Input variables for the function</param>
     /// <param name="skills">Skills that the function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
@@ -99,30 +100,40 @@ public static class SKFunctionExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
-        string? input = null,
-        IEnumerable<KeyValuePair<string, string>>? variables = null,
+        ContextVariables? variables = null,
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
         CompleteRequestSettings? settings = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
-        ContextVariables contextVariables = new(input);
-        if (variables != null)
-        {
-            foreach (var variable in variables)
-            {
-                contextVariables.Set(variable.Key, variable.Value);
-            }
-        }
-
-        var context = new SKContext(contextVariables, skills, logger)
+        var context = new SKContext(variables, skills, logger)
         {
             Culture = culture!
         };
 
         return function.InvokeAsync(context, settings, cancellationToken);
     }
+
+    /// <summary>
+    /// Execute a function allowing to pass the main input separately from the rest of the context.
+    /// </summary>
+    /// <param name="function">Function to execute</param>
+    /// <param name="input">Input string for the function</param>
+    /// <param name="skills">Skills that the function can access</param>
+    /// <param name="culture">Culture to use for the function execution</param>
+    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="logger">Logger to use for the function execution</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The result of the function execution</returns>
+    public static Task<SKContext> InvokeAsync(this ISKFunction function,
+        string input,
+        IReadOnlySkillCollection? skills = null,
+        CultureInfo? culture = null,
+        CompleteRequestSettings? settings = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+        => function.InvokeAsync(new ContextVariables(input), skills, culture, settings, logger, cancellationToken);
 
     /// <summary>
     /// Returns decorated instance of <see cref="ISKFunction"/> with enabled instrumentation.

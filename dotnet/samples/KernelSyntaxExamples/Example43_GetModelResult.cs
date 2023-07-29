@@ -41,7 +41,8 @@ Event: {{$input}}
         var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 100, temperature: 0.4, topP: 1);
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var textResult = await excuseFunction.InvokeAsync("I missed the F1 final race", new CompleteRequestSettings { ResultsPerPrompt = 3 });
+        var textResult = await excuseFunction.InvokeAsync("I missed the F1 final race",
+            settings: new CompleteRequestSettings { ResultsPerPrompt = 3 });
         Console.WriteLine(textResult);
         Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAITextResult()).AsJson());
         Console.WriteLine();

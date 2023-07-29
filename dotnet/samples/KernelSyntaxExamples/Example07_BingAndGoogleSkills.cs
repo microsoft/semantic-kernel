@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using Microsoft.SemanticKernel.Skills.Web.Google;
@@ -141,7 +140,7 @@ Answer: ";
 
         var context = kernel.CreateNewContext();
         context.Variables["externalInformation"] = "";
-        var answer = await oracle.InvokeAsync(questions, context);
+        var answer = await kernel.RunAsync(oracle, questions);
 
         // If the answer contains commands, execute them using the prompt renderer.
         if (answer.Result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
@@ -158,7 +157,7 @@ Answer: ";
             context.Variables["externalInformation"] = information;
 
             // Run the semantic function again, now including information from Bing
-            answer = await oracle.InvokeAsync(questions, context);
+            answer = await kernel.RunAsync(oracle, questions);
         }
         else
         {
