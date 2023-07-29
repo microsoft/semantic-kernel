@@ -59,23 +59,12 @@ public static class SKContextSequentialPlannerExtensions
         string? semanticQuery = null,
         CancellationToken cancellationToken = default)
     {
-        var excludedSkills = config.ExcludedSkills ?? new();
-        var excludedFunctions = config.ExcludedFunctions ?? new();
-        var includedFunctions = config.IncludedFunctions ?? new();
-
-        if (context.Skills == null)
-        {
-            throw new KernelException(
-                KernelException.ErrorCodes.SkillCollectionNotSet,
-                "Skill collection not found in the context");
-        }
-
         var functionsView = context.Skills.GetFunctionsView();
 
         var availableFunctions = functionsView.SemanticFunctions
             .Concat(functionsView.NativeFunctions)
             .SelectMany(x => x.Value)
-            .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
+            .Where(s => !config.ExcludedSkills.Contains(s.SkillName) && !config.ExcludedFunctions.Contains(s.Name))
             .ToList();
 
         List<FunctionView>? result = null;
@@ -104,7 +93,7 @@ public static class SKContextSequentialPlannerExtensions
             result.AddRange(await GetRelevantFunctionsAsync(context, availableFunctions, memories, cancellationToken).ConfigureAwait(false));
 
             // Add any missing functions that were included but not found in the search results.
-            var missingFunctions = includedFunctions
+            var missingFunctions = config.IncludedFunctions
                 .Except(result.Select(x => x.Name))
                 .Join(availableFunctions, f => f, af => af.Name, (_, af) => af);
 
@@ -128,7 +117,7 @@ public static class SKContextSequentialPlannerExtensions
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
             if (function != null)
             {
-                context.Log.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance,
+                context.Logger.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance,
                     function.ToFullyQualifiedName());
                 relevantFunctions.Add(function);
             }

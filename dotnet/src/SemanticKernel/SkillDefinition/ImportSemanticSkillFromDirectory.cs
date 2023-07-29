@@ -96,14 +96,14 @@ public static class ImportSemanticSkillFromDirectoryExtension
                     config = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
                 }
 
-                kernel.Log.LogTrace("Config {0}: {1}", functionName, config.ToJson());
+                kernel.Logger.LogTrace("Config {0}: {1}", functionName, config.ToJson());
 
                 // Load prompt template
                 var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngine);
 
                 var functionConfig = new SemanticFunctionConfig(config, template);
 
-                kernel.Log.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);
+                kernel.Logger.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);
                 skill[functionName] = kernel.RegisterSemanticFunction(skillDirectoryName, functionName, functionConfig);
             }
         }

@@ -37,7 +37,7 @@ public abstract class OpenAIClientBase : ClientBase
 
         this.ModelId = modelId;
 
-        var options = new OpenAIClientOptions();
+        var options = GetClientOptions();
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);
@@ -58,5 +58,20 @@ public abstract class OpenAIClientBase : ClientBase
     private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
         this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelId);
+    }
+
+    /// <summary>
+    /// Options used by the OpenAI client, e.g. User Agent.
+    /// </summary>
+    private static OpenAIClientOptions GetClientOptions()
+    {
+        return new OpenAIClientOptions
+        {
+            Diagnostics =
+            {
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
+                ApplicationId = Telemetry.HttpUserAgent,
+            }
+        };
     }
 }

@@ -30,7 +30,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// The rationale is currently available only in the prompt, we might include it in
 /// the Plan object in future.
 /// </summary>
-public sealed class ActionPlanner
+public sealed class ActionPlanner : IActionPlanner
 {
     private const string StopSequence = "#END-OF-PLAN";
     private const string SkillName = "this";
@@ -78,6 +78,7 @@ public sealed class ActionPlanner
         this._context = kernel.CreateNewContext();
     }
 
+    /// <inheritdoc />
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(goal))
@@ -280,7 +281,7 @@ Goal: tell me a joke.
                 // Function parameters
                 foreach (var p in func.Parameters)
                 {
-                    var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description;
+                    var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description!;
                     var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
                     list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
                 }
