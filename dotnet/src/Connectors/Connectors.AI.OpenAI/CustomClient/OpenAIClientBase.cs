@@ -34,7 +34,7 @@ public abstract class OpenAIClientBase
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected virtual void AddRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add("User-Agent", HttpUserAgent);
+        request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
     }
 
     /// <summary>
@@ -77,9 +77,6 @@ public abstract class OpenAIClientBase
     }
 
     #region private ================================================================================
-
-    // HTTP user agent sent to remote endpoints
-    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
 
     /// <summary>
     /// Logger

@@ -56,10 +56,9 @@ public static class KernelOpenApiExtensions
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
-        if (!string.IsNullOrEmpty(executionParameters?.UserAgent))
-        {
-            requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
-        }
+        requestMessage.Headers.UserAgent.Add(!string.IsNullOrEmpty(executionParameters?.UserAgent)
+            ? ProductInfoHeaderValue.Parse(executionParameters!.UserAgent)
+            : ProductInfoHeaderValue.Parse(Telemetry.HttpUserAgent));
 
         using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
@@ -195,7 +194,8 @@ public static class KernelOpenApiExtensions
 
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 
-        var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
+        var userAgent = executionParameters?.UserAgent ?? Telemetry.HttpUserAgent;
+        var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, userAgent);
 
         var skill = new Dictionary<string, ISKFunction>();
 

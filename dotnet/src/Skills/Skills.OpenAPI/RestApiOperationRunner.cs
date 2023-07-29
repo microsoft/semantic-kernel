@@ -46,7 +46,7 @@ internal sealed class RestApiOperationRunner
     public RestApiOperationRunner(HttpClient httpClient, AuthenticateRequestAsyncCallback? authCallback = null, string? userAgent = null)
     {
         this._httpClient = httpClient;
-        this._userAgent = userAgent;
+        this._userAgent = userAgent ?? Telemetry.HttpUserAgent;
 
         // If no auth callback provided, use empty function
         if (authCallback == null)
@@ -97,10 +97,9 @@ internal sealed class RestApiOperationRunner
             requestMessage.Content = payload;
         }
 
-        if (!string.IsNullOrWhiteSpace(this._userAgent))
-        {
-            requestMessage.Headers.Add("User-Agent", this._userAgent);
-        }
+        requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
+            ? this._userAgent
+            : Telemetry.HttpUserAgent);
 
         if (headers != null)
         {

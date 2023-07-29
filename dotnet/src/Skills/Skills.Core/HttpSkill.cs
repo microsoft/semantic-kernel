@@ -104,9 +104,9 @@ public sealed class HttpSkill
     private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
-
+        request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+      
         using var response = await this._client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
         var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         response.EnsureSuccess(responseContent);

@@ -24,7 +24,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// </summary>
 public sealed class OobaboogaTextCompletion : ITextCompletion
 {
-    public const string HttpUserAgent = "Microsoft-Semantic-Kernel";
     public const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
 
@@ -209,7 +208,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 RequestUri = this._blockingUri.Uri,
                 Content = stringContent
             };
-            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
+            httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
 
             using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
@@ -264,7 +263,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// </summary>
     private void SetWebSocketOptions(ClientWebSocket clientWebSocket)
     {
-        clientWebSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
+        clientWebSocket.Options.SetRequestHeader("User-Agent", Telemetry.HttpUserAgent);
     }
 
     /// <summary>
