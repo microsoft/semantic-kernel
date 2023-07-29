@@ -77,7 +77,10 @@ public sealed class ContextVariables : IDictionary<string, string>
             // If requested, discard old data and keep only the new one.
             if (!merge) { this._variables.Clear(); }
 
-            this.SetAll(newData._variables);
+            foreach (KeyValuePair<string, string> varData in newData._variables)
+            {
+                this._variables[varData.Key] = varData.Value;
+            }
         }
 
         return this;
@@ -191,14 +194,6 @@ public sealed class ContextVariables : IDictionary<string, string>
     /// Important: names are case insensitive
     /// </summary>
     private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.OrdinalIgnoreCase);
-
-    internal void SetAll(IEnumerable<KeyValuePair<string, string>> values)
-    {
-        foreach (var value in values)
-        {
-            this.Set(value.Key, value.Value);
-        }
-    }
 
     private sealed class TypeProxy
     {

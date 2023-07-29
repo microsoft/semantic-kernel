@@ -433,7 +433,7 @@ public sealed class Plan : IPlan
         // Loop through vars and add anything missing to context
         foreach (var item in vars)
         {
-            if (!context.Variables.ContainsKey(item.Key))
+            if (!context.Variables.TryGetValue(item.Key, out string? value) || string.IsNullOrEmpty(value))
             {
                 context.Variables.Set(item.Key, item.Value);
             }
