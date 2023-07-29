@@ -5,14 +5,13 @@
 set -e
 
 # Get defaults and constants
-SCRIPT_DIRECTORY="$(dirname $0)"
+SCRIPT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . $SCRIPT_DIRECTORY/.env
+cd "$SCRIPT_DIRECTORY/../webapp"
 
 # Environment variable `ASPNETCORE_ENVIRONMENT` required to override appsettings.json with 
 # appsettings.$ENV_ASPNETCORE.json. See `webapi/ConfigurationExtensions.cs`
 export ASPNETCORE_ENVIRONMENT=$ENV_ASPNETCORE
-
-cd "$SCRIPT_DIRECTORY/../webapi"
 
 # Build and run the backend API server
 dotnet build && dotnet run
