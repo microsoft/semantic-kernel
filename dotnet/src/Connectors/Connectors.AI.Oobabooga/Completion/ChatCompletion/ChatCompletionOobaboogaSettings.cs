@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 
+/// <summary>
+/// Settings to perform oobabooga chat completion request.
+/// </summary>
 public class ChatCompletionOobaboogaSettings : CompletionOobaboogaSettings
 {
     /// <summary>
@@ -55,7 +58,7 @@ public class ChatCompletionOobaboogaSettings : CompletionOobaboogaSettings
     public int ChatGenerationAttempts { get; set; } = 1;
 
     /// <summary>
-    /// The chat-instruct command for the chat completion.
+    /// The chat-instruct command for the chat completion when corresponding mode is used.
     /// </summary>
     [JsonPropertyName("chat-instruct_command")]
     public string ChatInstructCommand { get; set; } = "Continue the chat dialogue below. Write a single reply for the character \"<|character|>\".\n\n<|prompt|>";

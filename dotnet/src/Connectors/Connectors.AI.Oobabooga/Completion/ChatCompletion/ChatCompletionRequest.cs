@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 
 /// <summary>
-/// HTTP schema to perform oobabooga chat completion request. Inherits from TextCompletionRequest.
+/// HTTP schema to perform oobabooga chat completion request.
 /// </summary>
 public sealed class ChatCompletionRequest : ChatCompletionOobaboogaSettings
 {
