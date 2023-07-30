@@ -34,8 +34,8 @@ public sealed class ChatCompletionRequest : ChatCompletionOobaboogaSettings
             UserInput = chat.Messages.Last().Content,
             History = new ChatHistory()
             {
-                Internal = chatMessages.Count > 0 ? new() { chatMessages } : new(),
-                Visible = chatMessages.Count > 0 ? new() { chatMessages } : new(),
+                Internal = chatMessages.Count > 1 ? new() { chatMessages } : new(),
+                Visible = chatMessages.Count > 1 ? new() { chatMessages } : new(),
             },
         };
         toReturn.Apply(settings);
