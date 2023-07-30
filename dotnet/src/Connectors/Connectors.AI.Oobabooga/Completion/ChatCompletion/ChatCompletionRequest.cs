@@ -28,24 +28,14 @@ public sealed class ChatCompletionRequest : ChatCompletionOobaboogaSettings
     /// </summary>
     public static ChatCompletionRequest Create(SemanticKernel.AI.ChatCompletion.ChatHistory chat, ChatCompletionOobaboogaSettings settings, ChatRequestSettings requestSettings)
     {
-        var chatMessages = chat.Messages.Take(chat.Messages.Count).Select(@base => @base.Content).ToList();
+        var chatMessages = chat.Messages.Take(chat.Messages.Count - 1).Select(@base => @base.Content).ToList();
         var toReturn = new ChatCompletionRequest()
         {
             UserInput = chat.Messages.Last().Content,
             History = new ChatHistory()
             {
-                Internal = new()
-                {
-                    //new List<string>()
-                    //{
-                    //    ChatInstructCommand
-                    //},
-                    chatMessages
-                },
-                Visible = new()
-                {
-                    chatMessages
-                },
+                Internal = chatMessages.Count > 0 ? new() { chatMessages } : new(),
+                Visible = chatMessages.Count > 0 ? new() { chatMessages } : new(),
             },
         };
         toReturn.Apply(settings);
