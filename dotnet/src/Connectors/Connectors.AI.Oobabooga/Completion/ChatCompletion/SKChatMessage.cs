@@ -16,7 +16,7 @@ public class SKChatMessage : ChatMessageBase
     /// </summary>
     /// <param name="oobaboogaChatMessages">List of Oobabooga chat messages</param>
     public SKChatMessage(List<string> oobaboogaChatMessages)
-        : base(new AuthorRole(oobaboogaChatMessages.Last()), oobaboogaChatMessages.Last())
+        : base(AuthorRole.Assistant, oobaboogaChatMessages.Last())
     {
     }
 }

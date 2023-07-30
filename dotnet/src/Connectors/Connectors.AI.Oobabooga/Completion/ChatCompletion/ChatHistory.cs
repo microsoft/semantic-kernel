@@ -14,11 +14,11 @@ public class ChatHistory
     /// The internal chat history.
     /// </summary>
     [JsonPropertyName("internal")]
-    public List<string> Internal { get; set; } = new List<string>();
+    public List<List<string>> Internal { get; set; } = new List<List<string>>();
 
     /// <summary>
     /// The visible chat history.
     /// </summary>
     [JsonPropertyName("visible")]
-    public List<string> Visible { get; set; } = new List<string>();
+    public List<List<string>> Visible { get; set; } = new List<List<string>>();
 }

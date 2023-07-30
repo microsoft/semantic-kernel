@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -29,6 +30,6 @@ internal sealed class ChatCompletionResult : IChatResult
 
     public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult((ChatMessageBase)new SKChatMessage(this._responseData.GetResult<ChatCompletionResponseHistory>().History.Visible));
+        return Task.FromResult((ChatMessageBase)new SKChatMessage(this._responseData.GetResult<ChatCompletionResponseHistory>().History.Visible.Last()));
     }
 }

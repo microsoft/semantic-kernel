@@ -25,10 +25,13 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
     private readonly UriBuilder _blockingUri;
     private readonly UriBuilder _streamingUri;
 
+    public CompletionOobaboogaSettings CompletionOobaboogaSettings { get; set; }
+
     /// <inheritdoc/>
     public OobaboogaTextCompletion(Uri endpoint,
         int blockingPort = 5000,
         int streamingPort = 5005,
+        CompletionOobaboogaSettings? completionRequestSettings = null,
         SemaphoreSlim? concurrentSemaphore = null,
         HttpClient? httpClient = null,
         bool useWebSocketsPooling = true,
@@ -37,6 +40,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
         Func<ClientWebSocket>? webSocketFactory = null,
         ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, httpClient, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, logger)
     {
+        this.CompletionOobaboogaSettings = completionRequestSettings ?? new CompletionOobaboogaSettings();
         Verify.NotNull(endpoint);
         this._blockingUri = new UriBuilder(endpoint)
         {
@@ -178,14 +182,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
         }
 
         // Prepare the request using the provided parameters.
-        return new CompletionRequest()
-        {
-            Prompt = text,
-            MaxNewTokens = requestSettings.MaxTokens,
-            Temperature = requestSettings.Temperature,
-            TopP = requestSettings.TopP,
-            RepetitionPenalty = GetRepetitionPenalty(requestSettings.PresencePenalty),
-            StoppingStrings = requestSettings.StopSequences.ToList()
-        };
+        var toReturn = CompletionRequest.Create(text, this.CompletionOobaboogaSettings, requestSettings);
+        return toReturn;
     }
 }

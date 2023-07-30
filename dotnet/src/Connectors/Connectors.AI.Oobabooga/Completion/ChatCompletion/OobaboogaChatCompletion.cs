@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
@@ -22,24 +21,18 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatComple
 /// </summary>
 public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatCompletion
 {
-    private const string ChatBlockingUriPath = "/api/v1/chat";
-    private const string ChatStreamingUriPath = "/api/v1/chat-stream";
-
     private readonly UriBuilder _chatBlockingUri;
     private readonly UriBuilder _chatStreamingUri;
 
-    public string Character { get; set; } = "Example";
+    public const string ChatBlockingUriPath = "/api/v1/chat";
+    public const string ChatStreamingUriPath = "/api/v1/chat-stream";
 
-    //TODO: add enumeration 'mode': 'instruct',  # Valid options: 'chat', 'chat-instruct', 'instruct'
-    public string Instruct { get; set; } = "instruct";
-
-    //  'Vicuna-v1.1',  # Will get autodetected if unset
-    public string InstructionTemplate { get; set; } = "";
+    public ChatCompletionOobaboogaSettings ChatCompletionOobaboogaSettings { get; set; }
 
     /// <inheritdoc/>
-    public OobaboogaChatCompletion(Uri endpoint,
-        int blockingPort = 5000,
+    public OobaboogaChatCompletion(Uri endpoint, int blockingPort = 5000,
         int streamingPort = 5005,
+        ChatCompletionOobaboogaSettings? chatCompletionRequestSettings = null,
         SemaphoreSlim? concurrentSemaphore = null,
         HttpClient? httpClient = null,
         bool useWebSocketsPooling = true,
@@ -48,6 +41,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         Func<ClientWebSocket>? webSocketFactory = null,
         ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, httpClient, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, logger)
     {
+        this.ChatCompletionOobaboogaSettings = chatCompletionRequestSettings ?? new ChatCompletionOobaboogaSettings();
         this._chatBlockingUri = new(endpoint)
         {
             Port = blockingPort,
@@ -98,7 +92,11 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
 
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            ChatCompletionResponse? completionResponse = JsonSerializer.Deserialize<ChatCompletionResponse>(body);
+            ChatCompletionResponse? completionResponse = null;
+            if (!string.IsNullOrEmpty(body))
+            {
+                completionResponse = JsonSerializer.Deserialize<ChatCompletionResponse>(body);
+            }
 
             if (completionResponse is null)
             {
@@ -188,28 +186,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
             requestSettings = new ChatRequestSettings();
         }
 
-        var completionRequest = new ChatCompletionRequest()
-        {
-            History = new ChatHistory()
-            {
-                Internal = chat.Messages.Select(@base => @base.Content).ToList()
-            },
-            MaxNewTokens = requestSettings.MaxTokens,
-            Temperature = requestSettings.Temperature,
-            TopP = requestSettings.TopP,
-            RepetitionPenalty = GetRepetitionPenalty(requestSettings.PresencePenalty),
-            StoppingStrings = requestSettings.StopSequences.ToList(),
-            Mode = this.Instruct,
-            Character = this.Character,
-            InstructionTemplate = this.InstructionTemplate,
-            YourName = "You",
-            Regenerate = false,
-            Continue = false,
-            StopAtNewline = false,
-            ChatGenerationAttempts = requestSettings.ResultsPerPrompt,
-            ChatInstructCommand = "Continue the chat dialogue below. Write a single reply for the character \"<|character|>\".\\n\\n<|prompt|>"
-        };
-
+        var completionRequest = ChatCompletionRequest.Create(chat, this.ChatCompletionOobaboogaSettings, requestSettings);
         return completionRequest;
     }
 }

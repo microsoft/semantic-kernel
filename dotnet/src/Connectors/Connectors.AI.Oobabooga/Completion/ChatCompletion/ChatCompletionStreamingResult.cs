@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
@@ -28,7 +29,7 @@ internal sealed class ChatCompletionStreamingResult : CompletionStreamingResultB
         this.ModelResponses.Add(response);
         if (response.History.Visible.Count > 0)
         {
-            this._chatMessageChannel.Writer.TryWrite(new SKChatMessage(response.History.Visible));
+            this._chatMessageChannel.Writer.TryWrite(new SKChatMessage(response.History.Visible.Last()));
         }
     }
 
