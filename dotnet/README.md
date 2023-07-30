@@ -18,7 +18,7 @@ in Visual Studio:
 
 # Running prompts with input parameters
 
-Copy and paste the following code into your project, with your Azure OpenAI key in hand:
+Copy and paste the following code into your `Program.cs` file, with your Azure OpenAI key in hand:
 
 ```csharp
 using Microsoft.SemanticKernel;
@@ -121,31 +121,29 @@ more features, such as connectors to services and Skills to perform specific act
 Unless you need to optimize which packages to include in your app, you will usually
 start by installing this meta-package first:
 
-* **Microsoft.SemanticKernel**
+* **[Microsoft.SemanticKernel](https://www.nuget.org/packages/Microsoft.SemanticKernel/#readme-body-tab)**
 
 This meta package includes core packages and OpenAI connectors, allowing to run
 most samples and build apps with OpenAI and Azure OpenAI.
 
 Packages included in **Microsoft.SemanticKernel**:
 
-1. **Microsoft.SemanticKernel.Abstractions**: contains common interfaces and classes
+1. [Microsoft.SemanticKernel.Abstractions](https://www.nuget.org/packages/Microsoft.SemanticKernel.Abstractions/): contains common interfaces and classes
   used by the core and other SK components.
-1. **Microsoft.SemanticKernel.Core**: contains the core logic of SK, such as prompt
+1. [Microsoft.SemanticKernel.Core](https://www.nuget.org/packages/Microsoft.SemanticKernel.Core/): contains the core logic of SK, such as prompt
   engineering, semantic memory and semantic functions definition and orchestration.
-1. **Microsoft.SemanticKernel.Connectors.AI.OpenAI**: connectors to OpenAI and Azure
-  OpenAI, allowing to run semantic functions, chats, image generation with GPT3,
-  GPT3.5, GPT4, DALL-E2. Includes also GPT tokenizers.
+1. [Microsoft.SemanticKernel.Connectors.AI.OpenAI](https://www.nuget.org/packages/Microsoft.SemanticKernel.Connectors.AI.OpenAI/): connectors to OpenAI and Azure
+  OpenAI, allowing to run semantic functions, chats, image generation with GPT3, GPT3.5, GPT4, DALL-E2. Includes also GPT tokenizers.
 
 Other SK packages available at nuget.org:
 
-1. **Microsoft.SemanticKernel.Connectors.Memory.Qdrant**: Qdrant connector for
+1. [Microsoft.SemanticKernel.Connectors.Memory.Qdrant](https://www.nuget.org/packages/Microsoft.SemanticKernel.Connectors.Memory.Qdrant): Qdrant connector for
    skills and semantic memory.
-2. **Microsoft.SemanticKernel.Connectors.Memory.Sqlite**: SQLite connector for
+2. [Microsoft.SemanticKernel.Connectors.Memory.Sqlite](https://www.nuget.org/packages/Microsoft.SemanticKernel.Connectors.Memory.Sqlite): SQLite connector for
    skills and semantic memory
-3. **Microsoft.SemanticKernel.Skills.Document**: Document Skill: Word processing,
+3. [Microsoft.SemanticKernel.Skills.Document](https://www.nuget.org/packages/Microsoft.SemanticKernel.Skills.Document): Document Skill: Word processing,
    OpenXML, etc.
-4. **Microsoft.SemanticKernel.Skills.MsGraph**: Microsoft Graph Skill: access your
+4. [Microsoft.SemanticKernel.Skills.MsGraph](https://www.nuget.org/packages/Microsoft.SemanticKernel.Skills.MsGraph/): Microsoft Graph Skill: access your
    tenant data, schedule meetings, send emails, etc.
-5. **Microsoft.SemanticKernel.Skills.OpenAPI**: OpenAPI skill.
-6. **Microsoft.SemanticKernel.Skills.Web**: Web Skill: search the web, download
-   files, etc.
+5. [Microsoft.SemanticKernel.Skills.OpenAPI](https://www.nuget.org/packages/Microsoft.SemanticKernel.Skills.OpenAPI): OpenAPI skill.
+6. [Microsoft.SemanticKernel.Skills.Web](https://www.nuget.org/packages/Microsoft.SemanticKernel.Skills.Web/): Web Skill: search the web, download files, etc.
