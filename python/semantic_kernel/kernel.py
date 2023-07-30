@@ -234,17 +234,9 @@ class Kernel:
                     yield stream_message
                 context.variables.update(completion)
 
-        except Exception as ex:
+        except Exception as e:
             # TODO: "critical exceptions"
-            self._log.error(
-                f"Something went wrong in stream function."
-                f"During function invocation: '{stream_function.skill_name}.{stream_function.name}'. "
-                f"Error description: '{str(ex)}'"
-            )
-            raise KernelException(
-                KernelException.ErrorCodes.FunctionInvokeError,
-                "Error occured while invoking stream function",
-            )
+            context.fail(str(e), e)
 
     async def run_async(
         self,
