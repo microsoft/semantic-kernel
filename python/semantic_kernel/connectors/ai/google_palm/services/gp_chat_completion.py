@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.complete_request_settings import CompleteRequestSettings
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -11,8 +12,9 @@ from google.generativeai.types import ChatResponse
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+import asyncio
 
-class GooglePalmChatCompletion(ChatCompletionClientBase):
+class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     _model_id: str
     _api_key: str
     _message_history: ChatResponse
@@ -42,17 +44,96 @@ class GooglePalmChatCompletion(ChatCompletionClientBase):
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings,
         context: Optional[str] = None
     ) -> Union[str, List[str]]:
+        
         response = await self._send_chat_request(messages, request_settings, context)
 
         if request_settings.number_of_responses > 1:
-            return [candidate['output'] for candidate in response.candidates]
+            return [candidate['output'] if candidate['output'] is not None else "I don't know." for candidate in response.candidates]
         else:
-            return response.last
+            if response.last is None:
+                return "I don't know." # PaLM returns None if it doesn't know
+            else:
+                return response.last
 
     async def complete_chat_stream_async(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
+        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings,
+        delay=0.1, output_words=1, context: Optional[str] = None
     ):
-        pass
+        response = await self._send_chat_request(messages, request_settings, context)
+
+        if request_settings.number_of_responses > 1:
+            for choice in response.candidates:
+                await asyncio.sleep(delay)
+                yield choice['output'] if choice['output'] is not None else "I don't know."
+        else:
+            if response.last is None:
+                response = "I don't know.".split() # PaLM returns None if it doesn't know
+            else:
+                response = response.last.split()
+            for i in range(0, len(response), output_words):
+                chunk = response[i:i+output_words]
+                chunk = " ".join(chunk)
+                await asyncio.sleep(delay)
+                yield chunk        
+
+    async def complete_async(
+        self, prompt: str, request_settings: CompleteRequestSettings
+    ) -> Union[str, List[str]]:
+        
+        prompt_to_message = [("user", prompt)]
+        chat_settings = ChatRequestSettings(
+            temperature=request_settings.temperature,
+            top_p=request_settings.top_p,
+            presence_penalty=request_settings.presence_penalty,
+            frequency_penalty=request_settings.frequency_penalty,
+            max_tokens=request_settings.max_tokens,
+            number_of_responses=request_settings.number_of_responses,
+            token_selection_biases=request_settings.token_selection_biases,
+        )
+        response = await self._send_chat_request(
+            prompt_to_message, chat_settings
+            )
+        
+        if chat_settings.number_of_responses > 1:
+            return [candidate['output'] if candidate['output'] is not None else "I don't know." for candidate in response.candidates]
+        else:
+            if response.last is None:
+                return "I don't know." # PaLM returns None if it doesn't know
+            else:
+                return response.last
+
+    async def complete_stream_async(
+        self, prompt: str, request_settings: CompleteRequestSettings, delay=0.1,
+        output_words=1
+    ):
+        prompt_to_message = [("user", prompt)]
+        chat_settings = ChatRequestSettings(
+            temperature=request_settings.temperature,
+            top_p=request_settings.top_p,
+            presence_penalty=request_settings.presence_penalty,
+            frequency_penalty=request_settings.frequency_penalty,
+            max_tokens=request_settings.max_tokens,
+            number_of_responses=request_settings.number_of_responses,
+            token_selection_biases=request_settings.token_selection_biases,
+        )
+        response = await self._send_chat_request(
+            prompt_to_message, chat_settings
+            )
+        
+        if request_settings.number_of_responses > 1:
+            for choice in response.candidates:
+                await asyncio.sleep(delay)
+                yield choice['output'] if choice['output'] is not None else "I don't know."
+        else:
+            if response.last is None:
+                response = "I don't know.".split() # PaLM returns None if it doesn't know
+            else:
+                response = response.last.split()
+            for i in range(0, len(response), output_words):
+                chunk = response[i:i+output_words]
+                chunk = " ".join(chunk)
+                await asyncio.sleep(delay)
+                yield chunk
 
     async def _send_chat_request(
         self,
@@ -61,10 +142,12 @@ class GooglePalmChatCompletion(ChatCompletionClientBase):
         context: Optional[str] = None,
     ):
         """
-        Completes the given user message. If there is a system role in messages,
-        it will be used as context. System needs to be the first message in
-        messages, otherwise it will not be used. Context can also be provided
-        as a separate parameter.
+        Completes the given user message. If chat history is needed to provide 
+        context, the chat history in messages is concatenated to a string and 
+        sent to the API as the context parameter. If len(messages) > 1, and a 
+        conversation has not been initiated yet, all messages preceding the 
+        last message will be utilized for context. This enables Google PaLM to 
+        utilize memory and skills, which are stored in the messages parameter.
 
         Arguments:
             user_message {str} -- The message (from a user) to respond to.
@@ -104,26 +187,19 @@ class GooglePalmChatCompletion(ChatCompletionClientBase):
                 "Google PaLM service failed to configure. Invalid API key provided.",
                 ex,
             )
-        #print(messages)
-        """
-        if self._message_history is None: # If conversation hasn't started yet, check if we need to use context
-            if messages[0][0] == "system" and len(messages) == 1: # If using skill without memory
-                context = messages[0][1] 
-            elif len(messages) > 1 and messages[1][0] != "system": # If using memory without skill
-                context = ""
-                for role, message in messages:
-                    context += role + ": " + message + "\n"    
-            elif len(messages) > 1 and messages[1][0] == "system": # If using memory with skill  
-                context = ""
-                context += "user: " + messages[0][1] + "\n"
-                for role, message in messages[1:]:
-                    context += role + ": " + message + "\n" 
-        """
-        if messages[0][0] == "system":
-            context = messages[0][1]
+        if self._message_history is None and context is None: # If the conversation hasn't started yet and no context is provided
+            context = ""
+            if len(messages) > 1: # Check if we need context from messages
+                for index, (role, message) in enumerate(messages):
+                    if index < len(messages) - 1:
+                        if role == "system":
+                            context += message + "\n"
+                        else:
+                            context += role + ": " + message + "\n"
+        print("context", context)
         try:
-            if self._message_history is None:
-                response = palm.chat(
+            if self._message_history is None: 
+                response = palm.chat( # Start a new conversation
                     model=self._model_id,
                     context=context,
                     examples=None,
@@ -134,11 +210,10 @@ class GooglePalmChatCompletion(ChatCompletionClientBase):
                     messages=messages[-1][1],
                 )
             else: 
-                response = self._message_history.reply(
+                response = self._message_history.reply( # Continue the conversation
                     messages[-1][1],
                 )
-            #print("check", response.messages)
-            self._message_history = response
+            self._message_history = response # Store response object for future use
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,

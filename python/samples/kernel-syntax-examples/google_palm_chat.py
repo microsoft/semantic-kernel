@@ -4,7 +4,6 @@ import semantic_kernel as sk
 import asyncio
 import semantic_kernel.connectors.ai.google_palm as sk_gp
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-import google.generativeai as palm
 
 async def chat_request_example(api_key):
     palm_chat_completion = sk_gp.GooglePalmChatCompletion(
@@ -14,11 +13,11 @@ async def chat_request_example(api_key):
     settings.temperature = 1
     
     chat_messages = list()
-    user_mssg = "I love the LA Lakers, tell me an interesting fact about LeBron James."
+    user_mssg = "I'm planning a vacation. Which are some must-visit places in Europe?"
     chat_messages.append(("user", user_mssg))
     answer = await palm_chat_completion.complete_chat_async(chat_messages, settings)
     chat_messages.append(("assistant", str(answer)))
-    user_mssg = "What are his best all-time stats?"
+    user_mssg = "Where should I go in France?"
     chat_messages.append(("user", user_mssg))
     answer = await palm_chat_completion.complete_chat_async(chat_messages, settings)
     chat_messages.append(("assistant", str(answer)))

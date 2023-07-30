@@ -4,34 +4,28 @@ import semantic_kernel as sk
 import asyncio
 import semantic_kernel.connectors.ai.google_palm as sk_gp
 from typing import Tuple
-from semantic_kernel.connectors.ai.open_ai import OpenAITextCompletion, OpenAITextEmbedding, OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
+
 
 kernel = sk.Kernel()
-
 apikey = sk.google_palm_settings_from_dot_env()
 
-"""
+
 palm_text_embed = sk_gp.GooglePalmTextEmbedding(
-        "models/embedding-gecko-001", api_key
+        "models/embedding-gecko-001", apikey
 )
 kernel.add_text_embedding_generation_service("gecko", palm_text_embed)
-"""
+
 
 palm_chat_completion = sk_gp.GooglePalmChatCompletion(
         "models/chat-bison-001", apikey
 )
 kernel.add_chat_service("models/chat-bison-001", palm_chat_completion)
-
-
+"""
 api_key, org_id = sk.openai_settings_from_dot_env()
-"""
-openai_chat_completion = OpenAIChatCompletion(
-        "gpt-3.5-turbo", api_key, org_id
-    )
-kernel.add_chat_service("chat_service", openai_chat_completion)
-"""
-kernel.add_text_embedding_generation_service("ada", OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id))
 
+kernel.add_text_embedding_generation_service("ada", OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id))
+"""
 kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 kernel.import_skill(sk.core_skills.TextMemorySkill())
 
@@ -70,6 +64,16 @@ async def search_memory_examples(kernel: sk.Kernel) -> None:
 async def setup_chat_with_memory(
     kernel: sk.Kernel,
 ) -> Tuple[sk.SKFunctionBase, sk.SKContext]:
+    """
+    When using Google PaLM to chat with memories, a chat prompt template is 
+    essential; otherwise, the kernel will send text prompts to the Google PaLM 
+    chat service. Unfortunately, when a text prompt includes memory, chat 
+    history, and the user's current message, PaLM often struggles to comprehend 
+    the user's message. To address this issue, the prompt containing memory is
+    incorporated into the chat prompt template as a system message.  
+    Note that this is only an issue for the chat service; the text service
+    does not require a chat prompt template.
+    """
     sk_prompt = """
     ChatBot can have a conversation with you about any topic.
     It can give explicit instructions or say 'I don't know' if
@@ -82,12 +86,17 @@ async def setup_chat_with_memory(
     - {{$fact4}} {{recall $fact4}}
     - {{$fact5}} {{recall $fact5}}
 
-    Chat:
-    {{$chat_history}}
-    User: {{$user_input}}
-    ChatBot:""".strip()
+    """.strip()
 
-    chat_func = kernel.create_semantic_function(sk_prompt, max_tokens=200, temperature=0.8)
+    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
+        max_tokens=2000, temperature=0.7, top_p=0.8
+    )
+    prompt_template = sk.ChatPromptTemplate(  # Create the chat prompt template
+        "{{$user_input}}", kernel.prompt_template_engine, prompt_config
+    )
+    prompt_template.add_system_message(sk_prompt) # Add the memory as a system message
+    function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
+    chat_func = kernel.register_semantic_function(None, "ChatWithMemory", function_config)
 
     context = kernel.create_new_context()
     context["fact1"] = "what is my name?"

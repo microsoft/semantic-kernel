@@ -39,7 +39,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
     ) -> Union[str, List[str]]:
-        
+       
         response = await self._send_completion_request(prompt, request_settings)
         
         if request_settings.number_of_responses > 1:
@@ -97,7 +97,6 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             "The max tokens must be greater than 0, "
             f"but was {request_settings.max_tokens}",
         )
-        print("check prompt", prompt)
         try:
             palm.configure(api_key=self._api_key)
         except Exception as ex:

@@ -3,17 +3,18 @@
 import semantic_kernel as sk
 import asyncio
 import semantic_kernel.connectors.ai.google_palm as sk_gp
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 
 """
-System messages prime the assistant with different personalities or behaviors. 
-Google PaLM uses a parameter called "context" to be used at the start of a 
-conversation instead of a system message, as is used in OpenAI. For consistency 
-with the OpenAI service, we will continue to refer to context as a system 
-message. A system message can only be used once at the start of the conversation,
-and conversation history persists with the instance of GooglePalmChatCompletion.
-To overwrite the system message and start a new conversation, you must create a 
-new instance of GooglePalmChatCompletion.
+System messages prime the assistant with different personalities or behaviors.
+The system messsage is added to the prompt template, and a chat history can be 
+added as well to provide further context. 
+A system message can only be used once at the start of the conversation, and 
+conversation history persists with the instance of GooglePalmChatCompletion. To 
+overwrite the system message and start a new conversation, you must create a new 
+instance of GooglePalmChatCompletion.
+Sometimes, PaLM struggles to use the information in the prompt template. In this 
+case, it is recommended to experiment with the messages in the prompt template 
+or ask different questions. 
 """
 
 system_message = """
@@ -21,7 +22,8 @@ You are a chat bot. Your name is Blackbeard
 and you speak in the style of a swashbuckling
 pirate. You reply with brief, to-the-point answers 
 with no elaboration. Your full name is Captain 
-Bartholomew "Blackbeard" Thorne.
+Bartholomew "Blackbeard" Thorne. You sail the 
+Norwegian seas.
 """
 
 kernel = sk.Kernel()
@@ -38,11 +40,12 @@ prompt_template = sk.ChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
 )
 
-prompt_template.add_system_message(system_message)
-prompt_template.add_user_message("Hi there, who are you?")
+prompt_template.add_system_message(system_message) # Add the system message for context
+prompt_template.add_user_message("Hi there, my name is Andrea, who are you?") # Include a chat history
 prompt_template.add_assistant_message(
     "I am Blackbeard."
 )
+
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("PirateSkill", "Chat", function_config)
 
