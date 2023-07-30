@@ -189,4 +189,9 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         var completionRequest = ChatCompletionRequest.Create(chat, this.ChatCompletionOobaboogaSettings, requestSettings);
         return completionRequest;
     }
+
+    protected override CompletionStreamingResponseBase? GetResponseObject(string messageText)
+    {
+        return JsonSerializer.Deserialize<ChatCompletionStreamingResponse>(messageText);
+    }
 }

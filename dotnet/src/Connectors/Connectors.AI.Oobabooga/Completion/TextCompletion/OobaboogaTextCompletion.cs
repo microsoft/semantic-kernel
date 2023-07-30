@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
@@ -184,5 +185,10 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
         // Prepare the request using the provided parameters.
         var toReturn = CompletionRequest.Create(text, this.CompletionOobaboogaSettings, requestSettings);
         return toReturn;
+    }
+
+    protected override CompletionStreamingResponseBase? GetResponseObject(string messageText)
+    {
+        return JsonSerializer.Deserialize<ChatCompletionStreamingResponse>(messageText);
     }
 }

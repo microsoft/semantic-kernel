@@ -6,16 +6,13 @@ using System.IO;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 
-public class OobaboogaCompletionBase
+public abstract class OobaboogaCompletionBase
 {
     public const string HttpUserAgent = "Microsoft-Semantic-Kernel";
 
@@ -36,7 +33,7 @@ public class OobaboogaCompletionBase
     public int WebSocketBufferSize { get; set; } = 2048;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OobaboogaChatCompletion"/> class.
+    /// Initializes a new instance of the <see cref="OobaboogaCompletionBase"/> class.
     /// </summary>
     /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
     /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
@@ -48,7 +45,7 @@ public class OobaboogaCompletionBase
     /// <param name="keepAliveWebSocketsDuration">When pooling is enabled, pooled websockets are flushed on a regular basis when no more connections are made. This is the time to keep them in pool before flushing</param>
     /// <param name="webSocketFactory">The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
     /// <param name="logger">Application logger</param>
-    public OobaboogaCompletionBase(Uri endpoint,
+    protected OobaboogaCompletionBase(Uri endpoint,
         int blockingPort = 5000,
         int streamingPort = 5005,
         SemaphoreSlim? concurrentSemaphore = null,
@@ -136,7 +133,7 @@ public class OobaboogaCompletionBase
                     messageText = await reader.ReadToEndAsync().ConfigureAwait(false);
                 }
 
-                var responseObject = JsonSerializer.Deserialize<TextCompletionStreamingResponse>(messageText);
+                var responseObject = this.GetResponseObject(messageText);
 
                 if (responseObject is null)
                 {
@@ -173,6 +170,8 @@ public class OobaboogaCompletionBase
             }
         }
     }
+
+    protected abstract CompletionStreamingResponseBase? GetResponseObject(string messageText);
 
     /// <summary>
     /// Starts a concurrent call, either by taking a semaphore slot or by pushing a value on the active connections stack
