@@ -1,6 +1,5 @@
 import aiosqlite as sqlite
 
-from dataclasses import dataclass
 from logging import Logger
 from typing import List, Optional, Tuple
 
@@ -13,6 +12,8 @@ from semantic_kernel.connectors.memory.sqlite.utils import (
     deserialize_metadata,
     deserialize_embedding,
     deserialize_timestamp,
+    serialize_timestamp,
+    Metadata,
 )
 
 TABLE_NAME = "SKMemoryTable"
@@ -105,21 +106,17 @@ class SQLiteMemoryStore(MemoryStoreBase):
                 WHERE collection = ? AND key = ?;
             """,
             map(
-                lambda r: SQLiteMemoryStore.memory_record_to_tuple(collection, r),
+                lambda r: (
+                    Metadata.from_memory_record(r).to_json(),
+                    r.embedding,
+                    serialize_timestamp(r._timestamp),
+                    collection,
+                    r._id,
+                ),
                 records,
             ),
         ) as cursor:
             await cursor.commit()
-
-    @staticmethod
-    def memory_record_to_tuple(collection: str, record: MemoryRecord):  # type: ignore
-        return (
-            collection,
-            record._id,  # Note: id field is key
-            record._additional_metadata,
-            record.embedding.tolist(),
-            record._timestamp,
-        )
 
     async def _insert_or_ignore_batch_async(
         self, collection: str, records: List[MemoryRecord]
@@ -130,7 +127,13 @@ class SQLiteMemoryStore(MemoryStoreBase):
                 VALUES(?, ?, ?, ?, ?);
             """,
             map(
-                lambda r: SQLiteMemoryStore.memory_record_to_tuple(collection, r),
+                lambda r: (
+                    collection,
+                    r._id,
+                    Metadata.from_memory_record(r).to_json(),
+                    r.embedding,
+                    serialize_timestamp(r._timestamp),
+                ),
                 records,
             ),
         ) as cursor:
@@ -183,13 +186,79 @@ class SQLiteMemoryStore(MemoryStoreBase):
 
             return MemoryRecord.local_record(
                 id=key,
-                text=metadata["text"],
+                text=metadata["text"] or "",
                 description=metadata["description"],
                 additional_metadata=metadata["additional_metadata"],
                 embedding=deserialize_embedding(record["embedding"])
                 if with_embedding
                 else None,
-                timestamp=deserialize_timestamp(record["timestamp"])
-                if record["timestamp"]
-                else None,
+                timestamp=deserialize_timestamp(record["timestamp"]),
             )
+
+    async def get_batch_async(
+        self, collection_name: str, keys: List[str], with_embeddings: bool
+    ) -> List[MemoryRecord]:
+        async with self._conn.execute_fetchall(
+            f"""
+                SELECT key, metadata, embedding, timestamp FROM {TABLE_NAME} WHERE collection=? and key in (%s)
+            """
+            % ", ".join("?" * len(keys)),
+            (collection_name, *keys),
+        ) as rows:
+            return [
+                MemoryRecord.local_record(
+                    id=row["key"],
+                    text=metadata["text"] or "",
+                    description=metadata["description"],
+                    additional_metadata=metadata["additional_metadata"],
+                    embedding=deserialize_embedding(row["embedding"])
+                    if with_embeddings
+                    else None,
+                )
+                for row in rows
+                if (metadata := deserialize_metadata(row["metadata"]) is not None)
+            ]
+
+    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+        async with self._conn.execute(
+            f"""
+                DELETE FROM {TABLE_NAME} WHERE collection=? and key in (%s)
+            """
+            % ", ".join("?" * len(keys)),
+            (collection_name, *keys),
+        ) as cursor:
+            await cursor.commit()
+
+    async def remove_async(self, collection_name: str, key: str) -> None:
+        await self.remove_batch_async(collection_name, [key])
+
+    async def get_nearest_matches_async(
+        self,
+        collection_name: str,
+        embedding: ndarray,
+        limit: int,
+        min_relevance_score: float,
+        with_embeddings: bool,
+    ) -> List[Tuple[MemoryRecord, float]]:
+        async with self._conn.execute_fetchall(
+            f"""
+                SELECT key, metadata, embedding, timestamp FROM {TABLE_NAME} WHERE collection=? ORDER BY relevance_score DESC LIMIT ?
+            """,
+            (collection_name, limit),
+        ) as rows:
+            return [
+                (
+                    MemoryRecord.local_record(
+                        id=row["key"],
+                        text=metadata["text"] or "",
+                        description=metadata["description"],
+                        additional_metadata=metadata["additional_metadata"],
+                        embedding=deserialize_embedding(row["embedding"])
+                        if with_embeddings
+                        else None,
+                    ),
+                    row["relevance_score"],
+                )
+                for row in rows
+                if (metadata := deserialize_metadata(row["metadata"]) is not None)
+            ]
