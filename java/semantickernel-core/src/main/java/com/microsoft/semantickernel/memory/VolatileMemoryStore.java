@@ -65,7 +65,13 @@ public class VolatileMemoryStore implements MemoryStore {
     public Mono<String> upsertAsync(@Nonnull String collectionName, @Nonnull MemoryRecord record) {
         // Contract:
         //    Does not guarantee that the collection exists.
-        Map<String, MemoryRecord> collection = getCollection(collectionName);
+        Map<String, MemoryRecord> collection = null;
+        try {
+            // getCollection throws MemoryException if the collection does not exist.
+            collection = getCollection(collectionName);
+        } catch (MemoryException e) {
+            return Mono.error(e);
+        }
 
         String key = record.getMetadata().getId();
         // Assumption is that MemoryRecord will always have a non-null id.
@@ -212,11 +218,14 @@ public class VolatileMemoryStore implements MemoryStore {
                         }
                     }
                 });
-        return Mono.just(
+
+        List<Tuple2<MemoryRecord, Number>> result =
                 nearestMatches.stream()
                         .sorted(Comparator.comparingDouble(extractSimilarity).reversed())
-                        .limit(limit)
-                        .collect(Collectors.toList()));
+                        .limit(Math.max(1, limit))
+                        .collect(Collectors.toList());
+
+        return Mono.just(result);
     }
 
     @Override
