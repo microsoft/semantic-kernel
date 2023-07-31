@@ -1,8 +1,9 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS com.microsoft.semantic-kernel:semantickernel-core:0.2.6-alpha
-//DEPS com.microsoft.semantic-kernel:semantickernel-core-skills:0.2.6-alpha
-//DEPS com.microsoft.semantic-kernel.connectors:semantickernel-connectors:0.2.6-alpha
-//DEPS com.microsoft.semantic-kernel.extensions:semantickernel-sequentialplanner-extension:0.2.6-alpha
+// Note: to run this with jbang, you first must run `./mvnw install` in the root of the java project.
+//DEPS com.microsoft.semantic-kernel:semantickernel-core:0.2.8-alpha-SNAPSHOT
+//DEPS com.microsoft.semantic-kernel:semantickernel-core-skills:0.2.8-alpha-SNAPSHOT
+//DEPS com.microsoft.semantic-kernel.connectors:semantickernel-connectors:0.2.8-alpha-SNAPSHOT
+//DEPS com.microsoft.semantic-kernel.extensions:semantickernel-sequentialplanner-extension:0.2.8-alpha-SNAPSHOT
 //DEPS org.slf4j:slf4j-jdk14:2.0.7
 //SOURCES syntaxexamples/SampleSkillsUtil.java,Config.java,Example00_GettingStarted.java
 package com.microsoft.semantickernel.samples;

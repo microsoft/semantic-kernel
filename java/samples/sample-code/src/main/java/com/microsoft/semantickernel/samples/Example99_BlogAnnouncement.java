@@ -1,10 +1,20 @@
-package com.microsoft.semantickernel;
+///usr/bin/env jbang "$0" "$@" ; exit $?
+// Note: to run this with jbang, you first must run `./mvnw install` in the root of the java project.
+//DEPS com.microsoft.semantic-kernel:semantickernel-core:0.2.8-alpha-SNAPSHOT
+//DEPS com.microsoft.semantic-kernel:semantickernel-core-skills:0.2.8-alpha-SNAPSHOT
+//DEPS com.microsoft.semantic-kernel.connectors:semantickernel-connectors:0.2.8-alpha-SNAPSHOT
+//DEPS com.microsoft.semantic-kernel:semantickernel-planners:0.2.8-alpha-SNAPSHOT
+//DEPS org.slf4j:slf4j-jdk14:2.0.7
+//SOURCES syntaxexamples/SampleSkillsUtil.java,Config.java
+package com.microsoft.semantickernel.samples;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.util.AIProviderSettings;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAISettings;
@@ -17,12 +27,10 @@ import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 public class Example99_BlogAnnouncement {
 
-  static {
-    System.setProperty("client.openai.key", "");
-  }
-
   public static void main(String[] args) throws IOException {
-    OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromSystemProperties();
+    OpenAISettings settings = AIProviderSettings.getOpenAISettingsFromFile(
+      Paths.get(System.getProperty("user.home"), ".sk", "conf.properties").toAbsolutePath().toString()
+    );
 
     NonAzureOpenAIKeyCredential credential = new NonAzureOpenAIKeyCredential(settings.getKey());
 
