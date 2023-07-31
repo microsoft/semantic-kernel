@@ -4,7 +4,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace></RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
+    <LangVersion>11</LangVersion>
     <RollForward>LatestMajor</RollForward>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
@@ -23,6 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Polly" />

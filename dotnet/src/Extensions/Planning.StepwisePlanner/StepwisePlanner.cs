@@ -151,7 +151,7 @@ public class StepwisePlanner : IStepwisePlanner
                         await Task.Delay(this.Config.MinIterationTimeMs).ConfigureAwait(false);
                         var result = await this.InvokeActionAsync(nextStep.Action!, nextStep!.ActionVariables!).ConfigureAwait(false);
 
-                        if (string.IsNullOrEmpty(result))
+                        if (string.IsNullOrEmpty(result) || result.StartsWith("Error occurred"))
                         {
                             nextStep.Observation = "Got no result from action";
                         }
