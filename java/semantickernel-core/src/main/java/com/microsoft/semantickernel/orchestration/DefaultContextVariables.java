@@ -148,19 +148,34 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
 
     public static class Builder implements ContextVariables.Builder {
 
+        private final Map<String, String> variables;
+
+        public Builder() {
+            variables = new CaseInsensitiveMap<>();
+            this.variables.put(MAIN_KEY, "");
+        }
+
+        @Override
+        public ContextVariables.Builder withVariable(String key, String value) {
+            variables.put(key, value);
+            return this;
+        }
+
+        @Override
+        public Builder withInput(String content) {
+            variables.put(MAIN_KEY, content);
+            return this;
+        }
+
+        @Override
+        public Builder withVariables(Map<String, String> map) {
+            variables.putAll(map);
+            return this;
+        }
+
         @Override
         public ContextVariables build() {
-            return new DefaultContextVariables("");
-        }
-
-        @Override
-        public ContextVariables build(String content) {
-            return new DefaultContextVariables(content);
-        }
-
-        @Override
-        public ContextVariables build(Map<String, String> map) {
-            return new DefaultContextVariables(map);
+            return new DefaultContextVariables(variables);
         }
     }
 }
