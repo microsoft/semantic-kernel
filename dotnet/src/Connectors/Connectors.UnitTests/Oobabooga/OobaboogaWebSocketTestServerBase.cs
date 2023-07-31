@@ -10,20 +10,15 @@ using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion
 
 namespace SemanticKernel.Connectors.UnitTests.Oobabooga;
 
-/// <summary>
-/// Represents a WebSocket test server specifically designed for the Oobabooga text completion service.
-/// It inherits from the base WebSocketTestServer class and handles Oobabooga-specific request and response classes.
-/// The server accepts WebSocket connections, receives requests, and generates responses based on the Oobabooga text completion logic.
-/// The OobaboogaWebSocketTestServer class uses a delegate to handle the request and response logic, allowing customization of the behavior.
-/// </summary>
-internal sealed class OobaboogaWebSocketTestServer : WebSocketTestServer
+internal abstract class OobaboogaWebSocketTestServerBase : WebSocketTestServer
 {
-    public OobaboogaWebSocketTestServer(string url, Func<string, List<string>> stringHandler, ILogger? logger = null)
-        : base(url, bytes => HandleRequest(bytes, stringHandler), logger: logger)
+    public OobaboogaWebSocketTestServerBase(string url, Func<string, List<string>> stringHandler, ILogger? logger = null)
+        : base(url, logger: logger)
     {
+        this.ArraySegmentHandler = bytes => this.HandleRequest(bytes, stringHandler);
     }
 
-    private static List<ArraySegment<byte>> HandleRequest(ArraySegment<byte> request, Func<string, List<string>> stringHandler)
+    private List<ArraySegment<byte>> HandleRequest(ArraySegment<byte> request, Func<string, List<string>> stringHandler)
     {
         var requestString = Encoding.UTF8.GetString(request.ToArray());
         var requestObj = JsonSerializer.Deserialize<CompletionRequest>(requestString);
@@ -34,14 +29,9 @@ internal sealed class OobaboogaWebSocketTestServer : WebSocketTestServer
         int messageNum = 0;
         foreach (var responseChunk in responseList)
         {
-            var responseObj = new TextCompletionStreamingResponse
-            {
-                Event = "text_stream",
-                MessageNum = messageNum,
-                Text = responseChunk
-            };
+            CompletionStreamingResponseBase responseObj = this.GetCompletionStreamingResponse(messageNum, responseChunk, responseList);
 
-            var responseJson = JsonSerializer.Serialize(responseObj);
+            var responseJson = JsonSerializer.Serialize(responseObj, responseObj.GetType());
             var responseBytes = Encoding.UTF8.GetBytes(responseJson);
             responseSegments.Add(new ArraySegment<byte>(responseBytes));
 
@@ -60,4 +50,6 @@ internal sealed class OobaboogaWebSocketTestServer : WebSocketTestServer
 
         return responseSegments;
     }
+
+    protected abstract CompletionStreamingResponseBase GetCompletionStreamingResponse(int messageNum, string responseChunk, List<string> responseList);
 }

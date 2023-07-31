@@ -2,20 +2,24 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 using Xunit;
+using ChatHistory = Microsoft.SemanticKernel.AI.ChatCompletion.ChatHistory;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
 
 /// <summary>
-/// Integration tests for <see cref=" OobaboogaChatCompletion"/>.
+/// Integration tests for <see cref=" Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion.OobaboogaChatCompletion"/>.
 /// </summary>
 public sealed class OobaboogaTextCompletionTests : IDisposable
 {
@@ -89,6 +93,61 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         AssertAcceptableResponse(resultsMerged);
     }
 
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task OobaboogaLocalChatCompletionAsync()
+    {
+        var oobaboogaLocal = new OobaboogaChatCompletion(
+            endpoint: new Uri(Endpoint),
+            blockingPort: BlockingPort);
+
+        var history = new ChatHistory();
+        history.AddUserMessage("What is your name?");
+        // Act
+        var localResponse = await oobaboogaLocal.GetChatCompletionsAsync(history, new ChatRequestSettings()
+        {
+            Temperature = 0.01,
+            MaxTokens = 20,
+            TopP = 0.1,
+        });
+
+        var chatMessage = await localResponse[^1].GetChatMessageAsync(CancellationToken.None).ConfigureAwait(false);
+        this.AssertAcceptableChatResponse(chatMessage);
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
+    public async Task OobaboogaLocalChatCompletionStreamingAsync()
+    {
+        var oobaboogaLocal = new OobaboogaChatCompletion(
+            endpoint: new Uri(Endpoint),
+            blockingPort: BlockingPort,
+            streamingPort: StreamingPort);
+
+        var history = new ChatHistory();
+        history.AddUserMessage("What is your name?");
+
+        // Act
+        var localResponse = oobaboogaLocal.GetStreamingChatCompletionsAsync(history, new ChatRequestSettings()
+        {
+            Temperature = 0.01,
+            MaxTokens = 7,
+            TopP = 0.1,
+        });
+
+        StringBuilder stringBuilder = new();
+        ChatMessageBase? chatMessage = null;
+        await foreach (var result in localResponse)
+        {
+            await foreach (var message in result.GetStreamingChatMessageAsync())
+            {
+                stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"{message.Role}: {message.Content}");
+                chatMessage = message;
+            }
+        }
+
+        var resultsMerged = stringBuilder.ToString();
+        this.AssertAcceptableChatResponse(chatMessage);
+    }
+
     private static void AssertAcceptableResponse(string localResponse)
     {
         // Assert
@@ -99,6 +158,16 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         // A few will return an empty string, but well those shouldn't be used for integration tests.
         var expectedRegex = new Regex(@"\s\w+.*");
         Assert.Matches(expectedRegex, localResponse);
+    }
+
+    private void AssertAcceptableChatResponse(ChatMessageBase? chatMessage)
+    {
+        Assert.NotNull(chatMessage);
+        Assert.NotNull(chatMessage.Content);
+        Assert.Equal(chatMessage.Role, AuthorRole.Assistant);
+        // Default chat settings use the "Example" character, which depicts an assistant named Chiharu. Any non trivial chat model should return the appropriate name.
+        var expectedRegex = new Regex(@"\w+.*Chiharu.*");
+        Assert.Matches(expectedRegex, chatMessage.Content);
     }
 
     public void Dispose()

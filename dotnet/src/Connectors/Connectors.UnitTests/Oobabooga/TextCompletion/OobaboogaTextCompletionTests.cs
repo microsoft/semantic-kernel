@@ -12,12 +12,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 using Xunit;
 using Xunit.Abstractions;
+using ChatHistory = Microsoft.SemanticKernel.AI.ChatCompletion.ChatHistory;
 
 namespace SemanticKernel.Connectors.UnitTests.Oobabooga.TextCompletion;
 
@@ -32,6 +34,11 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private const int StreamingPort = 2345;
     private const string CompletionText = "fake-test";
     private const string CompletionMultiText = "Hello, my name is";
+
+    private const string CompletionMultiTextExpectedResponse = @" John
+. I
+'m a
+ writer";
 
     private HttpMessageHandlerStub _messageHandlerStub;
     private HttpClient _httpClient;
@@ -152,10 +159,9 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ShouldHandleStreamingServicePersistentWebSocketResponseAsync()
     {
         var requestMessage = CompletionText;
-        var expectedResponse = new List<string> { this._streamCompletionResponseStub };
         await this.RunWebSocketMultiPacketStreamingTestAsync(
             requestMessage: requestMessage,
-            expectedResponse: expectedResponse,
+            expectedResponses: this._streamCompletionResponseStub,
             isPersistent: true).ConfigureAwait(false);
     }
 
@@ -163,10 +169,9 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     public async Task ShouldHandleStreamingServiceTransientWebSocketResponseAsync()
     {
         var requestMessage = CompletionText;
-        var expectedResponse = new List<string> { this._streamCompletionResponseStub };
         await this.RunWebSocketMultiPacketStreamingTestAsync(
             requestMessage: requestMessage,
-            expectedResponse: expectedResponse).ConfigureAwait(false);
+            expectedResponses: this._streamCompletionResponseStub).ConfigureAwait(false);
     }
 
     [Fact]
@@ -226,52 +231,40 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         }
     }
 
-    [Fact]
-    public async Task ShouldHandleMultiPacketStreamingServiceTransientWebSocketResponseAsync()
-    {
-        await this.RunWebSocketMultiPacketStreamingTestAsync().ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task ShouldHandleMultiPacketStreamingServicePersistentWebSocketResponseBroadcastBlockAsync()
-    {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(isPersistent: true).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task ShouldHandleConcurrentMultiPacketStreamingServiceTransientWebSocketResponseAsync()
-    {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10).ConfigureAwait(false);
-    }
-
-    [Fact]
-    public async Task ShouldHandleConcurrentMultiPacketStreamingServicePersistentWebSocketResponseAsync()
-    {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10, isPersistent: true).ConfigureAwait(false);
-    }
-
     /// <summary>
     /// This test will assess concurrent enumeration of the same long multi message (500 websocket messages) streaming result.
     /// </summary>
     [Fact]
     public async Task ShouldHandleConcurrentEnumerationOfLongStreamingServiceResponseAsync()
     {
-        var expectedResponse = Enumerable.Range(0, 500).Select(i => i.ToString(CultureInfo.InvariantCulture)).ToList();
+        var expectedResponse = Enumerable.Range(0, 500).Select(i => i.ToString(CultureInfo.InvariantCulture)).ToList().Aggregate((s1, s2) => $"{s1}\n{s2}");
         using SemaphoreSlim enforcedConcurrentCallSemaphore = new(20);
         await this.RunWebSocketMultiPacketStreamingTestAsync(
-            expectedResponse: expectedResponse,
+            expectedResponses: expectedResponse,
             nbConcurrentCalls: 1,
             nbConcurrentEnumeration: 100,
             isPersistent: true,
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 0,
-            enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
+            enforcedConcurrentCallSemaphoreCount: 20,
             maxExpectedNbClients: 20).ConfigureAwait(false);
     }
 
-    private async Task RunWebSocketMultiPacketStreamingTestAsync(
+    /// <summary>
+    /// This is a multi-parameter test to test complex queries.
+    /// </summary>
+    [Theory]
+    [InlineData(CompletionMultiText, CompletionMultiTextExpectedResponse, 1, 1, false, 0, 0, 100, 0, null, 0, 0, false)]
+    [InlineData(CompletionMultiText, CompletionMultiTextExpectedResponse, 1, 1, true, 0, 0, 100, 0, null, 0, 0, false)]
+    [InlineData(CompletionMultiText, CompletionMultiTextExpectedResponse, 1, 10, false, 0, 0, 100, 0, null, 0, 0, false)]
+    [InlineData(CompletionMultiText, CompletionMultiTextExpectedResponse, 1, 10, true, 0, 0, 100, 0, null, 0, 0, false)]
+    [InlineData(CompletionMultiText, CompletionMultiTextExpectedResponse, 1, 1, false, 0, 0, 100, 0, null, 0, 0, true)]
+    [InlineData(CompletionMultiText, CompletionMultiTextExpectedResponse, 1, 1, true, 0, 0, 100, 0, null, 0, 0, true)]
+    [InlineData(CompletionMultiText, CompletionMultiTextExpectedResponse, 1, 10, false, 0, 0, 100, 0, null, 0, 0, true)]
+    [InlineData(CompletionMultiText, CompletionMultiTextExpectedResponse, 1, 10, true, 0, 0, 100, 0, null, 0, 0, true)]
+    public async Task RunWebSocketMultiPacketStreamingTestAsync(
         string requestMessage = CompletionMultiText,
-        List<string>? expectedResponse = null,
+        string expectedResponses = CompletionMultiTextExpectedResponse,
         int nbConcurrentCalls = 1,
         int nbConcurrentEnumeration = 1,
         bool isPersistent = false,
@@ -279,15 +272,12 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         int segmentMessageDelay = 0,
         int keepAliveWebSocketsDuration = 100,
         int concurrentCallsTicksDelay = 0,
-        SemaphoreSlim? enforcedConcurrentCallSemaphore = null,
+        int enforcedConcurrentCallSemaphoreCount = 0,
         int maxExpectedNbClients = 0,
-        int maxTestDuration = 0)
+        int maxTestDuration = 0,
+        bool isChat = false)
     {
-        if (expectedResponse == null)
-        {
-            expectedResponse = new List<string> { " John", ". I", "'m a", " writer" };
-        }
-
+        List<string> expectedResponse = expectedResponses.Split("\n").ToList();
         Func<ClientWebSocket>? webSocketFactory = null;
         // Counter to track the number of WebSocket clients created
         int clientCount = 0;
@@ -320,37 +310,86 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
         using var cleanupToken = new CancellationTokenSource();
 
-        var sut = new OobaboogaTextCompletion(
-            endpoint: new Uri("http://localhost/"),
-            streamingPort: StreamingPort,
-            httpClient: this._httpClient,
-            webSocketsCleanUpCancellationToken: cleanupToken.Token,
-            webSocketFactory: webSocketFactory,
-            keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
-            concurrentSemaphore: enforcedConcurrentCallSemaphore,
-            logger: this._logger);
-
-        await using var server = new OobaboogaWebSocketTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse, logger: this._logger)
+        SemaphoreSlim? enforcedConcurrentCallSemaphore = null;
+        if (enforcedConcurrentCallSemaphoreCount > 0)
         {
-            RequestProcessingDelay = TimeSpan.FromMilliseconds(requestProcessingDuration),
-            SegmentMessageDelay = TimeSpan.FromMilliseconds(segmentMessageDelay)
-        };
+            enforcedConcurrentCallSemaphore = new(20);
+        }
+
+        OobaboogaCompletionBase sut;
+
+        if (isChat)
+        {
+            sut = new OobaboogaChatCompletion(
+                endpoint: new Uri("http://localhost/"),
+                streamingPort: StreamingPort,
+                httpClient: this._httpClient,
+                webSocketsCleanUpCancellationToken: cleanupToken.Token,
+                webSocketFactory: webSocketFactory,
+                keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
+                concurrentSemaphore: enforcedConcurrentCallSemaphore,
+                logger: this._logger);
+        }
+        else
+        {
+            sut = new OobaboogaTextCompletion(
+                endpoint: new Uri("http://localhost/"),
+                streamingPort: StreamingPort,
+                httpClient: this._httpClient,
+                webSocketsCleanUpCancellationToken: cleanupToken.Token,
+                webSocketFactory: webSocketFactory,
+                keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
+                concurrentSemaphore: enforcedConcurrentCallSemaphore,
+                logger: this._logger);
+        }
+
+        OobaboogaWebSocketTestServerBase server;
+        if (isChat)
+        {
+            server = new OobaboogaWebSocketChatCompletionTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse, logger: this._logger)
+            {
+                RequestProcessingDelay = TimeSpan.FromMilliseconds(requestProcessingDuration),
+                SegmentMessageDelay = TimeSpan.FromMilliseconds(segmentMessageDelay)
+            };
+        }
+        else
+        {
+            server = new OobaboogaWebSocketTextCompletionTestServer($"http://localhost:{StreamingPort}/", request => expectedResponse, logger: this._logger)
+            {
+                RequestProcessingDelay = TimeSpan.FromMilliseconds(requestProcessingDuration),
+                SegmentMessageDelay = TimeSpan.FromMilliseconds(segmentMessageDelay)
+            };
+        }
 
         var sw = Stopwatch.StartNew();
         var tasks = new List<Task<IAsyncEnumerable<string>>>();
 
         for (int i = 0; i < nbConcurrentCalls; i++)
         {
-            tasks.Add(Task.Run(() =>
+            IAsyncEnumerable<string> localResponse;
+
+            if (isChat)
             {
-                var localResponse = sut.CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
+                tasks.Add(Task.Run(() =>
                 {
-                    Temperature = 0.01,
-                    MaxTokens = 7,
-                    TopP = 0.1,
-                }, cancellationToken: cleanupToken.Token);
-                return localResponse;
-            }));
+                    var history = new Microsoft.SemanticKernel.AI.ChatCompletion.ChatHistory();
+                    history.AddUserMessage("What is your name?");
+                    return Task.FromResult(this.GetStreamingMessagesAsync(sut, history, cleanupToken));
+                }, cleanupToken.Token));
+            }
+            else
+            {
+                tasks.Add(Task.Run(() =>
+                {
+                    localResponse = ((OobaboogaTextCompletion)sut).CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
+                    {
+                        Temperature = 0.01,
+                        MaxTokens = 7,
+                        TopP = 0.1,
+                    }, cancellationToken: cleanupToken.Token);
+                    return localResponse;
+                }, cleanupToken.Token));
+            }
         }
 
         var callEnumerationTasks = new List<Task<List<string>>>();
@@ -377,6 +416,9 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var allResults = await Task.WhenAll(callEnumerationTasks).ConfigureAwait(false);
 
         var elapsed = sw.ElapsedMilliseconds;
+
+        await server.DisposeAsync().ConfigureAwait(false);
+
         if (maxExpectedNbClients > 0)
         {
             Assert.InRange(clientCount, 1, maxExpectedNbClients);
@@ -386,15 +428,49 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         foreach (var result in allResults)
         {
             Assert.Equal(expectedResponse.Count, result.Count);
-            for (int i = 0; i < expectedResponse.Count; i++)
+            var testResponse = expectedResponse;
+            if (isChat)
             {
-                Assert.Equal(expectedResponse[i], result[i]);
+                testResponse = expectedResponse.Select((s, i) => expectedResponse.Take(i + 1).Aggregate((a, b) => a + b)).ToList();
+            }
+
+            for (int i = 0; i < testResponse.Count; i++)
+            {
+                Assert.Equal(testResponse[i], result[i]);
             }
         }
 
         if (maxTestDuration > 0)
         {
             Assert.InRange(elapsed, 0, maxTestDuration);
+        }
+
+        if (enforcedConcurrentCallSemaphore != null)
+        {
+            enforcedConcurrentCallSemaphore.Dispose();
+        }
+    }
+
+    private async IAsyncEnumerable<string> GetStreamingMessagesAsync(OobaboogaCompletionBase sut, ChatHistory history, CancellationTokenSource cleanupToken)
+    {
+        IAsyncEnumerable<IChatStreamingResult> tempResponse;
+        tempResponse = ((OobaboogaChatCompletion)sut).GetStreamingChatCompletionsAsync(history, new ChatRequestSettings()
+        {
+            Temperature = 0.01,
+            MaxTokens = 7,
+            TopP = 0.1,
+        }, cancellationToken: cleanupToken.Token);
+
+        //localResponse = tempResponse.SelectMany(result => result.GetStreamingChatMessageAsync(cleanupToken.Token))
+        //    .Select(chatMessage => chatMessage.Content);
+
+        var chatMessages = new List<string>();
+        await foreach (var result in tempResponse)
+        {
+            await foreach (var chatMessage in result.GetStreamingChatMessageAsync(cleanupToken.Token))
+            {
+                yield return chatMessage.Content;
+            }
         }
     }
 

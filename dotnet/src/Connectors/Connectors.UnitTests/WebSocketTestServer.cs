@@ -21,7 +21,7 @@ internal class WebSocketTestServer : IDisposable
     private readonly CancellationTokenSource _socketCancellationTokenSource;
     private bool _serverIsRunning;
 
-    private Func<ArraySegment<byte>, List<ArraySegment<byte>>> _arraySegmentHandler;
+    public Func<ArraySegment<byte>, List<ArraySegment<byte>>>? ArraySegmentHandler { get; set; }
     private readonly ConcurrentDictionary<Guid, ConcurrentQueue<byte[]>> _requestContentQueues;
     private readonly ConcurrentBag<Task> _runningTasks = new();
 
@@ -40,11 +40,15 @@ internal class WebSocketTestServer : IDisposable
         }
     }
 
-    public WebSocketTestServer(string url, Func<ArraySegment<byte>, List<ArraySegment<byte>>> arraySegmentHandler, ILogger? logger = null)
+    public WebSocketTestServer(string url, Func<ArraySegment<byte>, List<ArraySegment<byte>>>? arraySegmentHandler = null, ILogger? logger = null)
     {
         this._logger = logger;
 
-        this._arraySegmentHandler = arraySegmentHandler;
+        if (arraySegmentHandler != null)
+        {
+            this.ArraySegmentHandler = arraySegmentHandler;
+        }
+
         this._requestContentQueues = new ConcurrentDictionary<Guid, ConcurrentQueue<byte[]>>();
 
         this._mainCancellationTokenSource = new();
@@ -125,26 +129,29 @@ internal class WebSocketTestServer : IDisposable
 
                     if (result.EndOfMessage)
                     {
-                        var responseSegments = this._arraySegmentHandler(receivedBytes);
+                        var responseSegments = this.ArraySegmentHandler?.Invoke(receivedBytes);
 
                         if (this.RequestProcessingDelay.Ticks > 0)
                         {
                             await Task.Delay(this.RequestProcessingDelay).ConfigureAwait(false);
                         }
 
-                        foreach (var responseSegment in responseSegments)
+                        if (responseSegments != null)
                         {
-                            if (connectedClient.Socket.State != WebSocketState.Open)
+                            foreach (var responseSegment in responseSegments)
                             {
-                                break;
-                            }
+                                if (connectedClient.Socket.State != WebSocketState.Open)
+                                {
+                                    break;
+                                }
 
-                            if (this.SegmentMessageDelay.Ticks > 0)
-                            {
-                                await Task.Delay(this.SegmentMessageDelay).ConfigureAwait(false);
-                            }
+                                if (this.SegmentMessageDelay.Ticks > 0)
+                                {
+                                    await Task.Delay(this.SegmentMessageDelay).ConfigureAwait(false);
+                                }
 
-                            await connectedClient.Socket.SendAsync(responseSegment, WebSocketMessageType.Text, true, this._socketCancellationTokenSource.Token).ConfigureAwait(false);
+                                await connectedClient.Socket.SendAsync(responseSegment, WebSocketMessageType.Text, true, this._socketCancellationTokenSource.Token).ConfigureAwait(false);
+                            }
                         }
                     }
                 }
