@@ -31,7 +31,8 @@ class TextMemorySkill:
     )
     @sk_function_context_parameter(
         name=NUM_RECORDS_PARAM,
-        description="The number of records to retrieve, default is 1, when more then 1 a comma separated string of the results is returned.",
+        description="The number of records to retrieve, default is 1, \
+when more then 1 a comma separated string of the results is returned.",
         default_value=DEFAULT_NUM_RECORDS,
     )
     async def recall_async(self, ask: str, context: SKContext) -> str:
@@ -80,7 +81,10 @@ class TextMemorySkill:
             num_records = TextMemorySkill.DEFAULT_NUM_RECORDS
 
         results = await context.memory.search_async(
-            collection=collection, query=ask, limit=int(num_records), min_relevance_score=float(relevance)
+            collection=collection,
+            query=ask,
+            limit=int(num_records),
+            min_relevance_score=float(relevance),
         )
         if results is None or len(results) == 0:
             if context.log is not None:
