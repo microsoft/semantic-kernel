@@ -9,7 +9,6 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -303,22 +302,6 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(
-        string? input = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        if (input != null) { this.State.Update(input); }
-
-        SKContext context = new(
-            this.State,
-            logger: logger);
-
-        return this.InvokeAsync(context, settings, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
@@ -326,6 +309,7 @@ public sealed class Plan : IPlan
     {
         if (this.Function is not null)
         {
+            AddVariablesToContext(this.State, context);
             var result = await this.Function
                 .WithInstrumentation(context.Logger)
                 .InvokeAsync(context, settings, cancellationToken)
@@ -343,12 +327,8 @@ public sealed class Plan : IPlan
             // loop through steps and execute until completion
             while (this.HasNextStep)
             {
-                var functionContext = context;
-
-                AddVariablesToContext(this.State, functionContext);
-
-                await this.InvokeNextStepAsync(functionContext, cancellationToken).ConfigureAwait(false);
-
+                AddVariablesToContext(this.State, context);
+                await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
                 this.UpdateContextWithOutputs(context);
             }
         }
@@ -453,7 +433,7 @@ public sealed class Plan : IPlan
         // Loop through vars and add anything missing to context
         foreach (var item in vars)
         {
-            if (!context.Variables.ContainsKey(item.Key))
+            if (!context.Variables.TryGetValue(item.Key, out string? value) || string.IsNullOrEmpty(value))
             {
                 context.Variables.Set(item.Key, item.Value);
             }

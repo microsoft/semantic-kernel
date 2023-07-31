@@ -32,7 +32,8 @@ public static class Example43_GetModelResult
         var myFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var textResult = await myFunction.InvokeAsync("Sci-fi", new CompleteRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+        var textResult = await myFunction.InvokeAsync("Sci-fi",
+            settings: new CompleteRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
         Console.WriteLine(textResult);
         Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAITextResult()).AsJson());
         Console.WriteLine();
