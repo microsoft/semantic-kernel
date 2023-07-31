@@ -32,7 +32,7 @@ async def main():
     kernel.import_semantic_skill_from_directory(pluginsDirectory, "SummarizeSkill")
 
     # Import the native functions
-    mathPlugin = kernel.import_skill(MathPlugin(), "MathPlugin") # noqa: F841
+    mathPlugin = kernel.import_skill(MathPlugin(), "MathPlugin")  # noqa: F841
     orchestratorPlugin = kernel.import_skill(
         OrchestratorPlugin(kernel), "OrchestratorPlugin"
     )

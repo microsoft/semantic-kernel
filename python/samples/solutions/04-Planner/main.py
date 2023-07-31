@@ -28,7 +28,7 @@ async def main():
     planner = BasicPlanner()
 
     # Import the native functions
-    mathPlugin = kernel.import_skill(MathPlugin(), "MathPlugin") # noqa: F841
+    mathPlugin = kernel.import_skill(MathPlugin(), "MathPlugin")  # noqa: F841
 
     ask = "If my investment of 2130.23 dollars increased by 23%, how much would I have after I spent $5 on a latte?"
     plan = await planner.create_plan_async(ask, kernel)

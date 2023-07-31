@@ -25,14 +25,20 @@ async def main():
     plugins_directory = "./plugins"
 
     # Import the OrchestratorPlugin and SummarizeSkill from the plugins directory.
-    orchestrator_plugin = kernel.import_semantic_skill_from_directory(plugins_directory, "OrchestratorPlugin")
-    summarization_plugin = kernel.import_semantic_skill_from_directory(plugins_directory, "SummarizeSkill") # noqa: F841
+    orchestrator_plugin = kernel.import_semantic_skill_from_directory(
+        plugins_directory, "OrchestratorPlugin"
+    )
+    summarization_plugin = kernel.import_semantic_skill_from_directory(
+        plugins_directory, "SummarizeSkill"
+    )  # noqa: F841
     get_intent_function = orchestrator_plugin["GetIntent"]
 
     # Create a new context and set the input, history, and options variables.
     context = kernel.create_new_context()
     context["input"] = "Yes"
-    context["history"] = """Bot: How can I help you?
+    context[
+        "history"
+    ] = """Bot: How can I help you?
     User: My team just hit a major milestone and I would like to send them a message to congratulate them.
     Bot:Would you like to send an email?"""
     context["options"] = "SendEmail, ReadEmail, SendMeeting, RsvpToMeeting, SendChat"
@@ -48,5 +54,3 @@ if __name__ == "__main__":
     import asyncio
 
     asyncio.run(main())
-
-
