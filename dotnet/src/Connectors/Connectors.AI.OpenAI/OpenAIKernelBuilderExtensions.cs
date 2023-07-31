@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
+using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
+using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -12,6 +15,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Reliability;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
@@ -269,12 +273,20 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new(
-            deploymentName,
-            endpoint,
-            apiKey,
-            HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-            parameters.Logger);
+        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters)
+        {
+            OpenAIClientOptions options = new();
+            options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger));
+            if (parameters.Config.HttpHandlerFactory is DefaultHttpRetryHandlerFactory factory && factory.Config is not null)
+            {
+                options.Retry.MaxRetries = factory.Config.MaxRetryCount;
+                options.Retry.MaxDelay = factory.Config.MaxRetryDelay;
+            }
+
+            OpenAIClient client = new(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
+
+            return new(deploymentName, client, parameters.Logger);
+        };
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
@@ -309,12 +321,20 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new(
-            deploymentName,
-            endpoint,
-            credentials,
-            HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-            parameters.Logger);
+        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters)
+        {
+            OpenAIClientOptions options = new();
+            options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger));
+            if (parameters.Config.HttpHandlerFactory is DefaultHttpRetryHandlerFactory factory && factory.Config is not null)
+            {
+                options.Retry.MaxRetries = factory.Config.MaxRetryCount;
+                options.Retry.MaxDelay = factory.Config.MaxRetryDelay;
+            }
+
+            OpenAIClient client = new(new Uri(endpoint), credentials, options);
+
+            return new(deploymentName, client, parameters.Logger);
+        };
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 

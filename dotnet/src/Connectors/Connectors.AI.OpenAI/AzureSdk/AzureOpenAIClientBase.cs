@@ -43,9 +43,19 @@ public abstract class AzureOpenAIClientBase : ClientBase
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);
+            options.RetryPolicy = new RetryPolicy(0);
         }
 
         this.ModelId = modelId;
+        this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
+    }
+
+    private protected AzureOpenAIClientBase(string modelId,
+        string endpoint,
+        string apiKey,
+        OpenAIClientOptions options,
+        ILogger? logger = null) : base(logger)
+    {
         this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
     }
 
