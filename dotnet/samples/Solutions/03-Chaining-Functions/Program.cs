@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Plugins;
+using Plugins.OrchestratorPlugin;
 
 using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
 {
@@ -25,8 +25,8 @@ kernel.ImportSemanticSkillFromDirectory(pluginsDirectory, "OrchestratorPlugin");
 kernel.ImportSemanticSkillFromDirectory(pluginsDirectory, "SummarizePlugin");
 
 // Import the native functions
-var mathPlugin = kernel.ImportSkill(new MathPlugin(), "MathPlugin");
-var orchestratorPlugin = kernel.ImportSkill(new OrchestratorPlugin(kernel), "OrchestratorPlugin");
+var mathPlugin = kernel.ImportSkill(new Plugins.MathPlugin.Math(), "MathPlugin");
+var orchestratorPlugin = kernel.ImportSkill(new Orchestrator(kernel), "OrchestratorPlugin");
 
 // Make a request that runs the Sqrt function
 var result1 = await orchestratorPlugin["RouteRequest"]

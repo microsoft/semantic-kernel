@@ -5,13 +5,13 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Newtonsoft.Json.Linq;
 
-namespace Plugins;
+namespace Plugins.OrchestratorPlugin;
 
-public class OrchestratorPlugin
+public class Orchestrator
 {
     private IKernel _kernel;
 
-    public OrchestratorPlugin(IKernel kernel)
+    public Orchestrator(IKernel kernel)
     {
         this._kernel = kernel;
     }

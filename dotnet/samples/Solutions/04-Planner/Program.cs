@@ -4,7 +4,6 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
-using Plugins;
 
 using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
 {
@@ -21,7 +20,7 @@ IKernel kernel = new KernelBuilder()
     .Build();
 
 // Add the math plugin
-var mathPlugin = kernel.ImportSkill(new MathPlugin(), "MathPlugin");
+var mathPlugin = kernel.ImportSkill(new Plugins.MathPlugin.Math(), "MathPlugin");
 
 // Create a planner
 var planner = new SequentialPlanner(kernel);
