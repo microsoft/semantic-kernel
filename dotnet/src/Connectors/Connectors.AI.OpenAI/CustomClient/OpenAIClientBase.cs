@@ -31,13 +31,13 @@ public abstract class OpenAIClientBase
     private protected OpenAIClientBase(HttpClient? httpClient, ILogger? logger = null)
     {
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._log = logger ?? NullLogger.Instance;
+        this._logger = logger ?? NullLogger.Instance;
     }
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
     private protected virtual void AddRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add("User-Agent", HttpUserAgent);
+        request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
     }
 
     /// <summary>
@@ -93,7 +93,7 @@ public abstract class OpenAIClientBase
         }
         catch (Exception ex) when (ex is NotSupportedException or JsonException)
         {
-            this._log.LogError(ex, "Unable to extract error from response body content. Exception: {0}:{1}", ex.GetType(), ex.Message);
+            this._logger.LogError(ex, "Unable to extract error from response body content. Exception: {0}:{1}", ex.GetType(), ex.Message);
         }
 
         return null;
@@ -101,13 +101,10 @@ public abstract class OpenAIClientBase
 
     #region private ================================================================================
 
-    // HTTP user agent sent to remote endpoints
-    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
-
     /// <summary>
     /// Logger
     /// </summary>
-    private readonly ILogger _log;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// The HttpClient used for making HTTP requests.
@@ -159,7 +156,7 @@ public abstract class OpenAIClientBase
                 response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             }
 
-            this._log.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+            this._logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
             if (response.IsSuccessStatusCode)
             {

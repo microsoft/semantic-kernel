@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,13 +37,13 @@ public sealed class Kernel : IKernel, IDisposable
     public KernelConfig Config { get; }
 
     /// <inheritdoc/>
-    public ILogger Log { get; }
+    public ILogger Logger { get; }
 
     /// <inheritdoc/>
     public ISemanticTextMemory Memory => this._memory;
 
     /// <inheritdoc/>
-    public IReadOnlySkillCollection Skills => this._skillCollection.ReadOnlySkillCollection;
+    public IReadOnlySkillCollection Skills => this._skillCollection;
 
     /// <inheritdoc/>
     public IPromptTemplateEngine PromptTemplateEngine { get; }
@@ -60,16 +61,16 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="promptTemplateEngine"></param>
     /// <param name="memory"></param>
     /// <param name="config"></param>
-    /// <param name="log"></param>
+    /// <param name="logger"></param>
     public Kernel(
         ISkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         KernelConfig config,
-        ILogger log)
+        ILogger logger)
     {
-        this.Log = log;
+        this.Logger = logger;
         this.Config = config;
         this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
@@ -105,17 +106,17 @@ public sealed class Kernel : IKernel, IDisposable
         if (string.IsNullOrWhiteSpace(skillName))
         {
             skillName = SkillCollection.GlobalSkill;
-            this.Log.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
+            this.Logger.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
         }
         else
         {
-            this.Log.LogTrace("Importing skill {0}", skillName);
+            this.Logger.LogTrace("Importing skill {0}", skillName);
         }
 
         Dictionary<string, ISKFunction> skill = ImportSkill(
             skillInstance,
             skillName!,
-            this.Log
+            this.Logger
         );
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
@@ -144,6 +145,10 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
+    public Task<SKContext> RunAsync(ISKFunction skFunction, CancellationToken cancellationToken = default)
+        => this.RunAsync(new ContextVariables(), cancellationToken, skFunction);
+
+    /// <inheritdoc/>
     public Task<SKContext> RunAsync(params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(), pipeline);
 
@@ -168,18 +173,17 @@ public sealed class Kernel : IKernel, IDisposable
     {
         var context = new SKContext(
             variables,
-            this._skillCollection.ReadOnlySkillCollection,
-            this.Log,
-            cancellationToken);
+            this._skillCollection,
+            this.Logger);
 
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
         {
             if (context.ErrorOccurred)
             {
-                this.Log.LogError(
+                this.Logger.LogError(
                     context.LastException,
-                    "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastErrorDescription);
+                    "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastException?.Message);
                 return context;
             }
 
@@ -187,21 +191,21 @@ public sealed class Kernel : IKernel, IDisposable
 
             try
             {
-                context.CancellationToken.ThrowIfCancellationRequested();
-                context = await f.InvokeAsync(context).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (context.ErrorOccurred)
                 {
-                    this.Log.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
-                        pipelineStepCount, f.SkillName, f.Name, context.LastErrorDescription);
+                    this.Logger.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
+                        pipelineStepCount, f.SkillName, f.Name, context.LastException?.Message);
                     return context;
                 }
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
-                this.Log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
+                this.Logger.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
                     pipelineStepCount, f.SkillName, f.Name, e.Message);
-                context.Fail(e.Message, e);
+                context.LastException = e;
                 return context;
             }
         }
@@ -216,12 +220,11 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext(CancellationToken cancellationToken = default)
+    public SKContext CreateNewContext()
     {
         return new SKContext(
-            skills: this._skillCollection.ReadOnlySkillCollection,
-            logger: this.Log,
-            cancellationToken: cancellationToken);
+            skills: this._skillCollection,
+            logger: this.Logger);
     }
 
     /// <inheritdoc/>
@@ -271,7 +274,7 @@ public sealed class Kernel : IKernel, IDisposable
             skillName,
             functionName,
             functionConfig,
-            this.Log
+            this.Logger
         );
 
         // Connect the function to the current kernel skill collection, in case the function
@@ -291,12 +294,12 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     /// <param name="skillInstance">Skill class instance</param>
     /// <param name="skillName">Skill name, used to group functions under a shared namespace</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="logger">Application logger</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger log)
+    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger logger)
     {
         MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
-        log.LogTrace("Importing skill name: {0}. Potential methods found: {1}", skillName, methods.Length);
+        logger.LogTrace("Importing skill name: {0}. Potential methods found: {1}", skillName, methods.Length);
 
         // Filter out non-SKFunctions and fail if two functions have the same name
         Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
@@ -304,7 +307,7 @@ public sealed class Kernel : IKernel, IDisposable
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
-                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, log);
+                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, logger);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new KernelException(
@@ -316,9 +319,30 @@ public sealed class Kernel : IKernel, IDisposable
             }
         }
 
-        log.LogTrace("Methods imported {0}", result.Count);
+        logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
+    }
+
+    #endregion
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Use Logger instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ILogger Log => this.Logger;
+
+    /// <summary>
+    /// Create a new instance of a context, linked to the kernel internal state.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for operations in context.</param>
+    /// <returns>SK context</returns>
+    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public SKContext CreateNewContext(CancellationToken cancellationToken)
+    {
+        return this.CreateNewContext();
     }
 
     #endregion

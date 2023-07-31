@@ -13,7 +13,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planning.Action;
 using Microsoft.SemanticKernel.Planning.Sequential;
+using Microsoft.SemanticKernel.Planning.Stepwise;
+using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Skills.Web;
+using Microsoft.SemanticKernel.Skills.Web.Bing;
+using NCalcSkills;
 
 /// <summary>
 /// Example of telemetry in Semantic Kernel using Application Insights within console application.
@@ -43,7 +49,7 @@ public sealed class Program
         ConfigureTracing(activityListener, telemetryClient);
 
         var kernel = GetKernel(logger);
-        var planner = GetPlanner(kernel, logger);
+        var planner = GetSequentialPlanner(kernel, logger);
 
         try
         {
@@ -98,7 +104,9 @@ public sealed class Program
 
     private static IKernel GetKernel(ILogger logger)
     {
-        string folder = RepoFiles.SampleSkillsPath();
+        var folder = RepoFiles.SampleSkillsPath();
+        var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
+        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
 
         var kernel = new KernelBuilder()
             .WithLogger(logger)
@@ -110,10 +118,14 @@ public sealed class Program
 
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill", "WriterSkill");
 
+        kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
+        kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "advancedCalculator");
+        kernel.ImportSkill(new TimeSkill(), "time");
+
         return kernel;
     }
 
-    private static ISequentialPlanner GetPlanner(
+    private static ISequentialPlanner GetSequentialPlanner(
         IKernel kernel,
         ILogger logger,
         int maxTokens = 1024)
@@ -121,6 +133,28 @@ public sealed class Program
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
 
         return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(logger);
+    }
+
+    private static IActionPlanner GetActionPlanner(
+        IKernel kernel,
+        ILogger logger)
+    {
+        return new ActionPlanner(kernel).WithInstrumentation(logger);
+    }
+
+    private static IStepwisePlanner GetStepwisePlanner(
+        IKernel kernel,
+        ILogger logger,
+        int minIterationTimeMs = 1500,
+        int maxTokens = 2000)
+    {
+        var plannerConfig = new StepwisePlannerConfig
+        {
+            MinIterationTimeMs = minIterationTimeMs,
+            MaxTokens = maxTokens
+        };
+
+        return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(logger);
     }
 
     /// <summary>
@@ -140,14 +174,22 @@ public sealed class Program
             }
         };
 
-        MeasurementCallback<double> measurementCallback = (instrument, measurement, tags, state) =>
+        meterListener.SetMeasurementEventCallback(GetMeasurementCallback<int>(telemetryClient));
+        meterListener.SetMeasurementEventCallback(GetMeasurementCallback<double>(telemetryClient));
+
+        meterListener.Start();
+    }
+
+    /// <summary>
+    /// The callback which can be used to get measurement recording.
+    /// </summary>
+    /// <param name="telemetryClient">Instance of Application Insights <see cref="TelemetryClient"/>.</param>
+    private static MeasurementCallback<T> GetMeasurementCallback<T>(TelemetryClient telemetryClient) where T : struct
+    {
+        return (instrument, measurement, tags, state) =>
         {
             telemetryClient.GetMetric(instrument.Name).TrackValue(measurement);
         };
-
-        meterListener.SetMeasurementEventCallback(measurementCallback);
-
-        meterListener.Start();
     }
 
     /// <summary>
