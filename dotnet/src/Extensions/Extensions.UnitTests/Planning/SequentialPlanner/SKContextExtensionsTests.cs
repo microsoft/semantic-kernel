@@ -43,7 +43,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, skills.ReadOnlySkillCollection, logger);
+        var context = new SKContext(variables, skills, logger);
         var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -95,7 +95,6 @@ public class SKContextExtensionsTests
         skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
         skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
-        skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(variables, skills.Object, logger);
@@ -161,7 +160,6 @@ public class SKContextExtensionsTests
         skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
         skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
-        skills.SetupGet(x => x.ReadOnlySkillCollection).Returns(skills.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(variables, skills.Object, logger);
@@ -217,7 +215,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, skills.ReadOnlySkillCollection, logger);
+        var context = new SKContext(variables, skills, logger);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
