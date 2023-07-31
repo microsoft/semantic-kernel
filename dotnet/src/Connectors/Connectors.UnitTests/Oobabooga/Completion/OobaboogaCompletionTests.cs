@@ -21,12 +21,12 @@ using Xunit;
 using Xunit.Abstractions;
 using ChatHistory = Microsoft.SemanticKernel.AI.ChatCompletion.ChatHistory;
 
-namespace SemanticKernel.Connectors.UnitTests.Oobabooga.TextCompletion;
+namespace SemanticKernel.Connectors.UnitTests.Oobabooga.Completion;
 
 /// <summary>
 /// Unit tests for <see cref="OobaboogaChatCompletion"/> class.
 /// </summary>
-public sealed class OobaboogaTextCompletionTests : IDisposable
+public sealed class OobaboogaCompletionTests : IDisposable
 {
     private readonly XunitLogger<OobaboogaChatCompletion> _logger;
     private const string EndPoint = "https://fake-random-test-host";
@@ -45,7 +45,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private Uri _endPointUri;
     private string _streamCompletionResponseStub;
 
-    public OobaboogaTextCompletionTests(ITestOutputHelper output)
+    public OobaboogaCompletionTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<OobaboogaChatCompletion>(output);
         this._messageHandlerStub = new HttpMessageHandlerStub();
@@ -74,7 +74,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var values = this._messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
 
         var value = values.SingleOrDefault();
-        Assert.Equal("Semantic-Kernel", value);
+        Assert.Equal("Microsoft-Semantic-Kernel", value);
     }
 
     [Fact]

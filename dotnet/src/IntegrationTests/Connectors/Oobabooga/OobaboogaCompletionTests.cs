@@ -21,7 +21,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
 /// <summary>
 /// Integration tests for <see cref=" Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion.OobaboogaChatCompletion"/>.
 /// </summary>
-public sealed class OobaboogaTextCompletionTests : IDisposable
+public sealed class OobaboogaCompletionTests : IDisposable
 {
     private const string Endpoint = "http://localhost";
     private const int BlockingPort = 5000;
@@ -31,7 +31,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private List<ClientWebSocket> _webSockets = new();
     private Func<ClientWebSocket> _webSocketFactory;
 
-    public OobaboogaTextCompletionTests()
+    public OobaboogaCompletionTests()
     {
         // Load configuration
         this._configuration = new ConfigurationBuilder()
