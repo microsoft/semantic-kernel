@@ -11,31 +11,25 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>semantickernel-connectors-ai-openai</artifactId>
+    <artifactId>semantickernel-connectors-memory-sqlite</artifactId>
 
-    <name>Semantic Kernel OpenAI Connectors</name>
-    <description>Defines OpenAI connectors to be used with the Semantic Kernel</description>
+    <name>Semantic Kernel SQLite Memory Connector</name>
+    <description>Defines connector for SQLite to be used with the Semantic Kernel</description>
 
     <dependencies>
         <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-search-documents</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.inject</groupId>
-            <artifactId>jakarta.inject-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -51,21 +45,24 @@
         </dependency>
 
         <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.20.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.20.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
-            <version>2.20.0</version>
             <scope>test</scope>
         </dependency>
 
