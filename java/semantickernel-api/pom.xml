@@ -6,13 +6,14 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
-        <version>0.2.5-alpha-SNAPSHOT</version>
+        <version>0.2.8-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>semantickernel-api</artifactId>
     <packaging>jar</packaging>
-
+    <name>Semantic Kernel API</name>
+    <description>Defines the public interface for the Semantic Kernel</description>
     <dependencies>
         <dependency>
             <groupId>com.azure</groupId>
@@ -28,6 +29,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
         </dependency>
@@ -36,5 +42,4 @@
             <artifactId>jsr305</artifactId>
         </dependency>
     </dependencies>
-
 </project>

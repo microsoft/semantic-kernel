@@ -83,6 +83,7 @@ export const useChat = () => {
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
                     input: '',
                     isBotTyping: false,
+                    userDataLoaded: false,
                 };
 
                 dispatch(addConversation(newChat));
@@ -153,6 +154,7 @@ export const useChat = () => {
                         botProfilePicture: getBotProfilePicture(Object.keys(loadedConversations).length),
                         input: '',
                         isBotTyping: false,
+                        userDataLoaded: false,
                     };
                 }
 
@@ -207,7 +209,7 @@ export const useChat = () => {
             });
     };
 
-    const getBotProfilePicture = (index: number) => {
+    const getBotProfilePicture = (index: number): string => {
         return botProfilePictures[index % botProfilePictures.length];
     };
 
@@ -225,13 +227,13 @@ export const useChat = () => {
         return [];
     };
 
-    const importDocument = async (chatId: string, file: File) => {
+    const importDocument = async (chatId: string, files: File[]) => {
         try {
             await documentImportService.importDocumentAsync(
                 userId,
                 fullName,
                 chatId,
-                file,
+                files,
                 await AuthHelper.getSKaaSAccessToken(instance, inProgress),
             );
         } catch (e: any) {
@@ -267,6 +269,7 @@ export const useChat = () => {
                     botProfilePicture: getBotProfilePicture(Object.keys(conversations).length),
                     input: '',
                     isBotTyping: false,
+                    userDataLoaded: false,
                 };
 
                 dispatch(addConversation(newChat));

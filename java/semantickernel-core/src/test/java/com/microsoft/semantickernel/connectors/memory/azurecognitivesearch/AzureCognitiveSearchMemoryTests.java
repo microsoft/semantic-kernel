@@ -99,7 +99,6 @@ class AzureCognitiveSearchMemoryTests {
 
         kernel =
                 SKBuilders.kernel()
-                        .withKernelConfig(SKBuilders.kernelConfig().build())
                         .withMemory(new AzureCognitiveSearchMemory(searchIndexAsyncClient))
                         .build();
     }

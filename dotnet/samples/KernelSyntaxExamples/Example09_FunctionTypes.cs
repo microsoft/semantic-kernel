@@ -16,11 +16,11 @@ public static class Example09_FunctionTypes
     {
         Console.WriteLine("======== Native function types ========");
 
-        var fakeContext = new SKContext(logger: ConsoleLogger.Log);
+        var fakeContext = new SKContext(logger: ConsoleLogger.Logger);
 
         var kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithLogger(ConsoleLogger.Logger)
+            .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates

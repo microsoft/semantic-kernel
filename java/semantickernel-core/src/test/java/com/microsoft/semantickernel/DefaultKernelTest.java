@@ -2,6 +2,10 @@
 package com.microsoft.semantickernel;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.models.ChatChoice;
+import com.azure.ai.openai.models.ChatCompletions;
+import com.azure.ai.openai.models.ChatCompletionsOptions;
+import com.azure.ai.openai.models.ChatMessage;
 import com.azure.ai.openai.models.Choice;
 import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
@@ -111,15 +115,9 @@ public class DefaultKernelTest {
     }
 
     public static Kernel buildKernel(String model, OpenAIAsyncClient client) {
-
         TextCompletion textCompletion = new OpenAITextCompletion(client, model);
 
-        KernelConfig kernelConfig =
-                SKBuilders.kernelConfig()
-                        .addTextCompletionService(model, kernel -> textCompletion)
-                        .build();
-
-        return SKBuilders.kernel().withKernelConfig(kernelConfig).build();
+        return SKBuilders.kernel().withDefaultAIService(textCompletion).build();
     }
 
     private static OpenAIAsyncClient mockCompletionOpenAIAsyncClient(String arg, String response) {
@@ -186,45 +184,76 @@ public class DefaultKernelTest {
 
         for (Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response : responses) {
 
-            Choice choice = Mockito.mock(Choice.class);
-            Mockito.when(choice.getText()).thenReturn(response.getT2());
+            mockChatCompletionResponse(openAIAsyncClient, response);
 
-            Completions completions = Mockito.mock(Completions.class);
-
-            Mockito.when(completions.getChoices()).thenReturn(Collections.singletonList(choice));
-
-            Mockito.when(
-                            openAIAsyncClient.getCompletions(
-                                    Mockito.any(String.class),
-                                    Mockito.<CompletionsOptions>argThat(
-                                            it -> response.getT1().matches(it.getPrompt().get(0)))))
-                    .then(
-                            (arg) -> {
-                                response.getT3()
-                                        .accept(
-                                                ((CompletionsOptions) arg.getArgument(1))
-                                                        .getPrompt()
-                                                        .get(0));
-                                return Mono.just(completions);
-                            })
-                    .thenReturn(Mono.just(completions));
-
-            Mockito.when(
-                            openAIAsyncClient.getCompletions(
-                                    Mockito.any(String.class),
-                                    Mockito.<String>argThat(it -> response.getT1().matches(it))))
-                    .then(
-                            (arg) -> {
-                                response.getT3()
-                                        .accept(
-                                                ((CompletionsOptions) arg.getArgument(1))
-                                                        .getPrompt()
-                                                        .get(0));
-                                return Mono.just(completions);
-                            })
-                    .thenReturn(Mono.just(completions));
+            mockTextCompletionResponse(openAIAsyncClient, response);
         }
         return openAIAsyncClient;
+    }
+
+    private static void mockTextCompletionResponse(
+            OpenAIAsyncClient openAIAsyncClient,
+            Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response) {
+        Choice choice = Mockito.mock(Choice.class);
+        Mockito.when(choice.getText()).thenReturn(response.getT2());
+        Completions completions = Mockito.mock(Completions.class);
+        Mockito.when(completions.getChoices()).thenReturn(Collections.singletonList(choice));
+
+        Mockito.when(
+                        openAIAsyncClient.getCompletions(
+                                Mockito.any(String.class),
+                                Mockito.<CompletionsOptions>argThat(
+                                        it -> response.getT1().matches(it.getPrompt().get(0)))))
+                .then(
+                        (arg) -> {
+                            response.getT3()
+                                    .accept(
+                                            ((CompletionsOptions) arg.getArgument(1))
+                                                    .getPrompt()
+                                                    .get(0));
+                            return Mono.just(completions);
+                        })
+                .thenReturn(Mono.just(completions));
+
+        Mockito.when(
+                        openAIAsyncClient.getCompletions(
+                                Mockito.any(String.class),
+                                Mockito.<String>argThat(it -> response.getT1().matches(it))))
+                .then(
+                        (arg) -> {
+                            response.getT3()
+                                    .accept(
+                                            ((CompletionsOptions) arg.getArgument(1))
+                                                    .getPrompt()
+                                                    .get(0));
+                            return Mono.just(completions);
+                        })
+                .thenReturn(Mono.just(completions));
+    }
+
+    private static void mockChatCompletionResponse(
+            OpenAIAsyncClient openAIAsyncClient,
+            Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response) {
+        ChatMessage message = Mockito.mock(ChatMessage.class);
+        Mockito.when(message.getContent()).thenReturn(response.getT2());
+        ChatChoice chatChoice = Mockito.mock(ChatChoice.class);
+        Mockito.when(chatChoice.getMessage()).thenReturn(message);
+        ChatCompletions chatCompletions = Mockito.mock(ChatCompletions.class);
+        Mockito.when(chatCompletions.getChoices())
+                .thenReturn(Collections.singletonList(chatChoice));
+
+        ArgumentMatcher<ChatCompletionsOptions> completionMatcher =
+                chatCompletionsOptions ->
+                        response.getT1()
+                                .matches(
+                                        chatCompletionsOptions.getMessages().stream()
+                                                .map(ChatMessage::getContent)
+                                                .collect(Collectors.joining("\n")));
+
+        Mockito.when(
+                        openAIAsyncClient.getChatCompletions(
+                                Mockito.any(String.class), Mockito.argThat(completionMatcher)))
+                .thenReturn(Mono.just(chatCompletions));
     }
 
     @Test

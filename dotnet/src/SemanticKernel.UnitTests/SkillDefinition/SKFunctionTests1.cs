@@ -18,7 +18,7 @@ public sealed class SKFunctionTests1
     public SKFunctionTests1()
     {
         this._promptTemplate = new Mock<IPromptTemplate>();
-        this._promptTemplate.Setup(x => x.RenderAsync(It.IsAny<SKContext>())).ReturnsAsync("foo");
+        this._promptTemplate.Setup(x => x.RenderAsync(It.IsAny<SKContext>(), It.IsAny<CancellationToken>())).ReturnsAsync("foo");
         this._promptTemplate.Setup(x => x.GetParameters()).Returns(new List<ParameterView>());
     }
 
@@ -76,12 +76,12 @@ public sealed class SKFunctionTests1
     {
         var promptTemplate = new Mock<IPromptTemplate>();
 
-        promptTemplate.Setup(x => x.RenderAsync(It.IsAny<SKContext>()))
+        promptTemplate.Setup(x => x.RenderAsync(It.IsAny<SKContext>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync("some prompt");
 
         promptTemplate
             .Setup(x => x.GetParameters())
-            .Returns(new List<ParameterView>()); ;
+            .Returns(new List<ParameterView>());
 
         return promptTemplate;
     }

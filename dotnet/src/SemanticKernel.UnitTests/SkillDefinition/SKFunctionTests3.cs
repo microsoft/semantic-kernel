@@ -29,7 +29,7 @@ public sealed class SKFunctionTests3
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
-        Assert.All(functions, f => Assert.NotNull(f));
+        Assert.All(functions, Assert.NotNull);
     }
 
     [Fact]
@@ -82,13 +82,13 @@ public sealed class SKFunctionTests3
     {
         // Arrange
         var context = Kernel.Builder.Build().CreateNewContext();
-        context["done"] = "NO";
+        context.Variables["done"] = "NO";
 
         // Note: the function doesn't have any SK attributes
         async Task<SKContext> ExecuteAsync(SKContext contextIn)
         {
-            Assert.Equal("NO", contextIn["done"]);
-            contextIn["canary"] = "YES";
+            Assert.Equal("NO", contextIn.Variables["done"]);
+            contextIn.Variables["canary"] = "YES";
 
             await Task.Delay(0);
             return contextIn;
@@ -105,8 +105,8 @@ public sealed class SKFunctionTests3
         SKContext result = await function.InvokeAsync(context);
 
         // Assert
-        Assert.Equal("YES", context["canary"]);
-        Assert.Equal("YES", result["canary"]);
+        Assert.Equal("YES", context.Variables["canary"]);
+        Assert.Equal("YES", result.Variables["canary"]);
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public sealed class SKFunctionTests3
     {
         // Arrange
         var context = Kernel.Builder.Build().CreateNewContext();
-        context["done"] = "NO";
+        context.Variables["done"] = "NO";
 
         // Note: This is an important edge case that affects the function signature and how delegates
         //       are handled internally: the function references an external variable and cannot be static.
@@ -124,7 +124,7 @@ public sealed class SKFunctionTests3
         async Task<SKContext> ExecuteAsync(SKContext contextIn)
         {
             string referenceToExternalVariable = variableOutsideTheFunction;
-            contextIn["canary"] = "YES";
+            contextIn.Variables["canary"] = "YES";
 
             await Task.Delay(0);
             return contextIn;
@@ -140,7 +140,7 @@ public sealed class SKFunctionTests3
         SKContext result = await function.InvokeAsync(context);
 
         // Assert
-        Assert.Equal("YES", result["canary"]);
+        Assert.Equal("YES", result.Variables["canary"]);
     }
 
     private sealed class InvalidSkill

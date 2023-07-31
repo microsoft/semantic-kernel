@@ -1,0 +1,129 @@
+#
+# This workflow will build and run all tests using dotnet docker containers,
+# each targeting a single version of the dotnet SDK.
+#
+
+name: dotnet-ci
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 7 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test-docker:
+    strategy:
+        fail-fast: false
+        matrix:
+          include:
+          - { os: ubuntu-latest, dotnet: '6.0', configuration: Debug }
+          - { os: ubuntu-latest, dotnet: '6.0', configuration: Release }
+          - { os: ubuntu-latest, dotnet: '7.0', configuration: Release }
+          - { os: ubuntu-latest, dotnet: '8.0-preview', configuration: Release }
+  
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        clean: true
+        
+    - name: Find solutions
+      shell: bash
+      run: echo "solutions=$(find ./ -type f -name "*.sln" | tr '\n' ' ')" >> $GITHUB_ENV
+
+    - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
+      run: |
+        docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+
+    - name: Build
+      run: |
+        for solution in ${{ env.solutions }}; do
+          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet build -c ${{ matrix.configuration }} /app/$solution"
+        done
+        
+    - name: Find test projects
+      shell: bash
+      run: echo "testprojects=$(find ./dotnet -type f -name "*UnitTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+
+    - name: Run Tests
+      shell: bash
+      run: |
+        for project in ${{ env.testprojects }}; do
+          docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
+        done
+
+    - name: Upload dotnet test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: dotnet-testresults-${{ matrix.configuration }}
+        path: ./TestResults
+      if: ${{ always() }}
+
+  build-and-test-windows:
+    strategy:
+        fail-fast: false
+        matrix:
+          os: [windows-latest]
+          configuration: [Release, Debug]
+          dotnet-version: ['7.0.x']
+    runs-on: ${{ matrix.os }}
+    env:
+      NUGET_CERT_REVOCATION_MODE: offline
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        clean: true
+
+    - name: Setup .NET SDK ${{ matrix.dotnet-version }}
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.GPR_READ_TOKEN }}
+
+    - uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        # Look to see if there is a cache hit for the corresponding requirements file
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget
+
+    - name: Find solutions
+      shell: bash
+      run: echo "solutions=$(find ./dotnet -type f -name "*.sln" | tr '\n' ' ')" >> $GITHUB_ENV
+
+    - name: Restore dependencies
+      shell: bash
+      run: |
+        for solution in ${{ env.solutions }}; do
+          dotnet restore $solution
+        done
+
+    - name: Build
+      shell: bash
+      run: |
+        for solution in ${{ env.solutions }}; do
+          dotnet build $solution --no-restore --configuration ${{ matrix.configuration }}
+        done
+
+    - name: Find test projects
+      shell: bash
+      run: echo "testprojects=$(find ./dotnet -type f -name "*Tests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+
+    - name: Run Tests
+      shell: bash
+      run: |
+        for project in ${{ env.testprojects }}; do
+          dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
+        done
+
+    - name: Upload dotnet test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: dotnet-testresults-${{ matrix.configuration }}
+        path: ./TestResults
+      if: ${{ always() }}

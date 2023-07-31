@@ -3,7 +3,6 @@
 using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
@@ -68,12 +67,12 @@ public sealed class KernelBuilder
     /// <summary>
     /// Add a logger to the kernel to be built.
     /// </summary>
-    /// <param name="log">Logger to add.</param>
+    /// <param name="logger">Logger to add.</param>
     /// <returns>Updated kernel builder including the logger.</returns>
-    public KernelBuilder WithLogger(ILogger log)
+    public KernelBuilder WithLogger(ILogger logger)
     {
-        Verify.NotNull(log);
-        this._logger = log;
+        Verify.NotNull(logger);
+        this._logger = logger;
         return this;
     }
 
@@ -134,21 +133,6 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(promptTemplateEngine);
         this._promptTemplateEngine = promptTemplateEngine;
-        return this;
-    }
-
-    /// <summary>
-    /// Add memory storage and an embedding generator to the kernel to be built.
-    /// </summary>
-    /// <param name="storage">Storage to add.</param>
-    /// <param name="embeddingGenerator">Embedding generator to add.</param>
-    /// <returns>Updated kernel builder including the memory storage and embedding generator.</returns>
-    public KernelBuilder WithMemoryStorageAndTextEmbeddingGeneration(
-        IMemoryStore storage, ITextEmbeddingGeneration embeddingGenerator)
-    {
-        Verify.NotNull(storage);
-        Verify.NotNull(embeddingGenerator);
-        this._memoryFactory = () => new SemanticTextMemory(storage, embeddingGenerator);
         return this;
     }
 
