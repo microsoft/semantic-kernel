@@ -31,8 +31,7 @@ class TextMemorySkill:
     )
     @sk_function_context_parameter(
         name=NUM_RECORDS_PARAM,
-        description="The number of records to retrieve, default is 1, \
-when more then 1, a comma separated string of the results is returned.",
+        description="The number of records to retrieve, default is 1.",
         default_value=DEFAULT_NUM_RECORDS,
     )
     async def recall_async(self, ask: str, context: SKContext) -> str:
@@ -47,10 +46,10 @@ when more then 1, a comma separated string of the results is returned.",
             ask -- The question to ask the memory
             context -- Contains the 'collection' to search for information
                 , the 'relevance' score to use when searching
-                and the 'num_records' to retrieve
+                and the 'num_records' to retrieve.
 
         Returns:
-            The nearest item from the memory store as a comma-seperated string or empty string if not found. 
+            The nearest item from the memory store as a comma-separated string or empty string if not found.
         """
         if context.variables is None:
             raise ValueError("Context has no variables")
