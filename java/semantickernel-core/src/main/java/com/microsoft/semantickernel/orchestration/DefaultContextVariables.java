@@ -156,30 +156,25 @@ class DefaultContextVariables implements ContextVariables, WritableContextVariab
         }
 
         @Override
-        public WritableContextVariables buildWritable() {
-            return new DefaultContextVariables(variables);
-        }
-
-        @Override
-        public ContextVariables.Builder setVariable(String key, String value) {
+        public ContextVariables.Builder withVariable(String key, String value) {
             variables.put(key, value);
             return this;
         }
 
         @Override
-        public ContextVariables build() {
-            return new DefaultContextVariables(variables);
-        }
-
-        @Override
-        public ContextVariables build(String content) {
+        public Builder withInput(String content) {
             variables.put(MAIN_KEY, content);
-            return new DefaultContextVariables(variables);
+            return this;
         }
 
         @Override
-        public ContextVariables build(Map<String, String> map) {
+        public Builder withVariables(Map<String, String> map) {
             variables.putAll(map);
+            return this;
+        }
+
+        @Override
+        public ContextVariables build() {
             return new DefaultContextVariables(variables);
         }
     }
