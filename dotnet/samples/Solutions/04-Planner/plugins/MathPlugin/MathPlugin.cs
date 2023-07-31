@@ -19,8 +19,8 @@ public class MathPlugin
     public string Add(SKContext context)
     {
         return (
-            Convert.ToDouble(context["input"], CultureInfo.InvariantCulture) +
-            Convert.ToDouble(context["number2"], CultureInfo.InvariantCulture)
+            Convert.ToDouble(context.Variables["input"], CultureInfo.InvariantCulture) +
+            Convert.ToDouble(context.Variables["number2"], CultureInfo.InvariantCulture)
         ).ToString(CultureInfo.InvariantCulture);
     }
 
@@ -30,8 +30,8 @@ public class MathPlugin
     public string Subtract(SKContext context)
     {
         return (
-            Convert.ToDouble(context["input"], CultureInfo.InvariantCulture) -
-            Convert.ToDouble(context["number2"], CultureInfo.InvariantCulture)
+            Convert.ToDouble(context.Variables["input"], CultureInfo.InvariantCulture) -
+            Convert.ToDouble(context.Variables["number2"], CultureInfo.InvariantCulture)
         ).ToString(CultureInfo.InvariantCulture);
     }
 
@@ -41,8 +41,8 @@ public class MathPlugin
     public string Multiply(SKContext context)
     {
         return (
-            Convert.ToDouble(context["input"], CultureInfo.InvariantCulture) *
-            Convert.ToDouble(context["number2"], CultureInfo.InvariantCulture)
+            Convert.ToDouble(context.Variables["input"], CultureInfo.InvariantCulture) *
+            Convert.ToDouble(context.Variables["number2"], CultureInfo.InvariantCulture)
         ).ToString(CultureInfo.InvariantCulture);
     }
 
@@ -52,8 +52,8 @@ public class MathPlugin
     public string Divide(SKContext context)
     {
         return (
-            Convert.ToDouble(context["input"], CultureInfo.InvariantCulture) /
-            Convert.ToDouble(context["number2"], CultureInfo.InvariantCulture)
+            Convert.ToDouble(context.Variables["input"], CultureInfo.InvariantCulture) /
+            Convert.ToDouble(context.Variables["number2"], CultureInfo.InvariantCulture)
         ).ToString(CultureInfo.InvariantCulture);
     }
 }

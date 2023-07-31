@@ -19,16 +19,16 @@ public class OrchestratorPlugin
     public async Task<string> RouteRequest(SKContext context)
     {
         // Save the original user request
-        string request = context["input"];
+        string request = context.Variables["input"];
 
         // Add the list of available functions to the context
-        context["options"] = "Sqrt, Add";
+        context.Variables["options"] = "Sqrt, Add";
 
         // Retrieve the intent from the user request
         var GetIntent = _kernel.Skills.GetFunction("OrchestratorPlugin", "GetIntent");
         var CreateResponse = _kernel.Skills.GetFunction("OrchestratorPlugin", "CreateResponse");
         await GetIntent.InvokeAsync(context);
-        string intent = context["input"].Trim();
+        string intent = context.Variables["input"].Trim();
 
         var GetNumbers = _kernel.Skills.GetFunction("OrchestratorPlugin", "GetNumbers");
         var ExtractNumbersFromJson = _kernel.Skills.GetFunction("OrchestratorPlugin", "ExtractNumbersFromJson");
@@ -57,24 +57,24 @@ public class OrchestratorPlugin
             MathFunction,
             CreateResponse);
 
-        return output["input"];
+        return output.Variables["input"];
     }
 
     [SKFunction, Description("Extracts numbers from JSON")]
     public SKContext ExtractNumbersFromJson(SKContext context)
     {
-        JObject numbers = JObject.Parse(context["input"]);
+        JObject numbers = JObject.Parse(context.Variables["input"]);
 
         // otherwise, loop through numbers and add them to the context
         foreach (var number in numbers)
         {
             if (number.Key == "number1")
             {
-                context["input"] = number.Value!.ToString();
+                context.Variables["input"] = number.Value!.ToString();
                 continue;
             }
 
-            context[number.Key] = number.Value!.ToString();
+            context.Variables[number.Key] = number.Value!.ToString();
         }
         return context;
     }

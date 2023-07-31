@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.Extensions.Logging;
 
 namespace Models;

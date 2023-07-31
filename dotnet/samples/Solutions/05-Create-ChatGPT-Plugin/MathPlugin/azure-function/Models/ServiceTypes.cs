@@ -1,4 +1,6 @@
-﻿namespace Models;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+namespace Models;
 
 internal static class ServiceTypes
 {

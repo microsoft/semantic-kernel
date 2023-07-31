@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.Contracts;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -47,21 +45,15 @@ public class AIPluginRunner : IAIPluginRunner
             }
 
             var result = await this._kernel.RunAsync(contextVariables, function).ConfigureAwait(false);
-            if (result.ErrorOccurred)
-            {
-                HttpResponseData errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await errorResponse.WriteStringAsync(result.LastErrorDescription).ConfigureAwait(false);
-                return errorResponse;
-            }
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "text/plain;charset=utf-8");
             await response.WriteStringAsync(result.Result).ConfigureAwait(false);
             return response;
         }
-        #pragma warning disable CA1031
+#pragma warning disable CA1031
         catch (System.Exception ex)
-        #pragma warning restore CA1031
+#pragma warning restore CA1031
         {
             HttpResponseData errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
             await errorResponse.WriteStringAsync(ex.Message).ConfigureAwait(false);
@@ -80,7 +72,7 @@ public class AIPluginRunner : IAIPluginRunner
             throw new System.ArgumentNullException(nameof(req));
         }
 
-        ContextVariables contextVariables = new ContextVariables();
+        ContextVariables contextVariables = new();
         foreach (string? key in req.Query.AllKeys)
         {
             if (!string.IsNullOrEmpty(key))

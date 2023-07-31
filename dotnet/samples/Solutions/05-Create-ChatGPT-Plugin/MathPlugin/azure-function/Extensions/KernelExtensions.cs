@@ -1,14 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.IO;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Text;
 
 namespace AIPlugins.AzureFunctions.Extensions;
 
@@ -47,7 +42,6 @@ public static class KernelExtensions
             // Prepare lambda wrapping AI logic
             var functionConfig = new SemanticFunctionConfig(config, template);
 
-            kernel.Log.LogTrace("Registering function {0}.{1} loaded from {2}", pluginName, functionName, dir);
             plugin[functionName] = kernel.RegisterSemanticFunction(pluginName, functionName, functionConfig);
         }
 
