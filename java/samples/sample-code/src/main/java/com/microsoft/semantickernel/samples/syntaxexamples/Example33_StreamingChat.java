@@ -3,13 +3,13 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.samples.Config;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.function.BiFunction;
 
 import static com.microsoft.semantickernel.chatcompletion.ChatHistory.AuthorRoles.Assistant;
@@ -18,12 +18,12 @@ import static com.microsoft.semantickernel.chatcompletion.ChatHistory.AuthorRole
  * The following example shows how to use Semantic Kernel with Text Completion as streaming
  */
 public class Example33_StreamingChat {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws ConfigurationException {
         StartStreamingChatAsync();
     }
 
-    private static void StartStreamingChatAsync() throws IOException {
-        OpenAIAsyncClient client = Config.getClient();
+    private static void StartStreamingChatAsync() throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
         ChatCompletion chatCompletion = SKBuilders.chatCompletion().build(client, "gpt-35-turbo");
 
