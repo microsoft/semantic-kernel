@@ -26,7 +26,7 @@ Watch the [Chat Summary Quick Start Video](https://aka.ms/SK-Samples-SimChat-Vid
 
 The Simple Chat Summary sample allows you to see the power of semantic functions used in a chat.
 
-The sample highlights the [SummarizeConversation](../../../dotnet/src/Skills/Skills.Core/SemanticFunctionConstants.cs#7), [GetConversationActionItems](../../../dotnet/src/Skills/Skills.Core/SemanticFunctionConstants.cs#20), and [GetConversationTopics](../../../dotnet/src/Skills/Skills.Core/SemanticFunctionConstants.cs#63)
+The sample highlights the [SummarizeLongConversation](../../../dotnet/src/Skills/Skills.Core/SemanticFunctionConstants.cs#7), [GetLongConversationActionItems](../../../dotnet/src/Skills/Skills.Core/SemanticFunctionConstants.cs#21), and [GetLongConversationTopics](../../../dotnet/src/Skills/Skills.Core/SemanticFunctionConstants.cs#65)
 native functions in the [Conversation Summary Skill](../../../dotnet/src/Skills//Skills.Core/ConversationSummarySkill.cs).
 Each function calls Open AI to review the information in the chat window and produces insights.
 

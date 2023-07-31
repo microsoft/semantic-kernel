@@ -22,7 +22,7 @@ const AISummary: FC<IData> = ({ uri, chat, keyConfig, onBack }) => {
 
     const getSummary = async (ask: any) => {
         try {
-            var result = await sk.invokeAsync(keyConfig, ask, 'ConversationSummarySkill', 'SummarizeConversation');
+            var result = await sk.invokeAsync(keyConfig, ask, 'ConversationSummarySkill', 'SummarizeLongConversation');
             setSummary(result.value);
         } catch (e) {
             alert('Something went wrong.\n\nDetails:\n' + e);
@@ -31,7 +31,7 @@ const AISummary: FC<IData> = ({ uri, chat, keyConfig, onBack }) => {
 
     const getActionItems = async (ask: any) => {
         try {
-            var result = await sk.invokeAsync(keyConfig, ask, 'ConversationSummarySkill', 'GetConversationActionItems');
+            var result = await sk.invokeAsync(keyConfig, ask, 'ConversationSummarySkill', 'GetLongConversationActionItems');
             setActionItems(result.value);
         } catch (e) {
             alert('Something went wrong.\n\nDetails:\n' + e);
@@ -83,7 +83,7 @@ const AISummary: FC<IData> = ({ uri, chat, keyConfig, onBack }) => {
 
     const getTopics = async (ask: any) => {
         try {
-            var result = await sk.invokeAsync(keyConfig, ask, 'ConversationSummarySkill', 'GetConversationTopics');
+            var result = await sk.invokeAsync(keyConfig, ask, 'ConversationSummarySkill', 'GetLongConversationTopics');
             setTopics(result.value);
         } catch (e) {
             alert('Something went wrong.\n\nDetails:\n' + e);

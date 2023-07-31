@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 
 internal static class SemanticFunctionConstants
 {
+    internal const string SummarizeConversation = nameof(SummarizeConversation);
     internal const string SummarizeConversationDefinition =
         @"BEGIN CONTENT TO SUMMARIZE:
 {{$INPUT}}
@@ -17,6 +18,7 @@ Summary is in plain text, in complete sentences, with no markup or tags.
 BEGIN SUMMARY:
 ";
 
+    internal const string GetConversationActionItems = nameof(GetConversationActionItems);
     internal const string GetConversationActionItemsDefinition =
         @"You are an action item extractor. You will be given chat history and need to make note of action items mentioned in the chat.
 Extract action items from the content if there are any. If there are no action, return nothing. If a single field is missing, use an empty string.
@@ -60,6 +62,7 @@ CONTENT STOPS HERE.
 
 OUTPUT:";
 
+    internal const string GetConversationTopics = nameof(GetConversationTopics);
     internal const string GetConversationTopicsDefinition =
         @"Analyze the following extract taken from a conversation transcript and extract key topics.
 - Topics only worth remembering.

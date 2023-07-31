@@ -37,7 +37,7 @@ public class ConversationSummarySkill
     {
         this._summarizeConversationFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.SummarizeConversationDefinition,
-            functionName: nameof(SummarizeConversationAsync),
+            functionName: nameof(SemanticFunctionConstants.SummarizeConversation),
             skillName: nameof(ConversationSummarySkill),
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             maxTokens: MaxTokens,
@@ -46,7 +46,7 @@ public class ConversationSummarySkill
 
         this._conversationActionItemsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
-            functionName: nameof(GetConversationActionItemsAsync),
+            functionName: nameof(SemanticFunctionConstants.GetConversationActionItems),
             skillName: nameof(ConversationSummarySkill),
             description: "Given a section of a conversation transcript, identify action items.",
             maxTokens: MaxTokens,
@@ -55,7 +55,7 @@ public class ConversationSummarySkill
 
         this._conversationTopicsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
-            functionName: nameof(GetConversationTopicsAsync),
+            functionName: nameof(SemanticFunctionConstants.GetConversationTopics),
             skillName: nameof(ConversationSummarySkill),
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             maxTokens: MaxTokens,
@@ -69,7 +69,7 @@ public class ConversationSummarySkill
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, summarize the conversation.")]
-    public Task<SKContext> SummarizeConversationAsync(
+    public Task<SKContext> SummarizeLongConversationAsync(
         [Description("A long conversation transcript.")] string input,
         SKContext context)
     {
@@ -86,7 +86,7 @@ public class ConversationSummarySkill
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, identify action items.")]
-    public Task<SKContext> GetConversationActionItemsAsync(
+    public Task<SKContext> GetLongConversationActionItemsAsync(
         [Description("A long conversation transcript.")] string input,
         SKContext context)
     {
@@ -103,7 +103,7 @@ public class ConversationSummarySkill
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="context">The SKContext for function execution.</param>
     [SKFunction, Description("Given a long conversation transcript, identify topics worth remembering.")]
-    public Task<SKContext> GetConversationTopicsAsync(
+    public Task<SKContext> GetLongConversationTopicsAsync(
         [Description("A long conversation transcript.")] string input,
         SKContext context)
     {
