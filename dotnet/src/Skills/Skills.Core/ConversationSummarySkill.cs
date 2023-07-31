@@ -37,6 +37,7 @@ public class ConversationSummarySkill
     {
         this._summarizeConversationFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.SummarizeConversationDefinition,
+            functionName: nameof(SummarizeConversationAsync),
             skillName: nameof(ConversationSummarySkill),
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             maxTokens: MaxTokens,
@@ -45,6 +46,7 @@ public class ConversationSummarySkill
 
         this._conversationActionItemsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
+            functionName: nameof(GetConversationActionItemsAsync),
             skillName: nameof(ConversationSummarySkill),
             description: "Given a section of a conversation transcript, identify action items.",
             maxTokens: MaxTokens,
@@ -53,6 +55,7 @@ public class ConversationSummarySkill
 
         this._conversationTopicsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
+            functionName: nameof(GetConversationTopicsAsync),
             skillName: nameof(ConversationSummarySkill),
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             maxTokens: MaxTokens,
