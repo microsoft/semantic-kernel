@@ -28,9 +28,9 @@ async def main():
     orchestrator_plugin = kernel.import_semantic_skill_from_directory(
         plugins_directory, "OrchestratorPlugin"
     )
-    summarization_plugin = kernel.import_semantic_skill_from_directory(
+    summarization_plugin = kernel.import_semantic_skill_from_directory(  # noqa: F841
         plugins_directory, "SummarizeSkill"
-    )  # noqa: F841
+    )
     get_intent_function = orchestrator_plugin["GetIntent"]
 
     # Create a new context and set the input, history, and options variables.
