@@ -49,6 +49,11 @@
                 <artifactId>semantickernel-gpt3-tokenizer</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-memory-sqlite</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
 
             <dependency>
@@ -103,6 +108,12 @@
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
                 <version>2.0.1.MR</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>3.42.0.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -66,6 +66,7 @@
 
     <modules>
         <module>connectors/semantickernel-connectors-ai-openai</module>
+        <module>connectors/semantickernel-connectors-memory-sqlite</module>
 
         <module>extensions/semantickernel-planners</module>
         <module>extensions/semantickernel-gpt3-tokenizer</module>
