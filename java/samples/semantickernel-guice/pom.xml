@@ -13,10 +13,6 @@
     <artifactId>semantickernel-guice</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <semantickernel.java.version>0.2.1-beta-SNAPSHOT</semantickernel.java.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
