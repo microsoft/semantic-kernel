@@ -2,30 +2,26 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.time.Duration;
 
 public class Example09_FunctionTypes {
-    public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.getClient();
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
         TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
-        KernelConfig kernelConfig = new KernelConfig.Builder()
-                .addTextCompletionService("text-davinci-003", kernel -> textCompletion)
-                .build();
-
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
+        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
 
         System.out.println("======== Native function types ========");
 
@@ -179,7 +175,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type08")
         public void Type08(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x) {
             System.out.println("Running function type 8");
         }
@@ -187,7 +183,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type09")
         public String Type09(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x) {
             System.out.println("Running function type 9");
             return "";
@@ -195,7 +191,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type10")
         public Mono<String> Type10Async(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x) {
             return Mono.delay(Duration.ZERO)
                     .map(x2 -> {
@@ -206,7 +202,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type11")
         public void Type11(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x,
                 SKContext context) {
             System.out.println("Running function type 11");
@@ -215,7 +211,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type12")
         public String Type12(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x,
                 SKContext context) {
             System.out.println("Running function type 12");
@@ -224,7 +220,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type13")
         public Mono<String> Type13Async(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x, SKContext context) {
             return Mono.delay(Duration.ZERO)
                     .map(x2 -> {
@@ -235,7 +231,7 @@ public class Example09_FunctionTypes {
 
         @DefineSKFunction(name = "type14")
         public Mono<SKContext> Type14Async(
-                @SKFunctionInputAttribute
+                @SKFunctionInputAttribute(description = "?")
                 String x, SKContext context) {
             return Mono.delay(Duration.ZERO)
                     .ignoreElement()

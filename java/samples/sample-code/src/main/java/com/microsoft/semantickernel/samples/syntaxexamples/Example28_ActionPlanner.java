@@ -2,25 +2,20 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.samples.Config;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TextSkill;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.planner.actionplanner.ActionPlanner;
 
-import java.io.IOException;
-
 public class Example28_ActionPlanner {
-    public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.getClient();
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
         System.out.println("======== Action Planner ========");
 
         var kernel = SKBuilders.kernel()
-                .withKernelConfig(SKBuilders
-                        .kernelConfig()
-                        .addTextCompletionService("text-davinci-002", kernel1 -> SKBuilders.textCompletionService()
-                                .build(client, "text-davinci-002"))
-                        .build())
+                .withDefaultAIService(SKBuilders.textCompletionService().build(client, "text-davinci-002"))
                 .build();
 
         kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");

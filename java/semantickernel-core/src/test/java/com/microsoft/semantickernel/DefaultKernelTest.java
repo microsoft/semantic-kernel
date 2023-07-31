@@ -36,6 +36,7 @@ public class DefaultKernelTest {
 
     @Test
     void contextVariableTest() {
+
         String model = "a-model";
 
         OpenAIAsyncClient client =
@@ -115,15 +116,9 @@ public class DefaultKernelTest {
     }
 
     public static Kernel buildKernel(String model, OpenAIAsyncClient client) {
-
         TextCompletion textCompletion = new OpenAITextCompletion(client, model);
 
-        KernelConfig kernelConfig =
-                SKBuilders.kernelConfig()
-                        .addTextCompletionService(model, kernel -> textCompletion)
-                        .build();
-
-        return SKBuilders.kernel().withKernelConfig(kernelConfig).build();
+        return SKBuilders.kernel().withDefaultAIService(textCompletion).build();
     }
 
     private static OpenAIAsyncClient mockCompletionOpenAIAsyncClient(String arg, String response) {

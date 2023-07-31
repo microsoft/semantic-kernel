@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
-import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemory;
 import reactor.core.publisher.Flux;
@@ -38,10 +38,7 @@ public class Example14_SemanticMemory
          * Azure Cognitive Search automatically indexes your data semantically, so you don't
          * need to worry about embedding generation.
          */
-        var kernelConfig = SKBuilders.kernelConfig().build();
-
         var kernelWithACS = SKBuilders.kernel()
-                .withKernelConfig(kernelConfig)
                 .withMemory(new AzureCognitiveSearchMemory(System.getenv("ACS_ENDPOINT"), System.getenv("ACS_API_KEY")))
                 .build();
 
@@ -59,17 +56,11 @@ public class Example14_SemanticMemory
          * You can replace VolatileMemoryStore with Qdrant (see QdrantMemoryStore connector)
          * or implement your connectors for Pinecone, Vespa, Postgres + pgvector, SQLite VSS, etc.
          */
-        var openAIAsyncClient = Config.getClient();
-
-        var kernelConfigWithTextEmbedding = SKBuilders.kernelConfig()
-                .addTextEmbeddingsGenerationService(
-                        "ada",
-                        kernel -> SKBuilders.textEmbeddingGenerationService().build(openAIAsyncClient, "text-embedding-ada-002"))
-                .build();
+        var openAIAsyncClient = SamplesConfig.getClient();
 
         var kernelWithCustomDb = SKBuilders.kernel()
-                .withKernelConfig(kernelConfigWithTextEmbedding)
-                .withMemoryStore(SKBuilders.memoryStore().build())
+                .withDefaultAIService(SKBuilders.textEmbeddingGenerationService().build(openAIAsyncClient, "text-embedding-ada-002"))
+                .withMemoryStorage(SKBuilders.memoryStore().build())
                 .build();
 
         runExampleAsync(kernelWithCustomDb).block();

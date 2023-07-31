@@ -80,14 +80,9 @@ public class Example12SequentialPlannerTest {
     private static Kernel getKernel(OpenAIAsyncClient client) {
         Kernel kernel =
                 SKBuilders.kernel()
-                        .withKernelConfig(
-                                SKBuilders.kernelConfig()
-                                        .addTextCompletionService(
-                                                "text-davinci-002",
-                                                kernel1 ->
-                                                        SKBuilders.textCompletionService()
-                                                                .build(client, "text-davinci-002"))
-                                        .build())
+                        .withDefaultAIService(
+                                SKBuilders.textCompletionService()
+                                        .build(client, "text-davinci-002"))
                         .build();
 
         kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
@@ -101,10 +96,7 @@ public class Example12SequentialPlannerTest {
                 name = "SendEmail",
                 description = "Given an e-mail and message body, send an email")
         public void sendEmail(
-                @SKFunctionInputAttribute()
-                        @SKFunctionParameters(
-                                description = "The body of the email message to send.",
-                                name = "input")
+                @SKFunctionInputAttribute(description = "The body of the email message to send.")
                         String input,
                 @SKFunctionParameters(
                                 description = "The email address to send email to.",
@@ -117,10 +109,7 @@ public class Example12SequentialPlannerTest {
                 name = "GetEmailAddressAsync",
                 description = "Lookup an email address for a person given a name")
         public String getEmailAddressAsync(
-                @SKFunctionInputAttribute()
-                        @SKFunctionParameters(
-                                description = "The name of the person to email.",
-                                name = "input")
+                @SKFunctionInputAttribute(description = "The name of the person to email.")
                         String input) {
             return "fake@example.com";
         }

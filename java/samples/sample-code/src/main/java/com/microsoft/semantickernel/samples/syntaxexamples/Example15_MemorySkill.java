@@ -3,14 +3,13 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TextMemorySkill;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
-import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -28,7 +27,7 @@ public class Example15_MemorySkill
         // ========= Create a kernel =========
         OpenAIAsyncClient client = null;
         try {
-            client = Config.ClientType.OPEN_AI.getClient();
+            client = SamplesConfig.getClient();
         } catch (Exception e) {
             return Mono.error(e);
         }
@@ -43,14 +42,10 @@ public class Example15_MemorySkill
 
         MemoryStore memoryStore = SKBuilders.memoryStore().build();
 
-        KernelConfig kernelConfig = SKBuilders.kernelConfig()
-                .addTextCompletionService("text-davinci-003", kernel -> textCompletionService)
-                .addTextEmbeddingsGenerationService("text-embedding-ada-002", kernel -> textEmbeddingGenerationService)
-                .build();
-
         Kernel kernel = SKBuilders.kernel()
-                .withKernelConfig(kernelConfig)
-                .withMemoryStore(memoryStore)
+                .withDefaultAIService(textCompletionService)
+                .withDefaultAIService(textEmbeddingGenerationService)
+                .withMemoryStorage(memoryStore)
                 .build();
 
         // ========= Store memories using the kernel =========

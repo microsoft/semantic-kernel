@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.syntaxexamples.javaspecific;
+package com.microsoft.semantickernel.samples.syntaxexamples.javaspecific;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
@@ -10,7 +10,6 @@ public class Java_Example01_ResourceLoading {
 
     public static void main(String[] args) throws IOException {
         Kernel kernel = SKBuilders.kernel()
-                .withKernelConfig(SKBuilders.kernelConfig().build())
                 .build();
 
         kernel.importSkillFromResources(

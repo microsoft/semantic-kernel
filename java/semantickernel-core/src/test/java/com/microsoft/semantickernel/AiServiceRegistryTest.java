@@ -34,7 +34,7 @@ public class AiServiceRegistryTest {
         Kernel kernel =
                 SKBuilders.kernel()
                         .withAIService("a-service", service, setAsDefault, TextCompletion.class)
-                        .withKernelConfig(config)
+                        .withConfiguration(config)
                         .build();
 
         Assertions.assertSame(kernel.getService("a-service", TextCompletion.class), service);
@@ -52,7 +52,7 @@ public class AiServiceRegistryTest {
     public void noServiceThrowsAnError() {
         KernelConfig config = SKBuilders.kernelConfig().build();
 
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(config).build();
+        Kernel kernel = SKBuilders.kernel().withConfiguration(config).build();
 
         Assertions.assertThrows(
                 KernelException.class, () -> kernel.getService("a-service", TextCompletion.class));

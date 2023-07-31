@@ -1,46 +1,34 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.util;
 
-import java.io.IOException;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
+
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
 /** Settings for Azure OpenAI client */
-public class AzureOpenAISettings extends ClientSettings<AzureOpenAISettings> {
+public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
+    private static final String DEFAULT_SETTINGS_PREFIX = "client.azureopenai";
+    private static final String AZURE_OPEN_AI_ENDPOINT_SUFFIX = "endpoint";
+    private static final String AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX = "deploymentname";
 
-    private static final String DEFAULT_CLIENT_ID = "azureopenai";
+    @Nullable private final String key;
 
-    @Nullable private String key = null;
+    @Nullable private final String endpoint;
 
-    @Nullable private String endpoint = null;
+    @Nullable private final String deploymentName;
+    private final String settingsPrefix;
 
-    @Nullable private String deploymentName = null;
-
-    private enum Property {
-        AZURE_OPEN_AI_KEY("key"),
-        AZURE_OPEN_AI_ENDPOINT("endpoint"),
-        AZURE_OPEN_AI_DEPLOYMENT_NAME("deploymentname");
-        private final String label;
-
-        Property(String label) {
-            this.label = label;
-        }
-
-        public String label() {
-            return this.label;
-        }
+    public AzureOpenAISettings(Map<String, String> settings) {
+        this(DEFAULT_SETTINGS_PREFIX, settings);
     }
 
-    /**
-     * Get the Azure OpenAI key
-     *
-     * @return Azure OpenAI key
-     */
-    public String getKey() {
-        if (key == null) {
-            throw new RuntimeException("Azure OpenAI key is not set");
-        }
-        return key;
+    public AzureOpenAISettings(String settingsPrefix, Map<String, String> settings) {
+        this.settingsPrefix = settingsPrefix;
+        key = settings.get(settingsPrefix + "." + KEY_SUFFIX);
+        endpoint = settings.get(settingsPrefix + "." + AZURE_OPEN_AI_ENDPOINT_SUFFIX);
+        deploymentName = settings.get(settingsPrefix + "." + AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX);
     }
 
     /**
@@ -48,9 +36,10 @@ public class AzureOpenAISettings extends ClientSettings<AzureOpenAISettings> {
      *
      * @return Azure OpenAI endpoint
      */
-    public String getEndpoint() {
+    public String getEndpoint() throws ConfigurationException {
         if (endpoint == null) {
-            throw new RuntimeException("Azure OpenAI endpoint is not set");
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound, AZURE_OPEN_AI_ENDPOINT_SUFFIX);
         }
         return endpoint;
     }
@@ -60,62 +49,36 @@ public class AzureOpenAISettings extends ClientSettings<AzureOpenAISettings> {
      *
      * @return Azure OpenAI deployment name
      */
-    public String getDeploymentName() {
+    public String getDeploymentName() throws ConfigurationException {
         if (deploymentName == null) {
-            throw new RuntimeException("Azure OpenAI deployment name is not set");
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound,
+                    AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX);
         }
         return deploymentName;
     }
 
-    @Override
-    public AzureOpenAISettings fromEnv() {
-        this.key = getSettingsValueFromEnv(Property.AZURE_OPEN_AI_KEY.name());
-        this.endpoint = getSettingsValueFromEnv(Property.AZURE_OPEN_AI_ENDPOINT.name());
-        this.deploymentName =
-                getSettingsValueFromEnv(Property.AZURE_OPEN_AI_DEPLOYMENT_NAME.name());
-        return this;
+    public String getKey() throws ConfigurationException {
+        if (key == null) {
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound, KEY_SUFFIX);
+        }
+        return key;
     }
 
     @Override
-    public AzureOpenAISettings fromFile(String path) throws IOException {
-        return fromFile(path, DEFAULT_CLIENT_ID);
-    }
+    public boolean assertIsValid() throws ConfigurationException {
+        if (key == null) {
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound,
+                    settingsPrefix + "." + KEY_SUFFIX);
+        }
+        if (endpoint == null) {
+            throw new ConfigurationException(
+                    ConfigurationException.ErrorCodes.ValueNotFound,
+                    settingsPrefix + "." + AZURE_OPEN_AI_ENDPOINT_SUFFIX);
+        }
 
-    @Override
-    public AzureOpenAISettings fromFile(String path, String clientSettingsId) throws IOException {
-        this.key =
-                getSettingsValueFromFile(
-                        path, Property.AZURE_OPEN_AI_KEY.label(), clientSettingsId);
-        this.endpoint =
-                getSettingsValueFromFile(
-                        path, Property.AZURE_OPEN_AI_ENDPOINT.label(), clientSettingsId);
-        this.deploymentName =
-                getSettingsValueFromFile(
-                        path, Property.AZURE_OPEN_AI_DEPLOYMENT_NAME.label(), clientSettingsId);
-        return this;
-    }
-
-    @Override
-    public boolean isValid() {
-        return key != null && endpoint != null;
-    }
-
-    @Override
-    public AzureOpenAISettings fromSystemProperties() {
-        return fromSystemProperties(DEFAULT_CLIENT_ID);
-    }
-
-    @Override
-    public AzureOpenAISettings fromSystemProperties(String clientSettingsId) {
-        this.key =
-                getSettingsValueFromSystemProperties(
-                        Property.AZURE_OPEN_AI_KEY.label(), clientSettingsId);
-        this.endpoint =
-                getSettingsValueFromSystemProperties(
-                        Property.AZURE_OPEN_AI_ENDPOINT.label(), clientSettingsId);
-        this.deploymentName =
-                getSettingsValueFromSystemProperties(
-                        Property.AZURE_OPEN_AI_DEPLOYMENT_NAME.label(), clientSettingsId);
-        return this;
+        return true;
     }
 }

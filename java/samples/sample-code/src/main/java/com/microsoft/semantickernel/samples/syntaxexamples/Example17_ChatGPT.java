@@ -2,14 +2,13 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatHistory;
-
-import java.io.IOException;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 
 /**
  * The following example shows how to use Semantic Kernel with OpenAI ChatGPT
@@ -17,12 +16,10 @@ import java.io.IOException;
  */
 public class Example17_ChatGPT {
 
-    public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.getClient();
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
         Kernel kernel = SKBuilders.kernel()
-                .withKernelConfig(SKBuilders.kernelConfig()
-                        .build())
                 .withAIService(
                         "chat-test",
                         SKBuilders.chatCompletion().build(client, "chat-test"),

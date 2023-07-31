@@ -1,11 +1,9 @@
 package com.microsoft.semantickernel;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.azure.ai.openai.OpenAIClientBuilder;
-import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.connectors.ai.openai.util.AIProviderSettings;
-import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISettings;
+import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
@@ -14,31 +12,15 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputA
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-
 public class Example_PlanWithNativeFunctions {
 
-    public static void main(String[] args) throws IOException {
-        AzureOpenAISettings settings = AIProviderSettings.getAzureOpenAISettingsFromFile(
-                Paths.get(System.getProperty("user.home"), ".sk", "conf.properties").toAbsolutePath().toString()
-        );
-
-        OpenAIAsyncClient client =
-                new OpenAIClientBuilder()
-                        .endpoint(settings.getEndpoint())
-                        .credential(new AzureKeyCredential(settings.getKey()))
-                        .buildAsyncClient();
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = OpenAIClientProvider.getClient();
 
         TextCompletion textCompletionService = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
-        KernelConfig config = SKBuilders.kernelConfig()
-                .addTextCompletionService("davinci",
-                        kernel -> textCompletionService)
-                .build();
-
         Kernel kernel = SKBuilders.kernel()
-                .withKernelConfig(config)
+                .withDefaultAIService(textCompletionService)
                 .build();
 
         kernel.importSkill(new StringFunctions(), "StringFunctions");
@@ -73,8 +55,7 @@ public class Example_PlanWithNativeFunctions {
                 name = "stringReplace",
                 description = "Takes a message and substitutes string 'from' to 'to'")
         public String stringReplace(
-                @SKFunctionInputAttribute
-                @SKFunctionParameters(name = "input", description = "The string to perform the replacement on")
+                @SKFunctionInputAttribute(description = "The string to perform the replacement on")
                 String input,
                 @SKFunctionParameters(name = "from", description = "The string to replace")
                 String from,
@@ -88,8 +69,7 @@ public class Example_PlanWithNativeFunctions {
     public static class Names {
         @DefineSKFunction(name = "getNickName", description = "Retrieves the nick name for a given user")
         public String getNickName(
-                @SKFunctionInputAttribute
-                @SKFunctionParameters(name = "name", description = "The name of the person to get an nick name for")
+                @SKFunctionInputAttribute(description = "The name of the person to get an nick name for")
                 String name) {
             switch (name) {
                 case "Steven":
@@ -104,8 +84,7 @@ public class Example_PlanWithNativeFunctions {
     public static class Emailer {
         @DefineSKFunction(name = "getEmailAddress", description = "Retrieves the email address for a given user")
         public String getEmailAddress(
-                @SKFunctionInputAttribute
-                @SKFunctionParameters(name = "name", description = "The name of the person to get an email address for")
+                @SKFunctionInputAttribute(description = "The name of the person to get an email address for")
                 String name) {
             switch (name) {
                 case "Steven":

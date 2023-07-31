@@ -36,7 +36,7 @@ public static class Example40_DIContainer
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
-        collection.AddTransient<ILogger>((_) => ConsoleLogger.Log);
+        collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
 
         //Registering Kernel
         collection.AddTransient<IKernel>((serviceProvider) =>
@@ -76,7 +76,7 @@ public static class Example40_DIContainer
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
-        collection.AddTransient<ILogger>((_) => ConsoleLogger.Log);
+        collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
         collection.AddTransient<KernelConfig>();
         collection.AddTransient<ISkillCollection, SkillCollection>();
         collection.AddTransient<IPromptTemplateEngine, PromptTemplateEngine>();

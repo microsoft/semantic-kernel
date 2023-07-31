@@ -1,16 +1,24 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.annotation.Nonnull;
 
 /** Class representing the metadata associated with a Semantic Kernel memory. */
 public class MemoryRecordMetadata {
 
     private final boolean isReference;
+
     @Nonnull private final String externalSourceName;
+
     @Nonnull private final String id;
+
     @Nonnull private final String description;
+
     @Nonnull private final String text;
+
     @Nonnull private final String additionalMetadata;
 
     /**
@@ -79,13 +87,14 @@ public class MemoryRecordMetadata {
      * @param externalSourceName Name of the external source if isReference is true.
      * @param additionalMetadata Field for saving custom metadata with a memory.
      */
+    @JsonCreator
     public MemoryRecordMetadata(
-            boolean isReference,
-            @Nonnull String id,
-            @Nonnull String text,
-            @Nonnull String description,
-            @Nonnull String externalSourceName,
-            @Nonnull String additionalMetadata) {
+            @JsonProperty("reference") boolean isReference,
+            @JsonProperty("id") @Nonnull String id,
+            @JsonProperty("text") @Nonnull String text,
+            @JsonProperty("description") @Nonnull String description,
+            @JsonProperty("externalSourceName") @Nonnull String externalSourceName,
+            @JsonProperty("additionalMetadata") @Nonnull String additionalMetadata) {
         this.isReference = isReference;
         this.id = id;
         this.text = text;

@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.TextMemorySkill;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
     @Test
     @EnabledIf("isAzureTestEnabled")
-    public void testEmbeddingGenerationOpenAI() throws IOException {
+    public void testEmbeddingGenerationOpenAI() throws ConfigurationException {
         OpenAIAsyncClient client = getOpenAIClient();
         String model = "text-embedding-ada-002";
         OpenAITextEmbeddingGeneration embeddingGeneration =
@@ -50,7 +50,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
     @Test
     @EnabledIf("isAzureTestEnabled")
-    public void testEmbeddingGeneration() throws IOException {
+    public void testEmbeddingGeneration() throws ConfigurationException {
         String model = "text-embedding-ada-002";
         OpenAITextEmbeddingGeneration embeddingGeneration =
                 new OpenAITextEmbeddingGeneration(getOpenAIClient(), model);
@@ -63,7 +63,7 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
     @Test
     @EnabledIf("isAzureTestEnabled")
-    public void testMemory() throws IOException {
+    public void testMemory() throws ConfigurationException {
 
         Kernel kernel = buildTextCompletionKernel();
         kernel.importSkill(new TextMemorySkill(), "aboutMe");
