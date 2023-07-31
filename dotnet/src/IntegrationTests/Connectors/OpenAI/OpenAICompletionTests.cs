@@ -99,7 +99,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var result = await func.InvokeAsync("Jupiter");
 
         Assert.NotNull(result);
-        Assert.False(result.ErrorOccurred, result.LastErrorDescription);
+        Assert.False(result.ErrorOccurred);
         Assert.Contains("Saturn", result.Result, StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("Uranus", result.Result, StringComparison.InvariantCultureIgnoreCase);
     }
@@ -133,7 +133,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
 
         // Assert
-        Assert.Empty(actual.LastErrorDescription);
+        Assert.Null(actual.LastException);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
@@ -276,14 +276,8 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizePlugin");
 
         // Act
-        var context = await skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)));
-
         // Assert
-        Assert.True(context.ErrorOccurred);
-        Assert.IsType<AIException>(context.LastException);
-        Assert.Equal(AIException.ErrorCodes.InvalidRequest, ((AIException)context.LastException).ErrorCode);
-        Assert.Contains("The request is not valid, HTTP status: 400", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("maximum context length is", ((AIException)context.LastException).Detail, StringComparison.OrdinalIgnoreCase); // This message could change in the future, comes from Azure OpenAI
+        await Assert.ThrowsAsync<AIException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -331,7 +325,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
 
         // Assert
-        Assert.Empty(actual.LastErrorDescription);
+        Assert.Null(actual.LastException);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains("Pike Place", actual.Result, StringComparison.OrdinalIgnoreCase);
     }
@@ -353,7 +347,7 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(skill["Limerick"]);
 
         // Assert
-        Assert.Empty(actual.LastErrorDescription);
+        Assert.Null(actual.LastException?.Message);
         Assert.False(actual.ErrorOccurred);
         Assert.Contains("Bob", actual.Result, StringComparison.OrdinalIgnoreCase);
     }

@@ -177,6 +177,8 @@ internal static class Example12_SequentialPlanner
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Plan using Memory ========");
 
+        // IMPORTANT: Register an embedding generation service and a memory store. The Planner will
+        // use these to generate and store embeddings for the function descriptions.
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
             .WithAzureChatCompletionService(
@@ -210,7 +212,8 @@ internal static class Example12_SequentialPlanner
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
-        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.5 });
+        // IMPORTANT: To use memory and embeddings to find relevant skills in the planner, set the 'Memory' property on the planner config.
+        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.5, Memory = kernel.Memory });
 
         var plan = await planner.CreatePlanAsync(goal);
 
