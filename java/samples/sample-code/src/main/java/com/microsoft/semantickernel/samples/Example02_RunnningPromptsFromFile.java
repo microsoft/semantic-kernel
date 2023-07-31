@@ -35,7 +35,8 @@ public class Example02_RunnningPromptsFromFile {
      * Imports skill 'FunSkill' stored in the samples folder and then returns the
      * semantic function 'Joke' within it.
      *
-     * @param kernel Kernel with Text Completion
+     * @param kernel 
+     with Text Completion
      * @return Joke function
      */
     public static CompletionSKFunction getJokeFunction(Kernel kernel) {
