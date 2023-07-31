@@ -8,8 +8,10 @@ class TextMemorySkill:
     COLLECTION_PARAM = "collection"
     RELEVANCE_PARAM = "relevance"
     KEY_PARAM = "key"
+    NUM_RECORDS_PARAM = "num_records"
     DEFAULT_COLLECTION = "generic"
     DEFAULT_RELEVANCE = 0.75
+    DEFAULT_NUM_RECORDS = 1
 
     # @staticmethod
     @sk_function(
@@ -26,6 +28,11 @@ class TextMemorySkill:
         name=RELEVANCE_PARAM,
         description="The relevance score, from 0.0 to 1.0; 1.0 means perfect match",
         default_value=DEFAULT_RELEVANCE,
+    )
+    @sk_function_context_parameter(
+        name=NUM_RECORDS_PARAM,
+        description="The number of records to retrieve, default is 1, when more then 1 a comma separated string of the results is returned.",
+        default_value=DEFAULT_NUM_RECORDS,
     )
     async def recall_async(self, ask: str, context: SKContext) -> str:
         """
@@ -64,15 +71,22 @@ class TextMemorySkill:
         if relevance is None or str(relevance).strip() == "":
             relevance = TextMemorySkill.DEFAULT_RELEVANCE
 
+        num_records = (
+            context.variables[TextMemorySkill.NUM_RECORDS_PARAM]
+            if context.variables.contains_key(TextMemorySkill.NUM_RECORDS_PARAM)
+            else TextMemorySkill.DEFAULT_NUM_RECORDS
+        )
+        if num_records is None or str(num_records).strip() == "":
+            num_records = TextMemorySkill.DEFAULT_NUM_RECORDS
+
         results = await context.memory.search_async(
-            collection, ask, min_relevance_score=float(relevance)
+            collection=collection, query=ask, limit=int(num_records), min_relevance_score=float(relevance)
         )
         if results is None or len(results) == 0:
             if context.log is not None:
                 context.log.warning(f"Memory not found in collection: {collection}")
             return ""
-
-        return results[0].text if results[0].text is not None else ""
+        return ", ".join([result.text for result in results if result.text is not None])
 
     @sk_function(
         description="Save information to semantic memory",
