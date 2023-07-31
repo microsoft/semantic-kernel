@@ -206,7 +206,7 @@ class Kernel:
             )
             raise KernelException(
                 KernelException.ErrorCodes.FunctionInvokeError,
-                "Error occured while invoking stream function",
+                "Error occurred while invoking stream function",
             )
 
     async def run_async(

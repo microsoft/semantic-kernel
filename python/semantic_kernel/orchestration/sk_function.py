@@ -500,7 +500,7 @@ class SKFunction(SKFunctionBase):
             context.fail(str(e), e)
             raise KernelException(
                 KernelException.ErrorCodes.FunctionInvokeError,
-                "Error occured while invoking stream function",
+                "Error occurred while invoking stream function",
             )
 
     async def _invoke_semantic_stream_async(self, context, settings):
