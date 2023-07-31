@@ -65,7 +65,7 @@ public static class Example52_ApimAuth
 
         var funSkill = kernel.ImportSemanticSkillFromDirectory(
             folder,
-            "FunSkill");
+            "FunPlugin");
 
         // Run
         var result = await kernel.RunAsync(

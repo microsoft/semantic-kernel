@@ -14,17 +14,17 @@ internal static class TestHelpers
     internal static void ImportSampleSkills(IKernel target)
     {
         var chatSkill = GetSkills(target,
-            "ChatSkill",
-            "SummarizeSkill",
-            "WriterSkill",
-            "CalendarSkill",
-            "ChildrensBookSkill",
-            "ClassificationSkill",
-            "CodingSkill",
-            "FunSkill",
-            "IntentDetectionSkill",
-            "MiscSkill",
-            "QASkill");
+            "ChatPlugin",
+            "SummarizePlugin",
+            "WriterPlugin",
+            "CalendarPlugin",
+            "ChildrensBookPlugin",
+            "ClassificationPlugin",
+            "CodingPlugin",
+            "FunPlugin",
+            "IntentDetectionPlugin",
+            "MiscPlugin",
+            "QAPlugin");
     }
 
     internal static IDictionary<string, ISKFunction> GetSkills(IKernel target, params string[] skillNames)
@@ -34,8 +34,7 @@ internal static class TestHelpers
         {
             throw new InvalidOperationException("Unable to determine current assembly directory.");
         }
-
-        string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
+        string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../prompts/samples"));
 
         return target.ImportSemanticSkillFromDirectory(skillParentDirectory, skillNames);
     }

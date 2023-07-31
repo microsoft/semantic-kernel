@@ -19,8 +19,8 @@ public static class Example28_ActionPlanner
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizePlugin");
+        kernel.ImportSemanticSkillFromDirectory(folder, "WriterPlugin");
 
         // Create an instance of ActionPlanner.
         // The ActionPlanner takes one goal and returns a single function to execute.

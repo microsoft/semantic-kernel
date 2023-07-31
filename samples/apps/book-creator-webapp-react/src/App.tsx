@@ -63,27 +63,27 @@ const App: FC = () => {
             items: [
                 {
                     title: 'Book ideas',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChildrensBookSkill/BookIdeas',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/prompts/samples/ChildrensBookPlugin/BookIdeas',
                 },
                 {
                     title: 'Novel Outline',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/WriterSkill/NovelOutline',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/WriterPlugin/NovelOutline',
                 },
                 {
                     title: 'Create Book',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChildrensBookSkill/CreateBook',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChildrensBookPlugin/CreateBook',
                 },
                 {
                     title: 'Summarize',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/SummarizeSkill/Summarize',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/SummarizePlugin/Summarize',
                 },
                 {
                     title: 'Translate',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/WriterSkill/Translate',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/WriterPlugin/Translate',
                 },
                 {
                     title: 'Rewrite',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/WriterSkill/Rewrite',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/WriterPlugin/Rewrite',
                 },
             ],
         },

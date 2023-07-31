@@ -6,13 +6,13 @@ using System.Reflection;
 internal static class RepoFiles
 {
     /// <summary>
-    /// Scan the local folders from the repo, looking for "samples/skills" folder.
+    /// Scan the local folders from the repo, looking for "/prompts/samples" folder.
     /// </summary>
-    /// <returns>The full path to samples/skills</returns>
+    /// <returns>The full path to prompts/samples</returns>
     public static string SampleSkillsPath()
     {
-        const string Parent = "samples";
-        const string Folder = "skills";
+        const string Parent = "prompts";
+        const string Folder = "samples";
 
         bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
         {

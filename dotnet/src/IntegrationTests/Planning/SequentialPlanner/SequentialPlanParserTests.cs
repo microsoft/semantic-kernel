@@ -40,12 +40,12 @@ public class SequentialPlanParserTests
                 setAsDefault: true)
             .Build();
         kernel.ImportSkill(new EmailSkillFake(), "email");
-        TestHelpers.GetSkills(kernel, "SummarizeSkill", "WriterSkill");
+        TestHelpers.GetSkills(kernel, "SummarizePlugin", "WriterPlugin");
 
         var planString =
             @"<plan>
-    <function.SummarizeSkill.Summarize/>
-    <function.WriterSkill.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
+    <function.SummarizePlugin.Summarize/>
+    <function.WriterPlugin.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
     <function.email.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
     <function.email.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
 </plan>";
@@ -62,12 +62,12 @@ public class SequentialPlanParserTests
         Assert.Collection<Plan>(plan.Steps,
             step =>
             {
-                Assert.Equal("SummarizeSkill", step.SkillName);
+                Assert.Equal("SummarizePlugin", step.SkillName);
                 Assert.Equal("Summarize", step.Name);
             },
             step =>
             {
-                Assert.Equal("WriterSkill", step.SkillName);
+                Assert.Equal("WriterPlugin", step.SkillName);
                 Assert.Equal("Translate", step.Name);
                 Assert.Equal("French", step.Parameters["language"]);
                 Assert.True(step.Outputs.Contains("TRANSLATED_SUMMARY"));

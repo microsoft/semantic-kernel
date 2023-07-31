@@ -139,7 +139,7 @@
         }
       }
     },
-    "/FunSkill/Excuses": {
+    "/FunPlugin/Excuses": {
       "post": {
         "description": "Turn a scenario into a creative or humorous excuse to send your boss",
         "operationId": "Excuses",

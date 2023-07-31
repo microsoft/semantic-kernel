@@ -93,7 +93,7 @@ const App: FC = () => {
             items: [
                 {
                     title: 'Summarize',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/SummarizeSkill/Summarize',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/prompts/samples/SummarizePlugin/Summarize',
                 },
                 {
                     title: 'AppendTextAsync',

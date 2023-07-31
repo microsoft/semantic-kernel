@@ -91,7 +91,7 @@ public static class Example08_RetryHandler
 
         var qaSkill = kernel.ImportSemanticSkillFromDirectory(
             folder,
-            "QASkill");
+            "QAPlugin");
 
         var question = "How popular is Polly library?";
 
@@ -133,7 +133,7 @@ warn: object[0]
 warn: object[0]
       Error executing action [attempt 3 of 3], pausing 8000ms. Outcome: Unauthorized
 fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
+      Function call fail during pipeline step 0: QAPlugin.Question
 info: object[0]
       Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
 info: object[0]
@@ -147,7 +147,7 @@ warn: object[0]
 warn: object[0]
       Error executing action [attempt 3 of 3], pausing 2000ms. Outcome: Unauthorized
 fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
+      Function call fail during pipeline step 0: QAPlugin.Question
 info: object[0]
       Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
 info: object[0]
@@ -155,7 +155,7 @@ info: object[0]
 info: object[0]
       Question: How popular is Polly library?
 fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
+      Function call fail during pipeline step 0: QAPlugin.Question
 info: object[0]
       Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
 info: object[0]
@@ -171,7 +171,7 @@ warn: object[0]
 fail: object[0]
       Error executing request, max retry count reached. Reason: Unauthorized
 fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
+      Function call fail during pipeline step 0: QAPlugin.Question
 info: object[0]
       Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
 info: object[0]
@@ -187,7 +187,7 @@ warn: object[0]
 fail: object[0]
       Error executing request, max retry count reached. Reason: Unauthorized
 fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
+      Function call fail during pipeline step 0: QAPlugin.Question
 info: object[0]
       Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
 */

@@ -40,7 +40,7 @@ public sealed class SequentialPlannerTests : IDisposable
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         _ = kernel.ImportSkill(new EmailSkillFake());
-        TestHelpers.GetSkills(kernel, "FunSkill");
+        TestHelpers.GetSkills(kernel, "FunPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
 
@@ -56,12 +56,12 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterSkill", "<!--===ENDPART===-->")]
+    [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterPlugin", "<!--===ENDPART===-->")]
     public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedSkill, string expectedDefault)
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        TestHelpers.GetSkills(kernel, "WriterSkill");
+        TestHelpers.GetSkills(kernel, "WriterPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
 

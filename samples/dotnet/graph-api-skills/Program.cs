@@ -146,7 +146,7 @@ public sealed class Program
         string skillParentDirectory = RepoFiles.SampleSkillsPath();
 
         IDictionary<string, ISKFunction> summarizeSkills =
-            sk.ImportSemanticSkillFromDirectory(skillParentDirectory, "SummarizeSkill");
+            sk.ImportSemanticSkillFromDirectory(skillParentDirectory, "SummarizePlugin");
 
         //
         // The static plan below is meant to emulate a plan generated from the following request:

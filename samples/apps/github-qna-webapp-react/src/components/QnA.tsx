@@ -61,7 +61,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
                         { key: 'collection', value: `${projectUri}-${branch}` },
                     ],
                 },
-                'QASkill',
+                'QAPlugin',
                 'GitHubMemoryQuery',
             );
             response.content = result.value;

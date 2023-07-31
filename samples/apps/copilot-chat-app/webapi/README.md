@@ -12,23 +12,24 @@ Before you get started, make sure you have the following requirements in place:
 2. **(Optional)** [Visual Studio Code](http://aka.ms/vscode) or [Visual Studio](http://aka.ms/vsdownload).
 3. Update the properties in `./appsettings.json` to configure your Azure OpenAI resource or OpenAI account.
 4. Generate and trust a localhost developer certificate.
-   - For Windows and Mac run
-     ```bash
-     dotnet dev-certs https --trust
-     ```
-     > Select `Yes` when asked if you want to install this certificate.
-   - For Linux run
-     ```bash
-     dotnet dev-certs https
-     ```
 
-   > To verify the certificate has been installed and trusted, run `dotnet run dev-certs https --check`
+    - For Windows and Mac run
+        ```bash
+        dotnet dev-certs https --trust
+        ```
+        > Select `Yes` when asked if you want to install this certificate.
+    - For Linux run
+        ```bash
+        dotnet dev-certs https
+        ```
 
-   > To clean your system of the developer certificate, run `dotnet run dev-certs https --clean`
+    > To verify the certificate has been installed and trusted, run `dotnet run dev-certs https --check`
 
-5. **(Optional)** To enable support for uploading image file formats such as png, jpg and tiff, we have included the [Tesseract](https://www.nuget.org/packages/Tesseract) nuget package.  
-   - You will need to obtain one or more [tessdata language data files](https://github.com/tesseract-ocr/tessdata) such as `eng.traineddata` and add them to your `./data` directory or the location specified in the `Tesseract.FilePath` location in `./appsettings.json`.  
-   - Set the `Copy to Output Directory` value to `Copy if newer`.
+    > To clean your system of the developer certificate, run `dotnet run dev-certs https --clean`
+
+5. **(Optional)** To enable support for uploading image file formats such as png, jpg and tiff, we have included the [Tesseract](https://www.nuget.org/packages/Tesseract) nuget package.
+    - You will need to obtain one or more [tessdata language data files](https://github.com/tesseract-ocr/tessdata) such as `eng.traineddata` and add them to your `./data` directory or the location specified in the `Tesseract.FilePath` location in `./appsettings.json`.
+    - Set the `Copy to Output Directory` value to `Copy if newer`.
 
 # Start the WebApi Service
 
@@ -38,25 +39,26 @@ You can start the WebApi service using the command-line, Visual Studio Code, or 
 
 1. Open a terminal
 2. Change directory to the Copilot Chat webapi project directory.
-   ```
-   cd semantic-kernel/samples/apps/copilot-chat-app/webapi
-   ```
+    ```
+    cd semantic-kernel/samples/apps/copilot-chat-app/webapi
+    ```
 3. (Optional) Build the service and verify there are no errors.
-   ```
-   dotnet build
-   ```
+    ```
+    dotnet build
+    ```
 4. Run the service
-   ```
-   dotnet run
-   ```
+    ```
+    dotnet run
+    ```
 5. Early in the startup, the service will provide a probe endpoint you can use in a web browser to verify
    the service is running.
-   ```
-   info: Microsoft.SemanticKernel.Kernel[0]
-         Health probe: https://localhost:40443/healthz
-   ```
+    ```
+    info: Microsoft.SemanticKernel.Kernel[0]
+          Health probe: https://localhost:40443/healthz
+    ```
 
 ## Visual Studio Code
+
 1. build (CopilotChatWebApi)
 2. run (CopilotChatWebApi)
 3. [optional] watch (CopilotChatWebApi)
@@ -69,22 +71,24 @@ You can start the WebApi service using the command-line, Visual Studio Code, or 
 4. Start debugging by pressing `F5` or selecting the menu item `Debug`->`Start Debugging`.
 
 # Enabling Sequential Planner
-If you want to use SequentialPlanner (multi-step) instead ActionPlanner (single-step), we recommend using `gpt-4` or `gpt-3.5-turbo` as the planner model. Using `gpt-3.5-turbo` will require with a relevancy filter. 
 
-To enable sequential planner, 
+If you want to use SequentialPlanner (multi-step) instead ActionPlanner (single-step), we recommend using `gpt-4` or `gpt-3.5-turbo` as the planner model. Using `gpt-3.5-turbo` will require with a relevancy filter.
+
+To enable sequential planner,
+
 1. In [./webapi/appsettings.json](appsettings.json), set `"Type": "Sequential"` under the `Planner` section.
 1. Then, set your preferred Planner model (`gpt-4` or `gpt-3.5-turbo`) under the `AIService` configuration section.
-   1. If using `gpt-4`, no other changes are required.
-   1. If using `gpt-3.5-turbo`: change [CopilotChatPlanner.cs](CopilotChat/Skills/ChatSkills/CopilotChatPlanner.cs) to initialize SequentialPlanner with a RelevancyThreshold*.  
-      - Add `using` statement to top of file: 
-         ```
-         using Microsoft.SemanticKernel.Planning.Sequential;
-         ```
-      - The `CreatePlanAsync` method should return the following line if `this._plannerOptions?.Type == "Sequential"` is true:
-         ```
-         return new SequentialPlanner(this.Kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.75 }).CreatePlanAsync(goal);
-         ```
-         \* The `RelevancyThreshold` is a number from 0 to 1 that represents how similar a goal is to a function's name/description/inputs. You want to tune that value when using SequentialPlanner to help keep things scoped while not missing on on things that are relevant or including too many things that really aren't. `0.75` is an arbitrary threshold and we recommend developers play around with this number to see what best fits their scenarios.
+    1. If using `gpt-4`, no other changes are required.
+    1. If using `gpt-3.5-turbo`: change [CopilotChatPlanner.cs](CopilotChat/Skills/ChatSkills/CopilotChatPlanner.cs) to initialize SequentialPlanner with a RelevancyThreshold\*.
+        - Add `using` statement to top of file:
+            ```
+            using Microsoft.SemanticKernel.Planning.Sequential;
+            ```
+        - The `CreatePlanAsync` method should return the following line if `this._plannerOptions?.Type == "Sequential"` is true:
+            ```
+            return new SequentialPlanner(this.Kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.75 }).CreatePlanAsync(goal);
+            ```
+            \* The `RelevancyThreshold` is a number from 0 to 1 that represents how similar a goal is to a function's name/description/inputs. You want to tune that value when using SequentialPlanner to help keep things scoped while not missing on on things that are relevant or including too many things that really aren't. `0.75` is an arbitrary threshold and we recommend developers play around with this number to see what best fits their scenarios.
 1. Restart the `webapi` - Copilot Chat should be now running locally with SequentialPlanner.
 
 # (Optional) Enabling the Qdrant Memory Store
@@ -97,23 +101,26 @@ To enable the Qdrant memory store, you must first deploy Qdrant locally and then
 ## 1. Configure your environment
 
 Before you get started, make sure you have the following additional requirements in place:
-- [Docker Desktop](https://www.docker.com/products/docker-desktop) for hosting the [Qdrant](https://github.com/qdrant/qdrant) vector search engine.
+
+-   [Docker Desktop](https://www.docker.com/products/docker-desktop) for hosting the [Qdrant](https://github.com/qdrant/qdrant) vector search engine.
 
 ## 2. Deploy Qdrant VectorDB locally
 
 1. Open a terminal and use Docker to pull down the container image.
+
     ```bash
     docker pull qdrant/qdrant
     ```
 
 2. Change directory to this repo and create a `./data/qdrant` directory to use as persistent storage.
-    Then start the Qdrant container on port `6333` using the `./data/qdrant` folder as the persistent storage location.
+   Then start the Qdrant container on port `6333` using the `./data/qdrant` folder as the persistent storage location.
 
     ```bash
     cd /src/semantic-kernel
     mkdir ./data/qdrant
     docker run --name copilotchat -p 6333:6333 -v "$(pwd)/data/qdrant:/qdrant/storage" qdrant/qdrant
     ```
+
     > To stop the container, in another terminal window run `docker container stop copilotchat; docker container rm copilotchat;`.
 
 # (Optional) Enable Application Insights telemetry

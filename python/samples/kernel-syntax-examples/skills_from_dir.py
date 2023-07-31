@@ -23,10 +23,9 @@ else:
     kernel.add_text_completion_service(
         service_id, sk_oai.OpenAITextCompletion(model, api_key, org_id)
     )
-
 # note: using skills from the samples folder
-skills_directory = os.path.join(__file__, "../../../../samples/skills")
-skill = kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
+skills_directory = os.path.join(__file__, "../../../../prompts/samples")
+skill = kernel.import_semantic_skill_from_directory(skills_directory, "FunPlugin")
 
 result = asyncio.run(
     kernel.run_async(skill["Joke"], input_str="time travel to dinosaur age")

@@ -27,7 +27,7 @@ public static class Example09_FunctionTypes
         var test = kernel.ImportSkill(new LocalExampleSkill(), "test");
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizePlugin");
 
         // The kernel takes care of wiring the input appropriately
         await kernel.RunAsync(
@@ -132,7 +132,7 @@ public class LocalExampleSkill
     [SKFunction]
     public async Task<string> Type06Async(SKContext context)
     {
-        var summarizer = context.Func("SummarizeSkill", "Summarize");
+        var summarizer = context.Func("SummarizePlugin", "Summarize");
 
         var summary = await summarizer.InvokeAsync("blah blah blah");
 

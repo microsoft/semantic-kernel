@@ -8,10 +8,9 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 
 from utils.config import AIService, headers_to_config, dotenv_to_config
 
-
 def sample_skills_path() -> str:
-    PARENT = "samples"
-    FOLDER = "skills"
+    PARENT = "prompts"
+    FOLDER = "samples"
 
     def search_path(path_to_find: str, max_attempts=10):
         curr_dir = os.path.abspath(inspect.getfile(inspect.currentframe()))

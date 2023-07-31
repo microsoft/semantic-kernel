@@ -25,24 +25,24 @@ description: looks up the a contact and retrieves their email address
 args:
 - name: the name to look up
 
-WriterSkill.EmailTo
+WriterPlugin.EmailTo
 description: email the input text to a recipient
 args:
 - input: the text to email
 - recipient: the recipient's email address. Multiple addresses may be included if separated by ';'.
 
-WriterSkill.Translate
+WriterPlugin.Translate
 description: translate the input to another language
 args:
 - input: the text to translate
 - language: the language to translate to
 
-WriterSkill.Summarize
+WriterPlugin.Summarize
 description: summarize input text
 args:
 - input: the text to summarize
 
-FunSkill.Joke
+FunPlugin.Joke
 description: Generate a funny joke
 args:
 - input: the input to generate a joke about
@@ -54,13 +54,13 @@ args:
     {
         "input": "cars",
         "subtasks": [
-            {"function": "FunSkill.Joke"},
-            {"function": "WriterSkill.Translate", "args": {"language": "Spanish"}}
+            {"function": "FunPlugin.Joke"},
+            {"function": "WriterPlugin.Translate", "args": {"language": "Spanish"}}
         ]
     }
 
 [AVAILABLE FUNCTIONS]
-WriterSkill.Brainstorm
+WriterPlugin.Brainstorm
 description: Brainstorm ideas
 args:
 - input: the input to brainstorm about
@@ -70,13 +70,13 @@ description: Write in the style of author Edgar Allen Poe
 args:
 - input: the input to write about
 
-WriterSkill.EmailTo
+WriterPlugin.EmailTo
 description: Write an email to a recipient
 args:
 - input: the input to write about
 - recipient: the recipient's email address.
 
-WriterSkill.Translate
+WriterPlugin.Translate
 description: translate the input to another language
 args:
 - input: the text to translate
@@ -91,10 +91,10 @@ E-mail these ideas to my significant other. Translate it to French."
     {
         "input": "Valentine's Day Date Ideas",
         "subtasks": [
-            {"function": "WriterSkill.Brainstorm"},
+            {"function": "WriterPlugin.Brainstorm"},
             {"function": "EdgarAllenPoeSkill.Poe"},
-            {"function": "WriterSkill.EmailTo", "args": {"recipient": "significant_other"}},
-            {"function": "WriterSkill.Translate", "args": {"language": "French"}}
+            {"function": "WriterPlugin.EmailTo", "args": {"recipient": "significant_other"}},
+            {"function": "WriterPlugin.Translate", "args": {"language": "French"}}
         ]
     }
 

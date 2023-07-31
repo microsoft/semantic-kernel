@@ -30,8 +30,8 @@ public sealed class SequentialPlannerTests
         {
             ("SendEmail", "email", "Send an e-mail", false),
             ("GetEmailAddress", "email", "Get an e-mail address", false),
-            ("Translate", "WriterSkill", "Translate something", true),
-            ("Summarize", "SummarizeSkill", "Summarize something", true)
+            ("Translate", "WriterPlugin", "Translate something", true),
+            ("Summarize", "SummarizePlugin", "Summarize something", true)
         };
 
         var functionsView = new FunctionsView();
@@ -75,8 +75,8 @@ public sealed class SequentialPlannerTests
         var planString =
             @"
 <plan>
-    <function.SummarizeSkill.Summarize/>
-    <function.WriterSkill.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
+    <function.SummarizePlugin.Summarize/>
+    <function.WriterPlugin.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
     <function.email.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
     <function.email.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
 </plan>";

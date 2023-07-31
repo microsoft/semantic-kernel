@@ -120,7 +120,7 @@ public static class Example40_DIContainer
         {
             string folder = RepoFiles.SampleSkillsPath();
 
-            var sumSkill = this._kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+            var sumSkill = this._kernel.ImportSemanticSkillFromDirectory(folder, "SummarizePlugin");
 
             var result = await this._kernel.RunAsync(ask, sumSkill["Summarize"]);
 

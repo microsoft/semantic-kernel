@@ -91,9 +91,8 @@ public static class Example14_SemanticMemory
         Output:
 
         Query: Can I build a chat with SK?
-
         Result 1:
-          URL:     : https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChatSkill/ChatGPT
+          URL:     : https://github.com/microsoft/semantic-kernel/tree/main/prompts/samples/ChatPlugin/ChatGPT
           Title    : Sample demonstrating how to create a chat skill interfacing with ChatGPT
 
         Result 2:
@@ -149,7 +148,6 @@ public static class Example14_SemanticMemory
 
         Console.WriteLine("\n----------------------");
     }
-
     private static Dictionary<string, string> SampleData()
     {
         return new Dictionary<string, string>
@@ -160,7 +158,7 @@ public static class Example14_SemanticMemory
                 = "Jupyter notebook describing how to pass prompts from a file to a semantic skill or function",
             ["https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/00-getting-started.ipynb"]
                 = "Jupyter notebook describing how to get started with the Semantic Kernel",
-            ["https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChatSkill/ChatGPT"]
+            ["https://github.com/microsoft/semantic-kernel/tree/main/prompts/samples/ChatPlugin/ChatGPT"]
                 = "Sample demonstrating how to create a chat skill interfacing with ChatGPT",
             ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs"]
                 = "C# class that defines a volatile embedding store",

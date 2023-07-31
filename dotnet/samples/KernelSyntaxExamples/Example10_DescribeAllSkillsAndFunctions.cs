@@ -38,7 +38,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
 
         // Import a semantic skill
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizePlugin");
 
         // Define a semantic function inline, without naming
         var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", maxTokens: 150);
@@ -162,7 +162,7 @@ Skill: Writing
       - language:
         default: ''
 
-Skill: SummarizeSkill
+Skill: SummarizePlugin
    Topics: Analyze given text or document and extract key topics worth remembering
       Params:
       - input:

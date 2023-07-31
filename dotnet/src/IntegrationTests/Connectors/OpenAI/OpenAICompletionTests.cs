@@ -55,7 +55,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 setAsDefault: true)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatPlugin");
 
         // Act
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -75,7 +75,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatPlugin");
 
         // Act
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -127,7 +127,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatPlugin");
 
         // Act
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -160,7 +160,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizePlugin");
 
         // Act
         var context = await target.RunAsync(prompt, skill["Summarize"]);
@@ -193,7 +193,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizePlugin");
 
         // Act
         var context = await target.RunAsync(prompt, skill["Summarize"]);
@@ -217,7 +217,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: openAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizePlugin");
 
         // Act
         var context = await target.RunAsync("Any", skill["Summarize"]);
@@ -245,7 +245,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizePlugin");
 
         // Act
         var context = await target.RunAsync("Any", skill["Summarize"]);
@@ -273,7 +273,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizePlugin");
 
         // Act
         var context = await skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)));
@@ -305,7 +305,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         this._serviceConfiguration[service](target);
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatPlugin");
 
         // Act
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -347,7 +347,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this.ConfigureAzureOpenAI(builder);
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "FunSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "FunPlugin");
 
         // Act
         SKContext actual = await target.RunAsync(skill["Limerick"]);

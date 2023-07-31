@@ -25,8 +25,8 @@ internal static class Example31_CustomPlanner
         Console.WriteLine("======== Custom Planner - Create and Execute Markup Plan ========");
         IKernel kernel = InitializeKernel();
 
-        // ContextQuery is part of the QASkill
-        IDictionary<string, ISKFunction> skills = LoadQASkill(kernel);
+        // ContextQuery is part of the QAPlugin
+        IDictionary<string, ISKFunction> skills = LoadQAPlugin(kernel);
         SKContext context = CreateContextQueryContext(kernel);
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
@@ -109,10 +109,10 @@ internal static class Example31_CustomPlanner
         }
     }
 
-    // ContextQuery is part of the QASkill
+    // ContextQuery is part of the QAPlugin
     // DependsOn: TimeSkill named "time"
     // DependsOn: BingSkill named "bing"
-    private static IDictionary<string, ISKFunction> LoadQASkill(IKernel kernel)
+    private static IDictionary<string, ISKFunction> LoadQAPlugin(IKernel kernel)
     {
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSkill(new TimeSkill(), "time");
@@ -121,7 +121,7 @@ internal static class Example31_CustomPlanner
 #pragma warning restore CA2000 // Dispose objects before losing scope
         var search = kernel.ImportSkill(bing, "bing");
 
-        return kernel.ImportSemanticSkillFromDirectory(folder, "QASkill");
+        return kernel.ImportSemanticSkillFromDirectory(folder, "QAPlugin");
     }
 
     private static IKernel InitializeKernel()

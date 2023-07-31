@@ -5,12 +5,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Action;
@@ -116,7 +110,7 @@ public sealed class Program
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill", "WriterSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
         kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "advancedCalculator");

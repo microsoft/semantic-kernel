@@ -99,7 +99,7 @@ public sealed class PlanTests : IDisposable
         // Arrange
         IKernel target = this.InitializeKernel();
         var emailSkill = target.ImportSkill(new EmailSkillFake());
-        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
+        var writerSkill = TestHelpers.GetSkills(target, "WriterPlugin");
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
         var plan = new Plan(goal);
@@ -249,8 +249,8 @@ public sealed class PlanTests : IDisposable
         // Arrange
         IKernel target = this.InitializeKernel();
 
-        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
-        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
+        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizePlugin");
+        var writerSkill = TestHelpers.GetSkills(target, "WriterPlugin");
         var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
@@ -322,8 +322,8 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
-        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
+        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizePlugin");
+        var writerSkill = TestHelpers.GetSkills(target, "WriterPlugin");
         var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
@@ -381,8 +381,8 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
-        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
+        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizePlugin");
+        var writerSkill = TestHelpers.GetSkills(target, "WriterPlugin");
         var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
@@ -442,8 +442,8 @@ public sealed class PlanTests : IDisposable
         // Arrange
         IKernel target = this.InitializeKernel();
 
-        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
-        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
+        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizePlugin");
+        var writerSkill = TestHelpers.GetSkills(target, "WriterPlugin");
         var emailSkill = target.ImportSkill(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();

@@ -13,8 +13,8 @@ public static class RepoFiles
     /// <returns>The full path to samples/skills</returns>
     public static string SampleSkillsPath()
     {
-        const string Parent = "samples";
-        const string Folder = "skills";
+        const string Parent = "prompts";
+        const string Folder = "samples";
 
         bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
         {

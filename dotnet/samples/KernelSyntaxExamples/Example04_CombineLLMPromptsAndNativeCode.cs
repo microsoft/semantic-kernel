@@ -46,7 +46,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
 
         var sumSkill = kernel.ImportSemanticSkillFromDirectory(
             folder,
-            "SummarizeSkill");
+            "SummarizePlugin");
 
         // Run
         var ask = "What's the tallest building in South America";
