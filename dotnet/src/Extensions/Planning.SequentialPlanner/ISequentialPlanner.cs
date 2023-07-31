@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
 /// <summary>
-/// Interface for planner that uses semantic function to create a sequential plan.
+/// Interface for planner that uses a set of semantic functions to create a sequential plan.
 /// </summary>
 public interface ISequentialPlanner
 {
