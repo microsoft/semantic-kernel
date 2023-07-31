@@ -1,21 +1,18 @@
-import pytest
-import logging
-from typing import List, Tuple
+from textwrap import dedent
 from unittest.mock import Mock
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
+
+import pytest
+
 from semantic_kernel import Kernel
+from semantic_kernel.memory.semantic_text_memory import SemanticTextMemoryBase
+from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.planning import ActionPlanner
 from semantic_kernel.planning.planning_exception import PlanningException
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAITextCompletion,
-    OpenAIChatCompletion,
-)
 from semantic_kernel.skill_definition.function_view import FunctionView
-from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
 from semantic_kernel.skill_definition.functions_view import FunctionsView
-from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
 
 
 def create_mock_function(function_view: FunctionView) -> Mock(spec=SKFunctionBase):
@@ -25,24 +22,6 @@ def create_mock_function(function_view: FunctionView) -> Mock(spec=SKFunctionBas
     mock_function.skill_name = function_view.skill_name
     mock_function.description = function_view.description
     return mock_function
-
-
-def test_can_be_instantiated_with_text_completion_service(get_oai_config):
-    kernel = Kernel()
-    kernel.add_text_completion_service(
-        "text-davinci-003", OpenAITextCompletion("text-davinci-003", *get_oai_config)
-    )
-    planner = ActionPlanner(kernel)
-    assert planner is not None
-
-
-def test_can_be_instantiated_with_chat_completion_service(get_oai_config):
-    kernel = Kernel()
-    kernel.add_chat_service(
-        "gpt-3.5-turbo", OpenAIChatCompletion("gpt-3.5-turbo", *get_oai_config)
-    )
-    planner = ActionPlanner(kernel)
-    assert planner is not None
 
 
 def test_throw_without_kernel():
@@ -60,7 +39,14 @@ def test_throw_without_completion_service():
 @pytest.mark.asyncio
 async def test_plan_creation_async():
     goal = "Translate Happy birthday to German."
-    plan_str = 'Here is a plan that can achieve the given task:\n\n{""plan"":\n{""rationale"":""the list contains a function that allows to translate one language to another."",""function"": ""WriterSkill.Translate"",""parameters"": \n{""translate_from"": ""english"",""translate_to"": ""german"",""input"": ""Happy birthday""}\n}\n}\n\nThis plan makes use of the Translate function in WriterSkill to translate the message `Happy birthday` from english to german.'
+    plan_str = dedent(
+        """Here is a plan that can achieve the given task:\n\n{""plan"":\n{""rationale"":
+        ""the list contains a function that allows to translate one language to another."",
+        ""function"": ""WriterSkill.Translate"",""parameters"": \n{""translate_from"":
+        ""english"",""translate_to"": ""german"",""input"": ""Happy birthday""}\n}\n}\n\n
+        This plan makes use of the Translate function in WriterSkill to translate the message
+        `Happy birthday` from english to german."""
+    )
 
     kernel = Mock(spec=Kernel)
     mock_function = Mock(spec=SKFunctionBase)
@@ -182,7 +168,7 @@ async def test_invalid_json_throw_async():
 
 
 @pytest.mark.asyncio
-async def test_invalid_json_throw_async():
+async def test_empty_goal_throw_async():
     goal = ""
 
     kernel = Mock(spec=Kernel)
