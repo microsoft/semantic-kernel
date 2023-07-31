@@ -27,7 +27,7 @@ To build the Semantic Kernel, you will need:
 
 1. Clone this repository
 
-        git clone git@github.com:microsoft/semantic-kernel.git
+        git clone -b experimental-java https://github.com/microsoft/semantic-kernel/
 
 2. Build the Semantic Kernel
 

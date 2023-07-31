@@ -32,10 +32,7 @@ public class Example99_BlogAnnouncement {
 
     TextCompletion textCompletionService = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 
-    KernelConfig config = SKBuilders.kernelConfig().addTextCompletionService("textCompletion", k -> textCompletionService)
-        .build();
-
-    Kernel kernel = SKBuilders.kernel().withKernelConfig(config).build();
+    Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletionService).build();
     kernel.importSkill(new MyAppSkills(), "MyAppSkills");
 
     SequentialPlanner planner = new SequentialPlanner(kernel, null, null);
@@ -56,7 +53,9 @@ public class Example99_BlogAnnouncement {
   public static class MyAppSkills {
     @DefineSKFunction(name = "redactPassword", description = "Redacts passwords from a message")
     public String redactPassword(
-        @SKFunctionInputAttribute String input) {
+        @SKFunctionInputAttribute(
+            description = "The input message to redact passwords from"
+        ) String input) {
       System.out.println("[redactPassword] Redacting passwords from input: " + input);
       return input.replaceAll("password.*", "******");
     }

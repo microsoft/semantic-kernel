@@ -6,11 +6,10 @@
 //SOURCES syntaxexamples/SampleSkillsUtil.java,Config.java,Example00_GettingStarted.java
 package com.microsoft.semantickernel.samples;
 
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
-import com.microsoft.semantickernel.samples.syntaxexamples.SampleSkillsUtil;
 
 import java.io.IOException;
 
