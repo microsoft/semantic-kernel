@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.connectors.ai.openai.chatcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatMessage;
 import com.azure.ai.openai.models.ChatRole;
@@ -13,6 +14,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatRequestSettings;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
@@ -135,6 +137,45 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
     @Override
     public OpenAIChatHistory createNewChat(@Nullable String instructions) {
         return internalCreateNewChat(instructions);
+    }
+
+    @Override
+    public Flux<String> generateMessageStream(
+            ChatHistory chat, @Nullable ChatRequestSettings requestSettings) {
+        return this.getStreamingChatCompletionsAsync(chat, requestSettings)
+                .concatMap(
+                        chatCompletionResult -> {
+                            return Flux.fromIterable(chatCompletionResult.getChoices());
+                        })
+                .map(
+                        chatChoice -> {
+                            ChatMessage message = chatChoice.getDelta();
+                            if (message == null || message.getContent() == null) {
+                                return "";
+                            }
+                            return message.getContent();
+                        });
+    }
+
+    @Override
+    public Flux<ChatCompletions> getStreamingChatCompletionsAsync(
+            ChatHistory chat, ChatRequestSettings requestSettings) {
+        return internalGetChatStreamingResultsAsync(chat, requestSettings);
+    }
+
+    private Flux<ChatCompletions> internalGetChatStreamingResultsAsync(
+            ChatHistory chat, @Nullable ChatRequestSettings requestSettings) {
+        Verify.notNull(chat);
+        if (requestSettings == null) {
+            requestSettings = new ChatRequestSettings();
+        }
+
+        ClientBase.validateMaxTokens(requestSettings.getMaxTokens());
+
+        ChatCompletionsOptions options = createChatCompletionsOptions(requestSettings, chat);
+        options = options.setStream(true);
+
+        return getClient().getChatCompletionsStream(getModelId(), options);
     }
 
     /**
