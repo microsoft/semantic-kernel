@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
-import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemory;
 import reactor.core.publisher.Flux;
@@ -56,7 +56,7 @@ public class Example14_SemanticMemory
          * You can replace VolatileMemoryStore with Qdrant (see QdrantMemoryStore connector)
          * or implement your connectors for Pinecone, Vespa, Postgres + pgvector, SQLite VSS, etc.
          */
-        var openAIAsyncClient = Config.getClient();
+        var openAIAsyncClient = SamplesConfig.getClient();
 
         var kernelWithCustomDb = SKBuilders.kernel()
                 .withDefaultAIService(SKBuilders.textEmbeddingGenerationService().build(openAIAsyncClient, "text-embedding-ada-002"))

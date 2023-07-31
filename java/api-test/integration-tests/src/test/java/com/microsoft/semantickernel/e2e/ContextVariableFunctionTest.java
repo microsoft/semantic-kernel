@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.e2e;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
@@ -24,14 +24,20 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContextVariableFunctionTest.class);
 
     public static void main(String[] args)
-            throws IOException, ExecutionException, InterruptedException, TimeoutException {
+            throws ExecutionException,
+                    InterruptedException,
+                    TimeoutException,
+                    ConfigurationException {
         new ContextVariableFunctionTest().runContextVariableTest();
     }
 
     @Test
     @EnabledIf("isAzureTestEnabled")
     public void runContextVariableTest()
-            throws IOException, ExecutionException, InterruptedException, TimeoutException {
+            throws ExecutionException,
+                    InterruptedException,
+                    TimeoutException,
+                    ConfigurationException {
         Kernel kernel = buildTextCompletionKernel();
 
         String prompt =

@@ -2,14 +2,13 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TimeSkill;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-
-import java.io.IOException;
 
 public class Example06_TemplateLanguage {
     /// <summary>
@@ -17,10 +16,10 @@ public class Example06_TemplateLanguage {
     /// from a Semantic Function written in natural language
     /// </summary>
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws ConfigurationException {
         System.out.println("======== TemplateLanguage ========");
 
-        OpenAIAsyncClient client = Config.getClient();
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
         Kernel kernel = SKBuilders.kernel()
                 .withDefaultAIService(SKBuilders.textCompletionService().build(client, "text-davinci-003"))
