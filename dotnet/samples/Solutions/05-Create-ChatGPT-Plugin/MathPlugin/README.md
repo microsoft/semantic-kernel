@@ -69,5 +69,6 @@ To build and run the Azure Functions application from a terminal use the followi
 ```powershell
 cd azure-function
 dotnet build
-func start --csharp
+cd bin/Debug/net6.0
+func host start
 ```
