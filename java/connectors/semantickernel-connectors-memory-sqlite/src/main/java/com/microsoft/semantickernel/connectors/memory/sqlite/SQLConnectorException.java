@@ -2,6 +2,9 @@ package com.microsoft.semantickernel.connectors.memory.sqlite;
 
 import com.microsoft.semantickernel.SKException;
 
+/**
+ * Exception thrown by the SQLite connector.
+ */
 public class SQLConnectorException extends SKException {
 
     /**
