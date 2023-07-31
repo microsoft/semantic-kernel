@@ -74,7 +74,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var values = this._messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
 
         var value = values.SingleOrDefault();
-        Assert.Equal(OobaboogaTextCompletion.HttpUserAgent, value);
+        Assert.Equal("Semantic-Kernel", value);
     }
 
     [Fact]

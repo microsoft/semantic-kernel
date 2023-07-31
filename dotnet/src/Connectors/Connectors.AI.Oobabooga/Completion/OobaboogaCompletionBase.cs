@@ -102,7 +102,7 @@ public abstract class OobaboogaCompletionBase
     /// </summary>
     private void SetWebSocketOptions(ClientWebSocket clientWebSocket)
     {
-        clientWebSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
+        clientWebSocket.Options.SetRequestHeader("User-Agent", Telemetry.HttpUserAgent);
     }
 
     /// <summary>
