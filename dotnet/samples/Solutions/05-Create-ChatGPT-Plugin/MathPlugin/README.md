@@ -21,7 +21,7 @@ To learn more about using this starter, see the Semantic Kernel documentation th
 To configure the starter, you need to provide the following information:
 
 - Define the properties of the plugin in the [appsettings.json](./azure-function/appsettings.json) file.
-- Enter the API key for your AI endpoint in the [local.settings.json](./azure-function/azure-function/local.settings.json.example) file.
+- Enter the API key for your AI endpoint in the [local.settings.json](./azure-function/local.settings.json.example) file.
 
 ### Using appsettings.json
 
