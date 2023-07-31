@@ -132,7 +132,7 @@ internal static class Extensions
 
     internal static void RegisterTextMemory(this IKernel kernel)
     {
-        _ = kernel.ImportSkill(new TextMemorySkill(), nameof(TextMemorySkill));
+        _ = kernel.ImportSkill(nameof(TextMemorySkill));
     }
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",

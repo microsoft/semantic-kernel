@@ -138,8 +138,7 @@ which are not grounded in the original.
 
         kernel.ImportSkill(new TextSkill());
 
-        var plannerConfig = new SequentialPlannerConfig { };
-        var planner = new SequentialPlanner(kernel, plannerConfig);
+        var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 
