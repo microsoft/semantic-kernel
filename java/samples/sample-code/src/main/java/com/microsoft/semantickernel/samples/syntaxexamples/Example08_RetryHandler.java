@@ -9,27 +9,28 @@ import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISettings;
+import com.microsoft.semantickernel.connectors.ai.openai.util.SettingsMap;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import com.microsoft.semantickernel.connectors.ai.openai.util.AIProviderSettings;
-import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISettings;
 
-import java.io.IOException;
 import java.time.Duration;
 
-import static com.microsoft.semantickernel.samples.Config.CONF_PROPERTIES;
+import static com.microsoft.semantickernel.SamplesConfig.DEFAULT_PROPERTIES_LOCATIONS;
 
 public class Example08_RetryHandler {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws ConfigurationException {
         RetryOptions retryOptions = new RetryOptions(new ExponentialBackoffOptions()
                 .setMaxDelay(Duration.ofSeconds(180))
                 .setBaseDelay(Duration.ofSeconds(60))
                 .setMaxRetries(3));
 
-        AzureOpenAISettings settings = AIProviderSettings.getAzureOpenAISettingsFromFile(CONF_PROPERTIES);
+        AzureOpenAISettings settings = new AzureOpenAISettings(SettingsMap.getWithAdditional(DEFAULT_PROPERTIES_LOCATIONS));
+
         OpenAIAsyncClient client = new OpenAIClientBuilder()
                 .retryOptions(retryOptions)
                 .endpoint(settings.getEndpoint())

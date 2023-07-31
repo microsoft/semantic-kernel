@@ -2,17 +2,16 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.ConversationSummarySkill;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import reactor.core.publisher.Mono;
-
-import java.io.IOException;
 
 public class Example13_ConversationSummarySkill {
     private static final String ChatTranscript =
@@ -125,8 +124,8 @@ public class Example13_ConversationSummarySkill {
                     Jane: Goodbye!
                     """.stripIndent();
 
-    public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.getClient();
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
         conversationSummarySkillAsync(client);
         getConversationActionItemsAsync(client);

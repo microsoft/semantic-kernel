@@ -3,34 +3,34 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TextSkill;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlannerRequestSettings;
-import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Set;
 
 public class Example12_SequentialPlanner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Example12_SequentialPlanner.class);
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws ConfigurationException {
         poetrySamplesAsync();
         emailSamplesAsync();
         bookSamplesAsync();
         //MemorySampleAsync();
     }
 
-    private static void poetrySamplesAsync() throws IOException {
+    private static void poetrySamplesAsync() throws ConfigurationException {
         System.out.println("======== Sequential Planner - Create and Execute Poetry Plan ========");
         var kernel = initializeKernel();
 
@@ -72,7 +72,7 @@ public class Example12_SequentialPlanner {
         }
     }
 
-    private static void emailSamplesAsync() throws IOException {
+    private static void emailSamplesAsync() throws ConfigurationException {
         System.out.println("======== Sequential Planner - Create and Execute Email Plan ========");
         var kernel = initializeKernel();
 
@@ -111,7 +111,7 @@ public class Example12_SequentialPlanner {
         plan.invokeAsync(input).blockOptional();
     }
 
-    private static void bookSamplesAsync() throws IOException {
+    private static void bookSamplesAsync() throws ConfigurationException {
         System.out.println("======== Sequential Planner - Create and Execute Book Creation Plan  ========");
         var kernel = initializeKernel();
 
@@ -171,8 +171,8 @@ public class Example12_SequentialPlanner {
 
      */
 
-    private static Kernel initializeKernel() throws IOException {
-        OpenAIAsyncClient client = Config.getClient();
+    private static Kernel initializeKernel() throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
         var kernel = SKBuilders.kernel()
                 .withDefaultAIService(SKBuilders.chatCompletion()
                         .build(client, "gpt-35-turbo"))

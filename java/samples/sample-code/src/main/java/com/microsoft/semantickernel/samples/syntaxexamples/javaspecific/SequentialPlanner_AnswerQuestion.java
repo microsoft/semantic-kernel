@@ -1,10 +1,11 @@
 package com.microsoft.semantickernel.samples.syntaxexamples.javaspecific;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
-import com.microsoft.semantickernel.samples.Config;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 
@@ -30,8 +31,8 @@ public class SequentialPlanner_AnswerQuestion {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        OpenAIAsyncClient client = Config.getClient();
+    public static void main(String[] args) throws IOException, ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
         var kernel = SKBuilders.kernel()
                 .withDefaultAIService(SKBuilders.textCompletionService()
                         .build(client, "text-davinci-003"))

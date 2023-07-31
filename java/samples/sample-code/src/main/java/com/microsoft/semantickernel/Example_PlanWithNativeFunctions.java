@@ -1,11 +1,9 @@
 package com.microsoft.semantickernel;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.azure.ai.openai.OpenAIClientBuilder;
-import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.builders.SKBuilders;
-import com.microsoft.semantickernel.connectors.ai.openai.util.AIProviderSettings;
-import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISettings;
+import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
@@ -14,21 +12,10 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputA
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-
 public class Example_PlanWithNativeFunctions {
 
-    public static void main(String[] args) throws IOException {
-        AzureOpenAISettings settings = AIProviderSettings.getAzureOpenAISettingsFromFile(
-                Paths.get(System.getProperty("user.home"), ".sk", "conf.properties").toAbsolutePath().toString()
-        );
-
-        OpenAIAsyncClient client =
-                new OpenAIClientBuilder()
-                        .endpoint(settings.getEndpoint())
-                        .credential(new AzureKeyCredential(settings.getKey()))
-                        .buildAsyncClient();
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = OpenAIClientProvider.getClient();
 
         TextCompletion textCompletionService = SKBuilders.textCompletionService().build(client, "text-davinci-003");
 

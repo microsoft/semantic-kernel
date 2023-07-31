@@ -37,6 +37,7 @@ public class DefaultKernelTest {
 
     @Test
     void contextVariableTest() {
+
         String model = "a-model";
 
         OpenAIAsyncClient client =

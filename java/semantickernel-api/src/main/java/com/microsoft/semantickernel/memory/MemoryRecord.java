@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 
 import java.time.ZonedDateTime;
@@ -163,40 +165,30 @@ public class MemoryRecord extends DataEntryBase {
         return "MemoryRecord{" + "embedding=" + embedding + ", metadata=" + metadata + '}';
     }
 
-    /*
-       /// <summary>
-       /// Create a memory record from a serialized metadata string.
-       /// </summary>
-       /// <param name="json">Json string representing a memory record's metadata.</param>
-       /// <param name="embedding">Optional embedding associated with a memory record.</param>
-       /// <param name="key">Optional existing database key.</param>
-       /// <param name="timestamp">optional timestamp.</param>
-       /// <returns></returns>
-       /// <exception cref="MemoryException"></exception>
-       public static MemoryRecord FromJsonMetadata(
-           string json,
-           Embedding<float>? embedding,
-           string? key = null,
-           DateTimeOffset? timestamp = null)
-       {
-           var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
-           if (metadata != null)
-           {
-               return new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp);
-           }
+    public String getSerializedMetadata() throws JsonProcessingException {
+        return new ObjectMapper().writeValueAsString(this.metadata);
+    }
 
-           throw new MemoryException(
-               MemoryException.ErrorCodes.UnableToDeserializeMetadata,
-               "Unable to create memory record from serialized metadata");
-       }
+    public String getSerializedEmbedding() throws JsonProcessingException {
+        return new ObjectMapper().writeValueAsString(this.embedding);
+    }
 
-       /// <summary>
-       /// Serialize the metadata of a memory record.
-       /// </summary>
-       /// <returns>The memory record's metadata serialized to a json string.</returns>
-       public string GetSerializedMetadata()
-       {
-           return JsonSerializer.Serialize(this.Metadata);
-       }
-    */
+    public static MemoryRecord fromJsonMetadata(
+            String json,
+            @Nullable Embedding<Float> embedding,
+            @Nullable String key,
+            @Nullable ZonedDateTime timestamp)
+            throws JsonProcessingException {
+        MemoryRecordMetadata metadata =
+                new ObjectMapper().readValue(json, MemoryRecordMetadata.class);
+
+        if (metadata != null) {
+            return new MemoryRecord(
+                    metadata, embedding != null ? embedding : Embedding.empty(), key, timestamp);
+        }
+
+        throw new MemoryException(
+                MemoryException.ErrorCodes.UNABLE_TO_DESERIALIZE_METADATA,
+                "Unable to create memory record from serialized metadata");
+    }
 }

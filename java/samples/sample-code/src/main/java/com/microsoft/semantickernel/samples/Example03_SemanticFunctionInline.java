@@ -6,8 +6,10 @@
 //SOURCES syntaxexamples/SampleSkillsUtil.java,Config.java,Example00_GettingStarted.java
 package com.microsoft.semantickernel.samples;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
+import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -118,15 +120,14 @@ public class Example03_SemanticFunctionInline {
         inlineFunction(kernel, propmt, "tldr", text);
     }
 
-    public static void run (Config.ClientType clientType) throws IOException {
-        Kernel kernel = Example00_GettingStarted.getKernel(clientType.getClient());
+    public static void run(OpenAIAsyncClient client) throws IOException {
+        Kernel kernel = Example00_GettingStarted.getKernel(client);
 
         summarize(kernel);
         TLDR(kernel);
     }
 
-    public static void main(String args[]) throws IOException {
-        // Send one of Config.ClientType.OPEN_AI or Config.ClientType.AZURE_OPEN_AI
-        run(Config.ClientType.OPEN_AI);
+    public static void main(String args[]) throws ConfigurationException, IOException {
+        run(OpenAIClientProvider.getClient());
     }
 }

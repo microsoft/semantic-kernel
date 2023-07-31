@@ -5,6 +5,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -27,9 +28,9 @@ public class KernelTest extends AbstractKernelTest {
                 kernel.getSemanticFunctionBuilder()
                         .createFunction(
                                 """
-                                {{$input}}
+                                        {{$input}}
 
-                                One line TLDR with the fewest words.""",
+                                        One line TLDR with the fewest words.""",
                                 null,
                                 "",
                                 null,
@@ -55,14 +56,14 @@ public class KernelTest extends AbstractKernelTest {
 
     @Test
     @EnabledIf("isAzureTestEnabled")
-    public void endToEndTextGenerationTestAzureOpenAI() throws IOException {
+    public void endToEndTextGenerationTestAzureOpenAI() throws ConfigurationException {
         Kernel kernel = buildKernel(getOpenAIClient(), "text-davinci-003");
         executeCompletion(kernel);
     }
 
     @Test
     @EnabledIf("isAzureTestEnabled")
-    public void endToEndTextGenerationTestOpenAI() throws IOException {
+    public void endToEndTextGenerationTestOpenAI() throws ConfigurationException, IOException {
         Kernel kernel = buildKernel(getOpenAIClient(), getOpenAIModel());
         executeCompletion(kernel);
     }
