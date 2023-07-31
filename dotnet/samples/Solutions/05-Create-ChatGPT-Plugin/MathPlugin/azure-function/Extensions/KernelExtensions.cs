@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace AIPlugins.AzureFunctions.Extensions;
+namespace Extensions;
 
 public static class KernelExtensions
 {

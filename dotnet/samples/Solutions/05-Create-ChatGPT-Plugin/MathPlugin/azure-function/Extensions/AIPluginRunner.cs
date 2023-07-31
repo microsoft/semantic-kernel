@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Models;
 
-namespace AIPlugins.AzureFunctions.Extensions;
+namespace Extensions;
 
 public class AIPluginRunner : IAIPluginRunner
 {

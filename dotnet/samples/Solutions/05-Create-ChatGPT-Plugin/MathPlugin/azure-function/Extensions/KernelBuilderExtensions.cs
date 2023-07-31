@@ -3,6 +3,8 @@
 using Microsoft.SemanticKernel;
 using Models;
 
+namespace Extensions;
+
 internal static class KernelBuilderExtensions
 {
     /// <summary>
