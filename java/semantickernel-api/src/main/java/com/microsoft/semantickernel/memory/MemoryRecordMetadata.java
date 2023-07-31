@@ -25,6 +25,7 @@ public class MemoryRecordMetadata {
      * Whether the source data used to calculate embeddings are stored in the local storage provider
      * or is available through and external service, such as web site, MS Graph, etc.
      */
+    @JsonProperty("is_reference")
     public boolean isReference() {
         return isReference;
     }
@@ -35,6 +36,7 @@ public class MemoryRecordMetadata {
      *
      * @return Name of the external service if isReference is true.
      */
+    @JsonProperty("external_source_name")
     public String getExternalSourceName() {
         return externalSourceName;
     }
@@ -45,6 +47,7 @@ public class MemoryRecordMetadata {
      *
      * @return Unique string used to identify the {@code MemoryRecord}.
      */
+    @JsonProperty("id")
     public String getId() {
         return id;
     }
@@ -54,6 +57,7 @@ public class MemoryRecordMetadata {
      *
      * @return the optional title describing the content.
      */
+    @JsonProperty("description")
     public String getDescription() {
         return description;
     }
@@ -63,6 +67,7 @@ public class MemoryRecordMetadata {
      *
      * @return Source text when the memory is not an external source.
      */
+    @JsonProperty("text")
     public String getText() {
         return text;
     }
@@ -72,6 +77,7 @@ public class MemoryRecordMetadata {
      *
      * @return Custom metadata associated with a memory.
      */
+    @JsonProperty("additional_metadata")
     public String getAdditionalMetadata() {
         return additionalMetadata;
     }
@@ -89,12 +95,12 @@ public class MemoryRecordMetadata {
      */
     @JsonCreator
     public MemoryRecordMetadata(
-            @JsonProperty("reference") boolean isReference,
+            @JsonProperty("is_reference") boolean isReference,
             @JsonProperty("id") @Nonnull String id,
             @JsonProperty("text") @Nonnull String text,
             @JsonProperty("description") @Nonnull String description,
-            @JsonProperty("externalSourceName") @Nonnull String externalSourceName,
-            @JsonProperty("additionalMetadata") @Nonnull String additionalMetadata) {
+            @JsonProperty("external_source_name") @Nonnull String externalSourceName,
+            @JsonProperty("additional_metadata") @Nonnull String additionalMetadata) {
         this.isReference = isReference;
         this.id = id;
         this.text = text;
