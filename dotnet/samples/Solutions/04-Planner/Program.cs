@@ -26,7 +26,7 @@ var mathPlugin = kernel.ImportSkill(new MathPlugin(), "MathPlugin");
 // Create a planner
 var planner = new SequentialPlanner(kernel);
 
-var ask = "I have $2130.23. How much would I have after it grew by 24% and after I spent $5 on a latte?";
+var ask = "If my investment of 2130.23 dollars increased by 23%, how much would I have after I spent $5 on a latte?";
 var plan = await planner.CreatePlanAsync(ask);
 
 Console.WriteLine("Plan:\n");

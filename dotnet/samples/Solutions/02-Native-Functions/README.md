@@ -23,31 +23,33 @@ For Debugging the console application alone, we suggest using .NET [Secret Manag
 Configure an OpenAI endpoint
 
 ```powershell
-cd 02-Native-Functions
-dotnet user-secrets set "endpointType" "text-completion"
+cd 01-Semantic-Functions
+dotnet user-secrets set "endpointType" "chat-completion"
 dotnet user-secrets set "serviceType" "OpenAI"
-dotnet user-secrets set "serviceId" "text-davinci-003"
-dotnet user-secrets set "deploymentOrModelId" "text-davinci-003"
+dotnet user-secrets set "serviceId" "gpt-3.5-turbo"
+dotnet user-secrets set "deploymentOrModelId" "gpt-3.5-turbo"
 dotnet user-secrets set "apiKey" "... your OpenAI key ..."
 ```
 
 Configure an Azure OpenAI endpoint
 
 ```powershell
-cd 02-Native-Functions
-dotnet user-secrets set "endpointType" "text-completion"
+cd 01-Semantic-Functions
+dotnet user-secrets set "endpointType" "chat-completion"
 dotnet user-secrets set "serviceType" "AzureOpenAI"
-dotnet user-secrets set "serviceId" "text-davinci-003"
-dotnet user-secrets set "deploymentOrModelId" "text-davinci-003"
+dotnet user-secrets set "serviceId" "gpt-35-turbo"
+dotnet user-secrets set "deploymentOrModelId" "gpt-35-turbo"
 dotnet user-secrets set "endpoint" "https:// ... your endpoint ... .openai.azure.com/"
 dotnet user-secrets set "apiKey" "... your Azure OpenAI key ..."
 ```
+
+````
 
 Configure the Semantic Kernel logging level
 
 ```powershell
 dotnet user-secrets set "LogLevel" 0
-```
+````
 
 Log levels:
 
