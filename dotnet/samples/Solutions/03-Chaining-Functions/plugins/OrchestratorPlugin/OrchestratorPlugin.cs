@@ -1,3 +1,5 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -8,11 +10,11 @@ namespace Plugins;
 
 public class OrchestratorPlugin
 {
-    IKernel _kernel;
+    private IKernel _kernel;
 
     public OrchestratorPlugin(IKernel kernel)
     {
-        _kernel = kernel;
+        this._kernel = kernel;
     }
 
     [SKFunction, Description("Routes the request to the appropriate function.")]
@@ -25,23 +27,23 @@ public class OrchestratorPlugin
         context.Variables["options"] = "Sqrt, Add";
 
         // Retrieve the intent from the user request
-        var GetIntent = _kernel.Skills.GetFunction("OrchestratorPlugin", "GetIntent");
-        var CreateResponse = _kernel.Skills.GetFunction("OrchestratorPlugin", "CreateResponse");
+        var GetIntent = this._kernel.Skills.GetFunction("OrchestratorPlugin", "GetIntent");
+        var CreateResponse = this._kernel.Skills.GetFunction("OrchestratorPlugin", "CreateResponse");
         await GetIntent.InvokeAsync(context);
         string intent = context.Variables["input"].Trim();
 
-        var GetNumbers = _kernel.Skills.GetFunction("OrchestratorPlugin", "GetNumbers");
-        var ExtractNumbersFromJson = _kernel.Skills.GetFunction("OrchestratorPlugin", "ExtractNumbersFromJson");
+        var GetNumbers = this._kernel.Skills.GetFunction("OrchestratorPlugin", "GetNumbers");
+        var ExtractNumbersFromJson = this._kernel.Skills.GetFunction("OrchestratorPlugin", "ExtractNumbersFromJson");
         ISKFunction MathFunction;
 
         // Call the appropriate function
         switch (intent)
         {
             case "Sqrt":
-                MathFunction = _kernel.Skills.GetFunction("MathPlugin", "Sqrt");
+                MathFunction = this._kernel.Skills.GetFunction("MathPlugin", "Sqrt");
                 break;
             case "Add":
-                MathFunction = _kernel.Skills.GetFunction("MathPlugin", "Add");
+                MathFunction = this._kernel.Skills.GetFunction("MathPlugin", "Add");
                 break;
             default:
                 return "I'm sorry, I don't understand.";
@@ -50,7 +52,7 @@ public class OrchestratorPlugin
         var pipelineContext = new ContextVariables(request);
         pipelineContext["original_request"] = request;
 
-        var output = await _kernel.RunAsync(
+        var output = await this._kernel.RunAsync(
             pipelineContext,
             GetNumbers,
             ExtractNumbersFromJson,

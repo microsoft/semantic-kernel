@@ -24,7 +24,7 @@ public class SemanticFunctionGenerator : ISourceGenerator
     {
         var rootNamespace = context.GetRootNamespace();
 
-        if (String.IsNullOrEmpty(rootNamespace))
+        if (string.IsNullOrEmpty(rootNamespace))
         {
             rootNamespace = DefaultFunctionNamespace;
         }

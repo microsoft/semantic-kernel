@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Plugins;
 

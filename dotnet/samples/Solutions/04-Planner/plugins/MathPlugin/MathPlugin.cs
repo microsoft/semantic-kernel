@@ -1,3 +1,5 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.SemanticKernel.Orchestration;

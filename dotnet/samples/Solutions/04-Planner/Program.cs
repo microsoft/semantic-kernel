@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
