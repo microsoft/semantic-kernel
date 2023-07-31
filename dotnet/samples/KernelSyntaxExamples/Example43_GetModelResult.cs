@@ -25,8 +25,7 @@ public static class Example43_GetModelResult
             .Build();
 
         // Function defined using few-shot design pattern
-        const string FunctionDefinition = @"Hi, give me 5 book suggestions about: {{$input}}
-";
+        const string FunctionDefinition = @"Hi, give me 5 book suggestions about: {{$input}}";
 
         var myFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
