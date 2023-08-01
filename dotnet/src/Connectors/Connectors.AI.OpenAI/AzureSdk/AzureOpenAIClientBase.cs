@@ -49,15 +49,6 @@ public abstract class AzureOpenAIClientBase : ClientBase
         this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
     }
 
-    private protected AzureOpenAIClientBase(string modelId,
-        string endpoint,
-        string apiKey,
-        OpenAIClientOptions options,
-        ILogger? logger = null) : base(logger)
-    {
-        this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
-    }
-
     /// <summary>
     /// Creates a new Azure OpenAI client instance supporting AAD auth
     /// </summary>
