@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Class that holds extension methods for objects implementing ISKFunction.
@@ -31,7 +34,7 @@ public static class SKFunctionExtensions
     /// <param name="skFunction">Semantic function</param>
     /// <param name="maxTokens">Tokens count</param>
     /// <returns>Self instance</returns>
-    public static ISKFunction UseMaxTokens(this ISKFunction skFunction, int maxTokens)
+    public static ISKFunction UseMaxTokens(this ISKFunction skFunction, int? maxTokens)
     {
         skFunction.RequestSettings.MaxTokens = maxTokens;
         return skFunction;
@@ -86,53 +89,59 @@ public static class SKFunctionExtensions
     }
 
     /// <summary>
-    /// Execute a function allowing to pass the main input separately from the rest of the context
-    /// and the cancellation token without the need to name the parameter, to have a shorter more readable syntax.
-    /// Note: if the context contains an INPUT key/value, that value is ignored, logging a warning.
+    /// Execute a function allowing to pass the main input separately from the rest of the context.
     /// </summary>
     /// <param name="function">Function to execute</param>
-    /// <param name="input">Main input string</param>
-    /// /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <param name="variables">Input variables for the function</param>
+    /// <param name="skills">Skills that the function can access</param>
+    /// <param name="culture">Culture to use for the function execution</param>
+    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="logger">Logger to use for the function execution</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
-        string? input = null, CancellationToken cancellationToken = default)
+        ContextVariables? variables = null,
+        IReadOnlySkillCollection? skills = null,
+        CultureInfo? culture = null,
+        CompleteRequestSettings? settings = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
     {
-        return function.InvokeAsync(input, settings: null, memory: null, logger: null, cancellationToken: cancellationToken);
+        var context = new SKContext(variables, skills, logger)
+        {
+            Culture = culture!
+        };
+
+        return function.InvokeAsync(context, settings, cancellationToken);
     }
 
     /// <summary>
     /// Execute a function allowing to pass the main input separately from the rest of the context.
-    /// Note: if the context contains an INPUT key/value, that value is ignored, logging a warning.
     /// </summary>
     /// <param name="function">Function to execute</param>
-    /// <param name="input">Main input string</param>
-    /// <param name="context">Execution context, including variables other than input</param>
-    /// <param name="mutableContext">Whether the function can modify the context variables, True by default</param>
+    /// <param name="input">Input string for the function</param>
+    /// <param name="skills">Skills that the function can access</param>
+    /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="logger">Logger to use for the function execution</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
         string input,
-        SKContext context,
-        bool mutableContext = true,
-        CompleteRequestSettings? settings = null)
+        IReadOnlySkillCollection? skills = null,
+        CultureInfo? culture = null,
+        CompleteRequestSettings? settings = null,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
+        => function.InvokeAsync(new ContextVariables(input), skills, culture, settings, logger, cancellationToken);
+
+    /// <summary>
+    /// Returns decorated instance of <see cref="ISKFunction"/> with enabled instrumentation.
+    /// </summary>
+    /// <param name="function">Instance of <see cref="ISKFunction"/> to decorate.</param>
+    /// <param name="logger">Optional logger.</param>
+    public static ISKFunction WithInstrumentation(this ISKFunction function, ILogger? logger = null)
     {
-        // Log a warning if the given input is overriding a different input in the context
-        var inputInContext = context.Variables.Input;
-        if (!string.IsNullOrEmpty(inputInContext) && !string.Equals(input, inputInContext, StringComparison.Ordinal))
-        {
-            context.Log.LogWarning(
-                "Function {0}.{1} has been invoked with an explicit input text that is different and overrides the input text defined in the context",
-                function.SkillName, function.Name);
-        }
-
-        if (!mutableContext)
-        {
-            // Create a copy of the context, to avoid editing the original set of variables
-            context = context.Clone();
-        }
-
-        // Store the input in the context
-        context.Variables.Update(input);
-        return function.InvokeAsync(context, settings);
+        return new InstrumentedSKFunction(function, logger);
     }
 }

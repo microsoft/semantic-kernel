@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using Microsoft.SemanticKernel.Skills.Web.Google;
@@ -21,37 +20,68 @@ public static class Example07_BingAndGoogleSkills
 {
     public static async Task RunAsync()
     {
+        string openAIModelId = TestConfiguration.OpenAI.ModelId;
+        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
+
+        if (openAIModelId == null || openAIApiKey == null)
+        {
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            return;
+        }
+
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithLogger(ConsoleLogger.Logger)
+            .WithOpenAITextCompletionService(
+                modelId: openAIModelId,
+                apiKey: openAIApiKey)
             .Build();
 
         // Load Bing skill
-        using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
-        kernel.ImportSkill(new WebSearchEngineSkill(bingConnector), "bing");
+        string bingApiKey = TestConfiguration.Bing.ApiKey;
+
+        if (bingApiKey == null)
+        {
+            Console.WriteLine("Bing credentials not found. Skipping example.");
+        }
+        else
+        {
+            var bingConnector = new BingConnector(bingApiKey);
+            var bing = new WebSearchEngineSkill(bingConnector);
+            var search = kernel.ImportSkill(bing, "bing");
+            await Example1Async(kernel, "bing");
+            await Example2Async(kernel);
+        }
 
         // Load Google skill
-        using var googleConnector = new GoogleConnector(Env.Var("GOOGLE_API_KEY"), Env.Var("GOOGLE_SEARCH_ENGINE_ID"));
-        kernel.ImportSkill(new WebSearchEngineSkill(googleConnector), "google");
+        string googleApiKey = TestConfiguration.Google.ApiKey;
+        string googleSearchEngineId = TestConfiguration.Google.SearchEngineId;
 
-        await Example1Async(kernel);
-        await Example2Async(kernel);
+        if (googleApiKey == null || googleSearchEngineId == null)
+        {
+            Console.WriteLine("Google credentials not found. Skipping example.");
+        }
+        else
+        {
+            using var googleConnector = new GoogleConnector(
+                apiKey: googleApiKey,
+                searchEngineId: googleSearchEngineId);
+            var google = new WebSearchEngineSkill(googleConnector);
+            var search = kernel.ImportSkill(new WebSearchEngineSkill(googleConnector), "google");
+            await Example1Async(kernel, "google");
+        }
     }
 
-    private static async Task Example1Async(IKernel kernel)
+    private static async Task Example1Async(IKernel kernel, string searchSkillId)
     {
         Console.WriteLine("======== Bing and Google Search Skill ========");
 
         // Run
         var question = "What's the largest building in the world?";
-        var bingResult = await kernel.Func("bing", "search").InvokeAsync(question);
-        var googleResult = await kernel.Func("google", "search").InvokeAsync(question);
+        var result = await kernel.Func(searchSkillId, "search").InvokeAsync(question);
 
         Console.WriteLine(question);
-        Console.WriteLine("----");
-        Console.WriteLine(bingResult);
-        Console.WriteLine("----");
-        Console.WriteLine(googleResult);
+        Console.WriteLine($"----{searchSkillId}----");
+        Console.WriteLine(result);
 
         /* OUTPUT:
 
@@ -92,7 +122,7 @@ Answer:
 * The smallest positive number is 1.
 
 [EXAMPLE 3]
-Question: what's Ferrari stock price ? Who is the current number one female tennis player in the world?
+Question: what's Ferrari stock price? Who is the current number one female tennis player in the world?
 Answer:
 {{ '{{' }} bing.search ""what\\'s Ferrari stock price?"" {{ '}}' }}.
 {{ '{{' }} bing.search ""Who is the current number one female tennis player in the world?"" {{ '}}' }}.
@@ -108,9 +138,10 @@ Answer: ";
 
         var oracle = kernel.CreateSemanticFunction(SemanticFunction, maxTokens: 200, temperature: 0, topP: 1);
 
-        var context = kernel.CreateNewContext();
-        context["externalInformation"] = "";
-        var answer = await oracle.InvokeAsync(questions, context);
+        var answer = await kernel.RunAsync(oracle, new(questions)
+        {
+            ["externalInformation"] = string.Empty
+        });
 
         // If the answer contains commands, execute them using the prompt renderer.
         if (answer.Result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
@@ -118,16 +149,17 @@ Answer: ";
             var promptRenderer = new PromptTemplateEngine();
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptRenderer.RenderAsync(answer.Result, context);
+            var information = await promptRenderer.RenderAsync(answer.Result, kernel.CreateNewContext());
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);
 
-            // The rendered prompt contains the information retrieved from search engines
-            context["externalInformation"] = information;
-
             // Run the semantic function again, now including information from Bing
-            answer = await oracle.InvokeAsync(questions, context);
+            answer = await kernel.RunAsync(oracle, new(questions)
+            {
+                // The rendered prompt contains the information retrieved from search engines
+                ["externalInformation"] = information
+            });
         }
         else
         {

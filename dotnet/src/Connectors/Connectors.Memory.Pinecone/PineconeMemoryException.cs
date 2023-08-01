@@ -13,15 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 public class PineconeMemoryException : SKException
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="PineconeMemoryException"/> class with a provided error code.
-    /// </summary>
-    /// <param name="errorCode">The error code.</param>
-    public PineconeMemoryException(ErrorCodes errorCode)
-        : this(errorCode: errorCode, message: null, innerException: null)
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="PineconeMemoryException"/> class with a provided error code and message.
     /// </summary>
     /// <param name="errorCode">The error code.</param>
@@ -47,7 +38,7 @@ public class PineconeMemoryException : SKException
     /// <param name="errorCode">The error code.</param>
     /// <param name="message">A string that describes the error.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    public PineconeMemoryException(ErrorCodes errorCode, string? message, Exception? innerException)
+    public PineconeMemoryException(ErrorCodes errorCode, string? message = null, Exception? innerException = null)
         : base(message: GetDefaultMessage(errorCode: errorCode, message: message, innerException: innerException), innerException: innerException)
     {
         this.ErrorCode = errorCode;

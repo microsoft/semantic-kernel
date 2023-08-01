@@ -31,7 +31,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     public async Task SpecifiedModelShouldBeUsedAsync()
     {
         //Arrange
-        using var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this.httpClient);
+        var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this.httpClient);
 
         //Act
         await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());
@@ -44,7 +44,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     public async Task NoAuthorizationHeaderShouldBeAddedIfApiKeyIsNotProvidedAsync()
     {
         //Arrange
-        using var sut = new HuggingFaceTextCompletion("fake-model", apiKey: null, httpClient: this.httpClient);
+        var sut = new HuggingFaceTextCompletion("fake-model", apiKey: null, httpClient: this.httpClient);
 
         //Act
         await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());
@@ -57,7 +57,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     public async Task AuthorizationHeaderShouldBeAddedIfApiKeyIsProvidedAsync()
     {
         //Arrange
-        using var sut = new HuggingFaceTextCompletion("fake-model", apiKey: "fake-api-key", httpClient: this.httpClient);
+        var sut = new HuggingFaceTextCompletion("fake-model", apiKey: "fake-api-key", httpClient: this.httpClient);
 
         //Act
         await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());
@@ -75,7 +75,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
         //Arrange
-        using var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this.httpClient);
+        var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this.httpClient);
 
         //Act
         await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());
@@ -86,14 +86,14 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         var values = this.messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
 
         var value = values.SingleOrDefault();
-        Assert.Equal("Microsoft-Semantic-Kernel", value);
+        Assert.Equal("Semantic-Kernel", value);
     }
 
     [Fact]
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        using var sut = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this.httpClient);
+        var sut = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this.httpClient);
 
         //Act
         await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());
@@ -108,7 +108,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
         //Arrange
         this.httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path");
 
-        using var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this.httpClient);
+        var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this.httpClient);
 
         //Act
         await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());
@@ -121,7 +121,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     public async Task DefaultAddressShouldBeUsedAsync()
     {
         //Arrange
-        using var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this.httpClient);
+        var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this.httpClient);
 
         //Act
         await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());
@@ -134,7 +134,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
     {
         //Arrange
-        using var sut = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this.httpClient);
+        var sut = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this.httpClient);
 
         //Act
         await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());
@@ -147,7 +147,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
-        using var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this.httpClient);
+        var sut = new HuggingFaceTextCompletion("fake-model", httpClient: this.httpClient);
 
         //Act
         await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());
@@ -163,7 +163,7 @@ public sealed class HuggingFaceTextCompletionTests : IDisposable
     public async Task ShouldHandleServiceResponseAsync()
     {
         //Arrange
-        using var sut = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this.httpClient);
+        var sut = new HuggingFaceTextCompletion("fake-model", endpoint: "https://fake-random-test-host/fake-path", httpClient: this.httpClient);
 
         //Act
         var result = await sut.GetCompletionsAsync("fake-text", new CompleteRequestSettings());

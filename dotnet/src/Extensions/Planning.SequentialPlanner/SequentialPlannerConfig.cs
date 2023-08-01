@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
@@ -52,7 +54,7 @@ public sealed class SequentialPlannerConfig
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
     /// </summary>
-    public int MaxTokens { get; set; } = 1024;
+    public int? MaxTokens { get; set; }
 
     /// <summary>
     /// Whether to allow missing functions in the plan on creation.
@@ -62,9 +64,14 @@ public sealed class SequentialPlannerConfig
     public bool AllowMissingFunctions { get; set; } = false;
 
     /// <summary>
+    /// Semantic memory to use for function lookup (optional).
+    /// </summary>
+    public ISemanticTextMemory Memory { get; set; } = NullMemory.Instance;
+
+    /// <summary>
     /// Optional callback to get the available functions for planning.
     /// </summary>
-    public Func<SequentialPlannerConfig, string?, Task<IOrderedEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
+    public Func<SequentialPlannerConfig, string?, CancellationToken, Task<IOrderedEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
 
     /// <summary>
     /// Optional callback to get a function by name.

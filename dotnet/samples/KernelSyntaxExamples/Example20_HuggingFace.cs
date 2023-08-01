@@ -17,8 +17,10 @@ public static class Example20_HuggingFace
         Console.WriteLine("======== HuggingFace text completion AI ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithHuggingFaceTextCompletionService("gpt2", apiKey: Env.Var("HF_API_KEY"))
+            .WithLogger(ConsoleLogger.Logger)
+            .WithHuggingFaceTextCompletionService(
+                model: TestConfiguration.HuggingFace.ApiKey,
+                apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
         const string FunctionDefinition = "Question: {{$input}}; Answer:";

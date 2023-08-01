@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ComponentModel;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Skills.Core;
@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// <example>
 /// Usage: kernel.ImportSkill("http", new HttpSkill());
 /// Examples:
-/// SKContext["url"] = "https://www.bing.com"
+/// SKContext.Variables["url"] = "https://www.bing.com"
 /// {{http.getAsync $url}}
 /// {{http.postAsync $url}}
 /// {{http.putAsync $url}}
@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// </example>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
-public sealed class HttpSkill : IDisposable
+public sealed class HttpSkill
 {
     private readonly HttpClient _client;
 
@@ -104,15 +104,8 @@ public sealed class HttpSkill : IDisposable
     private async Task<string> SendRequestAsync(string uri, HttpMethod method, HttpContent? requestContent, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
+        request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
         using var response = await this._client.SendAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Disposes resources
-    /// </summary>
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
-    public void Dispose()
-    {
     }
 }

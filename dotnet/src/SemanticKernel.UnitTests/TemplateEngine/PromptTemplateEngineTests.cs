@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
@@ -24,7 +25,7 @@ public sealed class PromptTemplateEngineTests
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
         this._logger = testOutputHelper;
-        this._target = new PromptTemplateEngine(TestConsoleLogger.Log);
+        this._target = new PromptTemplateEngine(TestConsoleLogger.Logger);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._skills = new Mock<IReadOnlySkillCollection>();
     }
@@ -122,10 +123,10 @@ public sealed class PromptTemplateEngineTests
     public async Task ItRendersCodeUsingInputAsync()
     {
         // Arrange
-        string MyFunctionAsync(SKContext cx)
+        string MyFunctionAsync(SKContext context)
         {
-            this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
-            return $"F({cx.Variables.Input})";
+            this._logger.WriteLine("MyFunction call received, input: {0}", context.Variables.Input);
+            return $"F({context.Variables.Input})";
         }
 
         ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
@@ -151,10 +152,10 @@ public sealed class PromptTemplateEngineTests
     public async Task ItRendersCodeUsingVariablesAsync()
     {
         // Arrange
-        string MyFunctionAsync(SKContext cx)
+        string MyFunctionAsync(SKContext context)
         {
-            this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
-            return $"F({cx.Variables.Input})";
+            this._logger.WriteLine("MyFunction call received, input: {0}", context.Variables.Input);
+            return $"F({context.Variables.Input})";
         }
 
         ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
@@ -180,11 +181,11 @@ public sealed class PromptTemplateEngineTests
     public async Task ItRendersAsyncCodeUsingVariablesAsync()
     {
         // Arrange
-        Task<string> MyFunctionAsync(SKContext cx)
+        Task<string> MyFunctionAsync(SKContext context)
         {
             // Input value should be "BAR" because the variable $myVar is passed in
-            this._logger.WriteLine("MyFunction call received, input: {0}", cx.Variables.Input);
-            return Task.FromResult(cx.Variables.Input.Value);
+            this._logger.WriteLine("MyFunction call received, input: {0}", context.Variables.Input);
+            return Task.FromResult(context.Variables.Input);
         }
 
         ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
@@ -207,6 +208,56 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal("foo-BAR-baz", result);
     }
 
+    [Fact]
+    public async Task ItRendersAsyncCodeUsingImmutableVariablesAsync()
+    {
+        // Arrange
+        var template = "{{func1}} {{func2}} {{func3 $myVar}}";
+        this._variables.Update("BAR");
+        this._variables.Set("myVar", "BAZ");
+
+        string MyFunction1Async(SKContext context)
+        {
+            this._logger.WriteLine("MyFunction1 call received, input: {0}", context.Variables.Input);
+            context.Variables.Update("foo");
+            return "F(OUTPUT-FOO)";
+        }
+        string MyFunction2Async(SKContext context)
+        {
+            // Input value should be "BAR" because the variable $input is immutable in MyFunction1
+            this._logger.WriteLine("MyFunction2 call received, input: {0}", context.Variables.Input);
+            context.Variables.Set("myVar", "bar");
+            return context.Variables.Input;
+        }
+        string MyFunction3Async(SKContext context)
+        {
+            // Input value should be "BAZ" because the variable $myVar is immutable in MyFunction2
+            this._logger.WriteLine("MyFunction3 call received, input: {0}", context.Variables.Input);
+            return context.Variables.TryGetValue("myVar", out string? value) ? value : "";
+        }
+
+        var functions = new List<ISKFunction>()
+        {
+            SKFunction.FromNativeMethod(Method(MyFunction1Async), this, "func1"),
+            SKFunction.FromNativeMethod(Method(MyFunction2Async), this, "func2"),
+            SKFunction.FromNativeMethod(Method(MyFunction3Async), this, "func3")
+        };
+
+        foreach (var func in functions)
+        {
+            Assert.NotNull(func);
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.GetFunction(It.Is<string>(s => s == func.SkillName))).Returns(func);
+            this._skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == func.SkillName), out outFunc)).Returns(true);
+        }
+
+        // Act
+        var result = await this._target.RenderAsync(template, this.MockContext());
+
+        // Assert
+        Assert.Equal("F(OUTPUT-FOO) BAR BAZ", result);
+    }
+
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
@@ -217,6 +268,6 @@ public sealed class PromptTemplateEngineTests
         return new SKContext(
             this._variables,
             skills: this._skills.Object,
-            logger: TestConsoleLogger.Log);
+            logger: TestConsoleLogger.Logger);
     }
 }

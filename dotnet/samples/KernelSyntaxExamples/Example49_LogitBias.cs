@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using RepoUtils;
 
 /**
  * Logit_bias is an optional parameter that modifies the likelihood of specified tokens appearing in a Completion.
@@ -16,7 +15,7 @@ public static class Example49_LogitBias
 {
     public static async Task RunAsync()
     {
-        OpenAIChatCompletion chatCompletion = new("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        OpenAIChatCompletion chatCompletion = new("gpt-3.5-turbo", TestConfiguration.OpenAI.ApiKey);
 
         // To use Logit Bias you will need to know the token ids of the words you want to use.
         // Getting the token ids using the GPT Tokenizer: https://platform.openai.com/tokenizer
@@ -49,7 +48,7 @@ public static class Example49_LogitBias
         chatHistory.AddAssistantMessage(reply);
         await MessageOutputAsync(chatHistory);
 
-        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
+        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         await MessageOutputAsync(chatHistory);
 
         reply = await chatCompletion.GenerateMessageAsync(chatHistory, settings);

@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 
 namespace OpenApiSkillsExample;
 
@@ -77,7 +78,7 @@ internal sealed class Program
         await kernel.ImportOpenApiSkillFromFileAsync(
             skillName: "GitHubSkill",
             filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "GitHubSkill/openapi.json"),
-            authCallback: authenticationProvider.AuthenticateRequestAsync);
+            new OpenApiSkillExecutionParameters(authCallback: authenticationProvider.AuthenticateRequestAsync));
 
         // Use a planner to decide when to call the GitHub skill. Since we are not chaining operations, use
         // the ActionPlanner which is a simplified planner that will always return a 0 or 1 step plan.
@@ -212,11 +213,11 @@ internal sealed class Program
         }
         catch (JsonException)
         {
-            logger.LogDebug("Unable to extract JSON from planner response, it is likely not from an OpenAPI skill.");
+            logger.LogWarning("Unable to extract JSON from planner response, it is likely not from an OpenAPI skill.");
         }
         catch (InvalidOperationException)
         {
-            logger.LogDebug("Unable to extract JSON from planner response, it may already be proper JSON.");
+            logger.LogWarning("Unable to extract JSON from planner response, it may already be proper JSON.");
         }
 
         json = string.Empty;

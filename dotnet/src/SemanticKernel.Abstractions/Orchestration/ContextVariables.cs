@@ -4,11 +4,9 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Security;
 
 #pragma warning disable CA1710 // ContextVariables doesn't end in Dictionary or Collection
 #pragma warning disable CA1725, RCS1168 // Uses "name" instead of "key" for some public APIs
@@ -23,23 +21,16 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DebuggerTypeProxy(typeof(ContextVariables.TypeProxy))]
-public sealed class ContextVariables : IDictionary<string, TrustAwareString>
+public sealed class ContextVariables : IDictionary<string, string>
 {
     /// <summary>
     /// Constructor for context variables.
     /// </summary>
-    /// <param name="trustAwareContent">Optional value for the main variable of the context including trust information.</param>
-    public ContextVariables(TrustAwareString? trustAwareContent = null)
+    /// <param name="value">Optional value for the main variable of the context including trust information.</param>
+    public ContextVariables(string? value = null)
     {
-        this._variables[MainKey] = trustAwareContent ?? TrustAwareString.Empty;
+        this._variables[MainKey] = value ?? string.Empty;
     }
-
-    /// <summary>
-    /// Constructor for context variables.
-    /// By default the content will be trusted.
-    /// </summary>
-    /// <param name="content">Optional value for the main variable of the context.</param>
-    public ContextVariables(string? content) : this(TrustAwareString.CreateTrusted(content)) { }
 
     /// <summary>
     /// Create a copy of the current instance with a copy of the internal data
@@ -48,7 +39,7 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     public ContextVariables Clone()
     {
         var clone = new ContextVariables();
-        foreach (KeyValuePair<string, TrustAwareString> x in this._variables)
+        foreach (KeyValuePair<string, string> x in this._variables)
         {
             clone.Set(x.Key, x.Value);
         }
@@ -58,43 +49,18 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
 
     /// <summary>Gets the main input string.</summary>
     /// <remarks>If the main input string was removed from the collection, an empty string will be returned.</remarks>
-    public TrustAwareString Input => this._variables.TryGetValue(MainKey, out TrustAwareString? value) ? value : TrustAwareString.Empty;
+    public string Input => this._variables.TryGetValue(MainKey, out string? value) ? value : string.Empty;
 
     /// <summary>
     /// Updates the main input text with the new value after a function is complete.
-    /// The string includes trust information and will overwrite the trust state of the input.
     /// </summary>
-    /// <param name="trustAwareContent">The new input value, for the next function in the pipeline, or as a result for the user
+    /// <param name="value">The new input value, for the next function in the pipeline, or as a result for the user
     /// if the pipeline reached the end.</param>
     /// <returns>The current instance</returns>
-    public ContextVariables Update(TrustAwareString? trustAwareContent)
+    public ContextVariables Update(string? value)
     {
-        this._variables[MainKey] = trustAwareContent ?? TrustAwareString.Empty;
+        this._variables[MainKey] = value ?? string.Empty;
         return this;
-    }
-
-    /// <summary>
-    /// Updates the main input text with the new value after a function is complete.
-    /// By default the content will be trusted.
-    /// </summary>
-    /// <param name="content">The new input value, for the next function in the pipeline, or as a result for the user
-    /// if the pipeline reached the end.</param>
-    /// <returns>The current instance</returns>
-    public ContextVariables Update(string? content)
-    {
-        return this.Update(TrustAwareString.CreateTrusted(content));
-    }
-
-    /// <summary>
-    /// Updates the main input text with the new value after a function is complete.
-    /// This will keep the trust state of the current input set.
-    /// </summary>
-    /// <param name="content">The new input value, for the next function in the pipeline, or as a result for the user
-    /// if the pipeline reached the end.</param>
-    /// <returns>The current instance</returns>
-    public ContextVariables UpdateKeepingTrustState(string? content)
-    {
-        return this.Update(new TrustAwareString(content, this.Input.IsTrusted));
     }
 
     /// <summary>
@@ -111,7 +77,7 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
             // If requested, discard old data and keep only the new one.
             if (!merge) { this._variables.Clear(); }
 
-            foreach (KeyValuePair<string, TrustAwareString> varData in newData._variables)
+            foreach (KeyValuePair<string, string> varData in newData._variables)
             {
                 this._variables[varData.Key] = varData.Value;
             }
@@ -124,84 +90,21 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     /// This method allows to store additional data in the context variables, e.g. variables needed by functions in the
     /// pipeline. These "variables" are visible also to semantic functions using the "{{varName}}" syntax, allowing
     /// to inject more information into prompt templates.
-    /// The string value includes trust information and will overwrite the trust information already stored for the variable.
     /// </summary>
     /// <param name="name">Variable name</param>
-    /// <param name="trustAwareValue">Value to store. If the value is NULL the variable is deleted.</param>
-    public void Set(string name, TrustAwareString? trustAwareValue)
+    /// <param name="value">Value to store. If the value is NULL the variable is deleted.</param>
+    public void Set(string name, string? value)
     {
         Verify.NotNullOrWhiteSpace(name);
-        if (trustAwareValue != null)
+        if (value != null)
         {
-            this._variables[name] = trustAwareValue;
+            this._variables[name] = value;
         }
         else
         {
             this._variables.TryRemove(name, out _);
         }
     }
-
-    /// <summary>
-    /// This method allows to store additional data in the context variables, e.g. variables needed by functions in the
-    /// pipeline. These "variables" are visible also to semantic functions using the "{{varName}}" syntax, allowing
-    /// to inject more information into prompt templates.
-    /// By default the variables' value will be trusted.
-    /// </summary>
-    /// <param name="name">Variable name</param>
-    /// <param name="value">Value to store</param>
-    public void Set(string name, string value)
-    {
-        this.Set(name, TrustAwareString.CreateTrusted(value));
-    }
-
-    /// <summary>
-    /// Fetch a variable value and if its content is trusted from the context variables.
-    /// </summary>
-    /// <param name="name">Variable name</param>
-    /// <param name="trustAwareValue">Variable value as a string with trust information</param>
-    /// <returns>Whether the value exists in the context variables</returns>
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Use the TryGetValue method or indexer instead.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool Get(string name, out TrustAwareString trustAwareValue)
-    {
-        if (this._variables.TryGetValue(name, out TrustAwareString result))
-        {
-            trustAwareValue = result;
-            return true;
-        }
-
-        trustAwareValue = TrustAwareString.Empty;
-        return false;
-    }
-
-    /// <summary>
-    /// Fetch a variable value from the context variables.
-    /// </summary>
-    /// <param name="name">Variable name</param>
-    /// <param name="value">Value</param>
-    /// <returns>Whether the value exists in the context variables</returns>
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. Use the TryGetValue method or indexer instead.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool Get(string name, out string value)
-    {
-        var exists = this.Get(name, out TrustAwareString trustAwareValue);
-
-        value = trustAwareValue.Value;
-
-        return exists;
-    }
-
-    /// <summary>
-    /// Gets the variable value associated with the specified name.
-    /// </summary>
-    /// <param name="name">The name of the variable to get.</param>
-    /// <param name="value">
-    /// When this method returns, contains the variable value associated with the specified name, if the variable is found;
-    /// otherwise, null.
-    /// </param>
-    /// <returns>true if the <see cref="ContextVariables"/> contains a variable with the specified name; otherwise, false.</returns>
-    public bool TryGetValue(string name, [NotNullWhen(true)] out TrustAwareString? value) =>
-        this._variables.TryGetValue(name, out value);
 
     /// <summary>
     /// Gets the variable value associated with the specified name.
@@ -214,9 +117,8 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     /// <returns>true if the <see cref="ContextVariables"/> contains a variable with the specified name; otherwise, false.</returns>
     public bool TryGetValue(string name, [NotNullWhen(true)] out string? value)
     {
-        if (this._variables.TryGetValue(name, out TrustAwareString? trustAwareValue))
+        if (this._variables.TryGetValue(name, out value))
         {
-            value = trustAwareValue.Value;
             return true;
         }
 
@@ -231,14 +133,10 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     /// <returns>The value of the variable.</returns>
     public string this[string name]
     {
-        get => this._variables[name].Value;
+        get => this._variables[name];
         set
         {
-            // This will be trusted by default for now.
-            // TODO: we could plan to replace string usages in the kernel
-            // with TrustAwareString, so here "value" could directly be a trust aware string
-            // including trust information
-            this._variables[name] = TrustAwareString.CreateTrusted(value);
+            this._variables[name] = value;
         }
     }
 
@@ -253,42 +151,6 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     }
 
     /// <summary>
-    /// True if all the stored variables have trusted content.
-    /// </summary>
-    /// <returns></returns>
-    public bool IsAllTrusted()
-    {
-        foreach (var pair in this._variables)
-        {
-            if (!pair.Value.IsTrusted)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /// <summary>
-    /// Make all the variables stored in the context untrusted.
-    /// </summary>
-    public void UntrustAll()
-    {
-        foreach (var item in this._variables)
-        {
-            // Note: we don't use an internal setter for better multi-threading
-            this._variables[item.Key] = TrustAwareString.CreateUntrusted(item.Value.Value);
-        }
-    }
-
-    /// <summary>
-    /// Make the input variable untrusted.
-    /// </summary>
-    public void UntrustInput()
-    {
-        this.Update(TrustAwareString.CreateUntrusted(this.Input.Value));
-    }
-
-    /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
@@ -298,24 +160,24 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     /// Get an enumerator that iterates through the context variables.
     /// </summary>
     /// <returns>An enumerator that iterates through the context variables</returns>
-    public IEnumerator<KeyValuePair<string, TrustAwareString>> GetEnumerator() => this._variables.GetEnumerator();
+    public IEnumerator<KeyValuePair<string, string>> GetEnumerator() => this._variables.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => this._variables.GetEnumerator();
-    void IDictionary<string, TrustAwareString>.Add(string key, TrustAwareString value) => ((IDictionary<string, TrustAwareString>)this._variables).Add(key, value);
-    bool IDictionary<string, TrustAwareString>.Remove(string key) => ((IDictionary<string, TrustAwareString>)this._variables).Remove(key);
-    void ICollection<KeyValuePair<string, TrustAwareString>>.Add(KeyValuePair<string, TrustAwareString> item) => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).Add(item);
-    void ICollection<KeyValuePair<string, TrustAwareString>>.Clear() => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).Clear();
-    bool ICollection<KeyValuePair<string, TrustAwareString>>.Contains(KeyValuePair<string, TrustAwareString> item) => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).Contains(item);
-    void ICollection<KeyValuePair<string, TrustAwareString>>.CopyTo(KeyValuePair<string, TrustAwareString>[] array, int arrayIndex) => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).CopyTo(array, arrayIndex);
-    bool ICollection<KeyValuePair<string, TrustAwareString>>.Remove(KeyValuePair<string, TrustAwareString> item) => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).Remove(item);
-    ICollection<string> IDictionary<string, TrustAwareString>.Keys => ((IDictionary<string, TrustAwareString>)this._variables).Keys;
-    ICollection<TrustAwareString> IDictionary<string, TrustAwareString>.Values => ((IDictionary<string, TrustAwareString>)this._variables).Values;
-    int ICollection<KeyValuePair<string, TrustAwareString>>.Count => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).Count;
-    bool ICollection<KeyValuePair<string, TrustAwareString>>.IsReadOnly => ((ICollection<KeyValuePair<string, TrustAwareString>>)this._variables).IsReadOnly;
-    TrustAwareString IDictionary<string, TrustAwareString>.this[string key]
+    void IDictionary<string, string>.Add(string key, string value) => ((IDictionary<string, string>)this._variables).Add(key, value);
+    bool IDictionary<string, string>.Remove(string key) => ((IDictionary<string, string>)this._variables).Remove(key);
+    void ICollection<KeyValuePair<string, string>>.Add(KeyValuePair<string, string> item) => ((ICollection<KeyValuePair<string, string>>)this._variables).Add(item);
+    void ICollection<KeyValuePair<string, string>>.Clear() => ((ICollection<KeyValuePair<string, string>>)this._variables).Clear();
+    bool ICollection<KeyValuePair<string, string>>.Contains(KeyValuePair<string, string> item) => ((ICollection<KeyValuePair<string, string>>)this._variables).Contains(item);
+    void ICollection<KeyValuePair<string, string>>.CopyTo(KeyValuePair<string, string>[] array, int arrayIndex) => ((ICollection<KeyValuePair<string, string>>)this._variables).CopyTo(array, arrayIndex);
+    bool ICollection<KeyValuePair<string, string>>.Remove(KeyValuePair<string, string> item) => ((ICollection<KeyValuePair<string, string>>)this._variables).Remove(item);
+    ICollection<string> IDictionary<string, string>.Keys => ((IDictionary<string, string>)this._variables).Keys;
+    ICollection<string> IDictionary<string, string>.Values => ((IDictionary<string, string>)this._variables).Values;
+    int ICollection<KeyValuePair<string, string>>.Count => ((ICollection<KeyValuePair<string, string>>)this._variables).Count;
+    bool ICollection<KeyValuePair<string, string>>.IsReadOnly => ((ICollection<KeyValuePair<string, string>>)this._variables).IsReadOnly;
+    string IDictionary<string, string>.this[string key]
     {
-        get => ((IDictionary<string, TrustAwareString>)this._variables)[key];
-        set => ((IDictionary<string, TrustAwareString>)this._variables)[key] = value;
+        get => ((IDictionary<string, string>)this._variables)[key];
+        set => ((IDictionary<string, string>)this._variables)[key] = value;
     }
 
     internal const string MainKey = "INPUT";
@@ -331,7 +193,7 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
     /// <summary>
     /// Important: names are case insensitive
     /// </summary>
-    private readonly ConcurrentDictionary<string, TrustAwareString> _variables = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, string> _variables = new(StringComparer.OrdinalIgnoreCase);
 
     private sealed class TypeProxy
     {
@@ -340,7 +202,7 @@ public sealed class ContextVariables : IDictionary<string, TrustAwareString>
         public TypeProxy(ContextVariables variables) => this._variables = variables;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, TrustAwareString>[] Items => this._variables._variables.ToArray();
+        public KeyValuePair<string, string>[] Items => this._variables._variables.ToArray();
     }
 
     #endregion

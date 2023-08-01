@@ -8,7 +8,7 @@ const initialState: AppState = {
     alerts: [
         {
             message:
-                'SK Copilot is designed for internal use only. By using this chat bot, you agree to not to share confidential or customer information or store sensitive information in chat history. Further, you agree that SK Copilot can collect and retain your chat history for service improvement.',
+                'Copilot chat is designed for internal use only. By using this chat bot, you agree to not to share confidential or customer information or store sensitive information in chat history. Further, you agree that Copilot chat can collect and retain your chat history for service improvement.',
             type: AlertType.Info,
         },
     ],

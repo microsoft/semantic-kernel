@@ -17,7 +17,7 @@ const useClasses = makeStyles({
         ...shorthands.margin(tokens.spacingHorizontalXXS),
         maxHeight: '10px',
         minHeight: '10px',
-        fontSize: '12px',
+        fontSize: tokens.fontSizeBase200,
     },
     interactable: {
         zIndex: '50',

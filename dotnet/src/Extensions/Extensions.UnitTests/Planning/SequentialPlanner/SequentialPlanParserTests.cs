@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -37,7 +36,7 @@ public class SequentialPlanParserTests
 
         var kernelMock = new Mock<IKernel>();
         kernelMock.SetupGet(k => k.Skills).Returns(mockSkillCollection.Object);
-        kernelMock.SetupGet(k => k.Log).Returns(mockLogger.Object);
+        kernelMock.SetupGet(k => k.Logger).Returns(mockLogger.Object);
         kernelMock.SetupGet(k => k.Memory).Returns(semanticMemoryMock.Object);
 
         return kernelMock;
@@ -45,10 +44,9 @@ public class SequentialPlanParserTests
 
     private SKContext CreateSKContext(
         IKernel kernel,
-        ContextVariables? variables = null,
-        CancellationToken cancellationToken = default)
+        ContextVariables? variables = null)
     {
-        return new SKContext(variables, kernel.Memory, kernel.Skills, kernel.Log, cancellationToken);
+        return new SKContext(variables, kernel.Skills, kernel.Logger);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
@@ -67,7 +65,7 @@ public class SequentialPlanParserTests
         kernel = kernelMock.Object;
 
         // For Create
-        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<CancellationToken>())).Returns(this.CreateSKContext(kernel));
+        kernelMock.Setup(k => k.CreateNewContext()).Returns(this.CreateSKContext(kernel));
 
         var functionsView = new FunctionsView();
         foreach (var (name, skillName, description, isSemantic, resultString) in functions)
@@ -78,7 +76,7 @@ public class SequentialPlanParserTests
 
             var result = this.CreateSKContext(kernel);
             result.Variables.Update(resultString);
-            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(result);
 
             if (string.IsNullOrEmpty(name))
@@ -86,8 +84,7 @@ public class SequentialPlanParserTests
                 kernelMock.Setup(x => x.RegisterSemanticFunction(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<SemanticFunctionConfig>(),
-                    It.IsAny<ITrustService?>()
+                    It.IsAny<SemanticFunctionConfig>()
                 )).Returns(mockFunction.Object);
             }
             else

@@ -15,7 +15,6 @@ import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
 import { addAlert } from '../../redux/features/app/appSlice';
 import { editConversationInput } from '../../redux/features/conversations/conversationsSlice';
-import { CopilotChatTokens } from '../../styles';
 import { SpeechService } from './../../libs/services/SpeechService';
 import { updateUserIsTyping } from './../../redux/features/conversations/conversationsSlice';
 import { ChatStatus } from './ChatStatus';
@@ -57,12 +56,12 @@ const useClasses = makeStyles({
         flexDirection: 'row',
     },
     dragAndDrop: {
-        ...shorthands.border('2px', ' solid', CopilotChatTokens.backgroundColor),
+        ...shorthands.border(tokens.strokeWidthThick, ' solid', tokens.colorBrandStroke1),
         ...shorthands.padding('8px'),
         textAlign: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        fontSize: '14px',
-        color: CopilotChatTokens.backgroundColor,
+        backgroundColor: tokens.colorNeutralBackgroundInvertedDisabled,
+        fontSize: tokens.fontSizeBase300,
+        color: tokens.colorBrandForeground1,
         caretColor: 'transparent',
     },
 });
@@ -124,11 +123,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
         }
     };
 
-    const handleImport = (dragAndDropFile?: File) => {
-        const file = dragAndDropFile ?? documentFileRef.current?.files?.[0];
-        if (file) {
+    const handleImport = (dragAndDropFiles?: FileList) => {
+        const files = dragAndDropFiles ?? documentFileRef.current?.files;
+
+        if (files && files.length > 0) {
             setDocumentImporting(true);
-            chat.importDocument(selectedId, file).finally(() => {
+            // Deep copy the FileList into an array so that the function
+            // maintains a list of files to import before the import is complete.
+            const filesArray = Array.from(files);
+            chat.importDocument(selectedId, filesArray).finally(() => {
                 setDocumentImporting(false);
             });
         }
@@ -161,7 +164,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
 
     const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
         onDragLeave(e);
-        handleImport(e.dataTransfer.files[0]);
+        handleImport(e.dataTransfer.files);
     };
 
     return (
@@ -216,13 +219,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({ isDraggingOver, onDragLeav
             </div>
             <div className={classes.controls}>
                 <div className={classes.functional}>
-                    {/* Hidden input for file upload. Only accept .txt files for now. */}
+                    {/* Hidden input for file upload. Only accept .txt and .pdf files for now. */}
                     <input
                         type="file"
                         ref={documentFileRef}
                         style={{ display: 'none' }}
-                        accept=".txt,.pdf"
-                        multiple={false}
+                        accept=".txt,.pdf,.jpg,.jpeg,.png,.tif,.tiff"
+                        multiple={true}
                         onChange={() => {
                             handleImport();
                         }}

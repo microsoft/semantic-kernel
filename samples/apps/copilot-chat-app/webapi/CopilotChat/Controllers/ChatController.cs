@@ -16,12 +16,12 @@ using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using SemanticKernel.Service.CopilotChat.Hubs;
 using SemanticKernel.Service.CopilotChat.Models;
 using SemanticKernel.Service.CopilotChat.Skills.ChatSkills;
@@ -154,15 +154,8 @@ public class ChatController : ControllerBase, IDisposable
         // Klarna Shopping
         if (openApiSkillsAuthHeaders.KlarnaAuthentication != null)
         {
-            // Register the Klarna shopping ChatGPT plugin with the planner's kernel.
-            using DefaultHttpRetryHandler retryHandler = new(new HttpRetryConfig(), this._logger)
-            {
-                InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true }
-            };
-            using HttpClient importHttpClient = new(retryHandler, false);
-            importHttpClient.DefaultRequestHeaders.Add("User-Agent", "Microsoft.CopilotChat");
-            await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"),
-                importHttpClient);
+            // Register the Klarna shopping ChatGPT plugin with the planner's kernel. There is no authentication required for this plugin.
+            await planner.Kernel.ImportChatGptPluginSkillFromUrlAsync("KlarnaShoppingSkill", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiSkillExecutionParameters());
         }
 
         // GitHub
@@ -173,7 +166,10 @@ public class ChatController : ControllerBase, IDisposable
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "GitHubSkill",
                 filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "CopilotChat", "Skills", "OpenApiSkills/GitHubSkill/openapi.json"),
-                authCallback: authenticationProvider.AuthenticateRequestAsync);
+                new OpenApiSkillExecutionParameters
+                {
+                    AuthCallback = authenticationProvider.AuthenticateRequestAsync,
+                });
         }
 
         // Jira
@@ -186,8 +182,11 @@ public class ChatController : ControllerBase, IDisposable
             await planner.Kernel.ImportOpenApiSkillFromFileAsync(
                 skillName: "JiraSkill",
                 filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "CopilotChat", "Skills", "OpenApiSkills/JiraSkill/openapi.json"),
-                authCallback: authenticationProvider.AuthenticateRequestAsync,
-                serverUrlOverride: hasServerUrlOverride ? new Uri(serverUrlOverride!) : null);
+                new OpenApiSkillExecutionParameters
+                {
+                    AuthCallback = authenticationProvider.AuthenticateRequestAsync,
+                    ServerUrlOverride = hasServerUrlOverride ? new Uri(serverUrlOverride!) : null,
+                });
         }
 
         // Microsoft Graph

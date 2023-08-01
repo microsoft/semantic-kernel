@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
@@ -11,8 +12,6 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 /// </summary>
 public class OpenApiSkillExecutionParameters
 {
-    private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
-
     /// <summary>
     /// HttpClient to use for sending HTTP requests.
     /// </summary>
@@ -54,7 +53,7 @@ public class OpenApiSkillExecutionParameters
         HttpClient? httpClient = null,
         AuthenticateRequestAsyncCallback? authCallback = null,
         Uri? serverUrlOverride = null,
-        string? userAgent = HttpUserAgent,
+        string? userAgent = Telemetry.HttpUserAgent,
         bool ignoreNonCompliantErrors = false)
     {
         this.HttpClient = httpClient;

@@ -10,29 +10,34 @@ import {
     Text,
     tokens,
 } from '@fluentui/react-components';
-import { Tree, TreeItem } from '@fluentui/react-components/unstable';
-import { Dismiss20Regular, Filter20Regular } from '@fluentui/react-icons';
-import { FC, useEffect, useState } from 'react';
+import { bundleIcon, Dismiss20Filled, Dismiss20Regular, Filter20Filled, Filter20Regular } from '@fluentui/react-icons';
+import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { AlertType } from '../../../libs/models/AlertType';
+import { Bot } from '../../../libs/models/Bot';
 import { ChatMessageType } from '../../../libs/models/ChatMessage';
+import { useChat } from '../../../libs/useChat';
+import { useFile } from '../../../libs/useFile';
 import { isPlan } from '../../../libs/utils/PlanUtils';
-import { useAppSelector } from '../../../redux/app/hooks';
+import { useAppDispatch, useAppSelector } from '../../../redux/app/hooks';
 import { RootState } from '../../../redux/app/store';
+import { addAlert } from '../../../redux/features/app/appSlice';
 import { Conversations } from '../../../redux/features/conversations/ConversationsState';
 import { Breakpoints } from '../../../styles';
+import { FileUploader } from '../../FileUploader';
 import { ChatListItem } from './ChatListItem';
 import { NewBotMenu } from './NewBotMenu';
 
 const useClasses = makeStyles({
     root: {
-        ...shorthands.overflow('hidden'),
         display: 'flex',
-        width: '25%',
-        minWidth: '5rem',
-        backgroundColor: '#F0F0F0',
+        flexShrink: 0,
+        width: '320px',
+        backgroundColor: tokens.colorNeutralBackground4,
         flexDirection: 'column',
-        '@media (max-width: 25%)': {
-            display: 'none',
-        },
+        ...shorthands.overflow('hidden'),
+        ...Breakpoints.small({
+            width: '64px',
+        }),
     },
     list: {
         overflowY: 'auto',
@@ -43,36 +48,47 @@ const useClasses = makeStyles({
                 visibility: 'visible',
             },
         },
-        ...shorthands.margin('4px'),
         '&::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent',
+            backgroundColor: tokens.colorSubtleBackground,
         },
         alignItems: 'stretch',
     },
     header: {
-        ...shorthands.padding(tokens.spacingVerticalXXS, tokens.spacingHorizontalXS),
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginRight: '1em',
-        marginLeft: '1em',
+        marginRight: tokens.spacingVerticalM,
+        marginLeft: tokens.spacingHorizontalXL,
         alignItems: 'center',
-        height: '4.8em',
+        height: '60px',
         ...Breakpoints.small({
             justifyContent: 'center',
         }),
     },
     title: {
+        flexGrow: 1,
+        ...Breakpoints.small({
+            display: 'none',
+        }),
+    },
+    botsHeader: {
+        marginTop: 0,
+        marginBottom: tokens.spacingVerticalSNudge,
+        marginLeft: tokens.spacingHorizontalXL,
+        marginRight: tokens.spacingHorizontalXL,
+        fontWeight: tokens.fontWeightRegular,
+        fontSize: tokens.fontSizeBase200,
+        color: tokens.colorNeutralForeground3,
         ...Breakpoints.small({
             display: 'none',
         }),
     },
     input: {
+        flexGrow: 1,
         ...shorthands.padding(tokens.spacingHorizontalNone),
         ...shorthands.border(tokens.borderRadiusNone),
-        width: 'calc(100% - 24px)',
-        backgroundColor: 'transparent',
-        fontSize: '20px',
+        backgroundColor: tokens.colorSubtleBackground,
+        fontSize: tokens.fontSizeBase500,
     },
 });
 
@@ -83,6 +99,34 @@ export const ChatList: FC = () => {
     const [isFiltering, setIsFiltering] = useState(false);
     const [filterText, setFilterText] = useState('');
     const [conversationsView, setConversationsView] = useState(conversations);
+
+    const chat = useChat();
+    const fileHandler = useFile();
+    const dispatch = useAppDispatch();
+
+    const Dismiss20 = bundleIcon(Dismiss20Filled, Dismiss20Regular);
+    const Filter20 = bundleIcon(Filter20Filled, Filter20Regular);
+
+    const sortConversations = (conversations: Conversations): Conversations => {
+        // sort conversations by last activity
+        const sortedIds = Object.keys(conversations).sort((a, b) => {
+            if (conversations[a].lastUpdatedTimestamp === undefined) {
+                return 1;
+            }
+            if (conversations[b].lastUpdatedTimestamp === undefined) {
+                return -1;
+            }
+            // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+            return conversations[a].lastUpdatedTimestamp! - conversations[b].lastUpdatedTimestamp!;
+        });
+
+        // Add conversations to sortedConversations in the order of sortedIds.
+        const sortedConversations: Conversations = {};
+        sortedIds.forEach((id) => {
+            sortedConversations[id] = conversations[id];
+        });
+        return sortedConversations;
+    };
 
     useEffect(() => {
         // Ensure local component state is in line with app state.
@@ -97,7 +141,7 @@ export const ChatList: FC = () => {
             setConversationsView(filteredConversations);
         } else {
             // If no search string, show full conversations list.
-            setConversationsView(conversations);
+            setConversationsView(sortConversations(conversations));
         }
     }, [conversations, filterText]);
 
@@ -115,18 +159,39 @@ export const ChatList: FC = () => {
         setFilterText(data.value);
     };
 
+    const fileUploaderRef = useRef<HTMLInputElement>(null);
+    const onUpload = useCallback(
+        (file: File) => {
+            console.log('asdf');
+            fileHandler.loadFile<Bot>(file, chat.uploadBot).catch((error) =>
+                dispatch(
+                    addAlert({
+                        message: `Failed to parse uploaded file. ${error instanceof Error ? error.message : ''}`,
+                        type: AlertType.Error,
+                    }),
+                ),
+            );
+        },
+        [fileHandler, chat, dispatch],
+    );
+
     return (
         <div className={classes.root}>
             <div className={classes.header}>
                 {!isFiltering && (
                     <>
-                        <Text weight="bold" size={500} className={classes.title}>
+                        <Text weight="bold" size={500} className={classes.title} as="h2">
                             Conversations
                         </Text>
-                        <div>
-                            <Button icon={<Filter20Regular />} appearance="transparent" onClick={onFilterClick} />
-                            <NewBotMenu />
-                        </div>
+
+                        <Button icon={<Filter20 />} appearance="transparent" onClick={onFilterClick} />
+                        <NewBotMenu onFileUpload={() => fileUploaderRef.current?.click()} />
+
+                        <FileUploader
+                            ref={fileUploaderRef}
+                            acceptedExtensions={['.txt', '.json']}
+                            onSelectedFile={onUpload}
+                        />
                     </>
                 )}
                 {isFiltering && (
@@ -137,13 +202,14 @@ export const ChatList: FC = () => {
                             onChange={onSearch}
                             autoFocus
                         />
-                        <div>
-                            <Button icon={<Dismiss20Regular />} appearance="transparent" onClick={onFilterCancel} />
-                        </div>
+                        <Button icon={<Dismiss20 />} appearance="transparent" onClick={onFilterCancel} />
                     </>
                 )}
             </div>
-            <Tree aria-label={'chat list'} className={classes.list}>
+            <Text as="h3" className={classes.botsHeader}>
+                Your bots
+            </Text>
+            <div aria-label={'chat list'} className={classes.list}>
                 {Object.keys(conversationsView).map((id) => {
                     const convo = conversationsView[id];
                     const messages = convo.messages;
@@ -151,31 +217,26 @@ export const ChatList: FC = () => {
                     const isSelected = id === selectedId;
 
                     return (
-                        <TreeItem
+                        <ChatListItem
+                            id={id}
                             key={id}
-                            itemType="leaf"
-                            style={isSelected ? { background: tokens.colorNeutralBackground1 } : undefined}
-                        >
-                            <ChatListItem
-                                id={id}
-                                isSelected={isSelected}
-                                header={convo.title}
-                                timestamp={convo.lastUpdatedTimestamp ?? lastMessage.timestamp}
-                                preview={
-                                    messages.length > 0
-                                        ? lastMessage.type === ChatMessageType.Document
-                                            ? 'Sent a file'
-                                            : isPlan(lastMessage.content)
-                                            ? 'Click to view proposed plan'
-                                            : lastMessage.content
-                                        : 'Click to start the chat'
-                                }
-                                botProfilePicture={convo.botProfilePicture}
-                            />
-                        </TreeItem>
+                            isSelected={isSelected}
+                            header={convo.title}
+                            timestamp={convo.lastUpdatedTimestamp ?? lastMessage.timestamp}
+                            preview={
+                                messages.length > 0
+                                    ? lastMessage.type === ChatMessageType.Document
+                                        ? 'Sent a file'
+                                        : isPlan(lastMessage.content)
+                                        ? 'Click to view proposed plan'
+                                        : lastMessage.content
+                                    : 'Click to start the chat'
+                            }
+                            botProfilePicture={convo.botProfilePicture}
+                        />
                     );
                 })}
-            </Tree>
+            </div>
         </div>
     );
 };

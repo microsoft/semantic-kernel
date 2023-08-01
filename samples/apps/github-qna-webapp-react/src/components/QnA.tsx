@@ -25,7 +25,7 @@ const QnA: FC<IData> = ({ uri, project, branch, keyConfig, onBack }) => {
     const [chatHistory, setChatHistory] = useState<IChatMessage[]>([
         {
             content:
-                "Hi! I'm your GitHub Repo bot. Here's the repo you are interested in: <a href={project}>" +
+                `Hi! I'm your GitHub Repo bot. Here's the repo you are interested in: <a href=${project}>` +
                 project +
                 '</a>. How can I help you to learn more about this repo? ',
             author: 'GitHub Repo Bot',

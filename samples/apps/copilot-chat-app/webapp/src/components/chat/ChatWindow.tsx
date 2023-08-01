@@ -2,13 +2,12 @@
 
 import { useMsal } from '@azure/msal-react';
 import {
-    AvatarGroupItem,
-    AvatarGroupPopover,
     Button,
     Input,
     InputOnChangeData,
     Label,
     makeStyles,
+    mergeClasses,
     Persona,
     Popover,
     PopoverSurface,
@@ -21,18 +20,20 @@ import {
     tokens,
     Tooltip,
 } from '@fluentui/react-components';
-import { Edit24Filled, EditRegular } from '@fluentui/react-icons';
+import { Alert } from '@fluentui/react-components/unstable';
+import { Dismiss16Regular, Edit24Filled, EditRegular } from '@fluentui/react-icons';
 import React, { useEffect, useState } from 'react';
 import { AuthHelper } from '../../libs/auth/AuthHelper';
 import { AlertType } from '../../libs/models/AlertType';
 import { ChatService } from '../../libs/services/ChatService';
 import { useAppDispatch, useAppSelector } from '../../redux/app/hooks';
 import { RootState } from '../../redux/app/store';
-import { addAlert } from '../../redux/features/app/appSlice';
+import { addAlert, removeAlert } from '../../redux/features/app/appSlice';
 import { editConversationTitle } from '../../redux/features/conversations/conversationsSlice';
 import { ChatResourceList } from './ChatResourceList';
 import { ChatRoom } from './ChatRoom';
-import { ShareBotMenu } from './ShareBotMenu';
+import { ParticipantsList } from './controls/ParticipantsList';
+import { ShareBotMenu } from './controls/ShareBotMenu';
 
 const useClasses = makeStyles({
     root: {
@@ -60,6 +61,7 @@ const useClasses = makeStyles({
     },
     controls: {
         display: 'flex',
+        alignItems: 'center',
     },
     popoverHeader: {
         ...shorthands.margin('0'),
@@ -79,18 +81,37 @@ const useClasses = makeStyles({
     input: {
         width: '100%',
     },
+    alert: {
+        ...shorthands.borderRadius(0),
+    },
+    infoAlert: {
+        fontWeight: tokens.fontWeightRegular,
+        color: tokens.colorNeutralForeground1,
+        backgroundColor: tokens.colorNeutralBackground6,
+        ...shorthands.borderRadius(0),
+        fontSize: tokens.fontSizeBase200,
+        lineHeight: tokens.lineHeightBase200,
+        ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
+    },
+    buttons: {
+        display: 'flex',
+        alignSelf: 'end',
+        ...shorthands.gap(tokens.spacingVerticalS),
+    },
 });
 
 export const ChatWindow: React.FC = () => {
     const classes = useClasses();
     const dispatch = useAppDispatch();
+    const { instance, inProgress } = useMsal();
+    const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
+    const { alerts } = useAppSelector((state: RootState) => state.app);
+
     const { conversations, selectedId } = useAppSelector((state: RootState) => state.conversations);
     const chatName = conversations[selectedId].title;
+
     const [title = '', setTitle] = useState<string | undefined>(selectedId);
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const { instance, inProgress } = useMsal();
-
-    const chatService = new ChatService(process.env.REACT_APP_BACKEND_URI as string);
 
     const onSave = async () => {
         if (chatName !== title) {
@@ -110,6 +131,10 @@ export const ChatWindow: React.FC = () => {
         setSelectedTab(data.value);
     };
 
+    const onDismissAlert = (index: number) => {
+        dispatch(removeAlert(index));
+    };
+
     const onClose = () => {
         setTitle(chatName);
         setIsEditing(!isEditing);
@@ -119,14 +144,18 @@ export const ChatWindow: React.FC = () => {
         setTitle(data.value);
     };
 
+    const handleSave = () => {
+        onSave().catch((e: any) => {
+            const errorMessage = `Unable to retrieve chat to change title. Details: ${
+                e instanceof Error ? e.message : String(e)
+            }`;
+            dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
+        });
+    };
+
     const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
         if (event.key === 'Enter') {
-            onSave().catch((e: any) => {
-                const errorMessage = `Unable to retrieve chat to change title. Details: ${
-                    e instanceof Error ? e.message : String(e)
-                }`;
-                dispatch(addAlert({ message: errorMessage, type: AlertType.Error }));
-            });
+            handleSave();
         }
     };
 
@@ -138,6 +167,28 @@ export const ChatWindow: React.FC = () => {
 
     return (
         <div className={classes.root}>
+            {alerts.map(({ type, message }, index) => {
+                return (
+                    <Alert
+                        intent={type}
+                        action={{
+                            icon: (
+                                <Dismiss16Regular
+                                    aria-label="dismiss message"
+                                    onClick={() => {
+                                        onDismissAlert(index);
+                                    }}
+                                    color="black"
+                                />
+                            ),
+                        }}
+                        key={`${index}-${type}`}
+                        className={mergeClasses(classes.alert, classes.infoAlert)}
+                    >
+                        {message}
+                    </Alert>
+                );
+            })}
             <div className={classes.header}>
                 <div className={classes.title}>
                     <Persona
@@ -153,6 +204,7 @@ export const ChatWindow: React.FC = () => {
                         <PopoverTrigger disableButtonEnhancement>
                             <Tooltip content={'Edit conversation name'} relationship="label">
                                 <Button
+                                    data-testid="editChatTitleButton"
                                     icon={isEditing ? <Edit24Filled /> : <EditRegular />}
                                     appearance="transparent"
                                     onClick={onClose}
@@ -170,24 +222,30 @@ export const ChatWindow: React.FC = () => {
                                 className={classes.input}
                                 onKeyDown={handleKeyDown}
                             />
+                            <div className={classes.buttons}>
+                                <Button appearance="secondary" onClick={onClose}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit" appearance="primary" onClick={handleSave}>
+                                    Save
+                                </Button>
+                            </div>
                         </PopoverSurface>
                     </Popover>
                     <TabList selectedValue={selectedTab} onTabSelect={onTabSelect}>
-                        <Tab id="chat" value="chat">
+                        <Tab data-testid="chatTab" id="chat" value="chat">
                             Chat
                         </Tab>
-                        <Tab id="files" value="files">
+                        <Tab data-testid="filesTab" id="files" value="files">
                             Files
                         </Tab>
                     </TabList>
                 </div>
                 <div className={classes.controls}>
-                    <AvatarGroupPopover>
-                        {conversations[selectedId].users.map((user) => (
-                            <AvatarGroupItem name={user.id} key={user.id} />
-                        ))}
-                    </AvatarGroupPopover>
-                    <ShareBotMenu chatId={selectedId} chatTitle={title} />
+                    <div data-testid='chatParticipantsView'> 
+                        <ParticipantsList participants={conversations[selectedId].users} />
+                    </div>
+                    <div> <ShareBotMenu chatId={selectedId} chatTitle={title} /></div>
                 </div>
             </div>
             {selectedTab === 'chat' && <ChatRoom />}

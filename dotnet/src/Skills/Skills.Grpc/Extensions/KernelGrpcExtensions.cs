@@ -48,7 +48,7 @@ public static class KernelGrpcExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        kernel.Logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
@@ -74,7 +74,7 @@ public static class KernelGrpcExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        kernel.Logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
@@ -105,7 +105,7 @@ public static class KernelGrpcExtensions
 
         var skill = new Dictionary<string, ISKFunction>();
 
-        var client = HttpClientProvider.GetHttpClient(kernel.Config, httpClient, kernel.Log);
+        var client = HttpClientProvider.GetHttpClient(kernel.Config, httpClient, kernel.Logger);
 
         var runner = new GrpcOperationRunner(client);
 
@@ -113,14 +113,14 @@ public static class KernelGrpcExtensions
         {
             try
             {
-                kernel.Log.LogTrace("Registering gRPC function {0}.{1}", skillName, operation.Name);
+                kernel.Logger.LogTrace("Registering gRPC function {0}.{1}", skillName, operation.Name);
                 var function = kernel.RegisterGrpcFunction(runner, skillName, operation);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other gRPC functions
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}",
+                kernel.Logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}",
                     skillName, operation.Name, ex.Message);
             }
         }
@@ -175,9 +175,9 @@ public static class KernelGrpcExtensions
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}", skillName, operation.Name,
+                kernel.Logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}", skillName, operation.Name,
                     ex.Message);
-                context.Fail(ex.Message, ex);
+                throw;
             }
 
             return context;
@@ -189,8 +189,7 @@ public static class KernelGrpcExtensions
             description: operation.Name,
             skillName: skillName,
             functionName: operation.Name,
-            isSensitive: false,
-            log: kernel.Log);
+            logger: kernel.Logger);
 
         return kernel.RegisterCustomFunction(function);
     }

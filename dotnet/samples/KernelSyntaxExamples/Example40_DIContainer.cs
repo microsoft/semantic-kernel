@@ -36,14 +36,14 @@ public static class Example40_DIContainer
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
-        collection.AddTransient<ILogger>((_) => ConsoleLogger.Log);
+        collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
 
         //Registering Kernel
         collection.AddTransient<IKernel>((serviceProvider) =>
         {
             return Kernel.Builder
             .WithLogger(serviceProvider.GetRequiredService<ILogger>())
-            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"))
+            .WithOpenAITextCompletionService("text-davinci-002", TestConfiguration.OpenAI.ApiKey)
             .Build();
         });
 
@@ -72,11 +72,11 @@ public static class Example40_DIContainer
 
         //Registering AI services Kernel is going to use
         var aiServicesCollection = new AIServiceCollection();
-        aiServicesCollection.SetService<ITextCompletion>(() => new OpenAITextCompletion("text-davinci-002", Env.Var("OPENAI_API_KEY")));
+        aiServicesCollection.SetService<ITextCompletion>(() => new OpenAITextCompletion("text-davinci-002", TestConfiguration.OpenAI.ApiKey));
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
-        collection.AddTransient<ILogger>((_) => ConsoleLogger.Log);
+        collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
         collection.AddTransient<KernelConfig>();
         collection.AddTransient<ISkillCollection, SkillCollection>();
         collection.AddTransient<IPromptTemplateEngine, PromptTemplateEngine>();

@@ -50,13 +50,13 @@ export const InvitationCreateDialog: React.FC<InvitationCreateDialogProps> = ({ 
                     <DialogTitle>Invite others to your Bot</DialogTitle>
                     <DialogContent className={classes.content}>
                         <Label>Please provide the following Chat ID to your friends so they can join the chat.</Label>
-                        <Label weight="semibold">{chatId}</Label>
+                        <Label data-testid='chatIDLabel' weight="semibold">{chatId}</Label>
                     </DialogContent>
                     <DialogActions>
-                        <Button appearance="secondary" onClick={onCancel}>
+                        <Button data-testid='chatIDCloseButton' appearance="secondary" onClick={onCancel}>
                             Close
                         </Button>
-                        <Button appearance="primary" onClick={copyId} icon={isIdCopied ? <Checkmark20Filled /> : null}>
+                        <Button data-testid='chatIDCopyButton' appearance="primary" onClick={copyId} icon={isIdCopied ? <Checkmark20Filled /> : null}>
                             {isIdCopied ? 'Copied' : 'Copy'}
                         </Button>
                     </DialogActions>
