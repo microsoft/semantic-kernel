@@ -2,6 +2,7 @@
 
 using System.Data;
 using System.Globalization;
+using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
@@ -24,7 +25,13 @@ internal static class KustoSerializer
             return default;
         }
 
-        float[] floatArray = JsonConvert.DeserializeObject<float[]>(embedding);
+        float[]? floatArray = JsonConvert.DeserializeObject<float[]>(embedding);
+
+        if (floatArray == null)
+        {
+            return default;
+        }
+
         return new Embedding<float>(floatArray);
     }
     public static string SerializeMetadata(MemoryRecordMetadata metadata)
@@ -34,7 +41,7 @@ internal static class KustoSerializer
             return string.Empty;
         }
 
-        return JsonConvert.SerializeObject(metadata).Replace("\"", "\"\"");
+        return JsonConvert.SerializeObject(metadata);
     }
     public static MemoryRecordMetadata? DeserializeMetadata(string metadata)
     {
@@ -90,13 +97,18 @@ internal class KustoMemoryRecord
         return new MemoryRecord((MemoryRecordMetadata)this.Metadata, (Embedding<float>)this.Embedding, this.Key, this.Timestamp);
     }
 
-    public string ToCsvString()
+    public void WriteToCsvStream(CsvWriter streamWriter)
     {
         // Escapse string values in metadata according the Kusto csv escaping rules, whicm means replacing all \" (backslash double qoutes) with "" (two double qoutes)
         var jsonifiedMetadata = KustoSerializer.SerializeMetadata(this.Metadata);
         var jsonifiedEmbedding = KustoSerializer.SerializeEmbedding(this.Embedding);
         var isoFormattedDate = this.Timestamp?.ToString("o", CultureInfo.InvariantCulture) ?? string.Empty;
-        return $"\"{this.Key}\",\"{jsonifiedMetadata}\",\"{jsonifiedEmbedding}\",{isoFormattedDate}";
+
+        streamWriter.WriteField(this.Key);
+        streamWriter.WriteField(jsonifiedMetadata);
+        streamWriter.WriteField(jsonifiedEmbedding);
+        streamWriter.WriteField(isoFormattedDate);
+        streamWriter.CompleteRecord();
     }
 }
 
@@ -329,16 +341,19 @@ public class KustoMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default)
     {
-        // Upserts don't exist in Kusto, as it is an append only store.
-        // However, since we have an easy PK, we can just insert a new record, as our query always picks the latest row of that PK.
-        // An intresting scenario is deletion after a lot of "Upserts". This could be a heavy operation, as in theory there could be many old version that we now need to remove.
-        // Plus, deleting those records is a "soft delete" operation.
-        // For simplicty purposes (and under the assumption that in most systems, upserts are rare), we will ignore the potential build-up of "garbage" records,
-        // as Kusto is generally good with large amounts of data.
+        // In Kusto, upserts don't exist because it operates as an append-only store.
+        // Nevertheless, given that we have a straightforward primary key (PK), we can simply insert a new record.
+        // Our query always selects the latest row of that PK.
+        // An interesting scenario arises when performing deletion after many "upserts". 
+        // This could turn out to be a heavy operation since, in theory, we might need to remove many outdated versions.
+        // Additionally, deleting these records equates to a "soft delete" operation.
+        // For simplicity, and under the assumption that upserts are relatively rare in most systems, 
+        // we will overlook the potential accumulation of "garbage" records.
+        // Kusto is generally efficient with handling large volumes of data.
+        using var stream = new MemoryStream();
+        using var streamWriter = new StreamWriter(stream);
+        var csvWriter = new FastCsvWriter(streamWriter);
 
-        var inlineIngestionCommand = $".ingest inline into table {GetTableName(collectionName)} <|\n";
-
-        var recordsAsCsvString = "";
         var keys = new List<string>();
         var recordsAsList = records.ToList();
         for (var i = 0; i < recordsAsList.Count; i++)
@@ -346,18 +361,15 @@ public class KustoMemoryStore : IMemoryStore
             var record = recordsAsList[i];
             record.Key = record.Metadata.Id;
             keys.Add(record.Key);
-            recordsAsCsvString += $"{new KustoMemoryRecord(record).ToCsvString()}";
-            // if not last element, add a new line
-            if (i != recordsAsList.Count - 1)
-            {
-                recordsAsCsvString += "\n";
-            }
+            new KustoMemoryRecord(record).WriteToCsvStream(csvWriter);
         }
+        csvWriter.Flush();
+        stream.Seek(0, SeekOrigin.Begin);
 
-        var command = inlineIngestionCommand + recordsAsCsvString;
+        var command = CslCommandGenerator.GenerateTableIngestPushCommand(GetTableName(collectionName), false, stream);
         await this._adminClient
             .ExecuteControlCommandAsync(
-                _database,
+                this._database,
                 command,
                 GetClientRequestProperties()
             ).ConfigureAwait(false);
@@ -370,9 +382,10 @@ public class KustoMemoryStore : IMemoryStore
 
     private string GetBaseQuery(string collection)
     {
-        // Kusto is an append only store. Although deletions are possible, they are highly discourged,
-        //  and should only be used in rare cases (see: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/concepts/data-soft-delete#use-cases).
-        // As such, the recommended approach for dealing with row updates is versioning. An easy way to achieve this is by using the ingestion time of the record (insertion time).
+        // Kusto is an append-only store. Although deletions are possible, they are highly discourged,
+        // and should only be used in rare cases (see: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/concepts/data-soft-delete#use-cases).
+        // As such, the recommended approach for dealing with row updates is versioning.
+        // An easy way to achieve this is by using the ingestion time of the record (insertion time).
         return $"{GetTableName(collection)} | summarize arg_max(ingestion_time(), *) by {s_collectionColumns[0].Name} ";
     }
 

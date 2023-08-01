@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Kusto.Data" />
-    <PackageReference Include="Microsoft.Azure.Kusto.Ingest" />
   </ItemGroup>
 
   <ItemGroup>
