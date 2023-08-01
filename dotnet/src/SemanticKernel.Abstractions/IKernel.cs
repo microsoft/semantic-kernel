@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -23,12 +24,6 @@ public interface IKernel
     /// Settings required to execute functions, including details about AI dependencies, e.g. endpoints and API keys.
     /// </summary>
     KernelConfig Config { get; }
-
-    /// <summary>
-    /// App logger
-    /// </summary>
-    [Obsolete("Use Logger instead. This will be removed in a future release.")]
-    ILogger Log { get; }
 
     /// <summary>
     /// App logger
@@ -98,10 +93,12 @@ public interface IKernel
     /// Run a single synchronous or asynchronous <see cref="ISKFunction"/>.
     /// </summary>
     /// <param name="skFunction">A Semantic Kernel function to run</param>
+    /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Result of the function composition</returns>
+    /// <returns>Result of the function</returns>
     Task<SKContext> RunAsync(
         ISKFunction skFunction,
+        ContextVariables? variables = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -182,18 +179,30 @@ public interface IKernel
     SKContext CreateNewContext();
 
     /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
-    /// <returns>SK context</returns>
-    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
-    SKContext CreateNewContext(CancellationToken cancellationToken);
-
-    /// <summary>
     /// Get one of the configured services. Currently limited to AI services.
     /// </summary>
     /// <param name="name">Optional name. If the name is not provided, returns the default T available</param>
     /// <typeparam name="T">Service type</typeparam>
     /// <returns>Instance of T</returns>
     T GetService<T>(string? name = null) where T : IAIService;
+
+    #region Obsolete
+
+    /// <summary>
+    /// App logger
+    /// </summary>
+    [Obsolete("Use Logger instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    ILogger Log { get; }
+
+    /// <summary>
+    /// Create a new instance of a context, linked to the kernel internal state.
+    /// </summary>
+    /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
+    /// <returns>SK context</returns>
+    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    SKContext CreateNewContext(CancellationToken cancellationToken);
+
+    #endregion
 }

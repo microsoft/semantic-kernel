@@ -63,17 +63,6 @@ public sealed class InstrumentedPlan : IPlan
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
-        string? input = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        return await this.InvokeWithInstrumentationAsync(() =>
-            this._plan.InvokeAsync(input, settings, logger ?? this._logger, cancellationToken)).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings) =>
         this._plan.SetAIConfiguration(settings);
 
@@ -147,7 +136,7 @@ public sealed class InstrumentedPlan : IPlan
         if (result.ErrorOccurred)
         {
             this._logger.LogWarning("Plan execution status: {Status}", "Failed");
-            this._logger.LogError(result.LastException, "Plan execution exception details: {Message}", result.LastErrorDescription);
+            this._logger.LogError(result.LastException, "Plan execution exception details: {Message}", result.LastException?.Message);
 
             s_executionFailureCounter.Add(1);
         }

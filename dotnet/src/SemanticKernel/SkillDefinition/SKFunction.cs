@@ -192,14 +192,14 @@ public sealed class SKFunction : ISKFunction, IDisposable
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message, ex.Detail);
-                context.Fail(ex.Message, ex);
+                throw;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 const string Message = "Something went wrong while rendering the semantic function" +
                                        " or while executing the text completion. Function: {0}.{1}. Error: {2}";
                 logger?.LogError(ex, Message, skillName, functionName, ex.Message);
-                context.Fail(ex.Message, ex);
+                throw;
             }
 
             return context;
@@ -225,45 +225,29 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default)
     {
         if (this.IsSemantic)
         {
             this.AddDefaultValues(context.Variables);
 
-            var resultContext = await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
-            context.Variables.Update(resultContext.Variables);
+            return await this._function(this._aiService?.Value, settings ?? this._aiRequestSettings, context, cancellationToken).ConfigureAwait(false);
         }
-        else
+
+        try
         {
-            try
-            {
-                context = await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception e) when (!e.IsCriticalException())
-            {
-                const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-                this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
-                context.Fail(e.Message, e);
-            }
+            return await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
         }
-
-        return context;
-    }
-
-    /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(
-        string? input = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        SKContext context = new(
-            new ContextVariables(input),
-            skills: this._skillCollection,
-            logger: logger);
-
-        return this.InvokeAsync(context, settings, cancellationToken: cancellationToken);
+        catch (Exception e) when (!e.IsCriticalException())
+        {
+            const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
+            this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
+            context.LastException = e;
+            return context;
+        }
     }
 
     /// <inheritdoc/>

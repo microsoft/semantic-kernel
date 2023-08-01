@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,10 +35,6 @@ public sealed class Kernel : IKernel, IDisposable
 {
     /// <inheritdoc/>
     public KernelConfig Config { get; }
-
-    /// <inheritdoc/>
-    [Obsolete("Use Logger instead. This will be removed in a future release.")]
-    public ILogger Log => this.Logger;
 
     /// <inheritdoc/>
     public ILogger Logger { get; }
@@ -148,8 +145,10 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ISKFunction skFunction, CancellationToken cancellationToken = default)
-        => this.RunAsync(new ContextVariables(), cancellationToken, skFunction);
+    public Task<SKContext> RunAsync(ISKFunction skFunction,
+        ContextVariables? variables = null,
+        CancellationToken cancellationToken = default)
+        => this.RunAsync(variables ?? new(), cancellationToken, skFunction);
 
     /// <inheritdoc/>
     public Task<SKContext> RunAsync(params ISKFunction[] pipeline)
@@ -186,7 +185,7 @@ public sealed class Kernel : IKernel, IDisposable
             {
                 this.Logger.LogError(
                     context.LastException,
-                    "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastErrorDescription);
+                    "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastException?.Message);
                 return context;
             }
 
@@ -200,7 +199,7 @@ public sealed class Kernel : IKernel, IDisposable
                 if (context.ErrorOccurred)
                 {
                     this.Logger.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
-                        pipelineStepCount, f.SkillName, f.Name, context.LastErrorDescription);
+                        pipelineStepCount, f.SkillName, f.Name, context.LastException?.Message);
                     return context;
                 }
             }
@@ -208,7 +207,7 @@ public sealed class Kernel : IKernel, IDisposable
             {
                 this.Logger.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
                     pipelineStepCount, f.SkillName, f.Name, e.Message);
-                context.Fail(e.Message, e);
+                context.LastException = e;
                 return context;
             }
         }
@@ -228,17 +227,6 @@ public sealed class Kernel : IKernel, IDisposable
         return new SKContext(
             skills: this._skillCollection,
             logger: this.Logger);
-    }
-
-    /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for operations in context.</param>
-    /// <returns>SK context</returns>
-    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
-    public SKContext CreateNewContext(CancellationToken cancellationToken)
-    {
-        return this.CreateNewContext();
     }
 
     /// <inheritdoc/>
@@ -336,6 +324,27 @@ public sealed class Kernel : IKernel, IDisposable
         logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
+    }
+
+    #endregion
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Use Logger instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ILogger Log => this.Logger;
+
+    /// <summary>
+    /// Create a new instance of a context, linked to the kernel internal state.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for operations in context.</param>
+    /// <returns>SK context</returns>
+    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public SKContext CreateNewContext(CancellationToken cancellationToken)
+    {
+        return this.CreateNewContext();
     }
 
     #endregion
