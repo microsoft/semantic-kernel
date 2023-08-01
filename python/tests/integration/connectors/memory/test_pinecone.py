@@ -21,7 +21,7 @@ pytestmark = pytest.mark.skipif(
     not pinecone_installed, reason="pinecone is not installed"
 )
 
-async def retry(func, retries=5):
+async def retry(func, retries=2):
     for i in range(retries):
         try:
             return await func()
@@ -210,8 +210,7 @@ async def test_upsert_async_and_get_async(get_pinecone_config, memory_record1):
             pinecone.core.client.exceptions.NotFoundException,
             pinecone.core.client.exceptions.ApiException,
             pinecone.core.exceptions.PineconeProtocolError,
-            pinecone.core.client.exceptions.ServiceException,
-            TypeError),
+            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_upsert_batch_async_and_get_batch_async(
