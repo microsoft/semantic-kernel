@@ -50,13 +50,10 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
-            new AzureTextCompletion(
-                deploymentName,
-                endpoint,
-                apiKey,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger),
-            setAsDefault);
+        {
+            var client = CreateAzureOpenAIClient(parameters.Logger, parameters.Config, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
+            return new AzureTextCompletion(deploymentName, client, parameters.Logger);
+        }, setAsDefault);
 
         return builder;
     }
@@ -82,13 +79,10 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
-            new AzureTextCompletion(
-                deploymentName,
-                endpoint,
-                credentials,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger),
-            setAsDefault);
+        {
+            var client = CreateAzureOpenAIClient(parameters.Logger, parameters.Config, deploymentName, endpoint, credentials, httpClient);
+            return new AzureTextCompletion(deploymentName, client, parameters.Logger);
+        }, setAsDefault);
 
         return builder;
     }
@@ -275,7 +269,8 @@ public static class OpenAIKernelBuilderExtensions
     {
         AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters)
         {
-            OpenAIClientOptions options = new();
+            OpenAIClient client = CreateAzureOpenAIClient(parameters.Logger, parameters.Config, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
+            /*OpenAIClientOptions options = new();
             options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger));
             if (parameters.Config.HttpHandlerFactory is DefaultHttpRetryHandlerFactory factory && factory.Config is not null)
             {
@@ -283,7 +278,7 @@ public static class OpenAIKernelBuilderExtensions
                 options.Retry.MaxDelay = factory.Config.MaxRetryDelay;
             }
 
-            OpenAIClient client = new(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
+            OpenAIClient client = new(new Uri(endpoint), new AzureKeyCredential(apiKey), options);*/
 
             return new(deploymentName, client, parameters.Logger);
         };
@@ -323,6 +318,7 @@ public static class OpenAIKernelBuilderExtensions
     {
         AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters)
         {
+            /*
             OpenAIClientOptions options = new();
             options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger));
             if (parameters.Config.HttpHandlerFactory is DefaultHttpRetryHandlerFactory factory && factory.Config is not null)
@@ -331,7 +327,9 @@ public static class OpenAIKernelBuilderExtensions
                 options.Retry.MaxDelay = factory.Config.MaxRetryDelay;
             }
 
-            OpenAIClient client = new(new Uri(endpoint), credentials, options);
+            OpenAIClient client = new(new Uri(endpoint), credentials, options);*/
+
+            OpenAIClient client = CreateAzureOpenAIClient(parameters.Logger, parameters.Config, deploymentName, endpoint, credentials, httpClient);
 
             return new(deploymentName, client, parameters.Logger);
         };
@@ -451,4 +449,34 @@ public static class OpenAIKernelBuilderExtensions
     }
 
     #endregion
+
+    private static OpenAIClient CreateAzureOpenAIClient(ILogger logger, KernelConfig config, string deploymentName, string endpoint, AzureKeyCredential credentials, HttpClient? httpClient)
+    {
+        OpenAIClientOptions options = CreateOpenAIClientOptions(logger, config, httpClient);
+
+        return new(new Uri(endpoint), credentials, options);
+    }
+
+    private static OpenAIClient CreateAzureOpenAIClient(ILogger logger, KernelConfig config, string deploymentName, string endpoint, TokenCredential credentials, HttpClient? httpClient)
+    {
+        OpenAIClientOptions options = CreateOpenAIClientOptions(logger, config, httpClient);
+
+        return new(new Uri(endpoint), credentials, options);
+    }
+
+    private static OpenAIClientOptions CreateOpenAIClientOptions(ILogger logger, KernelConfig config, HttpClient? httpClient)
+    {
+        OpenAIClientOptions options = new();
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(config, httpClient, logger));
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+        if (config.HttpHandlerFactory is DefaultHttpRetryHandlerFactory factory && factory.Config is not null)
+        {
+            options.Retry.MaxRetries = factory.Config.MaxRetryCount;
+            options.Retry.MaxDelay = factory.Config.MaxRetryDelay;
+        }
+
+        return options;
+    }
 }
