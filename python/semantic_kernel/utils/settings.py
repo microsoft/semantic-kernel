@@ -17,7 +17,7 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     api_key = config.get("OPENAI_API_KEY", None)
     org_id = config.get("OPENAI_ORG_ID", None)
 
-    assert api_key is not None, "OpenAI API key not found in .env file"
+    assert api_key, "OpenAI API key not found in .env file"
 
     # It's okay if the org ID is not found (not required)
     return api_key, org_id
@@ -41,11 +41,11 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
     # Azure requires the deployment name, the API key and the endpoint URL.
     if include_deployment:
         assert (
-            deployment is not None
+            deployment
         ), "Azure OpenAI deployment name not found in .env file"
 
-    assert api_key is not None, "Azure OpenAI API key not found in .env file"
-    assert endpoint is not None, "Azure OpenAI endpoint not found in .env file"
+    assert api_key, "Azure OpenAI API key not found in .env file"
+    assert endpoint, "Azure OpenAI endpoint not found in .env file"
 
     return deployment or "", api_key, endpoint
 
@@ -61,7 +61,7 @@ def postgres_settings_from_dot_env() -> str:
     connection_string = config.get("POSTGRES_CONNECTION_STRING", None)
 
     assert (
-        connection_string is not None
+        connection_string
     ), "Postgres connection string not found in .env file"
 
     return connection_string
@@ -79,7 +79,7 @@ def pinecone_settings_from_dot_env() -> Tuple[str, str]:
     api_key = config.get("PINECONE_API_KEY", None)
     environment = config.get("PINECONE_ENVIRONMENT", None)
 
-    assert api_key is not None, "Pinecone API key not found in .env file"
-    assert environment is not None, "Pinecone environment not found in .env file"
+    assert api_key, "Pinecone API key not found in .env file"
+    assert environment, "Pinecone environment not found in .env file"
 
     return api_key, environment
