@@ -10,7 +10,7 @@ from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion impor
     GooglePalmChatCompletion
 )
 
-def test_palm_chat_completion_init() -> None:
+def test_google_palm_chat_completion_init() -> None:
     model_id = "test_model_id"
     api_key = "test_api_key"
 

@@ -6,7 +6,7 @@ import semantic_kernel.connectors.ai.google_palm as sk_gp
 import asyncio
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_skills(
+async def test_gp_chat_service_with_skills(
     setup_tldr_function_for_oai_models, get_gp_config
 ):
     kernel, sk_prompt, text_to_summarize = setup_tldr_function_for_oai_models
