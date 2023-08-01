@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -22,7 +21,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : ISKFunction
+public sealed class Plan : IPlan
 {
     /// <summary>
     /// State of the plan
@@ -218,29 +217,31 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="kernel">The kernel instance to use for executing the plan.</param>
     /// <param name="variables">The variables to use for the execution of the plan.</param>
-    /// <param name="cancellationToken">The cancellation token to cancel the execution of the plan.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
     /// <remarks>
-    /// This method executes the next step in the plan using the specified kernel instance and context variables. The context variables contain the necessary information for executing the plan, such as the memory, skills, and logger. The method returns a task representing the asynchronous execution of the plan's next step.
+    /// This method executes the next step in the plan using the specified kernel instance and context variables.
+    /// The context variables contain the necessary information for executing the plan, such as the skills, and logger.
+    /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var context = new SKContext(
             variables,
-            kernel.Memory,
             kernel.Skills,
-            kernel.Log,
-            cancellationToken);
-        return this.InvokeNextStepAsync(context);
+            kernel.Logger);
+
+        return this.InvokeNextStepAsync(context, cancellationToken);
     }
 
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
     /// <param name="context">Context to use</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
     /// <exception cref="KernelException">If an error occurs while running the plan</exception>
-    public async Task<Plan> InvokeNextStepAsync(SKContext context)
+    public async Task<Plan> InvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
@@ -250,14 +251,14 @@ public sealed class Plan : ISKFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
-            var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
+            var functionContext = new SKContext(functionVariables, context.Skills, context.Logger);
+            var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
             if (result.ErrorOccurred)
             {
                 throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
-                    $"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
+                    $"Error occurred while running plan step: {result.LastException?.Message}", result.LastException);
             }
 
             #region Update State
@@ -298,7 +299,6 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        // TODO - Eventually, we should be able to describe a plan and its expected inputs/outputs
         return this.Function?.Describe() ?? new();
     }
 
@@ -306,7 +306,6 @@ public sealed class Plan : ISKFunction
     public Task<SKContext> InvokeAsync(
         string? input = null,
         CompleteRequestSettings? settings = null,
-        ISemanticTextMemory? memory = null,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
@@ -314,27 +313,26 @@ public sealed class Plan : ISKFunction
 
         SKContext context = new(
             this.State,
-            memory: memory,
-            logger: logger,
-            cancellationToken: cancellationToken);
+            logger: logger);
 
-        return this.InvokeAsync(context, settings);
+        return this.InvokeAsync(context, settings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null)
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default)
     {
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
+            var result = await this.Function
+                .WithInstrumentation(context.Logger)
+                .InvokeAsync(context, settings, cancellationToken)
+                .ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
-                result.Log.LogError(
-                    result.LastException,
-                    "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
                 return result;
             }
 
@@ -349,7 +347,7 @@ public sealed class Plan : ISKFunction
 
                 AddVariablesToContext(this.State, functionContext);
 
-                await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
+                await this.InvokeNextStepAsync(functionContext, cancellationToken).ConfigureAwait(false);
 
                 this.UpdateContextWithOutputs(context);
             }

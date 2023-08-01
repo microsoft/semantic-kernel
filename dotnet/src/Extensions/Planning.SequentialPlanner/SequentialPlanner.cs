@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -15,7 +16,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.
 /// </summary>
-public sealed class SequentialPlanner
+public sealed class SequentialPlanner : ISequentialPlanner
 {
     private const string StopSequence = "<!-- END -->";
 
@@ -49,29 +50,24 @@ public sealed class SequentialPlanner
         this._context = kernel.CreateNewContext();
     }
 
-    /// <summary>
-    /// Create a plan for a goal.
-    /// </summary>
-    /// <param name="goal">The goal to create a plan for.</param>
-    /// <returns>The plan.</returns>
-    /// <exception cref="PlanningException">Thrown when the plan cannot be created.</exception>
-    public async Task<Plan> CreatePlanAsync(string goal)
+    /// <inheritdoc />
+    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(goal))
         {
             throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
         }
 
-        string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config).ConfigureAwait(false);
+        string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
         this._context.Variables.Set("available_functions", relevantFunctionsManual);
 
         this._context.Variables.Update(goal);
 
-        var planResult = await this._functionFlowFunction.InvokeAsync(this._context).ConfigureAwait(false);
+        var planResult = await this._functionFlowFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (planResult.ErrorOccurred)
         {
-            throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, $"Error creating plan for goal: {planResult.LastErrorDescription}", planResult.LastException);
+            throw new PlanningException(PlanningException.ErrorCodes.CreatePlanError, $"Error creating plan for goal: {planResult.LastException?.Message}", planResult.LastException);
         }
 
         string planResultString = planResult.Result.Trim();
