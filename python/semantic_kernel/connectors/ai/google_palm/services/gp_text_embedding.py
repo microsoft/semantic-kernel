@@ -19,7 +19,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         api_key: str
     ) -> None:
         """
-        Initializes a new instance of the GooglePalmTextCompletion class.
+        Initializes a new instance of the GooglePalmTextEmbedding class.
 
         Arguments:
             model_id {str} -- GooglePalm model name, see
