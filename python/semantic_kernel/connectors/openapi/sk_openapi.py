@@ -16,12 +16,12 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 
 class PreparedRestApiRequest:
-    def __init__(self, method: str, url: str, params=None, headers=None, payload=None):
+    def __init__(self, method: str, url: str, params=None, headers=None, request_body=None):
         self.method = method
         self.url = url
         self.params = params
         self.headers = headers
-        self.payload = payload
+        self.request_body = request_body
 
     def __repr__(self):
         return (
@@ -30,7 +30,7 @@ class PreparedRestApiRequest:
             f"url={self.url}, "
             f"params={self.params}, "
             f"headers={self.headers}, "
-            f"payload={self.payload})"
+            f"request_body={self.request_body})"
         )
 
     def validate_request(self, spec: Spec, logger: logging.Logger = NullLogger()):
@@ -39,7 +39,7 @@ class PreparedRestApiRequest:
             self.url,
             params=self.params,
             headers=self.headers,
-            json=self.payload,
+            json=self.request_body,
         )
         openapi_request = RequestsOpenAPIRequest(request=request)
         try:
@@ -59,7 +59,7 @@ class RestApiOperation:
         path: str,
         summary: Optional[str] = None,
         description: Optional[str] = None,
-        parameters: Optional[Mapping[str, str]] = None,
+        params: Optional[Mapping[str, str]] = None,
         request_body: Optional[Mapping[str, str]] = None,
     ):
         self.id = id
@@ -68,7 +68,7 @@ class RestApiOperation:
         self.path = path
         self.summary = summary
         self.description = description
-        self.parameters = parameters
+        self.params = params
         self.request_body = request_body
 
     """
@@ -76,12 +76,12 @@ class RestApiOperation:
     :param path_params: A dictionary of path parameters
     :param query_params: A dictionary of query parameters
     :param headers: A dictionary of headers
-    :param payload: The payload
+    :param request_body: The payload of the request
     :return: A PreparedRestApiRequest object
     """
 
     def prepare_request(
-        self, path_params=None, query_params=None, headers=None, payload=None
+        self, path_params=None, query_params=None, headers=None, request_body=None
     ) -> PreparedRestApiRequest:
         path = self.path
         if path_params:
@@ -90,7 +90,7 @@ class RestApiOperation:
         url = urljoin(self.server_url, path)
 
         processed_query_params, processed_headers = {}, {}
-        for param in self.parameters:
+        for param in self.params:
             param_name = param["name"]
             param_schema = param["schema"]
             param_default = param_schema.get("default", None)
@@ -114,7 +114,7 @@ class RestApiOperation:
         processed_payload = None
         if self.request_body:
             if (
-                payload is None
+                request_body is None
                 and "required" in self.request_body
                 and self.request_body["required"]
             ):
@@ -122,14 +122,14 @@ class RestApiOperation:
             content = self.request_body["content"]
             content_type = list(content.keys())[0]
             processed_headers["Content-Type"] = content_type
-            processed_payload = payload
+            processed_payload = request_body
 
         req = PreparedRestApiRequest(
             method=self.method,
             url=url,
             params=processed_query_params,
             headers=processed_headers,
-            payload=processed_payload,
+            request_body=processed_payload,
         )
         return req
 
@@ -140,8 +140,8 @@ class RestApiOperation:
             f"method={self.method}, "
             f"server_url={self.server_url}, "
             f"path={self.path}, "
-            f"parameters={self.parameters}, "
-            f"payload={self.request_body}, "
+            f"params={self.params}, "
+            f"request_body={self.request_body}, "
             f"summary={self.summary}, "
             f"description={self.description})"
         )
@@ -174,7 +174,8 @@ class OpenApiParser:
         request_objects = {}
         for path, methods in paths.items():
             for method, details in methods.items():
-                server_url = parsed_document.get("servers", [])[0].get("url")
+                server_url = parsed_document.get("servers", [])
+                server_url = server_url[0].get("url") if server_url else '/'
 
                 request_method = method.lower()
 
@@ -188,7 +189,7 @@ class OpenApiParser:
                     method=request_method,
                     server_url=server_url,
                     path=path,
-                    parameters=parameters,
+                    params=parameters,
                     request_body=details.get("requestBody", None),
                     summary=summary,
                     description=description,
@@ -213,13 +214,13 @@ class OpenApiRunner:
         path_params: Optional[Dict[str, str]] = None,
         query_params: Optional[Dict[str, str]] = None,
         headers: Optional[Dict[str, str]] = None,
-        payload: Optional[Union[str, Dict[str, str]]] = None,
+        request_body: Optional[Union[str, Dict[str, str]]] = None,
     ) -> aiohttp.ClientResponse:
         prepared_request = operation.prepare_request(
             path_params=path_params,
             query_params=query_params,
             headers=headers,
-            payload=payload,
+            request_body=request_body,
         )
         is_valid = prepared_request.validate_request(spec=self.spec, logger=self.logger)
         if not is_valid:
@@ -231,7 +232,7 @@ class OpenApiRunner:
                 prepared_request.url,
                 params=prepared_request.params,
                 headers=prepared_request.headers,
-                json=prepared_request.payload,
+                json=prepared_request.request_body,
             ) as response:
                 return await response.text()
 
@@ -269,25 +270,25 @@ def register_openapi_skill(
             name=operation_id,
         )
         @sk_function_context_parameter(
-            name="path_params", description="The path parameters"
+            name="path_params", description="A dictionary of path parameters"
         )
         @sk_function_context_parameter(
-            name="query_params", description="The query parameters"
+            name="query_params", description="A dictionary of query parameters"
         )
-        @sk_function_context_parameter(name="headers", description="The headers")
-        @sk_function_context_parameter(name="payload", description="The payload")
+        @sk_function_context_parameter(name="headers", description="A dictionary of headers")
+        @sk_function_context_parameter(name="request_body", description="A dictionary of the request body")
         async def run_openapi_operation(sk_context: SKContext) -> str:
             has_path_params, path_params = sk_context.variables.get("path_params")
             has_query_params, query_params = sk_context.variables.get("query_params")
             has_headers, headers = sk_context.variables.get("headers")
-            has_payload, payload = sk_context.variables.get("payload")
+            has_request_body, request_body = sk_context.variables.get("request_body")
 
             response = await runner.run_operation(
                 operation,
                 path_params=path_params if has_path_params else None,
                 query_params=query_params if has_query_params else None,
                 headers=headers if has_headers else None,
-                payload=payload if has_payload else None,
+                request_body=request_body if has_request_body else None,
             )
             return response
 

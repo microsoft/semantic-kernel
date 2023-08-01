@@ -33,7 +33,7 @@ put_operation = RestApiOperation(
     server_url="http://example.com",
     path="/todos/{id}",
     summary="Update a todo by ID",
-    parameters=[
+    params=[
         {
             "name": "id",
             "in": "path",
@@ -87,19 +87,19 @@ def test_prepare_request_with_path_params():
     path_params = {"id": 1}
     query_params = {"completed": False}
     headers = {"Authorization": "Bearer abc123"}
-    payload = {"title": "Buy milk", "completed": False}
+    request_body = {"title": "Buy milk", "completed": False}
     expected_request = PreparedRestApiRequest(
         method="PUT",
         url="http://example.com/todos/1",
         params={"completed": False},
         headers={"Authorization": "Bearer abc123", "Content-Type": "application/json"},
-        payload={"title": "Buy milk", "completed": False},
+        request_body={"title": "Buy milk", "completed": False},
     )
     actual_request = put_operation.prepare_request(
         path_params=path_params,
         query_params=query_params,
         headers=headers,
-        payload=payload,
+        request_body=request_body,
     )
     assert str(actual_request) == str(expected_request)
 
@@ -108,13 +108,13 @@ def test_prepare_request_with_missing_path_param():
     path_params = {}
     query_params = {"completed": False}
     headers = {"Authorization": "Bearer abc123"}
-    payload = {"title": "Buy milk", "completed": False}
+    request_body = {"title": "Buy milk", "completed": False}
     with pytest.raises(ValueError):
         put_operation.prepare_request(
             path_params=path_params,
             query_params=query_params,
             headers=headers,
-            payload=payload,
+            request_body=request_body,
         )
 
 
@@ -122,19 +122,19 @@ def test_prepare_request_with_default_query_param():
     path_params = {"id": 1}
     query_params = {}
     headers = {"Authorization": "Bearer abc123"}
-    payload = {"title": "Buy milk", "completed": False}
+    request_body = {"title": "Buy milk", "completed": False}
     expected_request = PreparedRestApiRequest(
         method="PUT",
         url="http://example.com/todos/1",
         params={},
         headers={"Authorization": "Bearer abc123", "Content-Type": "application/json"},
-        payload={"title": "Buy milk", "completed": False},
+        request_body={"title": "Buy milk", "completed": False},
     )
     actual_request = put_operation.prepare_request(
         path_params=path_params,
         query_params=query_params,
         headers=headers,
-        payload=payload,
+        request_body=request_body,
     )
     assert str(actual_request) == str(expected_request)
 
@@ -143,34 +143,34 @@ def test_prepare_request_with_default_header():
     path_params = {"id": 1}
     query_params = {"completed": False}
     headers = {}
-    payload = {"title": "Buy milk", "completed": False}
+    request_body = {"title": "Buy milk", "completed": False}
     expected_request = PreparedRestApiRequest(
         method="PUT",
         url="http://example.com/todos/1",
         params={"completed": False},
         headers={"Content-Type": "application/json"},
-        payload={"title": "Buy milk", "completed": False},
+        request_body={"title": "Buy milk", "completed": False},
     )
     actual_request = put_operation.prepare_request(
         path_params=path_params,
         query_params=query_params,
         headers=headers,
-        payload=payload,
+        request_body=request_body,
     )
     assert str(actual_request) == str(expected_request)
 
 
-def test_prepare_request_with_no_payload():
+def test_prepare_request_with_no_request_body():
     path_params = {"id": 1}
     query_params = {"completed": False}
     headers = {"Authorization": "Bearer abc123"}
-    payload = None
+    request_body = None
     with pytest.raises(ValueError):
         put_operation.prepare_request(
             path_params=path_params,
             query_params=query_params,
             headers=headers,
-            payload=payload,
+            request_body=request_body,
         )
 
 
@@ -203,7 +203,7 @@ def test_create_rest_api_operations():
     get_todos_rest_api_operation = result["getTodos"]
     assert get_todos_rest_api_operation.method.lower() == "get"
     assert get_todos_rest_api_operation.path == "/todos"
-    assert get_todos_rest_api_operation.parameters == [
+    assert get_todos_rest_api_operation.params == [
         {
             "name": "Authorization",
             "in": "header",
@@ -217,7 +217,7 @@ def test_create_rest_api_operations():
     add_todo_rest_api_operation = result["addTodo"]
     assert add_todo_rest_api_operation.method.lower() == "post"
     assert add_todo_rest_api_operation.path == "/todos"
-    assert add_todo_rest_api_operation.parameters == [
+    assert add_todo_rest_api_operation.params == [
         {
             "name": "Authorization",
             "in": "header",
@@ -265,9 +265,9 @@ async def test_run_operation_with_valid_request(mock_request, openapi_runner):
     runner, operations = openapi_runner
     operation = operations["addTodo"]
     headers = {"Authorization": "Bearer abc123"}
-    payload = {"title": "Buy milk", "completed": False}
+    request_body = {"title": "Buy milk", "completed": False}
     mock_request.return_value.__aenter__.return_value.text.return_value = 200
-    response = await runner.run_operation(operation, headers=headers, payload=payload)
+    response = await runner.run_operation(operation, headers=headers, request_body=request_body)
     assert response == 200
 
 
@@ -277,10 +277,10 @@ async def test_run_operation_with_invalid_request(mock_request, openapi_runner):
     runner, operations = openapi_runner
     operation = operations["getTodoById"]
     headers = {"Authorization": "Bearer abc123"}
-    payload = {"title": "Buy milk"}
+    request_body = {"title": "Buy milk"}
     mock_request.return_value.__aenter__.return_value.text.return_value = 400
     with pytest.raises(Exception):
-        await runner.run_operation(operation, headers=headers, payload=payload)
+        await runner.run_operation(operation, headers=headers, request_body=request_body)
 
 
 @patch("aiohttp.ClientSession.request")
@@ -289,7 +289,7 @@ async def test_run_operation_with_error(mock_request, openapi_runner):
     runner, operations = openapi_runner
     operation = operations["addTodo"]
     headers = {"Authorization": "Bearer abc123"}
-    payload = {"title": "Buy milk", "completed": False}
+    request_body = {"title": "Buy milk", "completed": False}
     mock_request.side_effect = Exception("Error")
     with pytest.raises(Exception):
-        await runner.run_operation(operation, headers=headers, payload=payload)
+        await runner.run_operation(operation, headers=headers, request_body=request_body)
