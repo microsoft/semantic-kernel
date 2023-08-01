@@ -9,7 +9,7 @@ public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
 {
     public DefaultHttpRetryHandlerFactory(HttpRetryConfig? config = null)
     {
-        this._config = config;
+        this.Config = config;
     }
 
     public DelegatingHandler Create(ILogger? logger)
@@ -17,7 +17,5 @@ public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
         return new DefaultHttpRetryHandler(this.Config, logger);
     }
 
-    private readonly HttpRetryConfig? _config;
-
-    public HttpRetryConfig? Config => this._config;
+    public HttpRetryConfig? Config { get; }
 }
