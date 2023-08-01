@@ -23,24 +23,24 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:        
       - uses: actions/checkout@v3
-        if: ${{ github.event_name == 'merge_group' }}
+        if: ${{ github.event_name != 'pull_request' }}
         with:
           clean: true
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
-        if: ${{ github.event_name == 'merge_group' }}
+        if: ${{ github.event_name != 'pull_request' }}
         with:
           dotnet-version: 6.0.x
 
       - name: Find projects
         shell: bash
-        if: ${{ github.event_name == 'merge_group' }}
-        run: echo "projects=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+        if: ${{ github.event_name != 'pull_request' }}
+        run: echo "projects=$(find ./dotnet -type f -name "*Tests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
 
       - name: Integration Tests
         shell: bash
-        if: ${{ github.event_name == 'merge_group' }}
+        if: ${{ github.event_name != 'pull_request' }}
         env: # Set Azure credentials secret as an input
           AzureOpenAI__Label: azure-text-davinci-003
           AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
@@ -62,4 +62,4 @@ jobs:
         with:
           name: dotnet-testresults-${{ matrix.configuration }}
           path: ./TestResults
-        if: ${{ github.event_name == 'merge_group' && always() }}
+        if: ${{ github.event_name != 'pull_request' && always() }}

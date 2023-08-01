@@ -5,15 +5,17 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.5" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.6" />
     <PackageVersion Include="Azure.Identity" Version="1.9.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.3" />
+    <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageVersion Include="NRedisStack" Version="0.8.0" />
     <PackageVersion Include="Pgvector" Version="0.1.3" />
     <PackageVersion Include="Polly" Version="7.2.4" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
     <!-- Microsoft.Extensions.Logging -->
@@ -36,7 +38,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <!-- Skills -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.8" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.9" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.8.1" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.8.1" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />

@@ -34,8 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		..\.github\workflows\dotnet-format.yml = ..\.github\workflows\dotnet-format.yml
-		..\README.md = ..\README.md
 		..\nuget.config = ..\nuget.config
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.UnitTests", "src\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj", "{37E39C68-5A40-4E63-9D3C-0C66AD98DFCB}"
@@ -61,8 +61,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Qdrant", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Sqlite", "src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.CosmosDB", "src\Connectors\Connectors.Memory.CosmosDB\Connectors.Memory.CosmosDB.csproj", "{EA61C289-7928-4B78-A9C1-7AAD61F907CD}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Postgres", "src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj", "{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Redis", "src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj", "{3720F5ED-FB4D-485E-8A93-CDE60DEF0805}"
@@ -83,7 +81,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.UnitTests", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning.SequentialPlanner", "src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj", "{A350933D-F9D5-4AD3-8C4F-B856B5020297}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureSearch", "src\Connectors\Connectors.Memory.AzureSearch\Connectors.Memory.AzureSearch.csproj", "{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCognitiveSearch", "src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj", "{EC3BB6D1-2FB2-4702-84C6-F791DE533ED4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Pinecone", "src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj", "{4D226C2F-AE9F-4EFB-AF2D-45C8FE5CB34E}"
 EndProject
@@ -137,6 +135,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{1C19D805-3
 		src\InternalUtilities\src\Http\NonDisposableHttpClientHandler.cs = src\InternalUtilities\src\Http\NonDisposableHttpClientHandler.cs
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10B2-AE8F-4FC4-8D55-92D4AD32E144}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\System\EnvExtensions.cs = src\InternalUtilities\src\System\EnvExtensions.cs
+	EndProjectSection
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Core", "src\Skills\Skills.Core\Skills.Core.csproj", "{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCalcSkills", "samples\NCalcSkills\NCalcSkills.csproj", "{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA}"
@@ -144,6 +147,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AI.Oobabooga", "src\Connectors\Connectors.AI.Oobabooga\Connectors.AI.Oobabooga.csproj", "{677F1381-7830-4115-9C1A-58B282629DC6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planning.StepwisePlanner", "src\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj", "{4762BCAF-E1C5-4714-B88D-E50FA333C50E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationInsightsExample", "samples\ApplicationInsightsExample\ApplicationInsightsExample.csproj", "{C754950A-E16C-4F96-9CC7-9328E361B5AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -233,11 +238,6 @@ Global
 		{EC004F12-2F60-4EDD-B3CD-3A504900D929}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{EC004F12-2F60-4EDD-B3CD-3A504900D929}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC004F12-2F60-4EDD-B3CD-3A504900D929}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EA61C289-7928-4B78-A9C1-7AAD61F907CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EA61C289-7928-4B78-A9C1-7AAD61F907CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EA61C289-7928-4B78-A9C1-7AAD61F907CD}.Publish|Any CPU.ActiveCfg = Release|Any CPU
-		{EA61C289-7928-4B78-A9C1-7AAD61F907CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EA61C289-7928-4B78-A9C1-7AAD61F907CD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
@@ -356,6 +356,11 @@ Global
 		{4762BCAF-E1C5-4714-B88D-E50FA333C50E}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{4762BCAF-E1C5-4714-B88D-E50FA333C50E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4762BCAF-E1C5-4714-B88D-E50FA333C50E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Publish|Any CPU.ActiveCfg = Release|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -378,7 +383,6 @@ Global
 		{EB3FC57F-E591-4C88-BCD5-B6A1BC635168} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{5DEBAA62-F117-496A-8778-FED3604B70E2} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{EC004F12-2F60-4EDD-B3CD-3A504900D929} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
-		{EA61C289-7928-4B78-A9C1-7AAD61F907CD} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{3720F5ED-FB4D-485E-8A93-CDE60DEF0805} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{185E0CE8-C2DA-4E4C-A491-E8EB40316315} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
@@ -403,10 +407,12 @@ Global
 		{B00AD427-0047-4850-BEF9-BA8237EA9D8B} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{DB950192-30F1-48B1-88D7-F43FECCA1A1C} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{1C19D805-3573-4477-BF07-40180FCDE1BD} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
+		{3CDE10B2-AE8F-4FC4-8D55-92D4AD32E144} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{677F1381-7830-4115-9C1A-58B282629DC6} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{4762BCAF-E1C5-4714-B88D-E50FA333C50E} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{C754950A-E16C-4F96-9CC7-9328E361B5AF} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

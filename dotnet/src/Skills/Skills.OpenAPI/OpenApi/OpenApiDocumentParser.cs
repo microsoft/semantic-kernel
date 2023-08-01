@@ -151,7 +151,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         var result = new List<RestApiOperation>();
 
-        var serverUrl = document.Servers.First().Url;
+        var serverUrl = document.Servers.FirstOrDefault()?.Url;
 
         foreach (var pathPair in document.Paths)
         {
@@ -170,7 +170,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
     /// <returns>Rest operation.</returns>
-    private static List<RestApiOperation> CreateRestApiOperations(string serverUrl, string path, OpenApiPathItem pathItem)
+    private static List<RestApiOperation> CreateRestApiOperations(string? serverUrl, string path, OpenApiPathItem pathItem)
     {
         var operations = new List<RestApiOperation>();
 
@@ -182,7 +182,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
             var operation = new RestApiOperation(
                 operationItem.OperationId,
-                new Uri(serverUrl),
+                string.IsNullOrEmpty(serverUrl) ? null : new Uri(serverUrl),
                 path,
                 new HttpMethod(method),
                 operationItem.Description,
