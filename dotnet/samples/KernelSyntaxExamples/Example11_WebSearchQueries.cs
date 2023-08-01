@@ -13,7 +13,7 @@ public static class Example11_WebSearchQueries
     {
         Console.WriteLine("======== WebSearchQueries ========");
 
-        IKernel kernel = Kernel.Builder.WithLogger(ConsoleLogger.Log).Build();
+        IKernel kernel = Kernel.Builder.WithLogger(ConsoleLogger.Logger).Build();
 
         // Load native skills
         var skill = new SearchUrlSkill();
