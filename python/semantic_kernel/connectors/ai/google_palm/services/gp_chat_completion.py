@@ -8,7 +8,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
 from typing import Union, List, Tuple, Optional
 from semantic_kernel.connectors.ai.ai_exception import AIException
 import google.generativeai as palm
-from google.generativeai.types import ChatResponse
+from google.generativeai.types import ChatResponse, ExampleOptions, MessagePromptOptions
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -42,10 +42,11 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def complete_chat_async(
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings,
-        context: Optional[str] = None
+        context: Optional[str] = None, examples: Optional[ExampleOptions] = None,
+        prompt: Optional[MessagePromptOptions] = None 
     ) -> Union[str, List[str]]:
         
-        response = await self._send_chat_request(messages, request_settings, context)
+        response = await self._send_chat_request(messages, request_settings, context, examples, prompt)
 
         if request_settings.number_of_responses > 1:
             return [candidate['output'] if candidate['output'] is not None else "I don't know." for candidate in response.candidates]
@@ -140,22 +141,37 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         messages: List[Tuple[str, str]],
         request_settings: ChatRequestSettings,
         context: Optional[str] = None,
+        examples: Optional[ExampleOptions] = None,
+        prompt: Optional[MessagePromptOptions] = None
     ):
         """
-        Completes the given user message. If chat history is needed to provide 
-        context, the chat history in messages is concatenated to a string and 
-        sent to the API as the context parameter. If len(messages) > 1, and a 
-        conversation has not been initiated yet, all messages preceding the 
-        last message will be utilized for context. This enables Google PaLM to 
-        utilize memory and skills, which are stored in the messages parameter.
+        Completes the given user message. If len(messages) > 1, and a 
+        conversation has not been initiated yet, it is assumed that chat history
+        is needed for context. All messages preceding the last message will be 
+        utilized for context. This also enables Google PaLM to utilize memory 
+        and skills, which are stored in the messages parameter as system 
+        messages.
 
         Arguments:
-            user_message {str} -- The message (from a user) to respond to.
+            messages {str} -- The message (from a user) to respond to.
             request_settings {ChatRequestSettings} -- The request settings.
             context {str} -- Text that should be provided to the model first, 
             to ground the response. If a system message is provided, it will be
             used as context.
-
+            examples {ExamplesOptions} -- 	Examples of what the model should 
+            generate.
+            This includes both the user input and the response that the model 
+            should emulate.
+            These examples are treated identically to conversation messages 
+            except that they take precedence over the history in messages: If 
+            the total input size exceeds the model's input_token_limit the input 
+            will be truncated. Items will be dropped from messages before examples
+            See: https://developers.generativeai.google/api/python/google/generativeai/types/ExampleOptions
+            prompt {MessagePromptOptions} -- 	You may pass a 
+            types.MessagePromptOptions instead of a setting context/examples/messages, 
+            but not both.
+            See: https://developers.generativeai.google/api/python/google/generativeai/types/MessagePromptOptions
+            
         Returns:
             str -- The completed text.
         """
@@ -196,17 +212,16 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                             context += message + "\n"
                         else:
                             context += role + ": " + message + "\n"
-        print("context", context)
         try:
             if self._message_history is None: 
                 response = palm.chat( # Start a new conversation
                     model=self._model_id,
                     context=context,
-                    examples=None,
+                    examples=examples,
                     temperature=request_settings.temperature,
                     candidate_count=request_settings.number_of_responses,
                     top_p=request_settings.top_p,
-                    prompt=None,
+                    prompt=prompt,
                     messages=messages[-1][1],
                 )
             else: 

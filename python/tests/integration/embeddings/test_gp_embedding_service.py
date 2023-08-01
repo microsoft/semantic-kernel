@@ -1,0 +1,27 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import pytest
+import semantic_kernel as sk
+import semantic_kernel.connectors.ai.google_palm as sk_gp
+
+@pytest.mark.asyncio
+async def test_gp_embedding_service(create_kernel, get_gp_config):
+    kernel = create_kernel
+
+    api_key = get_gp_config
+
+    palm_text_embed = sk_gp.GooglePalmTextEmbedding(
+        "models/embedding-gecko-001", api_key
+    )
+    kernel.add_text_embedding_generation_service("gecko", palm_text_embed)
+    kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
+
+    await kernel.memory.save_information_async(
+        "test", id="info1", text="this is a test"
+    )
+    await kernel.memory.save_reference_async(
+        "test",
+        external_id="info1",
+        text="this is a test",
+        external_source_name="external source",
+    )

@@ -9,23 +9,14 @@ from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
 
 kernel = sk.Kernel()
 apikey = sk.google_palm_settings_from_dot_env()
-
-
 palm_text_embed = sk_gp.GooglePalmTextEmbedding(
         "models/embedding-gecko-001", apikey
 )
 kernel.add_text_embedding_generation_service("gecko", palm_text_embed)
-
-
 palm_chat_completion = sk_gp.GooglePalmChatCompletion(
         "models/chat-bison-001", apikey
 )
 kernel.add_chat_service("models/chat-bison-001", palm_chat_completion)
-"""
-api_key, org_id = sk.openai_settings_from_dot_env()
-
-kernel.add_text_embedding_generation_service("ada", OpenAITextEmbedding("text-embedding-ada-002", api_key, org_id))
-"""
 kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 kernel.import_skill(sk.core_skills.TextMemorySkill())
 
@@ -38,10 +29,10 @@ async def populate_memory(kernel: sk.Kernel) -> None:
         "aboutMe", id="info2", text="I currently work as a tour guide"
     )
     await kernel.memory.save_information_async(
-        "aboutMe", id="info3", text="I've been living in Seattle since 2005"
+        "aboutMe", id="info3", text="My favorite hobby is hiking"
     )
     await kernel.memory.save_information_async(
-        "aboutMe", id="info4", text="I visited France and Italy five times since 2015"
+        "aboutMe", id="info4", text="I visitied Iceland last year."
     )
     await kernel.memory.save_information_async(
         "aboutMe", id="info5", text="My family is from New York"
@@ -50,9 +41,9 @@ async def populate_memory(kernel: sk.Kernel) -> None:
 async def search_memory_examples(kernel: sk.Kernel) -> None:
     questions = [
         "what's my name",
-        "where do I live?",
+        "what is my favorite hobby?",
         "where's my family from?",
-        "where have I traveled?",
+        "where did I travel last year?",
         "what do I do for work",
     ]
 
@@ -100,13 +91,13 @@ async def setup_chat_with_memory(
 
     context = kernel.create_new_context()
     context["fact1"] = "what is my name?"
-    context["fact2"] = "where do I live?"
+    context["fact2"] = "what is my favorite hobby?"
     context["fact3"] = "where's my family from?"
-    context["fact4"] = "where have I traveled?"
+    context["fact4"] = "where did I travel last year?"
     context["fact5"] = "what do I do for work?"
 
     context[sk.core_skills.TextMemorySkill.COLLECTION_PARAM] = "aboutMe"
-    context[sk.core_skills.TextMemorySkill.RELEVANCE_PARAM] = 0.8
+    context[sk.core_skills.TextMemorySkill.RELEVANCE_PARAM] = 0.6
 
     context["chat_history"] = ""
 

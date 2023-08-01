@@ -50,17 +50,18 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
                 "Google PaLM service failed to configure. Invalid API key provided.",
                 ex,
             )
+        embeddings = []
         for text in texts:
             try:
                 response = palm.generate_embeddings(
                     model=self._model_id,
                     text=text,
                 )
-                raw_embedding=[array(response["embedding"])]
-                return array(raw_embedding)
+                embeddings.append(array(response["embedding"]))
             except Exception as ex:
                 raise AIException(
                     AIException.ErrorCodes.ServiceError,
                     "Google PaLM service failed to generate the embedding.",
                     ex,
             )
+        return array(embeddings)
