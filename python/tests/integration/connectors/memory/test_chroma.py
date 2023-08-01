@@ -22,9 +22,9 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture
 def setup_chroma():
     persist_directory = "local_chroma"
-    os.makedirs(persist_directory, mode=0o777)
     memory = ChromaMemoryStore(persist_directory=persist_directory)
     yield memory
+    os.remove(os.path.join(persist_directory, "chroma.sqlite3"))
     shutil.rmtree(persist_directory)
 
 
