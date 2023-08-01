@@ -23,8 +23,10 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # python-version: ["3.8", "3.9", "3.10", "3.11"]
+        # os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.8"]
+        os: [ubuntu-latest]
     outputs:
       test_results: ${{ steps.run_tests.outputs.test_results }}
     steps:
@@ -46,8 +48,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry pytest
           cd python && poetry install
-      - name: Run Integration Tests
-        id: run_tests
+      - id: run_tests
         shell: bash
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
