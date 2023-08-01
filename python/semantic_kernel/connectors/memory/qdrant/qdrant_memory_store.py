@@ -164,7 +164,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             raise Exception("Batch upsert failed")
 
     async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
+        self, collection_name: str, key: str, with_embedding: bool = False
     ) -> Optional[MemoryRecord]:
         result = await self._get_existing_record_by_payload_id_async(
             collection_name=collection_name,
@@ -188,7 +188,7 @@ class QdrantMemoryStore(MemoryStoreBase):
             return None
 
     async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
+        self, collection_name: str, keys: List[str], with_embeddings: bool = False
     ) -> List[MemoryRecord]:
         tasks = []
         for key in keys:
@@ -243,7 +243,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         limit: int,
         min_relevance_score: float,
-        with_embeddings: bool,
+        with_embeddings: bool = False,
     ) -> List[Tuple[MemoryRecord, float]]:
         match_results = self._qdrantclient.search(
             collection_name=collection_name,
@@ -276,7 +276,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         collection_name: str,
         embedding: ndarray,
         min_relevance_score: float,
-        with_embedding: bool,
+        with_embedding: bool = False,
     ) -> Tuple[MemoryRecord, float]:
         result = await self.get_nearest_matches_async(
             collection_name=collection_name,
@@ -320,6 +320,8 @@ class QdrantMemoryStore(MemoryStoreBase):
             with_vectors=with_embedding,
         )
 
+        print("existing_record: ", existing_record)
+
         if existing_record:
             return existing_record[0]
         else:
@@ -342,8 +344,11 @@ class QdrantMemoryStore(MemoryStoreBase):
             else:
                 pointId = str(uuid.uuid4())
 
+        payload = record.__dict__.copy()
+        embedding = payload.pop("_embedding")
+
         return qdrant_models.PointStruct(
             id=pointId,
-            vector=record._embedding.tolist(),
-            payload=record.__dict__
+            vector=embedding.tolist(),
+            payload=payload
         )

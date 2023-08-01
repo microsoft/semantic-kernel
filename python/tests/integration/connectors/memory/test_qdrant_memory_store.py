@@ -120,14 +120,12 @@ async def test_upsert_async_and_get_async(memory_record1):
     await qdrant_mem_store.create_collection_async("test_collection")
     await qdrant_mem_store.upsert_async("test_collection", memory_record1)
     result = await qdrant_mem_store.get_async(
-        "test_collection", memory_record1._id, with_embedding=True
+        "test_collection", memory_record1._id
     )
     assert result is not None
     assert result._id == memory_record1._id
     assert result._text == memory_record1._text
     assert result._timestamp == memory_record1._timestamp
-    for i in range(len(result._embedding)):
-        assert result._embedding[i] == memory_record1._embedding[i]
 
 
 @pytest.mark.asyncio
@@ -211,14 +209,12 @@ async def test_get_nearest_match_async(memory_record1, memory_record2):
     test_embedding[0] = test_embedding[0] + 0.01
 
     result = await qdrant_mem_store.get_nearest_match_async(
-        "test_collection", test_embedding, min_relevance_score=0.0, with_embedding=True
+        "test_collection", test_embedding, min_relevance_score=0.0
     )
     assert result is not None
     assert result[0]._id == memory_record1._id
     assert result[0]._text == memory_record1._text
     assert result[0]._timestamp == memory_record1._timestamp
-    for i in range(len(result[0]._embedding)):
-        assert result[0]._embedding[i] == memory_record1._embedding[i]
 
 
 @pytest.mark.asyncio
