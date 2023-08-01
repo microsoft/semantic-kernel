@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Reliability;
 using SemanticKernel.IntegrationTests.TestSettings;
-using System;
-using System.Net;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 

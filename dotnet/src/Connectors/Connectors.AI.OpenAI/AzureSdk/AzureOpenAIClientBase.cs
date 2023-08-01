@@ -43,7 +43,6 @@ public abstract class AzureOpenAIClientBase : ClientBase
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);
-            options.RetryPolicy = new RetryPolicy(0);
         }
 
         this.ModelId = modelId;
