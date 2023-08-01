@@ -16,8 +16,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-    <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
@@ -27,5 +25,9 @@
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
     <InternalsVisibleTo Include="Extensions.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Plugins\Memory\AI.Embeddings\AI.Embeddings.csproj" />
   </ItemGroup>
 </Project>

@@ -8,7 +8,7 @@ using System.Text.Json;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.AI.Embeddings;
+namespace SemanticKernel.Plugins.Memory.UnitTests.Embeddings;
 
 public class EmbeddingTests
 {

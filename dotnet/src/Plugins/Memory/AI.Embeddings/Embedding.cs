@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings;
 
@@ -56,7 +55,7 @@ public readonly struct Embedding<TEmbedding> : IEquatable<Embedding<TEmbedding>>
     /// <exception cref="ArgumentNullException">A <c>null</c> vector is passed in.</exception>
     public Embedding(IEnumerable<TEmbedding> vector, bool transferOwnership)
     {
-        Verify.NotNull(vector);
+        if (vector == null) { throw new ArgumentNullException(nameof(vector)); }
 
         if (!Embedding.IsSupported<TEmbedding>())
         {

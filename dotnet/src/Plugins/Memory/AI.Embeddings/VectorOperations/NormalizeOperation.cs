@@ -3,7 +3,6 @@
 using System;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
-
 /// <summary>
 /// Extension methods to normalize a vector.
 /// </summary>
