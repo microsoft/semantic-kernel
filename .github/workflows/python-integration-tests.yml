@@ -15,7 +15,7 @@ on:
     paths:
       - "python/**"
   schedule:
-    - cron: "0 */12 * * *" # Run every 12 hours: midnight UTC and noon UTC
+    - cron: "0 0 * * *" # Run at midnight UTC daily
 
 permissions:
   contents: read
@@ -139,7 +139,7 @@ jobs:
           poetry run pytest ./tests/integration -v
 
   notify_teams:
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'}}
     name: Push Results to Microsoft Teams
     runs-on: ubuntu-latest
     needs: python-integration-tests
@@ -150,3 +150,4 @@ jobs:
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: True
+          job: $${{ toJson(needs.python-integration-tests) }}
