@@ -48,7 +48,8 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry pytest
           cd python && poetry install
-      - id: run_tests
+      - name: Run Integration Tests
+        id: run_tests
         shell: bash
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
@@ -71,6 +72,7 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "text<<$EOF" >> $GITHUB_OUTPUT
           echo "============================================================" >> test_results.txt
           echo "Integration Test Results for ${{ matrix.os }} ${{ matrix.python-version }}" >> test_results.txt
