@@ -27,13 +27,13 @@ To configure the starter, you need to provide the following information:
 
 Configure an OpenAI endpoint
 
-1. Copy [settings.json.openai-example](./config/appsettings.json.openai-example) to `./appsettings.json`
+1. Copy [settings.json.openai-example](./azure-function/config-samples/appsettings.json.openai-example) to `./appsettings.json`
 1. Edit the `kernel` object to add your OpenAI endpoint configuration
 1. Edit the `aiPlugin` object to define the properties that get exposed in the ai-plugin.json file
 
 Configure an Azure OpenAI endpoint
 
-1. Copy [settings.json.azure-example](./config/appsettings.json.azure-example) to `./appsettings.json`
+1. Copy [settings.json.azure-example](./azure-function/config-samples/appsettings.json.azure-example) to `./appsettings.json`
 1. Edit the `kernel` object to add your Azure OpenAI endpoint configuration
 1. Edit the `aiPlugin` object to define the properties that get exposed in the ai-plugin.json file
 
