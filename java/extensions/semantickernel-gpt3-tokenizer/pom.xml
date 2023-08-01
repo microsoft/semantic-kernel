@@ -10,6 +10,8 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
+    <name>Semantic Kernel GPT3 Tokenizer Extension</name>
+    <description>GPT3 Tokenizer for Semantic Kernel</description>
     <artifactId>semantickernel-gpt3-tokenizer</artifactId>
 
     <dependencies>
