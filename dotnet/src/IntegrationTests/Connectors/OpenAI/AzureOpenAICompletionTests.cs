@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Reliability;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -54,7 +55,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         // Act
         var func = target.CreateSemanticFunction(prompt);
 
-        var exception = await Assert.ThrowsAsync<AIException>(() => func.InvokeAsync(string.Empty, new() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
+        var exception = await Assert.ThrowsAsync<AIException>(() => func.InvokeAsync(string.Empty, settings: new CompleteRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
 
         // Assert
         Assert.Contains(expectedOutput, exception.Detail, StringComparison.OrdinalIgnoreCase);

@@ -270,15 +270,6 @@ public static class OpenAIKernelBuilderExtensions
         AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters)
         {
             OpenAIClient client = CreateAzureOpenAIClient(parameters.Logger, parameters.Config, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
-            /*OpenAIClientOptions options = new();
-            options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger));
-            if (parameters.Config.HttpHandlerFactory is DefaultHttpRetryHandlerFactory factory && factory.Config is not null)
-            {
-                options.Retry.MaxRetries = factory.Config.MaxRetryCount;
-                options.Retry.MaxDelay = factory.Config.MaxRetryDelay;
-            }
-
-            OpenAIClient client = new(new Uri(endpoint), new AzureKeyCredential(apiKey), options);*/
 
             return new(deploymentName, client, parameters.Logger);
         };
@@ -318,17 +309,6 @@ public static class OpenAIKernelBuilderExtensions
     {
         AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters)
         {
-            /*
-            OpenAIClientOptions options = new();
-            options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger));
-            if (parameters.Config.HttpHandlerFactory is DefaultHttpRetryHandlerFactory factory && factory.Config is not null)
-            {
-                options.Retry.MaxRetries = factory.Config.MaxRetryCount;
-                options.Retry.MaxDelay = factory.Config.MaxRetryDelay;
-            }
-
-            OpenAIClient client = new(new Uri(endpoint), credentials, options);*/
-
             OpenAIClient client = CreateAzureOpenAIClient(parameters.Logger, parameters.Config, deploymentName, endpoint, credentials, httpClient);
 
             return new(deploymentName, client, parameters.Logger);
