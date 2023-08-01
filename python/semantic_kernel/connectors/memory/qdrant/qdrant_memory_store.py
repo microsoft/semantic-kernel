@@ -345,6 +345,5 @@ class QdrantMemoryStore(MemoryStoreBase):
         return qdrant_models.PointStruct(
             id=pointId,
             vector=record._embedding.tolist(),
-            payload=record.__dict__,
-            default=str,
+            payload=record.__dict__
         )
