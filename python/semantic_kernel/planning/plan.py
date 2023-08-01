@@ -410,7 +410,9 @@ class Plan(SKFunctionBase):
 
             expanded_value = self.expand_from_variables(variables, param_var)
             if expanded_value.lower() == param_var.lower():
-                step_variables.set(param_var, expanded_value)
+                step_variables.set(
+                    param_var, step.parameters._variables[param_var]
+                )
             elif variables.contains_key(param_var):
                 step_variables.set(param_var, variables[param_var])
             elif self._state.contains_key(param_var):

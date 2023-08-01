@@ -4,7 +4,6 @@ import json
 import os
 
 import pytest
-
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.search_engine import BingConnector
@@ -127,7 +126,7 @@ async def test_can_create_stepwise_plan(
     plan = planner.create_plan(prompt)
     result = await plan.invoke_async()
 
-    assert "Biden" in result.result.lower()
+    assert result.result.lower().find("biden") >= 0
 
     steps_taken_string = result.variables.get("steps_taken")
     assert steps_taken_string is not None

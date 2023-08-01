@@ -7,7 +7,7 @@ The function definitions below are in the following format:
  - <parameterName>: <parameterDescription>
  - ...
 
-{{$functionDescriptions}}
+{{$function_descriptions}}
 [END AVAILABLE FUNCTIONS]
 
 [USAGE INSTRUCTIONS]
@@ -46,4 +46,4 @@ Begin!
 
 [QUESTION]
 {{$question}}
-{{$agentScratchPad}}
+{{$agent_scratch_pad}}

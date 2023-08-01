@@ -23,6 +23,9 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
 from semantic_kernel.skill_definition.function_view import FunctionView
+from semantic_kernel.skill_definition.sk_function_context_parameter_decorator import (
+    sk_function_context_parameter,
+)
 from semantic_kernel.skill_definition.sk_function_decorator import sk_function
 
 if TYPE_CHECKING:
@@ -51,8 +54,8 @@ ACTION = "[ACTION]"
 THOUGHT = "[THOUGHT]"
 OBSERVATION = "[OBSERVATION]"
 SCRATCH_PAD_PREFIX = (
-    "This was my previous work (but they haven't seen any of it!",
-    " They only see what I return as final answer):",
+    "This was my previous work (but they haven't seen any of it!"
+    " They only see what I return as final answer):"
 )
 
 
@@ -66,7 +69,11 @@ class StepwisePlanner:
     _function_flow_function: "SKFunctionBase"
 
     def __init__(
-        self, kernel: Kernel, config: StepwisePlannerConfig = None, prompt: str = None
+        self,
+        kernel: Kernel,
+        config: StepwisePlannerConfig = None,
+        prompt: str = None,
+        prompt_user_config: PromptTemplateConfig = None,
     ):
         assert isinstance(kernel, Kernel)
         self._kernel = kernel
@@ -74,33 +81,23 @@ class StepwisePlanner:
         self.config = config or StepwisePlannerConfig()
         self.config.excluded_skills.append(RESTRICTED_SKILL_NAME)
 
-        self._system_step_function = self._init_system_step_function(prompt, kernel)
+        prompt_config = prompt_user_config or PromptTemplateConfig()
+        prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
+
+        if prompt_user_config is None:
+            prompt_config = PromptTemplateConfig.from_json(
+                read_file(PROMPT_CONFIG_FILE_PATH)
+            )
+
+        prompt_config.completion.max_tokens = self.config.max_tokens
+
+        self._system_step_function = self.import_semantic_function(
+            kernel, "StepwsieStep", prompt_template, prompt_config
+        )
         self._native_functions = self._kernel.import_skill(self, RESTRICTED_SKILL_NAME)
 
         self._context = kernel.create_new_context()
         self._logger = self._kernel.logger
-
-    def _init_system_step_function(
-        self, prompt: str, kernel: Kernel
-    ) -> "SKFunctionBase":
-        prompt_config = PromptTemplateConfig.from_json(
-            read_file(PROMPT_CONFIG_FILE_PATH)
-        )
-        prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
-        prompt_config.completion.max_tokens = self.config.max_tokens
-
-        prompt_template = PromptTemplate(
-            template=prompt_template,
-            template_engine=kernel.prompt_template_engine,
-            prompt_config=prompt_config,
-        )
-        function_config = SemanticFunctionConfig(prompt_config, prompt_template)
-
-        return kernel.register_semantic_function(
-            skill_name=RESTRICTED_SKILL_NAME,
-            function_name="StepwiseStep",
-            function_config=function_config,
-        )
 
     def create_plan(self, goal: str) -> Plan:
         if len(goal) == 0:
@@ -112,7 +109,7 @@ class StepwisePlanner:
 
         plan_step: Plan = Plan.from_function(self._native_functions["ExecutePlan"])
         plan_step.parameters.set("function_descriptions", function_descriptions)
-        plan_step.parameters.set("goal", goal)
+        plan_step.parameters.set("question", goal)
 
         plan_step._outputs.append("agent_scratch_pad")
         plan_step._outputs.append("step_count")
@@ -125,22 +122,28 @@ class StepwisePlanner:
 
         return plan
 
-    # TODO: current version of python delegate types doesn't allow 2 string + 1 SKContext as arguments
-    #           I guess C# was able to do this, by https://github.com/microsoft/semantic-kernel/pull/1195
-    #           So I removed function_description temporarily as it does not used in here directly
+    # TODO: sync C# with https://github.com/microsoft/semantic-kernel/pull/1195
     @sk_function(name="ExecutePlan", description="Execute a plan")
-    async def execute_plan_async(self, question: str, context: SKContext):
-        # TODO: python need to sync
-        question = question or context["input"] or context["goal"]
+    @sk_function_context_parameter(
+        name="question", description="The question to answer"
+    )
+    @sk_function_context_parameter(
+        name="function_descriptions", description="List of tool descriptions"
+    )
+    async def execute_plan_async(self, context: SKContext):
+        question = context["question"]
+        # function_description = context["function_descriptions"]
 
         steps_taken: List[SystemStep] = []
         if not is_null_or_empty(question):
-            for i in range(0, self.config.max_iterations):
+            for i in range(self.config.max_iterations):
                 scratch_pad = self.create_scratch_pad(question, steps_taken)
 
                 context.variables.set("agent_scratch_pad", scratch_pad)
 
-                llm_response = await self._system_step_function.invoke_async(context)
+                llm_response = await self._system_step_function.invoke_async(
+                    context=context
+                )
 
                 if llm_response.error_occurred:
                     raise PlanningException(
@@ -150,17 +153,13 @@ class StepwisePlanner:
                     )
 
                 action_text = llm_response.result.strip()
-
-                # TODO: python need to sync telemetry
                 self._logger.debug(f"Response: {action_text}")
 
                 next_step = self.parse_result(action_text)
                 steps_taken.append(next_step)
 
                 if not is_null_or_empty(next_step.final_answer):
-                    self._logger.debug(
-                        f"Final Answer: {next_step.final_answer}",
-                    )
+                    self._logger.debug(f"Final Answer: {next_step.final_answer}")
 
                     context.variables.update(next_step.final_answer)
                     updated_scratch_pad = self.create_scratch_pad(question, steps_taken)
@@ -195,8 +194,9 @@ class StepwisePlanner:
                             f"Error invoking action {next_step.action}: {str(e)}"
                         )
                         self._logger.warning(
-                            f"Error invoking action {next_step.action}", exc_info=e
+                            f"Error invoking action {next_step.action}"
                         )
+
                     self._logger.debug(f"Observation: {next_step.observation}")
                 else:
                     self._logger.info("Action: No action to take")
@@ -204,9 +204,8 @@ class StepwisePlanner:
                 # sleep 3 seconds
                 await asyncio.sleep(self.config.min_iteration_time_ms / 1000)
 
-            serialized_steps_taken = json.dumps(steps_taken, indent=4)
             context.variables.update(
-                f"Result not found, review _stepsTaken to see what happened.\n{serialized_steps_taken}"
+                f"Result not found, review _steps_taken to see what happened.\n{json.dumps(steps_taken, indent=4)}"
             )
         else:
             context.variables.update("Question not found.")
@@ -225,6 +224,7 @@ class StepwisePlanner:
 
         # Extract thought
         thought_match = re.search(S_THOUGHT_REGEX, input)
+
         if thought_match:
             result.thought = thought_match.group(0).strip()
         elif not input.contains(ACTION):
@@ -264,10 +264,12 @@ class StepwisePlanner:
         return result
 
     def add_execution_stats_to_context(
-        steps_taken: List[SystemStep], context: SKContext
+        self, steps_taken: List[SystemStep], context: SKContext
     ):
-        context.variables.set("step_count", str(steps_taken.count))
-        context.variables.set("steps_taken", json.dumps(steps_taken, indent=4))
+        context.variables.set("step_count", str(len(steps_taken)))
+        context.variables.set(
+            "steps_taken", json.dumps([s.__dict__ for s in steps_taken], indent=4)
+        )
 
         action_counts: Dict[str, int] = {}
         for step in steps_taken:
@@ -280,7 +282,8 @@ class StepwisePlanner:
         skill_call_list_with_counts = [
             f"{skill}({action_counts[skill]})" for skill in action_counts
         ]
-        skill_call_count_str = ", ".join(skill_call_list_with_counts)
+        skill_call_list_with_counts = ", ".join(skill_call_list_with_counts)
+        skill_call_count_str = str(sum(action_counts.values()))
 
         context.variables.set(
             "skill_count", f"{skill_call_count_str} ({skill_call_list_with_counts})"
@@ -308,23 +311,22 @@ class StepwisePlanner:
 
             s = steps_taken[i]
 
-            if s.observation:
+            if not is_null_or_empty(s.observation):
                 scratch_pad_lines.insert(insert_point, f"{OBSERVATION} {s.observation}")
 
-            if s.action:
-                serialized_action_vars = json.dumps(s.action_variables)
+            if not is_null_or_empty(s.action):
                 scratch_pad_lines.insert(
                     insert_point,
-                    f'{ACTION} {{"action": "{s.action}", "action_variables": {serialized_action_vars}}}',
+                    f'{ACTION} {{"action": "{s.action}", "action_variables": {json.dumps(s.action_variables)}}}',
                 )
 
             if i != 0:
                 scratch_pad_lines.insert(insert_point, f"{THOUGHT} {s.thought}")
 
-            scratch_pad = "\n".join(scratch_pad_lines).strip()
+        scratch_pad = "\n".join(scratch_pad_lines).strip()
 
-            if not (is_null_or_empty(scratch_pad) or scratch_pad == ""):
-                self._logger.debug(f"Scratchpad: {scratch_pad}")
+        if not (is_null_or_empty(scratch_pad.strip())):
+            self._logger.debug(f"Scratchpad: {scratch_pad}")
 
         return scratch_pad
 
@@ -353,7 +355,7 @@ class StepwisePlanner:
             )
             action_context = self.create_action_context(action_variables)
 
-            result = await function.invoke_async(action_context)
+            result = await function.invoke_async(context=action_context)
 
             if result.error_occurred:
                 self._logger.error(f"Error occurred: {result.last_exception}")
@@ -362,6 +364,7 @@ class StepwisePlanner:
             self._logger.debug(
                 f"Invoked {target_function.name}. Result: {result.result}"
             )
+
             return result.result
 
         except Exception as e:
@@ -416,13 +419,14 @@ class StepwisePlanner:
         return function_descriptions
 
     def import_semantic_function(
+        self,
         kernel: Kernel,
         function_name: str,
         prompt_template: str,
         config: PromptTemplateConfig = None,
     ) -> "SKFunctionBase":
         template = PromptTemplate(
-            prompt_template, config, kernel.prompt_template_engine
+            prompt_template, kernel.prompt_template_engine, config
         )
         function_config = SemanticFunctionConfig(config, template)
 
