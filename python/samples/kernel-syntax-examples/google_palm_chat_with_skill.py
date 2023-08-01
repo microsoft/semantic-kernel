@@ -31,20 +31,17 @@ palm_chat_completion = sk_gp.GooglePalmChatCompletion(
         "models/chat-bison-001", api_key
 )
 kernel.add_chat_service("models/chat-bison-001", palm_chat_completion)
-
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
         max_tokens=2000, temperature=0.7, top_p=0.8
 )
 prompt_template = sk.ChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
 )
-
 prompt_template.add_system_message(system_message) # Add the system message for context
 prompt_template.add_user_message("Hi there, my name is Andrea, who are you?") # Include a chat history
 prompt_template.add_assistant_message(
     "I am Blackbeard."
 )
-
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("PirateSkill", "Chat", function_config)
 
@@ -68,7 +65,6 @@ async def chat() -> bool:
     answer = await kernel.run_async(chat_function, input_vars=context_vars)
     print(f"Blackbeard:> {answer}")
     return True
-
 
 async def main() -> None:
     chatting = True
