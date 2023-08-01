@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Planning.ChatStepwisePlanner</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Planning.ChatStepwise</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Stepwise Planner</Title>
+    <Description>Semantic Kernel Stepwise Planner</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Prompts\config.json" />
+    <None Remove="Prompts\fewshotexamples.json" />
+    <None Remove="Prompts\systemprompt.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Prompts\config.json" />
+    <EmbeddedResource Include="Prompts\fewshotexamples.json" />
+    <EmbeddedResource Include="Prompts\systemprompt.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+  </ItemGroup>
+
+</Project>
