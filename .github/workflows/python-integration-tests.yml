@@ -93,8 +93,6 @@ jobs:
         # os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.8"]
         os: [ubuntu-latest, windows-latest]
-    outputs:
-      test_results: ${{ steps.run_tests.outputs.test_results }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -114,8 +112,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry pytest
           cd python && poetry install
-      - name: Run Integration Tests (Unix)
-        if: matrix.os != 'windows-latest'
+      - name: Run Integration Tests
         id: run_tests
         shell: bash
         env: # Set Azure credentials secret as an input
@@ -139,48 +136,10 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "============================================================<<$EOF" >> $GITHUB_OUTPUT
-          echo "Integration Test Results for ${{ matrix.os }} ${{ matrix.python-version }}" >> $GITHUB_OUTPUT
-          echo "============================================================" >> $GITHUB_OUTPUT
-          poetry run pytest ./tests/integration -v >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
-          echo $GITHUB_OUTPUT
-      - name: Run Integration Tests (Windows)
-        if: matrix.os == 'windows-latest'
-        id: run_tests
-        shell: pwsh
-        env: # Set Azure credentials secret as an input
-          HNSWLIB_NO_NATIVE: 1
-          Python_Integration_Tests: Python_Integration_Tests
-          AzureOpenAI__Label: azure-text-davinci-003
-          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
-          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
-          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
-          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
-          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
-          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
-          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
-          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
-          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
-          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
-        run: |
-          cd python
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "============================================================<<$EOF" >> $ENV:GITHUB_OUTPUT
-          echo "Integration Test Results for ${{ matrix.os }} ${{ matrix.python-version }}" >> $ENV:GITHUB_OUTPUT
-          echo "============================================================" >> $ENV:GITHUB_OUTPUT
-          poetry run pytest ./tests/integration -v >> $ENV:GITHUB_OUTPUT
-          echo "$EOF" >> $ENV:GITHUB_OUTPUT
-          echo $ENV:GITHUB_OUTPUT
+          poetry run pytest ./tests/integration -v
 
   notify_teams:
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'schedule' }}
     name: Push Results to Microsoft Teams
     runs-on: ubuntu-latest
     needs: python-integration-tests
@@ -188,8 +147,6 @@ jobs:
       - uses: actions/checkout@master
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
-        if: always()
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
-          raw: ${{ needs.python-integration-tests.outputs.test_results }}
           dry_run: True
