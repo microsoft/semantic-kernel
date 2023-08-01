@@ -262,7 +262,7 @@ public class DefaultKernel implements Kernel {
 
     @Override
     public Mono<SKContext> runAsync(String input, SKFunction<?>... pipeline) {
-        return runAsync(SKBuilders.variables().build(input), pipeline);
+        return runAsync(SKBuilders.variables().withInput(input).build(), pipeline);
     }
 
     @Override

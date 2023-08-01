@@ -99,9 +99,12 @@ public final class CodeBlock extends Block implements CodeRendering {
         if (this.tokens.size() > 1) {
             // TODO: PII
             // this.Log.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
+            String content = this.tokens.get(1).getContent();
             String input = ((TextRendering) this.tokens.get(1)).render(variables);
-
-            variables = context.getVariables().writableClone().update(input);
+            if (content.startsWith("$")) {
+                String varName = content.substring(1);
+                variables = variables.writableClone().setVariable(varName, input);
+            } else variables = variables.writableClone().update(input);
         }
 
         Mono<SKContext> result =

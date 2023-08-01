@@ -41,7 +41,8 @@ public class Example03_Variables {
 
         ContextVariables variables =
                 SKBuilders.variables()
-                        .build("Today is: ")
+                        .withInput("Today is: ")
+                        .build()
                         .writableClone()
                         .setVariable("day", "Monday");
 

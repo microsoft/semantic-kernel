@@ -36,7 +36,7 @@ public interface SKContext {
     ContextVariables getVariables();
 
     /**
-     * Provides access to the contexts semantic memory
+     * Provides access to the context's semantic memory
      *
      * @return the semantic memory
      */

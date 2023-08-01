@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;
@@ -186,7 +187,7 @@ public class DefaultKernelTest {
         for (Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response : responses) {
 
             mockChatCompletionResponse(openAIAsyncClient, response);
-
+            mockChatCompletionResponseStreaming(openAIAsyncClient, response);
             mockTextCompletionResponse(openAIAsyncClient, response);
         }
         return openAIAsyncClient;
@@ -240,6 +241,7 @@ public class DefaultKernelTest {
         ChatChoice chatChoice = Mockito.mock(ChatChoice.class);
         Mockito.when(chatChoice.getMessage()).thenReturn(message);
         ChatCompletions chatCompletions = Mockito.mock(ChatCompletions.class);
+
         Mockito.when(chatCompletions.getChoices())
                 .thenReturn(Collections.singletonList(chatChoice));
 
@@ -255,6 +257,48 @@ public class DefaultKernelTest {
                         openAIAsyncClient.getChatCompletions(
                                 Mockito.any(String.class), Mockito.argThat(completionMatcher)))
                 .thenReturn(Mono.just(chatCompletions));
+    }
+
+    private static void mockChatCompletionResponseStreaming(
+            OpenAIAsyncClient openAIAsyncClient,
+            Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response) {
+
+        String responseStr = response.getT2();
+
+        String[] responseArray =
+                new String[] {
+                    responseStr.substring(0, responseStr.length() / 2),
+                    responseStr.substring(responseStr.length() / 2)
+                };
+
+        List<ChatChoice> choices =
+                Arrays.stream(responseArray)
+                        .map(
+                                r -> {
+                                    ChatMessage message = Mockito.mock(ChatMessage.class);
+                                    Mockito.when(message.getContent()).thenReturn(r);
+                                    ChatChoice chatChoice = Mockito.mock(ChatChoice.class);
+                                    Mockito.when(chatChoice.getDelta()).thenReturn(message);
+                                    Mockito.when(chatChoice.getMessage()).thenReturn(message);
+                                    return chatChoice;
+                                })
+                        .collect(Collectors.toList());
+
+        ChatCompletions chatCompletions = Mockito.mock(ChatCompletions.class);
+        Mockito.when(chatCompletions.getChoices()).thenReturn(choices);
+
+        ArgumentMatcher<ChatCompletionsOptions> completionMatcher =
+                chatCompletionsOptions ->
+                        response.getT1()
+                                .matches(
+                                        chatCompletionsOptions.getMessages().stream()
+                                                .map(ChatMessage::getContent)
+                                                .collect(Collectors.joining("\n")));
+
+        Mockito.when(
+                        openAIAsyncClient.getChatCompletionsStream(
+                                Mockito.any(String.class), Mockito.argThat(completionMatcher)))
+                .thenReturn(Flux.just(chatCompletions));
     }
 
     @Test

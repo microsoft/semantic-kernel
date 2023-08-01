@@ -11,9 +11,35 @@
     <name>Semantic Kernel Java BOM</name>
     <description>Bill of Materials for all Semantic Kernel (Java) modules</description>
     <url>https://www.github.com/microsoft/semantic-kernel</url>
+
     <properties>
-        <com.fasterxml.jackson.core.version>2.15.1</com.fasterxml.jackson.core.version>
+        <com.fasterxml.jackson.core.version>2.15.2</com.fasterxml.jackson.core.version>
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.9.3</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencyManagement>
         <dependencies>
@@ -90,7 +116,7 @@
             <dependency>
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-core</artifactId>
-                <version>3.5.6</version>
+                <version>3.5.8</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>

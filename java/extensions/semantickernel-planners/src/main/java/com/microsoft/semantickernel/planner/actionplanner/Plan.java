@@ -425,7 +425,10 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         }
 
         WritableContextVariables stepVariables =
-                SKBuilders.variables().build(Objects.requireNonNull(input)).writableClone();
+                SKBuilders.variables()
+                        .withInput(Objects.requireNonNull(input))
+                        .build()
+                        .writableClone();
 
         // Priority for remaining stepVariables is:
         // - Function Parameters (pull from variables or state by a key value)
