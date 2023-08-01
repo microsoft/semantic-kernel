@@ -115,8 +115,8 @@ public class ChatStepwisePlanner
             string currentTime = DateTimeOffset.UtcNow.ToString("f", DateTimeFormatInfo.InvariantInfo);
             ChatHistory history = this._chatCompletion.CreateNewChat(systemPromptTemplate.Replace("{{$functionDescriptions}}", functionDescriptions).Replace("{{time.UtcNow}}", currentTime));
             foreach (FewShotExample example in fewShotExamplesTemplate)
-            {
-                switch(example.Role)
+            {                
+                switch (example.Role)
                 {
                     case Role.User:
                         history.AddUserMessage(example.Content);
@@ -125,6 +125,9 @@ public class ChatStepwisePlanner
                     case Role.Assistant:
                         history.AddAssistantMessage(example.Content);
                         break;
+
+                    default:
+                        throw new ArgumentException("Invalid role specified.");
                 }
             }
 
