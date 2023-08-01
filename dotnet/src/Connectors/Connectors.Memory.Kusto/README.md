@@ -25,7 +25,7 @@ IKernel kernel = Kernel.Builder
 ## Important Notes
 
 ### Cosine Similarity
-As of now, cosine similiarity is not built-in to Kusto. 
+As of now, cosine similarity is not built-in to Kusto. 
 A function to calculate cosine similarity is automatically added to the Kusto database when the first collection is created. 
 This function (`series_cosine_similarity_fl`) is not removed. 
 You might want to delete it manually if you stop using the Kusto database as a semantic memory store. 

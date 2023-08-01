@@ -99,7 +99,6 @@ internal class KustoMemoryRecord
 
     public void WriteToCsvStream(CsvWriter streamWriter)
     {
-        // Escapse string values in metadata according the Kusto csv escaping rules, whicm means replacing all \" (backslash double qoutes) with "" (two double qoutes)
         var jsonifiedMetadata = KustoSerializer.SerializeMetadata(this.Metadata);
         var jsonifiedEmbedding = KustoSerializer.SerializeEmbedding(this.Embedding);
         var isoFormattedDate = this.Timestamp?.ToString("o", CultureInfo.InvariantCulture) ?? string.Empty;
@@ -215,7 +214,7 @@ public class KustoMemoryStore : IMemoryStore
 
         if (!withEmbeddings)
         {
-            // easiest way to ingore embeddings
+            // easiest way to ignore embeddings
             query += " | extend Embedding = ''";
         }
 
@@ -266,17 +265,17 @@ public class KustoMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, CancellationToken cancellationToken = default)
     {
-        var similiaryQuery = $"{this.GetBaseQuery(collectionName)} | extend similarity=series_cosine_similarity_fl('{KustoSerializer.SerializeEmbedding(embedding)}', {s_collectionColumns[2].Name}, 1, 1)";
+        var similarityQuery = $"{this.GetBaseQuery(collectionName)} | extend similarity=series_cosine_similarity_fl('{KustoSerializer.SerializeEmbedding(embedding)}', {s_collectionColumns[2].Name}, 1, 1)";
 
         if (minRelevanceScore != 0)
         {
-            similiaryQuery += $" | where similarity > {minRelevanceScore}";
+            similarityQuery += $" | where similarity > {minRelevanceScore}";
         }
 
-        similiaryQuery += $" | top {limit} by similarity desc";
+        similarityQuery += $" | top {limit} by similarity desc";
         // reorder to make it easier to ignore the embedding (key, metadata, timestamp, similarity, embedding
         // Using tostring to make it easier to parse the result. There are probably better ways we should explore
-        similiaryQuery += $"| project " +
+        similarityQuery += $"| project " +
             // Key
             $"{s_collectionColumns[0].Name}, " +
             // Metadata
@@ -289,13 +288,13 @@ public class KustoMemoryStore : IMemoryStore
 
         if (!withEmbeddings)
         {
-            similiaryQuery += $" | project-away {s_collectionColumns[2].Name} ";
+            similarityQuery += $" | project-away {s_collectionColumns[2].Name} ";
         }
 
         using var reader = await this._queryClient
             .ExecuteQueryAsync(
                 this._database,
-                similiaryQuery,
+                similarityQuery,
                 GetClientRequestProperties(),
                 cancellationToken
             ).ConfigureAwait(false);
