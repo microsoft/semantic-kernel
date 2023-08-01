@@ -15,11 +15,6 @@ internal static class KustoSerializer
 {
     public static string SerializeEmbedding(Embedding<float> embedding)
     {
-        if (embedding == null)
-        {
-            return string.Empty;
-        }
-
         return JsonConvert.SerializeObject(embedding.Vector);
     }
     public static Embedding<float> DeserializeEmbedding(string embedding)
@@ -72,8 +67,6 @@ internal class KustoMemoryRecord
     public Embedding<float> Embedding { get; set; }
     public DateTime? Timestamp { get; set; }
 
-    public KustoMemoryRecord() { }
-
     public KustoMemoryRecord(MemoryRecord record) : this(record.Key, record.Metadata, record.Embedding, record.Timestamp?.UtcDateTime) { }
 
     public KustoMemoryRecord(string key, MemoryRecordMetadata metadata, Embedding<float> embedding, DateTime? timestamp = null)
@@ -107,16 +100,22 @@ internal class KustoMemoryRecord
     }
 }
 
+/// <summary>
+/// An implementation of <see cref="IMemoryStore"/> backed by a Kusto database.
+/// </summary>
+/// <remarks>The embedded data is saved to the Kusto database specified in the constructor.
+/// Similarity search capability is provided through a cosine similarity function (added on first collection creation). Use Kusto's "Table" to implement "Collection".
+/// </remarks>
 public class KustoMemoryStore : IMemoryStore
 {
-    private string m_database;
+    private string _database;
     private static ClientRequestProperties GetClientRequestProperties() => new()
     {
         Application = "SemanticKernel",
     };
 
-    private readonly ICslQueryProvider m_queryClient;
-    private readonly ICslAdminProvider m_adminClient;
+    private readonly ICslQueryProvider _queryClient;
+    private readonly ICslAdminProvider _adminClient;
 
     private static readonly ColumnSchema[] s_collectionColumns = new ColumnSchema[]
     {
@@ -130,40 +129,48 @@ public class KustoMemoryStore : IMemoryStore
     private static string GetTableName(string collectionName) => c_collectionPrefix + collectionName;
     private static string GetCollectionName(string tableName) => tableName.Substring(c_collectionPrefix.Length);
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KustoMemoryStore"/> class.
+    /// </summary>
+    /// <param name="kcsb">Kusto Connection String Builder.</param>
+    /// <param name="database">The database used for the tables.</param>
     public KustoMemoryStore(KustoConnectionStringBuilder kcsb, string database)
     {
-        this.m_database = database;
-        this.m_queryClient = KustoClientFactory.CreateCslQueryProvider(kcsb);
-        this.m_adminClient = KustoClientFactory.CreateCslAdminProvider(kcsb);
+        this._database = database;
+        this._queryClient = KustoClientFactory.CreateCslQueryProvider(kcsb);
+        this._adminClient = KustoClientFactory.CreateCslAdminProvider(kcsb);
     }
 
+    /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
         await this.InitializeVectorFunctionsAsync().ConfigureAwait(false);
 
-        using var resp = await this.m_adminClient
+        using var resp = await this._adminClient
             .ExecuteControlCommandAsync(
-                this.m_database,
+                this._database,
                 CslCommandGenerator.GenerateTableCreateCommand(new TableSchema(GetTableName(collectionName), s_collectionColumns)),
                 GetClientRequestProperties()
             ).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        using var resp = await this.m_adminClient
+        using var resp = await this._adminClient
             .ExecuteControlCommandAsync(
-                this.m_database,
+                this._database,
                 CslCommandGenerator.GenerateTableDropCommand(GetTableName(collectionName)),
                 GetClientRequestProperties()
             ).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        var result = await this.m_adminClient
+        var result = await this._adminClient
             .ExecuteControlCommandAsync<TablesShowCommandResult>(
-                this.m_database,
+                this._database,
                 CslCommandGenerator.GenerateTablesShowCommand() + $" | where TableName == '{GetTableName(collectionName)}'",
                 GetClientRequestProperties()
             ).ConfigureAwait(false);
@@ -171,12 +178,14 @@ public class KustoMemoryStore : IMemoryStore
         return result.Count() == 1;
     }
 
+    /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         var result = this.GetBatchAsync(collectionName, new[] { key }, withEmbedding, cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancellationToken = default)
     {
         var inClauseValue = string.Join(',', keys.Select(k => $"'{k}'"));
@@ -198,9 +207,9 @@ public class KustoMemoryStore : IMemoryStore
             query += " | extend Embedding = ''";
         }
 
-        using var reader = await this.m_queryClient
+        using var reader = await this._queryClient
             .ExecuteQueryAsync(
-                this.m_database,
+                this._database,
                 query,
                 GetClientRequestProperties(),
                 cancellationToken
@@ -219,11 +228,12 @@ public class KustoMemoryStore : IMemoryStore
         }
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
-        var result = await this.m_adminClient
+        var result = await this._adminClient
             .ExecuteControlCommandAsync<TablesShowCommandResult>(
-                this.m_database,
+                this._database,
                 CslCommandGenerator.GenerateTablesShowCommand() + $" | where TableName startswith '{c_collectionPrefix}'",
                 GetClientRequestProperties()
             ).ConfigureAwait(false);
@@ -234,12 +244,14 @@ public class KustoMemoryStore : IMemoryStore
         }
     }
 
+    /// <inheritdoc/>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         var result = this.GetNearestMatchesAsync(collectionName, embedding, 1, minRelevanceScore, withEmbedding, cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, CancellationToken cancellationToken = default)
     {
         var similiaryQuery = $"{this.GetBaseQuery(collectionName)} | extend similarity=series_cosine_similarity_fl('{KustoSerializer.SerializeEmbedding(embedding)}', {s_collectionColumns[2].Name}, 1, 1)";
@@ -268,9 +280,9 @@ public class KustoMemoryStore : IMemoryStore
             similiaryQuery += $" | project-away {s_collectionColumns[2].Name} ";
         }
 
-        using var reader = await this.m_queryClient
+        using var reader = await this._queryClient
             .ExecuteQueryAsync(
-                this.m_database,
+                this._database,
                 similiaryQuery,
                 GetClientRequestProperties(),
                 cancellationToken
@@ -289,28 +301,32 @@ public class KustoMemoryStore : IMemoryStore
         }
     }
 
+    /// <inheritdoc/>
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default) => this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken);
 
+    /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         if (keys != null)
         {
             var keysString = string.Join(',', keys.Select(k => $"'{k}'"));
-            using var resp = await this.m_adminClient
+            using var resp = await this._adminClient
                 .ExecuteControlCommandAsync(
-                    this.m_database,
+                    this._database,
                     CslCommandGenerator.GenerateDeleteTableRecordsCommand(GetTableName(collectionName), $"{GetTableName(collectionName)} | where Key in ({keysString})"),
                     GetClientRequestProperties()
                 ).ConfigureAwait(false);
         }
     }
 
+    /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var result = this.UpsertBatchAsync(collectionName, new[] { record }, cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default)
     {
         // Upserts don't exist in Kusto, as it is an append only store.
@@ -339,9 +355,9 @@ public class KustoMemoryStore : IMemoryStore
         }
 
         var command = inlineIngestionCommand + recordsAsCsvString;
-        await this.m_adminClient
+        await this._adminClient
             .ExecuteControlCommandAsync(
-                m_database,
+                _database,
                 command,
                 GetClientRequestProperties()
             ).ConfigureAwait(false);
@@ -362,9 +378,9 @@ public class KustoMemoryStore : IMemoryStore
 
     private async Task InitializeVectorFunctionsAsync()
     {
-        var resp = await this.m_adminClient
+        var resp = await this._adminClient
             .ExecuteControlCommandAsync<FunctionShowCommandResult>(
-                this.m_database,
+                this._database,
                 ".create-or-alter function with (docstring = 'Calculate the Cosine similarity of 2 numerical arrays',folder = 'Vector') series_cosine_similarity_fl(vec1:dynamic,vec2:dynamic,vec1_size:real=real(null),vec2_size:real=real(null)) {" +
                 "  let dp = series_dot_product(vec1, vec2);" +
                 "  let v1l = iff(isnull(vec1_size), sqrt(series_dot_product(vec1, vec1)), vec1_size);" +
