@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.OpenAPI;
 using Xunit;
 
@@ -47,9 +46,6 @@ public class JsonPathSkillTests
     {
         var target = new JsonPathSkill();
 
-        ContextVariables variables = new(Json);
-        SKContext context = new(variables);
-
         string actual = target.GetJsonElementValue(Json, jsonPath);
 
         Assert.Equal(expected, actual, StringComparer.OrdinalIgnoreCase);
@@ -62,9 +58,6 @@ public class JsonPathSkillTests
     public void GetJsonPropertyValueSucceeds(string jsonPath, string expected)
     {
         var target = new JsonPathSkill();
-
-        ContextVariables variables = new(Json);
-        SKContext context = new(variables);
 
         string actual = target.GetJsonElements(Json, jsonPath);
 

@@ -31,7 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureSearch\Connectors.Memory.AzureSearch.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
