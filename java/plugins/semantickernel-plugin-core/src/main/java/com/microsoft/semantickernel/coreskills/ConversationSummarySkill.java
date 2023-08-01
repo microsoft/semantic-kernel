@@ -92,8 +92,7 @@ public class ConversationSummarySkill {
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
 
         if (context == null) {
-            context =
-                    SKBuilders.context().with(kernel.getSkills()).with(kernel.getMemory()).build();
+            context = SKBuilders.context().with(kernel.getSkills()).build();
         }
 
         SKContext completionContext = context.copy();

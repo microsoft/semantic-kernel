@@ -100,10 +100,9 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         List<ChatMessage> messages =
                 chat.getMessages().stream()
                         .map(
-                                it -> {
-                                    return new ChatMessage(toChatRole(it.getAuthorRoles()))
-                                            .setContent(it.getContent());
-                                })
+                                it ->
+                                        new ChatMessage(
+                                                toChatRole(it.getAuthorRoles()), it.getContent()))
                         .collect(Collectors.toList());
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(messages);
