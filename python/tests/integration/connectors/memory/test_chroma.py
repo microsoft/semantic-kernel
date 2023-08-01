@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import os
 import shutil
 import numpy as np
@@ -21,11 +22,12 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.fixture
 def setup_chroma():
-    persist_directory = "local_chroma"
+    persist_directory = "chroma/TEMP/"
     memory = ChromaMemoryStore(persist_directory=persist_directory)
     yield memory
-    os.remove(os.path.join(persist_directory, "chroma.sqlite3"))
-    shutil.rmtree(persist_directory)
+    collections = asyncio.run(memory.get_collections_async())
+    for collection in collections:
+        asyncio.run(memory.delete_collection_async(collection))
 
 
 @pytest.fixture
