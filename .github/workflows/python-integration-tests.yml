@@ -149,5 +149,5 @@ jobs:
         uses: skitionek/notify-microsoft-teams@master
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
-          dry_run: True
+          dry_run: False
           needa: ${{ toJson(needs) }}
