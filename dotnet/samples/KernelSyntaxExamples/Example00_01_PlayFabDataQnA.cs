@@ -33,8 +33,30 @@ public static partial class Example00_01_PlayFabDataQnA
 
         foreach (var question in questions)
         {
-            await RunTextCompletion(question);
-            // await RunChatCompletion(question);
+            try
+            {
+                await RunTextCompletion(question);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            try
+            {
+                //await RunBaseChatCompletion(question);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            try
+            {
+                await RunNewChatCompletion(question);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
     }
 
@@ -42,17 +64,24 @@ public static partial class Example00_01_PlayFabDataQnA
     {
         Console.WriteLine("RunTextCompletion");
         var kernel = GetKernel();
-        await RunWithQuestion(kernel, question);
+        await RunWithQuestion(kernel, question, false);
     }
 
-    private static async Task RunChatCompletion(string question)
+    private static async Task RunBaseChatCompletion(string question)
     {
-        Console.WriteLine("RunChatCompletion");
+        Console.WriteLine("RunBaseChatCompletion");
         var kernel = GetKernel(true);
-        await RunWithQuestion(kernel, question);
+        await RunWithQuestion(kernel, question, false);
     }
 
-    private static async Task RunWithQuestion(IKernel kernel, string question)
+    private static async Task RunNewChatCompletion(string question)
+    {
+        Console.WriteLine("RunNewChatCompletion");
+        var kernel = GetKernel(true);
+        await RunWithQuestion(kernel, question, true);
+    }
+
+    private static async Task RunWithQuestion(IKernel kernel, string question, bool useChatStepwisePlanner)
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
@@ -66,18 +95,32 @@ public static partial class Example00_01_PlayFabDataQnA
         kernel.ImportSkill(new TimeSkill(), "time");
 
         Console.WriteLine("*****************************************************");
-        Stopwatch sw = new();
         Console.WriteLine("Question: " + question);
+        Plan plan;
 
-        var plannerConfig = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig();
-        plannerConfig.ExcludedFunctions.Add("TranslateMathProblem");
-        plannerConfig.MinIterationTimeMs = 1500;
-        plannerConfig.MaxTokens = 2000;
+        Stopwatch sw = Stopwatch.StartNew();
+        if (useChatStepwisePlanner)
+        {
+            var plannerConfig = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig();
+            plannerConfig.ExcludedFunctions.Add("TranslateMathProblem");
+            plannerConfig.MinIterationTimeMs = 1500;
+            plannerConfig.MaxTokens = 2000;
 
-        StepwisePlanner planner = new(kernel, plannerConfig);
-        sw.Start();
-        var plan = planner.CreatePlan(question);
+            ChatStepwisePlanner planner = new(kernel, plannerConfig);
 
+            plan = planner.CreatePlan(question);
+        }
+        else
+        {
+            var plannerConfig = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig();
+            plannerConfig.ExcludedFunctions.Add("TranslateMathProblem");
+            plannerConfig.MinIterationTimeMs = 1500;
+            plannerConfig.MaxTokens = 2000;
+
+            StepwisePlanner planner = new(kernel, plannerConfig);
+
+            plan = planner.CreatePlan(question);
+        }
         var result = await plan.InvokeAsync(kernel.CreateNewContext());
         Console.WriteLine("Result: " + result);
         if (result.Variables.TryGetValue("stepCount", out string? stepCount))
