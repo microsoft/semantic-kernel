@@ -25,7 +25,8 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, windows-latest, macos-latest]
-
+    outputs:
+      test_results: ${{ steps.run_tests.outputs.test_results }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -46,6 +47,7 @@ jobs:
           python -m pip install poetry pytest
           cd python && poetry install
       - name: Run Integration Tests
+        id: run_tests
         shell: bash
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
@@ -68,4 +70,22 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
-          poetry run pytest ./tests/integration
+          echo "============================================================" >> test_results.txt
+          echo "Integration Test Results for ${{ matrix.os }} ${{ matrix.python-version }}" >> test_results.txt
+          echo "============================================================" >> test_results.txt
+          poetry run pytest ./tests/integration -v >> test_results.txt
+          echo $(cat test_results.txt) >> $GITHUB_OUTPUT
+
+  notify_teams:
+    name: Push Results to Microsoft Teams
+    runs-on: ubuntu-18.04
+    needs: python-integration-tests
+    steps:
+      - uses: actions/checkout@master
+      - name: Microsoft Teams Notification
+        uses: skitionek/notify-microsoft-teams@master
+        if: always()
+        with:
+          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
+          raw: ${{ needs.python-integration-tests.outputs.test_results }}
+          dry_run: True
