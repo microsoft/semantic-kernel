@@ -36,7 +36,7 @@ async def retry(func, retries=1):
 @pytest.fixture(autouse=True, scope="module")
 def slow_down_tests():
     yield
-    time.sleep(1)
+    time.sleep(3)
 
 
 @pytest.fixture(scope="session")
@@ -101,8 +101,6 @@ def test_constructor(get_pinecone_config):
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=(pinecone.core.client.exceptions.ForbiddenException,
-            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_create_and_get_collection_async(get_pinecone_config):
@@ -117,8 +115,6 @@ async def test_create_and_get_collection_async(get_pinecone_config):
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=(pinecone.core.client.exceptions.ForbiddenException,
-            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_get_collections_async(get_pinecone_config):
@@ -132,8 +128,6 @@ async def test_get_collections_async(get_pinecone_config):
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=(pinecone.core.client.exceptions.ForbiddenException,
-            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_delete_collection_async(get_pinecone_config):
@@ -148,8 +142,6 @@ async def test_delete_collection_async(get_pinecone_config):
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=(pinecone.core.client.exceptions.ForbiddenException,
-            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_does_collection_exist_async(get_pinecone_config):
@@ -163,8 +155,6 @@ async def test_does_collection_exist_async(get_pinecone_config):
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=(pinecone.core.client.exceptions.ForbiddenException,
-            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_upsert_async_and_get_async(get_pinecone_config, memory_record1):
@@ -191,8 +181,6 @@ async def test_upsert_async_and_get_async(get_pinecone_config, memory_record1):
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=(pinecone.core.client.exceptions.ForbiddenException,
-            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_upsert_batch_async_and_get_batch_async(
@@ -223,8 +211,6 @@ async def test_upsert_batch_async_and_get_batch_async(
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=(pinecone.core.client.exceptions.ForbiddenException,
-            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_remove_async(get_pinecone_config, memory_record1):
@@ -243,8 +229,6 @@ async def test_remove_async(get_pinecone_config, memory_record1):
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=(pinecone.core.client.exceptions.ForbiddenException,
-            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_remove_batch_async(get_pinecone_config, memory_record1, memory_record2):
@@ -276,8 +260,6 @@ async def test_remove_batch_async(get_pinecone_config, memory_record1, memory_re
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=(pinecone.core.client.exceptions.ForbiddenException,
-            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_get_nearest_match_async(
@@ -311,8 +293,6 @@ async def test_get_nearest_match_async(
 
 @pytest.mark.asyncio
 @pytest.mark.xfail(
-    raises=(pinecone.core.client.exceptions.ForbiddenException,
-            pinecone.core.client.exceptions.ServiceException),
     reason="Test failed due to known unreliable communications with Pinecone free tier"
     )
 async def test_get_nearest_matches_async(
