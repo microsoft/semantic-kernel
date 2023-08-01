@@ -40,9 +40,7 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
 
     # Azure requires the deployment name, the API key and the endpoint URL.
     if include_deployment:
-        assert (
-            deployment
-        ), "Azure OpenAI deployment name not found in .env file"
+        assert deployment, "Azure OpenAI deployment name not found in .env file"
 
     assert api_key, "Azure OpenAI API key not found in .env file"
     assert endpoint, "Azure OpenAI endpoint not found in .env file"
@@ -60,9 +58,7 @@ def postgres_settings_from_dot_env() -> str:
     config = dotenv_values(".env")
     connection_string = config.get("POSTGRES_CONNECTION_STRING", None)
 
-    assert (
-        connection_string
-    ), "Postgres connection string not found in .env file"
+    assert connection_string, "Postgres connection string not found in .env file"
 
     return connection_string
 
