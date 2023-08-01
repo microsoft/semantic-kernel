@@ -164,7 +164,7 @@ public sealed class RedisMemoryStore : IMemoryStore
         await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), new[] {
             new HashEntry("key", record.Key),
             new HashEntry("metadata", record.GetSerializedMetadata()),
-            new HashEntry("embedding", MemoryMarshal.Cast<float, byte>(record.Embedding.AsReadOnlySpan()).ToArray()),
+            new HashEntry("embedding", ConvertEmbeddingToBytes(record.Embedding)),
             new HashEntry("timestamp", ToTimestampLong(record.Timestamp))
         }, flags: CommandFlags.None).ConfigureAwait(false);
 
@@ -207,7 +207,7 @@ public sealed class RedisMemoryStore : IMemoryStore
         }
 
         var query = new Query($"*=>[KNN {limit} @embedding $embedding AS vector_score]")
-                    .AddParam("embedding", MemoryMarshal.Cast<float, byte>(embedding.AsReadOnlySpan()).ToArray())
+                    .AddParam("embedding", ConvertEmbeddingToBytes(embedding))
                     .SetSortBy("vector_score")
                     .ReturnFields("key", "metadata", "embedding", "timestamp", "vector_score")
                     .Limit(0, limit)
@@ -351,6 +351,21 @@ public sealed class RedisMemoryStore : IMemoryStore
         return 1 - vectorScore;
     }
 
-    #endregion
+    private byte[] ConvertEmbeddingToBytes(Embedding<float> embedding)
+    {
+        byte[] embeddingBytes = Array.Empty<byte>();
+        if (this._vectorType == "FLOAT32")
+        {
+            embeddingBytes = MemoryMarshal.Cast<float, byte>(embedding.AsReadOnlySpan()).ToArray();
+        }
+        else if (this._vectorType == "FLOAT64")
+        {
+            var toDouble = embedding.Vector.Select(x => (double)new decimal(x)).ToArray();
+            embeddingBytes = MemoryMarshal.Cast<double, byte>(toDouble).ToArray();
+        }
 
+        return embeddingBytes;
+    }
+
+    #endregion
 }
