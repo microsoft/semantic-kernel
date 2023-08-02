@@ -146,6 +146,12 @@ jobs:
         shell: bash
         run: |
           echo "date=$(date +'%m/%d/%Y-%H:%M:%S')" >> "$GITHUB_ENV"
+          if [${{ github.event_name == 'schedule'}}]
+          then
+            echo "type=Nightly" >> "$GITHUB_ENV"
+          else
+            echo "type=Manual" >> "$GITHUB_ENV"
+          fi
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
         if: always()
@@ -154,4 +160,4 @@ jobs:
           dry_run: True
           job: ${{ toJson(needs.python-integration-tests) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: ` ${{ github.event_name }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} `}"
+          overwrite: "{title: ` ${{ env.type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} `}"
