@@ -83,3 +83,18 @@ def pinecone_settings_from_dot_env() -> Tuple[str, str]:
     assert environment is not None, "Pinecone environment not found in .env file"
 
     return api_key, environment
+
+
+def sqlite_settings_from_dot_env() -> str:
+    """Reads the SQLite db filename  from the .env file.
+
+    Returns:
+        str: The SQLite db filename string
+    """
+    db_file_name = None
+    config = dotenv_values(".env")
+    db_file_name = config.get("SQLITE_DB_FILE", None)
+
+    assert db_file_name is not None, "SQLite connection string not found in .env file"
+
+    return db_file_name

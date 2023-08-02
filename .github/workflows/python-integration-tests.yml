@@ -66,6 +66,7 @@ jobs:
           Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
           AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+          SQLITE_DB_FILE: sqlite_test.db
         run: |
           cd python
           poetry run pytest ./tests/integration
