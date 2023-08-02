@@ -22,7 +22,7 @@ async def simple_search():
     print(result)
 
     # Will attempt to remedy typos or unclear queries
-    prompt = "pyfth0n profgaming lang"
+    prompt = "pyfth0n profgaming"
     search_async = web_skill["searchAsync"]
     result = await search_async.invoke_async(prompt)
     print(result)
@@ -33,26 +33,37 @@ async def semantic_function():
     prompt = """
     Answer the question using only the data that is provided in the data section.
     Do not use any prior knowledge to answer the question.
-    Data: {{WebSearch.SearchAsync "What is machine learning?"}}
-    Question: "Explain specific applications of machine learning."
+    Cite sources with links in a numbered list after the answer.
+
+    Data: {{WebSearch.SearchAsync "Machine learning"}}
+    Question: "What is machine learning and what are its applications?"
     Answer:
     """
 
     qna = kernel.create_semantic_function(prompt, temperature=0.2)
     context = kernel.create_new_context()
-    context["num_results"] = "10"
+    context["num_results"] = "5"
     context["offset"] = "0"
     result = await qna.invoke_async(context=context)
     print(result)
 
     """
     Output:
-    Machine learning has a wide range of applications, including but not limited to: Adversarial machine learning, 
-    which is the study of attacks on machine learning algorithms and defenses against such attacks; Quantum machine 
-    learning, which is the integration of quantum algorithms within machine learning programs; Active learning, which 
-    is a special case of machine learning in which a learning algorithm can interactively query a user or other 
-    information source; Support vector machines, which are supervised learning models with associated learning 
-    algorithms; and Boosting, which is an ensemble meta-algorithm for reducing bias and variance in supervised learning.
+
+    Machine learning is an umbrella term for solving problems for which development of algorithms by human programmers 
+    would be cost-prohibitive. Its applications include unsupervised learning, which analyzes a stream of data and 
+    finds patterns and makes predictions, and quantum machine learning, which integrates quantum algorithms within 
+    machine learning programs. Additionally, machine learning-based attention is a mechanism, mimicking cognitive 
+    attention, which calculates "soft" weights for each word, more precisely for its embedding. The most common use 
+    of the term refers to machine learning models such as the Transformer, which is a deep learning architecture 
+    that relies on the parallel multi-head attention mechanism.
+
+    Sources:
+    1. https://en.wikipedia.org/wiki/Machine_learning
+    2. https://en.wikipedia.org/wiki/Quantum_machine_learning
+    3. https://en.wikipedia.org/wiki/Attention_(machine_learning)
+    4. https://en.wikipedia.org/wiki/Transformer_(machine_learning_model)
+    5. https://en.wikipedia.org/wiki/Artificial_intelligence
     """
 
 
@@ -60,4 +71,4 @@ if __name__ == "__main__":
     import asyncio
 
     asyncio.run(simple_search())
-    # asyncio.run(semantic_function())    # Note: beware of token usage
+    asyncio.run(semantic_function())  # Note: beware of high token usage
