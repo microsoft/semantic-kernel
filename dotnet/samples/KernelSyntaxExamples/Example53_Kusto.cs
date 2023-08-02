@@ -19,7 +19,7 @@ public static class Example53_Kusto
         KustoMemoryStore memoryStore = new(connectionString, "MyDatabase");
 
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             .WithOpenAITextCompletionService(modelId: TestConfiguration.OpenAI.ModelId, apiKey: TestConfiguration.OpenAI.ApiKey)
             //.WithAzureTextCompletionService("text-davinci-003", TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(modelId: TestConfiguration.OpenAI.EmbeddingModelId,apiKey: TestConfiguration.OpenAI.ApiKey)

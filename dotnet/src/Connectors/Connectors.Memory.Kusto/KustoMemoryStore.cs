@@ -2,6 +2,7 @@
 
 using System.Data;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
 using Kusto.Data.Common;
@@ -18,7 +19,7 @@ internal static class KustoSerializer
     {
         return JsonConvert.SerializeObject(embedding.Vector);
     }
-    public static Embedding<float> DeserializeEmbedding(string embedding)
+    public static Embedding<float> DeserializeEmbedding(string? embedding)
     {
         if (string.IsNullOrEmpty(embedding))
         {
@@ -43,14 +44,9 @@ internal static class KustoSerializer
 
         return JsonConvert.SerializeObject(metadata);
     }
-    public static MemoryRecordMetadata? DeserializeMetadata(string metadata)
+    public static MemoryRecordMetadata DeserializeMetadata(string metadata)
     {
-        if (string.IsNullOrEmpty(metadata))
-        {
-            return default;
-        }
-
-        return JsonConvert.DeserializeObject<MemoryRecordMetadata>(metadata);
+        return JsonConvert.DeserializeObject<MemoryRecordMetadata>(metadata)!;
     }
 }
 
@@ -58,6 +54,11 @@ internal static class KustoExtensions
 {
     public static async ValueTask<T?> FirstOrDefaultAsync<T>(this IAsyncEnumerable<T> source, CancellationToken cancellationToken = default)
     {
+        if (source == null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             return item;
@@ -67,7 +68,7 @@ internal static class KustoExtensions
     }
 }
 
-internal class KustoMemoryRecord
+sealed internal class KustoMemoryRecord
 {
     public string Key { get; set; }
     public MemoryRecordMetadata Metadata { get; set; }
@@ -84,7 +85,7 @@ internal class KustoMemoryRecord
         this.Timestamp = timestamp;
     }
 
-    public KustoMemoryRecord(string key, string metadata, string embedding, DateTime? timestamp = null)
+    public KustoMemoryRecord(string key, string metadata, string? embedding, DateTime? timestamp = null)
     {
         this.Key = key;
         this.Metadata = KustoSerializer.DeserializeMetadata(metadata);
@@ -94,7 +95,7 @@ internal class KustoMemoryRecord
 
     public MemoryRecord ToMemoryRecord()
     {
-        return new MemoryRecord((MemoryRecordMetadata)this.Metadata, (Embedding<float>)this.Embedding, this.Key, this.Timestamp);
+        return new MemoryRecord(this.Metadata, this.Embedding, this.Key, this.Timestamp);
     }
 
     public void WriteToCsvStream(CsvWriter streamWriter)
@@ -197,12 +198,12 @@ public class KustoMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var inClauseValue = string.Join(',', keys.Select(k => $"'{k}'"));
         var query = $"{this.GetBaseQuery(collectionName)} " +
             $"| where Key in ({inClauseValue}) " +
-            $"| project " +
+            "| project " +
             // Key
             $"{s_collectionColumns[0].Name}, " +
             // Metadata
@@ -240,7 +241,7 @@ public class KustoMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var result = await this._adminClient
             .ExecuteControlCommandAsync<TablesShowCommandResult>(
@@ -263,7 +264,7 @@ public class KustoMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var similarityQuery = $"{this.GetBaseQuery(collectionName)} | extend similarity=series_cosine_similarity_fl('{KustoSerializer.SerializeEmbedding(embedding)}', {s_collectionColumns[2].Name}, 1, 1)";
 
@@ -275,14 +276,14 @@ public class KustoMemoryStore : IMemoryStore
         similarityQuery += $" | top {limit} by similarity desc";
         // reorder to make it easier to ignore the embedding (key, metadata, timestamp, similarity, embedding
         // Using tostring to make it easier to parse the result. There are probably better ways we should explore
-        similarityQuery += $"| project " +
+        similarityQuery += "| project " +
             // Key
             $"{s_collectionColumns[0].Name}, " +
             // Metadata
             $"{s_collectionColumns[1].Name}=tostring({s_collectionColumns[1].Name}), " +
             // Timestamp
             $"{s_collectionColumns[3].Name}, " +
-            $"similarity, " +
+            "similarity, " +
             // Embedding
             $"{s_collectionColumns[2].Name}=tostring({s_collectionColumns[2].Name})";
 
@@ -334,11 +335,11 @@ public class KustoMemoryStore : IMemoryStore
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var result = this.UpsertBatchAsync(collectionName, new[] { record }, cancellationToken);
-        return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // In Kusto, upserts don't exist because it operates as an append-only store.
         // Nevertheless, given that we have a straightforward primary key (PK), we can simply insert a new record.
