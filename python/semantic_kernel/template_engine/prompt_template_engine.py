@@ -107,7 +107,9 @@ class PromptTemplateEngine(PromptTemplatingEngine):
                 continue
             if not isinstance(block, TextRenderer):
                 raise ValueError("TextBlock must implement TextRenderer protocol")
-            rendered_blocks.append(TextBlock(block.render(variables), log=self._logger))
+            rendered_blocks.append(
+                TextBlock.from_text(block.render(variables), log=self._logger)
+            )
 
         return rendered_blocks
 
@@ -133,7 +135,7 @@ class PromptTemplateEngine(PromptTemplatingEngine):
             if not isinstance(block, CodeRenderer):
                 raise ValueError("CodeBlock must implement CodeRenderer protocol")
             rendered_blocks.append(
-                TextBlock(
+                TextBlock.from_text(
                     await block.render_code_async(execution_context), log=self._logger
                 )
             )
