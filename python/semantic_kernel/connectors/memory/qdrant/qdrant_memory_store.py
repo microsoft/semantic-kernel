@@ -320,7 +320,6 @@ class QdrantMemoryStore(MemoryStoreBase):
             with_vectors=with_embedding,
         )
 
-
         if existing_record:
             return existing_record[0]
         else:
