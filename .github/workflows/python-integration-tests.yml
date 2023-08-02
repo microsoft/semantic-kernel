@@ -147,4 +147,4 @@ jobs:
           needs: ${{ toJson(needs) }}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: `github.event_name: ${{ steps.run_tests.outputs.date }} python integration tests for ${{ matrix.python-version }} on ${{ matrix.os }}`, text: `${{ steps.run_tests.outputs.stdout }} \n\n [Workflow Link](${workflow_link})`}"
+          overwrite: "{title: ` ${{ github.event_name }}: ${{ steps.run_tests.outputs.date }} python integration tests for ${{ matrix.python-version }} on ${{ matrix.os }}`, text: `${{ steps.run_tests.outputs.stdout }} \n\n [Workflow Link](${workflow_link})`}"
