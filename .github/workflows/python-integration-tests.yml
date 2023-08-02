@@ -92,7 +92,7 @@ jobs:
         # python-version: ["3.8", "3.9", "3.10", "3.11"]
         # os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.8"]
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -137,7 +137,7 @@ jobs:
         run: |
           cd python
           echo "date=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
-          echo "stdout=poetry run pytest ./tests/integration/embeddings -v" >> $GITHUB_OUTPUT
+          echo "stdout=$(poetry run pytest ./tests/integration/embeddings -v)" >> $GITHUB_OUTPUT
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
         if: always()
