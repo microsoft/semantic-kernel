@@ -34,7 +34,7 @@ public static class Program
         await Example12_SequentialPlanner.RunAsync().SafeWaitAsync(cancelToken);
         await Example13_ConversationSummarySkill.RunAsync().SafeWaitAsync(cancelToken);
         await Example14_SemanticMemory.RunAsync().SafeWaitAsync(cancelToken);
-        await Example15_MemoryPlugin.RunAsync().SafeWaitAsync(cancelToken);
+        await Example15_MemorySkill.RunAsync().SafeWaitAsync(cancelToken);
         await Example16_CustomLLM.RunAsync().SafeWaitAsync(cancelToken);
         await Example17_ChatGPT.RunAsync().SafeWaitAsync(cancelToken);
         await Example18_DallE.RunAsync().SafeWaitAsync(cancelToken);

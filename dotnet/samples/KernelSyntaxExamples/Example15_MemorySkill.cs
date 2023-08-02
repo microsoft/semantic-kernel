@@ -32,7 +32,7 @@ public static class Example15_MemorySkill
         // ========= Store memories using semantic function =========
 
         // Add Memory as a skill for other functions
-        var memorySkill = new TextMemorySkill(kernel.Memory);
+        var memorySkill = new TextMemoryPlugin(kernel.Memory);
         kernel.ImportSkill(memorySkill);
 
         // Build a semantic function that saves info to memory
