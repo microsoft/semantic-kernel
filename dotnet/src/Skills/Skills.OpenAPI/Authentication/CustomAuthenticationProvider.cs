@@ -36,5 +36,4 @@ public class CustomAuthenticationProvider
         var value = await this._value().ConfigureAwait(false);
         request.Headers.Add(header, value);
     }
-
 }
