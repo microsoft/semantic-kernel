@@ -23,17 +23,21 @@ class Metadata:
     # Optional title describing the content. Note: the title is not indexed.
     description: str
 
+    # Source text, available only when the memory is not an external source.
+    text: str
+
     # Field for saving custom metadata with a memory.
     additional_metadata: str
 
     @staticmethod
     def from_memory_record(record: MemoryRecord) -> "Metadata":
         return Metadata(
-            record._is_reference,
-            record._external_source_name,
-            record._id,
-            record._description,
-            record._additional_metadata,
+            is_reference=record._is_reference,
+            external_source_name=record._external_source_name,
+            id=record._id or record._key,
+            description=record._description,
+            text=record._text,
+            additional_metadata=record._additional_metadata,
         )
 
     def to_json(self) -> str:
@@ -43,11 +47,12 @@ class Metadata:
     def from_json(json: str) -> "Metadata":
         d = deserialize_metadata(json)
         return Metadata(
-            d["is_reference"],
-            d["external_source_name"],
-            d["id"],
-            d["description"],
-            d["additional_metadata"],
+            is_reference=d["is_reference"] or False,
+            external_source_name=d["external_source_name"] or "",
+            id=d["id"] or "",
+            description=d["description"] or "",
+            text=d["text"] or "",
+            additional_metadata=d["additional_metadata"] or "",
         )
 
 
