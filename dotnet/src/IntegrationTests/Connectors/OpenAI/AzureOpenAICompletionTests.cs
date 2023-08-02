@@ -2,6 +2,8 @@
 
 using System;
 using System.Threading.Tasks;
+using Azure;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
@@ -50,6 +52,35 @@ public sealed class AzureOpenAICompletionTests : IDisposable
              .WithLogger(this._logger)
              .WithAzureChatCompletionService(configuration.ChatDeploymentName!, configuration.Endpoint, configuration.ApiKey)
              .WithRetryHandlerFactory(defaultHttpRetryHandlerFactory)
+             .Build();
+
+        // Act
+        var func = target.CreateSemanticFunction(prompt);
+
+        var exception = await Assert.ThrowsAsync<AIException>(() => func.InvokeAsync(string.Empty, settings: new CompleteRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
+
+        // Assert
+        Assert.Contains(expectedOutput, exception.Detail, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?",
+        "This model's maximum context length is")]
+    public async Task AzureOpenAIChatNoHttpRetryPolicyCustomClientShouldThrowAsync(string prompt, string expectedOutput)
+    {
+        // Arrange
+        var configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(configuration);
+
+        var clientOptions = new OpenAIClientOptions();
+        clientOptions.Retry.MaxRetries = 0;
+        clientOptions.Retry.NetworkTimeout = TimeSpan.FromSeconds(10);
+
+        var openAIClient = new OpenAIClient(new Uri(configuration.Endpoint), new AzureKeyCredential(configuration.ApiKey), clientOptions);
+
+        var target = new KernelBuilder()
+             .WithLogger(this._logger)
+             .WithAzureChatCompletionService(configuration.ChatDeploymentName!, openAIClient)
              .Build();
 
         // Act
