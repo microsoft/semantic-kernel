@@ -7,9 +7,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Memory;
+namespace SemanticKernel.Plugins.Memory.UnitTests;
 
 public class VolatileMemoryStoreTests
 {

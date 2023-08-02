@@ -4,9 +4,9 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using RepoUtils;
 using Skills;
 

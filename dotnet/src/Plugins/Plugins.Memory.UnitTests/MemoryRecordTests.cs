@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Memory;
+namespace SemanticKernel.Plugins.Memory.UnitTests;
 
 public class MemoryRecordTests
 {
