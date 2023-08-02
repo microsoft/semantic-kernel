@@ -137,19 +137,11 @@ jobs:
         run: |
           cd python
           poetry run pytest ./tests/integration/embeddings -v
-
-  notify_teams:
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'}}
-    name: Push Results to Microsoft Teams
-    runs-on: ubuntu-latest
-    needs: python-integration-tests
-    steps:
-      - uses: actions/checkout@master
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: False
-          needs: ${{ toJson(needs) }}
-          job: ${{ toJson(needs.python_integration_tests) }}
-          overwrite: "{title: `Daily python integration tests ${workflow_link}`}"
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          overwrite: "{title: `Daily python integration tests for ${{ matrix.python-version }} on ${{ matrix.os }}`, text: `${{ steps.run_tests.outputs.stdout }}`}"
