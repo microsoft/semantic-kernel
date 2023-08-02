@@ -134,10 +134,10 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
-          echo "date=$(date +'%m/%d/%Y')" >> "$GITHUB_OUTPUT"
+          echo "date=$(date +'%m/%d/%Y')" >> "$GITHUB_ENV"
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "Test output: <<$EOF" >> "$GITHUB_OUTPUT"
-          echo "$(poetry run pytest ./tests/integration -v)" >> "$GITHUB_OUTPUT"
+          echo "<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$(poetry run pytest ./tests/integration)" >> "$GITHUB_OUTPUT"
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
@@ -148,4 +148,4 @@ jobs:
           needs: ${{ toJson(needs) }}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: ` ${{ github.event_name }}: ${{ steps.run_tests.outputs.date }} - ${{ matrix.python-version }} on ${{ matrix.os }}`, text: `${{ toJson(steps.run_tests.outputs) }} \n\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
+          overwrite: "{title: ` ${{ github.event_name }} ${{ steps.run_tests.outcome }}: ${{ env.date }} - ${{ matrix.python-version }} on ${{ matrix.os }}`, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n${{ toJson(steps.run_tests.outputs) }}`}"
