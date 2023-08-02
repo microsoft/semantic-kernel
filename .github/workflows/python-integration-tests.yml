@@ -159,5 +159,4 @@ jobs:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
           job: ${{ toJson(needs.python-integration-tests) }}
-          steps: ${{ toJson(needs.python-integration-tests.steps) }}
           overwrite: "{title: ` ${{ env.type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} `}"
