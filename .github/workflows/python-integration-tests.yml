@@ -139,7 +139,7 @@ jobs:
           echo "date=$(date +'%m/%d/%Y')" >> "$GITHUB_OUTPUT"
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "Test output: <<$EOF" >> "$GITHUB_OUTPUT"
-          echo "stdout=$(poetry run pytest ./tests/integration/embeddings -v)" >> "$GITHUB_OUTPUT"
+          echo "$(poetry run pytest ./tests/integration/embeddings -v)" >> "$GITHUB_OUTPUT"
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
@@ -150,4 +150,4 @@ jobs:
           needs: ${{ toJson(needs) }}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: ` ${{ github.event_name }}: ${{ steps.run_tests.outputs.date }} python integration tests for ${{ matrix.python-version }} on ${{ matrix.os }}`, text: `${{ steps.run_tests.outputs }} \n\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
+          overwrite: "{title: ` ${{ github.event_name }}: ${{ steps.run_tests.outputs.date }} python integration tests for ${{ matrix.python-version }} on ${{ matrix.os }}`, text: `${{ toJson(steps.run_tests.outputs) }} \n\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
