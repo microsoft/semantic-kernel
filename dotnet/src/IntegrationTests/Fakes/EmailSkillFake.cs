@@ -1,47 +1,42 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SemanticKernel.IntegrationTests.Fakes;
 
 internal sealed class EmailSkillFake
 {
-    [SKFunction("Given an email address and message body, send an email")]
-    [SKFunctionInput(Description = "The body of the email message to send.")]
-    [SKFunctionContextParameter(Name = "email_address", Description = "The email address to send email to.", DefaultValue = "default@email.com")]
-    public Task<SKContext> SendEmailAsync(string input, SKContext context)
+    [SKFunction, Description("Given an email address and message body, send an email")]
+    public Task<string> SendEmailAsync(
+        [Description("The body of the email message to send.")] string input,
+        [Description("The email address to send email to.")] string? email_address = "default@email.com")
     {
-        context.Variables.TryGetValue("email_address", out string? emailAddress);
-        context.Variables.Update($"Sent email to: {emailAddress}. Body: {input}");
-        return Task.FromResult(context);
+        email_address ??= string.Empty;
+        return Task.FromResult($"Sent email to: {email_address}. Body: {input}");
     }
 
-    [SKFunction("Lookup an email address for a person given a name")]
-    [SKFunctionInput(Description = "The name of the person to email.")]
-    public Task<SKContext> GetEmailAddressAsync(string input, SKContext context)
+    [SKFunction, Description("Lookup an email address for a person given a name")]
+    public Task<string> GetEmailAddressAsync(
+        [Description("The name of the person to email.")] string input,
+        ILogger logger)
     {
         if (string.IsNullOrEmpty(input))
         {
-            context.Log.LogDebug("Returning hard coded email for {0}", input);
-            context.Variables.Update("johndoe1234@example.com");
-        }
-        else
-        {
-            context.Log.LogDebug("Returning dynamic email for {0}", input);
-            context.Variables.Update($"{input}@example.com");
+            logger.LogTrace("Returning hard coded email for {0}", input);
+            return Task.FromResult("johndoe1234@example.com");
         }
 
-        return Task.FromResult(context);
+        logger.LogTrace("Returning dynamic email for {0}", input);
+        return Task.FromResult($"{input}@example.com");
     }
 
-    [SKFunction("Write a short poem for an e-mail")]
-    [SKFunctionInput(Description = "The topic of the poem.")]
-    public Task<SKContext> WritePoemAsync(string input, SKContext context)
+    [SKFunction, Description("Write a short poem for an e-mail")]
+    public Task<string> WritePoemAsync(
+        [Description("The topic of the poem.")] string input)
     {
-        context.Variables.Update($"Roses are red, violets are blue, {input} is hard, so is this test.");
-        return Task.FromResult(context);
+        return Task.FromResult($"Roses are red, violets are blue, {input} is hard, so is this test.");
     }
 }

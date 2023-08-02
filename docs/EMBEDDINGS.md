@@ -13,8 +13,8 @@ antonyms, without needing explicit rules or human supervision.
 One popular method for creating embeddings is
 Word2Vec [[1]](https://arxiv.org/abs/1301.3781)[[2]](https://arxiv.org/abs/1310.4546),
 which uses neural networks to learn the relationships between words from large amounts
-of text data. Other methods include [GloVe](https://nlp.stanford.edu/projects/glove/)
-and [FastText](https://research.facebook.com/downloads/fasttext/). These methods
+of text data. Other methods include GloVe and
+[FastText](https://research.facebook.com/downloads/fasttext/). These methods
 all have different strengths and weaknesses, but they share the common goal of creating
 meaningful representations of words that can be used in machine learning models.
 

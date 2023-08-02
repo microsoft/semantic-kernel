@@ -9,11 +9,8 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -23,7 +20,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : ISKFunction
+public sealed class Plan : IPlan
 {
     /// <summary>
     /// State of the plan
@@ -80,14 +77,6 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     [JsonIgnore]
     public bool IsSemantic { get; private set; }
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public bool IsSensitive { get; private set; } = false;
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public ITrustService TrustServiceInstance { get; private set; } = TrustService.DefaultTrusted;
 
     /// <inheritdoc/>
     [JsonIgnore]
@@ -173,15 +162,16 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
     /// <param name="context">The context to use for function registrations.</param>
+    /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, SKContext? context = null)
+    public static Plan FromJson(string json, SKContext? context = null, bool requireFunctions = true)
     {
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
         if (context != null)
         {
-            plan = SetAvailableFunctions(plan, context);
+            plan = SetAvailableFunctions(plan, context, requireFunctions);
         }
 
         return plan;
@@ -226,29 +216,31 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="kernel">The kernel instance to use for executing the plan.</param>
     /// <param name="variables">The variables to use for the execution of the plan.</param>
-    /// <param name="cancellationToken">The cancellation token to cancel the execution of the plan.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
     /// <remarks>
-    /// This method executes the next step in the plan using the specified kernel instance and context variables. The context variables contain the necessary information for executing the plan, such as the memory, skills, and logger. The method returns a task representing the asynchronous execution of the plan's next step.
+    /// This method executes the next step in the plan using the specified kernel instance and context variables.
+    /// The context variables contain the necessary information for executing the plan, such as the skills, and logger.
+    /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var context = new SKContext(
             variables,
-            kernel.Memory,
             kernel.Skills,
-            kernel.Log,
-            cancellationToken);
-        return this.InvokeNextStepAsync(context);
+            kernel.Logger);
+
+        return this.InvokeNextStepAsync(context, cancellationToken);
     }
 
     /// <summary>
     /// Invoke the next step of the plan
     /// </summary>
     /// <param name="context">Context to use</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
     /// <exception cref="KernelException">If an error occurs while running the plan</exception>
-    public async Task<Plan> InvokeNextStepAsync(SKContext context)
+    public async Task<Plan> InvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
         {
@@ -258,14 +250,14 @@ public sealed class Plan : ISKFunction
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Memory, context.Skills, context.Log, context.CancellationToken);
-            var result = await step.InvokeAsync(functionContext).ConfigureAwait(false);
+            var functionContext = new SKContext(functionVariables, context.Skills, context.Logger);
+            var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
             if (result.ErrorOccurred)
             {
                 throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
-                    $"Error occurred while running plan step: {result.LastErrorDescription}", result.LastException);
+                    $"Error occurred while running plan step: {result.LastException?.Message}", result.LastException);
             }
 
             #region Update State
@@ -306,43 +298,25 @@ public sealed class Plan : ISKFunction
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        // TODO - Eventually, we should be able to describe a plan and its expected inputs/outputs
         return this.Function?.Describe() ?? new();
-    }
-
-    /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(
-        string? input = null,
-        CompleteRequestSettings? settings = null,
-        ISemanticTextMemory? memory = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        if (input != null) { this.State.Update(input); }
-
-        SKContext context = new(
-            this.State,
-            memory: memory,
-            logger: logger,
-            cancellationToken: cancellationToken);
-
-        return this.InvokeAsync(context, settings);
     }
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null)
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default)
     {
         if (this.Function is not null)
         {
-            var result = await this.Function.InvokeAsync(context, settings).ConfigureAwait(false);
+            AddVariablesToContext(this.State, context);
+            var result = await this.Function
+                .WithInstrumentation(context.Logger)
+                .InvokeAsync(context, settings, cancellationToken)
+                .ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
-                result.Log.LogError(
-                    result.LastException,
-                    "Something went wrong in plan step {0}.{1}:'{2}'", this.SkillName, this.Name, context.LastErrorDescription);
                 return result;
             }
 
@@ -353,12 +327,8 @@ public sealed class Plan : ISKFunction
             // loop through steps and execute until completion
             while (this.HasNextStep)
             {
-                var functionContext = context;
-
-                AddVariablesToContext(this.State, functionContext);
-
-                await this.InvokeNextStepAsync(functionContext).ConfigureAwait(false);
-
+                AddVariablesToContext(this.State, context);
+                await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
                 this.UpdateContextWithOutputs(context);
             }
         }
@@ -402,13 +372,14 @@ public sealed class Plan : ISKFunction
     {
         var result = input;
         var matches = s_variablesRegex.Matches(input);
-        var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).OrderByDescending(m => m.Length);
+        var orderedMatches = matches.Cast<Match>().Select(m => m.Groups["var"].Value).Distinct().OrderByDescending(m => m.Length);
 
         foreach (var varName in orderedMatches)
         {
-            result = result.Replace($"${varName}",
-                variables.TryGetValue(varName, out string? value) || this.State.TryGetValue(varName, out value) ? value :
-                string.Empty);
+            if (variables.TryGetValue(varName, out string? value) || this.State.TryGetValue(varName, out value))
+            {
+                result = result.Replace($"${varName}", value);
+            }
         }
 
         return result;
@@ -419,8 +390,9 @@ public sealed class Plan : ISKFunction
     /// </summary>
     /// <param name="plan">Plan to set functions for.</param>
     /// <param name="context">Context to use.</param>
+    /// <param name="requireFunctions">Whether to throw an exception if a function is not found.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetAvailableFunctions(Plan plan, SKContext context)
+    private static Plan SetAvailableFunctions(Plan plan, SKContext context, bool requireFunctions = true)
     {
         if (plan.Steps.Count == 0)
         {
@@ -435,12 +407,18 @@ public sealed class Plan : ISKFunction
             {
                 plan.SetFunction(skillFunction);
             }
+            else if (requireFunctions)
+            {
+                throw new KernelException(
+                    KernelException.ErrorCodes.FunctionNotAvailable,
+                    $"Function '{plan.SkillName}.{plan.Name}' not found in skill collection");
+            }
         }
         else
         {
             foreach (var step in plan.Steps)
             {
-                SetAvailableFunctions(step, context);
+                SetAvailableFunctions(step, context, requireFunctions);
             }
         }
 
@@ -455,7 +433,7 @@ public sealed class Plan : ISKFunction
         // Loop through vars and add anything missing to context
         foreach (var item in vars)
         {
-            if (!context.Variables.ContainsKey(item.Key))
+            if (!context.Variables.TryGetValue(item.Key, out string? value) || string.IsNullOrEmpty(value))
             {
                 context.Variables.Set(item.Key, item.Value);
             }
@@ -530,6 +508,7 @@ public sealed class Plan : ISKFunction
         // Priority for remaining stepVariables is:
         // - Function Parameters (pull from variables or state by a key value)
         // - Step Parameters (pull from variables or state by a key value)
+        // - All other variables. These are carried over in case the function wants access to the ambient content.
         var functionParameters = step.Describe();
         foreach (var param in functionParameters.Parameters)
         {
@@ -575,6 +554,14 @@ public sealed class Plan : ISKFunction
             }
         }
 
+        foreach (KeyValuePair<string, string> item in variables)
+        {
+            if (!stepVariables.ContainsKey(item.Key))
+            {
+                stepVariables.Set(item.Key, item.Value);
+            }
+        }
+
         return stepVariables;
     }
 
@@ -585,8 +572,6 @@ public sealed class Plan : ISKFunction
         this.SkillName = function.SkillName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
-        this.IsSensitive = function.IsSensitive;
-        this.TrustServiceInstance = function.TrustServiceInstance;
         this.RequestSettings = function.RequestSettings;
     }
 

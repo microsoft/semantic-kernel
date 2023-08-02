@@ -21,12 +21,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     private T[] _items;
     private int _count;
 
-    public MinHeap(T minValue)
-        : this(minValue, DefaultCapacity)
-    {
-    }
-
-    public MinHeap(T minValue, int capacity)
+    public MinHeap(T minValue, int capacity = DefaultCapacity)
     {
         if (capacity < MinCapacity)
         {

@@ -3,11 +3,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -39,19 +36,6 @@ public interface ISKFunction
     bool IsSemantic { get; }
 
     /// <summary>
-    /// Whether the function is set to be sensitive (default false).
-    /// When a function is sensitive, the default trust service will throw an exception
-    /// if the function is invoked passing in some untrusted input (or context, or prompt).
-    /// </summary>
-    bool IsSensitive { get; }
-
-    /// <summary>
-    /// Service used for trust check events.
-    /// This can be provided at function creation, if not, the TrustService.DefaultTrusted implementation will be used.
-    /// </summary>
-    ITrustService TrustServiceInstance { get; }
-
-    /// <summary>
     /// AI service settings
     /// </summary>
     CompleteRequestSettings RequestSettings { get; }
@@ -68,24 +52,10 @@ public interface ISKFunction
     /// <param name="context">SK context</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null);
-
-    /// <summary>
-    /// Invoke the <see cref="ISKFunction"/>.
-    /// </summary>
-    /// <param name="input">String input</param>
-    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
-    /// <param name="memory">Semantic memory</param>
-    /// <param name="logger">Application logger</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
-    Task<SKContext> InvokeAsync(
-        string? input = null,
         CompleteRequestSettings? settings = null,
-        ISemanticTextMemory? memory = null,
-        ILogger? logger = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

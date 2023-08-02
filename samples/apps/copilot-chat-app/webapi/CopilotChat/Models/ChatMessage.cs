@@ -120,7 +120,14 @@ public class ChatMessage : IStorageEntity
     /// <param name="prompt">The prompt used to generate the message</param>
     /// <param name="authorRole">Role of the author</param>
     /// <param name="type">Type of the message</param>
-    public ChatMessage(string userId, string userName, string chatId, string content, string prompt = "", AuthorRoles authorRole = AuthorRoles.User, ChatMessageType type = ChatMessageType.Message)
+    public ChatMessage(
+        string userId,
+        string userName,
+        string chatId,
+        string content,
+        string prompt = "",
+        AuthorRoles authorRole = AuthorRoles.User,
+        ChatMessageType type = ChatMessageType.Message)
     {
         this.Timestamp = DateTimeOffset.Now;
         this.UserId = userId;
@@ -145,12 +152,31 @@ public class ChatMessage : IStorageEntity
     }
 
     /// <summary>
+    /// Create a new chat message for a document upload.
+    /// </summary>
+    /// <param name="userId">The user ID that uploaded the document</param>
+    /// <param name="userName">The user name that uploaded the document</param>
+    /// <param name="chatId">The chat ID that this message belongs to</param>
+    /// <param name="documentMessageContent">The document message content</param>
+    public static ChatMessage CreateDocumentMessage(string userId, string userName, string chatId, DocumentMessageContent documentMessageContent)
+    {
+        return new ChatMessage(userId, userName, chatId, documentMessageContent.ToString(), string.Empty, AuthorRoles.User, ChatMessageType.Document);
+    }
+
+    /// <summary>
     /// Serialize the object to a formatted string.
     /// </summary>
     /// <returns>A formatted string</returns>
     public string ToFormattedString()
     {
-        return $"[{this.Timestamp.ToString("G", CultureInfo.CurrentCulture)}] {this.UserName}: {this.Content}";
+        var content = this.Content;
+        if (this.Type == ChatMessageType.Document)
+        {
+            var documentMessageContent = DocumentMessageContent.FromString(content);
+            content = (documentMessageContent != null) ? documentMessageContent.ToFormattedString() : "Uploaded documents";
+        }
+
+        return $"[{this.Timestamp.ToString("G", CultureInfo.CurrentCulture)}] {this.UserName}: {content}";
     }
 
     /// <summary>

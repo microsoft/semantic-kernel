@@ -7,6 +7,9 @@ using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
+/// <summary>
+/// Interface for chat completion services
+/// </summary>
 public interface IChatCompletion : IAIService
 {
     /// <summary>

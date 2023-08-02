@@ -9,6 +9,7 @@ from semantic_kernel.core_skills.math_skill import MathSkill
 from semantic_kernel.core_skills.text_memory_skill import TextMemorySkill
 from semantic_kernel.core_skills.text_skill import TextSkill
 from semantic_kernel.core_skills.time_skill import TimeSkill
+from semantic_kernel.core_skills.web_search_engine_skill import WebSearchEngineSkill
 
 __all__ = [
     "TextMemorySkill",
@@ -18,4 +19,5 @@ __all__ = [
     "HttpSkill",
     "ConversationSummarySkill",
     "MathSkill",
+    "WebSearchEngineSkill",
 ]

@@ -34,9 +34,9 @@ public sealed class PlanVariableExpansionTests
     [InlineData("$VAR1 $VAR2", "value1 value2", "VAR1", "value1", "VAR2", "value2")]
     [InlineData("$A-$A-$A", "x-x-x", "A", "x")]
     [InlineData("$A$B$A", "aba", "A", "a", "B", "b")]
-    [InlineData("$ABC", "", "A", "", "B", "", "C", "")]
-    [InlineData("$NO_VAR", "", "A", "a", "B", "b", "C", "c")]
-    [InlineData("$name$invalid_name", "world", "name", "world")]
+    [InlineData("$ABC", "$ABC", "A", "", "B", "", "C", "")]
+    [InlineData("$NO_VAR", "$NO_VAR", "A", "a", "B", "b", "C", "c")]
+    [InlineData("$name$invalid_name", "world$invalid_name", "name", "world")]
     public void ExpandFromVariablesWithVariablesReturnsExpandedString(string input, string expected, params string[] variables)
     {
         // Arrange

@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -35,7 +37,7 @@ namespace Microsoft.SemanticKernel.Skills.Document;
 /// <summary>
 /// Skill for interacting with documents (e.g. Microsoft Word)
 /// </summary>
-public class DocumentSkill
+public sealed class DocumentSkill
 {
     /// <summary>
     /// <see cref="ContextVariables"/> parameter names.
@@ -68,43 +70,44 @@ public class DocumentSkill
     /// <summary>
     /// Read all text from a document, using <see cref="ContextVariables.Input"/> as the file path.
     /// </summary>
-    [SKFunction("Read all text from a document")]
-    [SKFunctionInput(Description = "Path to the file to read")]
-    public async Task<string> ReadTextAsync(string filePath, SKContext context)
+    [SKFunction, Description("Read all text from a document")]
+    public async Task<string> ReadTextAsync(
+        [Description("Path to the file to read")] string filePath,
+        CancellationToken cancellationToken = default)
     {
-        this._logger.LogInformation("Reading text from {0}", filePath);
-        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
+        this._logger.LogDebug("Reading text from {0}", filePath);
+        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
         return this._documentConnector.ReadText(stream);
     }
 
     /// <summary>
     /// Append the text in <see cref="ContextVariables.Input"/> to a document. If the document doesn't exist, it will be created.
     /// </summary>
-    [SKFunction("Append text to a document. If the document doesn't exist, it will be created.")]
-    [SKFunctionInput(Description = "Text to append")]
-    [SKFunctionContextParameter(Name = Parameters.FilePath, Description = "Destination file path")]
-    public async Task AppendTextAsync(string text, SKContext context)
+    [SKFunction, Description("Append text to a document. If the document doesn't exist, it will be created.")]
+    public async Task AppendTextAsync(
+        [Description("Text to append")] string text,
+        [Description("Destination file path")] string filePath,
+        CancellationToken cancellationToken = default)
     {
-        if (!context.Variables.TryGetValue(Parameters.FilePath, out string? filePath))
+        if (string.IsNullOrWhiteSpace(filePath))
         {
-            context.Fail($"Missing variable {Parameters.FilePath}.");
-            return;
+            throw new ArgumentException("Variable was null or whitespace", nameof(filePath));
         }
 
         // If the document already exists, open it. If not, create it.
-        if (await this._fileSystemConnector.FileExistsAsync(filePath).ConfigureAwait(false))
+        if (await this._fileSystemConnector.FileExistsAsync(filePath, cancellationToken).ConfigureAwait(false))
         {
-            this._logger.LogInformation("Writing text to file {0}", filePath);
-            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(filePath, context.CancellationToken).ConfigureAwait(false);
+            this._logger.LogDebug("Writing text to file {0}", filePath);
+            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
             this._documentConnector.AppendText(stream, text);
         }
         else
         {
-            this._logger.LogInformation("File does not exist. Creating file at {0}", filePath);
-            using Stream stream = await this._fileSystemConnector.CreateFileAsync(filePath).ConfigureAwait(false);
+            this._logger.LogDebug("File does not exist. Creating file at {0}", filePath);
+            using Stream stream = await this._fileSystemConnector.CreateFileAsync(filePath, cancellationToken).ConfigureAwait(false);
             this._documentConnector.Initialize(stream);
 
-            this._logger.LogInformation("Writing text to {0}", filePath);
+            this._logger.LogDebug("Writing text to {0}", filePath);
             this._documentConnector.AppendText(stream, text);
         }
     }

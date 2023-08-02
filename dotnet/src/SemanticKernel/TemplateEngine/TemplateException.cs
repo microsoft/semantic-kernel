@@ -13,15 +13,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 public class TemplateException : SKException
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="TemplateException"/> class with a provided error code.
-    /// </summary>
-    /// <param name="error">The error code.</param>
-    public TemplateException(ErrorCodes error)
-        : this(error, message: null, innerException: null)
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="TemplateException"/> class with a provided error code and message.
     /// </summary>
     /// <param name="errorCode">The error code.</param>
@@ -37,7 +28,7 @@ public class TemplateException : SKException
     /// <param name="errorCode">The error code.</param>
     /// <param name="message">A string that describes the error.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    public TemplateException(ErrorCodes errorCode, string? message, Exception? innerException)
+    public TemplateException(ErrorCodes errorCode, string? message = null, Exception? innerException = null)
         : base(GetDefaultMessage(errorCode, message), innerException)
     {
         this.ErrorCode = errorCode;

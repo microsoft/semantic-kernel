@@ -11,6 +11,44 @@ from semantic_kernel.text import (
 NEWLINE = os.linesep
 
 
+def test_split_plain_text_lines_with_token_count():
+    """Test split_plain_text_lines() with external token counter"""
+
+    text = "This is a test of the emergency broadcast system. This is only a test."
+
+    max_token_per_line = 8
+
+    expected = [
+        "This is a test of the",
+        "emergency",
+        "broadcast system.",
+        "This is only a test.",
+    ]
+    split = split_plaintext_lines(
+        text=text,
+        max_token_per_line=max_token_per_line,
+        token_counter=lambda x: len(x) // 3,
+    )
+    assert expected == split
+
+
+def test_split_plain_text_lines_half():
+    """Test split_plain_text_lines() with external token counter"""
+
+    text_1 = "This is a test of. cutting. at the half point."
+    text_2 = "This is a test of . cutting. at the half point."
+
+    max_token_per_line = 10
+
+    expected_1 = ["This is a test of. cutting.", "at the half point."]
+    split_1 = split_plaintext_lines(text=text_1, max_token_per_line=max_token_per_line)
+    assert expected_1 == split_1
+
+    expected_2 = ["This is a test of .", "cutting. at the half point."]
+    split_2 = split_plaintext_lines(text=text_2, max_token_per_line=max_token_per_line)
+    assert expected_2 == split_2
+
+
 def test_split_plain_text_lines():
     """Test split_plain_text_lines()"""
 

@@ -18,11 +18,10 @@ internal static class GPT3Settings
 
     /// <summary>Lazy load the cached encoding table (encoder.json).</summary>
     private static readonly Lazy<Dictionary<string, int>> s_encoder = new(() =>
-    {
-        return JsonSerializer.Deserialize<Dictionary<string, int>>(EmbeddedResource.ReadEncodingTable())
-               ?? throw new AIException(AIException.ErrorCodes.InvalidConfiguration,
-                   "Encoding table deserialization returned NULL");
-    });
+        JsonSerializer.Deserialize<Dictionary<string, int>>(
+            EmbeddedResource.ReadEncodingTable()) ?? throw new AIException(
+            AIException.ErrorCodes.InvalidConfiguration,
+            "Encoding table deserialization returned NULL"));
 
     /// <summary>Lazy load the cached byte pair encoding table (vocab.bpe).</summary>
     private static readonly Lazy<Dictionary<(string, string), int>> s_bpeRanks = new(() =>

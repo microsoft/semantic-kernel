@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 
 namespace SemanticKernel.Service.CopilotChat.Models;
@@ -22,7 +24,7 @@ public class DocumentImportForm
     /// <summary>
     /// The file to import.
     /// </summary>
-    public IFormFile? FormFile { get; set; }
+    public IEnumerable<IFormFile> FormFiles { get; set; } = Enumerable.Empty<IFormFile>();
 
     /// <summary>
     /// Scope of the document. This determines the collection name in the document memory.
@@ -42,4 +44,10 @@ public class DocumentImportForm
     /// Will be use to validate if the user has access to the chat session.
     /// </summary>
     public string UserId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Name of the user who sent this message.
+    /// Will be used to create the chat message representing the document upload.
+    /// </summary>
+    public string UserName { get; set; } = string.Empty;
 }

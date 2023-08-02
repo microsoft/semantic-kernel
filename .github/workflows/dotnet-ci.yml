@@ -1,24 +1,74 @@
 #
-# This workflow will build and run all unit tests.
+# This workflow will build and run all tests using dotnet docker containers,
+# each targeting a single version of the dotnet SDK.
 #
 
 name: dotnet-ci
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main", "feature*" ]
+  schedule:
+    - cron:  '0 7 * * *'
 
 permissions:
   contents: read
 
 jobs:
-  dotnet-build-and-test:
+  build-and-test-docker:
     strategy:
+        fail-fast: false
         matrix:
-          os: [ubuntu-latest, windows-latest]
+          include:
+          - { os: ubuntu-latest, dotnet: '6.0', configuration: Debug }
+          - { os: ubuntu-latest, dotnet: '6.0', configuration: Release }
+          - { os: ubuntu-latest, dotnet: '7.0', configuration: Release }
+          - { os: ubuntu-latest, dotnet: '8.0-preview', configuration: Release }
+  
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        clean: true
+        
+    - name: Find solutions
+      shell: bash
+      run: echo "solutions=$(find ./ -type f -name "*.sln" | tr '\n' ' ')" >> $GITHUB_ENV
+
+    - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
+      run: |
+        docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+
+    - name: Build
+      run: |
+        for solution in ${{ env.solutions }}; do
+          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet build -c ${{ matrix.configuration }} /app/$solution"
+        done
+        
+    - name: Find test projects
+      shell: bash
+      run: echo "testprojects=$(find ./dotnet -type f -name "*UnitTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+
+    - name: Run Tests
+      shell: bash
+      run: |
+        for project in ${{ env.testprojects }}; do
+          docker run --rm -v $(pwd):/app -w /app mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }} /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
+        done
+
+    - name: Upload dotnet test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: dotnet-testresults-${{ matrix.configuration }}
+        path: ./TestResults
+      if: ${{ always() }}
+
+  build-and-test-windows:
+    strategy:
+        fail-fast: false
+        matrix:
+          os: [windows-latest]
           configuration: [Release, Debug]
-          dotnet-version: ['6.0.x']
+          dotnet-version: ['7.0.x']
     runs-on: ${{ matrix.os }}
     env:
       NUGET_CERT_REVOCATION_MODE: offline
@@ -42,22 +92,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget
 
-    - name: Update project versions
-      shell: bash
-      run: |
-        allProjectFiles=$(find ./dotnet -type f -name "*.csproj" | tr '\n' ' ');
-        if [ $? -ne 0 ]; then exit 1; fi
-        echo "$allProjectFiles"
-
-        propsFile="./dotnet/nuget/nuget-package.props"
-        
-        buildAndRevisionNumber="${{ github.run_number }}.${{ github.run_attempt }}"
-        echo "buildAndRevisionNumber: $buildAndRevisionNumber"
-
-        for file in $allProjectFiles; do
-          ./.github/workflows/update-version.sh --file $file --propsFile $propsFile --buildAndRevisionNumber $buildAndRevisionNumber
-        done
-
     - name: Find solutions
       shell: bash
       run: echo "solutions=$(find ./dotnet -type f -name "*.sln" | tr '\n' ' ')" >> $GITHUB_ENV
@@ -76,15 +110,15 @@ jobs:
           dotnet build $solution --no-restore --configuration ${{ matrix.configuration }}
         done
 
-    - name: Find unit test projects
+    - name: Find test projects
       shell: bash
-      run: echo "projects=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
+      run: echo "testprojects=$(find ./dotnet -type f -name "*Tests.csproj" | tr '\n' ' ')" >> $GITHUB_ENV
 
-    - name: Test
+    - name: Run Tests
       shell: bash
       run: |
-        for project in ${{ env.projects }}; do
-            dotnet test $project --no-build --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
+        for project in ${{ env.testprojects }}; do
+          dotnet test $project --verbosity normal --logger trx --results-directory ./TestResults --configuration ${{ matrix.configuration }}
         done
 
     - name: Upload dotnet test results
@@ -93,15 +127,3 @@ jobs:
         name: dotnet-testresults-${{ matrix.configuration }}
         path: ./TestResults
       if: ${{ always() }}
-    
-    - name: Stage artifacts
-      shell: bash
-      run: mkdir ./out; find . | grep "/bin/" | xargs cp -r --parents -t ./out
-      if: ${{ github.event_name == 'push' }}
-    
-    - name: Archive artifacts ${{ matrix.os }}-${{ matrix.configuration }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: drop-${{ matrix.os }}-${{ matrix.configuration }}
-        path: ./out
-      if: ${{ github.event_name == 'push' }}

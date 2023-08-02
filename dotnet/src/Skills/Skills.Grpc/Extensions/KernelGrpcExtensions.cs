@@ -27,8 +27,13 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the skill directory.</param>
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
+    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportGrpcSkillFromDirectory(this IKernel kernel, string parentDirectory, string skillDirectoryName)
+    public static IDictionary<string, ISKFunction> ImportGrpcSkillFromDirectory(
+        this IKernel kernel,
+        string parentDirectory,
+        string skillDirectoryName,
+        HttpClient? httpClient = null)
     {
         const string ProtoFile = "grpc.proto";
 
@@ -43,11 +48,11 @@ public static class KernelGrpcExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        kernel.Logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.RegisterGrpcSkill(stream, skillDirectoryName);
+        return kernel.RegisterGrpcSkill(stream, skillDirectoryName, httpClient);
     }
 
     /// <summary>
@@ -56,22 +61,24 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Name of the skill to register.</param>
     /// <param name="filePath">File path to .proto document.</param>
+    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static IDictionary<string, ISKFunction> ImportGrpcSkillFromFile(
         this IKernel kernel,
         string skillName,
-        string filePath)
+        string filePath,
+        HttpClient? httpClient = null)
     {
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
+        kernel.Logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.RegisterGrpcSkill(stream, skillName);
+        return kernel.RegisterGrpcSkill(stream, skillName, httpClient);
     }
 
     /// <summary>
@@ -80,11 +87,13 @@ public static class KernelGrpcExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">.proto document stream.</param>
     /// <param name="skillName">Skill name.</param>
+    /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static IDictionary<string, ISKFunction> RegisterGrpcSkill(
         this IKernel kernel,
         Stream documentStream,
-        string skillName)
+        string skillName,
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(kernel);
         Verify.ValidSkillName(skillName);
@@ -96,20 +105,22 @@ public static class KernelGrpcExtensions
 
         var skill = new Dictionary<string, ISKFunction>();
 
-        var runner = new GrpcOperationRunner(new HttpClient());
+        var client = HttpClientProvider.GetHttpClient(kernel.Config, httpClient, kernel.Logger);
+
+        var runner = new GrpcOperationRunner(client);
 
         foreach (var operation in operations)
         {
             try
             {
-                kernel.Log.LogTrace("Registering gRPC function {0}.{1}", skillName, operation.Name);
+                kernel.Logger.LogTrace("Registering gRPC function {0}.{1}", skillName, operation.Name);
                 var function = kernel.RegisterGrpcFunction(runner, skillName, operation);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other gRPC functions
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}",
+                kernel.Logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}",
                     skillName, operation.Name, ex.Message);
             }
         }
@@ -164,9 +175,9 @@ public static class KernelGrpcExtensions
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}", skillName, operation.Name,
+                kernel.Logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}", skillName, operation.Name,
                     ex.Message);
-                context.Fail(ex.Message, ex);
+                throw;
             }
 
             return context;
@@ -178,8 +189,7 @@ public static class KernelGrpcExtensions
             description: operation.Name,
             skillName: skillName,
             functionName: operation.Name,
-            isSensitive: false,
-            log: kernel.Log);
+            logger: kernel.Logger);
 
         return kernel.RegisterCustomFunction(function);
     }

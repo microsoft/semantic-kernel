@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
@@ -17,6 +18,9 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
+/// <summary>
+/// Provides extension methods for the <see cref="KernelBuilder"/> class to configure OpenAI and AzureOpenAI connectors.
+/// </summary>
 public static class OpenAIKernelBuilderExtensions
 {
     #region Text Completion
@@ -79,6 +83,32 @@ public static class OpenAIKernelBuilderExtensions
                 endpoint,
                 credentials,
                 HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                parameters.Logger),
+            setAsDefault);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an Azure OpenAI text completion service to the list.
+    /// See https://learn.microsoft.com/azure/cognitive-services/openai for service details.
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
+    /// <returns>Self instance</returns>
+    public static KernelBuilder WithAzureTextCompletionService(this KernelBuilder builder,
+        string deploymentName,
+        OpenAIClient openAIClient,
+        string? serviceId = null,
+        bool setAsDefault = false)
+    {
+        builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
+            new AzureTextCompletion(
+                deploymentName,
+                openAIClient,
                 parameters.Logger),
             setAsDefault);
 

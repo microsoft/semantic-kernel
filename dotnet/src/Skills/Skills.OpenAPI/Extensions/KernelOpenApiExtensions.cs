@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Resources;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -14,10 +15,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.OpenAPI;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
@@ -38,36 +38,38 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
     /// <param name="url">Url to in which to retrieve the OpenAPI definition.</param>
-    /// <param name="httpClient">HttpClient to use for the request.</param>
-    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    /// <param name="userAgent">Optional user agent header value.</param>
-    /// <param name="retryConfiguration">Optional retry configuration.</param>
-    /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(
         this IKernel kernel,
         string skillName,
         Uri url,
-        HttpClient httpClient,
-        AuthenticateRequestAsyncCallback? authCallback = null,
-        string? userAgent = "Microsoft-Semantic-Kernel",
-        HttpRetryConfig? retryConfiguration = null,
-        Uri? serverUrlOverride = null,
+        OpenApiSkillExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.ValidSkillName(skillName);
 
-        using HttpResponseMessage response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
+#pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
+
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+
+        requestMessage.Headers.UserAgent.Add(!string.IsNullOrEmpty(executionParameters?.UserAgent)
+            ? ProductInfoHeaderValue.Parse(executionParameters!.UserAgent)
+            : ProductInfoHeaderValue.Parse(Telemetry.HttpUserAgent));
+
+        using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         if (stream == null)
         {
             throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
         }
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, userAgent, serverUrlOverride, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, executionParameters, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -75,19 +77,13 @@ public static class KernelOpenApiExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Skill name.</param>
-    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    /// <param name="userAgent">Optional user agent header value.</param>
-    /// <param name="retryConfiguration">Optional retry configuration.</param>
-    /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(
         this IKernel kernel,
         string skillName,
-        AuthenticateRequestAsyncCallback? authCallback = null,
-        string? userAgent = "Microsoft-Semantic-Kernel",
-        HttpRetryConfig? retryConfiguration = null,
-        Uri? serverUrlOverride = null,
+        OpenApiSkillExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.ValidSkillName(skillName);
@@ -102,7 +98,7 @@ public static class KernelOpenApiExtensions
             throw new MissingManifestResourceException($"Unable to load OpenApi skill from assembly resource '{resourceName}'.");
         }
 
-        return kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, userAgent, serverUrlOverride, cancellationToken: cancellationToken);
+        return kernel.RegisterOpenApiSkillAsync(stream, skillName, executionParameters, cancellationToken);
     }
 
     /// <summary>
@@ -111,20 +107,14 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="parentDirectory">Directory containing the skill directory.</param>
     /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
-    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    /// <param name="userAgent">Optional user agent header value.</param>
-    /// <param name="retryConfiguration">Optional retry configuration.</param>
-    /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromDirectoryAsync(
         this IKernel kernel,
         string parentDirectory,
         string skillDirectoryName,
-        AuthenticateRequestAsyncCallback? authCallback = null,
-        string? userAgent = "Microsoft-Semantic-Kernel",
-        HttpRetryConfig? retryConfiguration = null,
-        Uri? serverUrlOverride = null,
+        OpenApiSkillExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         const string OpenApiFile = "openapi.json";
@@ -140,13 +130,13 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {openApiDocumentPath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document", openApiDocumentPath);
+        kernel.Logger.LogTrace("Registering Rest functions from {0} OpenApi document", openApiDocumentPath);
 
         var skill = new Dictionary<string, ISKFunction>();
 
         using var stream = File.OpenRead(openApiDocumentPath);
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillDirectoryName, authCallback, retryConfiguration, userAgent, serverUrlOverride, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await kernel.RegisterOpenApiSkillAsync(stream, skillDirectoryName, executionParameters, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -155,20 +145,14 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="skillName">Name of the skill to register.</param>
     /// <param name="filePath">File path to the OpenAPI document.</param>
-    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    /// <param name="userAgent">Optional user agent header value.</param>
-    /// <param name="retryConfiguration">Optional retry configuration.</param>
-    /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromFileAsync(
         this IKernel kernel,
         string skillName,
         string filePath,
-        AuthenticateRequestAsyncCallback? authCallback = null,
-        string? userAgent = "Microsoft-Semantic-Kernel",
-        HttpRetryConfig? retryConfiguration = null,
-        Uri? serverUrlOverride = null,
+        OpenApiSkillExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         if (!File.Exists(filePath))
@@ -176,11 +160,11 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {filePath} is found.");
         }
 
-        kernel.Log.LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
+        kernel.Logger.LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
-        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, authCallback, retryConfiguration, userAgent, serverUrlOverride, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await kernel.RegisterOpenApiSkillAsync(stream, skillName, executionParameters, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -189,40 +173,28 @@ public static class KernelOpenApiExtensions
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">OpenApi document stream.</param>
     /// <param name="skillName">Skill name.</param>
-    /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
-    /// <param name="retryConfiguration">Optional retry configuration.</param>
-    /// <param name="userAgent">Optional override for request-header field containing information about the user agent originating the request</param>
-    /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
     public static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiSkillAsync(
         this IKernel kernel,
         Stream documentStream,
         string skillName,
-        AuthenticateRequestAsyncCallback? authCallback = null,
-        HttpRetryConfig? retryConfiguration = null,
-        string? userAgent = "Microsoft-Semantic-Kernel",
-        Uri? serverUrlOverride = null,
+        OpenApiSkillExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
         Verify.ValidSkillName(skillName);
 
         // Parse
-        var parser = new OpenApiDocumentParser();
+        var parser = new OpenApiDocumentParser(kernel.Logger);
 
-        var operations = await parser.ParseAsync(documentStream, cancellationToken).ConfigureAwait(false);
+        var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-        //Creating HttpClient here until a proper solution allowing client code to provide its own instance is put in place.
-        var retryHandler = new DefaultHttpRetryHandler(retryConfiguration ?? new HttpRetryConfig(), kernel.Log) { InnerHandler = new HttpClientHandler() { CheckCertificateRevocationList = true } };
-        var httpClient = new HttpClient(retryHandler, true);
-#pragma warning restore CA2000 // Dispose objects before losing scope
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 
-        // User Agent may be a required request header fields for some Rest APIs,
-        // but this detail isn't specified in OpenAPI specs, so defaulting for all Rest APIs imported.
-        // Other applications can override this value by passing it as a parameter on execution.
-        var runner = new RestApiOperationRunner(httpClient, authCallback, userAgent);
+        var userAgent = executionParameters?.UserAgent ?? Telemetry.HttpUserAgent;
+        var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, userAgent);
 
         var skill = new Dictionary<string, ISKFunction>();
 
@@ -230,14 +202,14 @@ public static class KernelOpenApiExtensions
         {
             try
             {
-                kernel.Log.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                var function = kernel.RegisterRestApiFunction(skillName, runner, operation, serverUrlOverride, cancellationToken);
+                kernel.Logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
+                var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other Rest functions
-                kernel.Log.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                kernel.Logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
                     skillName, operation.Id, ex.Message);
             }
         }
@@ -267,7 +239,7 @@ public static class KernelOpenApiExtensions
     {
         var restOperationParameters = operation.GetParameters(serverUrlOverride);
 
-        var logger = kernel.Log ?? NullLogger.Instance;
+        var logger = kernel.Logger ?? NullLogger.Instance;
 
         async Task<SKContext> ExecuteAsync(SKContext context)
         {
@@ -308,7 +280,7 @@ public static class KernelOpenApiExtensions
             {
                 logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
                     ex.Message);
-                context.Fail(ex.Message, ex);
+                throw;
             }
 
             return context;
@@ -319,7 +291,7 @@ public static class KernelOpenApiExtensions
             {
                 Name = p.AlternativeName ?? p.Name,
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
-                DefaultValue = p.DefaultValue ?? string.Empty
+                DefaultValue = p.DefaultValue
             })
             .ToList();
 
@@ -329,8 +301,7 @@ public static class KernelOpenApiExtensions
             description: operation.Description,
             skillName: skillName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
-            isSensitive: false,
-            log: logger);
+            logger: logger);
 
         return kernel.RegisterCustomFunction(function);
     }
@@ -364,7 +335,7 @@ public static class KernelOpenApiExtensions
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 
-        logger.LogInformation("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{1}\" when invoking function.", operationId, result);
+        logger.LogDebug("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{2}\" when invoking function.", operationId, result, result);
 
         return result;
     }

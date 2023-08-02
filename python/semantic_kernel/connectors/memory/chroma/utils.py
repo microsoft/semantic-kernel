@@ -40,7 +40,7 @@ def query_results_to_records(
         memory_records = [
             (
                 MemoryRecord(
-                    is_reference=metadata["is_reference"],
+                    is_reference=(metadata["is_reference"] == "True"),
                     external_source_name=metadata["external_source_name"],
                     id=metadata["id"],
                     description=metadata["description"],
@@ -62,7 +62,7 @@ def query_results_to_records(
         memory_records = [
             (
                 MemoryRecord(
-                    is_reference=metadata["is_reference"],
+                    is_reference=(metadata["is_reference"] == "True"),
                     external_source_name=metadata["external_source_name"],
                     id=metadata["id"],
                     description=metadata["description"],

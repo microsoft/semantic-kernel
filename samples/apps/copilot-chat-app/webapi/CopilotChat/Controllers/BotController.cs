@@ -29,6 +29,8 @@ public class BotController : ControllerBase
     private readonly ISemanticTextMemory _semanticMemory;
     private readonly ChatSessionRepository _chatRepository;
     private readonly ChatMessageRepository _chatMessageRepository;
+    private readonly ChatParticipantRepository _chatParticipantRepository;
+
     private readonly BotSchemaOptions _botSchemaOptions;
     private readonly AIServiceOptions _embeddingOptions;
     private readonly DocumentMemoryOptions _documentMemoryOptions;
@@ -44,6 +46,7 @@ public class BotController : ControllerBase
     /// </param>
     /// <param name="chatRepository">The chat session repository.</param>
     /// <param name="chatMessageRepository">The chat message repository.</param>
+    /// <param name="chatParticipantRepository">The chat participant repository.</param>
     /// <param name="aiServiceOptions">The AI service options where we need the embedding settings from.</param>
     /// <param name="botSchemaOptions">The bot schema options.</param>
     /// <param name="documentMemoryOptions">The document memory options.</param>
@@ -53,6 +56,7 @@ public class BotController : ControllerBase
         ISemanticTextMemory semanticMemory,
         ChatSessionRepository chatRepository,
         ChatMessageRepository chatMessageRepository,
+        ChatParticipantRepository chatParticipantRepository,
         IOptions<AIServiceOptions> aiServiceOptions,
         IOptions<BotSchemaOptions> botSchemaOptions,
         IOptions<DocumentMemoryOptions> documentMemoryOptions,
@@ -63,6 +67,7 @@ public class BotController : ControllerBase
         this._semanticMemory = semanticMemory;
         this._chatRepository = chatRepository;
         this._chatMessageRepository = chatMessageRepository;
+        this._chatParticipantRepository = chatParticipantRepository;
         this._botSchemaOptions = botSchemaOptions.Value;
         this._embeddingOptions = aiServiceOptions.Value;
         this._documentMemoryOptions = documentMemoryOptions.Value;
@@ -111,8 +116,9 @@ public class BotController : ControllerBase
         // Upload chat history into chat repository and embeddings into memory.
 
         // 1. Create a new chat and get the chat id.
-        newChat = new ChatSession(userId, chatTitle);
+        newChat = new ChatSession(chatTitle);
         await this._chatRepository.CreateAsync(newChat);
+        await this._chatParticipantRepository.CreateAsync(new ChatParticipant(userId, newChat.Id));
         chatId = newChat.Id;
 
         string oldChatId = bot.ChatHistory.First().ChatId;

@@ -43,8 +43,10 @@ const TopicSelection: FC<IData> = ({ uri, keyConfig, onTopicSelected, onBack }) 
 
         try {
             var result = await sk.invokeAsync(keyConfig, ask, 'childrensbookskill', 'bookideas');
-            var jsonValue = (result.value as string).substring((result.value as string).indexOf('['));
-
+            var jsonValue = (result.value as string).substring(
+                (result.value as string).indexOf('['),
+                (result.value as string).indexOf(']') + 1,
+            );
             var results = JSON.parse(jsonValue);
             var topics: ITopicWithSummary[] = [];
 

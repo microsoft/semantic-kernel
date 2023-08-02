@@ -3,7 +3,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Models;
 using Moq;
@@ -14,8 +13,6 @@ namespace SemanticKernel.Skills.UnitTests.MsGraph;
 
 public class TaskListSkillTests
 {
-    private readonly SKContext _context = new();
-
     private readonly TaskManagementTaskList _anyTaskList = new(
         id: Guid.NewGuid().ToString(),
         name: Guid.NewGuid().ToString());
@@ -42,14 +39,10 @@ public class TaskListSkillTests
 
         TaskListSkill target = new(connectorMock.Object);
 
-        // Verify no reminder is set
-        Assert.False(this._context.Variables.ContainsKey(Parameters.Reminder));
-
         // Act
-        await target.AddTaskAsync(anyTitle, this._context);
+        await target.AddTaskAsync(anyTitle);
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -69,13 +62,11 @@ public class TaskListSkillTests
         string anyReminder = (DateTimeOffset.Now + TimeSpan.FromHours(1)).ToString("o");
 
         TaskListSkill target = new(connectorMock.Object);
-        this._context.Variables.Set(Parameters.Reminder, anyReminder);
 
         // Act
-        await target.AddTaskAsync(anyTitle, this._context);
+        await target.AddTaskAsync(anyTitle, anyReminder);
 
         // Assert
-        Assert.False(this._context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -94,13 +85,12 @@ public class TaskListSkillTests
         string anyReminder = (DateTimeOffset.Now + TimeSpan.FromHours(1)).ToString("o");
 
         TaskListSkill target = new(connectorMock.Object);
-        this._context.Variables.Set(Parameters.Reminder, anyReminder);
 
-        // Act
-        await target.AddTaskAsync(anyTitle, this._context);
+        // Act/Assert
+        await Assert.ThrowsAnyAsync<InvalidOperationException>(() =>
+           target.AddTaskAsync(anyTitle, anyReminder));
 
         // Assert
-        Assert.True(this._context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 

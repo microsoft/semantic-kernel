@@ -99,6 +99,11 @@ Python notebooks:
 * [Using Context Variables to Build a Chat Experience](../samples/notebooks/python/04-context-variables-chat.ipynb)
 * [Introduction to planners](../samples/notebooks/python/05-using-the-planner.ipynb)
 * [Building Memory with Embeddings](../samples/notebooks/python/06-memory-and-embeddings.ipynb)
+* [Using Hugging Face for Skills](../samples/notebooks/python/07-hugging-face-for-skills.ipynb)
+* [Combining native functions and semantic functions](../samples/notebooks/python/08-native-function-inline.ipynb)
+* [Groundedness Checking with Semantic Kernel](../samples/notebooks/python/09-groundedness-checking.ipynb)
+* [Returning multiple results per prompt](../samples/notebooks/python/10-multiple-results-per-prompt.ipynb)
+* [Streaming completions with Semantic Kernel](../samples/notebooks/python/11-streaming-completions.ipynb)
 
 # SK Frequently Asked Questions
 

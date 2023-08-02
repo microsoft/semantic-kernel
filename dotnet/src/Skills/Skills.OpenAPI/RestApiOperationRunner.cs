@@ -4,9 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
@@ -44,7 +46,7 @@ internal sealed class RestApiOperationRunner
     public RestApiOperationRunner(HttpClient httpClient, AuthenticateRequestAsyncCallback? authCallback = null, string? userAgent = null)
     {
         this._httpClient = httpClient;
-        this._userAgent = userAgent;
+        this._userAgent = userAgent ?? Telemetry.HttpUserAgent;
 
         // If no auth callback provided, use empty function
         if (authCallback == null)
@@ -95,10 +97,9 @@ internal sealed class RestApiOperationRunner
             requestMessage.Content = payload;
         }
 
-        if (!string.IsNullOrWhiteSpace(this._userAgent))
-        {
-            requestMessage.Headers.Add("User-Agent", this._userAgent);
-        }
+        requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
+            ? this._userAgent
+            : Telemetry.HttpUserAgent);
 
         if (headers != null)
         {
@@ -115,13 +116,11 @@ internal sealed class RestApiOperationRunner
         var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         // First iteration allowing to associate additional metadata with the returned content.
-        var result = new JsonObject
-        {
-            { "content", content },
-            { "contentType", responseMessage.Content.Headers.ContentType.ToString() }
-        };
+        var result = new RestApiOperationResponse(
+            content,
+            responseMessage.Content.Headers.ContentType.ToString());
 
-        return result;
+        return JsonSerializer.SerializeToNode(result);
     }
 
     /// <summary>

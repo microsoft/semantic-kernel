@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -33,8 +34,8 @@ public sealed class PromptTemplateEngineTests : IDisposable
 
         var kernel = Kernel.Builder.Build();
         var context = kernel.CreateNewContext();
-        context["input"] = Input;
-        context["winner"] = Winner;
+        context.Variables["input"] = Input;
+        context.Variables["winner"] = Winner;
 
         // Act
         var result = await this._target.RenderAsync(Template, context);
@@ -71,7 +72,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         var kernel = Kernel.Builder.Build();
         kernel.ImportSkill(new MySkill(), "my");
         var context = kernel.CreateNewContext();
-        context["call"] = "123";
+        context.Variables["call"] = "123";
 
         // Act
         var result = await this._target.RenderAsync(Template, context);
@@ -163,15 +164,13 @@ public sealed class PromptTemplateEngineTests : IDisposable
 
     public class MySkill
     {
-        [SKFunction("This is a test")]
-        [SKFunctionName("check123")]
+        [SKFunction, Description("This is a test"), SKName("check123")]
         public string MyFunction(string input)
         {
             return input == "123" ? "123 ok" : input + " != 123";
         }
 
-        [SKFunction("This is a test")]
-        [SKFunctionName("asis")]
+        [SKFunction, Description("This is a test"), SKName("asis")]
         public string MyFunction2(string input)
         {
             return input;

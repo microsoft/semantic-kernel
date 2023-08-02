@@ -90,7 +90,7 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                         }}
                         placeholder="Enter your OpenAI key here"
                     />
-                    <Label htmlFor="oaimodel">Model</Label>
+                    <Label htmlFor="oaimodel">Chat Completion Model</Label>
                     <Input
                         id="oaimodel"
                         value={openAiModel}
@@ -105,7 +105,7 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                                 },
                             });
                         }}
-                        placeholder="Enter the model id here, ie: text-davinci-003"
+                        placeholder="Enter the model id here, i.e.: gpt-3.5-turbo"
                     />
                 </>
             ) : (
@@ -124,11 +124,11 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                         }}
                         placeholder="Enter your Azure OpenAI key here"
                     />
-                    <Label htmlFor="oaimodel">Model</Label>
+                    <Label htmlFor="aoaimodel">Chat Completion Deployment</Label>
                     <Input
                         id="aoaideployment"
                         value={azureOpenAiDeployment}
-                        onChange={(e, d) => {
+                        onChange={(_e, d) => {
                             setAzureOpenAiDeployment(d.value);
                             setKeyConfig({
                                 ...keyConfig,
@@ -139,13 +139,13 @@ const ServiceConfig: FC<IData> = ({ uri, onConfigComplete }) => {
                                 },
                             });
                         }}
-                        placeholder="Enter your deployment name here, ie: my-deployment"
+                        placeholder="Enter your deployment name here, i.e.: gpt-35-turbo"
                     />
-                    <Label htmlFor="oaiendpoint">Endpoint</Label>
+                    <Label htmlFor="aoaiendpoint">Endpoint</Label>
                     <Input
                         id="aoaiendpoint"
                         value={azureOpenAiEndpoint}
-                        onChange={(e, d) => {
+                        onChange={(_e, d) => {
                             setAzureOpenAiEndpoint(d.value);
                             setKeyConfig({
                                 ...keyConfig,

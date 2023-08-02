@@ -3,11 +3,9 @@
 using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -16,18 +14,16 @@ namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A builder for Semantic Kernel.
-/// TODO: unit tests
 /// </summary>
 public sealed class KernelBuilder
 {
     private KernelConfig _config = new();
-    private ISemanticTextMemory _memory = NullMemory.Instance;
+    private Func<ISemanticTextMemory> _memoryFactory = () => NullMemory.Instance;
     private ILogger _logger = NullLogger.Instance;
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
-    private ITrustService? _trustService = null;
 
     /// <summary>
     /// Create a new kernel instance
@@ -54,10 +50,9 @@ public sealed class KernelBuilder
             new SkillCollection(this._logger),
             this._aiServices.Build(),
             this._promptTemplateEngine ?? new PromptTemplateEngine(this._logger),
-            this._memory,
+            this._memoryFactory.Invoke(),
             this._config,
-            this._logger,
-            this._trustService
+            this._logger
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -72,12 +67,12 @@ public sealed class KernelBuilder
     /// <summary>
     /// Add a logger to the kernel to be built.
     /// </summary>
-    /// <param name="log">Logger to add.</param>
+    /// <param name="logger">Logger to add.</param>
     /// <returns>Updated kernel builder including the logger.</returns>
-    public KernelBuilder WithLogger(ILogger log)
+    public KernelBuilder WithLogger(ILogger logger)
     {
-        Verify.NotNull(log);
-        this._logger = log;
+        Verify.NotNull(logger);
+        this._logger = logger;
         return this;
     }
 
@@ -89,7 +84,19 @@ public sealed class KernelBuilder
     public KernelBuilder WithMemory(ISemanticTextMemory memory)
     {
         Verify.NotNull(memory);
-        this._memory = memory;
+        this._memoryFactory = () => memory;
+        return this;
+    }
+
+    /// <summary>
+    /// Add a semantic text memory store factory.
+    /// </summary>
+    /// <param name="factory">The store factory.</param>
+    /// <returns>Updated kernel builder including the semantic text memory entity.</returns>
+    public KernelBuilder WithMemory<TStore>(Func<(ILogger Logger, KernelConfig Config), TStore> factory) where TStore : ISemanticTextMemory
+    {
+        Verify.NotNull(factory);
+        this._memoryFactory = () => factory((this._logger, this._config));
         return this;
     }
 
@@ -130,21 +137,6 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
-    /// Add memory storage and an embedding generator to the kernel to be built.
-    /// </summary>
-    /// <param name="storage">Storage to add.</param>
-    /// <param name="embeddingGenerator">Embedding generator to add.</param>
-    /// <returns>Updated kernel builder including the memory storage and embedding generator.</returns>
-    public KernelBuilder WithMemoryStorageAndTextEmbeddingGeneration(
-        IMemoryStore storage, ITextEmbeddingGeneration embeddingGenerator)
-    {
-        Verify.NotNull(storage);
-        Verify.NotNull(embeddingGenerator);
-        this._memory = new SemanticTextMemory(storage, embeddingGenerator);
-        return this;
-    }
-
-    /// <summary>
     /// Add a retry handler factory to the kernel to be built.
     /// </summary>
     /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
@@ -165,19 +157,6 @@ public sealed class KernelBuilder
     {
         Verify.NotNull(config);
         this._config = config;
-        return this;
-    }
-
-    /// <summary>
-    /// Use the given default trust service with the kernel to be built.
-    /// Functions directly created through the kernel will use this trust service.
-    /// If null, the created functions will rely on the TrustService.DefaultTrusted implementation.
-    /// </summary>
-    /// <param name="trustService">Trust service to use.</param>
-    /// <returns>Updated kernel builder including the given service.</returns>
-    public KernelBuilder WithTrustService(ITrustService? trustService)
-    {
-        this._trustService = trustService;
         return this;
     }
 

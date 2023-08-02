@@ -16,6 +16,8 @@ export const Constants = {
             storeAuthStateInCookie: false,
         },
         semanticKernelScopes: ['openid', 'offline_access', 'profile'],
+        // MS Graph scopes required for loading user information
+        msGraphAppScopes: ['User.ReadBasic.All'],
     },
     bot: {
         profile: {
@@ -35,10 +37,11 @@ export const Constants = {
             defaultDefinition: 'int',
         },
         // Reserved context variable names
-        reservedWords: ['INPUT', 'server_url', 'server-url'],
+        reservedWords: ['server_url', 'server-url'],
     },
     // For a list of Microsoft Graph permissions, see https://learn.microsoft.com/en-us/graph/permissions-reference.
     // Your application registration will need to be granted these permissions in Azure Active Directory.
-    msGraphScopes: ['Calendars.Read', 'Mail.Read', 'Mail.Send', 'Tasks.ReadWrite', 'User.Read'],
+    msGraphPluginScopes: ['Calendars.Read', 'Mail.Read', 'Mail.Send', 'Tasks.ReadWrite', 'User.Read'],
     adoScopes: ['vso.work'],
+    BATCH_REQUEST_LIMIT: 20,
 };

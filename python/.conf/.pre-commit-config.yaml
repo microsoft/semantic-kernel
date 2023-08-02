@@ -15,15 +15,8 @@ repos:
     hooks:
       - id: black
         files: \.py$
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.270
     hooks:
-      - id: isort
-        files: \.py$
-        args: ["--profile", "black"]
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
-    hooks:
-    - id: flake8
-      files: \.py$
-      args: ["--config=python/.conf/flake8.cfg"]
+      - id: ruff
+        args: [ --fix, --exit-non-zero-on-fix ]
