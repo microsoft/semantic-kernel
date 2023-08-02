@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import time
 import pytest
 
 import semantic_kernel
@@ -12,7 +13,18 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_config impor
 from tests.integration.fakes.email_skill_fake import EmailSkillFake
 from tests.integration.fakes.fun_skill_fake import FunSkillFake
 from tests.integration.fakes.writer_skill_fake import WriterSkillFake
-from test_utils import retry
+
+async def retry(func, retries=3):
+    min_delay = 2
+    max_delay = 7
+    for i in range(retries):
+        try:
+            result = await func()
+            return result
+        except Exception as e:
+            if i == retries - 1:  # Last retry
+                raise
+            time.sleep(max(min(i, max_delay), min_delay))
 
 
 def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=False):
@@ -153,7 +165,7 @@ async def test_create_plan_goal_relevant_async(
     plan = await retry(
         lambda: planner.create_plan_async(prompt)
     )
-    
+
     # Assert
     assert any(
         step.name == expected_function and step.skill_name == expected_skill
