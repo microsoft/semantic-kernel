@@ -7,16 +7,6 @@ version: 2
 updates:
   # Maintain dependencies for nuget
   - package-ecosystem: "nuget"
-    directory: "samples/apps/copilot-chat-app/webapi"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    labels:
-      - "copilot chat"
-      - "dependencies"
-
-  # Maintain dependencies for nuget
-  - package-ecosystem: "nuget"
     directory: "dotnet/"
     schedule:
       interval: "weekly"
