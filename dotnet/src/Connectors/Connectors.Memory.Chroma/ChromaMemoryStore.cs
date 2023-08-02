@@ -142,26 +142,23 @@ public class ChromaMemoryStore : IMemoryStore
     {
         Verify.NotNullOrWhiteSpace(collectionName);
 
-        var collection = await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
+        var collection = await this.GetCollectionOrThrowAsync(collectionName, cancellationToken).ConfigureAwait(false);
 
-        if (collection != null)
+        var queryEmbeddings = new float[][] { embedding.Vector.ToArray() };
+        var nResults = limit;
+        var include = this.GetEmbeddingIncludeTypes(withEmbeddings: withEmbeddings, withDistances: true);
+
+        var queryResultModel = await this._chromaClient.QueryEmbeddingsAsync(collection.Id, queryEmbeddings, nResults, include, cancellationToken).ConfigureAwait(false);
+
+        var recordCount = queryResultModel.Ids?.FirstOrDefault()?.Count ?? 0;
+
+        for (var recordIndex = 0; recordIndex < recordCount; recordIndex++)
         {
-            var queryEmbeddings = new float[][] { embedding.Vector.ToArray() };
-            var nResults = limit;
-            var include = this.GetEmbeddingIncludeTypes(withEmbeddings: withEmbeddings, withDistances: true);
+            (MemoryRecord memoryRecord, double similarityScore) = this.GetMemoryRecordFromQueryResultModel(queryResultModel, recordIndex);
 
-            var queryResultModel = await this._chromaClient.QueryEmbeddingsAsync(collection.Id, queryEmbeddings, nResults, include, cancellationToken).ConfigureAwait(false);
-
-            var recordCount = queryResultModel.Ids?.FirstOrDefault()?.Count ?? 0;
-
-            for (var recordIndex = 0; recordIndex < recordCount; recordIndex++)
+            if (similarityScore >= minRelevanceScore)
             {
-                (MemoryRecord memoryRecord, double similarityScore) = this.GetMemoryRecordFromQueryResultModel(queryResultModel, recordIndex);
-
-                if (similarityScore >= minRelevanceScore)
-                {
-                    yield return (memoryRecord, similarityScore);
-                }
+                yield return (memoryRecord, similarityScore);
             }
         }
     }
@@ -253,7 +250,7 @@ public class ChromaMemoryStore : IMemoryStore
         }
         catch (ChromaClientException e) when (e.CollectionDoesNotExistException(collectionName))
         {
-            this._logger.LogDebug("Collection {0} does not exist", collectionName);
+            this._logger.LogError("Collection {0} does not exist", collectionName);
 
             return null;
         }
