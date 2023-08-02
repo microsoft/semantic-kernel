@@ -140,6 +140,7 @@ jobs:
           echo "stdout=poetry run pytest ./tests/integration/embeddings -v" >> $GITHUB_OUTPUT
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
+        if: always()
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: False
