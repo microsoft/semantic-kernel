@@ -104,7 +104,7 @@ async def test_create_plan_with_defaults_async(
 
     # Act
     plan = await retry(
-        lambda: kernel.run_async(planner.create_plan_async, input_str=prompt)
+        lambda: planner.create_plan_async(prompt)
     )
 
     # Assert
@@ -151,9 +151,9 @@ async def test_create_plan_goal_relevant_async(
 
     # Act
     plan = await retry(
-        lambda: kernel.run_async(planner.create_plan_async, input_str=prompt)
+        lambda: planner.create_plan_async(prompt)
     )
-
+    
     # Assert
     assert any(
         step.name == expected_function and step.skill_name == expected_skill
